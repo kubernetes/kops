@@ -43,6 +43,7 @@ Metadata:
 Name: master-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-a
@@ -124,6 +125,7 @@ Metadata:
 Name: master-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-b
@@ -205,6 +207,7 @@ Metadata:
 Name: master-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-c
@@ -283,6 +286,7 @@ Metadata:
 Name: node-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-a
@@ -355,6 +359,7 @@ Metadata:
 Name: node-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-b
@@ -427,6 +432,7 @@ Metadata:
 Name: node-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-c
@@ -642,6 +648,7 @@ Name: nodeupconfig-node-c
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-a
@@ -680,6 +687,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-b
@@ -718,6 +726,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-c
@@ -756,6 +765,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-a
@@ -788,6 +798,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-b
@@ -820,6 +831,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-c
