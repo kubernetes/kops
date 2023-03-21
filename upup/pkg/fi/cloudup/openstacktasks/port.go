@@ -40,6 +40,7 @@ type Port struct {
 	Lifecycle                fi.Lifecycle
 	Tags                     []string
 	ForAPIServer             bool
+	AllowedAddressPairs      []ports.AddressPair
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -83,6 +84,29 @@ func (s *Port) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 
 func (s *Port) IsForAPIServer() bool {
 	return s.ForAPIServer
+}
+
+// getActualAllowedAddressPairs returns the actual allowed address pairs which kOps currently manages.
+func getActualAllowedAddressPairs(port *ports.Port, find *Port) []ports.AddressPair {
+	if find == nil {
+		return port.AllowedAddressPairs
+	}
+
+	var allowedAddressPairs []ports.AddressPair
+	for _, portAddressPair := range port.AllowedAddressPairs {
+		// TODO: what if user set the macaddress in the config to the same one as the port?
+		if portAddressPair.MACAddress == port.MACAddress {
+			portAddressPair.MACAddress = ""
+		}
+
+		allowedAddressPairs = append(allowedAddressPairs, portAddressPair)
+	}
+
+	sort.Slice(allowedAddressPairs, func(i, j int) bool {
+		return allowedAddressPairs[i].IPAddress < allowedAddressPairs[j].IPAddress
+	})
+
+	return allowedAddressPairs
 }
 
 func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
@@ -150,14 +174,15 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	}
 
 	actual := &Port{
-		ID:                fi.PtrTo(port.ID),
-		InstanceGroupName: cloudInstanceGroupName,
-		Name:              fi.PtrTo(port.Name),
-		Network:           &Network{ID: fi.PtrTo(port.NetworkID)},
-		SecurityGroups:    sgs,
-		Subnets:           subnets,
-		Lifecycle:         lifecycle,
-		Tags:              tags,
+		ID:                  fi.PtrTo(port.ID),
+		InstanceGroupName:   cloudInstanceGroupName,
+		Name:                fi.PtrTo(port.Name),
+		Network:             &Network{ID: fi.PtrTo(port.NetworkID)},
+		SecurityGroups:      sgs,
+		Subnets:             subnets,
+		Lifecycle:           lifecycle,
+		Tags:                tags,
+		AllowedAddressPairs: getActualAllowedAddressPairs(port, find),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -238,12 +263,23 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
 	}
-	if changes != nil && changes.Tags != nil {
-		klog.V(2).Infof("Updating tags for Port with name: %q", fi.ValueOf(e.Name))
-		for _, tag := range e.Tags {
-			err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.ValueOf(a.ID), tag)
+	if changes != nil {
+		if changes.Tags != nil {
+			klog.V(2).Infof("Updating tags for Port with name: %q", fi.ValueOf(e.Name))
+			for _, tag := range e.Tags {
+				err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.ValueOf(a.ID), tag)
+				if err != nil {
+					return fmt.Errorf("Error appending tag to port: %v", err)
+				}
+			}
+		}
+		if changes.AllowedAddressPairs != nil {
+			klog.V(2).Infof("Updating allowed address pairs for Port with name: %q", fi.ValueOf(e.Name))
+			_, err := t.Cloud.UpdatePort(fi.ValueOf(a.ID), ports.UpdateOpts{
+				AllowedAddressPairs: &e.AllowedAddressPairs,
+			})
 			if err != nil {
-				return fmt.Errorf("Error appending tag to port: %v", err)
+				return fmt.Errorf("error updating port: %v", err)
 			}
 		}
 	}
@@ -278,9 +314,10 @@ func portCreateOptsFromPortTask(t *openstack.OpenstackAPITarget, a, e, changes *
 	}
 
 	return ports.CreateOpts{
-		Name:           fi.ValueOf(e.Name),
-		NetworkID:      fi.ValueOf(e.Network.ID),
-		SecurityGroups: &sgs,
-		FixedIPs:       fixedIPs,
+		Name:                fi.ValueOf(e.Name),
+		NetworkID:           fi.ValueOf(e.Network.ID),
+		SecurityGroups:      &sgs,
+		FixedIPs:            fixedIPs,
+		AllowedAddressPairs: e.AllowedAddressPairs,
 	}, nil
 }

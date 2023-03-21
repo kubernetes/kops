@@ -1356,6 +1356,56 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 			},
 		},
+		{
+			desc: "configures allowed address pairs with annotations",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							Metadata: &kops.OpenstackMetadata{
+								ConfigDrive: fi.PtrTo(false),
+							},
+						},
+					},
+					KubernetesVersion: "1.24.0",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
+								Region: "region",
+							},
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+						Annotations: map[string]string{
+							"openstack.kops.io/allowedAddressPair/0": "192.168.0.0/16",
+							"openstack.kops.io/allowedAddressPair/1": "10.123.0.1,12:34:56:78:90:AB",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+			},
+		},
 	}
 }
 
