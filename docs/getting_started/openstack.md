@@ -218,6 +218,33 @@ spec:
       insecureSkipVerify: true
 ```
 
+## Advanced Instance Group config
+
+### Adding allowed address pairs to ports
+
+It is possible to make kOps provision and update the ports of the servers with allowed address pairs, which can be beneficial when needing to use for example VRRP for a custom loadbalancing solution.
+
+To make use of this annotate an Instance Group configuration like so:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/allowedAddressPair/N: <IPAddress>(,<MACAddress>)
+```
+
+Where `N` can be an arbitrary identifier and the MACAddress is optional, for example:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/allowedAddressPair/0: 192.168.0.0/16
+    openstack.kops.io/allowedAddressPair/1: 10.123.0.0,12:34:56:78:90:AB
+```
+
+For more information about allowed address pairs refer to the [OpenStack Network API documentation](https://docs.openstack.org/api-ref/network/v2/#allowed-address-pairs).
+
 ## Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
