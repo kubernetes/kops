@@ -906,6 +906,9 @@ func MakeCloudConfig(spec kops.ClusterSpec) []string {
 		for _, name := range networking.InternalNetworkNames {
 			networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.ValueOf(name)))
 		}
+		if networking.AddressSortOrder != nil {
+			networkingLines = append(networkingLines, fmt.Sprintf("address-sort-order=%s", fi.ValueOf(networking.AddressSortOrder)))
+		}
 
 		if len(networkingLines) > 0 {
 			lines = append(lines, "[Networking]")
