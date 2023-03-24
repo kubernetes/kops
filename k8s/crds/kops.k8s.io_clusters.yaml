@@ -498,6 +498,8 @@ spec:
                       network:
                         description: OpenstackNetwork defines the config for a network
                         properties:
+                          addressSortOrder:
+                            type: string
                           availabilityZoneHints:
                             items:
                               type: string
