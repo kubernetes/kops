@@ -817,6 +817,7 @@ type OpenstackNetwork struct {
 	IPv6SupportDisabled   *bool     `json:"ipv6SupportDisabled,omitempty"`
 	PublicNetworkNames    []*string `json:"publicNetworkNames,omitempty"`
 	InternalNetworkNames  []*string `json:"internalNetworkNames,omitempty"`
+	AddressSortOrder      *string   `json:"addressSortOrder,omitempty"`
 }
 
 // OpenstackMetadata defines config for metadata service related settings
