@@ -6786,6 +6786,7 @@ func autoConvert_v1alpha3_OpenstackNetwork_To_kops_OpenstackNetwork(in *Openstac
 	out.IPv6SupportDisabled = in.IPv6SupportDisabled
 	out.PublicNetworkNames = in.PublicNetworkNames
 	out.InternalNetworkNames = in.InternalNetworkNames
+	out.AddressSortOrder = in.AddressSortOrder
 	return nil
 }
 
@@ -6799,6 +6800,7 @@ func autoConvert_kops_OpenstackNetwork_To_v1alpha3_OpenstackNetwork(in *kops.Ope
 	out.IPv6SupportDisabled = in.IPv6SupportDisabled
 	out.PublicNetworkNames = in.PublicNetworkNames
 	out.InternalNetworkNames = in.InternalNetworkNames
+	out.AddressSortOrder = in.AddressSortOrder
 	return nil
 }
 
