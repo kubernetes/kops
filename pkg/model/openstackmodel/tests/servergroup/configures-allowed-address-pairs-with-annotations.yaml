@@ -1,121 +1,10 @@
 Lifecycle: ""
-Name: master
----
-Lifecycle: ""
 Name: node
----
-ForAPIServer: true
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-master-1-cluster
----
-ForAPIServer: false
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-node-1-cluster
----
-AvailabilityZone: zone-1
-ConfigDrive: false
-Flavor: blc.1-2
-FloatingIP:
-  ForAPIServer: true
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-master-1-cluster
-ForAPIServer: false
-GroupName: master
-ID: null
-Image: image-master
-Lifecycle: Sync
-Metadata:
-  KopsInstanceGroup: master
-  KopsName: master-1-cluster
-  KopsNetwork: cluster
-  KopsRole: ControlPlane
-  KubernetesCluster: cluster
-  cluster_generation: "0"
-  ig_generation: "0"
-  k8s: cluster
-  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
-  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
-  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
-  k8s.io_role_control-plane: "1"
-  k8s.io_role_master: "1"
-  kops.k8s.io_instancegroup: master
-Name: master-1-cluster
-Port:
-  AdditionalSecurityGroups: null
-  AllowedAddressPairs: null
-  ForAPIServer: false
-  ID: null
-  InstanceGroupName: master
-  Lifecycle: Sync
-  Name: port-master-1-cluster
-  Network:
-    AvailabilityZoneHints: null
-    ID: null
-    Lifecycle: ""
-    Name: cluster
-    Tag: null
-  SecurityGroups:
-  - Description: null
-    ID: null
-    Lifecycle: ""
-    Name: masters.cluster
-    RemoveExtraRules: null
-    RemoveGroup: false
-  - Description: null
-    ID: null
-    Lifecycle: ""
-    Name: master-public-name
-    RemoveExtraRules: null
-    RemoveGroup: false
-  Subnets:
-  - CIDR: null
-    DNSServers: null
-    ID: null
-    Lifecycle: ""
-    Name: subnet.cluster
-    Network: null
-    Tag: null
-  Tags:
-  - KopsInstanceGroup=master
-  - KopsName=port-master-1
-  - KubernetesCluster=cluster
-Region: region
-Role: ControlPlane
-SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
-SecurityGroups: null
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master
-  Policies:
-  - anti-affinity
-UserData:
-  task:
-    Lifecycle: ""
-    Name: master
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.2-4
-FloatingIP:
-  ForAPIServer: false
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-node-1-cluster
+FloatingIP: null
 ForAPIServer: false
 GroupName: node
 ID: null
@@ -136,7 +25,10 @@ Metadata:
 Name: node-1-cluster
 Port:
   AdditionalSecurityGroups: null
-  AllowedAddressPairs: null
+  AllowedAddressPairs:
+  - ip_address: 10.123.0.1
+    mac_address: 12:34:56:78:90:AB
+  - ip_address: 192.168.0.0/16
   ForAPIServer: false
   ID: null
   InstanceGroupName: node
@@ -295,16 +187,6 @@ Base: null
 Contents:
   task:
     Lifecycle: ""
-    Name: master
-Lifecycle: ""
-Location: igconfig/control-plane/master/nodeupconfig.yaml
-Name: nodeupconfig-master
-PublicACL: null
----
-Base: null
-Contents:
-  task:
-    Lifecycle: ""
     Name: node
 Lifecycle: ""
 Location: igconfig/node/node/nodeupconfig.yaml
@@ -312,46 +194,10 @@ Name: nodeupconfig-node
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
-AllowedAddressPairs: null
-ForAPIServer: false
-ID: null
-InstanceGroupName: master
-Lifecycle: Sync
-Name: port-master-1-cluster
-Network:
-  AvailabilityZoneHints: null
-  ID: null
-  Lifecycle: ""
-  Name: cluster
-  Tag: null
-SecurityGroups:
-- Description: null
-  ID: null
-  Lifecycle: ""
-  Name: masters.cluster
-  RemoveExtraRules: null
-  RemoveGroup: false
-- Description: null
-  ID: null
-  Lifecycle: ""
-  Name: master-public-name
-  RemoveExtraRules: null
-  RemoveGroup: false
-Subnets:
-- CIDR: null
-  DNSServers: null
-  ID: null
-  Lifecycle: ""
-  Name: subnet.cluster
-  Network: null
-  Tag: null
-Tags:
-- KopsInstanceGroup=master
-- KopsName=port-master-1
-- KubernetesCluster=cluster
----
-AdditionalSecurityGroups: null
-AllowedAddressPairs: null
+AllowedAddressPairs:
+- ip_address: 10.123.0.1
+  mac_address: 12:34:56:78:90:AB
+- ip_address: 192.168.0.0/16
 ForAPIServer: false
 ID: null
 InstanceGroupName: node
@@ -382,15 +228,6 @@ Tags:
 - KopsInstanceGroup=node
 - KopsName=port-node-1
 - KubernetesCluster=cluster
----
-ClusterName: cluster
-ID: null
-IGName: master
-Lifecycle: Sync
-MaxSize: 1
-Name: cluster-master
-Policies:
-- anti-affinity
 ---
 ClusterName: cluster
 ID: null

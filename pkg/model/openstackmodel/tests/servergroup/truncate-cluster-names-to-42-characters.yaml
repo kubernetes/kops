@@ -51,6 +51,7 @@ Metadata:
 Name: master-1-tom-software-dev-playground-real33-k8s-local
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master
@@ -135,6 +136,7 @@ Metadata:
 Name: node-1-tom-software-dev-playground-real33-k8s-local
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node
@@ -310,6 +312,7 @@ Name: nodeupconfig-node
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master
@@ -348,6 +351,7 @@ Tags:
 - KubernetesCluster=tom-software-dev-playground-real33--kngu8l
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node
