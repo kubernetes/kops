@@ -140,13 +140,14 @@ func LiteralListExpression(args ...*Literal) *Literal {
 	}
 }
 
-// LiteralNullConditionalExpression constructs a Literal which returns `null`
-// if the supplied "nullable" expression is null, otherwise returns "value".
+// LiteralEqualConditionExpression constructs a Literal which compares "equal" to "to".
+// If "equal" is equal to "to" "either" is being returned, otherwise "or".
+// The result looks like this: "equal == to ? either : or"
 // It is the caller's responsibility to ensure the supplied parameters do not use operators
 // with lower precedence than the conditional operator.
-func LiteralNullConditionalExpression(nullable, value *Literal) *Literal {
+func LiteralEqualConditionExpression(equal, to, either, or *Literal) *Literal {
 	return &Literal{
-		String: fmt.Sprintf("%s == null ? null : %s", nullable.String, value.String),
+		String: fmt.Sprintf("%s == %s ? %s : %s", equal.String, to.String, either.String, or.String),
 	}
 }
 
