@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -52,6 +53,32 @@ var TRUNCATE_OPT = truncate.TruncateStringOptions{
 	MaxLength:     MAX_TAG_LENGTH_OPENSTACK,
 	AlwaysAddHash: false,
 	HashLength:    6,
+}
+
+func (b *ServerGroupModelBuilder) buildAllowedAddressPairs(annotations map[string]string) []ports.AddressPair {
+	keyPrefix := openstack.OS_ANNOTATION + openstack.ALLOWED_ADDRESS_PAIR + "/"
+
+	var allowedAddressPairs []ports.AddressPair
+	for key := range annotations {
+		if strings.HasPrefix(key, keyPrefix) {
+			ipAddress, macAddress, _ := strings.Cut(annotations[key], ",")
+
+			allowedAddressPair := ports.AddressPair{
+				IPAddress: ipAddress,
+			}
+			if macAddress != "" {
+				allowedAddressPair.MACAddress = macAddress
+			}
+
+			allowedAddressPairs = append(allowedAddressPairs, allowedAddressPair)
+		}
+	}
+
+	sort.Slice(allowedAddressPairs, func(i, j int) bool {
+		return allowedAddressPairs[i].IPAddress < allowedAddressPairs[j].IPAddress
+	})
+
+	return allowedAddressPairs
 }
 
 func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
@@ -167,6 +194,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 			SecurityGroups:           securityGroups,
 			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
 			Subnets:                  subnets,
+			AllowedAddressPairs:      b.buildAllowedAddressPairs(ig.ObjectMeta.Annotations),
 			Lifecycle:                b.Lifecycle,
 		}
 		c.AddTask(portTask)
