@@ -1,0 +1,90 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2023-01-01T00:00:00Z"
+  name: scw-minimal.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: scaleway
+  configBase: memfs://tests/scw-minimal.k8s.local
+  etcdClusters:
+    - cpuRequest: 200m
+      etcdMembers:
+        - instanceGroup: control-plane-fr-par-1
+          name: etcd-1
+      memoryRequest: 100Mi
+      name: main
+    - cpuRequest: 100m
+      etcdMembers:
+        - instanceGroup: control-plane-fr-par-1
+          name: etcd-1
+      memoryRequest: 100Mi
+      name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubeProxy:
+    enabled: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+    - 0.0.0.0/0
+    - ::/0
+  kubernetesVersion: 1.25.5
+  networking:
+    cilium:
+      enableNodePort: true
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+    - ::/0
+  subnets:
+    - name: fr-par-1
+      type: Public
+      zone: fr-par-1
+  topology:
+    dns:
+      type: Private
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2023-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: scw-minimal.k8s.local
+  name: control-plane-fr-par-1
+spec:
+  image: ubuntu_focal
+  machineType: DEV1-M
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+    - fr-par-1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2023-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: scw-minimal.k8s.local
+  name: nodes-fr-par-1
+spec:
+  image: ubuntu_focal
+  machineType: DEV1-M
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+    - fr-par-1

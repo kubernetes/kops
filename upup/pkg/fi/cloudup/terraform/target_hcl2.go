@@ -214,6 +214,8 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 		providers["google"] = true
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
 		providers["hcloud"] = true
+	} else if t.Cloud.ProviderID() == kops.CloudProviderScaleway {
+		providers["scaleway"] = true
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providers["aws"] = true
 		if featureflag.Spotinst.Enabled() {
@@ -246,6 +248,10 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			"spotinst": {
 				"source":  "spotinst/spotinst",
 				"version": ">= 1.33.0",
+			},
+			"scaleway": {
+				"source":  "scaleway/scaleway",
+				"version": ">= 2.2.1",
 			},
 		}
 

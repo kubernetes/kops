@@ -23,6 +23,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -162,4 +164,25 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 	}
 
 	return nil
+}
+
+type terraformLBBackend struct {
+	LBID            *terraformWriter.Literal `cty:"lb_id"`
+	Name            *string                  `cty:"name"`
+	ForwardProtocol *string                  `cty:"forward_protocol"`
+	ForwardPort     *int32                   `cty:"forward_port"`
+}
+
+func (l *LBBackend) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *LBBackend) error {
+	tf := terraformLBBackend{
+		LBID:            expected.LoadBalancer.TerraformLink(),
+		Name:            expected.Name,
+		ForwardProtocol: expected.ForwardProtocol,
+		ForwardPort:     expected.ForwardPort,
+	}
+	return t.RenderResource("scaleway_lb_backend", fi.ValueOf(expected.Name), tf)
+}
+
+func (l *LBBackend) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_lb_backend", fi.ValueOf(l.Name), "id")
 }
