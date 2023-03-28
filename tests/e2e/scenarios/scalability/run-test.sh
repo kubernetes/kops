@@ -21,17 +21,23 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}"
 cd ..
 WORKSPACE=$(pwd)
+cd "${WORKSPACE}/kops"
 
 # Create bindir
-BINDIR=${WORKSPACE}/bin
-export PATH=${BINDIR}:${PATH}
+BINDIR="${WORKSPACE}/bin"
+export PATH="${BINDIR}:${PATH}"
 mkdir -p "${BINDIR}"
+
+# Build kubetest-2 kOps support
+pushd "${WORKSPACE}/kops"
+GOBIN=${BINDIR} make test-e2e-install
+popd
 
 # Setup our cleanup function; as we allocate resources we set a variable to indicate they should be cleaned up
 function cleanup {
   # shellcheck disable=SC2153
   if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
-      kubetest2 kops "${KUBETEST2_ARGS}" --down || echo "kubetest2 down failed"
+      kubetest2 kops "${KUBETEST2_ARGS[@]}" --down || echo "kubetest2 down failed"
   fi
 }
 trap cleanup EXIT
@@ -42,8 +48,6 @@ if [[ -z "${CLUSTER_NAME:-}" ]]; then
   CLUSTER_NAME="${SCRIPT_NAME}.k8s.local"
 fi
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
-
-exit 0
 
 if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
@@ -80,8 +84,12 @@ fi
 echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 
 # cilium does not yet pass conformance tests (shared hostport test)
-create_args="--networking cilium"
-create_args="${create_args} --node-size=c6g.medium --master-size=c6g.xlarge --node-count=100"
+#create_args="--networking cilium"
+create_args="--networking calico"
+# TODO: Use the newer non-DNS mode, more scalable than gossip and generally recommended
+# However, it currently fails two tests (HostPort & OIDC) so need to track that down
+#create_args="--dns none"
+create_args="${create_args} --node-size=c6g.medium --master-size=c6g.xlarge --node-count=101"
 if [[ -n "${ZONES:-}" ]]; then
     create_args="${create_args} --zones=${ZONES}"
 fi
@@ -93,25 +101,29 @@ echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
 
 # Note that these arguments for kubetest2
-KUBETEST2_ARGS=""
-KUBETEST2_ARGS="${KUBETEST2_ARGS} -v=2 --cloud-provider=${CLOUD_PROVIDER}"
-KUBETEST2_ARGS="${KUBETEST2_ARGS} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2_ARGS="${KUBETEST2_ARGS} --kops-binary-path=${KOPS_BIN}"
-KUBETEST2_ARGS="${KUBETEST2_ARGS} --admin-access=${ADMIN_ACCESS:-}"
-KUBETEST2_ARGS="${KUBETEST2_ARGS} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
+KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
+KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
+KUBETEST2_ARGS+=("--kops-binary-path=${KOPS_BIN}")
+KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
+KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
+
+# More time for bigger clusters
+KUBETEST2_ARGS+=("--validation-wait=30m")
 
 # The caller can set DELETE_CLUSTER=false to stop us deleting the cluster
 if [[ -z "${DELETE_CLUSTER:-}" ]]; then
   DELETE_CLUSTER="true"
 fi
 
-kubetest2 kops "${KUBETEST2_ARGS}" \
+kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --up \
   --kubernetes-version="${K8S_VERSION}" \
   --create-args="${create_args}" \
   --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}"
 
-kubetest2 kops "${KUBETEST2_ARGS}" \
+kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=kops \
   --kubernetes-version="${K8S_VERSION}" \
   -- \
@@ -121,6 +133,6 @@ kubetest2 kops "${KUBETEST2_ARGS}" \
   --focus-regex="\[Conformance\]"
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
-  kubetest2 kops "${KUBETEST2_ARGS}" --down
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
   DELETE_CLUSTER=false # Don't delete again in trap
 fi
