@@ -2317,13 +2317,16 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	igZonesSet := sets.NewString(igZones...)
 
 	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
+	var reasons []string
 	for _, instanceType := range candidates {
 		if strings.HasPrefix(instanceType, "t4g") {
 			if imageArch != "arm64" {
+				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
 		} else {
 			if imageArch == "arm64" {
+				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
 		}
@@ -2335,10 +2338,16 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 		if zones.IsSuperset(igZonesSet) {
 			return instanceType, nil
 		} else {
+			reasons = append(reasons, fmt.Sprintf("instance type %q is not available in all zones (available in zones %v, need %v)", instanceType, zones, igZones))
 			klog.V(2).Infof("can't use instance type %q, available in zones %v but need %v", instanceType, zones, igZones)
 		}
 	}
 
+	// Log the detailed reasons why we can't find an instance type
+	klog.Warning("cannot find suitable instance type")
+	for _, reason := range reasons {
+		klog.Warning("  *  " + reason)
+	}
 	return "", fmt.Errorf("could not find a suitable supported instance type for the instance group %q (type %q) in region %q", ig.Name, ig.Spec.Role, c.region)
 }
 
