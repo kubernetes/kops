@@ -205,6 +205,9 @@ const (
 	gcpCCMAddon   = "gcp-cloud-controller.addons.k8s.io-k8s-1.23"
 	gcpPDCSIAddon = "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23"
 
+	scwCCMAddon = "scaleway-cloud-controller.addons.k8s.io-k8s-1.24"
+	scwCSIAddon = "scaleway-csi-driver.addons.k8s.io-k8s-1.24"
+
 	calicoAddon  = "networking.projectcalico.org-k8s-1.25"
 	canalAddon   = "networking.projectcalico.org.canal-k8s-1.25"
 	ciliumAddon  = "networking.cilium.io-k8s-1.16"
@@ -405,6 +408,18 @@ func TestMinimalGCEDNSNone(t *testing.T) {
 			gcpPDCSIAddon,
 		).
 		runTestTerraformGCE(t)
+}
+
+// TestMinimalScaleway runs tests on a minimal Scaleway cluster with gossip DNS
+func TestMinimalScaleway(t *testing.T) {
+	t.Setenv("SCW_PROFILE", "REDACTED")
+	newIntegrationTest("scw-minimal.k8s.local", "minimal_scaleway").
+		withAddons(
+			scwCCMAddon,
+			scwCSIAddon,
+			dnsControllerAddon,
+		).
+		runTestTerraformScaleway(t)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
@@ -1746,6 +1761,45 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
 		"hcloud_server_master-fsn1_user_data",
 		"hcloud_server_nodes-fsn1_user_data",
+	)
+
+	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
+}
+
+func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
+	featureflag.ParseFlags("+Scaleway")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-Scaleway")
+	}
+	defer unsetFeatureFlags()
+
+	ctx := testcontext.ForTest(t)
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.21.0-alpha.1")
+
+	expectedFilenames := i.expectTerraformFilenames
+
+	expectedFilenames = append(expectedFilenames,
+		"aws_s3_object_cluster-completed.spec_content",
+		"aws_s3_object_etcd-cluster-spec-events_content",
+		"aws_s3_object_etcd-cluster-spec-main_content",
+		"aws_s3_object_kops-version.txt_content",
+		"aws_s3_object_manifests-etcdmanager-events-control-plane-fr-par-1_content",
+		"aws_s3_object_manifests-etcdmanager-main-control-plane-fr-par-1_content",
+		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
+		"aws_s3_object_nodeupconfig-control-plane-fr-par-1_content",
+		"aws_s3_object_nodeupconfig-nodes-fr-par-1_content",
+		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
+		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
+		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-networking.cilium.io-k8s-1.16_content",
+		"aws_s3_object_"+i.clusterName+"-addons-rbac.addons.k8s.io-k8s-1.8_content",
+		"scaleway_instance_server_control-plane-fr-par-1-masters-scw-minimal-k8s-local_user_data",
+		"scaleway_instance_server_nodes-fr-par-1-scw-minimal-k8s-local_user_data",
 	)
 
 	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)

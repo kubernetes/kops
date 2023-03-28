@@ -18,6 +18,7 @@ package scaleway
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -103,17 +104,26 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-	profile, err := CreateValidScalewayProfile()
-	if err != nil {
-		return nil, err
-	}
 
-	scwClient, err := scw.NewClient(
-		scw.WithProfile(profile),
-		scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("creating client for Scaleway Cloud: %w", err)
+	var scwClient *scw.Client
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		// If the profile is REDACTED, we're running integration tests so no need for authentication
+		scwClient, err = scw.NewClient(scw.WithoutAuth())
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		profile, err := CreateValidScalewayProfile()
+		if err != nil {
+			return nil, err
+		}
+		scwClient, err = scw.NewClient(
+			scw.WithProfile(profile),
+			scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("creating client for Scaleway Cloud: %w", err)
+		}
 	}
 
 	return &scwCloudImplementation{

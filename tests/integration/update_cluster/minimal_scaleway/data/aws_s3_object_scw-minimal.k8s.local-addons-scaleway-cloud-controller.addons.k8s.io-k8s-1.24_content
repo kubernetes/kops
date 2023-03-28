@@ -1,0 +1,221 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: scaleway-secret
+  namespace: kube-system
+stringData:
+  SCW_ACCESS_KEY: null
+  SCW_DEFAULT_PROJECT_ID: null
+  SCW_DEFAULT_REGION: fr-par
+  SCW_DEFAULT_ZONE: fr-par-1
+  SCW_SECRET_KEY: null
+type: Opaque
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: scaleway-cloud-controller-manager
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: scaleway-cloud-controller-manager
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
+      labels:
+        app: scaleway-cloud-controller-manager
+        kops.k8s.io/managed-by: kops
+    spec:
+      containers:
+      - args:
+        - --cloud-provider=scaleway
+        - --leader-elect=true
+        - --allow-untagged-cloud
+        envFrom:
+        - secretRef:
+            name: scaleway-secret
+        image: scaleway/scaleway-cloud-controller-manager:latest
+        imagePullPolicy: Always
+        name: scaleway-cloud-controller-manager
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+      dnsPolicy: Default
+      hostNetwork: true
+      serviceAccountName: cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: scaleway-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: scaleway-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
