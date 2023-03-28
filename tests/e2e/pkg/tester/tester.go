@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/octago/sflags/gen/gpflag"
@@ -388,8 +389,23 @@ func (t *Tester) addCSIDriverFlags() error {
 		if err != nil {
 			return err
 		}
-		klog.Infof("Setting --storage.testdriver=%s/tests/e2e/csi-manifests/ebs.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
-		t.TestArgs += fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/aws-ebs/driver.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+		storageTestDriverPath := filepath.Join(cwd, "tests/e2e/csi-manifests/aws-ebs/driver.yaml")
+		var exists bool
+		if _, err := os.Stat(storageTestDriverPath); err != nil {
+			if os.IsNotExist(err) {
+				exists = false
+			} else {
+				return fmt.Errorf("error getting stat of %q: %w", storageTestDriverPath, err)
+			}
+		} else {
+			exists = true
+		}
+		if exists {
+			klog.Infof("Setting --storage.testdriver=%s --storage.migratedPlugins=kubernetes.io/aws-ebs", storageTestDriverPath)
+			t.TestArgs += fmt.Sprintf(" --storage.testdriver=%s --storage.migratedPlugins=kubernetes.io/aws-ebs", storageTestDriverPath)
+		} else {
+			klog.Infof("%s not found, will not set storage.testdriver and storage.migratedPlugins", storageTestDriverPath)
+		}
 	} else {
 		klog.Info("EBS CSI driver not enabled. Skipping tests")
 	}
