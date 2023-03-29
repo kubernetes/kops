@@ -31,11 +31,6 @@ if [[ -z "${WORKSPACE-}" ]]; then
     WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
 fi
 
-if [[ -z "${WORKSPACE-}" ]]; then
-    export WORKSPACE
-    WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
-fi
-
 if [[ -z "${NETWORKING-}" ]]; then
     export NETWORKING="calico"
 fi
