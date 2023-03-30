@@ -162,7 +162,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			nameForTask := strings.ToLower(string(role))
 
-			klog.Warningf("adding bucket level write IAM for role %q to gs://%s to support etcd backup", bucket, role)
+			klog.Warningf("adding bucket level write IAM for role %q to gs://%s to support etcd backup", role, bucket)
 
 			c.AddTask(&gcetasks.StorageBucketIAM{
 				Name:      s("objectadmin-" + bucket + "-serviceaccount-" + nameForTask),
