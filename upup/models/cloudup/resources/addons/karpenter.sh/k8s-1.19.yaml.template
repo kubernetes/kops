@@ -765,10 +765,6 @@ rules:
     resources: ["validatingwebhookconfigurations"]
     verbs: ["update"]
     resourceNames: ["validation.webhook.karpenter.sh", "validation.webhook.config.karpenter.sh"]
-  - apiGroups: ["admissionregistration.k8s.io"]
-    resources: ["mutatingwebhookconfigurations"]
-    verbs: ["update"]
-    resourceNames: ["defaulting.webhook.karpenter.sh"]
 
 ---
 # Source: karpenter/templates/clusterrole.yaml
@@ -964,7 +960,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.27.0
+          image: public.ecr.aws/karpenter/controller:v0.27.3
           imagePullPolicy: IfNotPresent
           env:
             - name: KUBERNETES_MIN_VERSION
