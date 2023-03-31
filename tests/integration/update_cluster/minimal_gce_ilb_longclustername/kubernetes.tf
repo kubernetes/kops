@@ -458,6 +458,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
   name_prefix = "master-us-test1-a-minimal-ivl9ll-"
   network_interface {
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -504,6 +505,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
   name_prefix = "nodes-minimal-gce-with-a--k0ql96-"
   network_interface {
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -546,6 +548,7 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-with-a-very-very-very
   name          = "us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   region        = "us-test1"
+  stack_type    = "IPV4_ONLY"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
