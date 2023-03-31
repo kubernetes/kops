@@ -17,6 +17,9 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -31,8 +34,15 @@ func (b *PrefixBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.IsKopsControllerIPAM() {
 		return nil
 	}
-	c.AddTask(&nodetasks.Prefix{
-		Name: "prefix",
-	})
+	switch b.BootConfig.CloudProvider {
+	case kops.CloudProviderAWS:
+		c.AddTask(&nodetasks.Prefix{
+			Name: "prefix",
+		})
+	case kops.CloudProviderGCE:
+		// Prefix is assigned by GCE
+	default:
+		return fmt.Errorf("kOps IPAM controller not supported on cloud %q", b.BootConfig.CloudProvider)
+	}
 	return nil
 }
