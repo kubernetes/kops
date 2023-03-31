@@ -74,6 +74,9 @@ type InstanceTemplate struct {
 	// HasExternalIP is set to true when an external IP is allocated to an instance.
 	HasExternalIP *bool
 
+	// StackType indicates the address families supported (IPV4_IPV6 or IPV4_ONLY)
+	StackType *string
+
 	// ID is the actual name
 	ID *string
 
@@ -138,6 +141,9 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
 			actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
+			if ni.StackType != "" {
+				actual.StackType = &ni.StackType
+			}
 
 			if len(ni.AliasIpRanges) != 0 {
 				actual.AliasIPRanges = make(map[string]string)
@@ -311,6 +317,9 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 				NetworkTier: "PREMIUM",
 			},
 		}
+	}
+	if e.StackType != nil {
+		ni.StackType = fi.ValueOf(e.StackType)
 	}
 
 	if e.Subnet != nil {
@@ -526,6 +535,7 @@ type terraformNetworkInterface struct {
 	Network      *terraformWriter.Literal `cty:"network"`
 	Subnetwork   *terraformWriter.Literal `cty:"subnetwork"`
 	AccessConfig []*terraformAccessConfig `cty:"access_config"`
+	StackType    *string                  `cty:"stack_type"`
 }
 
 type terraformAccessConfig struct {
@@ -537,10 +547,11 @@ type terraformGuestAccelerator struct {
 	Count int64  `cty:"count"`
 }
 
-func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.NetworkInterface) []*terraformNetworkInterface {
+func addNetworks(stackType *string, network *Network, subnet *Subnet, networkInterfaces []*compute.NetworkInterface) []*terraformNetworkInterface {
 	ni := make([]*terraformNetworkInterface, 0)
 	for _, g := range networkInterfaces {
 		tf := &terraformNetworkInterface{}
+		tf.StackType = stackType
 		if network != nil {
 			tf.Network = network.TerraformLink()
 		}
@@ -639,7 +650,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		tf.Disks = append(tf.Disks, tfd)
 	}
 
-	tf.NetworkInterfaces = addNetworks(e.Network, e.Subnet, i.Properties.NetworkInterfaces)
+	tf.NetworkInterfaces = addNetworks(e.StackType, e.Network, e.Subnet, i.Properties.NetworkInterfaces)
 
 	metadata, err := addMetadata(t, name, i.Properties.Metadata)
 	if err != nil {

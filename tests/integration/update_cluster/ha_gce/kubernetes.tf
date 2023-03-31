@@ -593,6 +593,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     access_config {
     }
     network    = google_compute_network.ha-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-ha-gce-example-com.name
   }
   scheduling {
@@ -641,6 +642,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     access_config {
     }
     network    = google_compute_network.ha-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-ha-gce-example-com.name
   }
   scheduling {
@@ -689,6 +691,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     access_config {
     }
     network    = google_compute_network.ha-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-ha-gce-example-com.name
   }
   scheduling {
@@ -737,6 +740,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     access_config {
     }
     network    = google_compute_network.ha-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-ha-gce-example-com.name
   }
   scheduling {
@@ -762,6 +766,7 @@ resource "google_compute_subnetwork" "us-test1-ha-gce-example-com" {
   name          = "us-test1-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   region        = "us-test1"
+  stack_type    = "IPV4_ONLY"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
