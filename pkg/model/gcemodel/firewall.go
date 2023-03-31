@@ -144,8 +144,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
-		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.NameForFirewallRule("pod-cidrs-to-node")),
+		b.AddFirewallRulesTasks(c, "pod-cidrs-to-node", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
 			SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
@@ -180,6 +179,7 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 
 	ipv4 := *rule
 	ipv4.Name = s(b.NameForFirewallRule(name))
+	ipv4.Family = gcetasks.AddressFamilyIPv4
 	ipv4.SourceRanges = ipv4SourceRanges
 	if len(ipv4.SourceRanges) == 0 {
 		// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
@@ -191,6 +191,7 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 
 	ipv6 := *rule
 	ipv6.Name = s(b.NameForFirewallRule(name + "-ipv6"))
+	ipv6.Family = gcetasks.AddressFamilyIPv6
 	ipv6.SourceRanges = ipv6SourceRanges
 	if len(ipv6.SourceRanges) == 0 {
 		// We specify explicitly so the rule is in IPv6 mode
