@@ -457,6 +457,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     access_config {
     }
     network    = google_compute_network.minimal-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-example-com.name
   }
   scheduling {
@@ -505,6 +506,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     access_config {
     }
     network    = google_compute_network.minimal-gce-example-com.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-example-com.name
   }
   scheduling {
@@ -530,6 +532,7 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-example-com" {
   name          = "us-test1-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   region        = "us-test1"
+  stack_type    = "IPV4_ONLY"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
