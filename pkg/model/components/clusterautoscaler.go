@@ -63,6 +63,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.Expander == "" {
 		cas.Expander = "random"
 	}
+	if cas.IgnoreDaemonSetsUtilization == nil {
+		cas.IgnoreDaemonSetsUtilization = fi.PtrTo(false)
+	}
 	if cas.ScaleDownUtilizationThreshold == nil {
 		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")
 	}
