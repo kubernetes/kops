@@ -939,6 +939,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.IgnoreDaemonSetsUtilization != nil {
+		in, out := &in.IgnoreDaemonSetsUtilization, &out.IgnoreDaemonSetsUtilization
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ScaleDownUtilizationThreshold != nil {
 		in, out := &in.ScaleDownUtilizationThreshold, &out.ScaleDownUtilizationThreshold
 		*out = new(string)

@@ -680,12 +680,12 @@ spec:
                 description: ClusterAutoscaler defines the cluaster autoscaler configuration.
                 properties:
                   awsUseStaticInstanceList:
-                    description: 'AWSUseStaticInstanceList makes cluster autoscaler
+                    description: 'AWSUseStaticInstanceList makes the cluster autoscaler
                       to use statically defined set of AWS EC2 Instance List. Default:
                       false'
                     type: boolean
                   balanceSimilarNodeGroups:
-                    description: 'BalanceSimilarNodeGroups makes cluster autoscaler
+                    description: 'BalanceSimilarNodeGroups makes the cluster autoscaler
                       treat similar node groups as one. Default: false'
                     type: boolean
                   cordonNodeBeforeTerminating:
@@ -726,6 +726,11 @@ spec:
                       ConfigMap based on the `autoscale` and `autoscalePriority` fields
                       in the InstanceGroup specs. Default: least-waste'
                     type: string
+                  ignoreDaemonSetsUtilization:
+                    description: 'IgnoreDaemonSetsUtilization causes the cluster autoscaler
+                      to ignore DaemonSet-managed pods when calculating resource utilization
+                      for scaling down. Default: false'
+                    type: boolean
                   image:
                     description: 'Image is the docker container used. Default: the
                       latest supported image for the specified kubernetes version.'
@@ -743,15 +748,15 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   newPodScaleUpDelay:
-                    description: 'NewPodScaleUpDelay causes cluster autoscaler to
-                      ignore unschedulable pods until they are a certain "age", regardless
-                      of the scan-interval Default: 0s'
+                    description: 'NewPodScaleUpDelay causes the cluster autoscaler
+                      to ignore unschedulable pods until they are a certain "age",
+                      regardless of the scan-interval Default: 0s'
                     type: string
                   podAnnotations:
                     additionalProperties:
                       type: string
                     description: 'PodAnnotations are the annotations added to cluster
-                      autoscaler pod when they are created. Default: none'
+                      autoscaler pods when they are created. Default: none'
                     type: object
                   scaleDownDelayAfterAdd:
                     description: 'ScaleDownDelayAfterAdd determines the time after
@@ -772,11 +777,11 @@ spec:
                       threshold for node scale-down. Default: 0.5'
                     type: string
                   skipNodesWithLocalStorage:
-                    description: 'SkipNodesWithLocalStorage makes cluster autoscaler
+                    description: 'SkipNodesWithLocalStorage makes the cluster autoscaler
                       skip scale-down of nodes with local storage. Default: true'
                     type: boolean
                   skipNodesWithSystemPods:
-                    description: 'SkipNodesWithSystemPods makes cluster autoscaler
+                    description: 'SkipNodesWithSystemPods makes the cluster autoscaler
                       skip scale-down of nodes with non-DaemonSet pods in the kube-system
                       namespace. Default: true'
                     type: boolean

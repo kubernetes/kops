@@ -990,22 +990,25 @@ type ClusterAutoscalerConfig struct {
 	// By default, kOps will generate the priority expander ConfigMap based on the `autoscale` and `autoscalePriority` fields in the InstanceGroup specs.
 	// Default: least-waste
 	Expander string `json:"expander,omitempty"`
-	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
+	// BalanceSimilarNodeGroups makes the cluster autoscaler treat similar node groups as one.
 	// Default: false
 	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
 	// AWSUseStaticInstanceList makes cluster autoscaler to use statically defined set of AWS EC2 Instance List.
 	// Default: false
 	AWSUseStaticInstanceList *bool `json:"awsUseStaticInstanceList,omitempty"`
+	// IgnoreDaemonSetsUtilization causes the cluster autoscaler to ignore DaemonSet-managed pods when calculating resource utilization for scaling down.
+	// Default: false
+	IgnoreDaemonSetsUtilization *bool `json:"ignoreDaemonSetsUtilization,omitempty"`
 	// ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down.
 	// Default: 0.5
 	ScaleDownUtilizationThreshold *string `json:"scaleDownUtilizationThreshold,omitempty"`
-	// SkipNodesWithSystemPods makes cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
+	// SkipNodesWithSystemPods makes the cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
 	// Default: true
 	SkipNodesWithSystemPods *bool `json:"skipNodesWithSystemPods,omitempty"`
-	// SkipNodesWithLocalStorage makes cluster autoscaler skip scale-down of nodes with local storage.
+	// SkipNodesWithLocalStorage makes the cluster autoscaler skip scale-down of nodes with local storage.
 	// Default: true
 	SkipNodesWithLocalStorage *bool `json:"skipNodesWithLocalStorage,omitempty"`
-	// NewPodScaleUpDelay causes cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
+	// NewPodScaleUpDelay causes the cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
 	// Default: 0s
 	NewPodScaleUpDelay *string `json:"newPodScaleUpDelay,omitempty"`
 	// ScaleDownDelayAfterAdd determines the time after scale up that scale down evaluation resumes
