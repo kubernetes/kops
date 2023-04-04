@@ -1,6 +1,6 @@
 # Calico
 
-[Calico](https://docs.projectcalico.org/latest/introduction/) is an open source networking and
+[Calico](https://docs.tigera.io/calico/latest/about/) is an open source networking and
 network security solution for containers, virtual machines, and native host-based workloads.
 
 Calico combines flexible networking capabilities with run-anywhere security enforcement to provide
@@ -34,7 +34,7 @@ kops create cluster \
 
 In IPv6 clusters, kOps configures (and requires) Calico to use no encapsulation.
 
-In IPv4 clusters, in order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better choice when used in concert with Calico's eBPF dataplane](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#poor-performance). In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
+In IPv4 clusters, in order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better choice when used in concert with Calico's eBPF dataplane](https://docs.tigera.io/calico/latest/operations/ebpf/troubleshoot-ebpf#poor-performance). In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
 
 By default, kOps uses the IP-in-IP encapsulation mode; this is the Calico project's default choice. This is equivalent to writing the following in the cluster spec:
 ```yaml
@@ -63,7 +63,7 @@ In IPv4 clusters, Calico supports an option for both of its IP-in-IP and VXLAN e
 when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness, for example, across
 heterogeneous public clouds or on AWS where traffic is crossing availability zones.
 
-With this mode, encapsulation is only [performed selectively](https://docs.projectcalico.org/v3.10/networking/vxlan-ipip#configure-ip-in-ip-encapsulation-for-only-cross-subnet-traffic).
+With this mode, encapsulation is only [performed selectively](https://docs.tigera.io/v3.10/networking/vxlan-ipip#configure-ip-in-ip-encapsulation-for-only-cross-subnet-traffic).
 This provides better performance in AWS multi-AZ deployments, or those spanning multiple VPC subnets within a single AZ, and in general when deploying on networks where pools of nodes with L2 connectivity are connected via a router.
 
 Note that by default with Calico—when using its BIRD networking backend—routes between nodes within a subnet are
@@ -73,7 +73,7 @@ This full node-to-node mesh per L2 network has its scaling challenges for larger
 BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. [BGP route reflectors are recommended once the number of nodes goes above ~50-100.](https://docs.projectcalico.org/networking/bgp#topologies-for-public-cloud)
 The setup of BGP route reflectors is currently out of the scope of kOps.
 
-Read more here: [BGP route reflectors](https://docs.projectcalico.org/reference/architecture/overview#bgp-route-reflector-bird)
+Read more here: [BGP route reflectors](https://docs.tigera.io/calico/latest/reference/architecture/overview#bird)
 
 In the case of AWS, EC2 instances' ENIs have source/destination checks enabled by default.
 When cross-subnet mode is enabled in kOps 1.19+, it is equivalent to either:
@@ -95,7 +95,7 @@ depending on which encapsulation mode you have selected.
 **Cross-subnet mode is the default mode in kOps 1.22+** for both IP-in-IP and VXLAN encapsulation.
 It can be disabled or adjusted by setting the `ipipMode`, `vxlanMode` and `awsSrcDstCheck` options.
 
-In AWS an IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.projectcalico.org/reference/resources/felixconfig#spec) is set.
+In AWS an IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.tigera.io/calico/latest/reference/resources/felixconfig#spec) is set.
 For older versions of kOps, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
 will be deployed as a Pod (which will be scheduled on one of the control plane nodes) to facilitate the disabling of said source/destination address checks.
 Only the control plane nodes have an IAM policy to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
@@ -113,7 +113,7 @@ spec:
 
 ### Configuring Calico to use Typha
 
-As of kOps 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha)—a component intended to lower the impact of Calico on the Kubernetes API Server which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
+As of kOps 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha)—a component intended to lower the impact of Calico on the Kubernetes API Server which is recommended in [clusters over 50 nodes](https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises#install-calico-with-kubernetes-api-datastore-more-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
 It is possible to configure Calico to use Typha by editing a cluster and adding the `typhaReplicas` field with a positive value to the Calico spec:
 
 ```yaml
@@ -127,7 +127,7 @@ It is possible to configure Calico to use Typha by editing a cluster and adding 
 
 Calico supports using an [eBPF dataplane](https://docs.projectcalico.org/about/about-ebpf) as an alternative to the standard Linux dataplane (which is based on iptables). While the standard dataplane focuses on compatibility by relying on kube-proxy and your own iptables rules, the eBPF dataplane focuses on performance, latency, and improving user experience with features that aren’t possible in the standard dataplane. As part of that, the eBPF dataplane replaces kube-proxy with an eBPF implementation. The main “user experience” feature is to preserve the source IP address of traffic from outside the cluster when traffic hits a node port; this makes the server-side logs and network policy much more useful on that path.
 
-For more details on enabling the eBPF dataplane please refer the [Calico Docs](https://docs.projectcalico.org/maintenance/ebpf/enabling-bpf).
+For more details on enabling the eBPF dataplane please refer the [Calico Docs](https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf).
 
 Enable the eBPF dataplane in kOps—while also disabling use of kube-proxy—as follows:
 
@@ -139,7 +139,7 @@ Enable the eBPF dataplane in kOps—while also disabling use of kube-proxy—as 
       bpfEnabled: true
 ```
 
-You can further tune Calico's eBPF dataplane with additional options, such as enabling [DSR mode](https://docs.projectcalico.org/maintenance/enabling-bpf#try-out-dsr-mode) to eliminate network hops in node port traffic (feasible only when your cluster conforms to [certain restrictions](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#troubleshoot-access-to-services)) or [increasing the log verbosity for Calico's eBPF programs](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#ebpf-program-debug-logs):
+You can further tune Calico's eBPF dataplane with additional options, such as enabling [DSR mode](https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf#try-out-dsr-mode) to eliminate network hops in node port traffic (feasible only when your cluster conforms to [certain restrictions](https://docs.tigera.io/calico/latest/operations/ebpf/troubleshoot-ebpf#troubleshoot-access-to-services)) or [increasing the log verbosity for Calico's eBPF programs](https://docs.tigera.io/calico/latest/operations/ebpf/troubleshoot-ebpf#ebpf-program-debug-logs):
 
 ```yaml
   kubeProxy:
@@ -158,7 +158,7 @@ You can further tune Calico's eBPF dataplane with additional options, such as en
 
 In IPv4 clusters, Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kOps installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
 
-For more details of Calico WireGuard please refer the [Calico Docs](https://docs.projectcalico.org/security/encrypt-cluster-pod-traffic).
+For more details of Calico WireGuard please refer the [Calico Docs](https://docs.tigera.io/calico/latest/network-policy/encrypt-cluster-pod-traffic#encrypt-cluster-pod-traffic).
 
 ```yaml
   networking:
@@ -172,10 +172,10 @@ For help with Calico or to report any issues:
 * [Calico Github](https://github.com/projectcalico/calico)
 * [Calico Users Slack](https://calicousers.slack.com)
 
-For more general information on options available with Calico see the official [Calico docs](https://docs.projectcalico.org/latest/introduction/):
-* See [Calico Network Policy](https://docs.projectcalico.org/latest/security/calico-network-policy)
+For more general information on options available with Calico see the official [Calico docs](https://docs.tigera.io/calico/latest/about/):
+* See [Calico Network Policy](https://docs.tigera.io/calico/latest/network-policy/get-started/calico-policy/calico-network-policy)
   for details on the additional features not available with Kubernetes Network Policy.
-* See [Determining best Calico networking option](https://docs.projectcalico.org/latest/networking/determine-best-networking)
+* See [Determining best Calico networking option](https://docs.tigera.io/calico/latest/networking/determine-best-networking)
   for help with the network options available with Calico.
 
 
