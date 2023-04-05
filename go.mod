@@ -2,6 +2,11 @@ module k8s.io/kops
 
 go 1.19
 
+replace (
+	github.com/docker/cli => github.com/docker/cli v20.10.21+incompatible
+	github.com/docker/docker => github.com/docker/docker v20.10.21+incompatible
+)
+
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	github.com/Azure/azure-pipeline-go v0.2.3
