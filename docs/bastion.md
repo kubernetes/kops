@@ -73,7 +73,7 @@ spec:
 ```
 
 ### Using an internal (VPC only) load balancer 
-{{ kops_feature_table(kops_added_default='1.22') }}
+{{ kops_feature_table(kops_added_default='1.23') }}
 
 When configuring a LoadBalancer, you can also choose to have a public load balancer or an internal (VPC only) load balancer. The `type` field should be `Public` or `Internal` (defaults to `Public` if omitted).
 
