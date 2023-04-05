@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
+	"k8s.io/utils/strings/slices"
 )
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
@@ -132,7 +133,6 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
 func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
-	lbSpec := b.Cluster.Spec.API.LoadBalancer
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
 		Port:      wellknownports.KubeAPIServer,
@@ -162,30 +162,40 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContex
 		InstanceGroupManagers: igms,
 	}
 	c.AddTask(bs)
-	for _, sn := range lbSpec.Subnets {
-		network, err := b.LinkToNetwork()
-		if err != nil {
-			return err
+
+	network, err := b.LinkToNetwork()
+	if err != nil {
+		return err
+	}
+
+	for _, sn := range b.Cluster.Spec.Networking.Subnets {
+		var subnet *gcetasks.Subnet
+		for _, ig := range b.InstanceGroups {
+			if ig.HasAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
+				subnet = b.LinkToSubnet(&sn)
+				break
+			}
 		}
-		t := true
-		subnet := &gcetasks.Subnet{
-			Name:    s(sn.Name),
-			Network: network,
-			Shared:  &t,
-			// Override lifecycle because these subnets are specified
-			// to already exist.
-			Lifecycle: fi.LifecycleExistsAndWarnIfChanges,
+		if subnet == nil {
+			continue
 		}
-		// TODO: automatically associate forwarding rule to subnets if no subnets are specified here.
-		if subnetNotSpecified(sn, b.Cluster.Spec.Networking.Subnets) {
-			c.AddTask(subnet)
+
+		ipAddress := &gcetasks.Address{
+			Name:          s(b.NameForIPAddress("api-" + sn.Name)),
+			IPAddressType: s("INTERNAL"),
+			Purpose:       s("SHARED_LOADBALANCER_VIP"),
+			Subnetwork:    subnet,
+			ForAPIServer:  true,
+			Lifecycle:     b.Lifecycle,
 		}
+		c.AddTask(ipAddress)
+
 		c.AddTask(&gcetasks.ForwardingRule{
-			Name:                s(b.NameForForwardingRule(sn.Name)),
+			Name:                s(b.NameForForwardingRule("api-" + sn.Name)),
 			Lifecycle:           b.Lifecycle,
 			BackendService:      bs,
 			Ports:               []string{strconv.Itoa(wellknownports.KubeAPIServer)},
-			RuleIPAddress:       sn.PrivateIPv4Address,
+			IPAddress:           ipAddress,
 			IPProtocol:          "TCP",
 			LoadBalancingScheme: s("INTERNAL"),
 			Network:             network,
@@ -197,7 +207,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContex
 				Lifecycle:           b.Lifecycle,
 				BackendService:      bs,
 				Ports:               []string{strconv.Itoa(wellknownports.KopsControllerPort)},
-				RuleIPAddress:       sn.PrivateIPv4Address,
+				IPAddress:           ipAddress,
 				IPProtocol:          "TCP",
 				LoadBalancingScheme: s("INTERNAL"),
 				Network:             network,

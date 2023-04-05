@@ -32,8 +32,12 @@ type Address struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	IPAddress    *string
-	ForAPIServer bool
+	IPAddress     *string
+	IPAddressType *string
+	Purpose       *string
+	ForAPIServer  bool
+
+	Subnetwork *Subnet
 }
 
 var _ fi.CompareWithID = &ForwardingRule{}
@@ -72,6 +76,8 @@ func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
 
 	actual := &Address{}
 	actual.IPAddress = &addrs[0].Address
+	actual.IPAddressType = &addrs[0].AddressType
+	actual.Purpose = &addrs[0].Purpose
 	actual.Name = &addrs[0].Name
 
 	return actual, nil
@@ -89,7 +95,14 @@ func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
 
 	actual := &Address{}
 	actual.IPAddress = &r.Address
+	actual.IPAddressType = &r.AddressType
+	actual.Purpose = &r.Purpose
 	actual.Name = &r.Name
+	if e.Subnetwork != nil {
+		actual.Subnetwork = &Subnet{
+			Name: fi.PtrTo(lastComponent(r.Subnetwork)),
+		}
+	}
 
 	return actual, nil
 }
@@ -130,13 +143,19 @@ func (_ *Address) CheckChanges(a, e, changes *Address) error {
 func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	cloud := t.Cloud
 	addr := &compute.Address{
-		Name:    *e.Name,
-		Address: fi.ValueOf(e.IPAddress),
-		Region:  cloud.Region(),
+		Name:        *e.Name,
+		Address:     fi.ValueOf(e.IPAddress),
+		AddressType: fi.ValueOf(e.IPAddressType),
+		Purpose:     fi.ValueOf(e.Purpose),
+		Region:      cloud.Region(),
+	}
+
+	if e.Subnetwork != nil {
+		addr.Subnetwork = e.Subnetwork.URL(t.Cloud.Project(), t.Cloud.Region())
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating address: %q", addr.Name)
+		klog.V(2).Infof("Creating Address: %q", addr.Name)
 
 		op, err := cloud.Compute().Addresses().Insert(cloud.Project(), cloud.Region(), addr)
 		if err != nil {
@@ -154,12 +173,20 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 }
 
 type terraformAddress struct {
-	Name *string `cty:"name"`
+	Name        *string                  `cty:"name"`
+	AddressType *string                  `cty:"address_type"`
+	Purpose     *string                  `cty:"purpose"`
+	Subnetwork  *terraformWriter.Literal `cty:"subnetwork"`
 }
 
 func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
 	tf := &terraformAddress{
-		Name: e.Name,
+		Name:        e.Name,
+		AddressType: e.IPAddressType,
+		Purpose:     e.Purpose,
+	}
+	if e.Subnetwork != nil {
+		tf.Subnetwork = e.Subnetwork.TerraformLink()
 	}
 	return t.RenderResource("google_compute_address", *e.Name, tf)
 }
