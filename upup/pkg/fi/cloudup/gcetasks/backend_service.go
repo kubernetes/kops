@@ -124,7 +124,7 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating backend service: %q", bs.Name)
+		klog.V(2).Infof("Creating BackendService: %q", bs.Name)
 
 		op, err := cloud.Compute().RegionBackendServices().Insert(cloud.Project(), cloud.Region(), bs)
 		if err != nil {

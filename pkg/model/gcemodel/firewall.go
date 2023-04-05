@@ -46,6 +46,28 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		allProtocols = append(allProtocols, "ipip")
 	}
 
+	// Allow all TCP traffic from load balancer health checks
+	if b.Cluster.Spec.API.LoadBalancer != nil {
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
+		c.AddTask(&gcetasks.FirewallRule{
+			Name:      s(b.NameForFirewallRule("lb-health-checks")),
+			Lifecycle: b.Lifecycle,
+			Network:   network,
+			Family:    gcetasks.AddressFamilyIPv4,
+			SourceRanges: []string{
+				// IP ranges for load balancer health checks
+				// https://cloud.google.com/load-balancing/docs/health-checks
+				"35.191.0.0/16",
+				"130.211.0.0/22",
+			},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+			Allowed:    []string{"tcp"},
+		})
+	}
+
 	// Allow all traffic from nodes -> nodes
 	{
 		network, err := b.LinkToNetwork()
