@@ -147,10 +147,7 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 			cm.MachineType = server.Flavor["original_name"].(string)
 		}
 
-		ip, err := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
-		if err != nil {
-			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
-		}
+		ip, _ := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
 
 		cm.PrivateIP = ip
 
