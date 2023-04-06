@@ -115,9 +115,33 @@ func Config(base v1.Image, cfg v1.Config) (v1.Image, error) {
 	return ConfigFile(base, cf)
 }
 
-// Annotatable represents a manifest that can carry annotations.
-type Annotatable interface {
-	partial.WithRawManifest
+// Subject mutates the subject on an image or index manifest.
+//
+// The input is expected to be a v1.Image or v1.ImageIndex, and
+// returns the same type. You can type-assert the result like so:
+//
+//	img := Subject(empty.Image, subj).(v1.Image)
+//
+// Or for an index:
+//
+//	idx := Subject(empty.Index, subj).(v1.ImageIndex)
+//
+// If the input is not an Image or ImageIndex, the result will
+// attempt to lazily annotate the raw manifest.
+func Subject(f partial.WithRawManifest, subject v1.Descriptor) partial.WithRawManifest {
+	if img, ok := f.(v1.Image); ok {
+		return &image{
+			base:    img,
+			subject: &subject,
+		}
+	}
+	if idx, ok := f.(v1.ImageIndex); ok {
+		return &index{
+			base:    idx,
+			subject: &subject,
+		}
+	}
+	return arbitraryRawManifest{a: f, subject: &subject}
 }
 
 // Annotations mutates the annotations on an annotatable image or index manifest.
@@ -137,7 +161,7 @@ type Annotatable interface {
 //
 // If the input Annotatable is not an Image or ImageIndex, the result will
 // attempt to lazily annotate the raw manifest.
-func Annotations(f Annotatable, anns map[string]string) Annotatable {
+func Annotations(f partial.WithRawManifest, anns map[string]string) partial.WithRawManifest {
 	if img, ok := f.(v1.Image); ok {
 		return &image{
 			base:        img,
@@ -150,12 +174,13 @@ func Annotations(f Annotatable, anns map[string]string) Annotatable {
 			annotations: anns,
 		}
 	}
-	return arbitraryRawManifest{f, anns}
+	return arbitraryRawManifest{a: f, anns: anns}
 }
 
 type arbitraryRawManifest struct {
-	a    Annotatable
-	anns map[string]string
+	a       partial.WithRawManifest
+	anns    map[string]string
+	subject *v1.Descriptor
 }
 
 func (a arbitraryRawManifest) RawManifest() ([]byte, error) {
@@ -177,6 +202,9 @@ func (a arbitraryRawManifest) RawManifest() ([]byte, error) {
 		}
 	} else {
 		m["annotations"] = a.anns
+	}
+	if a.subject != nil {
+		m["subject"] = a.subject
 	}
 	return json.Marshal(m)
 }
@@ -437,6 +465,13 @@ func layerTime(layer v1.Layer, t time.Time) (v1.Layer, error) {
 		}
 
 		header.ModTime = t
+
+		//PAX and GNU Format support additional timestamps in the header
+		if header.Format == tar.FormatPAX || header.Format == tar.FormatGNU {
+			header.AccessTime = t
+			header.ChangeTime = t
+		}
+
 		if err := tarWriter.WriteHeader(header); err != nil {
 			return nil, fmt.Errorf("writing tar header: %w", err)
 		}
@@ -500,6 +535,8 @@ func MediaType(img v1.Image, mt types.MediaType) v1.Image {
 }
 
 // ConfigMediaType modifies the MediaType() of the given image's Config.
+//
+// If !mt.IsConfig(), this will be the image's artifactType in any indexes it's a part of.
 func ConfigMediaType(img v1.Image, mt types.MediaType) v1.Image {
 	return &image{
 		base:            img,

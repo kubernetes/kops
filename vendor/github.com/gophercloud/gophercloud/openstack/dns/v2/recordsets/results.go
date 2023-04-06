@@ -51,6 +51,10 @@ type DeleteResult struct {
 
 // IsEmpty returns true if the page contains no results.
 func (r RecordSetPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	s, err := ExtractRecordSets(r)
 	return len(s) == 0, err
 }

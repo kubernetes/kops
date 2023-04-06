@@ -121,6 +121,10 @@ type FlavorPage struct {
 
 // IsEmpty determines if a FlavorPage contains any results.
 func (page FlavorPage) IsEmpty() (bool, error) {
+	if page.StatusCode == 204 {
+		return true, nil
+	}
+
 	flavors, err := ExtractFlavors(page)
 	return len(flavors) == 0, err
 }
@@ -155,6 +159,10 @@ type AccessPage struct {
 
 // IsEmpty indicates whether an AccessPage is empty.
 func (page AccessPage) IsEmpty() (bool, error) {
+	if page.StatusCode == 204 {
+		return true, nil
+	}
+
 	v, err := ExtractAccesses(page)
 	return len(v) == 0, err
 }

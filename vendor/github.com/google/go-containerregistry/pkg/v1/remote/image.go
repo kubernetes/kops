@@ -46,6 +46,15 @@ type remoteImage struct {
 	descriptor   *v1.Descriptor
 }
 
+func (r *remoteImage) ArtifactType() (string, error) {
+	// kind of a hack, but RawManifest does appropriate locking/memoization
+	// and makes sure r.descriptor is populated.
+	if _, err := r.RawManifest(); err != nil {
+		return "", err
+	}
+	return r.descriptor.ArtifactType, nil
+}
+
 var _ partial.CompressedImageCore = (*remoteImage)(nil)
 
 // Image provides access to a remote image reference.

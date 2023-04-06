@@ -17,11 +17,13 @@ package remote
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/google/go-containerregistry/internal/redact"
@@ -577,8 +579,113 @@ func unpackTaggable(t Taggable) ([]byte, *v1.Descriptor, error) {
 	}, nil
 }
 
+// commitSubjectReferrers is responsible for updating the fallback tag manifest to track descriptors referring to a subject for registries that don't yet support the Referrers API.
+// TODO: use conditional requests to avoid race conditions
+func (w *writer) commitSubjectReferrers(ctx context.Context, sub name.Digest, add v1.Descriptor) error {
+	// Check if the registry supports Referrers API.
+	// TODO: This should be done once per registry, not once per subject.
+	u := w.url(fmt.Sprintf("/v2/%s/referrers/%s", w.repo.RepositoryStr(), sub.DigestStr()))
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", string(types.OCIImageIndex))
+	resp, err := w.client.Do(req.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if err := transport.CheckError(resp, http.StatusOK, http.StatusNotFound, http.StatusBadRequest); err != nil {
+		return err
+	}
+	if resp.StatusCode == http.StatusOK {
+		// The registry supports Referrers API. The registry is responsible for updating the referrers list.
+		return nil
+	}
+
+	// The registry doesn't support Referrers API, we need to update the manifest tagged with the fallback tag.
+	// Make the request to GET the current manifest.
+	t := fallbackTag(sub)
+	u = w.url(fmt.Sprintf("/v2/%s/manifests/%s", w.repo.RepositoryStr(), t.Identifier()))
+	req, err = http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", string(types.OCIImageIndex))
+	resp, err = w.client.Do(req.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var im v1.IndexManifest
+	if err := transport.CheckError(resp, http.StatusOK, http.StatusNotFound); err != nil {
+		return err
+	} else if resp.StatusCode == http.StatusNotFound {
+		// Not found just means there are no attachments. Start with an empty index.
+		im = v1.IndexManifest{
+			SchemaVersion: 2,
+			MediaType:     types.OCIImageIndex,
+			Manifests:     []v1.Descriptor{add},
+		}
+	} else {
+		if err := json.NewDecoder(resp.Body).Decode(&im); err != nil {
+			return err
+		}
+		if im.SchemaVersion != 2 {
+			return fmt.Errorf("fallback tag manifest is not a schema version 2: %d", im.SchemaVersion)
+		}
+		if im.MediaType != types.OCIImageIndex {
+			return fmt.Errorf("fallback tag manifest is not an OCI image index: %s", im.MediaType)
+		}
+		for _, desc := range im.Manifests {
+			if desc.Digest == add.Digest {
+				// The digest is already attached, nothing to do.
+				logs.Progress.Printf("fallback tag %s already had referrer", t.Identifier())
+				return nil
+			}
+		}
+		// Append the new descriptor to the index.
+		im.Manifests = append(im.Manifests, add)
+	}
+
+	// Sort the manifests for reproducibility.
+	sort.Slice(im.Manifests, func(i, j int) bool {
+		return im.Manifests[i].Digest.String() < im.Manifests[j].Digest.String()
+	})
+	logs.Progress.Printf("updating fallback tag %s with new referrer", t.Identifier())
+	if err := w.commitManifest(ctx, fallbackTaggable{im}, t); err != nil {
+		return err
+	}
+	return nil
+}
+
+type fallbackTaggable struct {
+	im v1.IndexManifest
+}
+
+func (f fallbackTaggable) RawManifest() ([]byte, error)        { return json.Marshal(f.im) }
+func (f fallbackTaggable) MediaType() (types.MediaType, error) { return types.OCIImageIndex, nil }
+
 // commitManifest does a PUT of the image's manifest.
 func (w *writer) commitManifest(ctx context.Context, t Taggable, ref name.Reference) error {
+	// If the manifest refers to a subject, we need to check whether we need to update the fallback tag manifest.
+	raw, err := t.RawManifest()
+	if err != nil {
+		return err
+	}
+	var mf struct {
+		MediaType types.MediaType `json:"mediaType"`
+		Subject   *v1.Descriptor  `json:"subject,omitempty"`
+		Config    struct {
+			MediaType types.MediaType `json:"mediaType"`
+		} `json:"config"`
+	}
+	if err := json.Unmarshal(raw, &mf); err != nil {
+		return err
+	}
+
 	tryUpload := func() error {
 		ctx := retry.Never(ctx)
 		raw, desc, err := unpackTaggable(t)
@@ -603,6 +710,26 @@ func (w *writer) commitManifest(ctx context.Context, t Taggable, ref name.Refere
 
 		if err := transport.CheckError(resp, http.StatusOK, http.StatusCreated, http.StatusAccepted); err != nil {
 			return err
+		}
+
+		// If the manifest referred to a subject, we may need to update the fallback tag manifest.
+		// TODO: If this fails, we'll retry the whole upload. We should retry just this part.
+		if mf.Subject != nil {
+			h, size, err := v1.SHA256(bytes.NewReader(raw))
+			if err != nil {
+				return err
+			}
+			desc := v1.Descriptor{
+				ArtifactType: string(mf.Config.MediaType),
+				MediaType:    mf.MediaType,
+				Digest:       h,
+				Size:         size,
+			}
+			if err := w.commitSubjectReferrers(ctx,
+				ref.Context().Digest(mf.Subject.Digest.String()),
+				desc); err != nil {
+				return err
+			}
 		}
 
 		// The image was successfully pushed!

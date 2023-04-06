@@ -253,11 +253,11 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 		// Handle instance API X-Total-Count header
 		xTotalCountStr := httpResponse.Header.Get("X-Total-Count")
 		if legacyLister, isLegacyLister := res.(legacyLister); isLegacyLister && xTotalCountStr != "" {
-			xTotalCount, err := strconv.Atoi(xTotalCountStr)
+			xTotalCount, err := strconv.ParseInt(xTotalCountStr, 10, 32)
 			if err != nil {
 				return errors.Wrap(err, "could not parse X-Total-Count header")
 			}
-			legacyLister.UnsafeSetTotalCount(xTotalCount)
+			legacyLister.UnsafeSetTotalCount(int(xTotalCount))
 		}
 	}
 

@@ -41,6 +41,10 @@ type KeyPairPage struct {
 
 // IsEmpty determines whether or not a KeyPairPage is empty.
 func (page KeyPairPage) IsEmpty() (bool, error) {
+	if page.StatusCode == 204 {
+		return true, nil
+	}
+
 	ks, err := ExtractKeyPairs(page)
 	return len(ks) == 0, err
 }

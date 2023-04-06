@@ -15712,6 +15712,56 @@
             "https://www.googleapis.com/auth/compute"
           ]
         },
+        "simulateMaintenanceEvent": {
+          "description": "Simulates maintenance event on specified nodes from the node group.",
+          "flatPath": "projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/simulateMaintenanceEvent",
+          "httpMethod": "POST",
+          "id": "compute.nodeGroups.simulateMaintenanceEvent",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "nodeGroup"
+          ],
+          "parameters": {
+            "nodeGroup": {
+              "description": "Name of the NodeGroup resource whose nodes will go under maintenance simulation.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/simulateMaintenanceEvent",
+          "request": {
+            "$ref": "NodeGroupsSimulateMaintenanceEventRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "testIamPermissions": {
           "description": "Returns permissions that a caller has on the specified resource.",
           "flatPath": "projects/{project}/zones/{zone}/nodeGroups/{resource}/testIamPermissions",
@@ -21183,205 +21233,6 @@
           "scopes": [
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute"
-          ]
-        }
-      }
-    },
-    "regionInstanceTemplates": {
-      "methods": {
-        "delete": {
-          "description": "Deletes the specified instance template. Deleting an instance template is permanent and cannot be undone.",
-          "flatPath": "projects/{project}/regions/{region}/instanceTemplates/{instanceTemplate}",
-          "httpMethod": "DELETE",
-          "id": "compute.regionInstanceTemplates.delete",
-          "parameterOrder": [
-            "project",
-            "region",
-            "instanceTemplate"
-          ],
-          "parameters": {
-            "instanceTemplate": {
-              "description": "The name of the instance template to delete.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
-              "required": true,
-              "type": "string"
-            },
-            "project": {
-              "description": "Project ID for this request.",
-              "location": "path",
-              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
-              "required": true,
-              "type": "string"
-            },
-            "region": {
-              "description": "The name of the region for this request.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
-              "required": true,
-              "type": "string"
-            },
-            "requestId": {
-              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "path": "projects/{project}/regions/{region}/instanceTemplates/{instanceTemplate}",
-          "response": {
-            "$ref": "Operation"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/compute"
-          ]
-        },
-        "get": {
-          "description": "Returns the specified instance template.",
-          "flatPath": "projects/{project}/regions/{region}/instanceTemplates/{instanceTemplate}",
-          "httpMethod": "GET",
-          "id": "compute.regionInstanceTemplates.get",
-          "parameterOrder": [
-            "project",
-            "region",
-            "instanceTemplate"
-          ],
-          "parameters": {
-            "instanceTemplate": {
-              "description": "The name of the instance template.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
-              "required": true,
-              "type": "string"
-            },
-            "project": {
-              "description": "Project ID for this request.",
-              "location": "path",
-              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
-              "required": true,
-              "type": "string"
-            },
-            "region": {
-              "description": "The name of the region for this request.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "path": "projects/{project}/regions/{region}/instanceTemplates/{instanceTemplate}",
-          "response": {
-            "$ref": "InstanceTemplate"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/compute",
-            "https://www.googleapis.com/auth/compute.readonly"
-          ]
-        },
-        "insert": {
-          "description": "Creates an instance template in the specified project and region using the global instance template whose URL is included in the request.",
-          "flatPath": "projects/{project}/regions/{region}/instanceTemplates",
-          "httpMethod": "POST",
-          "id": "compute.regionInstanceTemplates.insert",
-          "parameterOrder": [
-            "project",
-            "region"
-          ],
-          "parameters": {
-            "project": {
-              "description": "Project ID for this request.",
-              "location": "path",
-              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
-              "required": true,
-              "type": "string"
-            },
-            "region": {
-              "description": "The name of the region for this request.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
-              "required": true,
-              "type": "string"
-            },
-            "requestId": {
-              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "path": "projects/{project}/regions/{region}/instanceTemplates",
-          "request": {
-            "$ref": "InstanceTemplate"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/compute"
-          ]
-        },
-        "list": {
-          "description": "Retrieves a list of instance templates that are contained within the specified project and region.",
-          "flatPath": "projects/{project}/regions/{region}/instanceTemplates",
-          "httpMethod": "GET",
-          "id": "compute.regionInstanceTemplates.list",
-          "parameterOrder": [
-            "project",
-            "region"
-          ],
-          "parameters": {
-            "filter": {
-              "description": "A filter expression that filters resources listed in the response. Most Compute resources support two types of filter expressions: expressions that support regular expressions and expressions that follow API improvement proposal AIP-160. If you want to use AIP-160, your expression must specify the field name, an operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The operator must be either `=`, `!=`, `\u003e`, `\u003c`, `\u003c=`, `\u003e=` or `:`. For example, if you are filtering Compute Engine instances, you can exclude instances named `example-instance` by specifying `name != example-instance`. The `:` operator can be used with string fields to match substrings. For non-string fields it is equivalent to the `=` operator. The `:*` comparison can be used to test whether a key has been defined. For example, to find all objects with `owner` label use: ``` labels.owner:* ``` You can also filter nested fields. For example, you could specify `scheduling.automaticRestart = false` to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels. To filter on multiple expressions, provide each separate expression within parentheses. For example: ``` (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\") ``` By default, each expression is an `AND` expression. However, you can include `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true) ``` If you want to use a regular expression, use the `eq` (equal) or `ne` (not equal) operator against a single un-parenthesized expression with or without quotes or against multiple parenthesized expressions. Examples: `fieldname eq unquoted literal` `fieldname eq 'single quoted literal'` `fieldname eq \"double quoted literal\"` `(fieldname1 eq literal) (fieldname2 ne \"literal\")` The literal value is interpreted as a regular expression using Google RE2 library syntax. The literal value must match the entire field. For example, to filter for instances that do not end with name \"instance\", you would use `name ne .*instance`.",
-              "location": "query",
-              "type": "string"
-            },
-            "maxResults": {
-              "default": "500",
-              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than `maxResults`, Compute Engine returns a `nextPageToken` that can be used to get the next page of results in subsequent list requests. Acceptable values are `0` to `500`, inclusive. (Default: `500`)",
-              "format": "uint32",
-              "location": "query",
-              "minimum": "0",
-              "type": "integer"
-            },
-            "orderBy": {
-              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name. You can also sort results in descending order based on the creation timestamp using `orderBy=\"creationTimestamp desc\"`. This sorts results based on the `creationTimestamp` field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first. Currently, only sorting by `name` or `creationTimestamp desc` is supported.",
-              "location": "query",
-              "type": "string"
-            },
-            "pageToken": {
-              "description": "Specifies a page token to use. Set `pageToken` to the `nextPageToken` returned by a previous list request to get the next page of results.",
-              "location": "query",
-              "type": "string"
-            },
-            "project": {
-              "description": "Project ID for this request.",
-              "location": "path",
-              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
-              "required": true,
-              "type": "string"
-            },
-            "region": {
-              "description": "The name of the regions for this request.",
-              "location": "path",
-              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
-              "required": true,
-              "type": "string"
-            },
-            "returnPartialSuccess": {
-              "description": "Opt-in for partial success behavior which provides partial results in case of failure. The default value is false.",
-              "location": "query",
-              "type": "boolean"
-            }
-          },
-          "path": "projects/{project}/regions/{region}/instanceTemplates",
-          "response": {
-            "$ref": "InstanceTemplateList"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/compute",
-            "https://www.googleapis.com/auth/compute.readonly"
           ]
         }
       }
@@ -33123,7 +32974,7 @@
       }
     }
   },
-  "revision": "20230221",
+  "revision": "20230322",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -33543,11 +33394,11 @@
       "id": "AccessConfig",
       "properties": {
         "externalIpv6": {
-          "description": "The first IPv6 address of the external IPv6 range associated with this instance, prefix length is stored in externalIpv6PrefixLength in ipv6AccessConfig. To use a static external IP address, it must be unused and in the same region as the instance's zone. If not specified, Google Cloud will automatically assign an external IPv6 address from the instance's subnetwork.",
+          "description": "Applies to ipv6AccessConfigs only. The first IPv6 address of the external IPv6 range associated with this instance, prefix length is stored in externalIpv6PrefixLength in ipv6AccessConfig. To use a static external IP address, it must be unused and in the same region as the instance's zone. If not specified, Google Cloud will automatically assign an external IPv6 address from the instance's subnetwork.",
           "type": "string"
         },
         "externalIpv6PrefixLength": {
-          "description": "The prefix length of the external IPv6 range.",
+          "description": "Applies to ipv6AccessConfigs only. The prefix length of the external IPv6 range.",
           "format": "int32",
           "type": "integer"
         },
@@ -33557,11 +33408,11 @@
           "type": "string"
         },
         "name": {
-          "description": "The name of this access configuration. The default and recommended name is External NAT, but you can use any arbitrary string, such as My external IP or Network Access.",
+          "description": "The name of this access configuration. In accessConfigs (IPv4), the default and recommended name is External NAT, but you can use any arbitrary string, such as My external IP or Network Access. In ipv6AccessConfigs, the recommend name is External IPv6.",
           "type": "string"
         },
         "natIP": {
-          "description": "An external IP address associated with this instance. Specify an unused static external IP address available to the project or leave this field undefined to use an IP from a shared ephemeral IP address pool. If you specify a static external IP address, it must live in the same region as the zone of the instance.",
+          "description": "Applies to accessConfigs (IPv4) only. An external IP address associated with this instance. Specify an unused static external IP address available to the project or leave this field undefined to use an IP from a shared ephemeral IP address pool. If you specify a static external IP address, it must live in the same region as the zone of the instance.",
           "type": "string"
         },
         "networkTier": {
@@ -33589,8 +33440,7 @@
           "type": "boolean"
         },
         "type": {
-          "default": "ONE_TO_ONE_NAT",
-          "description": "The type of configuration. The default and only option is ONE_TO_ONE_NAT.",
+          "description": "The type of configuration. In accessConfigs (IPv4), the default and only option is ONE_TO_ONE_NAT. In ipv6AccessConfigs, the default and only option is DIRECT_IPV6.",
           "enum": [
             "DIRECT_IPV6",
             "ONE_TO_ONE_NAT"
@@ -39982,8 +39832,36 @@
       "description": "Represents a match condition that incoming traffic is evaluated against. Exactly one field must be specified.",
       "id": "FirewallPolicyRuleMatcher",
       "properties": {
+        "destAddressGroups": {
+          "description": "Address groups which should be matched against the traffic destination. Maximum number of destination address groups is 10.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destFqdns": {
+          "description": "Fully Qualified Domain Name (FQDN) which should be matched against traffic destination. Maximum number of destination fqdn allowed is 100.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "destIpRanges": {
           "description": "CIDR IP address range. Maximum number of destination CIDR IP ranges allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destRegionCodes": {
+          "description": "Region codes whose IP addresses will be used to match for destination of traffic. Should be specified as 2 letter country code defined as per ISO 3166 alpha-2 country codes. ex.\"US\" Maximum number of dest region codes allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destThreatIntelligences": {
+          "description": "Names of Network Threat Intelligence lists. The IPs in these lists will be matched against traffic destination.",
           "items": {
             "type": "string"
           },
@@ -39996,8 +39874,29 @@
           },
           "type": "array"
         },
+        "srcAddressGroups": {
+          "description": "Address groups which should be matched against the traffic source. Maximum number of source address groups is 10.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "srcFqdns": {
+          "description": "Fully Qualified Domain Name (FQDN) which should be matched against traffic source. Maximum number of source fqdn allowed is 100.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "srcIpRanges": {
           "description": "CIDR IP address range. Maximum number of source CIDR IP ranges allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "srcRegionCodes": {
+          "description": "Region codes whose IP addresses will be used to match for source of traffic. Should be specified as 2 letter country code defined as per ISO 3166 alpha-2 country codes. ex.\"US\" Maximum number of source region codes allowed is 5000.",
           "items": {
             "type": "string"
           },
@@ -40007,6 +39906,13 @@
           "description": "List of secure tag values, which should be matched at the source of the traffic. For INGRESS rule, if all the srcSecureTag are INEFFECTIVE, and there is no srcIpRange, this rule will be ignored. Maximum number of source tag values allowed is 256.",
           "items": {
             "$ref": "FirewallPolicyRuleSecureTag"
+          },
+          "type": "array"
+        },
+        "srcThreatIntelligences": {
+          "description": "Names of Network Threat Intelligence lists. The IPs in these lists will be matched against traffic source.",
+          "items": {
+            "type": "string"
           },
           "type": "array"
         }
@@ -40874,19 +40780,21 @@
       "id": "GuestOsFeature",
       "properties": {
         "type": {
-          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_SNP_CAPABLE For more information, see Enabling guest operating system features.",
+          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_LIVE_MIGRATABLE - SEV_SNP_CAPABLE - TDX_CAPABLE For more information, see Enabling guest operating system features.",
           "enum": [
             "FEATURE_TYPE_UNSPECIFIED",
             "GVNIC",
             "MULTI_IP_SUBNET",
             "SECURE_BOOT",
             "SEV_CAPABLE",
+            "SEV_LIVE_MIGRATABLE",
             "SEV_SNP_CAPABLE",
             "UEFI_COMPATIBLE",
             "VIRTIO_SCSI_MULTIQUEUE",
             "WINDOWS"
           ],
           "enumDescriptions": [
+            "",
             "",
             "",
             "",
@@ -41757,7 +41665,7 @@
           "type": "string"
         },
         "healthState": {
-          "description": "Health state of the instance.",
+          "description": "Health state of the IPv4 address of the instance.",
           "enum": [
             "HEALTHY",
             "UNHEALTHY"
@@ -41830,10 +41738,10 @@
             "UNKNOWN"
           ],
           "enumDescriptions": [
-            "",
-            "",
-            "",
-            ""
+            "Endpoint is being drained.",
+            "Endpoint is healthy.",
+            "Endpoint is unhealthy.",
+            "Health status of the endpoint is unknown."
           ],
           "type": "string"
         }
@@ -42079,7 +41987,7 @@
           "type": "integer"
         },
         "requestPath": {
-          "description": "The request path of the HTTP health check request. The default value is /. This field does not support query parameters.",
+          "description": "The request path of the HTTP health check request. The default value is /. This field does not support query parameters. Must comply with RFC3986.",
           "type": "string"
         },
         "selfLink": {
@@ -42481,7 +42389,7 @@
           "type": "integer"
         },
         "requestPath": {
-          "description": "The request path of the HTTPS health check request. The default value is \"/\".",
+          "description": "The request path of the HTTPS health check request. The default value is \"/\". Must comply with RFC3986.",
           "type": "string"
         },
         "selfLink": {
@@ -43218,7 +43126,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -44444,7 +44352,7 @@
       "id": "InstanceGroupManagersDeleteInstancesRequest",
       "properties": {
         "instances": {
-          "description": "The URLs of one or more instances to delete. This can be a full URL or a partial URL, such as zones/[ZONE]/instances/[INSTANCE_NAME].",
+          "description": "The URLs of one or more instances to delete. This can be a full URL or a partial URL, such as zones/[ZONE]/instances/[INSTANCE_NAME]. Queued instances do not have URL and can be deleted only by name. One cannot specify both URLs and names in a single request.",
           "items": {
             "type": "string"
           },
@@ -45986,7 +45894,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -46303,7 +46211,7 @@
       "type": "object"
     },
     "Interconnect": {
-      "description": "Represents an Interconnect resource. An Interconnect resource is a dedicated connection between the GCP network and your on-premises network. For more information, read the Dedicated Interconnect Overview.",
+      "description": "Represents an Interconnect resource. An Interconnect resource is a dedicated connection between the Google Cloud network and your on-premises network. For more information, read the Dedicated Interconnect Overview.",
       "id": "Interconnect",
       "properties": {
         "adminEnabled": {
@@ -46585,7 +46493,7 @@
           "type": "string"
         },
         "ipsecInternalAddresses": {
-          "description": "A list of URLs of addresses that have been reserved for the VLAN attachment. Used only for the VLAN attachment that has the encryption option as IPSEC. The addresses must be regional internal IP address ranges. When creating an HA VPN gateway over the VLAN attachment, if the attachment is configured to use a regional internal IP address, then the VPN gateway's IP address is allocated from the IP address range specified here. For example, if the HA VPN gateway's interface 0 is paired to this VLAN attachment, then a regional internal IP address for the VPN gateway interface 0 will be allocated from the IP address specified for this VLAN attachment. If this field is not specified when creating the VLAN attachment, then later on when creating an HA VPN gateway on this VLAN attachment, the HA VPN gateway's IP address is allocated from the regional external IP address pool. Not currently available publicly. ",
+          "description": "A list of URLs of addresses that have been reserved for the VLAN attachment. Used only for the VLAN attachment that has the encryption option as IPSEC. The addresses must be regional internal IP address ranges. When creating an HA VPN gateway over the VLAN attachment, if the attachment is configured to use a regional internal IP address, then the VPN gateway's IP address is allocated from the IP address range specified here. For example, if the HA VPN gateway's interface 0 is paired to this VLAN attachment, then a regional internal IP address for the VPN gateway interface 0 will be allocated from the IP address specified for this VLAN attachment. If this field is not specified when creating the VLAN attachment, then later on when creating an HA VPN gateway on this VLAN attachment, the HA VPN gateway's IP address is allocated from the regional external IP address pool.",
           "items": {
             "type": "string"
           },
@@ -48971,7 +48879,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -49236,7 +49144,7 @@
           "type": "string"
         },
         "gatewayIPv4": {
-          "description": "[Output Only] The gateway address for default routing out of the network, selected by GCP.",
+          "description": "[Output Only] The gateway address for default routing out of the network, selected by Google Cloud.",
           "pattern": "[0-9]{1,3}(?:\\.[0-9]{1,3}){3}",
           "type": "string"
         },
@@ -50919,7 +50827,7 @@
           "type": "integer"
         },
         "stackType": {
-          "description": "The stack type for this network interface to identify whether the IPv6 feature is enabled or not. If not specified, IPV4_ONLY will be used. This field can be both set at instance creation and update network interface operations.",
+          "description": "The stack type for this network interface. To assign only IPv4 addresses, use IPV4_ONLY. To assign both IPv4 and IPv6 addresses, use IPV4_IPV6. If not specified, IPV4_ONLY is used. This field can be both set at instance creation and update network interface operations.",
           "enum": [
             "IPV4_IPV6",
             "IPV4_ONLY"
@@ -52004,6 +51912,19 @@
         "nodeTemplate": {
           "description": "Full or partial URL of the node template resource to be updated for this node group.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "NodeGroupsSimulateMaintenanceEventRequest": {
+      "id": "NodeGroupsSimulateMaintenanceEventRequest",
+      "properties": {
+        "nodes": {
+          "description": "Names of the nodes to go under maintenance simulation.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -61328,7 +61249,7 @@
       "type": "object"
     },
     "ServiceAttachment": {
-      "description": "Represents a ServiceAttachment resource. A service attachment represents a service that a producer has exposed. It encapsulates the load balancer which fronts the service runs and a list of NAT IP ranges that the producers uses to represent the consumers connecting to the service. next tag = 20",
+      "description": "Represents a ServiceAttachment resource. A service attachment represents a service that a producer has exposed. It encapsulates the load balancer which fronts the service runs and a list of NAT IP ranges that the producers uses to represent the consumers connecting to the service.",
       "id": "ServiceAttachment",
       "properties": {
         "connectedEndpoints": {
@@ -64881,7 +64802,7 @@
           "type": "string"
         },
         "serverTlsPolicy": {
-          "description": "Optional. A URL referring to a networksecurity.ServerTlsPolicy resource that describes how the proxy should authenticate inbound traffic. serverTlsPolicy only applies to a global TargetHttpsProxy attached to globalForwardingRules with the loadBalancingScheme set to INTERNAL_SELF_MANAGED. If left blank, communications are not encrypted. Note: This field currently has no impact.",
+          "description": "Optional. A URL referring to a networksecurity.ServerTlsPolicy resource that describes how the proxy should authenticate inbound traffic. serverTlsPolicy only applies to a global TargetHttpsProxy attached to globalForwardingRules with the loadBalancingScheme set to INTERNAL_SELF_MANAGED or EXTERNAL or EXTERNAL_MANAGED. For details which ServerTlsPolicy resources are accepted with INTERNAL_SELF_MANAGED and which with EXTERNAL, EXTERNAL_MANAGED loadBalancingScheme consult ServerTlsPolicy documentation. If left blank, communications are not encrypted.",
           "type": "string"
         },
         "sslCertificates": {
