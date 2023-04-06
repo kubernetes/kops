@@ -24,6 +24,7 @@ import (
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
@@ -399,9 +400,12 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		return nil
 	}
 	if changes.Port != nil {
-		ports.Update(cloud.NetworkingClient(), fi.ValueOf(changes.Port.ID), ports.UpdateOpts{
-			DeviceID: e.ID,
-		})
+		_, err := attachinterfaces.Create(cloud.ComputeClient(), fi.ValueOf(e.ID), attachinterfaces.CreateOpts{
+			PortID: fi.ValueOf(changes.Port.ID),
+		}).Extract()
+		if err != nil {
+			return err
+		}
 	}
 	if changes.FloatingIP != nil {
 		err := associateFloatingIP(t, e)
