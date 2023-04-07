@@ -16,6 +16,7 @@ package crane
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -30,6 +31,9 @@ type Options struct {
 	Remote   []remote.Option
 	Platform *v1.Platform
 	Keychain authn.Keychain
+
+	transport http.RoundTripper
+	insecure  bool
 }
 
 // GetOptions exposes the underlying []remote.Option, []name.Option, and
@@ -47,9 +51,22 @@ func makeOptions(opts ...Option) Options {
 		},
 		Keychain: authn.DefaultKeychain,
 	}
+
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	// Allow for untrusted certificates if the user
+	// passed Insecure but no custom transport.
+	if opt.insecure && opt.transport == nil {
+		transport := remote.DefaultTransport.(*http.Transport).Clone()
+		transport.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true, //nolint: gosec
+		}
+
+		WithTransport(transport)(&opt)
+	}
+
 	return opt
 }
 
@@ -57,16 +74,21 @@ func makeOptions(opts ...Option) Options {
 type Option func(*Options)
 
 // WithTransport is a functional option for overriding the default transport
-// for remote operations.
+// for remote operations. Setting a transport will override the Insecure option's
+// configuration allowing for image registries to use untrusted certificates.
 func WithTransport(t http.RoundTripper) Option {
 	return func(o *Options) {
 		o.Remote = append(o.Remote, remote.WithTransport(t))
+		o.transport = t
 	}
 }
 
 // Insecure is an Option that allows image references to be fetched without TLS.
+// This will also allow for untrusted (e.g. self-signed) certificates in cases where
+// the default transport is used (i.e. when WithTransport is not used).
 func Insecure(o *Options) {
 	o.Name = append(o.Name, name.Insecure)
+	o.insecure = true
 }
 
 // WithPlatform is an Option to specify the platform.

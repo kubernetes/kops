@@ -71,3 +71,12 @@ func (m MediaType) IsIndex() bool {
 	}
 	return false
 }
+
+// IsConfig returns true if the mediaType represents a config, as opposed to something else, like an image.
+func (m MediaType) IsConfig() bool {
+	switch m {
+	case OCIConfigJSON, DockerConfigJSON:
+		return true
+	}
+	return false
+}

@@ -18,7 +18,7 @@ package stream
 import (
 	"bufio"
 	"compress/gzip"
-	"crypto/sha256"
+	"crypto"
 	"encoding/hex"
 	"errors"
 	"hash"
@@ -166,8 +166,8 @@ type compressedReader struct {
 func newCompressedReader(l *Layer) (*compressedReader, error) {
 	// Collect digests of compressed and uncompressed stream and size of
 	// compressed stream.
-	h := sha256.New()
-	zh := sha256.New()
+	h := crypto.SHA256.New()
+	zh := crypto.SHA256.New()
 	count := &countWriter{}
 
 	// gzip.Writer writes to the output stream via pipe, a hasher to

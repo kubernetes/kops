@@ -71,6 +71,7 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "iam:v1"
 const apiName = "iam"
@@ -1131,6 +1132,65 @@ func (s *GoogleIamAdminV1WorkforcePoolProviderSaml) MarshalJSON() ([]byte, error
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// KeyData: Represents a public key data along with its format.
+type KeyData struct {
+	// Format: Output only. The format of the key.
+	//
+	// Possible values:
+	//   "KEY_FORMAT_UNSPECIFIED" - No format has been specified. This is an
+	// invalid format and must not be used.
+	//   "RSA_X509_PEM" - A RSA public key wrapped in an X.509v3 certificate
+	// ([RFC5280] ( https://www.ietf.org/rfc/rfc5280.txt)), encoded in
+	// base64, and wrapped in [public certificate
+	// label](https://datatracker.ietf.org/doc/html/rfc7468#section-5.1).
+	Format string `json:"format,omitempty"`
+
+	// Key: Output only. The key data. The format of the key is represented
+	// by the format field.
+	Key string `json:"key,omitempty"`
+
+	// KeySpec: Immutable. The specifications for the key.
+	//
+	// Possible values:
+	//   "KEY_SPEC_UNSPECIFIED" - No key specification specified.
+	//   "RSA_2048" - A 2048 bit RSA key.
+	//   "RSA_3072" - A 3072 bit RSA key.
+	//   "RSA_4096" - A 4096 bit RSA key.
+	KeySpec string `json:"keySpec,omitempty"`
+
+	// NotAfterTime: Output only. Latest timestamp when this key is valid.
+	// Attempts to use this key after this time will fail. Only present if
+	// the key data represents a X.509 certificate.
+	NotAfterTime string `json:"notAfterTime,omitempty"`
+
+	// NotBeforeTime: Output only. Earliest timestamp when this key is
+	// valid. Attempts to use this key before this time will fail. Only
+	// present if the key data represents a X.509 certificate.
+	NotBeforeTime string `json:"notBeforeTime,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Format") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Format") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *KeyData) MarshalJSON() ([]byte, error) {
+	type NoMethod KeyData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // LintPolicyRequest: The request to lint a Cloud IAM policy object.
 type LintPolicyRequest struct {
 	// Condition: google.iam.v1.Binding.condition object to be linted.
@@ -1388,6 +1448,44 @@ func (s *ListServiceAccountsResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ListWorkforcePoolProviderKeysResponse: Response message for
+// ListWorkforcePoolProviderKeys.
+type ListWorkforcePoolProviderKeysResponse struct {
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve
+	// the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// WorkforcePoolProviderKeys: A list of WorkforcePoolProviderKeys.
+	WorkforcePoolProviderKeys []*WorkforcePoolProviderKey `json:"workforcePoolProviderKeys,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListWorkforcePoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkforcePoolProviderKeysResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ListWorkforcePoolProvidersResponse: Response message for
 // ListWorkforcePoolProviders.
 type ListWorkforcePoolProvidersResponse struct {
@@ -1459,6 +1557,45 @@ type ListWorkforcePoolsResponse struct {
 
 func (s *ListWorkforcePoolsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkforcePoolsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListWorkloadIdentityPoolProviderKeysResponse: Response message for
+// ListWorkloadIdentityPoolProviderKeys.
+type ListWorkloadIdentityPoolProviderKeysResponse struct {
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve
+	// the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// WorkloadIdentityPoolProviderKeys: A list of
+	// WorkloadIdentityPoolProviderKey
+	WorkloadIdentityPoolProviderKeys []*WorkloadIdentityPoolProviderKey `json:"workloadIdentityPoolProviderKeys,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListWorkloadIdentityPoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkloadIdentityPoolProviderKeysResponse
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2825,6 +2962,11 @@ func (s *UndeleteServiceAccountResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UndeleteWorkforcePoolProviderKeyRequest: Request message for
+// UndeleteWorkforcePoolProviderKey.
+type UndeleteWorkforcePoolProviderKeyRequest struct {
+}
+
 // UndeleteWorkforcePoolProviderRequest: Request message for
 // UndeleteWorkforcePoolProvider.
 type UndeleteWorkforcePoolProviderRequest struct {
@@ -2838,6 +2980,11 @@ type UndeleteWorkforcePoolRequest struct {
 // UndeleteWorkforcePoolSubjectRequest: Request message for
 // UndeleteWorkforcePoolSubject.
 type UndeleteWorkforcePoolSubjectRequest struct {
+}
+
+// UndeleteWorkloadIdentityPoolProviderKeyRequest: Request message for
+// UndeleteWorkloadIdentityPoolProviderKey.
+type UndeleteWorkloadIdentityPoolProviderKeyRequest struct {
 }
 
 // UndeleteWorkloadIdentityPoolProviderRequest: Request message for
@@ -3090,6 +3237,67 @@ func (s *WorkforcePoolProvider) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// WorkforcePoolProviderKey: Represents a public key configuration for a
+// Workforce Pool Provider. The key can be configured in your identity
+// provider to encrypt SAML assertions. Google holds the corresponding
+// private key, which it uses to decrypt encrypted tokens.
+type WorkforcePoolProviderKey struct {
+	// ExpireTime: Output only. The time after which the key will be
+	// permanently deleted and cannot be recovered. Note that the key may
+	// get purged before this time if the total limit of keys per provider
+	// is exceeded.
+	ExpireTime string `json:"expireTime,omitempty"`
+
+	// KeyData: Immutable. Public half of the asymmetric key.
+	KeyData *KeyData `json:"keyData,omitempty"`
+
+	// Name: Output only. The resource name of the key.
+	Name string `json:"name,omitempty"`
+
+	// State: Output only. The state of the key.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The key is active.
+	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are
+	// permanently deleted after approximately 30 days. You can restore a
+	// soft-deleted key using UndeleteWorkforcePoolProviderKey.
+	State string `json:"state,omitempty"`
+
+	// Use: Immutable. The purpose of the key.
+	//
+	// Possible values:
+	//   "KEY_USE_UNSPECIFIED" - KeyUse unspecified.
+	//   "ENCRYPTION" - The key is used for encryption.
+	Use string `json:"use,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ExpireTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExpireTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkforcePoolProviderKey) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkforcePoolProviderKey
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // WorkloadIdentityPool: Represents a collection of external workload
 // identities. You can define IAM policies to grant these identities
 // access to Google Cloud resources.
@@ -3284,6 +3492,69 @@ type WorkloadIdentityPoolProvider struct {
 
 func (s *WorkloadIdentityPoolProvider) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPoolProvider
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkloadIdentityPoolProviderKey: Represents a public key
+// configuration for your workload identity pool provider. The key can
+// be configured in your identity provider to encrypt the SAML
+// assertions. Google holds the corresponding private key which it uses
+// to decrypt encrypted tokens.
+type WorkloadIdentityPoolProviderKey struct {
+	// ExpireTime: Output only. Time after which the key will be permanently
+	// purged and cannot be recovered. Note that the key may get purged
+	// before this timestamp if the total limit of keys per provider is
+	// crossed.
+	ExpireTime string `json:"expireTime,omitempty"`
+
+	// KeyData: Immutable. Public half of the asymmetric key.
+	KeyData *KeyData `json:"keyData,omitempty"`
+
+	// Name: Output only. The resource name of the key.
+	Name string `json:"name,omitempty"`
+
+	// State: Output only. The state of the key.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The key is active.
+	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are
+	// permanently deleted after approximately 30 days. You can restore a
+	// soft-deleted key using UndeleteWorkloadIdentityPoolProviderKey. While
+	// a key is deleted, you cannot use it during the federation.
+	State string `json:"state,omitempty"`
+
+	// Use: Immutable. The purpose of the key.
+	//
+	// Possible values:
+	//   "KEY_USE_UNSPECIFIED" - The key use is not known.
+	//   "ENCRYPTION" - The public key is used for encryption purposes.
+	Use string `json:"use,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ExpireTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExpireTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkloadIdentityPoolProviderKey) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkloadIdentityPoolProviderKey
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -6046,6 +6317,796 @@ func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Do(opts ...googleapi.Call
 	//   "path": "v1/{+name}:undelete",
 	//   "request": {
 	//     "$ref": "UndeleteWorkforcePoolProviderRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.locations.workforcePools.providers.keys.create":
+
+type LocationsWorkforcePoolsProvidersKeysCreateCall struct {
+	s                        *Service
+	parent                   string
+	workforcepoolproviderkey *WorkforcePoolProviderKey
+	urlParams_               gensupport.URLParams
+	ctx_                     context.Context
+	header_                  http.Header
+}
+
+// Create: Creates a new WorkforcePoolProviderKey in a
+// WorkforcePoolProvider.
+//
+// - parent: The provider to create this key in.
+func (r *LocationsWorkforcePoolsProvidersKeysService) Create(parent string, workforcepoolproviderkey *WorkforcePoolProviderKey) *LocationsWorkforcePoolsProvidersKeysCreateCall {
+	c := &LocationsWorkforcePoolsProvidersKeysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workforcepoolproviderkey = workforcepoolproviderkey
+	return c
+}
+
+// WorkforcePoolProviderKeyId sets the optional parameter
+// "workforcePoolProviderKeyId": Required. The ID to use for the key,
+// which becomes the final component of the resource name. This value
+// must be 4-32 characters, and may contain the characters [a-z0-9-].
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) WorkforcePoolProviderKeyId(workforcePoolProviderKeyId string) *LocationsWorkforcePoolsProvidersKeysCreateCall {
+	c.urlParams_.Set("workforcePoolProviderKeyId", workforcePoolProviderKeyId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepoolproviderkey)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.keys.create" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a new WorkforcePoolProviderKey in a WorkforcePoolProvider.",
+	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
+	//   "httpMethod": "POST",
+	//   "id": "iam.locations.workforcePools.providers.keys.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The provider to create this key in.",
+	//       "location": "path",
+	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "workforcePoolProviderKeyId": {
+	//       "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-].",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/keys",
+	//   "request": {
+	//     "$ref": "WorkforcePoolProviderKey"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.locations.workforcePools.providers.keys.delete":
+
+type LocationsWorkforcePoolsProvidersKeysDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a WorkforcePoolProviderKey. You can undelete a key
+// for 30 days. After 30 days, deletion is permanent.
+//
+// - name: The name of the key to delete.
+func (r *LocationsWorkforcePoolsProvidersKeysService) Delete(name string) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
+	c := &LocationsWorkforcePoolsProvidersKeysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.keys.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a WorkforcePoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
+	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.locations.workforcePools.providers.keys.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the key to delete.",
+	//       "location": "path",
+	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.locations.workforcePools.providers.keys.get":
+
+type LocationsWorkforcePoolsProvidersKeysGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets a WorkforcePoolProviderKey.
+//
+// - name: The name of the key to retrieve.
+func (r *LocationsWorkforcePoolsProvidersKeysService) Get(name string) *LocationsWorkforcePoolsProvidersKeysGetCall {
+	c := &LocationsWorkforcePoolsProvidersKeysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersKeysGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.keys.get" call.
+// Exactly one of *WorkforcePoolProviderKey or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderKey.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderKey, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderKey{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets a WorkforcePoolProviderKey.",
+	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.locations.workforcePools.providers.keys.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the key to retrieve.",
+	//       "location": "path",
+	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "WorkforcePoolProviderKey"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.locations.workforcePools.providers.keys.list":
+
+type LocationsWorkforcePoolsProvidersKeysListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkforcePoolProviderKeys in a
+// WorkforcePoolProvider. If `show_deleted` is set to `true`, then
+// deleted keys are also listed.
+//
+//   - parent: The provider resource to list encryption keys for. Format:
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
+//     provider_id}`.
+func (r *LocationsWorkforcePoolsProvidersKeysService) List(parent string) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c := &LocationsWorkforcePoolsProvidersKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of keys to return. If unspecified, all keys are returned. The maximum
+// value is 10; values above 10 are truncated to 10.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token,
+// received from a previous `ListWorkforcePoolProviderKeys` call.
+// Provide this to retrieve the subsequent page.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to
+// return soft-deleted keys.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.keys.list" call.
+// Exactly one of *ListWorkforcePoolProviderKeysResponse or error will
+// be non-nil. Any non-2xx status code is an error. Response headers are
+// in either
+// *ListWorkforcePoolProviderKeysResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolProviderKeysResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListWorkforcePoolProviderKeysResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all non-deleted WorkforcePoolProviderKeys in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted keys are also listed.",
+	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
+	//   "httpMethod": "GET",
+	//   "id": "iam.locations.workforcePools.providers.keys.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "A page token, received from a previous `ListWorkforcePoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The provider resource to list encryption keys for. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+	//       "location": "path",
+	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "showDeleted": {
+	//       "description": "Whether to return soft-deleted keys.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/keys",
+	//   "response": {
+	//     "$ref": "ListWorkforcePoolProviderKeysResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LocationsWorkforcePoolsProvidersKeysListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolProviderKeysResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "iam.locations.workforcePools.providers.keys.undelete":
+
+type LocationsWorkforcePoolsProvidersKeysUndeleteCall struct {
+	s                                       *Service
+	name                                    string
+	undeleteworkforcepoolproviderkeyrequest *UndeleteWorkforcePoolProviderKeyRequest
+	urlParams_                              gensupport.URLParams
+	ctx_                                    context.Context
+	header_                                 http.Header
+}
+
+// Undelete: Undeletes a WorkforcePoolProviderKey, as long as it was
+// deleted fewer than 30 days ago.
+//
+// - name: The name of the key to undelete.
+func (r *LocationsWorkforcePoolsProvidersKeysService) Undelete(name string, undeleteworkforcepoolproviderkeyrequest *UndeleteWorkforcePoolProviderKeyRequest) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
+	c := &LocationsWorkforcePoolsProvidersKeysUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkforcepoolproviderkeyrequest = undeleteworkforcepoolproviderkeyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkforcepoolproviderkeyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.keys.undelete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Undeletes a WorkforcePoolProviderKey, as long as it was deleted fewer than 30 days ago.",
+	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}:undelete",
+	//   "httpMethod": "POST",
+	//   "id": "iam.locations.workforcePools.providers.keys.undelete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the key to undelete.",
+	//       "location": "path",
+	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:undelete",
+	//   "request": {
+	//     "$ref": "UndeleteWorkforcePoolProviderKeyRequest"
 	//   },
 	//   "response": {
 	//     "$ref": "Operation"
@@ -10098,6 +11159,796 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Do(opts ..
 	//   "path": "v1/{+name}:undelete",
 	//   "request": {
 	//     "$ref": "UndeleteWorkloadIdentityPoolProviderRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.keys.create":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall struct {
+	s                               *Service
+	parent                          string
+	workloadidentitypoolproviderkey *WorkloadIdentityPoolProviderKey
+	urlParams_                      gensupport.URLParams
+	ctx_                            context.Context
+	header_                         http.Header
+}
+
+// Create: Create a new WorkloadIdentityPoolProviderKey in a
+// WorkloadIdentityPoolProvider.
+//
+// - parent: The parent provider resource to create the key in.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Create(parent string, workloadidentitypoolproviderkey *WorkloadIdentityPoolProviderKey) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workloadidentitypoolproviderkey = workloadidentitypoolproviderkey
+	return c
+}
+
+// WorkloadIdentityPoolProviderKeyId sets the optional parameter
+// "workloadIdentityPoolProviderKeyId": Required. The ID to use for the
+// key, which becomes the final component of the resource name. This
+// value should be 4-32 characters, and may contain the characters
+// [a-z0-9-].
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) WorkloadIdentityPoolProviderKeyId(workloadIdentityPoolProviderKeyId string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
+	c.urlParams_.Set("workloadIdentityPoolProviderKeyId", workloadIdentityPoolProviderKeyId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolproviderkey)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.create" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Create a new WorkloadIdentityPoolProviderKey in a WorkloadIdentityPoolProvider.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The parent provider resource to create the key in.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "workloadIdentityPoolProviderKeyId": {
+	//       "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/keys",
+	//   "request": {
+	//     "$ref": "WorkloadIdentityPoolProviderKey"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.keys.delete":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes an WorkloadIdentityPoolProviderKey. You can undelete
+// a key for 30 days. After 30 days, deletion is permanent.
+//
+// - name: The name of the encryption key to delete.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes an WorkloadIdentityPoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the encryption key to delete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.keys.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual WorkloadIdentityPoolProviderKey.
+//
+// - name: The name of the key to retrieve.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.get" call.
+// Exactly one of *WorkloadIdentityPoolProviderKey or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *WorkloadIdentityPoolProviderKey.ServerResponse.Header or (if
+// a response was returned at all) in error.(*googleapi.Error).Header.
+// Use googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPoolProviderKey, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkloadIdentityPoolProviderKey{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets an individual WorkloadIdentityPoolProviderKey.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the key to retrieve.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "WorkloadIdentityPoolProviderKey"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.keys.list":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkloadIdentityPoolProviderKeys in a
+// project. If show_deleted is set to `true`, then deleted pools are
+// also listed.
+//
+// - parent: The parent provider resource to list encryption keys for.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) List(parent string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of keys to return. If unspecified, all keys are returned. The maximum
+// value is 10; values above 10 are truncated to 10.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token,
+// received from a previous `ListWorkloadIdentityPoolProviderKeys` call.
+// Provide this to retrieve the subsequent page.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to
+// return soft deleted resources as well.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.list" call.
+// Exactly one of *ListWorkloadIdentityPoolProviderKeysResponse or error
+// will be non-nil. Any non-2xx status code is an error. Response
+// headers are in either
+// *ListWorkloadIdentityPoolProviderKeysResponse.ServerResponse.Header
+// or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolProviderKeysResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListWorkloadIdentityPoolProviderKeysResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all non-deleted WorkloadIdentityPoolProviderKeys in a project. If show_deleted is set to `true`, then deleted pools are also listed.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The parent provider resource to list encryption keys for.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "showDeleted": {
+	//       "description": "Whether to return soft deleted resources as well.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/keys",
+	//   "response": {
+	//     "$ref": "ListWorkloadIdentityPoolProviderKeysResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolProviderKeysResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.keys.undelete":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall struct {
+	s                                              *Service
+	name                                           string
+	undeleteworkloadidentitypoolproviderkeyrequest *UndeleteWorkloadIdentityPoolProviderKeyRequest
+	urlParams_                                     gensupport.URLParams
+	ctx_                                           context.Context
+	header_                                        http.Header
+}
+
+// Undelete: Undeletes an WorkloadIdentityPoolProviderKey, as long as it
+// was deleted fewer than 30 days ago.
+//
+// - name: The name of the encryption key to undelete.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Undelete(name string, undeleteworkloadidentitypoolproviderkeyrequest *UndeleteWorkloadIdentityPoolProviderKeyRequest) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkloadidentitypoolproviderkeyrequest = undeleteworkloadidentitypoolproviderkeyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolproviderkeyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.undelete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Undeletes an WorkloadIdentityPoolProviderKey, as long as it was deleted fewer than 30 days ago.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}:undelete",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.undelete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the encryption key to undelete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:undelete",
+	//   "request": {
+	//     "$ref": "UndeleteWorkloadIdentityPoolProviderKeyRequest"
 	//   },
 	//   "response": {
 	//     "$ref": "Operation"

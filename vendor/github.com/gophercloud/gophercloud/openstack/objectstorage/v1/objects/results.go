@@ -32,6 +32,13 @@ type Object struct {
 
 	// Subdir denotes if the result contains a subdir.
 	Subdir string `json:"subdir"`
+
+	// IsLatest indicates whether the object version is the latest one.
+	IsLatest bool `json:"is_latest"`
+
+	// VersionID contains a version ID of the object, when container
+	// versioning is enabled.
+	VersionID string `json:"version_id"`
 }
 
 func (r *Object) UnmarshalJSON(b []byte) error {
@@ -146,6 +153,7 @@ type DownloadHeader struct {
 	ObjectManifest     string    `json:"X-Object-Manifest"`
 	StaticLargeObject  bool      `json:"-"`
 	TransID            string    `json:"X-Trans-Id"`
+	ObjectVersionID    string    `json:"X-Object-Version-Id"`
 }
 
 func (r *DownloadHeader) UnmarshalJSON(b []byte) error {
@@ -224,6 +232,7 @@ type GetHeader struct {
 	ObjectManifest     string    `json:"X-Object-Manifest"`
 	StaticLargeObject  bool      `json:"-"`
 	TransID            string    `json:"X-Trans-Id"`
+	ObjectVersionID    string    `json:"X-Object-Version-Id"`
 }
 
 func (r *GetHeader) UnmarshalJSON(b []byte) error {
@@ -290,12 +299,13 @@ func (r GetResult) ExtractMetadata() (map[string]string, error) {
 // CreateHeader represents the headers returned in the response from a
 // Create request.
 type CreateHeader struct {
-	ContentLength int64     `json:"Content-Length,string"`
-	ContentType   string    `json:"Content-Type"`
-	Date          time.Time `json:"-"`
-	ETag          string    `json:"Etag"`
-	LastModified  time.Time `json:"-"`
-	TransID       string    `json:"X-Trans-Id"`
+	ContentLength   int64     `json:"Content-Length,string"`
+	ContentType     string    `json:"Content-Type"`
+	Date            time.Time `json:"-"`
+	ETag            string    `json:"Etag"`
+	LastModified    time.Time `json:"-"`
+	TransID         string    `json:"X-Trans-Id"`
+	ObjectVersionID string    `json:"X-Object-Version-Id"`
 }
 
 func (r *CreateHeader) UnmarshalJSON(b []byte) error {
@@ -337,10 +347,11 @@ func (r CreateResult) Extract() (*CreateHeader, error) {
 // UpdateHeader represents the headers returned in the response from a
 // Update request.
 type UpdateHeader struct {
-	ContentLength int64     `json:"Content-Length,string"`
-	ContentType   string    `json:"Content-Type"`
-	Date          time.Time `json:"-"`
-	TransID       string    `json:"X-Trans-Id"`
+	ContentLength   int64     `json:"Content-Length,string"`
+	ContentType     string    `json:"Content-Type"`
+	Date            time.Time `json:"-"`
+	TransID         string    `json:"X-Trans-Id"`
+	ObjectVersionID string    `json:"X-Object-Version-Id"`
 }
 
 func (r *UpdateHeader) UnmarshalJSON(b []byte) error {
@@ -376,10 +387,12 @@ func (r UpdateResult) Extract() (*UpdateHeader, error) {
 // DeleteHeader represents the headers returned in the response from a
 // Delete request.
 type DeleteHeader struct {
-	ContentLength int64     `json:"Content-Length,string"`
-	ContentType   string    `json:"Content-Type"`
-	Date          time.Time `json:"-"`
-	TransID       string    `json:"X-Trans-Id"`
+	ContentLength          int64     `json:"Content-Length,string"`
+	ContentType            string    `json:"Content-Type"`
+	Date                   time.Time `json:"-"`
+	TransID                string    `json:"X-Trans-Id"`
+	ObjectVersionID        string    `json:"X-Object-Version-Id"`
+	ObjectCurrentVersionID string    `json:"X-Object-Current-Version-Id"`
 }
 
 func (r *DeleteHeader) UnmarshalJSON(b []byte) error {
@@ -423,6 +436,7 @@ type CopyHeader struct {
 	ETag                   string    `json:"Etag"`
 	LastModified           time.Time `json:"-"`
 	TransID                string    `json:"X-Trans-Id"`
+	ObjectVersionID        string    `json:"X-Object-Version-Id"`
 }
 
 func (r *CopyHeader) UnmarshalJSON(b []byte) error {

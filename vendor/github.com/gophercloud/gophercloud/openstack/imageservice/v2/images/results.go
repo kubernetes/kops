@@ -204,6 +204,10 @@ type ImagePage struct {
 
 // IsEmpty returns true if an ImagePage contains no Images results.
 func (r ImagePage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	images, err := ExtractImages(r)
 	return len(images) == 0, err
 }
