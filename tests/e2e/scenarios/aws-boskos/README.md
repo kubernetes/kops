@@ -1,0 +1,1 @@
+A simple test running with boskos.
