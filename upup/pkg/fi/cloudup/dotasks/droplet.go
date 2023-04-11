@@ -235,12 +235,16 @@ type terraformDropletOptions struct {
 
 func (_ *Droplet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Droplet) error {
 	tf := &terraformDropletOptions{
-		Image:  e.Image,
-		Size:   e.Size,
-		Region: e.Region,
-		Name:   e.Name,
-		Tags:   e.Tags,
-		SSHKey: []string{fi.ValueOf(e.SSHKey.KeyFingerprint)},
+		Image:   e.Image,
+		Size:    e.Size,
+		Region:  e.Region,
+		Name:    e.Name,
+		Tags:    e.Tags,
+		VPCUUID: e.VPCUUID,
+	}
+
+	if e.SSHKey != nil {
+		tf.SSHKey = []string{fi.ValueOf(e.SSHKey.KeyFingerprint)}
 	}
 
 	if e.UserData != nil {
