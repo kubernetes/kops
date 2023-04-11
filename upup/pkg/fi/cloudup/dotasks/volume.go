@@ -132,16 +132,26 @@ func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
 // terraformVolume represents the digitalocean_volume resource in terraform
 // https://www.terraform.io/docs/providers/do/r/volume.html
 type terraformVolume struct {
-	Name   *string `cty:"name"`
-	SizeGB *int64  `cty:"size"`
-	Region *string `cty:"region"`
+	Name   *string  `cty:"name"`
+	SizeGB *int64   `cty:"size"`
+	Region *string  `cty:"region"`
+	Tags   []string `cty:"tags"`
 }
 
 func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+	tagArray := []string{}
+
+	for k, v := range e.Tags {
+		// DO tags don't accept =. Separate the key and value with an ":"
+		klog.V(10).Infof("DO - Join the volume tag - %s", fmt.Sprintf("%s:%s", k, v))
+		tagArray = append(tagArray, fmt.Sprintf("%s:%s", k, v))
+	}
+
 	tf := &terraformVolume{
 		Name:   e.Name,
 		SizeGB: e.SizeGB,
 		Region: e.Region,
+		Tags:   tagArray,
 	}
 	return t.RenderResource("digitalocean_volume", *e.Name, tf)
 }

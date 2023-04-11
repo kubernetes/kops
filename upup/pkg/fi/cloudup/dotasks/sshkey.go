@@ -163,7 +163,7 @@ func (_ *SSHKey) RenderDO(t *do.DOAPITarget, a, e, changes *SSHKey) error {
 }
 
 type terraformSSHKey struct {
-	Name      *string                  `cty:"key_name"`
+	Name      *string                  `cty:"name"`
 	PublicKey *terraformWriter.Literal `cty:"public_key"`
 }
 
