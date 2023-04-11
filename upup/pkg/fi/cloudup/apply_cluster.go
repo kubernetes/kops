@@ -92,6 +92,7 @@ var TerraformCloudProviders = []kops.CloudProviderID{
 	kops.CloudProviderGCE,
 	kops.CloudProviderHetzner,
 	kops.CloudProviderScaleway,
+	kops.CloudProviderDO,
 }
 
 type ApplyClusterCmd struct {
@@ -166,6 +167,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 		if !found {
 			return fmt.Errorf("cloud provider %v does not support the terraform target", c.Cloud.ProviderID())
+		}
+		if c.Cloud.ProviderID() == kops.CloudProviderDO && !featureflag.DOTerraform.Enabled() {
+			return fmt.Errorf("DO Terraform requires the DOTerraform feature flag to be enabled")
 		}
 	}
 	if c.InstanceGroups == nil {

@@ -122,7 +122,7 @@ func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerBody["project"] = t.Project
 	}
-	if t.Cloud.ProviderID() != kops.CloudProviderHetzner {
+	if t.Cloud.ProviderID() != kops.CloudProviderHetzner && t.Cloud.ProviderID() != kops.CloudProviderDO {
 		providerBody["region"] = t.Cloud.Region()
 	}
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
@@ -221,6 +221,8 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 		if featureflag.Spotinst.Enabled() {
 			providers["spotinst"] = true
 		}
+	} else if t.Cloud.ProviderID() == kops.CloudProviderDO {
+		providers["digitalocean"] = true
 	}
 
 	for _, tfProvider := range t.TerraformWriter.Providers {
@@ -252,6 +254,10 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			"scaleway": {
 				"source":  "scaleway/scaleway",
 				"version": ">= 2.2.1",
+			},
+			"digitalocean": {
+				"source":  "digitalocean/digitalocean",
+				"version": "~>2.0",
 			},
 		}
 

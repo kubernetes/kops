@@ -94,6 +94,8 @@ var (
 	// - the feature won't do anything when the node OS does not support SELinux.
 	// TODO(jsafrane): add to all CSI drivers installed by kops.
 	SELinuxMount = new("SELinuxMount", Bool(false))
+	// DO Terraform toggles the DO terraform support.
+	DOTerraform = new("DOTerraform", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
