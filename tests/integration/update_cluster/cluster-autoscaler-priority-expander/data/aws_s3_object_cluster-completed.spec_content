@@ -30,6 +30,7 @@ spec:
     createPriorityExpanderConfig: true
     enabled: true
     expander: priority
+    ignoreDaemonSetsUtilization: false
     image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s

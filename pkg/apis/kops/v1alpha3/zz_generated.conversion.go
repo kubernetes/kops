@@ -2464,6 +2464,7 @@ func autoConvert_v1alpha3_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.Expander = in.Expander
 	out.BalanceSimilarNodeGroups = in.BalanceSimilarNodeGroups
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
+	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
@@ -2492,6 +2493,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha3_ClusterAutoscalerConfi
 	out.Expander = in.Expander
 	out.BalanceSimilarNodeGroups = in.BalanceSimilarNodeGroups
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
+	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
