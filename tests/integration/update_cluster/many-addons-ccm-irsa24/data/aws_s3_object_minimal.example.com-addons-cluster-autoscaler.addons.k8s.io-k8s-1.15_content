@@ -325,6 +325,7 @@ spec:
         - --aws-use-static-instance-list=false
         - --expander=random
         - --nodes=2:2:nodes.minimal.example.com
+        - --ignore-daemonsets-utilization=false
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true

@@ -330,6 +330,7 @@ spec:
         - --cloud-provider=gce
         - --expander=random
         - --nodes=1:1:https://www.googleapis.com/compute/v1/projects/testproject/zones/us-test1-a/instanceGroups/a-nodes-minimal-example-com
+        - --ignore-daemonsets-utilization=false
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true
