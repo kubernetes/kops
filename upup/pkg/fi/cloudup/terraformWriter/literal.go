@@ -140,13 +140,13 @@ func LiteralListExpression(args ...*Literal) *Literal {
 	}
 }
 
-// LiteralNullConditionalExpression constructs a Literal which returns `null`
-// if the supplied "nullable" expression is null, otherwise returns "value".
+// LiteralEmptyStrConditionalExpression constructs a Literal which returns `null`
+// if the supplied "empty" expression is an empty string, otherwise returns "value".
 // It is the caller's responsibility to ensure the supplied parameters do not use operators
 // with lower precedence than the conditional operator.
-func LiteralNullConditionalExpression(nullable, value *Literal) *Literal {
+func LiteralEmptyStrConditionalExpression(empty, value *Literal) *Literal {
 	return &Literal{
-		String: fmt.Sprintf("%s == null ? null : %s", nullable.String, value.String),
+		String: fmt.Sprintf("%s == \"\" ? null : %s", empty.String, value.String),
 	}
 }
 
