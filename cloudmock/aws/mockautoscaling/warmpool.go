@@ -16,7 +16,10 @@ limitations under the License.
 
 package mockautoscaling
 
-import "github.com/aws/aws-sdk-go/service/autoscaling"
+import (
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+)
 
 func (m *MockAutoscaling) DescribeWarmPool(input *autoscaling.DescribeWarmPoolInput) (*autoscaling.DescribeWarmPoolOutput, error) {
 	instances, found := m.WarmPoolInstances[*input.AutoScalingGroupName]
@@ -31,4 +34,11 @@ func (m *MockAutoscaling) DescribeWarmPool(input *autoscaling.DescribeWarmPoolIn
 
 func (m *MockAutoscaling) DeleteWarmPool(*autoscaling.DeleteWarmPoolInput) (*autoscaling.DeleteWarmPoolOutput, error) {
 	return &autoscaling.DeleteWarmPoolOutput{}, nil
+}
+
+func (m *MockAutoscaling) PutWarmPool(input *autoscaling.PutWarmPoolInput) (*autoscaling.PutWarmPoolOutput, error) {
+	if _, found := m.Groups[*input.AutoScalingGroupName]; !found {
+		return nil, awserr.New("ValidationError", "AutoScalingGroup not found", nil)
+	}
+	return &autoscaling.PutWarmPoolOutput{}, nil
 }

@@ -179,6 +179,15 @@ func TestLifecycleManyAddons(t *testing.T) {
 	})
 }
 
+// TestLifecycleManyAddons runs the test on a cluster with requisite resources for NTH Queue Processor and other addons.
+func TestLifecycleWarmPool(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:           t,
+		SrcDir:      "minimal-warmpool",
+		ClusterName: "minimal-warmpool.example.com",
+	})
+}
+
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
 
