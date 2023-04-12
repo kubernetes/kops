@@ -304,7 +304,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		cidrPrefixLengthCaptureList,
 		terraformWriter.LiteralFromIntValue(0),
 	)
-	if err := t.AddOutputVariable("vpc_ipv6_cidr_length", terraformWriter.LiteralNullConditionalExpression(
+	if err := t.AddOutputVariable("vpc_ipv6_cidr_length", terraformWriter.LiteralEmptyStrConditionalExpression(
 		terraformWriter.LiteralTokens("local", "vpc_ipv6_cidr_block"),
 		terraformWriter.LiteralFunctionExpression("tonumber", cidrPrefixLengthString),
 	)); err != nil {
