@@ -478,6 +478,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
+			config.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
 
 		case kops.CloudProviderScaleway:
 			config.VolumeProvider = "scaleway"
@@ -589,6 +590,7 @@ type config struct {
 	VolumeTag             []string `flag:"volume-tag,repeat"`
 	VolumeNameTag         string   `flag:"volume-name-tag"`
 	DNSSuffix             string   `flag:"dns-suffix"`
+	NetworkCIDR           *string  `flag:"network-cidr"`
 }
 
 // SelectorForCluster returns the selector that should be used to select our pods (from services)
