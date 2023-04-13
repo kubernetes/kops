@@ -110,7 +110,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if nodeLocalDNS.Image == nil {
-		nodeLocalDNS.Image = fi.PtrTo("registry.k8s.io/dns/k8s-dns-node-cache:1.22.16")
+		nodeLocalDNS.Image = fi.PtrTo("registry.k8s.io/dns/k8s-dns-node-cache:1.22.20")
 	}
 
 	return nil
