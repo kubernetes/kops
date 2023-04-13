@@ -44,9 +44,9 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"# Kubernetes Settings",
 			"")
 
-		// A higher vm.max_map_count is great for elasticsearch, mongo, or other mmap users
+		// A higher vm.max_map_count is great for elasticsearch, mongo, arangodb or other mmap users
 		// See https://github.com/kubernetes/kops/issues/1340
-		sysctls = append(sysctls, "vm.max_map_count = 262144",
+		sysctls = append(sysctls, "vm.max_map_count = 1048576",
 			"")
 
 		// See https://github.com/kubernetes/kubernetes/pull/38001
