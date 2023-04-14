@@ -43,6 +43,21 @@ const (
 	detachLoadBalancerTargetGroupsMaxItems = 10
 )
 
+var _ fi.CloudupHasDependencies = &AutoscalingGroup{}
+
+func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+        var deps []fi.CloudupTask
+        for _, task := range tasks {
+                if _, ok := task.(*Subnet); ok {
+                        deps = append(deps, task)
+                }
+                if _, ok := task.(*LaunchTemplate); ok {
+                        deps = append(deps, task)
+                }
+        }
+	return deps
+}
+
 // AutoscalingGroup provides the definition for a autoscaling group in aws
 // +kops:fitask
 type AutoscalingGroup struct {
@@ -99,7 +114,7 @@ type AutoscalingGroup struct {
 	// CapacityRebalance makes ASG proactively replace spot instances when ASG receives a rebalance recommendation
 	CapacityRebalance *bool
 	// WarmPool is the WarmPool config for the ASG
-	WarmPool *WarmPool
+	WarmPoolConfig *autoscaling.WarmPoolConfiguration
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -1077,10 +1092,10 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	}
 	tf.SuspendedProcesses = processes
 
-	if e.WarmPool != nil && *e.WarmPool.Enabled {
+	if e.WarmPoolConfig != nil {
 		tf.WarmPool = &terraformWarmPool{
-			MinSize: &e.WarmPool.MinSize,
-			MaxSize: e.WarmPool.MaxSize,
+			MinSize: e.WarmPoolConfig.MinSize,
+			MaxSize: e.WarmPoolConfig.MaxGroupPreparedCapacity,
 		}
 	}
 

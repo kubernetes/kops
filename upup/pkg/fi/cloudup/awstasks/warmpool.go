@@ -34,12 +34,15 @@ type WarmPool struct {
 	Lifecycle fi.Lifecycle
 
 	Enabled *bool
-	// MaxSize is the max number of nodes in the warm pool.
-	MaxSize *int64
-	// MinSize is the smallest number of nodes in the warm pool.
-	MinSize int64
 
+	WarmPoolConfig *autoscaling.WarmPoolConfiguration
 	AutoscalingGroup *AutoscalingGroup
+}
+
+var _ fi.CloudupHasDependencies = &WarmPool{}
+
+func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+        return nil
 }
 
 // Find is used to discover the ASG in the cloud provider.
@@ -67,8 +70,7 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 		Name:      e.Name,
 		Lifecycle: e.Lifecycle,
 		Enabled:   fi.PtrTo(true),
-		MaxSize:   warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
-		MinSize:   fi.ValueOf(warmPool.WarmPoolConfiguration.MinSize),
+		WarmPoolConfig: warmPool.WarmPoolConfiguration,
 	}
 	return actual, nil
 }
@@ -85,15 +87,15 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 	svc := t.Cloud.Autoscaling()
 	if changes != nil {
 		if fi.ValueOf(e.Enabled) {
-			minSize := e.MinSize
-			maxSize := e.MaxSize
+			minSize := e.WarmPoolConfig.MinSize
+			maxSize := e.WarmPoolConfig.MaxGroupPreparedCapacity
 			if maxSize == nil {
 				maxSize = fi.PtrTo(int64(-1))
 			}
 			request := &autoscaling.PutWarmPoolInput{
 				AutoScalingGroupName:     e.Name,
 				MaxGroupPreparedCapacity: maxSize,
-				MinSize:                  fi.PtrTo(minSize),
+				MinSize:                  minSize,
 			}
 
 			_, err := svc.PutWarmPool(request)

@@ -342,10 +342,9 @@ terraform {
 				MixedOnDemandBase:           fi.PtrTo(int64(4)),
 				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
 				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
-				WarmPool: &WarmPool{
-					Enabled: fi.PtrTo(true),
-					MinSize: 3,
-					MaxSize: fi.PtrTo(int64(5)),
+				WarmPoolConfig: &autoscaling.WarmPoolConfiguration{
+					MaxGroupPreparedCapacity:       fi.PtrTo(int64(5)),
+					MinSize:                        fi.PtrTo(int64(3)),
 				},
 				Subnets: []*Subnet{
 					{

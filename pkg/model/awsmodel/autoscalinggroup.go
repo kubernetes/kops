@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -98,11 +99,13 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				Enabled:   enabled,
 			}
 			if warmPool.IsEnabled() {
-				warmPoolTask.MinSize = warmPool.MinSize
-				warmPoolTask.MaxSize = warmPool.MaxSize
-				tsk.WarmPool = warmPoolTask
+				warmPoolTask.WarmPoolConfig = &autoscaling.WarmPoolConfiguration{
+					MaxGroupPreparedCapacity:	warmPool.MaxSize,
+					MinSize:			&warmPool.MinSize,
+				}
+				tsk.WarmPoolConfig = warmPoolTask.WarmPoolConfig
 			} else {
-				tsk.WarmPool = nil
+				tsk.WarmPoolConfig = nil
 			}
 			c.AddTask(warmPoolTask)
 
