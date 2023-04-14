@@ -100,8 +100,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 			if warmPool.IsEnabled() {
 				warmPoolTask.WarmPoolConfig = &autoscaling.WarmPoolConfiguration{
-					MaxGroupPreparedCapacity:	warmPool.MaxSize,
-					MinSize:			&warmPool.MinSize,
+					MaxGroupPreparedCapacity: warmPool.MaxSize,
+					MinSize:                  &warmPool.MinSize,
 				}
 				tsk.WarmPoolConfig = warmPoolTask.WarmPoolConfig
 			} else {

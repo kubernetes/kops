@@ -46,15 +46,15 @@ const (
 var _ fi.CloudupHasDependencies = &AutoscalingGroup{}
 
 func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
-        var deps []fi.CloudupTask
-        for _, task := range tasks {
-                if _, ok := task.(*Subnet); ok {
-                        deps = append(deps, task)
-                }
-                if _, ok := task.(*LaunchTemplate); ok {
-                        deps = append(deps, task)
-                }
-        }
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*Subnet); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*LaunchTemplate); ok {
+			deps = append(deps, task)
+		}
+	}
 	return deps
 }
 

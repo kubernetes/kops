@@ -35,14 +35,14 @@ type WarmPool struct {
 
 	Enabled *bool
 
-	WarmPoolConfig *autoscaling.WarmPoolConfiguration
+	WarmPoolConfig   *autoscaling.WarmPoolConfiguration
 	AutoscalingGroup *AutoscalingGroup
 }
 
 var _ fi.CloudupHasDependencies = &WarmPool{}
 
 func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
-        return nil
+	return nil
 }
 
 // Find is used to discover the ASG in the cloud provider.
@@ -67,9 +67,9 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	}
 
 	actual := &WarmPool{
-		Name:      e.Name,
-		Lifecycle: e.Lifecycle,
-		Enabled:   fi.PtrTo(true),
+		Name:           e.Name,
+		Lifecycle:      e.Lifecycle,
+		Enabled:        fi.PtrTo(true),
 		WarmPoolConfig: warmPool.WarmPoolConfiguration,
 	}
 	return actual, nil

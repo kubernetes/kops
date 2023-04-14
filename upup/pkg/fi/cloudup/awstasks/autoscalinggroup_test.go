@@ -343,8 +343,8 @@ terraform {
 				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
 				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
 				WarmPoolConfig: &autoscaling.WarmPoolConfiguration{
-					MaxGroupPreparedCapacity:       fi.PtrTo(int64(5)),
-					MinSize:                        fi.PtrTo(int64(3)),
+					MaxGroupPreparedCapacity: fi.PtrTo(int64(5)),
+					MinSize:                  fi.PtrTo(int64(3)),
 				},
 				Subnets: []*Subnet{
 					{
