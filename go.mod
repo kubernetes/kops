@@ -1,6 +1,6 @@
 module k8s.io/kops
 
-go 1.19
+go 1.20
 
 replace (
 	github.com/docker/cli => github.com/docker/cli v20.10.21+incompatible
