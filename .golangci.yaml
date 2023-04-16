@@ -22,7 +22,7 @@ linters:
 
 linters-settings: # please keep this alphabetized
   staticcheck:
-    go: "1.19"
+    go: "1.20"
     checks: [
       "all",
       "-ST1000",  # Incorrect or missing package comment
