@@ -187,7 +187,7 @@ resource "scaleway_instance_server" "control-plane-fr-par-1-masters-scw-minimal-
   image = "ubuntu_focal"
   ip_id = scaleway_instance_ip.control-plane-fr-par-1-masters-scw-minimal-k8s-local.id
   name  = "control-plane-fr-par-1.masters.scw-minimal.k8s.local"
-  tags  = ["instance-group=control-plane-fr-par-1", "kops.k8s.io/cluster=scw-minimal.k8s.local", "k8s.io/role=control-plane"]
+  tags  = ["noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1", "noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local", "noprefix=kops.k8s.io/role=ControlPlane"]
   type  = "DEV1-M"
   user_data = {
     "cloud-init" = filebase64("${path.module}/data/scaleway_instance_server_control-plane-fr-par-1-masters-scw-minimal-k8s-local_user_data")
@@ -198,7 +198,7 @@ resource "scaleway_instance_server" "nodes-fr-par-1-scw-minimal-k8s-local" {
   image = "ubuntu_focal"
   ip_id = scaleway_instance_ip.nodes-fr-par-1-scw-minimal-k8s-local.id
   name  = "nodes-fr-par-1.scw-minimal.k8s.local"
-  tags  = ["instance-group=nodes-fr-par-1", "kops.k8s.io/cluster=scw-minimal.k8s.local"]
+  tags  = ["noprefix=kops.k8s.io/instance-group=nodes-fr-par-1", "noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local"]
   type  = "DEV1-M"
   user_data = {
     "cloud-init" = filebase64("${path.module}/data/scaleway_instance_server_nodes-fr-par-1-scw-minimal-k8s-local_user_data")
@@ -208,21 +208,21 @@ resource "scaleway_instance_server" "nodes-fr-par-1-scw-minimal-k8s-local" {
 resource "scaleway_instance_volume" "etcd-1-etcd-events-scw-minimal-k8s-local" {
   name       = "etcd-1.etcd-events.scw-minimal.k8s.local"
   size_in_gb = 20
-  tags       = ["kops.k8s.io/cluster=scw-minimal.k8s.local", "k8s.io/etcd=events", "k8s.io/role=control-plane", "instance-group=control-plane-fr-par-1"]
+  tags       = ["noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local", "noprefix=kops.k8s.io/etcd=events", "noprefix=kops.k8s.io/role=ControlPlane", "noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1"]
   type       = "b_ssd"
 }
 
 resource "scaleway_instance_volume" "etcd-1-etcd-main-scw-minimal-k8s-local" {
   name       = "etcd-1.etcd-main.scw-minimal.k8s.local"
   size_in_gb = 20
-  tags       = ["kops.k8s.io/cluster=scw-minimal.k8s.local", "k8s.io/etcd=main", "k8s.io/role=control-plane", "instance-group=control-plane-fr-par-1"]
+  tags       = ["noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local", "noprefix=kops.k8s.io/etcd=main", "noprefix=kops.k8s.io/role=ControlPlane", "noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1"]
   type       = "b_ssd"
 }
 
 resource "scaleway_lb" "api-scw-minimal-k8s-local" {
   ip_id = scaleway_lb_ip.api-scw-minimal-k8s-local.id
   name  = "api.scw-minimal.k8s.local"
-  tags  = ["k8s.io/role=control-plane"]
+  tags  = ["noprefix=kops.k8s.io/role=ControlPlane"]
   type  = "LB-S"
 }
 
