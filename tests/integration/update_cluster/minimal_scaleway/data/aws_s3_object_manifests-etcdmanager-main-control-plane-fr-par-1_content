@@ -15,8 +15,9 @@ spec:
       --backup-store=memfs://tests/scw-minimal.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
       --cluster-name=etcd --containerized=true --dns-suffix=.internal.scw-minimal.k8s.local
       --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
-      --v=6 --volume-name-tag=instance-group=control-plane-fr-par-1 --volume-provider=scaleway
-      --volume-tag=k8s.io/etcd=main --volume-tag=k8s.io/role=control-plane --volume-tag=kops.k8s.io/cluster=scw-minimal.k8s.local
+      --v=6 --volume-name-tag=noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1
+      --volume-provider=scaleway --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local
+      --volume-tag=noprefix=kops.k8s.io/etcd=main --volume-tag=noprefix=kops.k8s.io/role=ControlPlane
       > /tmp/pipe 2>&1
     env:
     - name: SCW_ACCESS_KEY
