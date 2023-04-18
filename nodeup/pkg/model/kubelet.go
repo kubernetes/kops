@@ -49,7 +49,8 @@ const (
 	// kubeletService is the name of the kubelet service
 	kubeletService = "kubelet.service"
 
-	kubeletConfigFilePath = "/var/lib/kubelet/kubelet.conf"
+	kubeletConfigFilePath            = "/var/lib/kubelet/kubelet.conf"
+	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf"
 )
 
 // KubeletBuilder installs kubelet
@@ -157,6 +158,12 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return err
 	}
 
+	if b.Cluster.UsesExternalECRCredentialsProvider() {
+		if err := b.addECRCP(c); err != nil {
+			return fmt.Errorf("failed to add ECR credential provider: %w", err)
+		}
+	}
+
 	if kubeletConfig.CgroupDriver == "systemd" && b.NodeupConfig.ContainerRuntime == "containerd" {
 
 		{
@@ -241,16 +248,25 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodeta
 	return t, nil
 }
 
-// kubeletPath returns the path of the kubelet based on distro
-func (b *KubeletBuilder) kubeletPath() string {
-	kubeletCommand := "/usr/local/bin/kubelet"
+func (b *KubeletBuilder) binaryPath() string {
+	path := "/usr/local/bin"
 	if b.Distribution == distributions.DistributionFlatcar {
-		kubeletCommand = "/opt/kubernetes/bin/kubelet"
+		path = "/opt/kubernetes/bin"
 	}
 	if b.Distribution == distributions.DistributionContainerOS {
-		kubeletCommand = "/home/kubernetes/bin/kubelet"
+		path = "/home/kubernetes/bin"
 	}
-	return kubeletCommand
+	return path
+}
+
+// kubeletPath returns the path of the kubelet based on distro
+func (b *KubeletBuilder) kubeletPath() string {
+	return b.binaryPath() + "/kubelet"
+}
+
+// ecrcpPath returns the path of the ECR credentials provider based on distro and archiecture
+func (b *KubeletBuilder) ecrcpPath() string {
+	return b.binaryPath() + "/ecr-credential-provider"
 }
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
@@ -329,6 +345,11 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	flags += " --config=" + kubeletConfigFilePath
+
+	if b.Cluster.UsesExternalECRCredentialsProvider() {
+		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
+		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly
@@ -411,6 +432,56 @@ func (b *KubeletBuilder) usesContainerizedMounter() bool {
 	default:
 		return false
 	}
+}
+
+// addECRCP installs the ECR credential provider
+func (b *KubeletBuilder) addECRCP(c *fi.NodeupModelBuilderContext) error {
+	{
+		assetName := "ecr-credential-provider-linux-" + string(b.Architecture)
+		assetPath := ""
+		asset, err := b.Assets.Find(assetName, assetPath)
+		if err != nil {
+			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+		}
+		if asset == nil {
+			return fmt.Errorf("unable to locate asset %q", assetName)
+		}
+
+		t := &nodetasks.File{
+			Path:     b.ecrcpPath(),
+			Contents: asset,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		}
+		c.AddTask(t)
+	}
+
+	{
+		configContent := `apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - name: ecr-credential-provider
+    matchImages:
+      - "*.dkr.ecr.*.amazonaws.com"
+      - "*.dkr.ecr.*.amazonaws.cn"
+      - "*.dkr.ecr-fips.*.amazonaws.com"
+      - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
+      - "*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov"
+    defaultCacheDuration: "12h"
+    apiVersion: credentialprovider.kubelet.k8s.io/v1
+    args:
+      - get-credentials
+`
+
+		t := &nodetasks.File{
+			Path:     credentialProviderConfigFilePath,
+			Contents: fi.NewStringResource(configContent),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+		}
+		c.AddTask(t)
+	}
+	return nil
 }
 
 // addContainerizedMounter downloads and installs the containerized mounter, that we need on ContainerOS
