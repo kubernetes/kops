@@ -435,6 +435,10 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		Zone: s.zone,
 	})
 	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("Load-balancer %q (%s) was already deleted", loadBalancer.Name, loadBalancer.ID)
+			return nil
+		}
 		return fmt.Errorf("waiting for load-balancer: %w", err)
 	}
 	err = s.lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
