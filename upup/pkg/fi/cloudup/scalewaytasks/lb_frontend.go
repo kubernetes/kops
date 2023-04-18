@@ -51,6 +51,10 @@ func (l *LBFrontend) Find(context *fi.CloudupContext) (*LBFrontend, error) {
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
+	if l.LoadBalancer.LBID == nil {
+		return nil, nil
+	}
+
 	frontendResponse, err := lbService.ListFrontends(&lb.ZonedAPIListFrontendsRequest{
 		Zone: scw.Zone(cloud.Zone()),
 		LBID: fi.ValueOf(l.LoadBalancer.LBID),
