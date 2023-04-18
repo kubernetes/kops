@@ -142,7 +142,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 
 	if actual != nil {
 
-		klog.Infof("Updating existing load-balancer with name %q", expected.Name)
+		klog.Infof("Updating existing load-balancer with name %q", fi.ValueOf(expected.Name))
 
 		// We update the tags
 		if changes != nil || len(actual.Tags) != len(expected.Tags) {
@@ -164,7 +164,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 
 	} else {
 
-		klog.Infof("Creating new load-balancer with name %q", expected.Name)
+		klog.Infof("Creating new load-balancer with name %q", fi.ValueOf(expected.Name))
 
 		lbCreated, err := lbService.CreateLB(&lb.ZonedAPICreateLBRequest{
 			Zone: scw.Zone(fi.ValueOf(expected.Zone)),
