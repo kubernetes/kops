@@ -58,7 +58,7 @@ spec:
           tolerationSeconds: 300
       containers:
         - name: scaleway-cloud-controller-manager
-          image: scaleway/scaleway-cloud-controller-manager:latest
+          image: scaleway/scaleway-cloud-controller-manager:v0.24.3
           imagePullPolicy: Always
           args:
             - --cloud-provider=scaleway

@@ -51,7 +51,7 @@ spec:
         envFrom:
         - secretRef:
             name: scaleway-secret
-        image: scaleway/scaleway-cloud-controller-manager:latest
+        image: scaleway/scaleway-cloud-controller-manager:v0.24.3
         imagePullPolicy: Always
         name: scaleway-cloud-controller-manager
         resources:
