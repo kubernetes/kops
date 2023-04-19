@@ -107,6 +107,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
+				Family:       gcetasks.AddressFamilyIPv4, // ip alias is always ipv4
 				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
 				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
 				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
