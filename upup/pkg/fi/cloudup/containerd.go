@@ -234,6 +234,8 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.6.16": "2415b431a900275c14942f87f751e1e13d513c1c2f062322b5ca5a9a2190f22a",
 		"1.6.17": "5f0584d000769d0cf08fc0e25135614ef5bf52971a6069175c78437699f3b8d4",
 		"1.6.18": "c4e516376a2392520a87abea94baf2045cc3a67e9e0c90c75fb6ed038170561e",
+		"1.6.19": "3262454d9b3581f4d4da0948f77dde1be51cfc42347a1548bc9ab6870b055815",
+		"1.6.20": "bb9a9ccd6517e2a54da748a9f60dc9aa9d79d19d4724663f2386812f083968e2",
 	}
 
 	return hashes
@@ -260,6 +262,8 @@ func findAllContainerdHashesArm64() map[string]string {
 		"1.6.16": "c2bf51fde02ec9cf8b9c18721bc4f53bd1f19fb2bb3251f41ece61af7347e082",
 		"1.6.17": "7e110faa738bff2f5f0ffd54c4ec2c17c05fd2af6de4877c839794ca3dadd61c",
 		"1.6.18": "56b83a0bc955edc5ebaa3bd0f788e654b63395be00fcb1bd03ff4bdfe4b5e1e7",
+		"1.6.19": "25a0dd6cce4e1058824d6dc277fc01dc45da92539ccb39bb6c8a481c24d2476e",
+		"1.6.20": "c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce",
 	}
 
 	return hashes
