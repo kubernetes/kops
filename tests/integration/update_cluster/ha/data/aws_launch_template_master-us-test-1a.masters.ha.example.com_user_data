@@ -265,7 +265,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: itvlkh5c7zwyVtNO4VJDCIEs5zmj7k13kXE8dbtuUgc=
+NodeupConfigHash: a8Q1q7MqZP28T1nxjAJClepivymT48V19uuMrIEu7XM=
 
 __EOF_KUBE_ENV
 
