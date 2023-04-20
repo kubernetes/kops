@@ -361,6 +361,20 @@ func (b *FirewallModelBuilder) addNodeExporterAndOccmRules(c *fi.CloudupModelBui
 		PortRangeMax: i(10258),
 	}
 	b.addDirectionalGroupRule(c, masterSG, nodeSG, occmMetrics)
+
+	if fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.BlockStorage.MetricsEnabled) {
+		csiMetrics := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(IPProtocolTCP),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(9809),
+			PortRangeMax: i(9809),
+		}
+		// allow 9809 port from nodeSG & masterSG
+		b.addDirectionalGroupRule(c, masterSG, nodeSG, csiMetrics)
+		b.addDirectionalGroupRule(c, nodeSG, nodeSG, csiMetrics)
+	}
 	return nil
 }
 
