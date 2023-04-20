@@ -4631,6 +4631,11 @@ func (in *OpenstackBlockStorageConfig) DeepCopyInto(out *OpenstackBlockStorageCo
 		*out = new(bool)
 		**out = **in
 	}
+	if in.MetricsEnabled != nil {
+		in, out := &in.MetricsEnabled, &out.MetricsEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.CreateStorageClass != nil {
 		in, out := &in.CreateStorageClass, &out.CreateStorageClass
 		*out = new(bool)
