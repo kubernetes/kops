@@ -779,8 +779,10 @@ spec:
           {{- end }}
         - mountPath: /var/run/cilium
           name: cilium-run
+          {{- if not (semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver) }}
         - mountPath: /host/opt/cni/bin
           name: cni-path
+          {{- end }}
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
 {{ if .EtcdManaged }}
@@ -814,6 +816,26 @@ spec:
 {{ end }}
       hostNetwork: true
       initContainers:
+      {{- if semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver }}
+      - command:
+        - /install-plugin.sh
+        image: "quay.io/cilium/cilium:{{ .Version }}"
+        imagePullPolicy: IfNotPresent
+        name: install-cni-binaries
+        resources:
+          requests:
+            cpu: 100m
+            memory: 10Mi
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-path
+      {{- end }}
       - command:
         - /init-container.sh
         env:
