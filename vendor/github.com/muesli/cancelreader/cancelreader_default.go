@@ -3,9 +3,7 @@
 
 package cancelreader
 
-import (
-	"io"
-)
+import "io"
 
 // NewReader returns a fallbackCancelReader that satisfies the CancelReader but
 // does not actually support cancellation.

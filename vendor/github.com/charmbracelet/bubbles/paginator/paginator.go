@@ -7,6 +7,7 @@ package paginator
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -19,20 +20,49 @@ const (
 	Dots
 )
 
+// KeyMap is the key bindings for different actions within the paginator.
+type KeyMap struct {
+	PrevPage key.Binding
+	NextPage key.Binding
+}
+
+// DefaultKeyMap is the default set of key bindings for navigating and acting
+// upon the paginator.
+var DefaultKeyMap = KeyMap{
+	PrevPage: key.NewBinding(key.WithKeys("pgup", "left", "h")),
+	NextPage: key.NewBinding(key.WithKeys("pgdown", "right", "l")),
+}
+
 // Model is the Bubble Tea model for this user interface.
 type Model struct {
-	Type              Type
-	Page              int
-	PerPage           int
-	TotalPages        int
-	ActiveDot         string
-	InactiveDot       string
-	ArabicFormat      string
+	// Type configures how the pagination is rendered (Arabic, Dots).
+	Type Type
+	// Page is the current page number.
+	Page int
+	// PerPage is the number of items per page.
+	PerPage int
+	// TotalPages is the total number of pages.
+	TotalPages int
+	// ActiveDot is used to mark the current page under the Dots display type.
+	ActiveDot string
+	// InactiveDot is used to mark inactive pages under the Dots display type.
+	InactiveDot string
+	// ArabicFormat is the printf-style format to use for the Arabic display type.
+	ArabicFormat string
+
+	// KeyMap encodes the keybindings recognized by the widget.
+	KeyMap KeyMap
+
+	// Deprecated: customize [KeyMap] instead.
 	UsePgUpPgDownKeys bool
-	UseLeftRightKeys  bool
-	UseUpDownKeys     bool
-	UseHLKeys         bool
-	UseJKKeys         bool
+	// Deprecated: customize [KeyMap] instead.
+	UseLeftRightKeys bool
+	// Deprecated: customize [KeyMap] instead.
+	UseUpDownKeys bool
+	// Deprecated: customize [KeyMap] instead.
+	UseHLKeys bool
+	// Deprecated: customize [KeyMap] instead.
+	UseJKKeys bool
 }
 
 // SetTotalPages is a helper function for calculating the total number of pages
@@ -51,8 +81,8 @@ func (m *Model) SetTotalPages(items int) int {
 	return n
 }
 
-// ItemsOnPage is a helper function for returning the numer of items on the
-// current page given the total numer of items passed as an argument.
+// ItemsOnPage is a helper function for returning the number of items on the
+// current page given the total number of items passed as an argument.
 func (m Model) ItemsOnPage(totalItems int) int {
 	if totalItems < 1 {
 		return 0
@@ -65,10 +95,9 @@ func (m Model) ItemsOnPage(totalItems int) int {
 // of the slice you're rendering and you'll receive the start and end bounds
 // corresponding the to pagination. For example:
 //
-//     bunchOfStuff := []stuff{...}
-//     start, end := model.GetSliceBounds(len(bunchOfStuff))
-//     sliceToRender := bunchOfStuff[start:end]
-//
+//	bunchOfStuff := []stuff{...}
+//	start, end := model.GetSliceBounds(len(bunchOfStuff))
+//	sliceToRender := bunchOfStuff[start:end]
 func (m *Model) GetSliceBounds(length int) (start int, end int) {
 	start = m.Page * m.PerPage
 	end = min(m.Page*m.PerPage+m.PerPage, length)
@@ -99,69 +128,31 @@ func (m Model) OnLastPage() bool {
 // New creates a new model with defaults.
 func New() Model {
 	return Model{
-		Type:              Arabic,
-		Page:              0,
-		PerPage:           1,
-		TotalPages:        1,
-		ActiveDot:         "•",
-		InactiveDot:       "○",
-		ArabicFormat:      "%d/%d",
-		UsePgUpPgDownKeys: true,
-		UseLeftRightKeys:  true,
-		UseUpDownKeys:     false,
-		UseHLKeys:         true,
-		UseJKKeys:         false,
+		Type:         Arabic,
+		Page:         0,
+		PerPage:      1,
+		TotalPages:   1,
+		KeyMap:       DefaultKeyMap,
+		ActiveDot:    "•",
+		InactiveDot:  "○",
+		ArabicFormat: "%d/%d",
 	}
 }
 
 // NewModel creates a new model with defaults.
 //
-// Deprecated. Use New instead.
+// Deprecated: use [New] instead.
 var NewModel = New
 
 // Update is the Tea update function which binds keystrokes to pagination.
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if m.UsePgUpPgDownKeys {
-			switch msg.String() {
-			case "pgup":
-				m.PrevPage()
-			case "pgdown":
-				m.NextPage()
-			}
-		}
-		if m.UseLeftRightKeys {
-			switch msg.String() {
-			case "left":
-				m.PrevPage()
-			case "right":
-				m.NextPage()
-			}
-		}
-		if m.UseUpDownKeys {
-			switch msg.String() {
-			case "up":
-				m.PrevPage()
-			case "down":
-				m.NextPage()
-			}
-		}
-		if m.UseHLKeys {
-			switch msg.String() {
-			case "h":
-				m.PrevPage()
-			case "l":
-				m.NextPage()
-			}
-		}
-		if m.UseJKKeys {
-			switch msg.String() {
-			case "j":
-				m.PrevPage()
-			case "k":
-				m.NextPage()
-			}
+		switch {
+		case key.Matches(msg, m.KeyMap.NextPage):
+			m.NextPage()
+		case key.Matches(msg, m.KeyMap.PrevPage):
+			m.PrevPage()
 		}
 	}
 

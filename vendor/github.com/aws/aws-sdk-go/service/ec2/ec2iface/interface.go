@@ -2254,6 +2254,10 @@ type EC2API interface {
 	GetVpnConnectionDeviceTypesPages(*ec2.GetVpnConnectionDeviceTypesInput, func(*ec2.GetVpnConnectionDeviceTypesOutput, bool) bool) error
 	GetVpnConnectionDeviceTypesPagesWithContext(aws.Context, *ec2.GetVpnConnectionDeviceTypesInput, func(*ec2.GetVpnConnectionDeviceTypesOutput, bool) bool, ...request.Option) error
 
+	GetVpnTunnelReplacementStatus(*ec2.GetVpnTunnelReplacementStatusInput) (*ec2.GetVpnTunnelReplacementStatusOutput, error)
+	GetVpnTunnelReplacementStatusWithContext(aws.Context, *ec2.GetVpnTunnelReplacementStatusInput, ...request.Option) (*ec2.GetVpnTunnelReplacementStatusOutput, error)
+	GetVpnTunnelReplacementStatusRequest(*ec2.GetVpnTunnelReplacementStatusInput) (*request.Request, *ec2.GetVpnTunnelReplacementStatusOutput)
+
 	ImportClientVpnClientCertificateRevocationList(*ec2.ImportClientVpnClientCertificateRevocationListInput) (*ec2.ImportClientVpnClientCertificateRevocationListOutput, error)
 	ImportClientVpnClientCertificateRevocationListWithContext(aws.Context, *ec2.ImportClientVpnClientCertificateRevocationListInput, ...request.Option) (*ec2.ImportClientVpnClientCertificateRevocationListOutput, error)
 	ImportClientVpnClientCertificateRevocationListRequest(*ec2.ImportClientVpnClientCertificateRevocationListInput) (*request.Request, *ec2.ImportClientVpnClientCertificateRevocationListOutput)
@@ -2659,6 +2663,10 @@ type EC2API interface {
 	ReplaceTransitGatewayRoute(*ec2.ReplaceTransitGatewayRouteInput) (*ec2.ReplaceTransitGatewayRouteOutput, error)
 	ReplaceTransitGatewayRouteWithContext(aws.Context, *ec2.ReplaceTransitGatewayRouteInput, ...request.Option) (*ec2.ReplaceTransitGatewayRouteOutput, error)
 	ReplaceTransitGatewayRouteRequest(*ec2.ReplaceTransitGatewayRouteInput) (*request.Request, *ec2.ReplaceTransitGatewayRouteOutput)
+
+	ReplaceVpnTunnel(*ec2.ReplaceVpnTunnelInput) (*ec2.ReplaceVpnTunnelOutput, error)
+	ReplaceVpnTunnelWithContext(aws.Context, *ec2.ReplaceVpnTunnelInput, ...request.Option) (*ec2.ReplaceVpnTunnelOutput, error)
+	ReplaceVpnTunnelRequest(*ec2.ReplaceVpnTunnelInput) (*request.Request, *ec2.ReplaceVpnTunnelOutput)
 
 	ReportInstanceStatus(*ec2.ReportInstanceStatusInput) (*ec2.ReportInstanceStatusOutput, error)
 	ReportInstanceStatusWithContext(aws.Context, *ec2.ReportInstanceStatusInput, ...request.Option) (*ec2.ReportInstanceStatusOutput, error)

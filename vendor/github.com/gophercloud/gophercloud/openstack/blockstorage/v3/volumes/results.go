@@ -111,6 +111,10 @@ type VolumePage struct {
 
 // IsEmpty returns true if a ListResult contains no Volumes.
 func (r VolumePage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	volumes, err := ExtractVolumes(r)
 	return len(volumes) == 0, err
 }

@@ -157,6 +157,10 @@ func (r ListenerPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a ListenerPage struct is empty.
 func (r ListenerPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractListeners(r)
 	return len(is) == 0, err
 }

@@ -85,6 +85,47 @@ func (p Platform) Equals(o Platform) bool {
 		stringSliceEqualIgnoreOrder(p.Features, o.Features)
 }
 
+// Satisfies returns true if this Platform "satisfies" the given spec Platform.
+//
+// Note that this is different from Equals and that Satisfies is not reflexive.
+//
+// The given spec represents "requirements" such that any missing values in the
+// spec are not compared.
+//
+// For OSFeatures and Features, Satisfies will return true if this Platform's
+// fields contain a superset of the values in the spec's fields (order ignored).
+func (p Platform) Satisfies(spec Platform) bool {
+	return satisfies(spec.OS, p.OS) &&
+		satisfies(spec.Architecture, p.Architecture) &&
+		satisfies(spec.Variant, p.Variant) &&
+		satisfies(spec.OSVersion, p.OSVersion) &&
+		satisfiesList(spec.OSFeatures, p.OSFeatures) &&
+		satisfiesList(spec.Features, p.Features)
+}
+
+func satisfies(want, have string) bool {
+	return want == "" || want == have
+}
+
+func satisfiesList(want, have []string) bool {
+	if len(want) == 0 {
+		return true
+	}
+
+	set := map[string]struct{}{}
+	for _, h := range have {
+		set[h] = struct{}{}
+	}
+
+	for _, w := range want {
+		if _, ok := set[w]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
 // stringSliceEqual compares 2 string slices and returns if their contents are identical.
 func stringSliceEqual(a, b []string) bool {
 	if len(a) != len(b) {

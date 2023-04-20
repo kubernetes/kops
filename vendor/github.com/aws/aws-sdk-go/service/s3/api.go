@@ -41704,6 +41704,9 @@ const (
 
 	// ObjectStorageClassGlacierIr is a ObjectStorageClass enum value
 	ObjectStorageClassGlacierIr = "GLACIER_IR"
+
+	// ObjectStorageClassSnow is a ObjectStorageClass enum value
+	ObjectStorageClassSnow = "SNOW"
 )
 
 // ObjectStorageClass_Values returns all elements of the ObjectStorageClass enum
@@ -41718,6 +41721,7 @@ func ObjectStorageClass_Values() []string {
 		ObjectStorageClassDeepArchive,
 		ObjectStorageClassOutposts,
 		ObjectStorageClassGlacierIr,
+		ObjectStorageClassSnow,
 	}
 }
 
@@ -41995,6 +41999,9 @@ const (
 
 	// StorageClassGlacierIr is a StorageClass enum value
 	StorageClassGlacierIr = "GLACIER_IR"
+
+	// StorageClassSnow is a StorageClass enum value
+	StorageClassSnow = "SNOW"
 )
 
 // StorageClass_Values returns all elements of the StorageClass enum
@@ -42009,6 +42016,7 @@ func StorageClass_Values() []string {
 		StorageClassDeepArchive,
 		StorageClassOutposts,
 		StorageClassGlacierIr,
+		StorageClassSnow,
 	}
 }
 

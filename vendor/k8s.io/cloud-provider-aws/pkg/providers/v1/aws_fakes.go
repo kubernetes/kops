@@ -91,6 +91,12 @@ func (s *FakeAWSServices) WithAz(az string) *FakeAWSServices {
 	return s
 }
 
+// WithRegion sets the AWS region
+func (s *FakeAWSServices) WithRegion(region string) *FakeAWSServices {
+	s.region = region
+	return s
+}
+
 // Compute returns a fake EC2 client
 func (s *FakeAWSServices) Compute(region string) (EC2, error) {
 	return s.ec2, nil
@@ -426,6 +432,11 @@ func (m *FakeMetadata) GetMetadata(key string) (string, error) {
 	return "", nil
 }
 
+// Region returns AWS region
+func (m *FakeMetadata) Region() (string, error) {
+	return m.aws.region, nil
+}
+
 // FakeELB is a fake ELB client used for testing
 type FakeELB struct {
 	aws *FakeAWSServices
@@ -747,8 +758,16 @@ func (ec2i *FakeEC2Impl) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInt
 			return &ec2.DescribeNetworkInterfacesOutput{}, nil
 		}
 
-		if *filter.Values[0] == "return.private.dns.name" {
+		if strings.Contains(*filter.Values[0], "return.private.dns.name") {
 			networkInterface[0].PrivateDnsName = aws.String("ip-1-2-3-4.compute.amazon.com")
+		}
+
+		if *filter.Values[0] == "return.private.dns.name.ipv6" {
+			networkInterface[0].Ipv6Addresses = []*ec2.NetworkInterfaceIpv6Address{
+				{
+					Ipv6Address: aws.String("2001:db8:3333:4444:5555:6666:7777:8888"),
+				},
+			}
 		}
 	}
 

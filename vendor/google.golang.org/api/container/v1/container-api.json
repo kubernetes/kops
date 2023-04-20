@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20230207",
+  "revision": "20230326",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2510,6 +2510,20 @@
         "gpuSharingConfig": {
           "$ref": "GPUSharingConfig",
           "description": "The configuration for GPU sharing options."
+        }
+      },
+      "type": "object"
+    },
+    "AdditionalPodRangesConfig": {
+      "description": "AdditionalPodRangesConfig is the configuration for additional pod secondary ranges supporting the ClusterUpdate message.",
+      "id": "AdditionalPodRangesConfig",
+      "properties": {
+        "podRangeNames": {
+          "description": "Name for pod secondary ipv4 range which has the actual range defined ahead.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -2936,6 +2950,10 @@
           "description": "[Output only] The time the cluster will be automatically deleted in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) text format.",
           "type": "string"
         },
+        "fleet": {
+          "$ref": "Fleet",
+          "description": "Fleet information for the cluster."
+        },
         "id": {
           "description": "Output only. Unique id for the cluster.",
           "readOnly": true,
@@ -3187,6 +3205,10 @@
       "description": "ClusterUpdate describes an update to the cluster. Exactly one update can be applied to a cluster with each request, so at most one field can be provided.",
       "id": "ClusterUpdate",
       "properties": {
+        "additionalPodRangesConfig": {
+          "$ref": "AdditionalPodRangesConfig",
+          "description": "The additional pod ranges to be added to the cluster. These pod ranges can be used by node pools to allocate pod IPs."
+        },
         "desiredAddonsConfig": {
           "$ref": "AddonsConfig",
           "description": "Configurations for the various addons available to run in the cluster."
@@ -3336,7 +3358,7 @@
             "Default value. Same as DISABLED",
             "No private access to or from Google Services",
             "Enables private IPv6 access to Google Services from GKE",
-            "Enables priate IPv6 access to and from Google Services"
+            "Enables private IPv6 access to and from Google Services"
           ],
           "type": "string"
         },
@@ -3381,6 +3403,10 @@
         "etag": {
           "description": "The current etag of the cluster. If an etag is provided and does not match the current etag of the cluster, update will be blocked and an ABORTED error will be returned.",
           "type": "string"
+        },
+        "removedAdditionalPodRangesConfig": {
+          "$ref": "AdditionalPodRangesConfig",
+          "description": "The additional pod ranges that are to be removed from the cluster. The pod ranges specified here must have been specified earlier in the 'additional_pod_ranges_config' argument."
         }
       },
       "type": "object"
@@ -3664,6 +3690,25 @@
       },
       "type": "object"
     },
+    "Fleet": {
+      "description": "Fleet is the fleet configuration for the cluster.",
+      "id": "Fleet",
+      "properties": {
+        "membership": {
+          "description": "[Output only] The full resource name of the registered fleet membership of the cluster, in the format `//gkehub.googleapis.com/projects/*/locations/*/memberships/*`.",
+          "type": "string"
+        },
+        "preRegistered": {
+          "description": "[Output only] Whether the cluster has been registered through the fleet API.",
+          "type": "boolean"
+        },
+        "project": {
+          "description": "The Fleet host project(project ID or project number) where this cluster will be registered to. This field cannot be changed after the cluster has been registered.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GPUSharingConfig": {
       "description": "GPUSharingConfig represents the GPU sharing configuration for Hardware Accelerators.",
       "id": "GPUSharingConfig",
@@ -3884,6 +3929,11 @@
       "description": "Configuration for controlling how IPs are allocated in the cluster.",
       "id": "IPAllocationPolicy",
       "properties": {
+        "additionalPodRangesConfig": {
+          "$ref": "AdditionalPodRangesConfig",
+          "description": "Output only. [Output only] The additional pod ranges that are added to the cluster. These pod ranges can be used by new node pools to allocate pod IPs automatically. Once the range is removed it will not show up in IPAllocationPolicy.",
+          "readOnly": true
+        },
         "clusterIpv4Cidr": {
           "description": "This field is deprecated, use cluster_ipv4_cidr_block.",
           "type": "string"
@@ -3921,6 +3971,10 @@
         "nodeIpv4CidrBlock": {
           "description": "The IP address range of the instance IPs in this cluster. This is applicable only if `create_subnetwork` is true. Set to blank to have a range chosen with the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific range to use.",
           "type": "string"
+        },
+        "podCidrOverprovisionConfig": {
+          "$ref": "PodCIDROverprovisionConfig",
+          "description": "[PRIVATE FIELD] Pod CIDR size overprovisioning config for the cluster. Pod CIDR size per node depends on max_pods_per_node. By default, the value of max_pods_per_node is doubled and then rounded off to next power of 2 to get the size of pod CIDR block per node. Example: max_pods_per_node of 30 would result in 64 IPs (/26). This config can disable the doubling of IPs (we still round off to next power of 2) Example: max_pods_per_node of 30 will result in 32 IPs (/27) when overprovisioning is disabled."
         },
         "servicesIpv4Cidr": {
           "description": "This field is deprecated, use services_ipv4_cidr_block.",
@@ -4507,7 +4561,7 @@
             "Default value. Same as DISABLED",
             "No private access to or from Google Services",
             "Enables private IPv6 access to Google Services from GKE",
-            "Enables priate IPv6 access to and from Google Services"
+            "Enables private IPv6 access to and from Google Services"
           ],
           "type": "string"
         },
@@ -4838,6 +4892,10 @@
         "networkPerformanceConfig": {
           "$ref": "NetworkPerformanceConfig",
           "description": "Network bandwidth tier configuration."
+        },
+        "podCidrOverprovisionConfig": {
+          "$ref": "PodCIDROverprovisionConfig",
+          "description": "[PRIVATE FIELD] Pod CIDR size overprovisioning config for the nodepool. Pod CIDR size per node depends on max_pods_per_node. By default, the value of max_pods_per_node is rounded off to next power of 2 and we then double that to get the size of pod CIDR block per node. Example: max_pods_per_node of 30 would result in 64 IPs (/26). This config can disable the doubling of IPs (we still round off to next power of 2) Example: max_pods_per_node of 30 will result in 32 IPs (/27) when overprovisioning is disabled."
         },
         "podIpv4CidrBlock": {
           "description": "The IP address range for pod IPs in this node pool. Only applicable if `create_pod_range` is true. Set to blank to have a range chosen with the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) to pick a specific range to use. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
@@ -5286,6 +5344,17 @@
             "COMPACT specifies node placement in the same availability domain to ensure low communication latency."
           ],
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PodCIDROverprovisionConfig": {
+      "description": "[PRIVATE FIELD] Config for pod CIDR size overprovisioning.",
+      "id": "PodCIDROverprovisionConfig",
+      "properties": {
+        "disable": {
+          "description": "Whether Pod CIDR overprovisioning is disabled. Note: Pod CIDR overprovisioning is enabled by default.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -6575,7 +6644,7 @@
           "enumDescriptions": [
             "UNKNOWN is the zero value of the Status enum. It's not a valid status.",
             "UNUSED denotes that this range is unclaimed by any cluster.",
-            "IN_USE_SERVICE denotes that this range is claimed by a cluster for services. It cannot be used for other clusters.",
+            "IN_USE_SERVICE denotes that this range is claimed by cluster(s) for services. User-managed services range can be shared between clusters within the same subnetwork.",
             "IN_USE_SHAREABLE_POD denotes this range was created by the network admin and is currently claimed by a cluster for pods. It can only be used by other clusters as a pod range.",
             "IN_USE_MANAGED_POD denotes this range was created by GKE and is claimed for pods. It cannot be used for other clusters."
           ],

@@ -66,9 +66,22 @@ func (s Style) UnsetHeight() Style {
 	return s
 }
 
-// UnsetAlign removes the text alignment style rule, if set.
+// UnsetAlign removes the horizontal and vertical text alignment style rule, if set.
 func (s Style) UnsetAlign() Style {
-	delete(s.rules, alignKey)
+	delete(s.rules, alignHorizontalKey)
+	delete(s.rules, alignVerticalKey)
+	return s
+}
+
+// UnsetAlignHorizontal removes the horizontal text alignment style rule, if set.
+func (s Style) UnsetAlignHorizontal() Style {
+	delete(s.rules, alignHorizontalKey)
+	return s
+}
+
+// UnsetAlignHorizontal removes the vertical text alignment style rule, if set.
+func (s Style) UnsetAlignVertical() Style {
+	delete(s.rules, alignVerticalKey)
 	return s
 }
 

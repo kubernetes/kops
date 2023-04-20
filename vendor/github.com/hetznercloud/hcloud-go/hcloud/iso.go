@@ -12,11 +12,12 @@ import (
 
 // ISO represents an ISO image in the Hetzner Cloud.
 type ISO struct {
-	ID          int
-	Name        string
-	Description string
-	Type        ISOType
-	Deprecated  time.Time
+	ID           int
+	Name         string
+	Description  string
+	Type         ISOType
+	Architecture *Architecture
+	Deprecated   time.Time
 }
 
 // IsDeprecated returns true if the ISO is deprecated.
@@ -83,6 +84,12 @@ type ISOListOpts struct {
 	ListOpts
 	Name string
 	Sort []string
+	// Architecture filters the ISOs by Architecture. Note that custom ISOs do not have any architecture set, and you
+	// must use IncludeWildcardArchitecture to include them.
+	Architecture []Architecture
+	// IncludeWildcardArchitecture must be set to also return custom ISOs that have no architecture set, if you are
+	// also setting the Architecture field.
+	IncludeWildcardArchitecture bool
 }
 
 func (l ISOListOpts) values() url.Values {
@@ -92,6 +99,12 @@ func (l ISOListOpts) values() url.Values {
 	}
 	for _, sort := range l.Sort {
 		vals.Add("sort", sort)
+	}
+	for _, arch := range l.Architecture {
+		vals.Add("architecture", string(arch))
+	}
+	if l.IncludeWildcardArchitecture {
+		vals.Add("include_architecture_wildcard", "true")
 	}
 	return vals
 }

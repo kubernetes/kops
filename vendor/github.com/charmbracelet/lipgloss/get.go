@@ -71,12 +71,32 @@ func (s Style) GetHeight() int {
 	return s.getAsInt(heightKey)
 }
 
-// GetAlign returns the style's implicit alignment setting. If no alignment is
-// set Position.AlignLeft is returned.
+// GetAlign returns the style's implicit horizontal alignment setting.
+// If no alignment is set Position.AlignLeft is returned.
 func (s Style) GetAlign() Position {
-	v := s.getAsPosition(alignKey)
+	v := s.getAsPosition(alignHorizontalKey)
 	if v == Position(0) {
 		return Left
+	}
+	return v
+}
+
+// GetAlignHorizontal returns the style's implicit horizontal alignment setting.
+// If no alignment is set Position.AlignLeft is returned.
+func (s Style) GetAlignHorizontal() Position {
+	v := s.getAsPosition(alignHorizontalKey)
+	if v == Position(0) {
+		return Left
+	}
+	return v
+}
+
+// GetAlignVertical returns the style's implicit vertical alignment setting.
+// If no alignment is set Position.AlignTop is returned.
+func (s Style) GetAlignVertical() Position {
+	v := s.getAsPosition(alignVerticalKey)
+	if v == Position(0) {
+		return Top
 	}
 	return v
 }

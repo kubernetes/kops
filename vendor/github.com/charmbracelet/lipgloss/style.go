@@ -26,7 +26,8 @@ const (
 	backgroundKey
 	widthKey
 	heightKey
-	alignKey
+	alignHorizontalKey
+	alignVerticalKey
 
 	// Padding.
 	paddingTopKey
@@ -120,9 +121,9 @@ func (s Style) Copy() Style {
 	return o
 }
 
-// Inherit takes values from the style in the argument applies them to this
-// style, overwriting existing definitions. Only values explicitly set on the
-// style in argument will be applied.
+// Inherit overlays the style in the argument onto this style by copying each explicitly
+// set value from the argument style onto this style if it is not already explicitly set.
+// Existing set values are kept intact and not overwritten.
 //
 // Margins, padding, and underlying string values are not inherited.
 func (s Style) Inherit(i Style) Style {
@@ -137,8 +138,6 @@ func (s Style) Inherit(i Style) Style {
 			// Padding is not inherited
 			continue
 		case backgroundKey:
-			s.rules[k] = v
-
 			// The margins also inherit the background color
 			if !s.isSet(marginBackgroundKey) && !i.isSet(marginBackgroundKey) {
 				s.rules[marginBackgroundKey] = v
@@ -171,9 +170,10 @@ func (s Style) Render(str string) string {
 		fg = s.getAsColor(foregroundKey)
 		bg = s.getAsColor(backgroundKey)
 
-		width  = s.getAsInt(widthKey)
-		height = s.getAsInt(heightKey)
-		align  = s.getAsPosition(alignKey)
+		width           = s.getAsInt(widthKey)
+		height          = s.getAsInt(heightKey)
+		horizontalAlign = s.getAsPosition(alignHorizontalKey)
+		verticalAlign   = s.getAsPosition(alignVerticalKey)
 
 		topPadding    = s.getAsInt(paddingTopKey)
 		rightPadding  = s.getAsInt(paddingRightKey)
@@ -264,7 +264,7 @@ func (s Style) Render(str string) string {
 
 	// Strip newlines in single line mode
 	if inline {
-		str = strings.Replace(str, "\n", "", -1)
+		str = strings.ReplaceAll(str, "\n", "")
 	}
 
 	// Word wrap
@@ -329,10 +329,7 @@ func (s Style) Render(str string) string {
 
 	// Height
 	if height > 0 {
-		h := strings.Count(str, "\n") + 1
-		if height > h {
-			str += strings.Repeat("\n", height-h)
-		}
+		str = alignTextVertical(str, verticalAlign, height, nil)
 	}
 
 	// Set alignment. This will also pad short lines with spaces so that all
@@ -346,7 +343,7 @@ func (s Style) Render(str string) string {
 			if colorWhitespace || styleWhitespace {
 				st = &teWhitespace
 			}
-			str = alignText(str, align, width, st)
+			str = alignTextHorizontal(str, horizontalAlign, width, st)
 		}
 	}
 

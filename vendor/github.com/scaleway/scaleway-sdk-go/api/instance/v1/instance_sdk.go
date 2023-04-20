@@ -750,30 +750,30 @@ func (enum *VolumeVolumeType) UnmarshalJSON(data []byte) error {
 
 // Bootscript: bootscript.
 type Bootscript struct {
-	// Bootcmdargs: the bootscript arguments.
+	// Bootcmdargs: bootscript arguments.
 	Bootcmdargs string `json:"bootcmdargs"`
-	// Default: dispmay if the bootscript is the default bootscript if no other boot option is configured.
+	// Default: display if the bootscript is the default bootscript (if no other boot option is configured).
 	Default bool `json:"default"`
-	// Dtb: provide information regarding a Device Tree Binary (dtb) for use with C1 servers.
+	// Dtb: provide information regarding a Device Tree Binary (DTB) for use with C1 servers.
 	Dtb string `json:"dtb"`
-	// ID: the bootscript ID.
+	// ID: bootscript ID.
 	ID string `json:"id"`
-	// Initrd: the initrd (initial ramdisk) configuration.
+	// Initrd: initrd (initial ramdisk) configuration.
 	Initrd string `json:"initrd"`
-	// Kernel: the server kernel version.
+	// Kernel: instance kernel version.
 	Kernel string `json:"kernel"`
-	// Organization: the bootscript organization ID.
+	// Organization: bootscript Organization ID.
 	Organization string `json:"organization"`
-	// Project: the bootscript project ID.
+	// Project: bootscript Project ID.
 	Project string `json:"project"`
 	// Public: provide information if the bootscript is public.
 	Public bool `json:"public"`
-	// Title: the bootscript title.
+	// Title: bootscript title.
 	Title string `json:"title"`
-	// Arch: the bootscript arch.
+	// Arch: bootscript architecture.
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// Zone: the zone in which is the bootscript.
+	// Zone: zone in which the bootscript is located.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -871,7 +871,9 @@ type GetPlacementGroupResponse struct {
 	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
+// GetPlacementGroupServersResponse: get placement group servers response.
 type GetPlacementGroupServersResponse struct {
+	// Servers: instances attached to the placement group.
 	Servers []*PlacementGroupServer `json:"servers"`
 }
 
@@ -896,8 +898,7 @@ type GetServerTypesAvailabilityResponse struct {
 }
 
 type GetServerTypesAvailabilityResponseAvailability struct {
-	// Availability:
-	// Default value: available
+	// Availability: default value: available
 	Availability ServerTypesAvailability `json:"availability"`
 }
 
@@ -931,8 +932,7 @@ type Image struct {
 	ID string `json:"id"`
 
 	Name string `json:"name"`
-	// Arch:
-	// Default value: x86_64
+	// Arch: default value: x86_64
 	Arch Arch `json:"arch"`
 
 	CreationDate *time.Time `json:"creation_date"`
@@ -950,8 +950,7 @@ type Image struct {
 	Public bool `json:"public"`
 
 	RootVolume *VolumeSummary `json:"root_volume"`
-	// State:
-	// Default value: available
+	// State: default value: available
 	State ImageState `json:"state"`
 
 	Project string `json:"project"`
@@ -1025,17 +1024,17 @@ type ListServerUserDataResponse struct {
 
 // ListServersResponse: list servers response.
 type ListServersResponse struct {
-	// TotalCount: total number of servers.
+	// TotalCount: total number of Instances.
 	TotalCount uint32 `json:"total_count"`
-	// Servers: list of servers.
+	// Servers: list of Instances.
 	Servers []*Server `json:"servers"`
 }
 
 // ListServersTypesResponse: list servers types response.
 type ListServersTypesResponse struct {
-	// TotalCount: total number of server types.
+	// TotalCount: total number of Instance types.
 	TotalCount uint32 `json:"total_count"`
-	// Servers: list of server types.
+	// Servers: list of Instance types.
 	Servers map[string]*ServerType `json:"servers"`
 }
 
@@ -1071,17 +1070,17 @@ type NullableStringValue struct {
 
 // PlacementGroup: placement group.
 type PlacementGroup struct {
-	// ID: the placement group unique ID.
+	// ID: placement group unique ID.
 	ID string `json:"id"`
-	// Name: the placement group name.
+	// Name: placement group name.
 	Name string `json:"name"`
-	// Organization: the placement group organization ID.
+	// Organization: placement group Organization ID.
 	Organization string `json:"organization"`
-	// Project: the placement group project ID.
+	// Project: placement group Project ID.
 	Project string `json:"project"`
-	// Tags: the placement group tags.
+	// Tags: placement group tags.
 	Tags []string `json:"tags"`
-	// PolicyMode: select the failling mode when the placement cannot be respected, either optional or enforced.
+	// PolicyMode: select the failure mode when the placement cannot be respected, either optional or enforced.
 	// Default value: optional
 	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
 	// PolicyType: select the behavior of the placement group, either low_latency (group) or max_availability (spread).
@@ -1089,86 +1088,85 @@ type PlacementGroup struct {
 	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 	// PolicyRespected: returns true if the policy is respected, false otherwise.
 	PolicyRespected bool `json:"policy_respected"`
-	// Zone: the zone in which is the placement group.
+	// Zone: zone in which the placement group is located.
 	Zone scw.Zone `json:"zone"`
 }
 
+// PlacementGroupServer: placement group server.
 type PlacementGroupServer struct {
+	// ID: instance UUID.
 	ID string `json:"id"`
-
+	// Name: instance name.
 	Name string `json:"name"`
-
+	// PolicyRespected: defines whether the placement group policy is respected (either 1 or 0).
 	PolicyRespected bool `json:"policy_respected"`
 }
 
 // PrivateNIC: private nic.
 type PrivateNIC struct {
-	// ID: the private NIC unique ID.
+	// ID: private NIC unique ID.
 	ID string `json:"id,omitempty"`
-	// ServerID: the server the private NIC is attached to.
+	// ServerID: instance to which the private NIC is attached.
 	ServerID string `json:"server_id,omitempty"`
-	// PrivateNetworkID: the private network where the private NIC is attached.
+	// PrivateNetworkID: private Network the private NIC is attached to.
 	PrivateNetworkID string `json:"private_network_id,omitempty"`
-	// MacAddress: the private NIC MAC address.
+	// MacAddress: private NIC MAC address.
 	MacAddress string `json:"mac_address,omitempty"`
-	// State: the private NIC state.
+	// State: private NIC state.
 	// Default value: available
 	State PrivateNICState `json:"state,omitempty"`
-	// Tags: the private NIC tags.
+	// Tags: private NIC tags.
 	Tags []string `json:"tags,omitempty"`
 }
 
 // SecurityGroup: security group.
 type SecurityGroup struct {
-	// ID: the security groups' unique ID.
+	// ID: security group unique ID.
 	ID string `json:"id"`
-	// Name: the security groups name.
+	// Name: security group name.
 	Name string `json:"name"`
-	// Description: the security groups description.
+	// Description: security group description.
 	Description string `json:"description"`
 	// EnableDefaultSecurity: true if SMTP is blocked on IPv4 and IPv6.
 	EnableDefaultSecurity bool `json:"enable_default_security"`
-	// InboundDefaultPolicy: the default inbound policy.
+	// InboundDefaultPolicy: default inbound policy.
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy: the default outbound policy.
+	// OutboundDefaultPolicy: default outbound policy.
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// Organization: the security groups organization ID.
+	// Organization: security group Organization ID.
 	Organization string `json:"organization"`
-	// Project: the security group project ID.
+	// Project: security group Project ID.
 	Project string `json:"project"`
-	// Tags: the security group tags.
+	// Tags: security group tags.
 	Tags []string `json:"tags"`
-	// Deprecated: OrganizationDefault: true if it is your default security group for this organization ID.
+	// Deprecated: OrganizationDefault: true if it is your default security group for this Organization ID.
 	OrganizationDefault *bool `json:"organization_default,omitempty"`
-	// ProjectDefault: true if it is your default security group for this project ID.
+	// ProjectDefault: true if it is your default security group for this Project ID.
 	ProjectDefault bool `json:"project_default"`
-	// CreationDate: the security group creation date.
+	// CreationDate: security group creation date.
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: the security group modification date.
+	// ModificationDate: security group modification date.
 	ModificationDate *time.Time `json:"modification_date"`
-	// Servers: list of servers attached to this security group.
+	// Servers: list of Instances attached to this security group.
 	Servers []*ServerSummary `json:"servers"`
-	// Stateful: true if the security group is stateful.
+	// Stateful: defines whether the security group is stateful.
 	Stateful bool `json:"stateful"`
 	// State: security group state.
 	// Default value: available
 	State SecurityGroupState `json:"state"`
-	// Zone: the zone in which is the security group.
+	// Zone: zone in which the security group is located.
 	Zone scw.Zone `json:"zone"`
 }
 
 type SecurityGroupRule struct {
 	ID string `json:"id"`
-	// Protocol:
-	// Default value: TCP
+	// Protocol: default value: TCP
 	Protocol SecurityGroupRuleProtocol `json:"protocol"`
-	// Direction:
-	// Default value: inbound
+	// Direction: default value: inbound
 	Direction SecurityGroupRuleDirection `json:"direction"`
-	// Action:
-	// Default value: accept
+	// Action: default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
 	IPRange scw.IPNet `json:"ip_range"`
@@ -1198,72 +1196,73 @@ type SecurityGroupTemplate struct {
 
 // Server: server.
 type Server struct {
-	// ID: the server unique ID.
+	// ID: instance unique ID.
 	ID string `json:"id"`
-	// Name: the server name.
+	// Name: instance name.
 	Name string `json:"name"`
-	// Organization: the server organization ID.
+	// Organization: instance Organization ID.
 	Organization string `json:"organization"`
-	// Project: the server project ID.
+	// Project: instance Project ID.
 	Project string `json:"project"`
-	// AllowedActions: provide as list of allowed actions on the server.
+	// AllowedActions: list of allowed actions on the Instance.
 	AllowedActions []ServerAction `json:"allowed_actions"`
-	// Tags: the server associated tags.
+	// Tags: tags associated with the Instance.
 	Tags []string `json:"tags"`
-	// CommercialType: the server commercial type (eg. GP1-M).
+	// CommercialType: instance commercial type (eg. GP1-M).
 	CommercialType string `json:"commercial_type"`
-	// CreationDate: the server creation date.
+	// CreationDate: instance creation date.
 	CreationDate *time.Time `json:"creation_date"`
 	// DynamicIPRequired: true if a dynamic IP is required.
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
 	// EnableIPv6: true if IPv6 is enabled.
 	EnableIPv6 bool `json:"enable_ipv6"`
-	// Hostname: the server host name.
+	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
-	// Image: provide information on the server image.
+	// Image: information about the Instance image.
 	Image *Image `json:"image"`
-	// Protected: the server protection option is activated.
+	// Protected: defines whether the Instance protection option is activated.
 	Protected bool `json:"protected"`
-	// PrivateIP: the server private IP address.
+	// PrivateIP: private IP address of the Instance.
 	PrivateIP *string `json:"private_ip"`
 	// PublicIP: information about the public IP.
 	PublicIP *ServerIP `json:"public_ip"`
-	// ModificationDate: the server modification date.
+	// ModificationDate: instance modification date.
 	ModificationDate *time.Time `json:"modification_date"`
-	// State: the server state.
+	// State: instance state.
 	// Default value: running
 	State ServerState `json:"state"`
-	// Location: the server location.
+	// Location: instance location.
 	Location *ServerLocation `json:"location"`
-	// IPv6: the server IPv6 address.
+	// IPv6: instance IPv6 address.
 	IPv6 *ServerIPv6 `json:"ipv6"`
-	// Deprecated: Bootscript: the server bootscript.
+	// Deprecated: Bootscript: instance bootscript.
 	Bootscript *Bootscript `json:"bootscript,omitempty"`
-	// BootType: the server boot type.
+	// BootType: instance boot type.
 	// Default value: local
 	BootType BootType `json:"boot_type"`
-	// Volumes: the server volumes.
+	// Volumes: instance volumes.
 	Volumes map[string]*VolumeServer `json:"volumes"`
-	// SecurityGroup: the server security group.
+	// SecurityGroup: instance security group.
 	SecurityGroup *SecurityGroupSummary `json:"security_group"`
-	// Maintenances: the server planned maintenances.
+	// Maintenances: instance planned maintenance.
 	Maintenances []*ServerMaintenance `json:"maintenances"`
-	// StateDetail: the server state_detail.
+	// StateDetail: detailed information about the Instance state.
 	StateDetail string `json:"state_detail"`
-	// Arch: the server arch.
+	// Arch: instance architecture.
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// PlacementGroup: the server placement group.
+	// PlacementGroup: instance placement group.
 	PlacementGroup *PlacementGroup `json:"placement_group"`
-	// PrivateNics: the server private NICs.
+	// PrivateNics: instance private NICs.
 	PrivateNics []*PrivateNIC `json:"private_nics"`
-	// Zone: the zone in which is the server.
+	// Zone: zone in which the Instance is located.
 	Zone scw.Zone `json:"zone"`
 }
 
 // ServerActionRequestVolumeBackupTemplate: server action request. volume backup template.
 type ServerActionRequestVolumeBackupTemplate struct {
-	// VolumeType: overrides the volume_type of the snapshot for this volume.
+	// VolumeType: snapshot's volume type.
+	// Overrides the `volume_type` of the snapshot for this volume.
 	// If omitted, the volume type of the original volume will be used.
 	// Default value: unknown_volume_type
 	VolumeType SnapshotVolumeType `json:"volume_type,omitempty"`
@@ -1275,9 +1274,9 @@ type ServerActionResponse struct {
 
 // ServerIP: server. ip.
 type ServerIP struct {
-	// ID: the unique ID of the IP address.
+	// ID: unique ID of the IP address.
 	ID string `json:"id"`
-	// Address: the server public IPv4 IP-Address.
+	// Address: instance public IPv4 IP-Address.
 	Address net.IP `json:"address"`
 	// Dynamic: true if the IP address is dynamic.
 	Dynamic bool `json:"dynamic"`
@@ -1285,11 +1284,11 @@ type ServerIP struct {
 
 // ServerIPv6: server. ipv6.
 type ServerIPv6 struct {
-	// Address: the server IPv6 IP-Address.
+	// Address: instance IPv6 IP-Address.
 	Address net.IP `json:"address"`
-	// Gateway: the IPv6 IP-addresses gateway.
+	// Gateway: iPv6 IP-addresses gateway.
 	Gateway net.IP `json:"gateway"`
-	// Netmask: the IPv6 IP-addresses CIDR netmask.
+	// Netmask: iPv6 IP-addresses CIDR netmask.
 	Netmask string `json:"netmask"`
 }
 
@@ -1321,7 +1320,7 @@ type ServerType struct {
 	MonthlyPrice *float32 `json:"monthly_price,omitempty"`
 	// HourlyPrice: hourly price in Euro.
 	HourlyPrice float32 `json:"hourly_price"`
-	// AltNames: alternative instance name if any.
+	// AltNames: alternative Instance name, if any.
 	AltNames []string `json:"alt_names"`
 	// PerVolumeConstraint: additional volume constraints.
 	PerVolumeConstraint *ServerTypeVolumeConstraintsByType `json:"per_volume_constraint"`
@@ -1336,9 +1335,9 @@ type ServerType struct {
 	// Arch: CPU architecture.
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// Baremetal: true if it is a baremetal instance.
+	// Baremetal: true if it is a baremetal Instance.
 	Baremetal bool `json:"baremetal"`
-	// Network: network available for the instance.
+	// Network: network available for the Instance.
 	Network *ServerTypeNetwork `json:"network"`
 	// Capabilities: capabilities.
 	Capabilities *ServerTypeCapabilities `json:"capabilities"`
@@ -1346,7 +1345,7 @@ type ServerType struct {
 
 // ServerTypeCapabilities: server type. capabilities.
 type ServerTypeCapabilities struct {
-	// BlockStorage: true if server supports block storage.
+	// BlockStorage: defines whether the Instance supports block storage.
 	BlockStorage *bool `json:"block_storage"`
 	// BootTypes: list of supported boot types.
 	BootTypes []BootType `json:"boot_types"`
@@ -1390,7 +1389,9 @@ type SetPlacementGroupResponse struct {
 	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
+// SetPlacementGroupServersResponse: set placement group servers response.
 type SetPlacementGroupServersResponse struct {
+	// Servers: instances attached to the placement group.
 	Servers []*PlacementGroupServer `json:"servers"`
 }
 
@@ -1407,7 +1408,7 @@ type SetSecurityGroupRulesRequestRule struct {
 	// Direction: direction the rule applies to.
 	// Default value: inbound
 	Direction SecurityGroupRuleDirection `json:"direction"`
-	// IPRange: the range of IP address this rules applies to.
+	// IPRange: range of IP addresses these rules apply to.
 	IPRange scw.IPNet `json:"ip_range"`
 	// DestPortFrom: beginning of the range of ports this rule applies to (inclusive). This value will be set to null if protocol is ICMP or ANY.
 	DestPortFrom *uint32 `json:"dest_port_from"`
@@ -1427,64 +1428,64 @@ type SetSecurityGroupRulesResponse struct {
 
 // Snapshot: snapshot.
 type Snapshot struct {
-	// ID: the snapshot ID.
+	// ID: snapshot ID.
 	ID string `json:"id"`
-	// Name: the snapshot name.
+	// Name: snapshot name.
 	Name string `json:"name"`
-	// Organization: the snapshot organization ID.
+	// Organization: snapshot Organization ID.
 	Organization string `json:"organization"`
-	// Project: the snapshot project ID.
+	// Project: snapshot Project ID.
 	Project string `json:"project"`
-	// Tags: the snapshot tags.
+	// Tags: snapshot tags.
 	Tags []string `json:"tags"`
-	// VolumeType: the snapshot volume type.
+	// VolumeType: snapshot volume type.
 	// Default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type"`
-	// Size: the snapshot size.
+	// Size: snapshot size.
 	Size scw.Size `json:"size"`
-	// State: the snapshot state.
+	// State: snapshot state.
 	// Default value: available
 	State SnapshotState `json:"state"`
-	// BaseVolume: the volume on which the snapshot is based on.
+	// BaseVolume: volume on which the snapshot is based on.
 	BaseVolume *SnapshotBaseVolume `json:"base_volume"`
-	// CreationDate: the snapshot creation date.
+	// CreationDate: snapshot creation date.
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: the snapshot modification date.
+	// ModificationDate: snapshot modification date.
 	ModificationDate *time.Time `json:"modification_date"`
-	// Zone: the snapshot zone.
+	// Zone: snapshot zone.
 	Zone scw.Zone `json:"zone"`
-	// ErrorReason: the reason for the failed snapshot import.
+	// ErrorReason: reason for the failed snapshot import.
 	ErrorReason *string `json:"error_reason"`
 }
 
 // SnapshotBaseVolume: snapshot. base volume.
 type SnapshotBaseVolume struct {
-	// ID: the volume ID on which the snapshot is based on.
+	// ID: volume ID on which the snapshot is based.
 	ID string `json:"id"`
-	// Name: the volume name on which the snapshot is based on.
+	// Name: volume name on which the snapshot is based on.
 	Name string `json:"name"`
 }
 
 // Task: task.
 type Task struct {
-	// ID: the unique ID of the task.
+	// ID: unique ID of the task.
 	ID string `json:"id"`
-	// Description: the description of the task.
+	// Description: description of the task.
 	Description string `json:"description"`
-	// Progress: the progress of the task in percent.
+	// Progress: progress of the task in percent.
 	Progress int32 `json:"progress"`
-	// StartedAt: the task start date.
+	// StartedAt: task start date.
 	StartedAt *time.Time `json:"started_at"`
-	// TerminatedAt: the task end date.
+	// TerminatedAt: task end date.
 	TerminatedAt *time.Time `json:"terminated_at"`
-	// Status: the task status.
+	// Status: task status.
 	// Default value: pending
 	Status TaskStatus `json:"status"`
 
 	HrefFrom string `json:"href_from"`
 
 	HrefResult string `json:"href_result"`
-	// Zone: the zone in which is the task.
+	// Zone: zone in which the task is excecuted.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -1496,7 +1497,9 @@ type UpdatePlacementGroupResponse struct {
 	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
+// UpdatePlacementGroupServersResponse: update placement group servers response.
 type UpdatePlacementGroupServersResponse struct {
+	// Servers: instances attached to the placement group.
 	Servers []*PlacementGroupServer `json:"servers"`
 }
 
@@ -1510,33 +1513,33 @@ type UpdateVolumeResponse struct {
 
 // Volume: volume.
 type Volume struct {
-	// ID: the volume unique ID.
+	// ID: volume unique ID.
 	ID string `json:"id"`
-	// Name: the volume name.
+	// Name: volume name.
 	Name string `json:"name"`
 	// Deprecated: ExportURI: show the volume NBD export URI.
 	ExportURI *string `json:"export_uri"`
-	// Size: the volume disk size.
+	// Size: volume disk size.
 	Size scw.Size `json:"size"`
-	// VolumeType: the volume type.
+	// VolumeType: volume type.
 	// Default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type"`
-	// CreationDate: the volume creation date.
+	// CreationDate: volume creation date.
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: the volume modification date.
+	// ModificationDate: volume modification date.
 	ModificationDate *time.Time `json:"modification_date"`
-	// Organization: the volume organization ID.
+	// Organization: volume Organization ID.
 	Organization string `json:"organization"`
-	// Project: the volume project ID.
+	// Project: volume Project ID.
 	Project string `json:"project"`
-	// Tags: the volume tags.
+	// Tags: volume tags.
 	Tags []string `json:"tags"`
-	// Server: the server attached to the volume.
+	// Server: instance attached to the volume.
 	Server *ServerSummary `json:"server"`
-	// State: the volume state.
+	// State: volume state.
 	// Default value: available
 	State VolumeState `json:"state"`
-	// Zone: the zone in which is the volume.
+	// Zone: zone in which the volume is located.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -1552,15 +1555,13 @@ type VolumeServer struct {
 	Server *ServerSummary `json:"server"`
 
 	Size scw.Size `json:"size"`
-	// VolumeType:
-	// Default value: l_ssd
+	// VolumeType: default value: l_ssd
 	VolumeType VolumeServerVolumeType `json:"volume_type"`
 
 	CreationDate *time.Time `json:"creation_date"`
 
 	ModificationDate *time.Time `json:"modification_date"`
-	// State:
-	// Default value: available
+	// State: default value: available
 	State VolumeServerState `json:"state"`
 
 	Project string `json:"project"`
@@ -1574,7 +1575,7 @@ type VolumeServer struct {
 type VolumeServerTemplate struct {
 	// ID: UUID of the volume.
 	ID string `json:"id,omitempty"`
-	// Boot: force the server to boot on this volume.
+	// Boot: force the Instance to boot on this volume.
 	// Default value: false
 	Boot bool `json:"boot,omitempty"`
 	// Name: name of the volume.
@@ -1584,7 +1585,7 @@ type VolumeServerTemplate struct {
 	// VolumeType: type of the volume.
 	// Default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type,omitempty"`
-	// BaseSnapshot: the ID of the snapshot on which this volume will be based.
+	// BaseSnapshot: ID of the snapshot on which this volume will be based.
 	BaseSnapshot string `json:"base_snapshot,omitempty"`
 	// Organization: organization ID of the volume.
 	Organization string `json:"organization,omitempty"`
@@ -1598,8 +1599,7 @@ type VolumeSummary struct {
 	Name string `json:"name"`
 
 	Size scw.Size `json:"size"`
-	// VolumeType:
-	// Default value: l_ssd
+	// VolumeType: default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type"`
 }
 
@@ -1681,7 +1681,8 @@ type GetServerTypesAvailabilityRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// GetServerTypesAvailability: get availability for all server types.
+// GetServerTypesAvailability: get availability.
+// Get availability for all Instance types.
 func (s *API) GetServerTypesAvailability(req *GetServerTypesAvailabilityRequest, opts ...scw.RequestOption) (*GetServerTypesAvailabilityResponse, error) {
 	var err error
 
@@ -1728,7 +1729,8 @@ type ListServersTypesRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListServersTypes: get server types technical details.
+// ListServersTypes: list Instance types.
+// List available Instance types and their technical details.
 func (s *API) ListServersTypes(req *ListServersTypesRequest, opts ...scw.RequestOption) (*ListServersTypesResponse, error) {
 	var err error
 
@@ -1775,7 +1777,8 @@ type ListVolumesTypesRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListVolumesTypes: get volumes technical details.
+// ListVolumesTypes: list volumes types.
+// List all volume types and their technical details.
 func (s *API) ListVolumesTypes(req *ListVolumesTypesRequest, opts ...scw.RequestOption) (*ListVolumesTypesResponse, error) {
 	var err error
 
@@ -1821,31 +1824,32 @@ type ListServersRequest struct {
 	PerPage *uint32 `json:"-"`
 	// Page: a positive integer to choose the page to return.
 	Page *int32 `json:"-"`
-	// Organization: list only servers of this organization ID.
+	// Organization: list only Instances of this Organization ID.
 	Organization *string `json:"-"`
-	// Project: list only servers of this project ID.
+	// Project: list only Instances of this Project ID.
 	Project *string `json:"-"`
-	// Name: filter servers by name (for eg. "server1" will return "server100" and "server1" but not "foo").
+	// Name: filter Instances by name (eg. "server1" will return "server100" and "server1" but not "foo").
 	Name *string `json:"-"`
-	// PrivateIP: list servers by private_ip.
+	// PrivateIP: list Instances by private_ip.
 	PrivateIP *net.IP `json:"-"`
-	// WithoutIP: list servers that are not attached to a public IP.
+	// WithoutIP: list Instances that are not attached to a public IP.
 	WithoutIP *bool `json:"-"`
-	// CommercialType: list servers of this commercial type.
+	// CommercialType: list Instances of this commercial type.
 	CommercialType *string `json:"-"`
-	// State: list servers in this state.
+	// State: list Instances in this state.
 	// Default value: running
 	State *ServerState `json:"-"`
-	// Tags: list servers with these exact tags (to filter with several tags, use commas to separate them).
+	// Tags: list Instances with these exact tags (to filter with several tags, use commas to separate them).
 	Tags []string `json:"-"`
-	// PrivateNetwork: list servers in this Private Network.
+	// PrivateNetwork: list Instances in this Private Network.
 	PrivateNetwork *string `json:"-"`
 	// Order: define the order of the returned servers.
 	// Default value: creation_date_desc
 	Order ListServersRequestOrder `json:"-"`
 }
 
-// ListServers: list all servers.
+// ListServers: list all Instances.
+// List all Instances in a specified Availability Zone, e.g. `fr-par-1`.
 func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*ListServersResponse, error) {
 	var err error
 
@@ -1898,57 +1902,42 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 type CreateServerRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// Name: the server name.
+	// Name: instance name.
 	Name string `json:"name,omitempty"`
-	// DynamicIPRequired: define if a dynamic IP is required for the instance.
+	// DynamicIPRequired: define if a dynamic IP is required for the Instance.
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
-	// CommercialType: define the server commercial type (i.e. GP1-S).
+	// CommercialType: define the Instance commercial type (i.e. GP1-S).
 	CommercialType string `json:"commercial_type,omitempty"`
-	// Image: the server image ID or label.
+	// Image: instance image ID or label.
 	Image string `json:"image,omitempty"`
-	// Volumes: the volumes attached to the server.
+	// Volumes: volumes attached to the server.
 	Volumes map[string]*VolumeServerTemplate `json:"volumes,omitempty"`
 	// EnableIPv6: true if IPv6 is enabled on the server.
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
-	// PublicIP: the ID of the reserved IP to attach to the server.
+	// PublicIP: ID of the reserved IP to attach to the server.
 	PublicIP *string `json:"public_ip,omitempty"`
-	// BootType: the boot type to use.
+	// BootType: boot type to use.
 	// Default value: local
 	BootType *BootType `json:"boot_type,omitempty"`
-	// Deprecated: Bootscript: the bootscript ID to use when `boot_type` is set to `bootscript`.
+	// Deprecated: Bootscript: bootscript ID to use when `boot_type` is set to `bootscript`.
 	Bootscript *string `json:"bootscript,omitempty"`
-	// Deprecated: Organization: the server organization ID.
+	// Deprecated: Organization: instance Organization ID.
 	// Precisely one of Organization, Project must be set.
 	Organization *string `json:"organization,omitempty"`
-	// Project: the server project ID.
+	// Project: instance Project ID.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the server tags.
+	// Tags: instance tags.
 	Tags []string `json:"tags,omitempty"`
-	// SecurityGroup: the security group ID.
+	// SecurityGroup: security group ID.
 	SecurityGroup *string `json:"security_group,omitempty"`
-	// PlacementGroup: placement group ID if server must be part of a placement group.
+	// PlacementGroup: placement group ID if Instance must be part of a placement group.
 	PlacementGroup *string `json:"placement_group,omitempty"`
 }
 
-// createServer: the `volumes` key is a dictionary composed of the volume position as key and the volume parameters as value.
-// Depending of the volume parameters, you can achieve different behaviours :
-//
-// Create a volume from a snapshot of an image :
-// Optional : `volume_type`, `size`, `boot`.
-// If the `size` parameter is not set, the size of the volume will equal the size of the corresponding snapshot of the image.
-//
-// Attach an existing volume :
-// Required : `id`, `name`.
-// Optional : `boot`.
-//
-// Create an empty volume :
-// Required : `name`, `volume_type`, `size`.
-// Optional : `organization`, `project`, `boot`.
-//
-// Create a volume from a snapshot :
-// Required : `base_snapshot`, `name`, `volume_type`.
-// Optional : `organization`, `project`, `boot`.
+// createServer: create an Instance.
+// Create a new Instance of the specified commercial type in the specified zone. Pay attention to the volumes parameter, which takes an object which can be used in different ways to achieve different behaviors.
+// Get more information in the [Technical Information](#technical-information) section of the introduction.
 func (s *API) createServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 	var err error
 
@@ -2002,7 +1991,8 @@ type DeleteServerRequest struct {
 	ServerID string `json:"-"`
 }
 
-// DeleteServer: delete a server with the given ID.
+// DeleteServer: delete an Instance.
+// Delete the Instance with the specified ID.
 func (s *API) DeleteServer(req *DeleteServerRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2035,11 +2025,12 @@ func (s *API) DeleteServer(req *DeleteServerRequest, opts ...scw.RequestOption) 
 type GetServerRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server you want to get.
+	// ServerID: UUID of the Instance you want to get.
 	ServerID string `json:"-"`
 }
 
-// GetServer: get the details of a specified Server.
+// GetServer: get an Instance.
+// Get the details of a specified Instance.
 func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*GetServerResponse, error) {
 	var err error
 
@@ -2074,64 +2065,64 @@ func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*GetS
 type setServerRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ID: the server unique ID.
+	// ID: instance unique ID.
 	ID string `json:"-"`
-	// Name: the server name.
+	// Name: instance name.
 	Name string `json:"name"`
-	// Organization: the server organization ID.
+	// Organization: instance Organization ID.
 	Organization string `json:"organization"`
-	// Project: the server project ID.
+	// Project: instance Project ID.
 	Project string `json:"project"`
-	// AllowedActions: provide as list of allowed actions on the server.
+	// AllowedActions: provide a list of allowed actions on the server.
 	AllowedActions []ServerAction `json:"allowed_actions"`
-	// Tags: the server associated tags.
+	// Tags: tags associated with the Instance.
 	Tags *[]string `json:"tags"`
-	// CommercialType: the server commercial type (eg. GP1-M).
+	// CommercialType: instance commercial type (eg. GP1-M).
 	CommercialType string `json:"commercial_type"`
-	// CreationDate: the server creation date.
+	// CreationDate: instance creation date.
 	CreationDate *time.Time `json:"creation_date"`
 	// DynamicIPRequired: true if a dynamic IP is required.
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
 	// EnableIPv6: true if IPv6 is enabled.
 	EnableIPv6 bool `json:"enable_ipv6"`
-	// Hostname: the server host name.
+	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
-	// Image: provide information on the server image.
+	// Image: provide information on the Instance image.
 	Image *Image `json:"image"`
-	// Protected: the server protection option is activated.
+	// Protected: instance protection option is activated.
 	Protected bool `json:"protected"`
-	// PrivateIP: the server private IP address.
+	// PrivateIP: instance private IP address.
 	PrivateIP *string `json:"private_ip"`
 	// PublicIP: information about the public IP.
 	PublicIP *ServerIP `json:"public_ip"`
-	// ModificationDate: the server modification date.
+	// ModificationDate: instance modification date.
 	ModificationDate *time.Time `json:"modification_date"`
-	// State: the server state.
+	// State: instance state.
 	// Default value: running
 	State ServerState `json:"state"`
-	// Location: the server location.
+	// Location: instance location.
 	Location *ServerLocation `json:"location"`
-	// IPv6: the server IPv6 address.
+	// IPv6: instance IPv6 address.
 	IPv6 *ServerIPv6 `json:"ipv6"`
-	// Deprecated: Bootscript: the server bootscript.
+	// Deprecated: Bootscript: instance bootscript.
 	Bootscript *Bootscript `json:"bootscript"`
-	// BootType: the server boot type.
+	// BootType: instance boot type.
 	// Default value: local
 	BootType BootType `json:"boot_type"`
-	// Volumes: the server volumes.
+	// Volumes: instance volumes.
 	Volumes map[string]*Volume `json:"volumes"`
-	// SecurityGroup: the server security group.
+	// SecurityGroup: instance security group.
 	SecurityGroup *SecurityGroupSummary `json:"security_group"`
-	// Maintenances: the server planned maintenances.
+	// Maintenances: instance planned maintenances.
 	Maintenances []*ServerMaintenance `json:"maintenances"`
-	// StateDetail: the server state_detail.
+	// StateDetail: instance state_detail.
 	StateDetail string `json:"state_detail"`
-	// Arch: the server arch.
+	// Arch: instance architecture (refers to the CPU architecture used for the Instance, e.g. x86_64, arm64).
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// PlacementGroup: the server placement group.
+	// PlacementGroup: instance placement group.
 	PlacementGroup *PlacementGroup `json:"placement_group"`
-	// PrivateNics: the server private NICs.
+	// PrivateNics: instance private NICs.
 	PrivateNics []*PrivateNIC `json:"private_nics"`
 }
 
@@ -2184,14 +2175,13 @@ func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setS
 type UpdateServerRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server.
+	// ServerID: UUID of the Instance.
 	ServerID string `json:"-"`
-	// Name: name of the server.
+	// Name: name of the Instance.
 	Name *string `json:"name,omitempty"`
-	// BootType:
-	// Default value: local
+	// BootType: default value: local
 	BootType *BootType `json:"boot_type,omitempty"`
-	// Tags: tags of the server.
+	// Tags: tags of the Instance.
 	Tags *[]string `json:"tags,omitempty"`
 
 	Volumes *map[string]*VolumeServerTemplate `json:"volumes,omitempty"`
@@ -2205,13 +2195,14 @@ type UpdateServerRequest struct {
 	Protected *bool `json:"protected,omitempty"`
 
 	SecurityGroup *SecurityGroupTemplate `json:"security_group,omitempty"`
-	// PlacementGroup: placement group ID if server must be part of a placement group.
+	// PlacementGroup: placement group ID if Instance must be part of a placement group.
 	PlacementGroup *NullableStringValue `json:"placement_group,omitempty"`
-	// PrivateNics: the server private NICs.
+	// PrivateNics: instance private NICs.
 	PrivateNics []*PrivateNIC `json:"private_nics,omitempty"`
 }
 
-// updateServer: update a server.
+// updateServer: update an Instance.
+// Update the Instance information, such as name, boot mode, or tags.
 func (s *API) updateServer(req *UpdateServerRequest, opts ...scw.RequestOption) (*UpdateServerResponse, error) {
 	var err error
 
@@ -2255,7 +2246,8 @@ type ListServerActionsRequest struct {
 	ServerID string `json:"-"`
 }
 
-// ListServerActions: list all actions that can currently be performed on a server.
+// ListServerActions: list Instance actions.
+// List all actions (e.g. power on, power off, reboot) that can currently be performed on an Instance.
 func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.RequestOption) (*ListServerActionsResponse, error) {
 	var err error
 
@@ -2290,20 +2282,34 @@ func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.Reque
 type ServerActionRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server.
+	// ServerID: UUID of the Instance.
 	ServerID string `json:"-"`
-	// Action: the action to perform on the server.
+	// Action: action to perform on the Instance.
 	// Default value: poweron
 	Action ServerAction `json:"action"`
-	// Name: the name of the backup you want to create.
+	// Name: name of the backup you want to create.
+	// Name of the backup you want to create.
 	// This field should only be specified when performing a backup action.
 	Name *string `json:"name,omitempty"`
 	// Volumes: for each volume UUID, the snapshot parameters of the volume.
+	// For each volume UUID, the snapshot parameters of the volume.
 	// This field should only be specified when performing a backup action.
 	Volumes map[string]*ServerActionRequestVolumeBackupTemplate `json:"volumes,omitempty"`
 }
 
-// ServerAction: perform power related actions on a server. Be wary that when terminating a server, all the attached volumes (local *and* block storage) are deleted. So, if you want to keep your local volumes, you must use the `archive` action instead of `terminate`. And if you want to keep block-storage volumes, **you must** detach it beforehand you issue the `terminate` call.  For more information, read the [Volumes](#volumes-7e8a39) documentation.
+// ServerAction: perform action.
+// Perform an action on an Instance.
+// Available actions are:
+// * `poweron`: Start a stopped Instance.
+// * `poweroff`: Fully stop the Instance and release the hypervisor slot.
+// * `stop_in_place`: Stop the Instance, but keep the slot on the hypervisor.
+// * `reboot`: Stop the instance and restart it.
+// * `backup`:  Create an image with all the volumes of an Instance.
+// * `terminate`: Delete the Instance along with all attached volumes.
+//
+// Keep in mind that terminating an Instance will result in the deletion of all attached volumes, including local and block storage.
+// If you want to preserve your local volumes, you should use the `archive` action instead of `terminate`. Similarly, if you want to keep your block storage volumes, you must first detach them before issuing the `terminate` command.
+// For more information, read the [Volumes](#volumes-7e8a39) documentation.
 func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) (*ServerActionResponse, error) {
 	var err error
 
@@ -2343,11 +2349,12 @@ func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) 
 type ListServerUserDataRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server.
+	// ServerID: UUID of the Instance.
 	ServerID string `json:"-"`
 }
 
-// ListServerUserData: list all user data keys registered on a given server.
+// ListServerUserData: list user data.
+// List all user data keys registered on a specified Instance.
 func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.RequestOption) (*ListServerUserDataResponse, error) {
 	var err error
 
@@ -2382,13 +2389,14 @@ func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.Req
 type DeleteServerUserDataRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server.
+	// ServerID: UUID of the Instance.
 	ServerID string `json:"-"`
 	// Key: key of the user data to delete.
 	Key string `json:"-"`
 }
 
-// DeleteServerUserData: delete the given key from a server user data.
+// DeleteServerUserData: delete user data.
+// Delete the specified key from an Instance's user data.
 func (s *API) DeleteServerUserData(req *DeleteServerUserDataRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2443,7 +2451,8 @@ type ListImagesRequest struct {
 	Tags *string `json:"-"`
 }
 
-// ListImages: list all images available in an account.
+// ListImages: list Instance images.
+// List all existing Instance images.
 func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*ListImagesResponse, error) {
 	var err error
 
@@ -2494,7 +2503,8 @@ type GetImageRequest struct {
 	ImageID string `json:"-"`
 }
 
-// GetImage: get details of an image with the given ID.
+// GetImage: get an Instance image.
+// Get details of an image with the specified ID.
 func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetImageResponse, error) {
 	var err error
 
@@ -2546,13 +2556,14 @@ type CreateImageRequest struct {
 	// Project: project ID of the image.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the tags of the image.
+	// Tags: tags of the image.
 	Tags []string `json:"tags,omitempty"`
 	// Public: true to create a public image.
 	Public *bool `json:"public,omitempty"`
 }
 
-// CreateImage: create an instance image.
+// CreateImage: create an Instance image.
+// Create an Instance image from the specified snapshot ID.
 func (s *API) CreateImage(req *CreateImageRequest, opts ...scw.RequestOption) (*CreateImageResponse, error) {
 	var err error
 
@@ -2606,8 +2617,7 @@ type SetImageRequest struct {
 	ID string `json:"-"`
 
 	Name string `json:"name"`
-	// Arch:
-	// Default value: x86_64
+	// Arch: default value: x86_64
 	Arch Arch `json:"arch"`
 
 	CreationDate *time.Time `json:"creation_date"`
@@ -2625,8 +2635,7 @@ type SetImageRequest struct {
 	Public bool `json:"public"`
 
 	RootVolume *VolumeSummary `json:"root_volume"`
-	// State:
-	// Default value: available
+	// State: default value: available
 	State ImageState `json:"state"`
 
 	Project string `json:"project"`
@@ -2634,7 +2643,8 @@ type SetImageRequest struct {
 	Tags *[]string `json:"tags"`
 }
 
-// setImage: replace all image properties with an image message.
+// setImage: update image.
+// Replace all image properties with an image message.
 func (s *API) setImage(req *SetImageRequest, opts ...scw.RequestOption) (*setImageResponse, error) {
 	var err error
 
@@ -2688,7 +2698,8 @@ type DeleteImageRequest struct {
 	ImageID string `json:"-"`
 }
 
-// DeleteImage: delete the image with the given ID.
+// DeleteImage: delete an Instance image.
+// Delete the image with the specified ID.
 func (s *API) DeleteImage(req *DeleteImageRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2736,6 +2747,7 @@ type ListSnapshotsRequest struct {
 }
 
 // ListSnapshots: list snapshots.
+// List all snapshots of an Organization in a specified Availability Zone.
 func (s *API) ListSnapshots(req *ListSnapshotsRequest, opts ...scw.RequestOption) (*ListSnapshotsResponse, error) {
 	var err error
 
@@ -2784,7 +2796,7 @@ type CreateSnapshotRequest struct {
 	Name string `json:"name,omitempty"`
 	// VolumeID: UUID of the volume.
 	VolumeID *string `json:"volume_id,omitempty"`
-	// Tags: the tags of the snapshot.
+	// Tags: tags of the snapshot.
 	Tags []string `json:"tags,omitempty"`
 	// Deprecated: Organization: organization ID of the snapshot.
 	// Precisely one of Organization, Project must be set.
@@ -2792,7 +2804,8 @@ type CreateSnapshotRequest struct {
 	// Project: project ID of the snapshot.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// VolumeType: overrides the volume_type of the snapshot.
+	// VolumeType: volume type of the snapshot.
+	// Overrides the volume_type of the snapshot.
 	// If omitted, the volume type of the original volume will be used.
 	// Default value: unknown_volume_type
 	VolumeType SnapshotVolumeType `json:"volume_type"`
@@ -2804,7 +2817,8 @@ type CreateSnapshotRequest struct {
 	Size *scw.Size `json:"size,omitempty"`
 }
 
-// CreateSnapshot: create a snapshot from a given volume or from a QCOW2 file.
+// CreateSnapshot: create a snapshot from a specified volume or from a QCOW2 file.
+// Create a snapshot from a specified volume or from a QCOW2 file in a specified Availability Zone.
 func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOption) (*CreateSnapshotResponse, error) {
 	var err error
 
@@ -2858,7 +2872,8 @@ type GetSnapshotRequest struct {
 	SnapshotID string `json:"-"`
 }
 
-// GetSnapshot: get details of a snapshot with the given ID.
+// GetSnapshot: get a snapshot.
+// Get details of a snapshot with the specified ID.
 func (s *API) GetSnapshot(req *GetSnapshotRequest, opts ...scw.RequestOption) (*GetSnapshotResponse, error) {
 	var err error
 
@@ -2901,13 +2916,11 @@ type setSnapshotRequest struct {
 	Name string `json:"name"`
 
 	Organization string `json:"organization"`
-	// VolumeType:
-	// Default value: l_ssd
+	// VolumeType: default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type"`
 
 	Size scw.Size `json:"size"`
-	// State:
-	// Default value: available
+	// State: default value: available
 	State SnapshotState `json:"state"`
 
 	BaseVolume *SnapshotBaseVolume `json:"base_volume"`
@@ -2921,7 +2934,8 @@ type setSnapshotRequest struct {
 	Tags *[]string `json:"tags"`
 }
 
-// setSnapshot: replace all snapshot properties with a snapshot message.
+// setSnapshot: update snapshot.
+// Replace all snapshot properties with a snapshot message.
 func (s *API) setSnapshot(req *setSnapshotRequest, opts ...scw.RequestOption) (*setSnapshotResponse, error) {
 	var err error
 
@@ -2975,7 +2989,8 @@ type DeleteSnapshotRequest struct {
 	SnapshotID string `json:"-"`
 }
 
-// DeleteSnapshot: delete the snapshot with the given ID.
+// DeleteSnapshot: delete a snapshot.
+// Delete the snapshot with the specified ID.
 func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3008,7 +3023,7 @@ func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOpti
 type ExportSnapshotRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// SnapshotID: the snapshot ID.
+	// SnapshotID: snapshot ID.
 	SnapshotID string `json:"-"`
 	// Bucket: s3 bucket name.
 	Bucket string `json:"bucket,omitempty"`
@@ -3016,7 +3031,8 @@ type ExportSnapshotRequest struct {
 	Key string `json:"key,omitempty"`
 }
 
-// ExportSnapshot: export a snapshot to a given S3 bucket in the same region.
+// ExportSnapshot: export a snapshot.
+// Export a snapshot to a specified S3 bucket in the same region.
 func (s *API) ExportSnapshot(req *ExportSnapshotRequest, opts ...scw.RequestOption) (*ExportSnapshotResponse, error) {
 	var err error
 
@@ -3064,9 +3080,9 @@ type ListVolumesRequest struct {
 	PerPage *uint32 `json:"-"`
 	// Page: a positive integer to choose the page to return.
 	Page *int32 `json:"-"`
-	// Organization: filter volume by organization ID.
+	// Organization: filter volume by Organization ID.
 	Organization *string `json:"-"`
-	// Project: filter volume by project ID.
+	// Project: filter volume by Project ID.
 	Project *string `json:"-"`
 	// Tags: filter volumes with these exact tags (to filter with several tags, use commas to separate them).
 	Tags []string `json:"-"`
@@ -3075,6 +3091,7 @@ type ListVolumesRequest struct {
 }
 
 // ListVolumes: list volumes.
+// List volumes in the specified Availability Zone. You can filter the output by volume type.
 func (s *API) ListVolumes(req *ListVolumesRequest, opts ...scw.RequestOption) (*ListVolumesResponse, error) {
 	var err error
 
@@ -3122,31 +3139,32 @@ func (s *API) ListVolumes(req *ListVolumesRequest, opts ...scw.RequestOption) (*
 type CreateVolumeRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// Name: the volume name.
+	// Name: volume name.
 	Name string `json:"name,omitempty"`
-	// Deprecated: Organization: the volume organization ID.
+	// Deprecated: Organization: volume Organization ID.
 	// Precisely one of Organization, Project must be set.
 	Organization *string `json:"organization,omitempty"`
-	// Project: the volume project ID.
+	// Project: volume Project ID.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the volume tags.
+	// Tags: volume tags.
 	Tags []string `json:"tags,omitempty"`
-	// VolumeType: the volume type.
+	// VolumeType: volume type.
 	// Default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type"`
-	// Size: the volume disk size, must be a multiple of 512.
+	// Size: volume disk size, must be a multiple of 512.
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
 	Size *scw.Size `json:"size,omitempty"`
-	// BaseVolume: the ID of the volume on which this volume will be based.
+	// BaseVolume: ID of the volume on which this volume will be based.
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
 	BaseVolume *string `json:"base_volume,omitempty"`
-	// BaseSnapshot: the ID of the snapshot on which this volume will be based.
+	// BaseSnapshot: ID of the snapshot on which this volume will be based.
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
 	BaseSnapshot *string `json:"base_snapshot,omitempty"`
 }
 
 // CreateVolume: create a volume.
+// Create a volume of a specified type in an Availability Zone.
 func (s *API) CreateVolume(req *CreateVolumeRequest, opts ...scw.RequestOption) (*CreateVolumeResponse, error) {
 	var err error
 
@@ -3200,7 +3218,8 @@ type GetVolumeRequest struct {
 	VolumeID string `json:"-"`
 }
 
-// GetVolume: get details of a volume with the given ID.
+// GetVolume: get a volume.
+// Get details of a volume with the specified ID.
 func (s *API) GetVolume(req *GetVolumeRequest, opts ...scw.RequestOption) (*GetVolumeResponse, error) {
 	var err error
 
@@ -3237,15 +3256,16 @@ type UpdateVolumeRequest struct {
 	Zone scw.Zone `json:"-"`
 	// VolumeID: UUID of the volume.
 	VolumeID string `json:"-"`
-	// Name: the volume name.
+	// Name: volume name.
 	Name *string `json:"name,omitempty"`
-	// Tags: the tags of the volume.
+	// Tags: tags of the volume.
 	Tags *[]string `json:"tags,omitempty"`
-	// Size: the volume disk size, must be a multiple of 512.
+	// Size: volume disk size, must be a multiple of 512.
 	Size *scw.Size `json:"size,omitempty"`
 }
 
-// UpdateVolume: replace name and/or size properties of given ID volume with the given value(s). Any volume name can be changed while, for now, only `b_ssd` volume growing is supported.
+// UpdateVolume: update a volume.
+// Replace the name and/or size properties of a volume specified by its ID, with the specified value(s). Any volume name can be changed, however only `b_ssd` volumes can currently be increased in size.
 func (s *API) UpdateVolume(req *UpdateVolumeRequest, opts ...scw.RequestOption) (*UpdateVolumeResponse, error) {
 	var err error
 
@@ -3289,7 +3309,8 @@ type DeleteVolumeRequest struct {
 	VolumeID string `json:"-"`
 }
 
-// DeleteVolume: delete the volume with the given ID.
+// DeleteVolume: delete a volume.
+// Delete the volume with the specified ID.
 func (s *API) DeleteVolume(req *DeleteVolumeRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3324,9 +3345,9 @@ type ListSecurityGroupsRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Name: name of the security group.
 	Name *string `json:"-"`
-	// Organization: the security group organization ID.
+	// Organization: security group Organization ID.
 	Organization *string `json:"-"`
-	// Project: the security group project ID.
+	// Project: security group Project ID.
 	Project *string `json:"-"`
 	// Tags: list security groups with these exact tags (to filter with several tags, use commas to separate them).
 	Tags []string `json:"-"`
@@ -3339,7 +3360,8 @@ type ListSecurityGroupsRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListSecurityGroups: list all security groups available in an account.
+// ListSecurityGroups: list security groups.
+// List all existing security groups.
 func (s *API) ListSecurityGroups(req *ListSecurityGroupsRequest, opts ...scw.RequestOption) (*ListSecurityGroupsResponse, error) {
 	var err error
 
@@ -3397,13 +3419,13 @@ type CreateSecurityGroupRequest struct {
 	// Project: project ID the security group belong to.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the tags of the security group.
+	// Tags: tags of the security group.
 	Tags []string `json:"tags,omitempty"`
-	// Deprecated: OrganizationDefault: whether this security group becomes the default security group for new instances.
+	// Deprecated: OrganizationDefault: defines whether this security group becomes the default security group for new Instances.
 	// Default value: false
 	// Precisely one of OrganizationDefault, ProjectDefault must be set.
 	OrganizationDefault *bool `json:"organization_default,omitempty"`
-	// ProjectDefault: whether this security group becomes the default security group for new instances.
+	// ProjectDefault: whether this security group becomes the default security group for new Instances.
 	// Default value: false
 	// Precisely one of OrganizationDefault, ProjectDefault must be set.
 	ProjectDefault *bool `json:"project_default,omitempty"`
@@ -3421,6 +3443,7 @@ type CreateSecurityGroupRequest struct {
 }
 
 // CreateSecurityGroup: create a security group.
+// Create a security group with a specified name and description.
 func (s *API) CreateSecurityGroup(req *CreateSecurityGroupRequest, opts ...scw.RequestOption) (*CreateSecurityGroupResponse, error) {
 	var err error
 
@@ -3474,7 +3497,8 @@ type GetSecurityGroupRequest struct {
 	SecurityGroupID string `json:"-"`
 }
 
-// GetSecurityGroup: get the details of a Security Group with the given ID.
+// GetSecurityGroup: get a security group.
+// Get the details of a security group with the specified ID.
 func (s *API) GetSecurityGroup(req *GetSecurityGroupRequest, opts ...scw.RequestOption) (*GetSecurityGroupResponse, error) {
 	var err error
 
@@ -3514,6 +3538,7 @@ type DeleteSecurityGroupRequest struct {
 }
 
 // DeleteSecurityGroup: delete a security group.
+// Delete a security group with the specified ID.
 func (s *API) DeleteSecurityGroup(req *DeleteSecurityGroupRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3546,41 +3571,42 @@ func (s *API) DeleteSecurityGroup(req *DeleteSecurityGroupRequest, opts ...scw.R
 type setSecurityGroupRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ID: the ID of the security group (will be ignored).
+	// ID: ID of the security group (will be ignored).
 	ID string `json:"-"`
-	// Name: the name of the security group.
+	// Name: name of the security group.
 	Name string `json:"name"`
-	// Tags: the tags of the security group.
+	// Tags: tags of the security group.
 	Tags *[]string `json:"tags"`
-	// CreationDate: the creation date of the security group (will be ignored).
+	// CreationDate: creation date of the security group (will be ignored).
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: the modification date of the security group (will be ignored).
+	// ModificationDate: modification date of the security group (will be ignored).
 	ModificationDate *time.Time `json:"modification_date"`
-	// Description: the description of the security group.
+	// Description: description of the security group.
 	Description string `json:"description"`
 	// EnableDefaultSecurity: true to block SMTP on IPv4 and IPv6.
 	EnableDefaultSecurity bool `json:"enable_default_security"`
-	// InboundDefaultPolicy: the default inbound policy.
+	// InboundDefaultPolicy: default inbound policy.
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy: the default outbound policy.
+	// OutboundDefaultPolicy: default outbound policy.
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// Organization: the security groups organization ID.
+	// Organization: security groups Organization ID.
 	Organization string `json:"organization"`
-	// Project: the security group project ID.
+	// Project: security group Project ID.
 	Project string `json:"project"`
 	// Deprecated: OrganizationDefault: please use project_default instead.
 	OrganizationDefault *bool `json:"organization_default"`
-	// ProjectDefault: true use this security group for future instances created in this project.
+	// ProjectDefault: true use this security group for future Instances created in this project.
 	ProjectDefault bool `json:"project_default"`
-	// Servers: the servers attached to this security group.
+	// Servers: instances attached to this security group.
 	Servers []*ServerSummary `json:"servers"`
 	// Stateful: true to set the security group as stateful.
 	Stateful bool `json:"stateful"`
 }
 
-// setSecurityGroup: replace all security group properties with a security group message.
+// setSecurityGroup: update a security group.
+// Replace all security group properties with a security group message.
 func (s *API) setSecurityGroup(req *setSecurityGroupRequest, opts ...scw.RequestOption) (*setSecurityGroupResponse, error) {
 	var err error
 
@@ -3632,7 +3658,8 @@ type ListDefaultSecurityGroupRulesRequest struct {
 	Zone scw.Zone `json:"-"`
 }
 
-// ListDefaultSecurityGroupRules: lists the default rules applied to all the security groups.
+// ListDefaultSecurityGroupRules: get default rules.
+// Lists the default rules applied to all the security groups.
 func (s *API) ListDefaultSecurityGroupRules(req *ListDefaultSecurityGroupRulesRequest, opts ...scw.RequestOption) (*ListSecurityGroupRulesResponse, error) {
 	var err error
 
@@ -3673,6 +3700,7 @@ type ListSecurityGroupRulesRequest struct {
 }
 
 // ListSecurityGroupRules: list rules.
+// List the rules of the a specified security group ID.
 func (s *API) ListSecurityGroupRules(req *ListSecurityGroupRulesRequest, opts ...scw.RequestOption) (*ListSecurityGroupRulesResponse, error) {
 	var err error
 
@@ -3719,28 +3747,26 @@ type CreateSecurityGroupRuleRequest struct {
 	Zone scw.Zone `json:"-"`
 	// SecurityGroupID: UUID of the security group.
 	SecurityGroupID string `json:"-"`
-	// Protocol:
-	// Default value: TCP
+	// Protocol: default value: TCP
 	Protocol SecurityGroupRuleProtocol `json:"protocol"`
-	// Direction:
-	// Default value: inbound
+	// Direction: default value: inbound
 	Direction SecurityGroupRuleDirection `json:"direction"`
-	// Action:
-	// Default value: accept
+	// Action: default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
 	IPRange scw.IPNet `json:"ip_range,omitempty"`
-	// DestPortFrom: the beginning of the range of ports to apply this rule to (inclusive).
+	// DestPortFrom: beginning of the range of ports to apply this rule to (inclusive).
 	DestPortFrom *uint32 `json:"dest_port_from,omitempty"`
-	// DestPortTo: the end of the range of ports to apply this rule to (inclusive).
+	// DestPortTo: end of the range of ports to apply this rule to (inclusive).
 	DestPortTo *uint32 `json:"dest_port_to,omitempty"`
-	// Position: the position of this rule in the security group rules list.
+	// Position: position of this rule in the security group rules list.
 	Position uint32 `json:"position,omitempty"`
 	// Editable: indicates if this rule is editable (will be ignored).
 	Editable bool `json:"editable,omitempty"`
 }
 
 // CreateSecurityGroupRule: create rule.
+// Create a rule in the specified security group ID.
 func (s *API) CreateSecurityGroupRule(req *CreateSecurityGroupRuleRequest, opts ...scw.RequestOption) (*CreateSecurityGroupRuleResponse, error) {
 	var err error
 
@@ -3786,7 +3812,8 @@ type SetSecurityGroupRulesRequest struct {
 	Rules []*SetSecurityGroupRulesRequestRule `json:"rules"`
 }
 
-// SetSecurityGroupRules: replaces the rules of the security group with the rules provided. This endpoint supports the update of existing rules, creation of new rules and deletion of existing rules when they are not passed in the request.
+// SetSecurityGroupRules: update all the rules of a security group.
+// Replaces the existing rules of the security group with the rules provided. This endpoint supports the update of existing rules, creation of new rules and deletion of existing rules when they are not passed in the request.
 func (s *API) SetSecurityGroupRules(req *SetSecurityGroupRulesRequest, opts ...scw.RequestOption) (*SetSecurityGroupRulesResponse, error) {
 	var err error
 
@@ -3832,7 +3859,8 @@ type DeleteSecurityGroupRuleRequest struct {
 	SecurityGroupRuleID string `json:"-"`
 }
 
-// DeleteSecurityGroupRule: delete a security group rule with the given ID.
+// DeleteSecurityGroupRule: delete rule.
+// Delete a security group rule with the specified ID.
 func (s *API) DeleteSecurityGroupRule(req *DeleteSecurityGroupRuleRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3875,7 +3903,8 @@ type GetSecurityGroupRuleRequest struct {
 	SecurityGroupRuleID string `json:"-"`
 }
 
-// GetSecurityGroupRule: get details of a security group rule with the given ID.
+// GetSecurityGroupRule: get rule.
+// Get details of a security group rule with the specified ID.
 func (s *API) GetSecurityGroupRule(req *GetSecurityGroupRuleRequest, opts ...scw.RequestOption) (*GetSecurityGroupRuleResponse, error) {
 	var err error
 
@@ -3920,14 +3949,11 @@ type setSecurityGroupRuleRequest struct {
 	SecurityGroupRuleID string `json:"-"`
 
 	ID string `json:"id"`
-	// Protocol:
-	// Default value: TCP
+	// Protocol: default value: TCP
 	Protocol SecurityGroupRuleProtocol `json:"protocol"`
-	// Direction:
-	// Default value: inbound
+	// Direction: default value: inbound
 	Direction SecurityGroupRuleDirection `json:"direction"`
-	// Action:
-	// Default value: accept
+	// Action: default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
 	IPRange scw.IPNet `json:"ip_range"`
@@ -3942,6 +3968,7 @@ type setSecurityGroupRuleRequest struct {
 }
 
 // setSecurityGroupRule: update security group rule.
+// Update the rule of a specified security group ID.
 func (s *API) setSecurityGroupRule(req *setSecurityGroupRuleRequest, opts ...scw.RequestOption) (*setSecurityGroupRuleResponse, error) {
 	var err error
 
@@ -3990,9 +4017,9 @@ type ListPlacementGroupsRequest struct {
 	PerPage *uint32 `json:"-"`
 	// Page: a positive integer to choose the page to return.
 	Page *int32 `json:"-"`
-	// Organization: list only placement groups of this organization ID.
+	// Organization: list only placement groups of this Organization ID.
 	Organization *string `json:"-"`
-	// Project: list only placement groups of this project ID.
+	// Project: list only placement groups of this Project ID.
 	Project *string `json:"-"`
 	// Tags: list placement groups with these exact tags (to filter with several tags, use commas to separate them).
 	Tags []string `json:"-"`
@@ -4000,7 +4027,8 @@ type ListPlacementGroupsRequest struct {
 	Name *string `json:"-"`
 }
 
-// ListPlacementGroups: list all placement groups.
+// ListPlacementGroups: list placement groups.
+// List all placement groups in a specified Availability Zone.
 func (s *API) ListPlacementGroups(req *ListPlacementGroupsRequest, opts ...scw.RequestOption) (*ListPlacementGroupsResponse, error) {
 	var err error
 
@@ -4055,17 +4083,18 @@ type CreatePlacementGroupRequest struct {
 	// Project: project ID of the placement group.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the tags of the placement group.
+	// Tags: tags of the placement group.
 	Tags []string `json:"tags,omitempty"`
-	// PolicyMode: the operating mode of the placement group.
+	// PolicyMode: operating mode of the placement group.
 	// Default value: optional
 	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
-	// PolicyType: the policy type of the placement group.
+	// PolicyType: policy type of the placement group.
 	// Default value: max_availability
 	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 }
 
-// CreatePlacementGroup: create a new placement group.
+// CreatePlacementGroup: create a placement group.
+// Create a new placement group in a specified Availability Zone.
 func (s *API) CreatePlacementGroup(req *CreatePlacementGroupRequest, opts ...scw.RequestOption) (*CreatePlacementGroupResponse, error) {
 	var err error
 
@@ -4119,7 +4148,8 @@ type GetPlacementGroupRequest struct {
 	PlacementGroupID string `json:"-"`
 }
 
-// GetPlacementGroup: get the given placement group.
+// GetPlacementGroup: get a placement group.
+// Get the specified placement group.
 func (s *API) GetPlacementGroup(req *GetPlacementGroupRequest, opts ...scw.RequestOption) (*GetPlacementGroupResponse, error) {
 	var err error
 
@@ -4160,11 +4190,9 @@ type SetPlacementGroupRequest struct {
 	Name string `json:"name"`
 
 	Organization string `json:"organization"`
-	// PolicyMode:
-	// Default value: optional
+	// PolicyMode: default value: optional
 	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
-	// PolicyType:
-	// Default value: max_availability
+	// PolicyType: default value: max_availability
 	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 
 	Project string `json:"project"`
@@ -4172,7 +4200,8 @@ type SetPlacementGroupRequest struct {
 	Tags *[]string `json:"tags"`
 }
 
-// SetPlacementGroup: set all parameters of the given placement group.
+// SetPlacementGroup: set placement group.
+// Set all parameters of the specified placement group.
 func (s *API) SetPlacementGroup(req *SetPlacementGroupRequest, opts ...scw.RequestOption) (*SetPlacementGroupResponse, error) {
 	var err error
 
@@ -4226,17 +4255,18 @@ type UpdatePlacementGroupRequest struct {
 	PlacementGroupID string `json:"-"`
 	// Name: name of the placement group.
 	Name *string `json:"name,omitempty"`
-	// Tags: the tags of the placement group.
+	// Tags: tags of the placement group.
 	Tags *[]string `json:"tags,omitempty"`
-	// PolicyMode: the operating mode of the placement group.
+	// PolicyMode: operating mode of the placement group.
 	// Default value: optional
 	PolicyMode *PlacementGroupPolicyMode `json:"policy_mode,omitempty"`
-	// PolicyType: the policy type of the placement group.
+	// PolicyType: policy type of the placement group.
 	// Default value: max_availability
 	PolicyType *PlacementGroupPolicyType `json:"policy_type,omitempty"`
 }
 
-// UpdatePlacementGroup: update one or more parameter of the given placement group.
+// UpdatePlacementGroup: update a placement group.
+// Update one or more parameter of the specified placement group.
 func (s *API) UpdatePlacementGroup(req *UpdatePlacementGroupRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupResponse, error) {
 	var err error
 
@@ -4280,7 +4310,7 @@ type DeletePlacementGroupRequest struct {
 	PlacementGroupID string `json:"-"`
 }
 
-// DeletePlacementGroup: delete the given placement group.
+// DeletePlacementGroup: delete the specified placement group.
 func (s *API) DeletePlacementGroup(req *DeletePlacementGroupRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -4313,11 +4343,12 @@ func (s *API) DeletePlacementGroup(req *DeletePlacementGroupRequest, opts ...scw
 type GetPlacementGroupServersRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-
+	// PlacementGroupID: UUID of the placement group you want to get.
 	PlacementGroupID string `json:"-"`
 }
 
-// GetPlacementGroupServers: get all servers belonging to the given placement group.
+// GetPlacementGroupServers: get placement group servers.
+// Get all Instances belonging to the specified placement group.
 func (s *API) GetPlacementGroupServers(req *GetPlacementGroupServersRequest, opts ...scw.RequestOption) (*GetPlacementGroupServersResponse, error) {
 	var err error
 
@@ -4352,13 +4383,14 @@ func (s *API) GetPlacementGroupServers(req *GetPlacementGroupServersRequest, opt
 type SetPlacementGroupServersRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-
+	// PlacementGroupID: UUID of the placement group you want to set.
 	PlacementGroupID string `json:"-"`
-
+	// Servers: an array of the Instances' UUIDs you want to configure.
 	Servers []string `json:"servers"`
 }
 
-// SetPlacementGroupServers: set all servers belonging to the given placement group.
+// SetPlacementGroupServers: set placement group servers.
+// Set all Instances belonging to the specified placement group.
 func (s *API) SetPlacementGroupServers(req *SetPlacementGroupServersRequest, opts ...scw.RequestOption) (*SetPlacementGroupServersResponse, error) {
 	var err error
 
@@ -4398,13 +4430,14 @@ func (s *API) SetPlacementGroupServers(req *SetPlacementGroupServersRequest, opt
 type UpdatePlacementGroupServersRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PlacementGroupID: UUID of the placement group.
+	// PlacementGroupID: UUID of the placement group you want to update.
 	PlacementGroupID string `json:"-"`
-
+	// Servers: an array of the Instances' UUIDs you want to configure.
 	Servers []string `json:"servers,omitempty"`
 }
 
-// UpdatePlacementGroupServers: update all servers belonging to the given placement group.
+// UpdatePlacementGroupServers: update placement group servers.
+// Update all Instances belonging to the specified placement group.
 func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupServersResponse, error) {
 	var err error
 
@@ -4444,9 +4477,9 @@ func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersReques
 type ListIPsRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// Project: the project ID the IPs are reserved in.
+	// Project: project ID in which the IPs are reserved.
 	Project *string `json:"-"`
-	// Organization: the organization ID the IPs are reserved in.
+	// Organization: organization ID in which the IPs are reserved.
 	Organization *string `json:"-"`
 	// Tags: filter IPs with these exact tags (to filter with several tags, use commas to separate them).
 	Tags []string `json:"-"`
@@ -4460,6 +4493,7 @@ type ListIPsRequest struct {
 }
 
 // ListIPs: list all flexible IPs.
+// List all flexible IPs in a specified zone.
 func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsResponse, error) {
 	var err error
 
@@ -4506,19 +4540,20 @@ func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsR
 type CreateIPRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// Deprecated: Organization: the organization ID the IP is reserved in.
+	// Deprecated: Organization: organization ID in which the IP is reserved.
 	// Precisely one of Organization, Project must be set.
 	Organization *string `json:"organization,omitempty"`
-	// Project: the project ID the IP is reserved in.
+	// Project: project ID in which the IP is reserved.
 	// Precisely one of Organization, Project must be set.
 	Project *string `json:"project,omitempty"`
-	// Tags: the tags of the IP.
+	// Tags: tags of the IP.
 	Tags []string `json:"tags,omitempty"`
-	// Server: UUID of the server you want to attach the IP to.
+	// Server: UUID of the Instance you want to attach the IP to.
 	Server *string `json:"server,omitempty"`
 }
 
 // CreateIP: reserve a flexible IP.
+// Reserve a flexible IP and attach it to the specified Instance.
 func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*CreateIPResponse, error) {
 	var err error
 
@@ -4564,11 +4599,12 @@ func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*Create
 type GetIPRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// IP: the IP ID or address to get.
+	// IP: IP ID or address to get.
 	IP string `json:"-"`
 }
 
-// GetIP: get details of an IP with the given ID or address.
+// GetIP: get a flexible IP.
+// Get details of an IP with the specified ID or address.
 func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*GetIPResponse, error) {
 	var err error
 
@@ -4614,6 +4650,7 @@ type UpdateIPRequest struct {
 }
 
 // UpdateIP: update a flexible IP.
+// Update a flexible IP in the specified zone with the specified ID.
 func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
 	var err error
 
@@ -4653,11 +4690,12 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*Update
 type DeleteIPRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// IP: the ID or the address of the IP to delete.
+	// IP: ID or address of the IP to delete.
 	IP string `json:"-"`
 }
 
-// DeleteIP: delete the IP with the given ID.
+// DeleteIP: delete a flexible IP.
+// Delete the IP with the specified ID.
 func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -4690,9 +4728,9 @@ func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 type ListPrivateNICsRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: the server the private NIC is attached to.
+	// ServerID: instance to which the private NIC is attached.
 	ServerID string `json:"-"`
-	// Tags: the private NIC tags.
+	// Tags: private NIC tags.
 	Tags []string `json:"-"`
 	// PerPage: a positive integer lower or equal to 100 to select the number of items to return.
 	// Default value: 50
@@ -4701,7 +4739,8 @@ type ListPrivateNICsRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListPrivateNICs: list all private NICs of a given server.
+// ListPrivateNICs: list all private NICs.
+// List all private NICs of a specified Instance.
 func (s *API) ListPrivateNICs(req *ListPrivateNICsRequest, opts ...scw.RequestOption) (*ListPrivateNICsResponse, error) {
 	var err error
 
@@ -4749,15 +4788,15 @@ func (s *API) ListPrivateNICs(req *ListPrivateNICsRequest, opts ...scw.RequestOp
 type CreatePrivateNICRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server the private NIC will be attached to.
+	// ServerID: UUID of the Instance the private NIC will be attached to.
 	ServerID string `json:"-"`
 	// PrivateNetworkID: UUID of the private network where the private NIC will be attached.
 	PrivateNetworkID string `json:"private_network_id,omitempty"`
-	// Tags: the private NIC tags.
+	// Tags: private NIC tags.
 	Tags []string `json:"tags,omitempty"`
 }
 
-// CreatePrivateNIC: create a private NIC connecting a server to a private network.
+// CreatePrivateNIC: create a private NIC connecting an Instance to a Private Network.
 func (s *API) CreatePrivateNIC(req *CreatePrivateNICRequest, opts ...scw.RequestOption) (*CreatePrivateNICResponse, error) {
 	var err error
 
@@ -4797,13 +4836,14 @@ func (s *API) CreatePrivateNIC(req *CreatePrivateNICRequest, opts ...scw.Request
 type GetPrivateNICRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: the server the private NIC is attached to.
+	// ServerID: instance to which the private NIC is attached.
 	ServerID string `json:"-"`
-	// PrivateNicID: the private NIC unique ID.
+	// PrivateNicID: private NIC unique ID.
 	PrivateNicID string `json:"-"`
 }
 
-// GetPrivateNIC: get private NIC properties.
+// GetPrivateNIC: get a private NIC.
+// Get private NIC properties.
 func (s *API) GetPrivateNIC(req *GetPrivateNICRequest, opts ...scw.RequestOption) (*GetPrivateNICResponse, error) {
 	var err error
 
@@ -4842,15 +4882,16 @@ func (s *API) GetPrivateNIC(req *GetPrivateNICRequest, opts ...scw.RequestOption
 type UpdatePrivateNICRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: UUID of the server the private NIC will be attached to.
+	// ServerID: UUID of the Instance the private NIC will be attached to.
 	ServerID string `json:"-"`
-	// PrivateNicID: the private NIC unique ID.
+	// PrivateNicID: private NIC unique ID.
 	PrivateNicID string `json:"-"`
 	// Tags: tags used to select private NIC/s.
 	Tags *[]string `json:"tags,omitempty"`
 }
 
-// UpdatePrivateNIC: update one or more parameter/s to a given private NIC.
+// UpdatePrivateNIC: update a private NIC.
+// Update one or more parameter(s) of a specified private NIC.
 func (s *API) UpdatePrivateNIC(req *UpdatePrivateNICRequest, opts ...scw.RequestOption) (*PrivateNIC, error) {
 	var err error
 
@@ -4894,9 +4935,9 @@ func (s *API) UpdatePrivateNIC(req *UpdatePrivateNICRequest, opts ...scw.Request
 type DeletePrivateNICRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ServerID: the server the private NIC is attached to.
+	// ServerID: instance to which the private NIC is attached.
 	ServerID string `json:"-"`
-	// PrivateNicID: the private NIC unique ID.
+	// PrivateNicID: private NIC unique ID.
 	PrivateNicID string `json:"-"`
 }
 
@@ -5000,7 +5041,8 @@ type GetBootscriptRequest struct {
 	BootscriptID string `json:"-"`
 }
 
-// Deprecated: GetBootscript: get details of a bootscript with the given ID.
+// Deprecated: GetBootscript: get bootscripts.
+// Get details of a bootscript with the specified ID.
 func (s *API) GetBootscript(req *GetBootscriptRequest, opts ...scw.RequestOption) (*GetBootscriptResponse, error) {
 	var err error
 

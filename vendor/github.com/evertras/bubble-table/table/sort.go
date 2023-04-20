@@ -34,6 +34,8 @@ func (m Model) SortByAsc(columnKey string) Model {
 		},
 	}
 
+	m.visibleRowCacheUpdated = false
+
 	return m
 }
 
@@ -49,6 +51,8 @@ func (m Model) SortByDesc(columnKey string) Model {
 		},
 	}
 
+	m.visibleRowCacheUpdated = false
+
 	return m
 }
 
@@ -62,6 +66,8 @@ func (m Model) ThenSortByAsc(columnKey string) Model {
 		},
 	}, m.sortOrder...)
 
+	m.visibleRowCacheUpdated = false
+
 	return m
 }
 
@@ -74,6 +80,8 @@ func (m Model) ThenSortByDesc(columnKey string) Model {
 			Direction: SortDirectionDesc,
 		},
 	}, m.sortOrder...)
+
+	m.visibleRowCacheUpdated = false
 
 	return m
 }

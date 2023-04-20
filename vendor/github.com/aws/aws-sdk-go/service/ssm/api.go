@@ -51297,6 +51297,8 @@ type ResetServiceSettingInput struct {
 	// The Amazon Resource Name (ARN) of the service setting to reset. The setting
 	// ID can be one of the following.
 	//
+	//    * /ssm/managed-instance/default-ec2-instance-management-role
+	//
 	//    * /ssm/automation/customer-script-log-destination
 	//
 	//    * /ssm/automation/customer-script-log-group-name
@@ -59704,7 +59706,7 @@ func (s UpdateResourceDataSyncOutput) GoString() string {
 type UpdateServiceSettingInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the service setting to reset. For example,
+	// The Amazon Resource Name (ARN) of the service setting to update. For example,
 	// arn:aws:ssm:us-east-1:111122223333:servicesetting/ssm/parameter-store/high-throughput-enabled.
 	// The setting ID can be one of the following.
 	//
@@ -59724,15 +59726,23 @@ type UpdateServiceSettingInput struct {
 	//
 	//    * /ssm/parameter-store/high-throughput-enabled
 	//
+	// Permissions to update the /ssm/managed-instance/default-ec2-instance-management-role
+	// setting should only be provided to administrators. Implement least privilege
+	// access when allowing individuals to configure or modify the Default Host
+	// Management Configuration.
+	//
 	// SettingId is a required field
 	SettingId *string `min:"1" type:"string" required:"true"`
 
 	// The new value to specify for the service setting. The following list specifies
 	// the available values for each setting.
 	//
+	//    * /ssm/managed-instance/default-ec2-instance-management-role: The name
+	//    of an IAM role
+	//
 	//    * /ssm/automation/customer-script-log-destination: CloudWatch
 	//
-	//    * /ssm/automation/customer-script-log-group-name: the name of an Amazon
+	//    * /ssm/automation/customer-script-log-group-name: The name of an Amazon
 	//    CloudWatch Logs log group
 	//
 	//    * /ssm/documents/console/public-sharing-permission: Enable or Disable
@@ -61096,6 +61106,12 @@ const (
 
 	// OperatingSystemRockyLinux is a OperatingSystem enum value
 	OperatingSystemRockyLinux = "ROCKY_LINUX"
+
+	// OperatingSystemAlmaLinux is a OperatingSystem enum value
+	OperatingSystemAlmaLinux = "ALMA_LINUX"
+
+	// OperatingSystemAmazonLinux2023 is a OperatingSystem enum value
+	OperatingSystemAmazonLinux2023 = "AMAZON_LINUX_2023"
 )
 
 // OperatingSystem_Values returns all elements of the OperatingSystem enum
@@ -61114,6 +61130,8 @@ func OperatingSystem_Values() []string {
 		OperatingSystemMacos,
 		OperatingSystemRaspbian,
 		OperatingSystemRockyLinux,
+		OperatingSystemAlmaLinux,
+		OperatingSystemAmazonLinux2023,
 	}
 }
 

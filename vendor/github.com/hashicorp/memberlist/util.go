@@ -152,6 +152,23 @@ OUTER:
 	return kNodes
 }
 
+// makeCompoundMessages takes a list of messages and packs
+// them into one or multiple messages based on the limitations
+// of compound messages (255 messages each).
+func makeCompoundMessages(msgs [][]byte) []*bytes.Buffer {
+	const maxMsgs = 255
+	bufs := make([]*bytes.Buffer, 0, (len(msgs)+(maxMsgs-1))/maxMsgs)
+
+	for ; len(msgs) > maxMsgs; msgs = msgs[maxMsgs:] {
+		bufs = append(bufs, makeCompoundMessage(msgs[:maxMsgs]))
+	}
+	if len(msgs) > 0 {
+		bufs = append(bufs, makeCompoundMessage(msgs))
+	}
+
+	return bufs
+}
+
 // makeCompoundMessage takes a list of messages and generates
 // a single compound message containing all of them
 func makeCompoundMessage(msgs [][]byte) *bytes.Buffer {

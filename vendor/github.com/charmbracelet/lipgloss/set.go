@@ -73,12 +73,11 @@ func (s Style) Faint(v bool) Style {
 
 // Foreground sets a foreground color.
 //
-//     // Sets the foreground to blue
-//     s := lipgloss.NewStyle().Foreground(lipgloss.Color("#0000ff"))
+//	// Sets the foreground to blue
+//	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#0000ff"))
 //
-//     // Removes the foreground color
-//     s.Foreground(lipgloss.NoColor)
-//
+//	// Removes the foreground color
+//	s.Foreground(lipgloss.NoColor)
 func (s Style) Foreground(c TerminalColor) Style {
 	s.set(foregroundKey, c)
 	return s
@@ -97,7 +96,7 @@ func (s Style) Width(i int) Style {
 	return s
 }
 
-// Height sets the width of the block before applying margins. If the height of
+// Height sets the height of the block before applying margins. If the height of
 // the text block is less than this value after applying padding (or not), the
 // block will be set to this height.
 func (s Style) Height(i int) Style {
@@ -105,9 +104,31 @@ func (s Style) Height(i int) Style {
 	return s
 }
 
-// Align sets a text alignment rule.
-func (s Style) Align(p Position) Style {
-	s.set(alignKey, p)
+// Align is a shorthand method for setting horizontal and vertical alignment.
+//
+// With one argument, the position value is applied to the horizontal alignment.
+//
+// With two arguments, the value is applied to the vertical and horizontal
+// alignments, in that order.
+func (s Style) Align(p ...Position) Style {
+	if len(p) > 0 {
+		s.set(alignHorizontalKey, p[0])
+	}
+	if len(p) > 1 {
+		s.set(alignVerticalKey, p[1])
+	}
+	return s
+}
+
+// HorizontalAlign sets a horizontal text alignment rule.
+func (s Style) AlignHorizontal(p Position) Style {
+	s.set(alignHorizontalKey, p)
+	return s
+}
+
+// VerticalAlign sets a text alignment rule.
+func (s Style) AlignVertical(p Position) Style {
+	s.set(alignVerticalKey, p)
 	return s
 }
 
@@ -248,12 +269,11 @@ func (s Style) MarginBackground(c TerminalColor) Style {
 //
 // Examples:
 //
-//     // Applies borders to the top and bottom only
-//     lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true, false)
+//	// Applies borders to the top and bottom only
+//	lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true, false)
 //
-//     // Applies rounded borders to the right and bottom only
-//     lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), false, true, true, false)
-//
+//	// Applies rounded borders to the right and bottom only
+//	lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), false, true, true, false)
 func (s Style) Border(b Border, sides ...bool) Style {
 	s.set(borderStyleKey, b)
 
@@ -285,8 +305,7 @@ func (s Style) Border(b Border, sides ...bool) Style {
 //
 // Example:
 //
-//     lipgloss.NewStyle().BorderStyle(lipgloss.ThickBorder())
-//
+//	lipgloss.NewStyle().BorderStyle(lipgloss.ThickBorder())
 func (s Style) BorderStyle(b Border) Style {
 	s.set(borderStyleKey, b)
 	return s
@@ -445,10 +464,9 @@ func (s Style) BorderLeftBackground(c TerminalColor) Style {
 //
 // Example:
 //
-//     var userInput string = "..."
-//     var userStyle = text.Style{ /* ... */ }
-//     fmt.Println(userStyle.Inline(true).Render(userInput))
-//
+//	var userInput string = "..."
+//	var userStyle = text.Style{ /* ... */ }
+//	fmt.Println(userStyle.Inline(true).Render(userInput))
 func (s Style) Inline(v bool) Style {
 	o := s.Copy()
 	o.set(inlineKey, v)
@@ -464,10 +482,9 @@ func (s Style) Inline(v bool) Style {
 //
 // Example:
 //
-//     var userInput string = "..."
-//     var userStyle = text.Style{ /* ... */ }
-//     fmt.Println(userStyle.MaxWidth(16).Render(userInput))
-//
+//	var userInput string = "..."
+//	var userStyle = text.Style{ /* ... */ }
+//	fmt.Println(userStyle.MaxWidth(16).Render(userInput))
 func (s Style) MaxWidth(n int) Style {
 	o := s.Copy()
 	o.set(maxWidthKey, n)

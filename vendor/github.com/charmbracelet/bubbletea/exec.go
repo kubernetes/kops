@@ -13,7 +13,7 @@ type execMsg struct {
 }
 
 // Exec is used to perform arbitrary I/O in a blocking fashion, effectively
-// pausing the Program while execution is runnning and resuming it when
+// pausing the Program while execution is running and resuming it when
 // execution has completed.
 //
 // Most of the time you'll want to use ExecProcess, which runs an exec.Cmd.
@@ -34,17 +34,17 @@ func Exec(c ExecCommand, fn ExecCallback) Cmd {
 // a message containing the error which may have occurred when running the
 // ExecCommand.
 //
-//     type VimFinishedMsg struct { err error }
+//	type VimFinishedMsg struct { err error }
 //
-//     c := exec.Command("vim", "file.txt")
+//	c := exec.Command("vim", "file.txt")
 //
-//     cmd := ExecProcess(c, func(err error) Msg {
-//         return VimFinishedMsg{err: error}
-//     })
+//	cmd := ExecProcess(c, func(err error) Msg {
+//	    return VimFinishedMsg{err: err}
+//	})
 //
 // Or, if you don't care about errors, you could simply:
 //
-//     cmd := ExecProcess(exec.Command("vim", "file.txt"), nil)
+//	cmd := ExecProcess(exec.Command("vim", "file.txt"), nil)
 //
 // For non-interactive i/o you should use a Cmd (that is, a tea.Cmd).
 func ExecProcess(c *exec.Cmd, fn ExecCallback) Cmd {
@@ -109,7 +109,7 @@ func (p *Program) exec(c ExecCommand, fn ExecCallback) {
 	}
 
 	c.SetStdin(p.input)
-	c.SetStdout(p.output)
+	c.SetStdout(p.output.TTY())
 	c.SetStderr(os.Stderr)
 
 	// Execute system command.

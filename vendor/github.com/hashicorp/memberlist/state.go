@@ -15,6 +15,21 @@ import (
 
 type NodeStateType int
 
+func (t NodeStateType) metricsString() string {
+	switch t {
+	case StateAlive:
+		return "alive"
+	case StateDead:
+		return "dead"
+	case StateSuspect:
+		return "suspect"
+	case StateLeft:
+		return "left"
+	default:
+		return fmt.Sprintf("unhandled-value-%d", t)
+	}
+}
+
 const (
 	StateAlive NodeStateType = iota
 	StateSuspect
@@ -286,14 +301,14 @@ func failedRemote(err error) bool {
 
 // probeNode handles a single round of failure checking on a node.
 func (m *Memberlist) probeNode(node *nodeState) {
-	defer metrics.MeasureSince([]string{"memberlist", "probeNode"}, time.Now())
+	defer metrics.MeasureSinceWithLabels([]string{"memberlist", "probeNode"}, time.Now(), m.metricLabels)
 
 	// We use our health awareness to scale the overall probe interval, so we
 	// slow down if we detect problems. The ticker that calls us can handle
 	// us running over the base interval, and will skip missed ticks.
 	probeInterval := m.awareness.ScaleTimeout(m.config.ProbeInterval)
 	if probeInterval > m.config.ProbeInterval {
-		metrics.IncrCounter([]string{"memberlist", "degraded", "probe"}, 1)
+		metrics.IncrCounterWithLabels([]string{"memberlist", "degraded", "probe"}, 1, m.metricLabels)
 	}
 
 	// Prepare a ping message and setup an ack handler.
@@ -329,7 +344,7 @@ func (m *Memberlist) probeNode(node *nodeState) {
 	}()
 	if node.State == StateAlive {
 		if err := m.encodeAndSendMsg(node.FullAddress(), pingMsg, &ping); err != nil {
-			m.logger.Printf("[ERR] memberlist: Failed to send ping: %s", err)
+			m.logger.Printf("[ERR] memberlist: Failed to send UDP ping: %s", err)
 			if failedRemote(err) {
 				goto HANDLE_REMOTE_FAILURE
 			} else {
@@ -339,7 +354,7 @@ func (m *Memberlist) probeNode(node *nodeState) {
 	} else {
 		var msgs [][]byte
 		if buf, err := encode(pingMsg, &ping); err != nil {
-			m.logger.Printf("[ERR] memberlist: Failed to encode ping message: %s", err)
+			m.logger.Printf("[ERR] memberlist: Failed to encode UDP ping message: %s", err)
 			return
 		} else {
 			msgs = append(msgs, buf.Bytes())
@@ -354,7 +369,7 @@ func (m *Memberlist) probeNode(node *nodeState) {
 
 		compound := makeCompoundMessage(msgs)
 		if err := m.rawSendMsgPacket(node.FullAddress(), &node.Node, compound.Bytes()); err != nil {
-			m.logger.Printf("[ERR] memberlist: Failed to send compound ping and suspect message to %s: %s", addr, err)
+			m.logger.Printf("[ERR] memberlist: Failed to send UDP compound ping and suspect message to %s: %s", addr, err)
 			if failedRemote(err) {
 				goto HANDLE_REMOTE_FAILURE
 			} else {
@@ -393,7 +408,7 @@ func (m *Memberlist) probeNode(node *nodeState) {
 		// probe interval it will give the TCP fallback more time, which
 		// is more active in dealing with lost packets, and it gives more
 		// time to wait for indirect acks/nacks.
-		m.logger.Printf("[DEBUG] memberlist: Failed ping: %s (timeout reached)", node.Name)
+		m.logger.Printf("[DEBUG] memberlist: Failed UDP ping: %s (timeout reached)", node.Name)
 	}
 
 HANDLE_REMOTE_FAILURE:
@@ -426,7 +441,7 @@ HANDLE_REMOTE_FAILURE:
 		}
 
 		if err := m.encodeAndSendMsg(peer.FullAddress(), indirectPingMsg, &ind); err != nil {
-			m.logger.Printf("[ERR] memberlist: Failed to send indirect ping: %s", err)
+			m.logger.Printf("[ERR] memberlist: Failed to send indirect UDP ping: %s", err)
 		}
 	}
 
@@ -449,7 +464,11 @@ HANDLE_REMOTE_FAILURE:
 			defer close(fallbackCh)
 			didContact, err := m.sendPingAndWaitForAck(node.FullAddress(), ping, deadline)
 			if err != nil {
-				m.logger.Printf("[ERR] memberlist: Failed fallback ping: %s", err)
+				var to string
+				if ne, ok := err.(net.Error); ok && ne.Timeout() {
+					to = fmt.Sprintf("timeout %s: ", probeInterval)
+				}
+				m.logger.Printf("[ERR] memberlist: Failed fallback TCP ping: %s%s", to, err)
 			} else {
 				fallbackCh <- didContact
 			}
@@ -474,7 +493,7 @@ HANDLE_REMOTE_FAILURE:
 	// any additional time here.
 	for didContact := range fallbackCh {
 		if didContact {
-			m.logger.Printf("[WARN] memberlist: Was able to connect to %s but other probes failed, network may be misconfigured", node.Name)
+			m.logger.Printf("[WARN] memberlist: Was able to connect to %s over TCP but UDP probes failed, network may be misconfigured", node.Name)
 			return
 		}
 	}
@@ -569,7 +588,7 @@ func (m *Memberlist) resetNodes() {
 // gossip is invoked every GossipInterval period to broadcast our gossip
 // messages to a few random nodes.
 func (m *Memberlist) gossip() {
-	defer metrics.MeasureSince([]string{"memberlist", "gossip"}, time.Now())
+	defer metrics.MeasureSinceWithLabels([]string{"memberlist", "gossip"}, time.Now(), m.metricLabels)
 
 	// Get some random live, suspect, or recently dead nodes
 	m.nodeLock.RLock()
@@ -611,10 +630,12 @@ func (m *Memberlist) gossip() {
 				m.logger.Printf("[ERR] memberlist: Failed to send gossip to %s: %s", addr, err)
 			}
 		} else {
-			// Otherwise create and send a compound message
-			compound := makeCompoundMessage(msgs)
-			if err := m.rawSendMsgPacket(node.FullAddress(), &node, compound.Bytes()); err != nil {
-				m.logger.Printf("[ERR] memberlist: Failed to send gossip to %s: %s", addr, err)
+			// Otherwise create and send one or more compound messages
+			compounds := makeCompoundMessages(msgs)
+			for _, compound := range compounds {
+				if err := m.rawSendMsgPacket(node.FullAddress(), &node, compound.Bytes()); err != nil {
+					m.logger.Printf("[ERR] memberlist: Failed to send gossip to %s: %s", addr, err)
+				}
 			}
 		}
 	}
@@ -647,7 +668,7 @@ func (m *Memberlist) pushPull() {
 
 // pushPullNode does a complete state exchange with a specific node.
 func (m *Memberlist) pushPullNode(a Address, join bool) error {
-	defer metrics.MeasureSince([]string{"memberlist", "pushPullNode"}, time.Now())
+	defer metrics.MeasureSinceWithLabels([]string{"memberlist", "pushPullNode"}, time.Now(), m.metricLabels)
 
 	// Attempt to send and receive with the node
 	remote, userState, err := m.sendAndReceiveState(a, join)
@@ -1119,7 +1140,7 @@ func (m *Memberlist) aliveNode(a *alive, notify chan struct{}, bootstrap bool) {
 	}
 
 	// Update metrics
-	metrics.IncrCounter([]string{"memberlist", "msg", "alive"}, 1)
+	metrics.IncrCounterWithLabels([]string{"memberlist", "msg", "alive"}, 1, m.metricLabels)
 
 	// Notify the delegate of any relevant updates
 	if m.config.Events != nil {
@@ -1177,7 +1198,7 @@ func (m *Memberlist) suspectNode(s *suspect) {
 	}
 
 	// Update metrics
-	metrics.IncrCounter([]string{"memberlist", "msg", "suspect"}, 1)
+	metrics.IncrCounterWithLabels([]string{"memberlist", "msg", "suspect"}, 1, m.metricLabels)
 
 	// Update the state
 	state.Incarnation = s.Incarnation
@@ -1215,7 +1236,7 @@ func (m *Memberlist) suspectNode(s *suspect) {
 
 		if timeout {
 			if k > 0 && numConfirmations < k {
-				metrics.IncrCounter([]string{"memberlist", "degraded", "timeout"}, 1)
+				metrics.IncrCounterWithLabels([]string{"memberlist", "degraded", "timeout"}, 1, m.metricLabels)
 			}
 
 			m.logger.Printf("[INFO] memberlist: Marking %s as failed, suspect timeout reached (%d peer confirmations)",
@@ -1268,7 +1289,7 @@ func (m *Memberlist) deadNode(d *dead) {
 	}
 
 	// Update metrics
-	metrics.IncrCounter([]string{"memberlist", "msg", "dead"}, 1)
+	metrics.IncrCounterWithLabels([]string{"memberlist", "msg", "dead"}, 1, m.metricLabels)
 
 	// Update the state
 	state.Incarnation = d.Incarnation

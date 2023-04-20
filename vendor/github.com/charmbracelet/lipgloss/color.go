@@ -1,9 +1,9 @@
 package lipgloss
 
 import (
+	"image/color"
 	"sync"
 
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/muesli/termenv"
 )
 
@@ -16,12 +16,15 @@ var (
 	getBackgroundColor      sync.Once
 	explicitBackgroundColor bool
 
-	colorProfileMtx sync.Mutex
+	colorProfileMtx sync.RWMutex
 )
 
 // ColorProfile returns the detected termenv color profile. It will perform the
 // actual check only once.
 func ColorProfile() termenv.Profile {
+	colorProfileMtx.RLock()
+	defer colorProfileMtx.RUnlock()
+
 	if !explicitColorProfile {
 		getColorProfile.Do(func() {
 			colorProfile = termenv.EnvColorProfile()
@@ -49,12 +52,16 @@ func ColorProfile() termenv.Profile {
 func SetColorProfile(p termenv.Profile) {
 	colorProfileMtx.Lock()
 	defer colorProfileMtx.Unlock()
+
 	colorProfile = p
 	explicitColorProfile = true
 }
 
 // HasDarkBackground returns whether or not the terminal has a dark background.
 func HasDarkBackground() bool {
+	colorProfileMtx.RLock()
+	defer colorProfileMtx.RUnlock()
+
 	if !explicitBackgroundColor {
 		getBackgroundColor.Do(func() {
 			hasDarkBackground = termenv.HasDarkBackground()
@@ -77,6 +84,7 @@ func HasDarkBackground() bool {
 func SetHasDarkBackground(b bool) {
 	colorProfileMtx.Lock()
 	defer colorProfileMtx.Unlock()
+
 	hasDarkBackground = b
 	explicitBackgroundColor = true
 }
@@ -95,8 +103,7 @@ type TerminalColor interface {
 //
 // Example usage:
 //
-//     var style = someStyle.Copy().Background(lipgloss.NoColor{})
-//
+//	var style = someStyle.Copy().Background(lipgloss.NoColor{})
 type NoColor struct{}
 
 func (n NoColor) value() string {
@@ -109,7 +116,7 @@ func (n NoColor) color() termenv.Color {
 
 // RGBA returns the RGBA value of this color. Because we have to return
 // something, despite this color being the absence of color, we're returning
-// the same value that go-colorful returns on error:
+// black with 100% opacity.
 //
 // Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFFFF.
 func (n NoColor) RGBA() (r, g, b, a uint32) {
@@ -120,9 +127,8 @@ var noColor = NoColor{}
 
 // Color specifies a color by hex or ANSI value. For example:
 //
-//     ansiColor := lipgloss.Color("21")
-//     hexColor := lipgloss.Color("#0000ff")
-//
+//	ansiColor := lipgloss.Color("21")
+//	hexColor := lipgloss.Color("#0000ff")
 type Color string
 
 func (c Color) value() string {
@@ -136,18 +142,9 @@ func (c Color) color() termenv.Color {
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
 // interface. Note that on error we return black with 100% opacity, or:
 //
-// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFFFF
-//
-// This is inline with go-colorful's default behavior.
+// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFF.
 func (c Color) RGBA() (r, g, b, a uint32) {
-	cf, err := colorful.Hex(c.value())
-	if err != nil {
-		// If we ignore the return behavior and simply return what go-colorful
-		// give us for the color value we'd be returning exactly this, however
-		// we're being explicit here for the sake of clarity.
-		return colorful.Color{}.RGBA()
-	}
-	return cf.RGBA()
+	return hexToColor(c.value()).RGBA()
 }
 
 // AdaptiveColor provides color options for light and dark backgrounds. The
@@ -156,8 +153,7 @@ func (c Color) RGBA() (r, g, b, a uint32) {
 //
 // Example usage:
 //
-//     color := lipgloss.AdaptiveColor{Light: "#0000ff", Dark: "#000099"}
-//
+//	color := lipgloss.AdaptiveColor{Light: "#0000ff", Dark: "#000099"}
 type AdaptiveColor struct {
 	Light string
 	Dark  string
@@ -177,13 +173,113 @@ func (ac AdaptiveColor) color() termenv.Color {
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
 // interface. Note that on error we return black with 100% opacity, or:
 //
-// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFFFF
-//
-// This is inline with go-colorful's default behavior.
+// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFF.
 func (ac AdaptiveColor) RGBA() (r, g, b, a uint32) {
-	cf, err := colorful.Hex(ac.value())
-	if err != nil {
-		return colorful.Color{}.RGBA()
-	}
+	cf := hexToColor(ac.value())
 	return cf.RGBA()
+}
+
+// CompleteColor specifies exact values for truecolor, ANSI256, and ANSI color
+// profiles. Automatic color degredation will not be performed.
+type CompleteColor struct {
+	TrueColor string
+	ANSI256   string
+	ANSI      string
+}
+
+func (c CompleteColor) value() string {
+	switch ColorProfile() {
+	case termenv.TrueColor:
+		return c.TrueColor
+	case termenv.ANSI256:
+		return c.ANSI256
+	case termenv.ANSI:
+		return c.ANSI
+	default:
+		return ""
+	}
+}
+
+func (c CompleteColor) color() termenv.Color {
+	return colorProfile.Color(c.value())
+}
+
+// RGBA returns the RGBA value of this color. This satisfies the Go Color
+// interface. Note that on error we return black with 100% opacity, or:
+//
+// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFFFF
+func (c CompleteColor) RGBA() (r, g, b, a uint32) {
+	return hexToColor(c.value()).RGBA()
+}
+
+// CompleteColor specifies exact values for truecolor, ANSI256, and ANSI color
+// profiles, with separate options for light and dark backgrounds. Automatic
+// color degredation will not be performed.
+type CompleteAdaptiveColor struct {
+	Light CompleteColor
+	Dark  CompleteColor
+}
+
+func (cac CompleteAdaptiveColor) value() string {
+	if HasDarkBackground() {
+		return cac.Dark.value()
+	}
+	return cac.Light.value()
+}
+
+func (cac CompleteAdaptiveColor) color() termenv.Color {
+	return ColorProfile().Color(cac.value())
+}
+
+// RGBA returns the RGBA value of this color. This satisfies the Go Color
+// interface. Note that on error we return black with 100% opacity, or:
+//
+// Red: 0x0, Green: 0x0, Blue: 0x0, Alpha: 0xFFFF
+func (cac CompleteAdaptiveColor) RGBA() (r, g, b, a uint32) {
+	return hexToColor(cac.value()).RGBA()
+}
+
+// hexToColor translates a hex color string (#RRGGBB or #RGB) into a color.RGB,
+// which satisfies the color.Color interface. If an invalid string is passed
+// black with 100% opacity will be returned: or, in hex format, 0x000000FF.
+func hexToColor(hex string) (c color.RGBA) {
+	c.A = 0xFF
+
+	if hex == "" || hex[0] != '#' {
+		return c
+	}
+
+	const (
+		fullFormat  = 7 // #RRGGBB
+		shortFormat = 4 // #RGB
+	)
+
+	switch len(hex) {
+	case fullFormat:
+		const offset = 4
+		c.R = hexToByte(hex[1])<<offset + hexToByte(hex[2])
+		c.G = hexToByte(hex[3])<<offset + hexToByte(hex[4])
+		c.B = hexToByte(hex[5])<<offset + hexToByte(hex[6])
+	case shortFormat:
+		const offset = 0x11
+		c.R = hexToByte(hex[1]) * offset
+		c.G = hexToByte(hex[2]) * offset
+		c.B = hexToByte(hex[3]) * offset
+	}
+
+	return c
+}
+
+func hexToByte(b byte) byte {
+	const offset = 10
+	switch {
+	case b >= '0' && b <= '9':
+		return b - '0'
+	case b >= 'a' && b <= 'f':
+		return b - 'a' + offset
+	case b >= 'A' && b <= 'F':
+		return b - 'A' + offset
+	}
+	// Invalid, but just return 0.
+	return 0
 }
