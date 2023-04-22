@@ -246,7 +246,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: AIqpepP3Go+fTz0GWXUD7p/LrQOjPUWx43XDQDxKEr8=
+NodeupConfigHash: nG0+1KP+nbbmeqM2TILYhhMAkT0E5LowLlR32hMRf6Q=
 
 __EOF_KUBE_ENV
 

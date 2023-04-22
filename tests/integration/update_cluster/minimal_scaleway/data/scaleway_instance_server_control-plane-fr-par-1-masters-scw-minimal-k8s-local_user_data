@@ -248,7 +248,7 @@ CloudProvider: scaleway
 ConfigBase: memfs://tests/scw-minimal.k8s.local
 InstanceGroupName: control-plane-fr-par-1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: /kF1YY110o7PLACTu9sC2U42qefAbJy4Uy/vBzmNqoU=
+NodeupConfigHash: 3V5+GOZ4BaRnDKgPnMg/cII2bxW/8HV8Rck9jNf/OEA=
 
 __EOF_KUBE_ENV
 
