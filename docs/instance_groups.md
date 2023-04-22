@@ -352,6 +352,19 @@ spec:
   maxInstanceLifetime: "48h"
 ```
 
+## Enable IMDSv2 (AWS Only)
+
+In order to enable IMDSv2 on all instance groups you need to set the following attributes on your instance group template:
+
+```yaml
+spec:
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+```
+
+**If you have enabled other service like clusterAutoscaler and you didn't enable IRSA, you should set httpPutResponseHopLimit to "2", following [AWS docs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) and following the [clusterAutoscaler docs](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#common-notes-and-gotchas)**
+
 # API Changes
 
 kOps is working on updating the `v1alpha2` API to a newer version. That new API
