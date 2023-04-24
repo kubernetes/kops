@@ -851,6 +851,8 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 			tag = "v1.25.5"
 		} else if parsed.Minor == 26 {
 			tag = "v1.26.2"
+		} else if parsed.Minor == 27 {
+			tag = "v1.27.1"
 		} else {
 			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
@@ -873,6 +875,8 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 			tag = "v1.25.5"
 		} else if parsed.Minor == 26 {
 			tag = "v1.26.2"
+		} else if parsed.Minor == 27 {
+			tag = "v1.27.1"
 		} else {
 			// otherwise we use always .0 csi image, if needed that can be overrided using cloud config spec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
