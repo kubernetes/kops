@@ -1266,7 +1266,6 @@ k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/api/validation
-k8s.io/apimachinery/pkg/api/validation/path
 k8s.io/apimachinery/pkg/apis/meta/internalversion
 k8s.io/apimachinery/pkg/apis/meta/internalversion/scheme
 k8s.io/apimachinery/pkg/apis/meta/v1
@@ -1318,24 +1317,6 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.27.1 => k8s.io/apiserver v0.26.4
-## explicit; go 1.19
-k8s.io/apiserver/pkg/admission
-k8s.io/apiserver/pkg/apis/apiserver
-k8s.io/apiserver/pkg/apis/apiserver/v1
-k8s.io/apiserver/pkg/apis/audit
-k8s.io/apiserver/pkg/apis/audit/v1
-k8s.io/apiserver/pkg/audit
-k8s.io/apiserver/pkg/authentication/user
-k8s.io/apiserver/pkg/authorization/authorizer
-k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager
-k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager/internal
-k8s.io/apiserver/pkg/endpoints/metrics
-k8s.io/apiserver/pkg/endpoints/request
-k8s.io/apiserver/pkg/endpoints/responsewriter
-k8s.io/apiserver/pkg/features
-k8s.io/apiserver/pkg/util/feature
-k8s.io/apiserver/pkg/warning
 # k8s.io/cli-runtime v0.27.1
 ## explicit; go 1.20
 k8s.io/cli-runtime/pkg/genericclioptions
@@ -1934,4 +1915,3 @@ sigs.k8s.io/structured-merge-diff/v4/value
 sigs.k8s.io/yaml
 # github.com/docker/cli => github.com/docker/cli v23.0.1+incompatible
 # github.com/docker/docker => github.com/docker/docker v23.0.1+incompatible
-# k8s.io/apiserver => k8s.io/apiserver v0.26.4

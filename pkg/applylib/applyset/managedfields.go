@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager"
 	"sigs.k8s.io/structured-merge-diff/v4/fieldpath"
 )
 
@@ -184,7 +183,7 @@ func mergeManagedFields(managedFields []metav1.ManagedFieldsEntry) (*fieldpath.S
 
 // toFieldPathSet converts an encoded ManagedFieldsEntry to a set of managed fields (a fieldpath.Set)
 func toFieldPathSet(fields *metav1.ManagedFieldsEntry) (*fieldpath.Set, error) {
-	decoded, err := fieldmanager.DecodeManagedFields([]metav1.ManagedFieldsEntry{*fields})
+	decoded, err := DecodeManagedFields([]metav1.ManagedFieldsEntry{*fields})
 	if err != nil {
 		return nil, err
 	}

@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package internal
+// this file contains copied functions from https://github.com/kubernetes/apimachinery/tree/master/pkg/util/managedfields/internal
+
+package applyset
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -245,4 +248,26 @@ func encodeManagerVersionedSet(manager string, versionedSet fieldpath.VersionedS
 	encodedVersionedSet.FieldsV1 = &fields
 
 	return encodedVersionedSet, nil
+}
+
+// EmptyFields represents a set with no paths
+// It looks like metav1.Fields{Raw: []byte("{}")}
+var EmptyFields = func() metav1.FieldsV1 {
+	f, err := SetToFields(*fieldpath.NewSet())
+	if err != nil {
+		panic("should never happen")
+	}
+	return f
+}()
+
+// SetToFields creates a trie of fields from an input set of paths
+func SetToFields(s fieldpath.Set) (f metav1.FieldsV1, err error) {
+	f.Raw, err = s.ToJSON()
+	return f, err
+}
+
+// FieldsToSet creates a set paths from an input trie of fields
+func FieldsToSet(f metav1.FieldsV1) (s fieldpath.Set, err error) {
+	err = s.FromJSON(bytes.NewReader(f.Raw))
+	return s, err
 }

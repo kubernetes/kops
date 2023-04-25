@@ -5,7 +5,6 @@ go 1.20
 replace (
 	github.com/docker/cli => github.com/docker/cli v23.0.1+incompatible
 	github.com/docker/docker => github.com/docker/docker v23.0.1+incompatible
-	k8s.io/apiserver => k8s.io/apiserver v0.26.4
 )
 
 require (
@@ -61,7 +60,6 @@ require (
 	helm.sh/helm/v3 v3.11.3
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
-	k8s.io/apiserver v0.27.1
 	k8s.io/cli-runtime v0.27.1
 	k8s.io/client-go v0.27.1
 	k8s.io/cloud-provider-aws v1.27.1
