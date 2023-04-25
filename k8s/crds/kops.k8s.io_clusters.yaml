@@ -444,6 +444,8 @@ spec:
                             type: boolean
                           ignore-volume-microversion:
                             type: boolean
+                          metricsEnabled:
+                            type: boolean
                           override-volume-az:
                             type: string
                         type: object
