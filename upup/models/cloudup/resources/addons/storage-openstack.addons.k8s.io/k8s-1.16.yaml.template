@@ -250,7 +250,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.2.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -263,7 +263,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.1.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -282,7 +282,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v5.0.1
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.2.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -297,7 +297,7 @@ spec:
               name: socket-dir
         {{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.7.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -311,7 +311,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.9.0
           args:
             - "--csi-address=$(ADDRESS)"
           env:
@@ -327,6 +327,9 @@ spec:
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--cloud-config=$(CLOUD_CONFIG)"
             - "--cluster=$(CLUSTER_NAME)"
+{{- if WithDefaultBool .CloudProvider.Openstack.BlockStorage.MetricsEnabled false }}
+            - "--http-endpoint=:9809"
+{{- end }}
           env:
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
@@ -339,6 +342,11 @@ spec:
             - containerPort: 9808
               name: healthz
               protocol: TCP
+{{- if WithDefaultBool .CloudProvider.Openstack.BlockStorage.MetricsEnabled false }}
+            - containerPort: 9809
+              name: metrics
+              protocol: TCP
+{{- end }}
           livenessProbe:
             failureThreshold: 5
             httpGet:
@@ -426,7 +434,7 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.6.3
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
@@ -446,7 +454,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.9.0
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
@@ -468,6 +476,9 @@ spec:
 {{- if .CloudProvider.Openstack.BlockStorage.ClusterName }}
             - "--cluster=$(CLUSTER_NAME)"
 {{- end }}
+{{- if WithDefaultBool .CloudProvider.Openstack.BlockStorage.MetricsEnabled false }}
+            - "--http-endpoint=:9809"
+{{- end }}
           env:
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
@@ -482,6 +493,11 @@ spec:
             - containerPort: 9808
               name: healthz
               protocol: TCP
+{{- if WithDefaultBool .CloudProvider.Openstack.BlockStorage.MetricsEnabled false }}
+            - containerPort: 9809
+              name: metrics
+              protocol: TCP
+{{- end }}
           livenessProbe:
             failureThreshold: 5
             httpGet:
