@@ -170,9 +170,9 @@ resource "aws_s3_object" "scw-minimal-k8s-local-addons-scaleway-csi-driver-addon
   server_side_encryption = "AES256"
 }
 
-resource "scaleway_iam_ssh_key" "kubernetes-scw-minimal-k8s-local-be_9e_c3_eb_cb_0c_c0_50_ea_bd_b4_5a_15_e3_40_2a" {
-  name       = "kubernetes.scw-minimal.k8s.local-be:9e:c3:eb:cb:0c:c0:50:ea:bd:b4:5a:15:e3:40:2a"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKqbVEozfAqng0gx8HTUu69EppcE5SWet6MpwrGShqMVUC4wkoiuVtJDPhMmWmdt7B7Ttc5pvnAZAZaQ6TKMguyBoAyS7qOTLU9/hM803XtSiwQUftOXiJfmsqAXEc8yDyb7UnrF8X7aA3gQJsnQBGJGdp+C88dPHNZenw4PnQc8BNYTCXG9d8F5vJ3xQ5qbiG4HVNoQ2CZh2ht+GedZJ3hl9lMJ24kE/cbMCLKxabMP4ROetECG6PU251jnm84NA8rm0Av/JMmn/c9CFAe0D0D1dGDlHWPsk4mbhGKJ0yU0YliatmPfmgSasismbYzIFf7VPq91ARzRUbavd1fYMBmkMsce0YR/5FdtrpzRhqDzuvwQgQRsoTcttdvp0puFcrtNefMfk8NCbBedIlkzOFxfGiBbe6jde4wqsqEnSrNHwZ2b+Er8z7vjcDPBqYk3gubmMBCrYxg6o1lOS6tTN0kJDUlyKO2AN1ZDr3mpkbhkvZV/N7gLglcClM0X5X7iM= leila@leila-ThinkPad-T14s-Gen-2i"
+resource "scaleway_iam_ssh_key" "kubernetes-scw-minimal-k8s-local-ae_ea_e9_42_75_4b_cd_2a_0d_68_c8_5a_af_7c_b1_c4" {
+  name       = "kubernetes.scw-minimal.k8s.local-ae:ea:e9:42:75:4b:cd:2a:0d:68:c8:5a:af:7c:b1:c4"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDDJ3lhaLGWT/YYhVMQFNo9YH1q4MGgO3qOX0dCU6bnTTchOHs0wByRuWhq7OnLt4H2JXSn3FEnjtnFDV9NvrTpg9fkovUdWJJCt7JYcEUcDSy5+G1LyO/PEDVyxuHmBiyek92JU+Kl9QCARaZRjvhYuvH4hCI0HaMYap/livITnUDyI+OM6hEbkXXjzHr6s+5Fwy/ztH4rgq8f+ZmejmjczpDD/6LQzsVtcrAF5SMaUvjuwfOhBpyWtwtwfi35k8ac0+CPBI/s6bnAGgtg6ylhC5Er2YFSKpg2S0hdR42pzjdlB3eXB1eKlU7IRAaEdrR56PSzUcrefOJ9DRsQ39PKaS5j/IJvrEUL9TOvF5PmIuWBW1fWh9BWAveivE/rhC9i96QiU7sFxVq2p6sR5tu9o0UEY9xLHaYbG2DfRDb7TXlPS3uBZ/yDRv7cJtH6cEEaAiGhCXBJ108xCpM0Dbva/jfzwW7rBRqJDRZsN1Kas2S2saTzPNHj4ANG6wKDWEc="
 }
 
 resource "scaleway_instance_ip" "control-plane-fr-par-1-0" {
