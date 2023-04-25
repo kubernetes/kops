@@ -35,13 +35,13 @@ import (
 )
 
 const (
-	TagClusterName           = "kops.k8s.io/cluster"
+	TagClusterName           = "noprefix=kops.k8s.io/cluster"
+	TagInstanceGroup         = "noprefix=kops.k8s.io/instance-group"
+	TagNameRolePrefix        = "noprefix=kops.k8s.io/role"
+	TagNameEtcdClusterPrefix = "noprefix=kops.k8s.io/etcd"
+	TagRoleControlPlane      = "ControlPlane"
+	TagRoleWorker            = "Node"
 	KopsUserAgentPrefix      = "kubernetes-kops/"
-	TagInstanceGroup         = "instance-group"
-	TagNameRolePrefix        = "k8s.io/role"
-	TagNameEtcdClusterPrefix = "k8s.io/etcd"
-	TagRoleControlPlane      = "control-plane"
-	TagRoleWorker            = "worker"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
@@ -476,7 +476,7 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 	})
 	if err != nil {
 		if is404Error(err) {
-			klog.V(4).Infof("delete server %s: instance was already deleted", server.ID)
+			klog.V(4).Infof("delete server %s: instance %q was already deleted", server.ID, server.Name)
 			return nil
 		}
 		return err
