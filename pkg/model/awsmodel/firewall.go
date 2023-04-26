@@ -31,6 +31,7 @@ type Protocol int
 
 const (
 	ProtocolIPIP Protocol = 4
+	ProtocolICMP Protocol = 1
 )
 
 // FirewallModelBuilder configures firewall network objects
@@ -135,9 +136,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
-	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
-		// Block the etcd peer port
-		tcpBlocked[2382] = true
+	if b.Cluster.Spec.Networking.Cilium != nil {
+		protocols = append(protocols, ProtocolICMP)
+		if b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+			tcpBlocked[2382] = true
+		}
 	}
 
 	if b.Cluster.Spec.Networking.Calico != nil {
@@ -193,21 +196,33 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
 				name := awsName
+
 				switch protocol {
 				case ProtocolIPIP:
 					name = "ipip"
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+						Lifecycle:     b.Lifecycle,
+						SecurityGroup: masterGroup.Task,
+						SourceGroup:   nodeGroup.Task,
+						Protocol:      fi.PtrTo(awsName),
+					}
+					AddDirectionalGroupRule(c, t)
+				case ProtocolICMP:
+					name = "icmp"
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+						Lifecycle:     b.Lifecycle,
+						SecurityGroup: masterGroup.Task,
+						SourceGroup:   nodeGroup.Task,
+						FromPort:      fi.PtrTo(int64(8)),
+						Protocol:      fi.PtrTo(awsName),
+						ToPort:        fi.PtrTo(int64(8)),
+					}
+					AddDirectionalGroupRule(c, t)
 				default:
 					klog.Warningf("unknown protocol %q - naming by number", awsName)
 				}
-
-				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
-					Lifecycle:     b.Lifecycle,
-					SecurityGroup: masterGroup.Task,
-					SourceGroup:   nodeGroup.Task,
-					Protocol:      fi.PtrTo(awsName),
-				}
-				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
