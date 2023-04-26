@@ -198,5 +198,14 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 		ipv6.Disabled = true
 		ipv6.SourceRanges = []string{"::/0"}
 	}
+	var ipv6Allowed []string
+	for _, allowed := range ipv6.Allowed {
+		// Map icmp to icmpv6; easier than maintaining separate lists
+		if allowed == "icmp" {
+			allowed = "58" // 58 == the IANA protocol number for ICMPv6
+		}
+		ipv6Allowed = append(ipv6Allowed, allowed)
+	}
+	ipv6.Allowed = ipv6Allowed
 	c.AddTask(&ipv6)
 }
