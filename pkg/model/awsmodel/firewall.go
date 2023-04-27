@@ -196,13 +196,12 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 			}
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
-				name := awsName
 
 				switch protocol {
 				case ProtocolIPIP:
-					name = "ipip"
+					awsName = "ipip"
 					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", awsName, suffix)),
 						Lifecycle:     b.Lifecycle,
 						SecurityGroup: masterGroup.Task,
 						SourceGroup:   nodeGroup.Task,
@@ -210,9 +209,9 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 					}
 					AddDirectionalGroupRule(c, t)
 				case ProtocolICMP:
-					name = "icmp"
+					awsName = "icmp"
 					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", awsName, suffix)),
 						Lifecycle:     b.Lifecycle,
 						SecurityGroup: masterGroup.Task,
 						SourceGroup:   nodeGroup.Task,
