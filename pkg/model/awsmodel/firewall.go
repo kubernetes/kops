@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"golang.org/x/net/ipv4"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -215,9 +216,9 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 						Lifecycle:     b.Lifecycle,
 						SecurityGroup: masterGroup.Task,
 						SourceGroup:   nodeGroup.Task,
-						FromPort:      fi.PtrTo(int64(8)),
+						FromPort:      fi.PtrTo(int64(ipv4.ICMPTypeEcho)),
 						Protocol:      fi.PtrTo(awsName),
-						ToPort:        fi.PtrTo(int64(8)),
+						ToPort:        fi.PtrTo(int64(ipv4.ICMPTypeEcho)),
 					}
 					AddDirectionalGroupRule(c, t)
 				default:
