@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
-	"k8s.io/kops/tests/e2e/kubetest2-kops/scw"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/scaleway"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
