@@ -234,14 +234,14 @@ func (c *awsCloudImplementation) Region() string {
 	return c.region
 }
 
-var aWSCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
+var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
 
 func ResetAWSCloudInstances() {
-	aWSCloudInstances = make(map[string]AWSCloud)
+	awsCloudInstances = make(map[string]AWSCloud)
 }
 
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
-	raw := aWSCloudInstances[region]
+	raw := awsCloudInstances[region]
 	if raw == nil {
 		c := &awsCloudImplementation{
 			region: region,
@@ -379,7 +379,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.ssm.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ssm.Handlers)
 
-		aWSCloudInstances[region] = c
+		awsCloudInstances[region] = c
 		raw = c
 	}
 
