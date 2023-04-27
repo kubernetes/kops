@@ -55,7 +55,7 @@ var _ fi.Cloud = (*MockAWSCloud)(nil)
 
 func InstallMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 	i := BuildMockAWSCloud(region, zoneLetters)
-	AWSCloudInstances[region] = i
+	aWSCloudInstances[region] = i
 	allRegions = []*ec2.Region{
 		{RegionName: aws.String(region)},
 	}
