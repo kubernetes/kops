@@ -225,13 +225,16 @@ type KubeletConfigSpec struct {
 	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
 	// PodPidsLimit is the maximum number of pids in any pod.
 	PodPidsLimit *int64 `json:"podPidsLimit,omitempty" flag:"pod-max-pids"`
-
 	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown by.
 	// Default: 30s
 	ShutdownGracePeriod *metav1.Duration `json:"shutdownGracePeriod,omitempty"`
 	// ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown.
 	// Default: 10s
 	ShutdownGracePeriodCriticalPods *metav1.Duration `json:"shutdownGracePeriodCriticalPods,omitempty"`
+	// MemorySwapConfiguration holds the memory swap configuration for the kubelet
+	MemorySwapConfiguration *MemorySwapConfiguration `json:"memorySwapConfiguration,omitempty"`
+	// MemorySwap defines the memory swap behavior
+	MemorySwap *string `json:"memorySwap,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -1164,6 +1167,11 @@ type LoadBalancerControllerSpec struct {
 	// EnableShield specifies whether the controller can enable Shield Advanced.
 	// Default: false
 	EnableShield bool `json:"enableShield,omitempty"`
+}
+
+type MemorySwapConfiguration struct {
+	// SwapBehavior can be "" or "UnlimitedSwap"
+	SwapBehavior *string `json:"swapBehavior,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

@@ -220,5 +220,15 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.RegisterSchedulable = fi.PtrTo(true)
 	clusterSpec.ControlPlaneKubelet.RegisterSchedulable = fi.PtrTo(true)
 
+	if clusterSpec.Kubelet.MemorySwapConfiguration != nil {
+		if clusterSpec.Kubelet.MemorySwapConfiguration.SwapBehavior != nil {
+			if *clusterSpec.Kubelet.MemorySwapConfiguration.SwapBehavior == "" {
+				clusterSpec.Kubelet.MemorySwap = fi.PtrTo("")
+			} else if *clusterSpec.Kubelet.MemorySwapConfiguration.SwapBehavior == "UnlimitedSwap" {
+				clusterSpec.Kubelet.MemorySwap = fi.PtrTo("UnlimitedSwap")
+			}
+		}
+	}
+
 	return nil
 }

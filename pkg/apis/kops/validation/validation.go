@@ -911,6 +911,19 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("shutdownGracePeriodCriticalPods"), k.ShutdownGracePeriodCriticalPods.String(), "shutdownGracePeriodCriticalPods cannot be greater than shutdownGracePeriod"))
 			}
 		}
+
+		if k.MemorySwapConfiguration != nil {
+			memorySwapFldPath := kubeletPath.Child("memorySwapConfiguration")
+			swapBehavior := k.MemorySwapConfiguration.SwapBehavior
+			if swapBehavior != nil {
+				switch *swapBehavior {
+				case "":
+				case "UnlimitedSwap":
+				default:
+					allErrs = append(allErrs, field.Invalid(memorySwapFldPath.Child("memorySwapBehavior"), *swapBehavior, "swapBehavior must be either empty or 'UnlimitedSwap'"))
+				}
+			}
+		}
 	}
 	return allErrs
 }
