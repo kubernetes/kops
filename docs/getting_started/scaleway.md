@@ -51,6 +51,9 @@ export S3_SECRET_ACCESS_KEY="my-secret-key" # where <my-secret-key> is the S3 AP
 # this is required since Scaleway support is currently in alpha so it is feature gated
 export KOPS_FEATURE_FLAGS="Scaleway"
 ```
+-> **Important:** Until the next release of `protokube`, you will have to export the following environment variable to make sure that you pull the version from master and not from the latest release that contains an error.
+
+`KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"`
 
 ## Creating a Single Master Cluster
 
