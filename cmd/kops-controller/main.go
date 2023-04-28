@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
 	// +kubebuilder:scaffold:imports
@@ -138,7 +139,16 @@ func main() {
 			klog.Fatalf("server cloud provider config not provided")
 		}
 
-		srv, err := server.NewServer(&opt, verifier)
+		uncachedClient, err := client.New(mgr.GetConfig(), client.Options{
+			Scheme: mgr.GetScheme(),
+			Mapper: mgr.GetRESTMapper(),
+		})
+		if err != nil {
+			setupLog.Error(err, "error creating uncached client")
+			os.Exit(1)
+		}
+
+		srv, err := server.NewServer(&opt, verifier, uncachedClient)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
