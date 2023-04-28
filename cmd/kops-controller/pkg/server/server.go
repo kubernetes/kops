@@ -30,6 +30,9 @@ import (
 	"runtime/debug"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
@@ -40,6 +43,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -54,11 +58,14 @@ type Server struct {
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
+
+	// uncachedClient is an uncached client for the kube apiserver
+	uncachedClient client.Client
 }
 
 var _ manager.LeaderElectionRunnable = &Server{}
 
-func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
+func NewServer(opt *config.Options, verifier bootstrap.Verifier, uncachedClient client.Client) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
@@ -68,10 +75,11 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 	}
 
 	s := &Server{
-		opt:       opt,
-		certNames: sets.NewString(opt.Server.CertNames...),
-		server:    server,
-		verifier:  verifier,
+		opt:            opt,
+		certNames:      sets.NewString(opt.Server.CertNames...),
+		server:         server,
+		verifier:       verifier,
+		uncachedClient: uncachedClient,
 	}
 
 	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
@@ -153,6 +161,26 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		// don't return the error; this allows us to have richer errors without security implications
 		_, _ = w.Write([]byte("failed to verify token"))
 		return
+	}
+
+	// Once the node is registered, we don't allow further registrations, this protects against a pod or escaped workload attempting to impersonate the node.
+	{
+		node := &unstructured.Unstructured{}
+		node.SetAPIVersion("v1")
+		node.SetKind("node")
+		err := s.uncachedClient.Get(ctx, types.NamespacedName{Name: id.NodeName}, node)
+		if err == nil {
+			klog.Infof("bootstrap %s node %q already exists; denying to avoid node-impersonation attacks", r.RemoteAddr, id.NodeName)
+			w.WriteHeader(http.StatusForbidden)
+			_, _ = w.Write([]byte("node already registered"))
+			return
+		}
+		if err != nil && !errors.IsNotFound(err) {
+			klog.Infof("bootstrap %s error querying for node %q: %v", r.RemoteAddr, id.NodeName, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("internal error"))
+			return
+		}
 	}
 
 	req := &nodeup.BootstrapRequest{}
