@@ -143,7 +143,18 @@ metadata:
   labels:
     kops.k8s.io/cluster: "example"
     spotinst.io/spot-percentage: "90"
-  ...
+  spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  machineType: m5.large
+  #define the max and min numbers of instances in the group
+  maxSize: 1
+  minSize: 3
+  role: Node
+  subnets:
+    - us-west-2b
 ```
 
 ## Metadata Labels
