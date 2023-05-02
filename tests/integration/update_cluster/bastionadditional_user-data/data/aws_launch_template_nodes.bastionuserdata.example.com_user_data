@@ -193,7 +193,11 @@ ConfigServer:
   - https://kops-controller.internal.bastionuserdata.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+<<<<<<< HEAD
 NodeupConfigHash: gKUr2eAIlOb00Mm3DGrMzLGkPbi6KvX4Ncdhl3aFUso=
+=======
+NodeupConfigHash: LlPVgLi7LPZy+DRKhWNpTmfWbZaoAZJ4aQ+P/rRMMjA=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

@@ -252,7 +252,11 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD
 NodeupConfigHash: b5Lqz1PVtBN3wTjRReJkv+0l/7pzPY9N80ghOE+GFcs=
+=======
+NodeupConfigHash: C6NLjw3lmNj10dQMXAjEfrkibMify/7A1wwaU9ArctE=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

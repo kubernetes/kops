@@ -243,7 +243,11 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD:tests/integration/update_cluster/privatedns1/data/aws_launch_template_master-us-test-1a.masters.privatedns1.example.com_user_data
 NodeupConfigHash: Dr1/XtEbc7J1Sc/TogZkKXknqzjsjpF6CekxHmuEo1A=
+=======
+NodeupConfigHash: 7mamuxQsYqK2WsA7AdcBn0HBfwgSPDTrTqZnWPBJ+eo=
+>>>>>>> run ./hack/update-expected.sh:tests/integration/update_cluster/minimal_scaleway/data/scaleway_instance_server_control-plane-fr-par-1_user_data
 
 __EOF_KUBE_ENV
 

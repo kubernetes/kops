@@ -28,7 +28,13 @@ spec:
       - http://HostIP2:Port2
       docker.io:
       - https://registry-1.docker.io
+<<<<<<< HEAD
     version: 1.4.13
+=======
+    runc:
+      version: 1.1.7
+    version: 1.6.20
+>>>>>>> run ./hack/update-expected.sh
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true

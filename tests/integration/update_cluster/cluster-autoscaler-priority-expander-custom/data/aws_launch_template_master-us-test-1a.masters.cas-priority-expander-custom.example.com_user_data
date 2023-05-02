@@ -258,7 +258,11 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/cas-priority-expander-custom.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD
 NodeupConfigHash: cBfatvrfyCMj0sY8eypmVHOw1euxQf5tuXvy+CAJJ44=
+=======
+NodeupConfigHash: vkDF+DmigaDlFSoHgoHdOerM2zaGxQhUId3mZk0ozkU=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 
