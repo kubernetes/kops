@@ -258,7 +258,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/cas-priority-expander.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: EyeoSnd3yHZVC3lFkG+mAZJS1vlAIMfQ39SHCUByk4o=
+NodeupConfigHash: vDYV6Bpl9a5VtBZEljme+2eJxh45rSGQy/IlkLkNvew=
 
 __EOF_KUBE_ENV
 
