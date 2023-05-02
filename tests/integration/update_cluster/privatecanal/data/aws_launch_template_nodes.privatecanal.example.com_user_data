@@ -189,7 +189,11 @@ ConfigServer:
   - https://kops-controller.internal.privatecanal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+<<<<<<< HEAD
 NodeupConfigHash: z4vlKQXv1Kpn7EefUwJ5HO5PNBCcOTBQg3nFuBCcnis=
+=======
+NodeupConfigHash: 14Kk8JhOaU7M/vgNvekHMhz9KgrN0sTQo/n1Stw3hv4=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

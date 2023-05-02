@@ -243,7 +243,11 @@ CloudProvider: aws
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: master-us-test-1c
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD
 NodeupConfigHash: GdMdwFGiMUjbb3JilkqVyeB+41rKtPH2TKqb5yyPVu4=
+=======
+NodeupConfigHash: DOHVyqiorZ4kBlb2uMgMNiRurmki3DCaq5GPOk/wGNY=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

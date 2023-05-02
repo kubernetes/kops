@@ -188,7 +188,11 @@ ConfigServer:
   - https://kops-controller.internal.cas-priority-expander.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+<<<<<<< HEAD
 NodeupConfigHash: j6NeU3OueMB7WRJ6wwUGASP08SkOMHBwd2HxGUohxcY=
+=======
+NodeupConfigHash: dST1KP3SRwvIhZU2FE72YhdVvu04jT199KX+NVLYiE0=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

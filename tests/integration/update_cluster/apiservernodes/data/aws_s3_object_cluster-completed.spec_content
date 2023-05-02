@@ -21,8 +21,14 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
+<<<<<<< HEAD:tests/integration/update_cluster/apiservernodes/data/aws_s3_object_cluster-completed.spec_content
     version: 1.4.13
   dnsZone: Z1AFAKE1ZON3YO
+=======
+    runc:
+      version: 1.1.7
+    version: 1.6.20
+>>>>>>> run ./hack/update-expected.sh:tests/integration/update_cluster/minimal_scaleway/data/aws_s3_object_cluster-completed.spec_content
   docker:
     skipInstall: true
   etcdClusters:
