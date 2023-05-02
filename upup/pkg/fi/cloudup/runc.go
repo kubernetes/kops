@@ -159,6 +159,7 @@ func findAllRuncHashesAmd64() map[string]string {
 		"1.1.2": "e0436dfc5d26ca88f00e84cbdab5801dd9829b1e5ded05dcfc162ce5718c32ce",
 		"1.1.3": "6e8b24be90fffce6b025d254846da9d2ca6d65125f9139b6354bab0272253d01",
 		"1.1.4": "db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce",
+		"1.1.7": "c3aadb419e5872af49504b6de894055251d2e685fddddb981a79703e7f895cbd",
 	}
 
 	return hashes
@@ -171,6 +172,7 @@ func findAllRuncHashesArm64() map[string]string {
 		"1.1.2": "6ebd968d46d00a3886e9a0cae2e0a7b399e110cf5d7b26e63ce23c1d81ea10ef",
 		"1.1.3": "00c9ad161a77a01d9dcbd25b1d76fa9822e57d8e4abf26ba8907c98f6bcfcd0f",
 		"1.1.4": "dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223",
+		"1.1.7": "1b309c4d5aa4cc7b888b2f79c385ecee26ca3d55dae0852e7c4a692196d5faab",
 	}
 
 	return hashes
