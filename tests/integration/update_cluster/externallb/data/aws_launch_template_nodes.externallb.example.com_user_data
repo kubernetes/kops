@@ -184,7 +184,11 @@ ConfigServer:
   - https://kops-controller.internal.externallb.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+<<<<<<< HEAD
 NodeupConfigHash: iJKilqxspeP23hRmmEoE/6ub0cjhfIb1+5ckx058i1w=
+=======
+NodeupConfigHash: OyVxOCi9bvdLbJfKIUFlFFtPgejO0tDMYsK2ZRQaiXg=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

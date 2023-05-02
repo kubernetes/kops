@@ -259,7 +259,11 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD
 NodeupConfigHash: 6t2fVzcVS700vzqTGel+2diC36uSLb+ilZjsIjNbIBw=
+=======
+NodeupConfigHash: f3F1H2fS8LcKpIhD1nzm+rRcyp2D/I54aD7u3ydG+A8=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 

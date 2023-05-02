@@ -161,11 +161,19 @@ kubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+<<<<<<< HEAD:tests/integration/update_cluster/apiservernodes/data/aws_launch_template_apiserver.apiservers.minimal.example.com_user_data
 CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
 NodeupConfigHash: vMi9Desod9xbuTf+IOVqaO3/VqrVtrOHP20EojREMJU=
+=======
+CloudProvider: scaleway
+ConfigBase: memfs://tests/scw-minimal.k8s.local
+InstanceGroupName: nodes-fr-par-1
+InstanceGroupRole: Node
+NodeupConfigHash: /f+JjY0FUy7UQTX7FkWZTbt01dPQMTe77/pmknGuThY=
+>>>>>>> run ./hack/update-expected.sh:tests/integration/update_cluster/minimal_scaleway/data/scaleway_instance_server_nodes-fr-par-1_user_data
 
 __EOF_KUBE_ENV
 

@@ -249,7 +249,11 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
 InstanceGroupRole: ControlPlane
+<<<<<<< HEAD
 NodeupConfigHash: n0pGwxV4Aqfz+7v0Ukw+80OTZs4VBgR2jY3MfrmxsqM=
+=======
+NodeupConfigHash: +sy35Abus9HOzAuFmxFTqXkM6iM1vpCOfoa9Ot+tjBY=
+>>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
 
