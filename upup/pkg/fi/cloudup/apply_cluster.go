@@ -1056,6 +1056,23 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
+		if c.Cluster.UsesExternalECRCredentialsProvider() {
+			binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
+			if binaryLocation == nil {
+				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
+			}
+
+			k, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
+			if err != nil {
+				return err
+			}
+			u, hash, err := assetBuilder.RemapFileAndSHA(k)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
+		}
+
 		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
 		if err != nil {
 			return err

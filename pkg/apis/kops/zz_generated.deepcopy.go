@@ -202,6 +202,11 @@ func (in *AWSSpec) DeepCopyInto(out *AWSSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.BinariesLocation != nil {
+		in, out := &in.BinariesLocation, &out.BinariesLocation
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

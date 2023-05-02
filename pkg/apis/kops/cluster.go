@@ -220,6 +220,9 @@ type AWSSpec struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
+
+	// BinariesLocation is the location of the AWS cloud provider binaries.
+	BinariesLocation *string `json:"binaryLocation,omitempty"`
 }
 
 // DOSpec configures the Digital Ocean cloud provider.
@@ -893,6 +896,10 @@ func (c *Cluster) UsesNoneDNS() bool {
 		return true
 	}
 	return false
+}
+
+func (c *Cluster) UsesExternalECRCredentialsProvider() bool {
+	return c.IsKubernetesGTE("1.27") && c.Spec.GetCloudProvider() == CloudProviderAWS
 }
 
 func (c *Cluster) APIInternalName() string {

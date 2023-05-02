@@ -1478,6 +1478,7 @@ func autoConvert_v1alpha3_AWSSpec_To_kops_AWSSpec(in *AWSSpec, out *kops.AWSSpec
 	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.SpotinstProduct = in.SpotinstProduct
 	out.SpotinstOrientation = in.SpotinstOrientation
+	out.BinariesLocation = in.BinariesLocation
 	return nil
 }
 
@@ -1537,6 +1538,7 @@ func autoConvert_kops_AWSSpec_To_v1alpha3_AWSSpec(in *kops.AWSSpec, out *AWSSpec
 	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.SpotinstProduct = in.SpotinstProduct
 	out.SpotinstOrientation = in.SpotinstOrientation
+	out.BinariesLocation = in.BinariesLocation
 	return nil
 }
 

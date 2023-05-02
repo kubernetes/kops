@@ -216,6 +216,9 @@ type AWSSpec struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
+
+	// BinariesLocation is the location of the AWS cloud provider binaries.
+	BinariesLocation *string `json:"binaryLocation,omitempty"`
 }
 
 // DOSpec configures the Digital Ocean cloud provider.
