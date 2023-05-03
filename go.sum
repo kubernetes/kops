@@ -671,6 +671,8 @@ github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DM
 github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/yZzE=
 github.com/spf13/viper v1.15.0 h1:js3yy885G8xwJa6iOISGFwd+qlUo5AvyXb7CiihdtiU=
 github.com/spf13/viper v1.15.0/go.mod h1:fFcTBJxvhhzSJiZy8n+PeW6t8l+KeT/uTARa0jHOQLA=
+github.com/spotinst/spotinst-sdk-go v1.145.0 h1:c/PufzKMbjmqSYcVHr+TuNpcZ6x5+jZALVGTesbJ7q4=
+github.com/spotinst/spotinst-sdk-go v1.145.0/go.mod h1:Ku9c4p+kRWnQqmXkzGcTMHLcQKgLHrQZISxeKY7mPqE=
 github.com/spotinst/spotinst-sdk-go v1.334.0 h1:CniPPiBwJWNIs9RA8S47P6KXT9Qm0BMsSl5viepTKaI=
 github.com/spotinst/spotinst-sdk-go v1.334.0/go.mod h1:C6mrT7+mqOgPyabacjyYTvilu8Xm96mvTvrZQhj99WI=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
