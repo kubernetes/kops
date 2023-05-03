@@ -259,9 +259,13 @@ ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: 1/5pTF0nS08hbu5SaV/xHYNyDj2uEPTP5wyGOjGzorc=
 =======
 NodeupConfigHash: xZmPxWeN+3+MeEuCtSEjnHZ3HP3z+DsYVNrR0PTJDHg=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: 7qTaDOQ50UDKITvxDuyGJI9EUV3cFNIDCiUcZhVOfdk=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

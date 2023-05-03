@@ -15,13 +15,17 @@ Assets:
   - b6769d8ac6a0ed0f13b307d289dc092ad86180b08f5b5044af152808c04950ae@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - bb9a9ccd6517e2a54da748a9f60dc9aa9d79d19d4724663f2386812f083968e2@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-amd64.tar.gz
-  - c3aadb419e5872af49504b6de894055251d2e685fddddb981a79703e7f895cbd@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
+  - f00b144e86f8c1db347a2e8f22caade07d55382c5f76dd5c0a5b1ab64eaec8bb@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.amd64
   arm64:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-arm64.tar.gz
+<<<<<<< HEAD
   - 1b309c4d5aa4cc7b888b2f79c385ecee26ca3d55dae0852e7c4a692196d5faab@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.arm64
+>>>>>>> run ./hack/update-expected.sh
+=======
+  - 54e79e4d48b9e191767e4abc08be1a8476a1c757e9a9f8c45c6ded001226867f@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.arm64
 >>>>>>> run ./hack/update-expected.sh
 CAs: {}
 ClusterName: private-shared-subnet.example.com
@@ -59,7 +63,7 @@ containerdConfig:
   version: 1.4.13
 =======
   runc:
-    version: 1.1.7
+    version: 1.1.5
   version: 1.6.20
 docker:
   skipInstall: true

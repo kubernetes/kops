@@ -54,10 +54,14 @@ spec:
     logLevel: info
     runc:
 <<<<<<< HEAD
+<<<<<<< HEAD
       version: 1.1.4
     version: 1.6.18
 =======
       version: 1.1.7
+=======
+      version: 1.1.5
+>>>>>>> run ./hack/update-expected.sh
     version: 1.6.20
 >>>>>>> run ./hack/update-expected.sh
   dnsZone: Z1AFAKE1ZON3YO
