@@ -1193,7 +1193,7 @@ metadata:
   namespace: kube-system
 spec:
   dnsNames:
-  - "*.default.hubble-grpc.cilium.io"
+  - "*.{{ .ClusterName }}.hubble-grpc.cilium.io"
   issuerRef:
     kind: Issuer
     name: networking.cilium.io
