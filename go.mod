@@ -43,7 +43,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
-	github.com/spotinst/spotinst-sdk-go v1.334.0
+	github.com/spotinst/spotinst-sdk-go v1.145.0
 	github.com/stretchr/testify v1.8.2
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.10.0
