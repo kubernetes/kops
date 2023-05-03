@@ -244,9 +244,13 @@ ConfigBase: memfs://clusters.example.com/sharedvpc.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: q5xjYKLwVX+STVA/6Uuf6gXNgssnERAV7hLZqJnlXfE=
 =======
 NodeupConfigHash: 2ojWF4qDzMaHCUzTLQx7DIftYRJW4xuP2EN7n0xDJ+4=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: YjNRGURukN8/IXHy7i90CL9Po9d+GwVOtH6u6q66UTI=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

@@ -242,9 +242,13 @@ ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: S7Isft+xRmWP8ed9LKi2XlkdQZGPIGQkwGEWazZWUTM=
 =======
 NodeupConfigHash: 5Fkv6pEJyuLHn9J9FAY+sk/1ejV/RVccnn0QN06RNyw=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: u66V79xYe+DHgxHrdVuI4+1+gIfzthB5eq8zyH1M0c0=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

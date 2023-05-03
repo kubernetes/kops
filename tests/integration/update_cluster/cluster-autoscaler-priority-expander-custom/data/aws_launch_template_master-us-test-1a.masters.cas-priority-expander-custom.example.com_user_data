@@ -259,9 +259,13 @@ ConfigBase: memfs://clusters.example.com/cas-priority-expander-custom.example.co
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: cBfatvrfyCMj0sY8eypmVHOw1euxQf5tuXvy+CAJJ44=
 =======
 NodeupConfigHash: vkDF+DmigaDlFSoHgoHdOerM2zaGxQhUId3mZk0ozkU=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: H/MLFR8mq0l0n8MJyTW2SsOYVPIKG2ZfC6kQlra1qZc=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

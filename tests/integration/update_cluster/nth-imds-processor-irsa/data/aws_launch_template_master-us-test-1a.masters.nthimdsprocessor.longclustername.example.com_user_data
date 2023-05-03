@@ -244,9 +244,13 @@ ConfigBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.exampl
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: VY+yD9mAGWb9ytiA3sZITojjBw0TRyUzJ0XVvFrkxAo=
 =======
 NodeupConfigHash: TrY0jpgetzgI/oLg3Fji5OHnR5AH/QZR1nxCcg+8AZM=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: rHdPeto6CVF5Y/kEQ1IlOtK6oyS4tQGkvVhjQ2tnusU=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

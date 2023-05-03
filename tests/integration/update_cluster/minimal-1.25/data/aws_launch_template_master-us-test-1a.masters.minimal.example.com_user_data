@@ -265,9 +265,13 @@ ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: UU9pC2mqPwPhP/br6oGevS0OygsyNfFZYqPVvaadvp0=
 =======
 NodeupConfigHash: cLgJ7ULGGzRHx1AXWMO3jQ16hZrI16x4pbOIdX7gf5g=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: gK8Jrt2iHlosl4Bm4UX5gtOaXryK+Zyd9zSjhVUzHdM=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
