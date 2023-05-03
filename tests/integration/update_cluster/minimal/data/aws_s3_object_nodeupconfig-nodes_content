@@ -5,14 +5,14 @@ Assets:
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - bb9a9ccd6517e2a54da748a9f60dc9aa9d79d19d4724663f2386812f083968e2@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-amd64.tar.gz
-  - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
+  - c3aadb419e5872af49504b6de894055251d2e685fddddb981a79703e7f895cbd@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
   arm64:
   - 2a15e9c291dce3e07db5d9948d5c37a4e52c9884343f63287189e4f0d4c3df76@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/arm64/kubelet
   - c5fad9f96ab5fe04b8927ce83ceefc4db65b032303a23b35e353276479450d2a@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-arm64.tar.gz
-  - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
+  - 1b309c4d5aa4cc7b888b2f79c385ecee26ca3d55dae0852e7c4a692196d5faab@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
 ContainerRuntime: containerd
@@ -56,7 +56,7 @@ channels:
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.4
+    version: 1.1.7
   version: 1.6.20
 docker:
   skipInstall: true
