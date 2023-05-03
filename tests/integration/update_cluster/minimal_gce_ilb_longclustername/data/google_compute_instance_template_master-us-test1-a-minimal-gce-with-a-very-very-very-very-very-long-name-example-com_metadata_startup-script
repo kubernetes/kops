@@ -253,9 +253,13 @@ ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: lnIL9BGcIJXu4RW4/KPbFQQNlPM5B+pkx08PTDBX4KA=
 =======
 NodeupConfigHash: xxkE3NTxE9A7h2avjlO8pVHBeBwoHWbeh1f7kqFlDuM=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: Hikzvbi/hWLMEA2hE5l1N00PZSu2+Fn9qemTXGbeGHM=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

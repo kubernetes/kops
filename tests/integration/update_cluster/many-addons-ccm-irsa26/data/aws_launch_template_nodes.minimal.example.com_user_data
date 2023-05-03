@@ -189,9 +189,13 @@ ConfigServer:
 InstanceGroupName: nodes
 InstanceGroupRole: Node
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: VDNViYe452a3TyFoaY09zyrQvmp1nd0x+dcBpTGGegA=
 =======
 NodeupConfigHash: oGWbhRLfYnj7kzyD+BnBwUjE6Lk5/OKCBIoBUHIAzSs=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: jYdlLHZsHjAM++Y68Y28qB3xg96i4wOPTPJnZ6FYLYQ=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

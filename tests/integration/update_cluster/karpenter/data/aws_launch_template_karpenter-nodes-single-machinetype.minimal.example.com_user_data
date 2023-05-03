@@ -190,9 +190,13 @@ ConfigServer:
 InstanceGroupName: karpenter-nodes-single-machinetype
 InstanceGroupRole: Node
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: JByaL7RlaaiPHAkZkjjnXr3Xxvgn16U7S2quIQEHZSE=
 =======
 NodeupConfigHash: zlOe+PyyK9r/utlqHcOqbkl5GZA5LxJFTVYNszrNGGY=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: i6v+FwzhB7+OrVMKtBK3jMCzGvy7q54PDlbv8wP4U1A=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV

@@ -261,9 +261,13 @@ ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
 <<<<<<< HEAD
+<<<<<<< HEAD
 NodeupConfigHash: 7ygNmuELACqCHIIaYPvhWTuiIdwXrd1Toj/zvYahy3A=
 =======
 NodeupConfigHash: eyxWtLBoJrhXaJpX/uJk4Px0Epyvo9S2L7gsmlS5/vc=
+>>>>>>> run ./hack/update-expected.sh
+=======
+NodeupConfigHash: P/ju6vWPBjB+8G/7loi1H+12cQOyrgipOhy3cG5126Q=
 >>>>>>> run ./hack/update-expected.sh
 
 __EOF_KUBE_ENV
