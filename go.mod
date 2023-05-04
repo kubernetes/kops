@@ -3,8 +3,8 @@ module k8s.io/kops
 go 1.20
 
 replace (
-	github.com/docker/cli => github.com/docker/cli v23.0.1+incompatible
-	github.com/docker/docker => github.com/docker/docker v23.0.1+incompatible
+	github.com/docker/cli => github.com/docker/cli v23.0.5+incompatible
+	github.com/docker/docker => github.com/docker/docker v23.0.5+incompatible
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.13.1-0.20230504051641-57674c8dd62f
 )
 
