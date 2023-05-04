@@ -261,6 +261,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: additionalobjects.example.com
 ConfigBase: memfs://tests/additionalobjects.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
