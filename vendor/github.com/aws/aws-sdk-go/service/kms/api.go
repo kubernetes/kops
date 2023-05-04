@@ -1458,11 +1458,16 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 // see Best practices for IAM policies (https://docs.aws.amazon.com/kms/latest/developerguide/iam-policies.html#iam-policies-best-practices)
 // in the Key Management Service Developer Guide.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-// in the Key Management Service Developer Guide.
+// Decrypt also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call Decrypt
+// for a Nitro enclave, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. Instead of the plaintext data, the
+// response includes the plaintext data encrypted with the public key from the
+// attestation document (CiphertextForRecipient).For information about the interaction
+// between KMS and Amazon Web Services Nitro Enclaves, see How Amazon Web Services
+// Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -3375,11 +3380,18 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 // For more information, see Encryption Context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
 // in the Key Management Service Developer Guide.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-// in the Key Management Service Developer Guide.
+// GenerateDataKey also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateDataKey
+// for an Amazon Web Services Nitro enclave, use the Amazon Web Services Nitro
+// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. GenerateDataKey returns a copy of the
+// data key encrypted under the specified KMS key, as usual. But instead of
+// a plaintext copy of the data key, the response includes a copy of the data
+// key encrypted under the public key from the attestation document (CiphertextForRecipient).
+// For information about the interaction between KMS and Amazon Web Services
+// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -3598,6 +3610,20 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 // X.509 SubjectPublicKeyInfo, as specified in RFC 5280 (https://tools.ietf.org/html/rfc5280).
 // The private key is a DER-encoded PKCS8 PrivateKeyInfo, as specified in RFC
 // 5958 (https://tools.ietf.org/html/rfc5958).
+//
+// GenerateDataKeyPair also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateDataKeyPair
+// for an Amazon Web Services Nitro enclave, use the Amazon Web Services Nitro
+// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. GenerateDataKeyPair returns the public
+// data key and a copy of the private data key encrypted under the specified
+// KMS key, as usual. But instead of a plaintext copy of the private data key
+// (PrivateKeyPlaintext), the response includes a copy of the private data key
+// encrypted under the public key from the attestation document (CiphertextForRecipient).
+// For information about the interaction between KMS and Amazon Web Services
+// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
 //
 // You can use an optional encryption context to add additional security to
 // the encryption operation. If you specify an EncryptionContext, you must specify
@@ -3987,7 +4013,7 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 // keys, use the KeySpec parameter.
 //
 // To generate an SM4 data key (China Regions only), specify a KeySpec value
-// of AES_128 or NumberOfBytes value of 128. The symmetric encryption key used
+// of AES_128 or NumberOfBytes value of 16. The symmetric encryption key used
 // in China Regions to encrypt your data key is an SM4 encryption key.
 //
 // If the operation succeeds, you will find the encrypted copy of the data key
@@ -4320,10 +4346,15 @@ func (c *KMS) GenerateRandomRequest(input *GenerateRandomInput) (req *request.Re
 // string in the CloudHSM cluster associated with an CloudHSM key store, use
 // the CustomKeyStoreId parameter.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// GenerateRandom also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateRandom
+// for a Nitro enclave, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. Instead of plaintext bytes, the response
+// includes the plaintext bytes encrypted under the public key from the attestation
+// document (CiphertextForRecipient).For information about the interaction between
+// KMS and Amazon Web Services Nitro Enclaves, see How Amazon Web Services Nitro
+// Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
 // in the Key Management Service Developer Guide.
 //
 // For more information about entropy and random number generation, see Key
@@ -9620,6 +9651,9 @@ type CreateAliasInput struct {
 	// Specifies the alias name. This value must begin with alias/ followed by a
 	// name, such as alias/ExampleAlias.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// The AliasName value must be string of 1-256 characters. It can contain only
 	// alphanumeric characters, forward slashes (/), underscores (_), and dashes
 	// (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
@@ -9740,6 +9774,9 @@ type CreateCustomKeyStoreInput struct {
 	// Specifies a friendly name for the custom key store. The name must be unique
 	// in your Amazon Web Services account and Region. This parameter is required
 	// for all custom key stores.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// CustomKeyStoreName is a required field
 	CustomKeyStoreName *string `min:"1" type:"string" required:"true"`
@@ -10036,19 +10073,13 @@ type CreateGrantInput struct {
 
 	// Specifies a grant constraint.
 	//
-	// KMS supports the EncryptionContextEquals and EncryptionContextSubset grant
-	// constraints. Each constraint value can include up to 8 encryption context
-	// pairs. The encryption context value in each constraint cannot exceed 384
-	// characters. For information about grant constraints, see Using grant constraints
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/create-grant-overview.html#grant-constraints)
-	// in the Key Management Service Developer Guide. For more information about
-	// encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
-	// in the Key Management Service Developer Guide .
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
-	// The encryption context grant constraints allow the permissions in the grant
-	// only when the encryption context in the request matches (EncryptionContextEquals)
-	// or includes (EncryptionContextSubset) the encryption context specified in
-	// this structure.
+	// KMS supports the EncryptionContextEquals and EncryptionContextSubset grant
+	// constraints, which allow the permissions in the grant only when the encryption
+	// context in the request matches (EncryptionContextEquals) or includes (EncryptionContextSubset)
+	// the encryption context specified in the constraint.
 	//
 	// The encryption context grant constraints are supported only on grant operations
 	// (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
@@ -10060,8 +10091,15 @@ type CreateGrantInput struct {
 	// permission have an equally strict or stricter encryption context constraint.
 	//
 	// You cannot use an encryption context grant constraint for cryptographic operations
-	// with asymmetric KMS keys or HMAC KMS keys. These keys don't support an encryption
-	// context.
+	// with asymmetric KMS keys or HMAC KMS keys. Operations with these keys don't
+	// support an encryption context.
+	//
+	// Each constraint value can include up to 8 encryption context pairs. The encryption
+	// context value in each constraint cannot exceed 384 characters. For information
+	// about grant constraints, see Using grant constraints (https://docs.aws.amazon.com/kms/latest/developerguide/create-grant-overview.html#grant-constraints)
+	// in the Key Management Service Developer Guide. For more information about
+	// encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
+	// in the Key Management Service Developer Guide .
 	Constraints *GrantConstraints `type:"structure"`
 
 	// A list of grant tokens.
@@ -10103,6 +10141,9 @@ type CreateGrantInput struct {
 
 	// A friendly name for the grant. Use this value to prevent the unintended creation
 	// of duplicate grants when retrying this request.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// When this value is absent, all CreateGrant requests result in a new grant
 	// with a unique GrantId even if all the supplied parameters are identical.
@@ -10323,10 +10364,12 @@ type CreateKeyInput struct {
 	// Deprecated: This parameter has been deprecated. Instead, use the KeySpec parameter.
 	CustomerMasterKeySpec *string `deprecated:"true" type:"string" enum:"CustomerMasterKeySpec"`
 
-	// A description of the KMS key.
+	// A description of the KMS key. Use a description that helps you decide whether
+	// the KMS key is appropriate for a task. The default value is an empty string
+	// (no description).
 	//
-	// Use a description that helps you decide whether the KMS key is appropriate
-	// for a task. The default value is an empty string (no description).
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
 	Description *string `type:"string"`
@@ -10467,6 +10510,9 @@ type CreateKeyInput struct {
 
 	// Assigns one or more tags to the KMS key. Use this parameter to tag the KMS
 	// key when it is created. To tag an existing KMS key, use the TagResource operation.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// Tagging or untagging a KMS key can allow or deny permission to the KMS key.
 	// For details, see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
@@ -11288,6 +11334,27 @@ type DecryptInput struct {
 	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	// To get the alias name and alias ARN, use ListAliases.
 	KeyId *string `min:"1" type:"string"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning the plaintext data, KMS
+	// encrypts the plaintext data with the public key in the attestation document,
+	// and returns the resulting ciphertext in the CiphertextForRecipient field
+	// in the response. This ciphertext can be decrypted only with the private key
+	// in the enclave. The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -11319,6 +11386,11 @@ func (s *DecryptInput) Validate() error {
 	}
 	if s.KeyId != nil && len(*s.KeyId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -11357,8 +11429,25 @@ func (s *DecryptInput) SetKeyId(v string) *DecryptInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *DecryptInput) SetRecipient(v *RecipientInfo) *DecryptInput {
+	s.Recipient = v
+	return s
+}
+
 type DecryptOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The plaintext data encrypted with the public key in the attestation document.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The encryption algorithm that was used to decrypt the ciphertext.
 	EncryptionAlgorithm *string `type:"string" enum:"EncryptionAlgorithmSpec"`
@@ -11369,6 +11458,9 @@ type DecryptOutput struct {
 
 	// Decrypted plaintext data. When you use the HTTP API or the Amazon Web Services
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by DecryptOutput's
@@ -11394,6 +11486,12 @@ func (s DecryptOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DecryptOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *DecryptOutput) SetCiphertextForRecipient(v []byte) *DecryptOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetEncryptionAlgorithm sets the EncryptionAlgorithm field's value.
@@ -12461,6 +12559,9 @@ type EncryptInput struct {
 	// with a symmetric encryption KMS key. The standard asymmetric encryption algorithms
 	// and HMAC algorithms that KMS uses do not support an encryption context.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
 	// to encrypt data, you must specify the same (an exact case-sensitive match)
@@ -12713,6 +12814,9 @@ type GenerateDataKeyInput struct {
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
 	// to encrypt data, you must specify the same (an exact case-sensitive match)
@@ -12773,6 +12877,29 @@ type GenerateDataKeyInput struct {
 	// You must specify either the KeySpec or the NumberOfBytes parameter (but not
 	// both) in every GenerateDataKey request.
 	NumberOfBytes *int64 `min:"1" type:"integer"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning the plaintext data key,
+	// KMS encrypts the plaintext data key under the public key in the attestation
+	// document, and returns the resulting ciphertext in the CiphertextForRecipient
+	// field in the response. This ciphertext can be decrypted only with the private
+	// key in the enclave. The CiphertextBlob field in the response contains a copy
+	// of the data key encrypted under the KMS key specified by the KeyId parameter.
+	// The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -12804,6 +12931,11 @@ func (s *GenerateDataKeyInput) Validate() error {
 	}
 	if s.NumberOfBytes != nil && *s.NumberOfBytes < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("NumberOfBytes", 1))
+	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -12842,6 +12974,12 @@ func (s *GenerateDataKeyInput) SetNumberOfBytes(v int64) *GenerateDataKeyInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateDataKeyInput) SetRecipient(v *RecipientInfo) *GenerateDataKeyInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateDataKeyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -12849,6 +12987,19 @@ type GenerateDataKeyOutput struct {
 	// Web Services CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
 	// CiphertextBlob is automatically base64 encoded/decoded by the SDK.
 	CiphertextBlob []byte `min:"1" type:"blob"`
+
+	// The plaintext data key encrypted with the public key from the Nitro enclave.
+	// This ciphertext can be decrypted only by using a private key in the Nitro
+	// enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the KMS key that encrypted the data key.
@@ -12858,6 +13009,9 @@ type GenerateDataKeyOutput struct {
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded. Use
 	// this data key to encrypt your data outside of KMS. Then, remove it from memory
 	// as soon as possible.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateDataKeyOutput's
@@ -12891,6 +13045,12 @@ func (s *GenerateDataKeyOutput) SetCiphertextBlob(v []byte) *GenerateDataKeyOutp
 	return s
 }
 
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateDataKeyOutput) SetCiphertextForRecipient(v []byte) *GenerateDataKeyOutput {
+	s.CiphertextForRecipient = v
+	return s
+}
+
 // SetKeyId sets the KeyId field's value.
 func (s *GenerateDataKeyOutput) SetKeyId(v string) *GenerateDataKeyOutput {
 	s.KeyId = &v
@@ -12908,6 +13068,9 @@ type GenerateDataKeyPairInput struct {
 
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -12966,6 +13129,30 @@ type GenerateDataKeyPairInput struct {
 	//
 	// KeyPairSpec is a required field
 	KeyPairSpec *string `type:"string" required:"true" enum:"DataKeyPairSpec"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning a plaintext copy of the
+	// private data key, KMS encrypts the plaintext private data key under the public
+	// key in the attestation document, and returns the resulting ciphertext in
+	// the CiphertextForRecipient field in the response. This ciphertext can be
+	// decrypted only with the private key in the enclave. The CiphertextBlob field
+	// in the response contains a copy of the private data key encrypted under the
+	// KMS key specified by the KeyId parameter. The PrivateKeyPlaintext field in
+	// the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -12998,6 +13185,11 @@ func (s *GenerateDataKeyPairInput) Validate() error {
 	if s.KeyPairSpec == nil {
 		invalidParams.Add(request.NewErrParamRequired("KeyPairSpec"))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13029,8 +13221,27 @@ func (s *GenerateDataKeyPairInput) SetKeyPairSpec(v string) *GenerateDataKeyPair
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateDataKeyPairInput) SetRecipient(v *RecipientInfo) *GenerateDataKeyPairInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateDataKeyPairOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The plaintext private data key encrypted with the public key from the Nitro
+	// enclave. This ciphertext can be decrypted only by using a private key in
+	// the Nitro enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the KMS key that encrypted the private key.
@@ -13046,6 +13257,9 @@ type GenerateDataKeyPairOutput struct {
 
 	// The plaintext copy of the private key. When you use the HTTP API or the Amazon
 	// Web Services CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the PrivateKeyPlaintext
+	// field is null or empty.
 	//
 	// PrivateKeyPlaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateDataKeyPairOutput's
@@ -13076,6 +13290,12 @@ func (s GenerateDataKeyPairOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GenerateDataKeyPairOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateDataKeyPairOutput) SetCiphertextForRecipient(v []byte) *GenerateDataKeyPairOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetKeyId sets the KeyId field's value.
@@ -13113,6 +13333,9 @@ type GenerateDataKeyPairWithoutPlaintextInput struct {
 
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -13302,6 +13525,9 @@ type GenerateDataKeyWithoutPlaintextInput struct {
 
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -13649,6 +13875,27 @@ type GenerateRandomInput struct {
 
 	// The length of the random byte string. This parameter is required.
 	NumberOfBytes *int64 `min:"1" type:"integer"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning plaintext bytes, KMS encrypts
+	// the plaintext bytes under the public key in the attestation document, and
+	// returns the resulting ciphertext in the CiphertextForRecipient field in the
+	// response. This ciphertext can be decrypted only with the private key in the
+	// enclave. The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -13678,6 +13925,11 @@ func (s *GenerateRandomInput) Validate() error {
 	if s.NumberOfBytes != nil && *s.NumberOfBytes < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("NumberOfBytes", 1))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13697,11 +13949,33 @@ func (s *GenerateRandomInput) SetNumberOfBytes(v int64) *GenerateRandomInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateRandomInput) SetRecipient(v *RecipientInfo) *GenerateRandomInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateRandomOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The plaintext random bytes encrypted with the public key from the Nitro enclave.
+	// This ciphertext can be decrypted only by using a private key in the Nitro
+	// enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
+
 	// The random byte string. When you use the HTTP API or the Amazon Web Services
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateRandomOutput's
@@ -13727,6 +14001,12 @@ func (s GenerateRandomOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GenerateRandomOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateRandomOutput) SetCiphertextForRecipient(v []byte) *GenerateRandomOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetPlaintext sets the Plaintext field's value.
@@ -17376,6 +17656,9 @@ type ReEncryptInput struct {
 
 	// Specifies that encryption context to use when the reencrypting the data.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// A destination encryption context is valid only when the destination KMS key
 	// is a symmetric encryption KMS key. The standard ciphertext format for asymmetric
 	// KMS keys does not include fields for metadata.
@@ -17647,6 +17930,71 @@ func (s *ReEncryptOutput) SetSourceKeyId(v string) *ReEncryptOutput {
 	return s
 }
 
+// Contains information about the party that receives the response from the
+// API operation.
+//
+// This data type is designed to support Amazon Web Services Nitro Enclaves,
+// which lets you create an isolated compute environment in Amazon EC2. For
+// information about the interaction between KMS and Amazon Web Services Nitro
+// Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide.
+type RecipientInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The attestation document for an Amazon Web Services Nitro Enclave. This document
+	// includes the enclave's public key.
+	// AttestationDocument is automatically base64 encoded/decoded by the SDK.
+	AttestationDocument []byte `min:"1" type:"blob"`
+
+	// The encryption algorithm that KMS should use with the public key for an Amazon
+	// Web Services Nitro Enclave to encrypt plaintext values for the response.
+	// The only valid value is RSAES_OAEP_SHA_256.
+	KeyEncryptionAlgorithm *string `type:"string" enum:"KeyEncryptionMechanism"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecipientInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecipientInfo) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RecipientInfo) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RecipientInfo"}
+	if s.AttestationDocument != nil && len(s.AttestationDocument) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AttestationDocument", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttestationDocument sets the AttestationDocument field's value.
+func (s *RecipientInfo) SetAttestationDocument(v []byte) *RecipientInfo {
+	s.AttestationDocument = v
+	return s
+}
+
+// SetKeyEncryptionAlgorithm sets the KeyEncryptionAlgorithm field's value.
+func (s *RecipientInfo) SetKeyEncryptionAlgorithm(v string) *RecipientInfo {
+	s.KeyEncryptionAlgorithm = &v
+	return s
+}
+
 type ReplicateKeyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -17665,6 +18013,9 @@ type ReplicateKeyInput struct {
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// A description of the KMS key. The default value is an empty string (no description).
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// The description is not a shared property of multi-Region keys. You can specify
 	// the same description or a different description for each key in a set of
@@ -17761,6 +18112,9 @@ type ReplicateKeyInput struct {
 	// Assigns one or more tags to the replica key. Use this parameter to tag the
 	// KMS key when it is created. To tag an existing KMS key, use the TagResource
 	// operation.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// Tagging or untagging a KMS key can allow or deny permission to the KMS key.
 	// For details, see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
@@ -18517,6 +18871,9 @@ func (s *SignOutput) SetSigningAlgorithm(v string) *SignOutput {
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
 // tag values are both required, but tag values can be empty (null) strings.
 //
+// Do not include confidential or sensitive information in this field. This
+// field may be displayed in plaintext in CloudTrail logs and other output.
+//
 // For information about the rules that apply to tag keys and tag values, see
 // User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
 // in the Amazon Web Services Billing and Cost Management User Guide.
@@ -18665,10 +19022,11 @@ type TagResourceInput struct {
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
 
-	// One or more tags.
+	// One or more tags. Each tag consists of a tag key and a tag value. The tag
+	// value can be an empty (null) string.
 	//
-	// Each tag consists of a tag key and a tag value. The tag value can be an empty
-	// (null) string.
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// You cannot have more than one tag on a KMS key with the same tag key. If
 	// you specify an existing tag key with a different tag value, KMS replaces
@@ -18926,6 +19284,9 @@ type UpdateAliasInput struct {
 	// with alias/ followed by the alias name, such as alias/ExampleAlias. You cannot
 	// use UpdateAlias to change the alias name.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// AliasName is a required field
 	AliasName *string `min:"1" type:"string" required:"true"`
 
@@ -19070,6 +19431,9 @@ type UpdateCustomKeyStoreInput struct {
 
 	// Changes the friendly name of the custom key store to the value that you specify.
 	// The custom key store name must be unique in the Amazon Web Services account.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To change this value, an CloudHSM key store must be disconnected. An external
 	// key store can be connected or disconnected.
@@ -19285,6 +19649,9 @@ type UpdateKeyDescriptionInput struct {
 	_ struct{} `type:"structure"`
 
 	// New description for the KMS key.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// Description is a required field
 	Description *string `type:"string" required:"true"`
@@ -21295,6 +21662,18 @@ func GrantOperation_Values() []string {
 		GrantOperationGenerateDataKeyPairWithoutPlaintext,
 		GrantOperationGenerateMac,
 		GrantOperationVerifyMac,
+	}
+}
+
+const (
+	// KeyEncryptionMechanismRsaesOaepSha256 is a KeyEncryptionMechanism enum value
+	KeyEncryptionMechanismRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
+)
+
+// KeyEncryptionMechanism_Values returns all elements of the KeyEncryptionMechanism enum
+func KeyEncryptionMechanism_Values() []string {
+	return []string{
+		KeyEncryptionMechanismRsaesOaepSha256,
 	}
 }
 

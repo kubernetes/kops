@@ -131,6 +131,7 @@ func (c *s2av2TransportCreds) ClientHandshake(ctx context.Context, serverAuthori
 		}
 		return nil, nil, err
 	}
+	defer cstream.CloseSend()
 	if grpclog.V(1) {
 		grpclog.Infof("Connected to S2Av2.")
 	}
@@ -192,6 +193,7 @@ func (c *s2av2TransportCreds) ServerHandshake(rawConn net.Conn) (net.Conn, crede
 		grpclog.Infof("Failed to connect to S2Av2: %v", err)
 		return nil, nil, err
 	}
+	defer cstream.CloseSend()
 	if grpclog.V(1) {
 		grpclog.Infof("Connected to S2Av2.")
 	}

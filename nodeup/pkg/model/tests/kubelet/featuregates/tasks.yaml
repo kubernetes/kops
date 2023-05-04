@@ -21,6 +21,7 @@ contents: |
     webhook:
       cacheAuthorizedTTL: 0s
       cacheUnauthorizedTTL: 0s
+  containerRuntimeEndpoint: ""
   cpuManagerReconcilePeriod: 0s
   evictionPressureTransitionPeriod: 0s
   fileCheckFrequency: 0s

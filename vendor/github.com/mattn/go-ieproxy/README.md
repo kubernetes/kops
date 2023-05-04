@@ -1,10 +1,8 @@
 # ieproxy
 
-Go package to detect the proxy settings on Windows platform, and MacOS.
+Go package to detect the proxy settings on Windows platform.
 
-On Windows, the settings are initially attempted to be read from the [`WinHttpGetIEProxyConfigForCurrentUser` DLL call](https://docs.microsoft.com/en-us/windows/desktop/api/winhttp/nf-winhttp-winhttpgetieproxyconfigforcurrentuser), but falls back to the registry (`CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings`) in the event the DLL call fails.
-
-On MacOS, the settings are read from [`CFNetworkCopySystemProxySettings` method of CFNetwork](https://developer.apple.com/documentation/cfnetwork/1426754-cfnetworkcopysystemproxysettings?language=objc).
+The settings are initially attempted to be read from the [`WinHttpGetIEProxyConfigForCurrentUser` DLL call](https://docs.microsoft.com/en-us/windows/desktop/api/winhttp/nf-winhttp-winhttpgetieproxyconfigforcurrentuser), but falls back to the registry (`CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings`) in the event the DLL call fails.
 
 For more information, take a look at the [documentation](https://godoc.org/github.com/mattn/go-ieproxy)
 

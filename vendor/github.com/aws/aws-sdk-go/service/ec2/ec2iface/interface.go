@@ -2162,6 +2162,9 @@ type EC2API interface {
 	GetNetworkInsightsAccessScopeAnalysisFindingsWithContext(aws.Context, *ec2.GetNetworkInsightsAccessScopeAnalysisFindingsInput, ...request.Option) (*ec2.GetNetworkInsightsAccessScopeAnalysisFindingsOutput, error)
 	GetNetworkInsightsAccessScopeAnalysisFindingsRequest(*ec2.GetNetworkInsightsAccessScopeAnalysisFindingsInput) (*request.Request, *ec2.GetNetworkInsightsAccessScopeAnalysisFindingsOutput)
 
+	GetNetworkInsightsAccessScopeAnalysisFindingsPages(*ec2.GetNetworkInsightsAccessScopeAnalysisFindingsInput, func(*ec2.GetNetworkInsightsAccessScopeAnalysisFindingsOutput, bool) bool) error
+	GetNetworkInsightsAccessScopeAnalysisFindingsPagesWithContext(aws.Context, *ec2.GetNetworkInsightsAccessScopeAnalysisFindingsInput, func(*ec2.GetNetworkInsightsAccessScopeAnalysisFindingsOutput, bool) bool, ...request.Option) error
+
 	GetNetworkInsightsAccessScopeContent(*ec2.GetNetworkInsightsAccessScopeContentInput) (*ec2.GetNetworkInsightsAccessScopeContentOutput, error)
 	GetNetworkInsightsAccessScopeContentWithContext(aws.Context, *ec2.GetNetworkInsightsAccessScopeContentInput, ...request.Option) (*ec2.GetNetworkInsightsAccessScopeContentOutput, error)
 	GetNetworkInsightsAccessScopeContentRequest(*ec2.GetNetworkInsightsAccessScopeContentInput) (*request.Request, *ec2.GetNetworkInsightsAccessScopeContentOutput)

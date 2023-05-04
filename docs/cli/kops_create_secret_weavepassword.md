@@ -48,10 +48,12 @@ kops create secret weavepassword [CLUSTER] [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   yaml config file (default is $HOME/.kops.yaml)
-      --name string     Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string    Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
-  -v, --v Level         number for the log level verbosity
+      --config string                 yaml config file (default is $HOME/.kops.yaml)
+      --name string                   Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
+      --s2a_enable_appengine_dialer   If true, opportunistically use AppEngine-specific dialer to call S2A.
+      --s2a_timeout duration          Timeout enforced on the connection to the S2A service for handshake. (default 3s)
+      --state string                  Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
+  -v, --v Level                       number for the log level verbosity
 ```
 
 ### SEE ALSO

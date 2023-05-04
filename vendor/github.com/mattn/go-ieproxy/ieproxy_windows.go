@@ -24,12 +24,6 @@ func getConf() ProxyConf {
 	return windowsProxyConf
 }
 
-// reloadConf forces a reload of the proxy configuration from the Windows registry
-func reloadConf() ProxyConf {
-	writeConf()
-	return getConf()
-}
-
 func writeConf() {
 	proxy := ""
 	proxyByPass := ""
@@ -48,7 +42,7 @@ func writeConf() {
 		autoDetect = ieCfg.fAutoDetect
 	}
 
-	if proxy == "" && !autoDetect {
+	if proxy == "" && !autoDetect{
 		// Try WinHTTP default proxy.
 		if defaultCfg, err := getDefaultProxyConfiguration(); err == nil {
 			defer globalFreeWrapper(defaultCfg.lpszProxy)

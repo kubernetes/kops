@@ -53,3 +53,10 @@ type PrimaryIPListResult struct {
 type PrimaryIPUpdateResult struct {
 	PrimaryIP PrimaryIP `json:"primary_ip"`
 }
+
+// PrimaryIPActionChangeDNSPtrRequest defines the schema for the request to
+// change a Primary IP's reverse DNS pointer.
+type PrimaryIPActionChangeDNSPtrRequest struct {
+	IP     string  `json:"ip"`
+	DNSPtr *string `json:"dns_ptr"`
+}
