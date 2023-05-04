@@ -71,6 +71,7 @@ type Elastigroup struct {
 	Tenancy                  *string
 	RootVolumeOpts           *RootVolumeOpts
 	AutoScalerOpts           *AutoScalerOpts
+	InstanceMetadataOptions  *InstanceMetadataOptions
 }
 
 type RootVolumeOpts struct {
@@ -110,6 +111,11 @@ type AutoScalerDownOpts struct {
 type AutoScalerResourceLimitsOpts struct {
 	MaxVCPU   *int
 	MaxMemory *int
+}
+
+type InstanceMetadataOptions struct {
+	HTTPPutResponseHopLimit *int64
+	HTTPTokens              *string
 }
 
 var (
