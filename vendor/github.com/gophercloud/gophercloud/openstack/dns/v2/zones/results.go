@@ -52,6 +52,10 @@ type ZonePage struct {
 
 // IsEmpty returns true if the page contains no results.
 func (r ZonePage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	s, err := ExtractZones(r)
 	return len(s) == 0, err
 }

@@ -324,6 +324,7 @@ func MergeProfiles(original *Profile, others ...*Profile) *Profile {
 		DefaultProjectID:      original.DefaultProjectID,
 		DefaultRegion:         original.DefaultRegion,
 		DefaultZone:           original.DefaultZone,
+		SendTelemetry:         original.SendTelemetry,
 	}
 
 	for _, other := range others {
@@ -350,6 +351,9 @@ func MergeProfiles(original *Profile, others ...*Profile) *Profile {
 		}
 		if other.DefaultZone != nil {
 			np.DefaultZone = other.DefaultZone
+		}
+		if other.SendTelemetry != nil {
+			np.SendTelemetry = other.SendTelemetry
 		}
 	}
 

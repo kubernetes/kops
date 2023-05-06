@@ -37,6 +37,10 @@ type VolumeAttachmentPage struct {
 
 // IsEmpty determines whether or not a VolumeAttachmentPage is empty.
 func (page VolumeAttachmentPage) IsEmpty() (bool, error) {
+	if page.StatusCode == 204 {
+		return true, nil
+	}
+
 	va, err := ExtractVolumeAttachments(page)
 	return len(va) == 0, err
 }

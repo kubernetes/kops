@@ -135,6 +135,10 @@ func (r PoolPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a PoolPage struct is empty.
 func (r PoolPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractPools(r)
 	return len(is) == 0, err
 }
@@ -265,6 +269,10 @@ func (r MemberPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a MemberPage struct is empty.
 func (r MemberPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractMembers(r)
 	return len(is) == 0, err
 }

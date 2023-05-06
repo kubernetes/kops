@@ -16,12 +16,15 @@ package mutate
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/google/go-containerregistry/pkg/logs"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/match"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
+	"github.com/google/go-containerregistry/pkg/v1/stream"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
@@ -70,6 +73,9 @@ type index struct {
 	imageMap    map[v1.Hash]v1.Image
 	indexMap    map[v1.Hash]v1.ImageIndex
 	layerMap    map[v1.Hash]v1.Layer
+	subject     *v1.Descriptor
+
+	sync.Mutex
 }
 
 var _ v1.ImageIndex = (*index)(nil)
@@ -84,6 +90,9 @@ func (i *index) MediaType() (types.MediaType, error) {
 func (i *index) Size() (int64, error) { return partial.Size(i) }
 
 func (i *index) compute() error {
+	i.Lock()
+	defer i.Unlock()
+
 	// Don't re-compute if already computed.
 	if i.computed {
 		return nil
@@ -142,6 +151,7 @@ func (i *index) compute() error {
 			manifest.Annotations[k] = v
 		}
 	}
+	manifest.Subject = i.subject
 
 	i.manifest = manifest
 	i.computed = true
@@ -199,4 +209,24 @@ func (i *index) RawManifest() ([]byte, error) {
 		return nil, err
 	}
 	return json.Marshal(i.manifest)
+}
+
+func (i *index) Manifests() ([]partial.Describable, error) {
+	if err := i.compute(); errors.Is(err, stream.ErrNotComputed) {
+		// Index contains a streamable layer which has not yet been
+		// consumed. Just return the manifests we have in case the caller
+		// is going to consume the streamable layers.
+		manifests, err := partial.Manifests(i.base)
+		if err != nil {
+			return nil, err
+		}
+		for _, add := range i.adds {
+			manifests = append(manifests, add.Add)
+		}
+		return manifests, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return partial.ComputeManifests(i)
 }

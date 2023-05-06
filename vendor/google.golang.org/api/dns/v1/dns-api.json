@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20230126",
+  "revision": "20230330",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -3109,7 +3109,7 @@
       "id": "RRSetRoutingPolicyLoadBalancerTarget",
       "properties": {
         "ipAddress": {
-          "description": "The frontend IP address of the",
+          "description": "The frontend IP address of the Load Balancer to health check.",
           "type": "string"
         },
         "ipProtocol": {
@@ -3130,6 +3130,7 @@
           "type": "string"
         },
         "loadBalancerType": {
+          "description": "The type of Load Balancer specified by this target. Must match the configuration of the Load Balancer located at the LoadBalancerTarget's IP address/port and region.",
           "enum": [
             "none",
             "regionalL4ilb"
@@ -3141,19 +3142,19 @@
           "type": "string"
         },
         "networkUrl": {
-          "description": "The fully qualified url of the network on which the ILB is",
+          "description": "The fully qualified url of the network on which the ILB is present. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
           "type": "string"
         },
         "port": {
-          "description": "Load Balancer to health check. The configured port of the Load Balancer.",
+          "description": "The configured port of the Load Balancer.",
           "type": "string"
         },
         "project": {
-          "description": "present. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network} The project ID in which the ILB exists.",
+          "description": "The project ID in which the ILB exists.",
           "type": "string"
         },
         "region": {
-          "description": "The region for regional ILBs.",
+          "description": "The region in which the ILB exists.",
           "type": "string"
         }
       },

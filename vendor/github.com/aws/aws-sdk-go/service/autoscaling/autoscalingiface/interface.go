@@ -240,6 +240,9 @@ type AutoScalingAPI interface {
 	DescribeTrafficSourcesWithContext(aws.Context, *autoscaling.DescribeTrafficSourcesInput, ...request.Option) (*autoscaling.DescribeTrafficSourcesOutput, error)
 	DescribeTrafficSourcesRequest(*autoscaling.DescribeTrafficSourcesInput) (*request.Request, *autoscaling.DescribeTrafficSourcesOutput)
 
+	DescribeTrafficSourcesPages(*autoscaling.DescribeTrafficSourcesInput, func(*autoscaling.DescribeTrafficSourcesOutput, bool) bool) error
+	DescribeTrafficSourcesPagesWithContext(aws.Context, *autoscaling.DescribeTrafficSourcesInput, func(*autoscaling.DescribeTrafficSourcesOutput, bool) bool, ...request.Option) error
+
 	DescribeWarmPool(*autoscaling.DescribeWarmPoolInput) (*autoscaling.DescribeWarmPoolOutput, error)
 	DescribeWarmPoolWithContext(aws.Context, *autoscaling.DescribeWarmPoolInput, ...request.Option) (*autoscaling.DescribeWarmPoolOutput, error)
 	DescribeWarmPoolRequest(*autoscaling.DescribeWarmPoolInput) (*request.Request, *autoscaling.DescribeWarmPoolOutput)
