@@ -112,7 +112,7 @@ git checkout main
 git pull upstream main
 git checkout -b kops_images_${VERSION}
 
-cd k8s.gcr.io/images/k8s-staging-kops
+cd registry.k8s.io/images/k8s-staging-kops
 echo "" >> images.yaml
 echo "# ${VERSION}" >> images.yaml
 kpromo cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
@@ -122,7 +122,7 @@ Currently, we send the image and non-image artifact promotion PRs separately.
 
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
-git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
+git add -p registry.k8s.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
 gh pr create -f
 ```
