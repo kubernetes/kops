@@ -767,7 +767,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 
 	var challengeListener *bootstrap.ChallengeListener
 
-	if kopsmodel.UseChallengeCallback() {
+	if kopsmodel.UseChallengeCallback(bootConfig.CloudProvider) {
 		challengeServer, err := bootstrap.NewChallengeServer(bootConfig.ClusterName, []byte(bootConfig.ConfigServer.CACertificates))
 		if err != nil {
 			return nil, err

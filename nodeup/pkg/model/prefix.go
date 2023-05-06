@@ -34,7 +34,7 @@ func (b *PrefixBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.IsKopsControllerIPAM() {
 		return nil
 	}
-	switch b.BootConfig.CloudProvider {
+	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
 		c.AddTask(&nodetasks.Prefix{
 			Name: "prefix",
@@ -42,7 +42,7 @@ func (b *PrefixBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	case kops.CloudProviderGCE:
 		// Prefix is assigned by GCE
 	default:
-		return fmt.Errorf("kOps IPAM controller not supported on cloud %q", b.BootConfig.CloudProvider)
+		return fmt.Errorf("kOps IPAM controller not supported on cloud %q", b.CloudProvider())
 	}
 	return nil
 }

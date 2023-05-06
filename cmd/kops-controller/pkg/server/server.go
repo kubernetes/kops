@@ -36,6 +36,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/pki"
@@ -206,14 +208,16 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.challengeClient.DoCallbackChallenge(ctx, s.opt.ClusterName, id.ChallengeEndpoint, req); err != nil {
-		klog.Infof("bootstrap %s callback challenge failed: %v", r.RemoteAddr, err)
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("callback failed"))
-		return
-	}
+	if model.UseChallengeCallback(kops.CloudProviderID(s.opt.Cloud)) {
+		if err := s.challengeClient.DoCallbackChallenge(ctx, s.opt.ClusterName, id.ChallengeEndpoint, req); err != nil {
+			klog.Infof("bootstrap %s callback challenge failed: %v", r.RemoteAddr, err)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("callback failed"))
+			return
+		}
 
-	klog.Infof("performed successful callback challenge with %s; identified as %s", id.ChallengeEndpoint, id.NodeName)
+		klog.Infof("performed successful callback challenge with %s; identified as %s", id.ChallengeEndpoint, id.NodeName)
+	}
 
 	resp := &nodeup.BootstrapResponse{
 		Certs: map[string]string{},
