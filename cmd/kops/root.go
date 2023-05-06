@@ -127,6 +127,8 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 			"log_file_max_size",
 			"logtostderr",
 			"one_output",
+			"s2a_enable_appengine_dialer",
+			"s2a_timeout",
 			"skip_headers",
 			"skip_log_headers",
 			"stderrthreshold",

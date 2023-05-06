@@ -68,7 +68,7 @@ require (
 	k8s.io/kubelet v0.27.1
 	k8s.io/mount-utils v0.27.1
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
-	sigs.k8s.io/controller-runtime v0.14.6
+	sigs.k8s.io/controller-runtime v0.15.0-alpha.0.0.20230505133714-90166996a38c
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 	sigs.k8s.io/yaml v1.3.0
 )
