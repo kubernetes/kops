@@ -236,6 +236,10 @@ func (c *awsCloudImplementation) Region() string {
 
 var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
 
+func ResetAWSCloudInstances() {
+	awsCloudInstances = make(map[string]AWSCloud)
+}
+
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	raw := awsCloudInstances[region]
 	if raw == nil {
