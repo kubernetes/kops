@@ -125,7 +125,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		)
 	}
 
-	if b.BootConfig.CloudProvider == kops.CloudProviderAWS {
+	if b.CloudProvider() == kops.CloudProviderAWS {
 		sysctls = append(sysctls,
 			"# AWS settings",
 			"",

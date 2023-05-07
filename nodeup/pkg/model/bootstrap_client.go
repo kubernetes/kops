@@ -49,7 +49,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
-	switch b.BootConfig.CloudProvider {
+	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
 		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
 		if err != nil {
@@ -81,7 +81,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		authenticator = a
 
 	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider())
 	}
 
 	baseURL := url.URL{
@@ -102,6 +102,8 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Certs:      b.bootstrapCerts,
 		KeypairIDs: b.bootstrapKeypairIDs,
 	}
+	bootstrapClientTask.UseChallengeCallback = b.UseChallengeCallback(b.CloudProvider())
+	bootstrapClientTask.ClusterName = b.NodeupConfig.ClusterName
 
 	for _, cert := range b.bootstrapCerts {
 		cert.Cert.Task = bootstrapClientTask

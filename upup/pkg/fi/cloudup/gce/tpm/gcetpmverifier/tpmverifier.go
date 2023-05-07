@@ -29,6 +29,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,6 +37,7 @@ import (
 	"google.golang.org/api/googleapi"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/gce"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
@@ -171,10 +173,13 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		return nil, err
 	}
 
+	challengeEndpoint := instance.NetworkInterfaces[0].NetworkIP + ":" + strconv.Itoa(wellknownports.NodeupChallenge)
+
 	result := &bootstrap.VerifyResult{
 		NodeName:          instance.Name,
 		InstanceGroupName: instanceGroupName,
 		CertificateNames:  sans,
+		ChallengeEndpoint: challengeEndpoint,
 	}
 
 	return result, nil

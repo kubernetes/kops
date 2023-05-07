@@ -39,6 +39,12 @@ type VerifyResult struct {
 
 	// CertificateNames is the alternate names the node is authorized to use for certificates.
 	CertificateNames []string
+
+	// ChallengeEndpoint is a valid endpoints to which we should issue a challenge request,
+	// corresponding to the node the request identified as.
+	// This should be sourced from e.g. the cloud, and acts as a cross-check
+	// that this is the correct instance.
+	ChallengeEndpoint string
 }
 
 // Verifier verifies authentication credentials for requests.

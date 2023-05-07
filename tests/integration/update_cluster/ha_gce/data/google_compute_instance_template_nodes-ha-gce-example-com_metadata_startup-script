@@ -147,6 +147,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: gce
+ClusterName: ha-gce.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----

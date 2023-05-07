@@ -245,6 +245,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: scaleway
+ClusterName: scw-minimal.k8s.local
 ConfigBase: memfs://tests/scw-minimal.k8s.local
 InstanceGroupName: control-plane-fr-par-1
 InstanceGroupRole: ControlPlane

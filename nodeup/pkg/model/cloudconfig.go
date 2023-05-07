@@ -90,7 +90,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 	// Add cloud config file if needed
 	var lines []string
 
-	cloudProvider := b.BootConfig.CloudProvider
+	cloudProvider := b.CloudProvider()
 
 	var config string
 	requireGlobal := true
