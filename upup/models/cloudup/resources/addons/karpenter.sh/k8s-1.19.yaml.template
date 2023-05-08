@@ -696,7 +696,7 @@ data:
   "batchMaxDuration": "10s"
   "batchIdleDuration": "1s"
   "aws.clusterName": "{{ ClusterName }}"
-  "aws.clusterEndpoint": "https://{{ .MasterInternalName }}"
+  "aws.clusterEndpoint": "https://{{ APIInternalName }}"
   "featureGates.driftEnabled": "false"
   {{ if not .Networking.AmazonVPC }}
   "aws.enableENILimitedPodDensity": "true"
@@ -1030,7 +1030,7 @@ spec:
               port: http
           env:
             - name: KUBERNETES_MIN_VERSION
-              value: "1.23.2"
+              value: "1.19.0-0"
             - name: KARPENTER_SERVICE
               value: karpenter
             - name: WEBHOOK_PORT
