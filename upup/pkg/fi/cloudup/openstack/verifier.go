@@ -87,7 +87,7 @@ func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, er
 
 	kubeClient, err := newClientSet()
 	if err != nil {
-		return nil, fmt.Errorf("error building kubernetes client: %v", err)
+		return nil, fmt.Errorf("error building kubernetes client: %w", err)
 	}
 
 	return &openstackVerifier{

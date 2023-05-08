@@ -62,6 +62,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -730,6 +731,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 		case kops.CloudProviderOpenstack:
 			config.Server.Provider.OpenStack = &openstack.OpenStackVerifierOptions{}
+
+		case kops.CloudProviderDO:
+			config.Server.Provider.DigitalOcean = &do.DigitalOceanVerifierOptions{}
 
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())

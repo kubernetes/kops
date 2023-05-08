@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -761,6 +762,14 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			return nil, err
 		}
 		authenticator = a
+
+	case api.CloudProviderDO:
+		a, err := do.NewAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}

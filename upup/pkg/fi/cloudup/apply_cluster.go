@@ -1435,6 +1435,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 				}
 			}
 
+		case kops.CloudProviderDO:
+			// Use any IP address that is found (including public ones)
+			for _, additionalIP := range apiserverAdditionalIPs {
+				bootConfig.APIServerIPs = append(bootConfig.APIServerIPs, additionalIP)
+			}
+
 		case kops.CloudProviderGCE:
 			// Use any IP address that is found (including public ones)
 			for _, additionalIP := range apiserverAdditionalIPs {
