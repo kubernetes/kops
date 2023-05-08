@@ -71,3 +71,28 @@ func (m MediaType) IsIndex() bool {
 	}
 	return false
 }
+
+// IsConfig returns true if the mediaType represents a config, as opposed to something else, like an image.
+func (m MediaType) IsConfig() bool {
+	switch m {
+	case OCIConfigJSON, DockerConfigJSON:
+		return true
+	}
+	return false
+}
+
+func (m MediaType) IsSchema1() bool {
+	switch m {
+	case DockerManifestSchema1, DockerManifestSchema1Signed:
+		return true
+	}
+	return false
+}
+
+func (m MediaType) IsLayer() bool {
+	switch m {
+	case DockerLayer, DockerUncompressedLayer, OCILayer, OCILayerZStd, OCIUncompressedLayer, DockerForeignLayer, OCIRestrictedLayer, OCIUncompressedRestrictedLayer:
+		return true
+	}
+	return false
+}

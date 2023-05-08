@@ -75,6 +75,7 @@ func WithProfile(p *Profile) ClientOption {
 		accessKey := ""
 		if p.AccessKey != nil {
 			accessKey = *p.AccessKey
+			s.token = auth.NewAccessKeyOnly(accessKey)
 		}
 
 		if p.SecretKey != nil {
@@ -111,7 +112,7 @@ func WithProfile(p *Profile) ClientOption {
 	}
 }
 
-// WithProfile client option configures a client from the environment variables.
+// WithEnv client option configures a client from the environment variables.
 func WithEnv() ClientOption {
 	return WithProfile(LoadEnvProfile())
 }

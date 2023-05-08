@@ -14564,8 +14564,17 @@ type RedshiftDataParameters struct {
 
 	// The SQL statement text to run.
 	//
-	// Sql is a required field
-	Sql *string `min:"1" type:"string" required:"true"`
+	// Sql is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RedshiftDataParameters's
+	// String and GoString methods.
+	Sql *string `min:"1" type:"string" sensitive:"true"`
+
+	// A list of SQLs.
+	//
+	// Sqls is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RedshiftDataParameters's
+	// String and GoString methods.
+	Sqls []*string `type:"list" sensitive:"true"`
 
 	// The name of the SQL statement. You can name the SQL statement when you create
 	// it to identify the query.
@@ -14609,9 +14618,6 @@ func (s *RedshiftDataParameters) Validate() error {
 	if s.SecretManagerArn != nil && len(*s.SecretManagerArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("SecretManagerArn", 1))
 	}
-	if s.Sql == nil {
-		invalidParams.Add(request.NewErrParamRequired("Sql"))
-	}
 	if s.Sql != nil && len(*s.Sql) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Sql", 1))
 	}
@@ -14646,6 +14652,12 @@ func (s *RedshiftDataParameters) SetSecretManagerArn(v string) *RedshiftDataPara
 // SetSql sets the Sql field's value.
 func (s *RedshiftDataParameters) SetSql(v string) *RedshiftDataParameters {
 	s.Sql = &v
+	return s
+}
+
+// SetSqls sets the Sqls field's value.
+func (s *RedshiftDataParameters) SetSqls(v []*string) *RedshiftDataParameters {
+	s.Sqls = v
 	return s
 }
 

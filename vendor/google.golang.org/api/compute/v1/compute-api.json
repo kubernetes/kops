@@ -550,6 +550,56 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "move": {
+          "description": "Moves the specified address resource.",
+          "flatPath": "projects/{project}/regions/{region}/addresses/{address}/move",
+          "httpMethod": "POST",
+          "id": "compute.addresses.move",
+          "parameterOrder": [
+            "project",
+            "region",
+            "address"
+          ],
+          "parameters": {
+            "address": {
+              "description": "Name of the address resource to move.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Source project ID which the Address is moved from.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "Name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/regions/{region}/addresses/{address}/move",
+          "request": {
+            "$ref": "RegionAddressesMoveRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "setLabels": {
           "description": "Sets the labels on an Address. To learn more about labels, read the Labeling Resources documentation.",
           "flatPath": "projects/{project}/regions/{region}/addresses/{resource}/setLabels",
@@ -4495,6 +4545,48 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "move": {
+          "description": "Moves the specified address resource from one project to another project.",
+          "flatPath": "projects/{project}/global/addresses/{address}/move",
+          "httpMethod": "POST",
+          "id": "compute.globalAddresses.move",
+          "parameterOrder": [
+            "project",
+            "address"
+          ],
+          "parameters": {
+            "address": {
+              "description": "Name of the address resource to move.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Source project ID which the Address is moved from.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/global/addresses/{address}/move",
+          "request": {
+            "$ref": "GlobalAddressesMoveRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
           ]
         },
         "setLabels": {
@@ -10647,6 +10739,11 @@
               "required": true,
               "type": "string"
             },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
             "zone": {
               "description": "The name of the zone for this request.",
               "location": "path",
@@ -15703,6 +15800,56 @@
           "path": "projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/setNodeTemplate",
           "request": {
             "$ref": "NodeGroupsSetNodeTemplateRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
+        "simulateMaintenanceEvent": {
+          "description": "Simulates maintenance event on specified nodes from the node group.",
+          "flatPath": "projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/simulateMaintenanceEvent",
+          "httpMethod": "POST",
+          "id": "compute.nodeGroups.simulateMaintenanceEvent",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "nodeGroup"
+          ],
+          "parameters": {
+            "nodeGroup": {
+              "description": "Name of the NodeGroup resource whose nodes will go under maintenance simulation.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/simulateMaintenanceEvent",
+          "request": {
+            "$ref": "NodeGroupsSimulateMaintenanceEventRequest"
           },
           "response": {
             "$ref": "Operation"
@@ -25956,6 +26103,11 @@
               "minimum": "0",
               "type": "integer"
             },
+            "natName": {
+              "description": "Name of the nat service to filter the Nat Mapping information. If it is omitted, all nats for this router will be returned. Name should conform to RFC1035.",
+              "location": "query",
+              "type": "string"
+            },
             "orderBy": {
               "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name. You can also sort results in descending order based on the creation timestamp using `orderBy=\"creationTimestamp desc\"`. This sorts results based on the `creationTimestamp` field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first. Currently, only sorting by `name` or `creationTimestamp desc` is supported.",
               "location": "query",
@@ -33123,7 +33275,7 @@
       }
     }
   },
-  "revision": "20230221",
+  "revision": "20230418",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -33543,11 +33695,11 @@
       "id": "AccessConfig",
       "properties": {
         "externalIpv6": {
-          "description": "The first IPv6 address of the external IPv6 range associated with this instance, prefix length is stored in externalIpv6PrefixLength in ipv6AccessConfig. To use a static external IP address, it must be unused and in the same region as the instance's zone. If not specified, Google Cloud will automatically assign an external IPv6 address from the instance's subnetwork.",
+          "description": "Applies to ipv6AccessConfigs only. The first IPv6 address of the external IPv6 range associated with this instance, prefix length is stored in externalIpv6PrefixLength in ipv6AccessConfig. To use a static external IP address, it must be unused and in the same region as the instance's zone. If not specified, Google Cloud will automatically assign an external IPv6 address from the instance's subnetwork.",
           "type": "string"
         },
         "externalIpv6PrefixLength": {
-          "description": "The prefix length of the external IPv6 range.",
+          "description": "Applies to ipv6AccessConfigs only. The prefix length of the external IPv6 range.",
           "format": "int32",
           "type": "integer"
         },
@@ -33557,11 +33709,11 @@
           "type": "string"
         },
         "name": {
-          "description": "The name of this access configuration. The default and recommended name is External NAT, but you can use any arbitrary string, such as My external IP or Network Access.",
+          "description": "The name of this access configuration. In accessConfigs (IPv4), the default and recommended name is External NAT, but you can use any arbitrary string, such as My external IP or Network Access. In ipv6AccessConfigs, the recommend name is External IPv6.",
           "type": "string"
         },
         "natIP": {
-          "description": "An external IP address associated with this instance. Specify an unused static external IP address available to the project or leave this field undefined to use an IP from a shared ephemeral IP address pool. If you specify a static external IP address, it must live in the same region as the zone of the instance.",
+          "description": "Applies to accessConfigs (IPv4) only. An external IP address associated with this instance. Specify an unused static external IP address available to the project or leave this field undefined to use an IP from a shared ephemeral IP address pool. If you specify a static external IP address, it must live in the same region as the zone of the instance.",
           "type": "string"
         },
         "networkTier": {
@@ -33589,8 +33741,7 @@
           "type": "boolean"
         },
         "type": {
-          "default": "ONE_TO_ONE_NAT",
-          "description": "The type of configuration. The default and only option is ONE_TO_ONE_NAT.",
+          "description": "The type of configuration. In accessConfigs (IPv4), the default and only option is ONE_TO_ONE_NAT. In ipv6AccessConfigs, the default and only option is DIRECT_IPV6.",
           "enum": [
             "DIRECT_IPV6",
             "ONE_TO_ONE_NAT"
@@ -33669,6 +33820,18 @@
           "default": "compute#address",
           "description": "[Output Only] Type of the resource. Always compute#address for addresses.",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this Address, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels, otherwise the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve an Address.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "name": {
           "annotations": {
@@ -34447,6 +34610,13 @@
           "description": "Indicates how many IOPS to provision for the disk. This sets the number of I/O operations per second that the disk can handle. Values must be between 10,000 and 120,000. For more details, see the Extreme persistent disk documentation.",
           "format": "int64",
           "type": "string"
+        },
+        "replicaZones": {
+          "description": "Required for each regional disk associated with the instance. Specify the URLs of the zones where the disk should be replicated to. You must provide exactly two replica zones, and one zone must be the same as the instance zone. You can't use this option with boot disks.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "resourceManagerTags": {
           "additionalProperties": {
@@ -37136,11 +37306,13 @@
             "GENERAL_PURPOSE_N2",
             "GENERAL_PURPOSE_N2D",
             "GENERAL_PURPOSE_T2D",
+            "GRAPHICS_OPTIMIZED",
             "MEMORY_OPTIMIZED",
             "MEMORY_OPTIMIZED_M3",
             "TYPE_UNSPECIFIED"
           ],
           "enumDescriptions": [
+            "",
             "",
             "",
             "",
@@ -37802,6 +37974,17 @@
           ],
           "type": "string"
         },
+        "asyncPrimaryDisk": {
+          "$ref": "DiskAsyncReplication",
+          "description": "Disk asynchronously replicated into this disk."
+        },
+        "asyncSecondaryDisks": {
+          "additionalProperties": {
+            "$ref": "DiskAsyncReplicationList"
+          },
+          "description": "[Output Only] A list of disks this disk is asynchronously replicated to.",
+          "type": "object"
+        },
         "creationTimestamp": {
           "description": "[Output Only] Creation timestamp in RFC3339 text format.",
           "type": "string"
@@ -37916,6 +38099,10 @@
           },
           "type": "array"
         },
+        "resourceStatus": {
+          "$ref": "DiskResourceStatus",
+          "description": "[Output Only] Status information for the disk resource."
+        },
         "satisfiesPzs": {
           "description": "[Output Only] Reserved for future use.",
           "type": "boolean"
@@ -37927,6 +38114,14 @@
         "sizeGb": {
           "description": "Size, in GB, of the persistent disk. You can specify this field when creating a persistent disk using the sourceImage, sourceSnapshot, or sourceDisk parameter, or specify it alone to create an empty persistent disk. If you specify this field along with a source, the value of sizeGb must not be less than the size of the source. Acceptable values are 1 to 65536, inclusive.",
           "format": "int64",
+          "type": "string"
+        },
+        "sourceConsistencyGroupPolicy": {
+          "description": "[Output Only] URL of the DiskConsistencyGroupPolicy for a secondary disk that was created using a consistency group.",
+          "type": "string"
+        },
+        "sourceConsistencyGroupPolicyId": {
+          "description": "[Output Only] ID of the DiskConsistencyGroupPolicy for a secondary disk that was created using a consistency group.",
           "type": "string"
         },
         "sourceDisk": {
@@ -38128,6 +38323,37 @@
       },
       "type": "object"
     },
+    "DiskAsyncReplication": {
+      "id": "DiskAsyncReplication",
+      "properties": {
+        "consistencyGroupPolicy": {
+          "description": "[Output Only] URL of the DiskConsistencyGroupPolicy if replication was started on the disk as a member of a group.",
+          "type": "string"
+        },
+        "consistencyGroupPolicyId": {
+          "description": "[Output Only] ID of the DiskConsistencyGroupPolicy if replication was started on the disk as a member of a group.",
+          "type": "string"
+        },
+        "disk": {
+          "description": "The other disk asynchronously replicated to or from the current disk. You can provide this as a partial or full URL to the resource. For example, the following are valid values: - https://www.googleapis.com/compute/v1/projects/project/zones/zone /disks/disk - projects/project/zones/zone/disks/disk - zones/zone/disks/disk ",
+          "type": "string"
+        },
+        "diskId": {
+          "description": "[Output Only] The unique ID of the other disk asynchronously replicated to or from the current disk. This value identifies the exact disk that was used to create this replication. For example, if you started replicating the persistent disk from a disk that was later deleted and recreated under the same name, the disk ID would identify the exact version of the disk that was used.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "DiskAsyncReplicationList": {
+      "id": "DiskAsyncReplicationList",
+      "properties": {
+        "asyncReplicationDisk": {
+          "$ref": "DiskAsyncReplication"
+        }
+      },
+      "type": "object"
+    },
     "DiskInstantiationConfig": {
       "description": "A specification of the desired way to instantiate a disk in the instance template when its created from a source instance.",
       "id": "DiskInstantiationConfig",
@@ -38313,6 +38539,47 @@
           },
           "description": "Resource manager tags to be bound to the disk. Tag keys and values have the same definition as resource manager tags. Keys must be in the format `tagKeys/{tag_key_id}`, and values are in the format `tagValues/456`. The field is ignored (both PUT \u0026 PATCH) when empty.",
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "DiskResourceStatus": {
+      "id": "DiskResourceStatus",
+      "properties": {
+        "asyncPrimaryDisk": {
+          "$ref": "DiskResourceStatusAsyncReplicationStatus"
+        },
+        "asyncSecondaryDisks": {
+          "additionalProperties": {
+            "$ref": "DiskResourceStatusAsyncReplicationStatus"
+          },
+          "description": "Key: disk, value: AsyncReplicationStatus message",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "DiskResourceStatusAsyncReplicationStatus": {
+      "id": "DiskResourceStatusAsyncReplicationStatus",
+      "properties": {
+        "state": {
+          "enum": [
+            "ACTIVE",
+            "CREATED",
+            "STARTING",
+            "STATE_UNSPECIFIED",
+            "STOPPED",
+            "STOPPING"
+          ],
+          "enumDescriptions": [
+            "Replication is active.",
+            "Secondary disk is created and is waiting for replication to start.",
+            "Replication is starting.",
+            "",
+            "Replication is stopped.",
+            "Replication is stopping."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -39982,8 +40249,36 @@
       "description": "Represents a match condition that incoming traffic is evaluated against. Exactly one field must be specified.",
       "id": "FirewallPolicyRuleMatcher",
       "properties": {
+        "destAddressGroups": {
+          "description": "Address groups which should be matched against the traffic destination. Maximum number of destination address groups is 10.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destFqdns": {
+          "description": "Fully Qualified Domain Name (FQDN) which should be matched against traffic destination. Maximum number of destination fqdn allowed is 100.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "destIpRanges": {
           "description": "CIDR IP address range. Maximum number of destination CIDR IP ranges allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destRegionCodes": {
+          "description": "Region codes whose IP addresses will be used to match for destination of traffic. Should be specified as 2 letter country code defined as per ISO 3166 alpha-2 country codes. ex.\"US\" Maximum number of dest region codes allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "destThreatIntelligences": {
+          "description": "Names of Network Threat Intelligence lists. The IPs in these lists will be matched against traffic destination.",
           "items": {
             "type": "string"
           },
@@ -39996,8 +40291,29 @@
           },
           "type": "array"
         },
+        "srcAddressGroups": {
+          "description": "Address groups which should be matched against the traffic source. Maximum number of source address groups is 10.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "srcFqdns": {
+          "description": "Fully Qualified Domain Name (FQDN) which should be matched against traffic source. Maximum number of source fqdn allowed is 100.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "srcIpRanges": {
           "description": "CIDR IP address range. Maximum number of source CIDR IP ranges allowed is 5000.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "srcRegionCodes": {
+          "description": "Region codes whose IP addresses will be used to match for source of traffic. Should be specified as 2 letter country code defined as per ISO 3166 alpha-2 country codes. ex.\"US\" Maximum number of source region codes allowed is 5000.",
           "items": {
             "type": "string"
           },
@@ -40007,6 +40323,13 @@
           "description": "List of secure tag values, which should be matched at the source of the traffic. For INGRESS rule, if all the srcSecureTag are INEFFECTIVE, and there is no srcIpRange, this rule will be ignored. Maximum number of source tag values allowed is 256.",
           "items": {
             "$ref": "FirewallPolicyRuleSecureTag"
+          },
+          "type": "array"
+        },
+        "srcThreatIntelligences": {
+          "description": "Names of Network Threat Intelligence lists. The IPs in these lists will be matched against traffic source.",
+          "items": {
+            "type": "string"
           },
           "type": "array"
         }
@@ -40113,6 +40436,10 @@
           "description": "This field is used along with the backend_service field for internal load balancing or with the target field for internal TargetInstance. If the field is set to TRUE, clients can access ILB from all regions. Otherwise only allows access from clients in the same region as the internal load balancer.",
           "type": "boolean"
         },
+        "allowPscGlobalAccess": {
+          "description": "This is used in PSC consumer ForwardingRule to control whether the PSC endpoint can be accessed from another region.",
+          "type": "boolean"
+        },
         "backendService": {
           "description": "Identifies the backend service to which the forwarding rule sends traffic. Required for Internal TCP/UDP Load Balancing and Network Load Balancing; must be omitted for all other load balancer types.",
           "type": "string"
@@ -40207,7 +40534,7 @@
           "type": "string"
         },
         "network": {
-          "description": "This field is not used for external load balancing. For Internal TCP/UDP Load Balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If this field is not specified, the default network will be used. For Private Service Connect forwarding rules that forward traffic to Google APIs, a network must be provided.",
+          "description": "This field is not used for external load balancing. For Internal TCP/UDP Load Balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If the subnetwork is specified, the network of the subnetwork will be used. If neither subnetwork nor this field is specified, the default network will be used. For Private Service Connect forwarding rules that forward traffic to Google APIs, a network must be provided.",
           "type": "string"
         },
         "networkTier": {
@@ -40717,6 +41044,20 @@
       },
       "type": "object"
     },
+    "GlobalAddressesMoveRequest": {
+      "id": "GlobalAddressesMoveRequest",
+      "properties": {
+        "description": {
+          "description": "An optional destination address description if intended to be different from the source.",
+          "type": "string"
+        },
+        "destinationAddress": {
+          "description": "The URL of the destination address to move to. This can be a full or partial URL. For example, the following are all valid URLs to a address: - https://www.googleapis.com/compute/v1/projects/project /global/addresses/address - projects/project/global/addresses/address Note that destination project must be different from the source project. So /global/addresses/address is not valid partial url.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GlobalNetworkEndpointGroupsAttachEndpointsRequest": {
       "id": "GlobalNetworkEndpointGroupsAttachEndpointsRequest",
       "properties": {
@@ -40874,19 +41215,21 @@
       "id": "GuestOsFeature",
       "properties": {
         "type": {
-          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_SNP_CAPABLE For more information, see Enabling guest operating system features.",
+          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_LIVE_MIGRATABLE - SEV_SNP_CAPABLE - TDX_CAPABLE For more information, see Enabling guest operating system features.",
           "enum": [
             "FEATURE_TYPE_UNSPECIFIED",
             "GVNIC",
             "MULTI_IP_SUBNET",
             "SECURE_BOOT",
             "SEV_CAPABLE",
+            "SEV_LIVE_MIGRATABLE",
             "SEV_SNP_CAPABLE",
             "UEFI_COMPATIBLE",
             "VIRTIO_SCSI_MULTIQUEUE",
             "WINDOWS"
           ],
           "enumDescriptions": [
+            "",
             "",
             "",
             "",
@@ -41062,7 +41405,7 @@
       "type": "object"
     },
     "HealthCheck": {
-      "description": "Represents a Health Check resource. Google Compute Engine has two Health Check resources: * [Global](/compute/docs/reference/rest/v1/healthChecks) * [Regional](/compute/docs/reference/rest/v1/regionHealthChecks) Internal HTTP(S) load balancers must use regional health checks (`compute.v1.regionHealthChecks`). Traffic Director must use global health checks (`compute.v1.HealthChecks`). Internal TCP/UDP load balancers can use either regional or global health checks (`compute.v1.regionHealthChecks` or `compute.v1.HealthChecks`). External HTTP(S), TCP proxy, and SSL proxy load balancers as well as managed instance group auto-healing must use global health checks (`compute.v1.HealthChecks`). Backend service-based network load balancers must use regional health checks (`compute.v1.regionHealthChecks`). Target pool-based network load balancers must use legacy HTTP health checks (`compute.v1.httpHealthChecks`). For more information, see Health checks overview.",
+      "description": "Represents a Health Check resource. Google Compute Engine has two Health Check resources: * [Global](/compute/docs/reference/rest/v1/healthChecks) * [Regional](/compute/docs/reference/rest/v1/regionHealthChecks) Internal HTTP(S) load balancers must use regional health checks (`compute.v1.regionHealthChecks`). Traffic Director must use global health checks (`compute.v1.healthChecks`). Internal TCP/UDP load balancers can use either regional or global health checks (`compute.v1.regionHealthChecks` or `compute.v1.healthChecks`). External HTTP(S), TCP proxy, and SSL proxy load balancers as well as managed instance group auto-healing must use global health checks (`compute.v1.healthChecks`). Backend service-based network load balancers must use regional health checks (`compute.v1.regionHealthChecks`). Target pool-based network load balancers must use legacy HTTP health checks (`compute.v1.httpHealthChecks`). For more information, see Health checks overview.",
       "id": "HealthCheck",
       "properties": {
         "checkIntervalSec": {
@@ -41757,7 +42100,7 @@
           "type": "string"
         },
         "healthState": {
-          "description": "Health state of the instance.",
+          "description": "Health state of the IPv4 address of the instance.",
           "enum": [
             "HEALTHY",
             "UNHEALTHY"
@@ -41830,10 +42173,10 @@
             "UNKNOWN"
           ],
           "enumDescriptions": [
-            "",
-            "",
-            "",
-            ""
+            "Endpoint is being drained.",
+            "Endpoint is healthy.",
+            "Endpoint is unhealthy.",
+            "Health status of the endpoint is unknown."
           ],
           "type": "string"
         }
@@ -42079,7 +42422,7 @@
           "type": "integer"
         },
         "requestPath": {
-          "description": "The request path of the HTTP health check request. The default value is /. This field does not support query parameters.",
+          "description": "The request path of the HTTP health check request. The default value is /. This field does not support query parameters. Must comply with RFC3986.",
           "type": "string"
         },
         "selfLink": {
@@ -42481,7 +42824,7 @@
           "type": "integer"
         },
         "requestPath": {
-          "description": "The request path of the HTTPS health check request. The default value is \"/\".",
+          "description": "The request path of the HTTPS health check request. The default value is \"/\". Must comply with RFC3986.",
           "type": "string"
         },
         "selfLink": {
@@ -43218,7 +43561,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -44444,7 +44787,7 @@
       "id": "InstanceGroupManagersDeleteInstancesRequest",
       "properties": {
         "instances": {
-          "description": "The URLs of one or more instances to delete. This can be a full URL or a partial URL, such as zones/[ZONE]/instances/[INSTANCE_NAME].",
+          "description": "The URLs of one or more instances to delete. This can be a full URL or a partial URL, such as zones/[ZONE]/instances/[INSTANCE_NAME]. Queued instances do not have URL and can be deleted only by name. One cannot specify both URLs and names in a single request.",
           "items": {
             "type": "string"
           },
@@ -45986,7 +46329,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -46303,7 +46646,7 @@
       "type": "object"
     },
     "Interconnect": {
-      "description": "Represents an Interconnect resource. An Interconnect resource is a dedicated connection between the GCP network and your on-premises network. For more information, read the Dedicated Interconnect Overview.",
+      "description": "Represents an Interconnect resource. An Interconnect resource is a dedicated connection between the Google Cloud network and your on-premises network. For more information, read the Dedicated Interconnect Overview.",
       "id": "Interconnect",
       "properties": {
         "adminEnabled": {
@@ -46374,6 +46717,18 @@
           "default": "compute#interconnect",
           "description": "[Output Only] Type of the resource. Always compute#interconnect for interconnects.",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this Interconnect, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels, otherwise the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve an Interconnect.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "linkType": {
           "description": "Type of link requested, which can take one of the following values: - LINK_TYPE_ETHERNET_10G_LR: A 10G Ethernet with LR optics - LINK_TYPE_ETHERNET_100G_LR: A 100G Ethernet with LR optics. Note that this field indicates the speed of each of the links in the bundle, not the speed of the entire bundle.",
@@ -46585,7 +46940,7 @@
           "type": "string"
         },
         "ipsecInternalAddresses": {
-          "description": "A list of URLs of addresses that have been reserved for the VLAN attachment. Used only for the VLAN attachment that has the encryption option as IPSEC. The addresses must be regional internal IP address ranges. When creating an HA VPN gateway over the VLAN attachment, if the attachment is configured to use a regional internal IP address, then the VPN gateway's IP address is allocated from the IP address range specified here. For example, if the HA VPN gateway's interface 0 is paired to this VLAN attachment, then a regional internal IP address for the VPN gateway interface 0 will be allocated from the IP address specified for this VLAN attachment. If this field is not specified when creating the VLAN attachment, then later on when creating an HA VPN gateway on this VLAN attachment, the HA VPN gateway's IP address is allocated from the regional external IP address pool. Not currently available publicly. ",
+          "description": "A list of URLs of addresses that have been reserved for the VLAN attachment. Used only for the VLAN attachment that has the encryption option as IPSEC. The addresses must be regional internal IP address ranges. When creating an HA VPN gateway over the VLAN attachment, if the attachment is configured to use a regional internal IP address, then the VPN gateway's IP address is allocated from the IP address range specified here. For example, if the HA VPN gateway's interface 0 is paired to this VLAN attachment, then a regional internal IP address for the VPN gateway interface 0 will be allocated from the IP address specified for this VLAN attachment. If this field is not specified when creating the VLAN attachment, then later on when creating an HA VPN gateway on this VLAN attachment, the HA VPN gateway's IP address is allocated from the regional external IP address pool.",
           "items": {
             "type": "string"
           },
@@ -46595,6 +46950,18 @@
           "default": "compute#interconnectAttachment",
           "description": "[Output Only] Type of the resource. Always compute#interconnectAttachment for interconnect attachments.",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this InterconnectAttachment, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels, otherwise the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve an InterconnectAttachment.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "mtu": {
           "description": "Maximum Transmission Unit (MTU), in bytes, of packets passing through this interconnect attachment. Only 1440 and 1500 are allowed. If not specified, the value will default to 1440.",
@@ -48971,7 +49338,7 @@
             "TERMINATED"
           ],
           "enumDescriptions": [
-            "The Nanny is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
+            "The instance is halted and we are performing tear down tasks like network deprogramming, releasing quota, IP, tearing down disks etc.",
             "Resources are being allocated for the instance.",
             "The instance is in repair.",
             "The instance is running.",
@@ -49236,7 +49603,7 @@
           "type": "string"
         },
         "gatewayIPv4": {
-          "description": "[Output Only] The gateway address for default routing out of the network, selected by GCP.",
+          "description": "[Output Only] The gateway address for default routing out of the network, selected by Google Cloud.",
           "pattern": "[0-9]{1,3}(?:\\.[0-9]{1,3}){3}",
           "type": "string"
         },
@@ -49540,7 +49907,7 @@
           "type": "string"
         },
         "secondaryIpCidrRanges": {
-          "description": "Alias IP ranges from the same subnetwork",
+          "description": "Alias IP ranges from the same subnetwork.",
           "items": {
             "type": "string"
           },
@@ -50919,7 +51286,7 @@
           "type": "integer"
         },
         "stackType": {
-          "description": "The stack type for this network interface to identify whether the IPv6 feature is enabled or not. If not specified, IPV4_ONLY will be used. This field can be both set at instance creation and update network interface operations.",
+          "description": "The stack type for this network interface. To assign only IPv4 addresses, use IPV4_ONLY. To assign both IPv4 and IPv6 addresses, use IPV4_IPV6. If not specified, IPV4_ONLY is used. This field can be both set at instance creation and update network interface operations.",
           "enum": [
             "IPV4_IPV6",
             "IPV4_ONLY"
@@ -52004,6 +52371,19 @@
         "nodeTemplate": {
           "description": "Full or partial URL of the node template resource to be updated for this node group.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "NodeGroupsSimulateMaintenanceEventRequest": {
+      "id": "NodeGroupsSimulateMaintenanceEventRequest",
+      "properties": {
+        "nodes": {
+          "description": "Names of the nodes to go under maintenance simulation.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -55474,6 +55854,7 @@
             "COMMITTED_NVIDIA_A100_80GB_GPUS",
             "COMMITTED_NVIDIA_A100_GPUS",
             "COMMITTED_NVIDIA_K80_GPUS",
+            "COMMITTED_NVIDIA_L4_GPUS",
             "COMMITTED_NVIDIA_P100_GPUS",
             "COMMITTED_NVIDIA_P4_GPUS",
             "COMMITTED_NVIDIA_T4_GPUS",
@@ -55525,11 +55906,15 @@
             "NETWORK_ATTACHMENTS",
             "NETWORK_ENDPOINT_GROUPS",
             "NETWORK_FIREWALL_POLICIES",
+            "NET_LB_SECURITY_POLICIES_PER_REGION",
+            "NET_LB_SECURITY_POLICY_RULES_PER_REGION",
+            "NET_LB_SECURITY_POLICY_RULE_ATTRIBUTES_PER_REGION",
             "NODE_GROUPS",
             "NODE_TEMPLATES",
             "NVIDIA_A100_80GB_GPUS",
             "NVIDIA_A100_GPUS",
             "NVIDIA_K80_GPUS",
+            "NVIDIA_L4_GPUS",
             "NVIDIA_P100_GPUS",
             "NVIDIA_P100_VWS_GPUS",
             "NVIDIA_P4_GPUS",
@@ -55544,6 +55929,7 @@
             "PREEMPTIBLE_NVIDIA_A100_80GB_GPUS",
             "PREEMPTIBLE_NVIDIA_A100_GPUS",
             "PREEMPTIBLE_NVIDIA_K80_GPUS",
+            "PREEMPTIBLE_NVIDIA_L4_GPUS",
             "PREEMPTIBLE_NVIDIA_P100_GPUS",
             "PREEMPTIBLE_NVIDIA_P100_VWS_GPUS",
             "PREEMPTIBLE_NVIDIA_P4_GPUS",
@@ -55567,6 +55953,7 @@
             "ROUTES",
             "SECURITY_POLICIES",
             "SECURITY_POLICIES_PER_REGION",
+            "SECURITY_POLICY_ADVANCED_RULES_PER_REGION",
             "SECURITY_POLICY_CEVAL_RULES",
             "SECURITY_POLICY_RULES",
             "SECURITY_POLICY_RULES_PER_REGION",
@@ -55624,7 +56011,14 @@
             "",
             "",
             "",
+            "",
             "Guest CPUs",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "",
             "",
             "",
@@ -55864,6 +56258,20 @@
             "type": "string"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RegionAddressesMoveRequest": {
+      "id": "RegionAddressesMoveRequest",
+      "properties": {
+        "description": {
+          "description": "An optional destination address description if intended to be different from the source.",
+          "type": "string"
+        },
+        "destinationAddress": {
+          "description": "The URL of the destination address to move to. This can be a full or partial URL. For example, the following are all valid URLs to a address: - https://www.googleapis.com/compute/v1/projects/project/regions/region /addresses/address - projects/project/regions/region/addresses/address Note that destination project must be different from the source project. So /regions/region/addresses/address is not valid partial url.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -60675,6 +61083,18 @@
           "description": "[Output only] Type of the resource. Always compute#securityPolicyfor security policies",
           "type": "string"
         },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this security policy, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels. To see the latest fingerprint, make get() request to the security policy.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
+        },
         "name": {
           "description": "Name of the resource. Provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
           "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
@@ -60727,15 +61147,15 @@
       "type": "object"
     },
     "SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfig": {
-      "description": "Configuration options for L7 DDoS detection.",
+      "description": "Configuration options for L7 DDoS detection. This field is only supported in Global Security Policies of type CLOUD_ARMOR.",
       "id": "SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfig",
       "properties": {
         "enable": {
-          "description": "If set to true, enables CAAP for L7 DDoS detection.",
+          "description": "If set to true, enables CAAP for L7 DDoS detection. This field is only supported in Global Security Policies of type CLOUD_ARMOR.",
           "type": "boolean"
         },
         "ruleVisibility": {
-          "description": "Rule visibility can be one of the following: STANDARD - opaque rules. (default) PREMIUM - transparent rules.",
+          "description": "Rule visibility can be one of the following: STANDARD - opaque rules. (default) PREMIUM - transparent rules. This field is only supported in Global Security Policies of type CLOUD_ARMOR.",
           "enum": [
             "PREMIUM",
             "STANDARD"
@@ -60930,7 +61350,7 @@
       "id": "SecurityPolicyRecaptchaOptionsConfig",
       "properties": {
         "redirectSiteKey": {
-          "description": "An optional field to supply a reCAPTCHA site key to be used for all the rules using the redirect action with the type of GOOGLE_RECAPTCHA under the security policy. The specified site key needs to be created from the reCAPTCHA API. The user is responsible for the validity of the specified site key. If not specified, a Google-managed site key is used.",
+          "description": "An optional field to supply a reCAPTCHA site key to be used for all the rules using the redirect action with the type of GOOGLE_RECAPTCHA under the security policy. The specified site key needs to be created from the reCAPTCHA API. The user is responsible for the validity of the specified site key. If not specified, a Google-managed site key is used. This field is only supported in Global Security Policies of type CLOUD_ARMOR.",
           "type": "string"
         }
       },
@@ -60950,7 +61370,7 @@
       "id": "SecurityPolicyRule",
       "properties": {
         "action": {
-          "description": "The Action to perform when the rule is matched. The following are the valid actions: - allow: allow access to target. - deny(STATUS): deny access to target, returns the HTTP response code specified. Valid values for `STATUS` are 403, 404, and 502. - rate_based_ban: limit client traffic to the configured threshold and ban the client if the traffic exceeds the threshold. Configure parameters for this action in RateLimitOptions. Requires rate_limit_options to be set. - redirect: redirect to a different target. This can either be an internal reCAPTCHA redirect, or an external URL-based redirect via a 302 response. Parameters for this action can be configured via redirectOptions. - throttle: limit client traffic to the configured threshold. Configure parameters for this action in rateLimitOptions. Requires rate_limit_options to be set for this. ",
+          "description": "The Action to perform when the rule is matched. The following are the valid actions: - allow: allow access to target. - deny(STATUS): deny access to target, returns the HTTP response code specified. Valid values for `STATUS` are 403, 404, and 502. - rate_based_ban: limit client traffic to the configured threshold and ban the client if the traffic exceeds the threshold. Configure parameters for this action in RateLimitOptions. Requires rate_limit_options to be set. - redirect: redirect to a different target. This can either be an internal reCAPTCHA redirect, or an external URL-based redirect via a 302 response. Parameters for this action can be configured via redirectOptions. This action is only supported in Global Security Policies of type CLOUD_ARMOR. - throttle: limit client traffic to the configured threshold. Configure parameters for this action in rateLimitOptions. Requires rate_limit_options to be set for this. ",
           "type": "string"
         },
         "description": {
@@ -60959,7 +61379,7 @@
         },
         "headerAction": {
           "$ref": "SecurityPolicyRuleHttpHeaderAction",
-          "description": "Optional, additional actions that are performed on headers."
+          "description": "Optional, additional actions that are performed on headers. This field is only supported in Global Security Policies of type CLOUD_ARMOR."
         },
         "kind": {
           "default": "compute#securityPolicyRule",
@@ -60989,7 +61409,7 @@
         },
         "redirectOptions": {
           "$ref": "SecurityPolicyRuleRedirectOptions",
-          "description": "Parameters defining the redirect action. Cannot be specified for any other actions."
+          "description": "Parameters defining the redirect action. Cannot be specified for any other actions. This field is only supported in Global Security Policies of type CLOUD_ARMOR."
         }
       },
       "type": "object"
@@ -61031,7 +61451,7 @@
         },
         "expr": {
           "$ref": "Expr",
-          "description": "User defined CEVAL expression. A CEVAL expression is used to specify match criteria such as origin.ip, source.region_code and contents in the request header."
+          "description": "User defined CEVAL expression. A CEVAL expression is used to specify match criteria such as origin.ip, source.region_code and contents in the request header. Expressions containing `evaluateThreatIntelligence` require Cloud Armor Managed Protection Plus tier and are not supported in Edge Policies nor in Regional Policies. Expressions containing `evaluatePreconfiguredExpr('sourceiplist-*')` require Cloud Armor Managed Protection Plus tier and are only supported in Global Security Policies."
         },
         "versionedExpr": {
           "description": "Preconfigured versioned expression. If this field is specified, config must also be specified. Available preconfigured expressions along with their requirements are: SRC_IPS_V1 - must specify the corresponding src_ip_range field in config.",
@@ -61185,21 +61605,62 @@
           ],
           "type": "string"
         },
+        "enforceOnKeyConfigs": {
+          "description": "If specified, any combination of values of enforce_on_key_type/enforce_on_key_name is treated as the key on which ratelimit threshold/action is enforced. You can specify up to 3 enforce_on_key_configs. If enforce_on_key_configs is specified, enforce_on_key must not be specified.",
+          "items": {
+            "$ref": "SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig"
+          },
+          "type": "array"
+        },
         "enforceOnKeyName": {
           "description": "Rate limit key name applicable only for the following key types: HTTP_HEADER -- Name of the HTTP header whose value is taken as the key value. HTTP_COOKIE -- Name of the HTTP cookie whose value is taken as the key value.",
           "type": "string"
         },
         "exceedAction": {
-          "description": "Action to take for requests that are above the configured rate limit threshold, to either deny with a specified HTTP response code, or redirect to a different endpoint. Valid options are `deny(STATUS)`, where valid values for `STATUS` are 403, 404, 429, and 502, and `redirect`, where the redirect parameters come from `exceedRedirectOptions` below.",
+          "description": "Action to take for requests that are above the configured rate limit threshold, to either deny with a specified HTTP response code, or redirect to a different endpoint. Valid options are `deny(STATUS)`, where valid values for `STATUS` are 403, 404, 429, and 502, and `redirect`, where the redirect parameters come from `exceedRedirectOptions` below. The `redirect` action is only supported in Global Security Policies of type CLOUD_ARMOR.",
           "type": "string"
         },
         "exceedRedirectOptions": {
           "$ref": "SecurityPolicyRuleRedirectOptions",
-          "description": "Parameters defining the redirect action that is used as the exceed action. Cannot be specified if the exceed action is not redirect."
+          "description": "Parameters defining the redirect action that is used as the exceed action. Cannot be specified if the exceed action is not redirect. This field is only supported in Global Security Policies of type CLOUD_ARMOR."
         },
         "rateLimitThreshold": {
           "$ref": "SecurityPolicyRuleRateLimitOptionsThreshold",
           "description": "Threshold at which to begin ratelimiting."
+        }
+      },
+      "type": "object"
+    },
+    "SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig": {
+      "id": "SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig",
+      "properties": {
+        "enforceOnKeyName": {
+          "description": "Rate limit key name applicable only for the following key types: HTTP_HEADER -- Name of the HTTP header whose value is taken as the key value. HTTP_COOKIE -- Name of the HTTP cookie whose value is taken as the key value.",
+          "type": "string"
+        },
+        "enforceOnKeyType": {
+          "description": "Determines the key to enforce the rate_limit_threshold on. Possible values are: - ALL: A single rate limit threshold is applied to all the requests matching this rule. This is the default value if \"enforceOnKeyConfigs\" is not configured. - IP: The source IP address of the request is the key. Each IP has this limit enforced separately. - HTTP_HEADER: The value of the HTTP header whose name is configured under \"enforceOnKeyName\". The key value is truncated to the first 128 bytes of the header value. If no such header is present in the request, the key type defaults to ALL. - XFF_IP: The first IP address (i.e. the originating client IP address) specified in the list of IPs under X-Forwarded-For HTTP header. If no such header is present or the value is not a valid IP, the key defaults to the source IP address of the request i.e. key type IP. - HTTP_COOKIE: The value of the HTTP cookie whose name is configured under \"enforceOnKeyName\". The key value is truncated to the first 128 bytes of the cookie value. If no such cookie is present in the request, the key type defaults to ALL. - HTTP_PATH: The URL path of the HTTP request. The key value is truncated to the first 128 bytes. - SNI: Server name indication in the TLS session of the HTTPS request. The key value is truncated to the first 128 bytes. The key type defaults to ALL on a HTTP session. - REGION_CODE: The country/region from which the request originates. ",
+          "enum": [
+            "ALL",
+            "HTTP_COOKIE",
+            "HTTP_HEADER",
+            "HTTP_PATH",
+            "IP",
+            "REGION_CODE",
+            "SNI",
+            "XFF_IP"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -61328,7 +61789,7 @@
       "type": "object"
     },
     "ServiceAttachment": {
-      "description": "Represents a ServiceAttachment resource. A service attachment represents a service that a producer has exposed. It encapsulates the load balancer which fronts the service runs and a list of NAT IP ranges that the producers uses to represent the consumers connecting to the service. next tag = 20",
+      "description": "Represents a ServiceAttachment resource. A service attachment represents a service that a producer has exposed. It encapsulates the load balancer which fronts the service runs and a list of NAT IP ranges that the producers uses to represent the consumers connecting to the service.",
       "id": "ServiceAttachment",
       "properties": {
         "connectedEndpoints": {
@@ -61424,6 +61885,10 @@
         "pscServiceAttachmentId": {
           "$ref": "Uint128",
           "description": "[Output Only] An 128-bit global unique ID of the PSC service attachment."
+        },
+        "reconcileConnections": {
+          "description": "This flag determines whether a consumer accept/reject list change can reconcile the statuses of existing ACCEPTED or REJECTED PSC endpoints. - If false, connection policy update will only affect existing PENDING PSC endpoints. Existing ACCEPTED/REJECTED endpoints will remain untouched regardless how the connection policy is modified . - If true, update will affect both PENDING and ACCEPTED/REJECTED PSC endpoints. For example, an ACCEPTED PSC endpoint will be moved to REJECTED if its project is added to the reject list. For newly created service attachment, this boolean defaults to true.",
+          "type": "boolean"
         },
         "region": {
           "description": "[Output Only] URL of the region where the service attachment resides. This field applies only to the region resource. You must specify this field as part of the HTTP request URL. It is not settable as a field in the request body.",
@@ -64775,7 +65240,7 @@
       "id": "TargetHttpsProxiesSetCertificateMapRequest",
       "properties": {
         "certificateMap": {
-          "description": "URL of the Certificate Map to associate with this TargetHttpsProxy.",
+          "description": "URL of the Certificate Map to associate with this TargetHttpsProxy. Accepted format is //certificatemanager.googleapis.com/projects/{project }/locations/{location}/certificateMaps/{resourceName}.",
           "type": "string"
         }
       },
@@ -64823,7 +65288,7 @@
           "type": "string"
         },
         "certificateMap": {
-          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored.",
+          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored. Accepted format is //certificatemanager.googleapis.com/projects/{project }/locations/{location}/certificateMaps/{resourceName}.",
           "type": "string"
         },
         "creationTimestamp": {
@@ -64881,7 +65346,7 @@
           "type": "string"
         },
         "serverTlsPolicy": {
-          "description": "Optional. A URL referring to a networksecurity.ServerTlsPolicy resource that describes how the proxy should authenticate inbound traffic. serverTlsPolicy only applies to a global TargetHttpsProxy attached to globalForwardingRules with the loadBalancingScheme set to INTERNAL_SELF_MANAGED. If left blank, communications are not encrypted. Note: This field currently has no impact.",
+          "description": "Optional. A URL referring to a networksecurity.ServerTlsPolicy resource that describes how the proxy should authenticate inbound traffic. serverTlsPolicy only applies to a global TargetHttpsProxy attached to globalForwardingRules with the loadBalancingScheme set to INTERNAL_SELF_MANAGED or EXTERNAL or EXTERNAL_MANAGED. For details which ServerTlsPolicy resources are accepted with INTERNAL_SELF_MANAGED and which with EXTERNAL, EXTERNAL_MANAGED loadBalancingScheme consult ServerTlsPolicy documentation. If left blank, communications are not encrypted.",
           "type": "string"
         },
         "sslCertificates": {
@@ -66080,7 +66545,7 @@
       "id": "TargetSslProxiesSetCertificateMapRequest",
       "properties": {
         "certificateMap": {
-          "description": "URL of the Certificate Map to associate with this TargetSslProxy.",
+          "description": "URL of the Certificate Map to associate with this TargetSslProxy. Accepted format is //certificatemanager.googleapis.com/projects/{project }/locations/{location}/certificateMaps/{resourceName}.",
           "type": "string"
         }
       },
@@ -66122,7 +66587,7 @@
       "id": "TargetSslProxy",
       "properties": {
         "certificateMap": {
-          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored.",
+          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored. Accepted format is //certificatemanager.googleapis.com/projects/{project }/locations/{location}/certificateMaps/{resourceName}.",
           "type": "string"
         },
         "creationTimestamp": {
@@ -66765,6 +67230,18 @@
           "default": "compute#targetVpnGateway",
           "description": "[Output Only] Type of resource. Always compute#targetVpnGateway for target VPN gateways.",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this TargetVpnGateway, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels, otherwise the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve a TargetVpnGateway.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "name": {
           "annotations": {
@@ -68861,6 +69338,18 @@
           "default": "compute#vpnTunnel",
           "description": "[Output Only] Type of resource. Always compute#vpnTunnel for VPN tunnels.",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this VpnTunnel, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels, otherwise the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve a VpnTunnel.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels for this resource. These can only be added or modified by the setLabels method. Each label key/value pair must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "localTrafficSelector": {
           "description": "Local traffic selector to use when establishing the VPN tunnel with the peer VPN gateway. The value should be a CIDR formatted string, for example: 192.168.0.0/16. The ranges must be disjoint. Only IPv4 is supported.",

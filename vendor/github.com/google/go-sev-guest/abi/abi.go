@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/google/go-sev-guest/gce"
 	pb "github.com/google/go-sev-guest/proto/sevsnp"
 	"github.com/google/logger"
 	"github.com/pborman/uuid"
@@ -690,9 +691,11 @@ func (c *CertTable) Proto() *pb.CertificateChain {
 	if err != nil {
 		logger.Warningf("ARK certificate not found in data pages: %v", err)
 	}
+	firmware, _ := c.GetByGUIDString(gce.FirmwareCertGUID)
 	return &pb.CertificateChain{
-		VcekCert: vcek,
-		AskCert:  ask,
-		ArkCert:  ark,
+		VcekCert:     vcek,
+		AskCert:      ask,
+		ArkCert:      ark,
+		FirmwareCert: firmware,
 	}
 }

@@ -71,6 +71,7 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "container:v1"
 const apiName = "container"
@@ -318,6 +319,37 @@ type AcceleratorConfig struct {
 
 func (s *AcceleratorConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AcceleratorConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// AdditionalPodRangesConfig: AdditionalPodRangesConfig is the
+// configuration for additional pod secondary ranges supporting the
+// ClusterUpdate message.
+type AdditionalPodRangesConfig struct {
+	// PodRangeNames: Name for pod secondary ipv4 range which has the actual
+	// range defined ahead.
+	PodRangeNames []string `json:"podRangeNames,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PodRangeNames") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PodRangeNames") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AdditionalPodRangesConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod AdditionalPodRangesConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1025,6 +1057,9 @@ type Cluster struct {
 	// format.
 	ExpireTime string `json:"expireTime,omitempty"`
 
+	// Fleet: Fleet information for the cluster.
+	Fleet *Fleet `json:"fleet,omitempty"`
+
 	// Id: Output only. Unique id for the cluster.
 	Id string `json:"id,omitempty"`
 
@@ -1352,6 +1387,11 @@ func (s *ClusterAutoscaling) MarshalJSON() ([]byte, error) {
 // Exactly one update can be applied to a cluster with each request, so
 // at most one field can be provided.
 type ClusterUpdate struct {
+	// AdditionalPodRangesConfig: The additional pod ranges to be added to
+	// the cluster. These pod ranges can be used by node pools to allocate
+	// pod IPs.
+	AdditionalPodRangesConfig *AdditionalPodRangesConfig `json:"additionalPodRangesConfig,omitempty"`
+
 	// DesiredAddonsConfig: Configurations for the various addons available
 	// to run in the cluster.
 	DesiredAddonsConfig *AddonsConfig `json:"desiredAddonsConfig,omitempty"`
@@ -1523,7 +1563,7 @@ type ClusterUpdate struct {
 	// from Google Services
 	//   "PRIVATE_IPV6_GOOGLE_ACCESS_TO_GOOGLE" - Enables private IPv6
 	// access to Google Services from GKE
-	//   "PRIVATE_IPV6_GOOGLE_ACCESS_BIDIRECTIONAL" - Enables priate IPv6
+	//   "PRIVATE_IPV6_GOOGLE_ACCESS_BIDIRECTIONAL" - Enables private IPv6
 	// access to and from Google Services
 	DesiredPrivateIpv6GoogleAccess string `json:"desiredPrivateIpv6GoogleAccess,omitempty"`
 
@@ -1565,21 +1605,28 @@ type ClusterUpdate struct {
 	// blocked and an ABORTED error will be returned.
 	Etag string `json:"etag,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "DesiredAddonsConfig")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// RemovedAdditionalPodRangesConfig: The additional pod ranges that are
+	// to be removed from the cluster. The pod ranges specified here must
+	// have been specified earlier in the 'additional_pod_ranges_config'
+	// argument.
+	RemovedAdditionalPodRangesConfig *AdditionalPodRangesConfig `json:"removedAdditionalPodRangesConfig,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "AdditionalPodRangesConfig") to unconditionally include in API
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "DesiredAddonsConfig") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g.
+	// "AdditionalPodRangesConfig") to include in API requests with the JSON
+	// null value. By default, fields with empty values are omitted from API
+	// requests. However, any field with an empty value appearing in
+	// NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -1952,7 +1999,7 @@ type DatabaseEncryption struct {
 	// y
 	KeyName string `json:"keyName,omitempty"`
 
-	// State: Denotes the state of etcd encryption.
+	// State: The desired state of etcd encryption.
 	//
 	// Possible values:
 	//   "UNKNOWN" - Should never be set
@@ -2151,6 +2198,45 @@ type Filter struct {
 
 func (s *Filter) MarshalJSON() ([]byte, error) {
 	type NoMethod Filter
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Fleet: Fleet is the fleet configuration for the cluster.
+type Fleet struct {
+	// Membership: [Output only] The full resource name of the registered
+	// fleet membership of the cluster, in the format
+	// `//gkehub.googleapis.com/projects/*/locations/*/memberships/*`.
+	Membership string `json:"membership,omitempty"`
+
+	// PreRegistered: [Output only] Whether the cluster has been registered
+	// through the fleet API.
+	PreRegistered bool `json:"preRegistered,omitempty"`
+
+	// Project: The Fleet host project(project ID or project number) where
+	// this cluster will be registered to. This field cannot be changed
+	// after the cluster has been registered.
+	Project string `json:"project,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Membership") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Membership") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Fleet) MarshalJSON() ([]byte, error) {
+	type NoMethod Fleet
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2576,6 +2662,12 @@ func (s *ILBSubsettingConfig) MarshalJSON() ([]byte, error) {
 // IPAllocationPolicy: Configuration for controlling how IPs are
 // allocated in the cluster.
 type IPAllocationPolicy struct {
+	// AdditionalPodRangesConfig: Output only. [Output only] The additional
+	// pod ranges that are added to the cluster. These pod ranges can be
+	// used by new node pools to allocate pod IPs automatically. Once the
+	// range is removed it will not show up in IPAllocationPolicy.
+	AdditionalPodRangesConfig *AdditionalPodRangesConfig `json:"additionalPodRangesConfig,omitempty"`
+
 	// ClusterIpv4Cidr: This field is deprecated, use
 	// cluster_ipv4_cidr_block.
 	ClusterIpv4Cidr string `json:"clusterIpv4Cidr,omitempty"`
@@ -2629,6 +2721,17 @@ type IPAllocationPolicy struct {
 	// (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a
 	// specific range to use.
 	NodeIpv4CidrBlock string `json:"nodeIpv4CidrBlock,omitempty"`
+
+	// PodCidrOverprovisionConfig: [PRIVATE FIELD] Pod CIDR size
+	// overprovisioning config for the cluster. Pod CIDR size per node
+	// depends on max_pods_per_node. By default, the value of
+	// max_pods_per_node is doubled and then rounded off to next power of 2
+	// to get the size of pod CIDR block per node. Example:
+	// max_pods_per_node of 30 would result in 64 IPs (/26). This config can
+	// disable the doubling of IPs (we still round off to next power of 2)
+	// Example: max_pods_per_node of 30 will result in 32 IPs (/27) when
+	// overprovisioning is disabled.
+	PodCidrOverprovisionConfig *PodCIDROverprovisionConfig `json:"podCidrOverprovisionConfig,omitempty"`
 
 	// ServicesIpv4Cidr: This field is deprecated, use
 	// services_ipv4_cidr_block.
@@ -2699,21 +2802,22 @@ type IPAllocationPolicy struct {
 	// false, then the server picks the default IP allocation mode
 	UseRoutes bool `json:"useRoutes,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ClusterIpv4Cidr") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "AdditionalPodRangesConfig") to unconditionally include in API
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ClusterIpv4Cidr") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g.
+	// "AdditionalPodRangesConfig") to include in API requests with the JSON
+	// null value. By default, fields with empty values are omitted from API
+	// requests. However, any field with an empty value appearing in
+	// NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -3726,7 +3830,7 @@ type NetworkConfig struct {
 	// from Google Services
 	//   "PRIVATE_IPV6_GOOGLE_ACCESS_TO_GOOGLE" - Enables private IPv6
 	// access to Google Services from GKE
-	//   "PRIVATE_IPV6_GOOGLE_ACCESS_BIDIRECTIONAL" - Enables priate IPv6
+	//   "PRIVATE_IPV6_GOOGLE_ACCESS_BIDIRECTIONAL" - Enables private IPv6
 	// access to and from Google Services
 	PrivateIpv6GoogleAccess string `json:"privateIpv6GoogleAccess,omitempty"`
 
@@ -4282,6 +4386,17 @@ type NodeNetworkConfig struct {
 	// NetworkPerformanceConfig: Network bandwidth tier configuration.
 	NetworkPerformanceConfig *NetworkPerformanceConfig `json:"networkPerformanceConfig,omitempty"`
 
+	// PodCidrOverprovisionConfig: [PRIVATE FIELD] Pod CIDR size
+	// overprovisioning config for the nodepool. Pod CIDR size per node
+	// depends on max_pods_per_node. By default, the value of
+	// max_pods_per_node is rounded off to next power of 2 and we then
+	// double that to get the size of pod CIDR block per node. Example:
+	// max_pods_per_node of 30 would result in 64 IPs (/26). This config can
+	// disable the doubling of IPs (we still round off to next power of 2)
+	// Example: max_pods_per_node of 30 will result in 32 IPs (/27) when
+	// overprovisioning is disabled.
+	PodCidrOverprovisionConfig *PodCIDROverprovisionConfig `json:"podCidrOverprovisionConfig,omitempty"`
+
 	// PodIpv4CidrBlock: The IP address range for pod IPs in this node pool.
 	// Only applicable if `create_pod_range` is true. Set to blank to have a
 	// range chosen with the default size. Set to /netmask (e.g. `/14`) to
@@ -4752,29 +4867,95 @@ type Operation struct {
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Not set.
-	//   "CREATE_CLUSTER" - Cluster create.
-	//   "DELETE_CLUSTER" - Cluster delete.
-	//   "UPGRADE_MASTER" - A master upgrade.
-	//   "UPGRADE_NODES" - A node upgrade.
-	//   "REPAIR_CLUSTER" - Cluster repair.
-	//   "UPDATE_CLUSTER" - Cluster update.
-	//   "CREATE_NODE_POOL" - Node pool create.
-	//   "DELETE_NODE_POOL" - Node pool delete.
-	//   "SET_NODE_POOL_MANAGEMENT" - Set node pool management.
-	//   "AUTO_REPAIR_NODES" - Automatic node pool repair.
-	//   "AUTO_UPGRADE_NODES" - Automatic node upgrade.
-	//   "SET_LABELS" - Set labels.
-	//   "SET_MASTER_AUTH" - Set/generate master auth materials
-	//   "SET_NODE_POOL_SIZE" - Set node pool size.
-	//   "SET_NETWORK_POLICY" - Updates network policy for a cluster.
-	//   "SET_MAINTENANCE_POLICY" - Set the maintenance policy.
+	//   "CREATE_CLUSTER" - The cluster is being created. The cluster should
+	// be assumed to be unusable until the operation finishes. In the event
+	// of the operation failing, the cluster will enter the ERROR state and
+	// eventually be deleted.
+	//   "DELETE_CLUSTER" - The cluster is being deleted. The cluster should
+	// be assumed to be unusable as soon as this operation starts. In the
+	// event of the operation failing, the cluster will enter the ERROR
+	// state and the deletion will be automatically retried until completed.
+	//   "UPGRADE_MASTER" - The cluster version is being updated. Note that
+	// this includes "upgrades" to the same version, which are simply a
+	// recreation. This also includes
+	// [auto-upgrades](https://cloud.google.com/kubernetes-engine/docs/concep
+	// ts/cluster-upgrades#upgrading_automatically). For more details, see
+	// [documentation on cluster
+	// upgrades](https://cloud.google.com/kubernetes-engine/docs/concepts/clu
+	// ster-upgrades#cluster_upgrades).
+	//   "UPGRADE_NODES" - A node pool is being updated. Despite calling
+	// this an "upgrade", this includes most forms of updates to node pools.
+	// This also includes
+	// [auto-upgrades](https://cloud.google.com/kubernetes-engine/docs/how-to
+	// /node-auto-upgrades). This operation sets the progress field and may
+	// be canceled. The upgrade strategy depends on [node pool
+	// configuration](https://cloud.google.com/kubernetes-engine/docs/concept
+	// s/node-pool-upgrade-strategies). The nodes are generally still usable
+	// during this operation.
+	//   "REPAIR_CLUSTER" - A problem has been detected with the control
+	// plane and is being repaired. This operation type is initiated by GKE.
+	// For more details, see [documentation on
+	// repairs](https://cloud.google.com/kubernetes-engine/docs/concepts/main
+	// tenance-windows-and-exclusions#repairs).
+	//   "UPDATE_CLUSTER" - The cluster is being updated. This is a broad
+	// category of operations and includes operations that only change
+	// metadata as well as those that must recreate the entire cluster. If
+	// the control plane must be recreated, this will cause temporary
+	// downtime for zonal clusters. Some features require recreating the
+	// nodes as well. Those will be recreated as separate operations and the
+	// update may not be completely functional until the node pools
+	// recreations finish. Node recreations will generally follow
+	// [maintenance
+	// policies](https://cloud.google.com/kubernetes-engine/docs/concepts/mai
+	// ntenance-windows-and-exclusions). Some GKE-initiated operations use
+	// this type. This includes certain types of auto-upgrades and incident
+	// mitigations.
+	//   "CREATE_NODE_POOL" - A node pool is being created. The node pool
+	// should be assumed to be unusable until this operation finishes. In
+	// the event of an error, the node pool may be partially created. If
+	// enabled, [node
+	// autoprovisioning](https://cloud.google.com/kubernetes-engine/docs/how-
+	// to/node-auto-provisioning) may have automatically initiated such
+	// operations.
+	//   "DELETE_NODE_POOL" - The node pool is being deleted. The node pool
+	// should be assumed to be unusable as soon as this operation starts.
+	//   "SET_NODE_POOL_MANAGEMENT" - The node pool's manamagent field is
+	// being updated. These operations only update metadata and may be
+	// concurrent with most other operations.
+	//   "AUTO_REPAIR_NODES" - A problem has been detected with nodes and
+	// [they are being
+	// repaired](https://cloud.google.com/kubernetes-engine/docs/how-to/node-
+	// auto-repair). This operation type is initiated by GKE, typically
+	// automatically. This operation may be concurrent with other operations
+	// and there may be multiple repairs occurring on the same node pool.
+	//   "AUTO_UPGRADE_NODES" - Unused. Automatic node upgrade uses
+	// UPGRADE_NODES.
+	//   "SET_LABELS" - Unused. Updating labels uses UPDATE_CLUSTER.
+	//   "SET_MASTER_AUTH" - Unused. Updating master auth uses
+	// UPDATE_CLUSTER.
+	//   "SET_NODE_POOL_SIZE" - The node pool is being resized. With the
+	// exception of resizing to or from size zero, the node pool is
+	// generally usable during this operation.
+	//   "SET_NETWORK_POLICY" - Unused. Updating network policy uses
+	// UPDATE_CLUSTER.
+	//   "SET_MAINTENANCE_POLICY" - Unused. Updating maintenance policy uses
+	// UPDATE_CLUSTER.
+	//   "RESIZE_CLUSTER" - The control plane is being resized. This
+	// operation type is initiated by GKE. These operations are often
+	// performed preemptively to ensure that the control plane has
+	// sufficient resources and is not typically an indication of issues.
+	// For more details, see [documentation on
+	// resizes](https://cloud.google.com/kubernetes-engine/docs/concepts/main
+	// tenance-windows-and-exclusions#repairs).
 	OperationType string `json:"operationType,omitempty"`
 
 	// Progress: Output only. [Output only] Progress information for an
 	// operation.
 	Progress *OperationProgress `json:"progress,omitempty"`
 
-	// SelfLink: Server-defined URL for the resource.
+	// SelfLink: Server-defined URI for the operation. Example:
+	// `https://container.googleapis.com/v1alpha1/projects/123/locations/us-c
+	// entral1/operations/operation-123`.
 	SelfLink string `json:"selfLink,omitempty"`
 
 	// StartTime: [Output only] The time the operation started, in RFC3339
@@ -4795,7 +4976,17 @@ type Operation struct {
 	// description of the error. Deprecated. Use the field error instead.
 	StatusMessage string `json:"statusMessage,omitempty"`
 
-	// TargetLink: Server-defined URL for the target of the operation.
+	// TargetLink: Server-defined URI for the target of the operation. The
+	// format of this is a URI to the resource being modified (such as a
+	// cluster, node pool, or node). For node pool repairs, there may be
+	// multiple nodes being repaired, but only one will be the target.
+	// Examples: -
+	// `https://container.googleapis.com/v1/projects/123/locations/us-central
+	// 1/clusters/my-cluster` -
+	// `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/
+	// clusters/my-cluster/nodePools/my-np` -
+	// `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/
+	// clusters/my-cluster/nodePools/my-np/node/my-node`
 	TargetLink string `json:"targetLink,omitempty"`
 
 	// Zone: The name of the Google Compute Engine zone
@@ -4913,6 +5104,36 @@ type PlacementPolicy struct {
 
 func (s *PlacementPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod PlacementPolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PodCIDROverprovisionConfig: [PRIVATE FIELD] Config for pod CIDR size
+// overprovisioning.
+type PodCIDROverprovisionConfig struct {
+	// Disable: Whether Pod CIDR overprovisioning is disabled. Note: Pod
+	// CIDR overprovisioning is enabled by default.
+	Disable bool `json:"disable,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Disable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Disable") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PodCIDROverprovisionConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod PodCIDROverprovisionConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -7153,8 +7374,8 @@ type UsableSubnetworkSecondaryRange struct {
 	//   "UNUSED" - UNUSED denotes that this range is unclaimed by any
 	// cluster.
 	//   "IN_USE_SERVICE" - IN_USE_SERVICE denotes that this range is
-	// claimed by a cluster for services. It cannot be used for other
-	// clusters.
+	// claimed by cluster(s) for services. User-managed services range can
+	// be shared between clusters within the same subnetwork.
 	//   "IN_USE_SHAREABLE_POD" - IN_USE_SHAREABLE_POD denotes this range
 	// was created by the network admin and is currently claimed by a
 	// cluster for pods. It can only be used by other clusters as a pod

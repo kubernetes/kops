@@ -82,11 +82,10 @@ const (
 
 // SevEsErr is an error that interprets SEV-ES guest-host communication results.
 type SevEsErr struct {
-	error
 	Result EsResult
 }
 
-func (err SevEsErr) Error() string {
+func (err *SevEsErr) Error() string {
 	if err.Result == EsUnsupported {
 		return "requested operation not supported"
 	}
