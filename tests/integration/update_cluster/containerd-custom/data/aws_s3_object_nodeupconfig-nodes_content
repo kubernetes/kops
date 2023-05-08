@@ -9,7 +9,7 @@ Assets:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - d713d8fbec491705ffe8c33ecc9051a904f6eedc92574928e1d33616f291c583@https://github.com/containerd/containerd/releases/download/v1.6.21/containerd-1.6.21-linux-arm64.tar.gz
+  - c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-arm64.tar.gz
   - 54e79e4d48b9e191767e4abc08be1a8476a1c757e9a9f8c45c6ded001226867f@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.arm64
 CAs: {}
 ClusterName: containerd.example.com
@@ -65,7 +65,7 @@ containerdConfig:
     - https://registry-1.docker.io
   runc:
     version: 1.1.5
-  version: 1.6.21
+  version: 1.6.20
 docker:
   skipInstall: true
 useInstanceIDForNodeName: true

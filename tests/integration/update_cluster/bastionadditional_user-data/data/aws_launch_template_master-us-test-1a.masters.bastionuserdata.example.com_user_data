@@ -258,7 +258,7 @@ ClusterName: bastionuserdata.example.com
 ConfigBase: memfs://clusters.example.com/bastionuserdata.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: ySFCYJMxSAYJRLJ7g8a8HwUN0I0GP4tglgBesG8lUyA=
+NodeupConfigHash: W+Nu01jj4vbCUeopMNOHhfYLeXemOik+AIZ9f/wfsc8=
 
 __EOF_KUBE_ENV
 

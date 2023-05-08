@@ -266,7 +266,7 @@ ClusterName: existing-iam.example.com
 ConfigBase: memfs://tests/existing-iam.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: vKCo+x+XBvalnOn1igkaOlGt3lumibMT7rl7YcxnqpM=
+NodeupConfigHash: 06GH0HWfKrpd3x4DgozvTAWclDFJKySF2dY459rulaM=
 
 __EOF_KUBE_ENV
 

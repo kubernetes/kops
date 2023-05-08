@@ -177,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.mixedinstances.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: +mUiy7SrSlkJN9HbPNs6EQxumg/tApPDghH4PRXAEGI=
+NodeupConfigHash: TwobeSMtHTifRoVmtnmwbvq06NGwKLzydznLvU3eF3o=
 
 __EOF_KUBE_ENV
 
