@@ -19,6 +19,7 @@ package awsup
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,6 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -240,6 +242,13 @@ func ResetAWSCloudInstances() {
 	awsCloudInstances = make(map[string]AWSCloud)
 }
 
+func setConfig(config *aws.Config) *aws.Config {
+	// This avoids a confusing error message when we fail to get credentials
+	// e.g. https://github.com/kubernetes/kops/issues/605
+	config = config.WithCredentialsChainVerboseErrors(true)
+	return request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+}
+
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	raw := awsCloudInstances[region]
 	if raw == nil {
@@ -254,11 +263,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		}
 
 		config := aws.NewConfig().WithRegion(region)
-
-		// This avoids a confusing error message when we fail to get credentials
-		// e.g. https://github.com/kubernetes/kops/issues/605
-		config = config.WithCredentialsChainVerboseErrors(true)
-		config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+		config = setConfig(config)
 
 		requestLogger := newRequestLogger(2)
 
@@ -269,6 +274,15 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		if err != nil {
 			return c, err
 		}
+
+		// assumes the role before executing commands
+		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
+		if roleARN != "" {
+			creds := stscreds.NewCredentials(sess, roleARN)
+			config = &aws.Config{Credentials: creds}
+			config = setConfig(config).WithRegion(region)
+		}
+
 		c.ec2 = ec2.New(sess, config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ec2.Handlers)
