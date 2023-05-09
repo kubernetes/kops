@@ -266,7 +266,7 @@ ClusterName: existingsg.example.com
 ConfigBase: memfs://clusters.example.com/existingsg.example.com
 InstanceGroupName: master-us-test-1b
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 2Ot7i5E5bRko8O/1Vx4p+3vJe5wXuzG2emMwliQXgxE=
+NodeupConfigHash: kiN7GtDMyjduGkLcyF/vuPIzyvUkKjrsB0vLvylXIVI=
 
 __EOF_KUBE_ENV
 

@@ -266,7 +266,7 @@ ClusterName: mixedinstances.example.com
 ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: aFVB7O2gdEi7ltRVTrxMwrqn80+LSHOqqH1rAi3Y7Y4=
+NodeupConfigHash: bxfy6Kn/l+BgdYcVjSOvD1y4T7ZtGtfpNl6gFNoXlvY=
 
 __EOF_KUBE_ENV
 
