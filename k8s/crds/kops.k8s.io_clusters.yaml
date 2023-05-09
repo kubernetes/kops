@@ -3791,6 +3791,17 @@ spec:
                       Kubelet.
                     format: int32
                     type: integer
+                  memorySwap:
+                    description: MemorySwap defines the memory swap behavior
+                    type: string
+                  memorySwapConfiguration:
+                    description: MemorySwapConfiguration holds the memory swap configuration
+                      for the kubelet
+                    properties:
+                      swapBehavior:
+                        description: SwapBehavior can be "" or "UnlimitedSwap"
+                        type: string
+                    type: object
                   networkPluginMTU:
                     description: NetworkPluginMTU is the MTU to be passed to the network
                       plugin, and overrides the default MTU for cases where it cannot
@@ -4220,6 +4231,17 @@ spec:
                       Kubelet.
                     format: int32
                     type: integer
+                  memorySwap:
+                    description: MemorySwap defines the memory swap behavior
+                    type: string
+                  memorySwapConfiguration:
+                    description: MemorySwapConfiguration holds the memory swap configuration
+                      for the kubelet
+                    properties:
+                      swapBehavior:
+                        description: SwapBehavior can be "" or "UnlimitedSwap"
+                        type: string
+                    type: object
                   networkPluginMTU:
                     description: NetworkPluginMTU is the MTU to be passed to the network
                       plugin, and overrides the default MTU for cases where it cannot
