@@ -276,7 +276,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		}
 
 		// assumes the role before executing commands
-		roleARN := os.Getenv("AWS_ASSUME_ROLE_ARN")
+		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
 		if roleARN != "" {
 			creds := stscreds.NewCredentials(sess, roleARN)
 			config = &aws.Config{Credentials: creds}
