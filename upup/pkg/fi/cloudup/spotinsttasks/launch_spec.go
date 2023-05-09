@@ -328,6 +328,13 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 		}
 	}
 
+	// Instance Metadata Options
+	if spec.InstanceMetadataOptions != nil {
+		actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
+		actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(spec.InstanceMetadataOptions.HTTPTokens))
+		actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(spec.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
+	}
+
 	// Avoid spurious changes.
 	actual.Lifecycle = o.Lifecycle
 

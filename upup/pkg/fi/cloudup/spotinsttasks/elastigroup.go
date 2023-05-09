@@ -427,6 +427,14 @@ func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 		if lc.HealthCheckType != nil {
 			actual.HealthCheckType = lc.HealthCheckType
 		}
+
+		// Instance Metadata Options
+		if lc.MetadataOptions != nil {
+			actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
+			actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(lc.MetadataOptions.HTTPTokens))
+			actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(lc.MetadataOptions.HTTPPutResponseHopLimit)))
+		}
+
 	}
 
 	// Auto Scaler.
@@ -752,6 +760,15 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			integration.SetKubernetes(k8s)
 
 			group.SetIntegration(integration)
+		}
+	}
+	// Instance Metadata Options
+	{
+		if e.InstanceMetadataOptions != nil {
+			opt := new(aws.MetadataOptions)
+			opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+			opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+			group.Compute.LaunchSpecification.SetMetadataOptions(opt)
 		}
 	}
 
@@ -1249,6 +1266,27 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 					changed = true
 				}
 			}
+
+			// Instance Metadata Options
+			{
+				if changes.InstanceMetadataOptions != nil {
+					if group.Compute == nil {
+						group.Compute = new(aws.Compute)
+					}
+					if group.Compute.LaunchSpecification == nil {
+						group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+					}
+
+					opt := new(aws.MetadataOptions)
+					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+					group.Compute.LaunchSpecification.SetMetadataOptions(opt)
+					changes.InstanceMetadataOptions = nil
+					changed = true
+
+				}
+			}
+
 		}
 	}
 

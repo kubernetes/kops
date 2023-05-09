@@ -454,6 +454,8 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 		ocean.AutoScalerOpts.Taints = nil
 		ocean.AutoScalerOpts.Headroom = nil
 	}
+	// Instance Metadata Options
+	ocean.InstanceMetadataOptions = b.buildInstanceMetadataOptions(ig)
 
 	if !fi.ValueOf(ocean.UseAsTemplateOnly) {
 		// Capacity.
