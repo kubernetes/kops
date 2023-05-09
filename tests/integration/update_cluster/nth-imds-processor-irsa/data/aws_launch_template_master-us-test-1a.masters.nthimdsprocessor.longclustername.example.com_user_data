@@ -258,7 +258,7 @@ ClusterName: nthimdsprocessor.longclustername.example.com
 ConfigBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: swQsOyjw7ADkLtJwQCtUHZEE1M/FAuHihPYH2xB9Uo8=
+NodeupConfigHash: QDrfil7DRhAlxIc9+bFsNw/OLb3I5ju7BjSDJ+NWtgE=
 
 __EOF_KUBE_ENV
 
