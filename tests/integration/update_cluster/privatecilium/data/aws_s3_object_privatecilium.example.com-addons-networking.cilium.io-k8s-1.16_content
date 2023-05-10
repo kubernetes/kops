@@ -648,6 +648,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        test1: "true"
+        test2: "123"
+        test3: cilium-operator
       creationTimestamp: null
       labels:
         io.cilium/app: operator
