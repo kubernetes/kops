@@ -195,6 +195,22 @@ func (p *FSPath) Remove() error {
 	return os.Remove(p.location)
 }
 
+func (p *FSPath) RemoveAll() error {
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	for _, filePath := range tree {
+		err := filePath.Remove()
+		if err != nil {
+			return fmt.Errorf("error removing file %s: %w", filePath, err)
+		}
+	}
+
+	return nil
+}
+
 func (p *FSPath) RemoveAllVersions() error {
 	return p.Remove()
 }

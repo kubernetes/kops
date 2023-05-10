@@ -175,27 +175,9 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		return fmt.Errorf("refusing to delete: unknown file found: %s", path)
 	}
 
-	for _, path := range paths {
-		err = path.Remove()
-		if err != nil {
-			return fmt.Errorf("error deleting cluster file %s: %v", path, err)
-		}
-	}
-
-	return nil
-}
-
-func deleteAllPaths(basePath vfs.Path) error {
-	paths, err := basePath.ReadTree()
+	err = basePath.RemoveAll()
 	if err != nil {
-		return fmt.Errorf("error listing files in state store: %v", err)
-	}
-
-	for _, path := range paths {
-		err = path.Remove()
-		if err != nil {
-			return fmt.Errorf("error deleting cluster file %s: %v", path, err)
-		}
+		return fmt.Errorf("error deleting cluster files in %s: %w", basePath, err)
 	}
 
 	return nil
@@ -227,7 +209,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		if err != nil {
 			return err
 		}
-		err = deleteAllPaths(path)
+		err = path.RemoveAll()
 		if err != nil {
 			return err
 		}
@@ -239,7 +221,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		if err != nil {
 			return err
 		}
-		err = deleteAllPaths(path)
+		err = path.RemoveAll()
 		if err != nil {
 			return err
 		}
