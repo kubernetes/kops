@@ -961,6 +961,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        {{- range $key, $value := .OperatorPodAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
       labels:
         io.cilium/app: operator
         name: cilium-operator
