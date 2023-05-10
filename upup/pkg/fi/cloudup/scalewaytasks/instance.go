@@ -68,7 +68,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	igName := ""
 	for _, tag := range server.Tags {
 		if strings.HasPrefix(tag, scaleway.TagInstanceGroup) {
-			igName = strings.TrimPrefix(tag, scaleway.TagInstanceGroup+"_")
+			igName = strings.TrimPrefix(tag, scaleway.TagInstanceGroup+"=")
 		}
 	}
 
