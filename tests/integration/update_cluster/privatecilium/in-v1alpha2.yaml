@@ -30,6 +30,10 @@ spec:
         test1: "true"
         test2: "123"
         test3: awesome
+      operatorPodAnnotations:
+        test1: "true"
+        test2: "123"
+        test3: cilium-operator
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

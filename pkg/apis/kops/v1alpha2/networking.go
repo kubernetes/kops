@@ -464,6 +464,9 @@ type CiliumNetworkingSpec struct {
 	// AgentPodAnnotations makes possible to add additional annotations to the cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
+	// OperatorPodAnnotations makes possible to add additional annotations to cilium operator.
+	// Default: none
+	OperatorPodAnnotations map[string]string `json:"operatorPodAnnotations,omitempty"`
 	// Pprof is unused.
 	// +k8s:conversion-gen=false
 	Pprof bool `json:"pprof,omitempty"`
