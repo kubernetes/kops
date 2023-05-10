@@ -2049,6 +2049,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
 	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
+	out.OperatorPodAnnotations = in.OperatorPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
 	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
@@ -2111,6 +2112,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
 	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
+	out.OperatorPodAnnotations = in.OperatorPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
 	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax

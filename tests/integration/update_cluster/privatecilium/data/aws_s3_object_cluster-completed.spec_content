@@ -193,6 +193,10 @@ spec:
       ipam: kubernetes
       memoryRequest: 128Mi
       monitorAggregation: medium
+      operatorPodAnnotations:
+        test1: "true"
+        test2: "123"
+        test3: cilium-operator
       sidecarIstioProxyImage: cilium/istio_proxy
       toFqdnsDnsRejectResponseCode: refused
       tunnel: vxlan
