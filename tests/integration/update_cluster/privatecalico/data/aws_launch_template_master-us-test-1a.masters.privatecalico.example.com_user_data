@@ -129,8 +129,8 @@ containerRuntime: containerd
 containerd:
   logLevel: info
   runc:
-    version: 1.1.4
-  version: 1.6.18
+    version: 1.1.5
+  version: 1.6.21
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -260,7 +260,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 7ygNmuELACqCHIIaYPvhWTuiIdwXrd1Toj/zvYahy3A=
+NodeupConfigHash: H8Fjb15rYEcMKIjeEk14QH7JbNfjlAUNURrmgcIK0Rs=
 
 __EOF_KUBE_ENV
 
