@@ -506,6 +506,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
 resource "aws_lb" "api-minimal-ipv6-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
+  ip_address_type                  = "dualstack"
   load_balancer_type               = "network"
   name                             = "api-minimal-ipv6-example--jhj9te"
   subnet_mapping {
