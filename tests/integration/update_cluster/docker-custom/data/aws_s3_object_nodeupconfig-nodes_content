@@ -1,12 +1,12 @@
 Assets:
   amd64:
-  - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubelet
-  - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubectl
+  - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubelet
+  - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - 000000000000000000000000000000000000000000000000000000000000000a@https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
   arm64:
-  - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
-  - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
+  - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://dl.k8s.io/release/v1.23.0/bin/linux/arm64/kubelet
+  - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://dl.k8s.io/release/v1.23.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
 CAs: {}
