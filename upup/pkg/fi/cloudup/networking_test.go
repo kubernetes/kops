@@ -25,7 +25,7 @@ import (
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
-	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
+	desiredCNIVersion := "https://dl.k8s.io/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
 	t.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)

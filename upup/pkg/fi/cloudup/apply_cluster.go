@@ -1025,7 +1025,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
 		baseURL = c.Cluster.Spec.KubernetesVersion
 	} else {
-		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
+		baseURL = "https://dl.k8s.io/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
 	c.Assets = make(map[architectures.Architecture][]*mirrors.MirroredAsset)
