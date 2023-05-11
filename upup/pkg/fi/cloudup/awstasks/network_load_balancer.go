@@ -733,6 +733,7 @@ type terraformNetworkLoadBalancer struct {
 	Name                   string                                      `cty:"name"`
 	Internal               bool                                        `cty:"internal"`
 	Type                   string                                      `cty:"load_balancer_type"`
+	IPAddressType          *string                                     `cty:"ip_address_type"`
 	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `cty:"enable_cross_zone_load_balancing"`
 	AccessLog              *terraformNetworkLoadBalancerAccessLog      `cty:"access_logs"`
@@ -767,6 +768,9 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
 		CrossZoneLoadBalancing: fi.ValueOf(e.CrossZoneLoadBalancing),
+	}
+	if fi.ValueOf(e.IpAddressType) == "dualstack" {
+		nlbTF.IPAddressType = e.IpAddressType
 	}
 
 	for _, subnetMapping := range e.SubnetMappings {
