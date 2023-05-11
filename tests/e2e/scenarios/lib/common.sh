@@ -130,7 +130,7 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
-        K8S_VERSION="$(curl -fs https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+        K8S_VERSION="$(curl -fs -L https://dl.k8s.io/release/stable.txt)"
     fi
 
     if [[ ${KOPS_IRSA-} = true ]]; then

@@ -51,7 +51,7 @@ fi
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
 if [[ -z "${K8S_VERSION:-}" ]]; then
-  K8S_VERSION="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+  K8S_VERSION="$(curl -s -L https://dl.k8s.io/release/stable.txt)"
 fi
 
 # Download latest prebuilt kOps
