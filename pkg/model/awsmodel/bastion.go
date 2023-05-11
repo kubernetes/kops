@@ -333,18 +333,16 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			TargetLoadBalancer: b.LinkToNLB("bastion"),
 		}
 		c.AddTask(t)
-		if *nlb.IpAddressType == "dualstack" {
-			t := &awstasks.DNSName{
-				Name:      fi.PtrTo(publicName + "-AAAA"),
-				Lifecycle: b.Lifecycle,
+		t = &awstasks.DNSName{
+			Name:      fi.PtrTo(publicName + "-AAAA"),
+			Lifecycle: b.Lifecycle,
 
-				Zone:               b.LinkToDNSZone(),
-				ResourceName:       fi.PtrTo(publicName),
-				ResourceType:       fi.PtrTo("AAAA"),
-				TargetLoadBalancer: b.LinkToNLB("bastion"),
-			}
-			c.AddTask(t)
+			Zone:               b.LinkToDNSZone(),
+			ResourceName:       fi.PtrTo(publicName),
+			ResourceType:       fi.PtrTo("AAAA"),
+			TargetLoadBalancer: b.LinkToNLB("bastion"),
 		}
+		c.AddTask(t)
 
 	}
 	return nil
