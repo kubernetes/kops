@@ -723,7 +723,9 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	if kubeAPIServer.AuditPolicyFile != "" {
 		// The audit config dir will be used for both the audit policy and the audit webhook config
 		auditConfigDir := filepath.Dir(kubeAPIServer.AuditPolicyFile)
-		kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
+		if pathSrvKAPI != auditConfigDir {
+			kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
+		}
 	}
 
 	if b.NodeupConfig.APIServerConfig.Authentication != nil {
