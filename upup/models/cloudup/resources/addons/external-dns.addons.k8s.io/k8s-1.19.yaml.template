@@ -53,7 +53,7 @@ spec:
           readOnlyRootFilesystem: true
           capabilities:
             drop: ["ALL"]
-        image: registry.k8s.io/external-dns/external-dns:v0.13.1
+        image: registry.k8s.io/external-dns/external-dns:v0.13.5
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
