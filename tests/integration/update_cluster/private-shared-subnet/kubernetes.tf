@@ -700,6 +700,17 @@ resource "aws_route53_record" "api-private-shared-subnet-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-private-shared-subnet-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-private-shared-subnet-example-com.dns_name
+    zone_id                = aws_elb.api-private-shared-subnet-example-com.zone_id
+  }
+  name    = "api.private-shared-subnet.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_s3_object" "cluster-completed-spec" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_cluster-completed.spec_content")

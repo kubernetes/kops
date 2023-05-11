@@ -751,6 +751,17 @@ resource "aws_route53_record" "api-privateflannel-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-privateflannel-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-privateflannel-example-com.dns_name
+    zone_id                = aws_elb.api-privateflannel-example-com.zone_id
+  }
+  name    = "api.privateflannel.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "private-us-test-1a-privateflannel-example-com" {
   tags = {
     "KubernetesCluster"                                = "privateflannel.example.com"

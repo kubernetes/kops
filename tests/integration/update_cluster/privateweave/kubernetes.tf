@@ -783,6 +783,17 @@ resource "aws_route53_record" "api-privateweave-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-privateweave-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-privateweave-example-com.dns_name
+    zone_id                = aws_elb.api-privateweave-example-com.zone_id
+  }
+  name    = "api.privateweave.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "private-us-test-1a-privateweave-example-com" {
   tags = {
     "KubernetesCluster"                              = "privateweave.example.com"

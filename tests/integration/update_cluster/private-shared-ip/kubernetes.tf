@@ -733,6 +733,17 @@ resource "aws_route53_record" "api-private-shared-ip-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-private-shared-ip-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-private-shared-ip-example-com.dns_name
+    zone_id                = aws_elb.api-private-shared-ip-example-com.zone_id
+  }
+  name    = "api.private-shared-ip.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "private-shared-ip-example-com" {
   tags = {
     "KubernetesCluster"                                   = "private-shared-ip.example.com"

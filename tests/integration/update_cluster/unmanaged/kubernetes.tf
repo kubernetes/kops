@@ -708,6 +708,17 @@ resource "aws_route53_record" "api-unmanaged-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-unmanaged-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-unmanaged-example-com.dns_name
+    zone_id                = aws_elb.api-unmanaged-example-com.zone_id
+  }
+  name    = "api.unmanaged.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_s3_object" "cluster-completed-spec" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_cluster-completed.spec_content")

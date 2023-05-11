@@ -747,6 +747,17 @@ resource "aws_route53_record" "api-privatecalico-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-privatecalico-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-privatecalico-example-com.dns_name
+    zone_id                = aws_elb.api-privatecalico-example-com.zone_id
+  }
+  name    = "api.privatecalico.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "private-us-test-1a-privatecalico-example-com" {
   tags = {
     "KubernetesCluster"                               = "privatecalico.example.com"

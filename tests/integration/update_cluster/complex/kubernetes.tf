@@ -652,6 +652,17 @@ resource "aws_route53_record" "api-complex-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-complex-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_lb.api-complex-example-com.dns_name
+    zone_id                = aws_lb.api-complex-example-com.zone_id
+  }
+  name    = "api.complex.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "complex-example-com" {
   tags = {
     "KubernetesCluster"                         = "complex.example.com"

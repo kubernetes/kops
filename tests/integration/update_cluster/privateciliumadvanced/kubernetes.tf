@@ -768,6 +768,17 @@ resource "aws_route53_record" "api-privateciliumadvanced-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-privateciliumadvanced-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-privateciliumadvanced-example-com.dns_name
+    zone_id                = aws_elb.api-privateciliumadvanced-example-com.zone_id
+  }
+  name    = "api.privateciliumadvanced.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "private-us-test-1a-privateciliumadvanced-example-com" {
   tags = {
     "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
