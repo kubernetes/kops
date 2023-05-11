@@ -518,10 +518,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			},
 		}
 
-		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log").WithReadWrite().WithType(v1.HostPathFileOrCreate).WithHostPath(logFile)
+		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log",
+			kubemanifest.WithReadWrite(),
+			kubemanifest.WithType(v1.HostPathFileOrCreate),
+			kubemanifest.WithHostPath(logFile))
 
 		if fi.ValueOf(b.Cluster.Spec.UseHostCertificates) {
-			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs").WithType(v1.HostPathDirectoryOrCreate)
+			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs", kubemanifest.WithType(v1.HostPathDirectoryOrCreate))
 		}
 	}
 
