@@ -150,7 +150,7 @@ spec:
   - range: ">=1.24.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.24.0
-    kubernetesVersion: 1.24.12
+    kubernetesVersion: 1.24.13
   - range: ">=1.23.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.23.0
