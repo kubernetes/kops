@@ -303,10 +303,15 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if lbSubnetName == "" {
 			return fmt.Errorf("could not find subnet for Kubernetes API loadbalancer")
 		}
+
 		lbTask := &openstacktasks.LB{
 			Name:      fi.PtrTo(b.APIResourceName()),
 			Subnet:    fi.PtrTo(lbSubnetName),
 			Lifecycle: b.Lifecycle,
+		}
+
+		if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.FlavorID != nil {
+			lbTask.FlavorID = b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.FlavorID
 		}
 
 		useVIPACL := b.UseVIPACL()

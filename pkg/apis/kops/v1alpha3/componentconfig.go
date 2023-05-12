@@ -778,6 +778,7 @@ type OpenstackLoadbalancerConfig struct {
 	ManageSecGroups       *bool   `json:"manageSecurityGroups,omitempty"`
 	EnableIngressHostname *bool   `json:"enableIngressHostname,omitempty"`
 	IngressHostnameSuffix *string `json:"ingressHostnameSuffix,omitempty"`
+	FlavorID              *string `json:"flavorID,omitempty"`
 }
 
 type OpenstackBlockStorageConfig struct {
