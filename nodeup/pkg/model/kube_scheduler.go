@@ -248,7 +248,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	kubemanifest.AddHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {

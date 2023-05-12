@@ -228,7 +228,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	}
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {
@@ -266,7 +266,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 
 	kubemanifest.AddHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
-	kubemanifest.AddHostPathMapping(pod, container, "volplugins", volumePluginDir).WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "volplugins", volumePluginDir, kubemanifest.WithReadWrite())
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
