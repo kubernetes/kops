@@ -167,10 +167,10 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 }
 
 // FindLatestKubernetesVersion returns the latest kubernetes version,
-// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
+// as stored at https://dl.k8s.io/release/stable.txt
 // This shouldn't be used any more; we prefer reading the stable channel
 func FindLatestKubernetesVersion() (string, error) {
-	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+	stableURL := "https://dl.k8s.io/release/stable.txt"
 	klog.Warningf("Loading latest kubernetes version from %q", stableURL)
 	b, err := vfs.Context.ReadFile(stableURL)
 	if err != nil {

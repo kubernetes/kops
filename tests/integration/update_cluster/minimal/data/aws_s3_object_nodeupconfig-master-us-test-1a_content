@@ -54,8 +54,8 @@ APIServerConfig:
     -----END RSA PUBLIC KEY-----
 Assets:
   amd64:
-  - be5e79c70e926019e588c8c5c44d93efb1042f3be6f1db0de14e707141564d29@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/amd64/kubelet
-  - 4d416a4bed7c1bb576e284fc6b0bb843f879c08fa8e4beb7e2376305d2dc8299@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/amd64/kubectl
+  - be5e79c70e926019e588c8c5c44d93efb1042f3be6f1db0de14e707141564d29@https://dl.k8s.io/release/v1.27.0-alpha.3/bin/linux/amd64/kubelet
+  - 4d416a4bed7c1bb576e284fc6b0bb843f879c08fa8e4beb7e2376305d2dc8299@https://dl.k8s.io/release/v1.27.0-alpha.3/bin/linux/amd64/kubectl
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - 04dcc1b99368492caee758583e531392683268197e58156888a3cea2941117b6@https://github.com/containerd/containerd/releases/download/v1.6.21/containerd-1.6.21-linux-amd64.tar.gz
@@ -63,8 +63,8 @@ Assets:
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - 2a15e9c291dce3e07db5d9948d5c37a4e52c9884343f63287189e4f0d4c3df76@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/arm64/kubelet
-  - c5fad9f96ab5fe04b8927ce83ceefc4db65b032303a23b35e353276479450d2a@https://storage.googleapis.com/kubernetes-release/release/v1.27.0-alpha.3/bin/linux/arm64/kubectl
+  - 2a15e9c291dce3e07db5d9948d5c37a4e52c9884343f63287189e4f0d4c3df76@https://dl.k8s.io/release/v1.27.0-alpha.3/bin/linux/arm64/kubelet
+  - c5fad9f96ab5fe04b8927ce83ceefc4db65b032303a23b35e353276479450d2a@https://dl.k8s.io/release/v1.27.0-alpha.3/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - d713d8fbec491705ffe8c33ecc9051a904f6eedc92574928e1d33616f291c583@https://github.com/containerd/containerd/releases/download/v1.6.21/containerd-1.6.21-linux-arm64.tar.gz
