@@ -2,8 +2,9 @@
 ## Deployment
 ### AWS
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-nginx/v1.6.0.yaml
+kubectl apply -f https://raw.githubusercontent.com/Nunuscloud/kops/master/addons/ingress-nginx/v1.7.1-aws.yaml
 ```
+
 
 ### GCE
 ```
