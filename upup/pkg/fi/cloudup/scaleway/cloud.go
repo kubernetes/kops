@@ -68,7 +68,7 @@ type ScwCloud interface {
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
-	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
+	GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
@@ -385,16 +385,20 @@ func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]
 	return lbs.LBs, nil
 }
 
-func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error) {
+func (s *scwCloudImplementation) GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error) {
+	tags := []string{TagClusterName + "=" + clusterName}
+	if instanceGroupName != nil {
+		tags = append(tags, fmt.Sprintf("%s=%s", TagInstanceGroup, *instanceGroupName))
+	}
 	request := &instance.ListServersRequest{
 		Zone: s.zone,
-		Name: serverName,
-		Tags: []string{TagClusterName + "=" + clusterName},
+		Name: instanceGroupName,
+		Tags: tags,
 	}
 	servers, err := s.instanceAPI.ListServers(request, scw.WithAllPages())
 	if err != nil {
-		if serverName != nil {
-			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *serverName, err)
+		if instanceGroupName != nil {
+			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *instanceGroupName, err)
 		}
 		return nil, fmt.Errorf("failed to list cluster servers: %w", err)
 	}
