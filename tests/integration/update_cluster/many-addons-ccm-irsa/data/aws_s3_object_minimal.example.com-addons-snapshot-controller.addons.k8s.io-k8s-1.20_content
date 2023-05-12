@@ -1271,6 +1271,7 @@ spec:
         - mountPath: /etc/snapshot-validation-webhook/certs
           name: snapshot-validation-webhook-certs
           readOnly: true
+      serviceAccountName: snapshot-controller
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
