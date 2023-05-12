@@ -236,10 +236,23 @@ func (c *awsCloudImplementation) Region() string {
 	return c.region
 }
 
-var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
+type awsCloudInstancesRegionMap struct {
+	mutex     sync.Mutex
+	regionMap map[string]AWSCloud
+}
+
+func newAwsCloudInstancesRegionMap() *awsCloudInstancesRegionMap {
+	return &awsCloudInstancesRegionMap{
+		regionMap: make(map[string]AWSCloud),
+	}
+}
+
+var awsCloudInstances *awsCloudInstancesRegionMap = newAwsCloudInstancesRegionMap()
 
 func ResetAWSCloudInstances() {
-	awsCloudInstances = make(map[string]AWSCloud)
+	awsCloudInstances.mutex.Lock()
+	awsCloudInstances.regionMap = make(map[string]AWSCloud)
+	awsCloudInstances.mutex.Unlock()
 }
 
 func setConfig(config *aws.Config) *aws.Config {
@@ -249,8 +262,15 @@ func setConfig(config *aws.Config) *aws.Config {
 	return request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
 }
 
+func updateAwsCloudInstances(region string, cloud AWSCloud) {
+	awsCloudInstances.mutex.Lock()
+	awsCloudInstances.regionMap[region] = cloud
+	awsCloudInstances.mutex.Unlock()
+}
+
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
-	raw := awsCloudInstances[region]
+	raw := awsCloudInstances.regionMap[region]
+
 	if raw == nil {
 		c := &awsCloudImplementation{
 			region: region,
@@ -393,7 +413,8 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.ssm.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ssm.Handlers)
 
-		awsCloudInstances[region] = c
+		updateAwsCloudInstances(region, c)
+
 		raw = c
 	}
 
