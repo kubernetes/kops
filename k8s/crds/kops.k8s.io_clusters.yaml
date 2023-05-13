@@ -457,6 +457,8 @@ spec:
                         properties:
                           enableIngressHostname:
                             type: boolean
+                          flavorID:
+                            type: string
                           floatingNetwork:
                             type: string
                           floatingNetworkID:

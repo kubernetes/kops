@@ -4999,6 +4999,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.FlavorID != nil {
+		in, out := &in.FlavorID, &out.FlavorID
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

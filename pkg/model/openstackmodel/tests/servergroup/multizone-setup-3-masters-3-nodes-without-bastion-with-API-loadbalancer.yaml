@@ -20,6 +20,7 @@ ForAPIServer: false
 ID: null
 IP: null
 LB:
+  FlavorID: null
   ID: null
   Lifecycle: Sync
   Name: master-public-name
@@ -590,6 +591,7 @@ oldFormat: false
 subject: cn=service-account
 type: ca
 ---
+FlavorID: null
 ID: null
 Lifecycle: Sync
 Name: master-public-name
@@ -613,6 +615,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -633,6 +636,7 @@ Port: 443
 ID: null
 Lifecycle: Sync
 Loadbalancer:
+  FlavorID: null
   ID: null
   Lifecycle: Sync
   Name: master-public-name
@@ -717,6 +721,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -752,6 +757,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -787,6 +793,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -821,6 +828,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name

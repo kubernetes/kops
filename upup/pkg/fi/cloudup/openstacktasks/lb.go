@@ -41,6 +41,7 @@ type LB struct {
 	PortID        *string
 	SecurityGroup *SecurityGroup
 	Provider      *string
+	FlavorID      *string
 }
 
 const (
@@ -126,6 +127,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 		Subnet:    fi.PtrTo(sub.Name),
 		VipSubnet: fi.PtrTo(lb.VipSubnetID),
 		Provider:  fi.PtrTo(lb.Provider),
+		FlavorID:  fi.PtrTo(lb.FlavorID),
 	}
 
 	if secGroup {
@@ -140,6 +142,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 		find.PortID = actual.PortID
 		find.VipSubnet = actual.VipSubnet
 		find.Provider = actual.Provider
+		find.FlavorID = actual.FlavorID
 	}
 	return actual, nil
 }
@@ -208,6 +211,9 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 			Name:        fi.ValueOf(e.Name),
 			VipSubnetID: subnets[0].ID,
 		}
+		if e.FlavorID != nil {
+			lbopts.FlavorID = fi.ValueOf(e.FlavorID)
+		}
 		lb, err := t.Cloud.CreateLB(lbopts)
 		if err != nil {
 			return fmt.Errorf("error creating LB: %v", err)
@@ -216,6 +222,7 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		e.PortID = fi.PtrTo(lb.VipPortID)
 		e.VipSubnet = fi.PtrTo(lb.VipSubnetID)
 		e.Provider = fi.PtrTo(lb.Provider)
+		e.FlavorID = fi.PtrTo(lb.FlavorID)
 
 		if e.SecurityGroup != nil {
 			opts := ports.UpdateOpts{
