@@ -315,7 +315,6 @@ type openstackCloud struct {
 	zones           []string
 	floatingEnabled bool
 	useVIPACL       *bool
-	flavorID        *string
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -497,9 +496,6 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 			return fmt.Errorf("error building lb client: %w", err)
 		}
 		lbClient = client
-		if spec.Loadbalancer.FlavorID != nil {
-			c.flavorID = spec.Loadbalancer.FlavorID
-		}
 	} else {
 		klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
 		client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
