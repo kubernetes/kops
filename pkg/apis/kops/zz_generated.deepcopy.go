@@ -672,6 +672,13 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.OperatorPodAnnotations != nil {
+		in, out := &in.OperatorPodAnnotations, &out.OperatorPodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.InstallIptablesRules != nil {
 		in, out := &in.InstallIptablesRules, &out.InstallIptablesRules
 		*out = new(bool)

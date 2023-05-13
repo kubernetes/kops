@@ -5036,6 +5036,12 @@ spec:
                       nodeInitBootstrapFile:
                         description: NodeInitBootstrapFile is unused.
                         type: string
+                      operatorPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: 'OperatorPodAnnotations makes possible to add
+                          additional annotations to cilium operator. Default: none'
+                        type: object
                       pprof:
                         description: Pprof is unused.
                         type: boolean
