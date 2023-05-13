@@ -352,25 +352,6 @@ func (b *KopsModelContext) IsIPv6Only() bool {
 	return b.Cluster.Spec.IsIPv6Only()
 }
 
-func (b *KopsModelContext) UseIPv6ForAPI() bool {
-	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleControlPlane && ig.Spec.Role != kops.InstanceGroupRoleAPIServer {
-			break
-		}
-		for _, igSubnetName := range ig.Spec.Subnets {
-			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
-				if igSubnetName != clusterSubnet.Name {
-					continue
-				}
-				if clusterSubnet.IPv6CIDR != "" {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 // WellKnownServiceIP returns a service ip with the service cidr
 func (b *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
 	return components.WellKnownServiceIP(&b.Cluster.Spec.Networking, id)

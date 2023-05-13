@@ -479,6 +479,16 @@ func (e *NetworkLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
 	sort.Stable(OrderListenersByPort(e.Listeners))
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
+
+	e.IpAddressType = fi.PtrTo("dualstack")
+	for _, subnet := range e.SubnetMappings {
+		for _, clusterSubnet := range c.T.Cluster.Spec.Networking.Subnets {
+			if clusterSubnet.Name == fi.ValueOf(subnet.Subnet.ShortName) && clusterSubnet.IPv6CIDR == "" {
+				e.IpAddressType = fi.PtrTo("ipv4")
+			}
+		}
+	}
+
 	return nil
 }
 

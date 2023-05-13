@@ -742,6 +742,17 @@ resource "aws_route53_record" "api-privatedns2-example-com" {
   zone_id = "/hostedzone/Z3AFAKE1ZOMORE"
 }
 
+resource "aws_route53_record" "api-privatedns2-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-privatedns2-example-com.dns_name
+    zone_id                = aws_elb.api-privatedns2-example-com.zone_id
+  }
+  name    = "api.privatedns2.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z3AFAKE1ZOMORE"
+}
+
 resource "aws_route_table" "private-us-test-1a-privatedns2-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns2.example.com"
