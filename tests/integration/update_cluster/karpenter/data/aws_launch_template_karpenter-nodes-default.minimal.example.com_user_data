@@ -129,8 +129,8 @@ containerRuntime: containerd
 containerd:
   logLevel: info
   runc:
-    version: 1.1.4
-  version: 1.6.18
+    version: 1.1.5
+  version: 1.6.21
 docker:
   skipInstall: true
 kubeProxy:
@@ -189,7 +189,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: karpenter-nodes-default
 InstanceGroupRole: Node
-NodeupConfigHash: QkEuzfw2ESHxPTuvi8wewM+69WgDSX0WXgwf2m1IDLw=
+NodeupConfigHash: GR3R7M0mFVdDtk/oI+WW7J2B/qUOzK5DU76LfnVEWR4=
 
 __EOF_KUBE_ENV
 
