@@ -179,6 +179,38 @@ func clusterFromJSON(in []byte) (*Cluster, error) {
 //endregion
 
 // region Virtual Node Group
+func (s *ServiceOp) ListVirtualNodeGroups(ctx context.Context, input *ListVngsInput) (*ListVngsOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+
+	path, err := uritemplates.Expand("/ocean/spark/cluster/{clusterId}/virtualNodeGroup", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	vngs, err := vngsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ListVngsOutput)
+	if len(vngs) > 0 {
+		output.VirtualNodeGroups = vngs
+	}
+
+	return output, nil
+}
+
 func (s *ServiceOp) DetachVirtualNodeGroup(ctx context.Context, input *DetachVngInput) (*DetachVngOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input is nil")
