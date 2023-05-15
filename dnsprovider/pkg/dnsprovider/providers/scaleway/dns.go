@@ -46,7 +46,7 @@ func init() {
 			return nil, err
 		}
 
-		return NewProvider(client), nil
+		return NewProvider(domain.NewAPI(client)), nil
 	})
 }
 
@@ -84,31 +84,29 @@ func newClient() (*scw.Client, error) {
 
 // Interface implements dnsprovider.Interface
 type Interface struct {
-	client *scw.Client
+	domainAPI DomainAPI
 }
 
 // NewProvider returns an implementation of dnsprovider.Interface
-func NewProvider(client *scw.Client) dnsprovider.Interface {
-	return &Interface{client: client}
+func NewProvider(api DomainAPI) dnsprovider.Interface {
+	return &Interface{domainAPI: api}
 }
 
 // Zones returns an implementation of dnsprovider.Zones
 func (d Interface) Zones() (dnsprovider.Zones, bool) {
 	return &zones{
-		client: d.client,
+		domainAPI: d.domainAPI,
 	}, true
 }
 
 // zones is an implementation of dnsprovider.Zones
 type zones struct {
-	client *scw.Client
+	domainAPI DomainAPI
 }
 
 // List returns a list of all dns zones
 func (z *zones) List() ([]dnsprovider.Zone, error) {
-	api := domain.NewAPI(z.client)
-
-	dnsZones, err := api.ListDNSZones(&domain.ListDNSZonesRequest{}, scw.WithAllPages())
+	dnsZones, err := z.domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{}, scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list DNS zones: %v", err)
 	}
@@ -116,8 +114,8 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 	zonesList := []dnsprovider.Zone(nil)
 	for _, dnsZone := range dnsZones.DNSZones {
 		newZone := &zone{
-			name:   dnsZone.Domain,
-			client: z.client,
+			name:      dnsZone.Domain,
+			domainAPI: z.domainAPI,
 		}
 		zonesList = append(zonesList, newZone)
 	}
@@ -128,8 +126,6 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 // Add adds a new DNS zone. The name of the new zone should be of the form "name.domain", otherwise we can't infer the
 // domain name from anywhere else in this function
 func (z *zones) Add(newZone dnsprovider.Zone) (dnsprovider.Zone, error) {
-	api := domain.NewAPI(z.client)
-
 	newZoneNameSplit := strings.SplitN(newZone.Name(), ".", 2)
 	if len(newZoneNameSplit) < 2 {
 		return nil, fmt.Errorf("new zone name should contain at least 1 '.', got %q", newZone.Name())
@@ -138,7 +134,7 @@ func (z *zones) Add(newZone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	domainName := newZoneNameSplit[1]
 	klog.V(8).Infof("Adding new DNS zone %s to domain %s", newZoneName, domainName)
 
-	_, err := api.CreateDNSZone(&domain.CreateDNSZoneRequest{
+	_, err := z.domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
 		Subdomain: newZoneName,
 		Domain:    domainName,
 	})
@@ -148,16 +144,14 @@ func (z *zones) Add(newZone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	klog.V(4).Infof("Added new DNS zone %s to domain %s", newZoneName, domainName)
 
 	return &zone{
-		name:   newZoneName,
-		client: z.client,
+		name:      newZoneName,
+		domainAPI: z.domainAPI,
 	}, nil
 }
 
 // Remove deletes a zone
 func (z *zones) Remove(zone dnsprovider.Zone) error {
-	api := domain.NewAPI(z.client)
-
-	_, err := api.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+	_, err := z.domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		DNSZone: zone.Name(),
 	})
 	if err != nil {
@@ -170,15 +164,15 @@ func (z *zones) Remove(zone dnsprovider.Zone) error {
 // New returns a new implementation of dnsprovider.Zone
 func (z *zones) New(name string) (dnsprovider.Zone, error) {
 	return &zone{
-		name:   name,
-		client: z.client,
+		name:      name,
+		domainAPI: z.domainAPI,
 	}, nil
 }
 
 // zone implements dnsprovider.Zone
 type zone struct {
-	name   string
-	client *scw.Client
+	name      string
+	domainAPI DomainAPI
 }
 
 // Name returns the Name of a dns zone
@@ -193,18 +187,18 @@ func (z *zone) ID() string {
 
 // ResourceRecordSets returns an implementation of dnsprovider.ResourceRecordSets
 func (z *zone) ResourceRecordSets() (dnsprovider.ResourceRecordSets, bool) {
-	return &resourceRecordSets{zone: z, client: z.client}, true
+	return &resourceRecordSets{zone: z, domainAPI: z.domainAPI}, true
 }
 
 // resourceRecordSets implements dnsprovider.ResourceRecordSet
 type resourceRecordSets struct {
-	zone   *zone
-	client *scw.Client
+	zone      *zone
+	domainAPI DomainAPI
 }
 
 // List returns a list of dnsprovider.ResourceRecordSet
 func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
-	records, err := listRecords(r.client, r.zone.Name())
+	records, err := listRecords(r.domainAPI, r.zone.Name())
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +263,7 @@ func (r *resourceRecordSets) New(name string, rrdatas []string, ttl int64, rrsty
 // StartChangeset returns an implementation of dnsprovider.ResourceRecordChangeset
 func (r *resourceRecordSets) StartChangeset() dnsprovider.ResourceRecordChangeset {
 	return &resourceRecordChangeset{
-		client:    r.client,
+		domainAPI: r.domainAPI,
 		zone:      r.zone,
 		rrsets:    r,
 		additions: []dnsprovider.ResourceRecordSet{},
@@ -314,9 +308,9 @@ func (r *resourceRecordSet) Type() rrstype.RrsType {
 
 // resourceRecordChangeset implements dnsprovider.ResourceRecordChangeset
 type resourceRecordChangeset struct {
-	client *scw.Client
-	zone   *zone
-	rrsets dnsprovider.ResourceRecordSets
+	domainAPI DomainAPI
+	zone      *zone
+	rrsets    dnsprovider.ResourceRecordSets
 
 	additions []dnsprovider.ResourceRecordSet
 	removals  []dnsprovider.ResourceRecordSet
@@ -349,12 +343,11 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		return nil
 	}
 
-	api := domain.NewAPI(r.client)
 	updateRecordsRequest := []*domain.RecordChange(nil)
 	klog.V(8).Infof("applying changes in record change set : [ %d additions | %d upserts | %d removals ]",
 		len(r.additions), len(r.upserts), len(r.removals))
 
-	records, err := listRecords(r.client, r.zone.Name())
+	records, err := listRecords(r.domainAPI, r.zone.Name())
 	if err != nil {
 		return err
 	}
@@ -424,7 +417,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		}
 	}
 
-	_, err = api.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
+	_, err = r.domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: r.zone.Name(),
 		Changes: updateRecordsRequest,
 	}, scw.WithContext(ctx))
@@ -451,9 +444,7 @@ func (r *resourceRecordChangeset) ResourceRecordSets() dnsprovider.ResourceRecor
 }
 
 // listRecords returns a list of scaleway records given a zone name (the name of the record doesn't end with the zone name)
-func listRecords(c *scw.Client, zoneName string) ([]*domain.Record, error) {
-	api := domain.NewAPI(c)
-
+func listRecords(api DomainAPI, zoneName string) ([]*domain.Record, error) {
 	records, err := api.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: zoneName,
 	}, scw.WithAllPages())
