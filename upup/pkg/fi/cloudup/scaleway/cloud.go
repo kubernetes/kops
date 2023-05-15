@@ -137,7 +137,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		client:      scwClient,
 		region:      region,
 		zone:        zone,
-		dns:         dns.NewProvider(scwClient),
+		dns:         dns.NewProvider(domain.NewAPI(scwClient)),
 		tags:        tags,
 		domainAPI:   domain.NewAPI(scwClient),
 		iamAPI:      iam.NewAPI(scwClient),
