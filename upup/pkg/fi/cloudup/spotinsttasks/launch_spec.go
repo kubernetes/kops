@@ -54,6 +54,7 @@ type LaunchSpec struct {
 	AssociatePublicIPAddress *bool
 	MinSize                  *int64
 	MaxSize                  *int64
+	InstanceMetadataOptions  *InstanceMetadataOptions
 
 	Ocean *Ocean
 }
@@ -327,6 +328,13 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 		}
 	}
 
+	// Instance Metadata Options
+	if spec.InstanceMetadataOptions != nil {
+		actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
+		actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(spec.InstanceMetadataOptions.HTTPTokens))
+		actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(spec.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
+	}
+
 	// Avoid spurious changes.
 	actual.Lifecycle = o.Lifecycle
 
@@ -532,6 +540,15 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	{
 		if fi.ValueOf(e.RestrictScaleDown) {
 			spec.SetRestrictScaleDown(e.RestrictScaleDown)
+		}
+	}
+	// Instance Metadata Options
+	{
+		if e.InstanceMetadataOptions != nil {
+			opt := new(aws.LaunchspecInstanceMetadataOptions)
+			opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+			opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+			spec.SetLaunchspecInstanceMetadataOptions(opt)
 		}
 	}
 
@@ -784,6 +801,17 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		if changes.RestrictScaleDown != nil {
 			spec.SetRestrictScaleDown(e.RestrictScaleDown)
 			changes.RestrictScaleDown = nil
+			changed = true
+		}
+	}
+	// Instance Metadata Options
+	{
+		if changes.InstanceMetadataOptions != nil {
+			opt := new(aws.LaunchspecInstanceMetadataOptions)
+			opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+			opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+			spec.SetLaunchspecInstanceMetadataOptions(opt)
+			changes.InstanceMetadataOptions = nil
 			changed = true
 		}
 	}
