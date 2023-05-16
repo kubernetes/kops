@@ -63,6 +63,7 @@ type Ocean struct {
 	UseAsTemplateOnly        *bool
 	RootVolumeOpts           *RootVolumeOpts
 	AutoScalerOpts           *AutoScalerOpts
+	InstanceMetadataOptions  *InstanceMetadataOptions
 }
 
 var (
@@ -290,6 +291,13 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 		if lc.UseAsTemplateOnly != nil {
 			actual.UseAsTemplateOnly = lc.UseAsTemplateOnly
 		}
+
+		// Instance Metadata Options
+		if lc.InstanceMetadataOptions != nil {
+			actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
+			actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(lc.InstanceMetadataOptions.HTTPTokens))
+			actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(lc.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
+		}
 	}
 
 	// Auto Scaler.
@@ -455,7 +463,15 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Compute.LaunchSpecification.SetSecurityGroupIDs(securityGroupIDs)
 				}
 			}
-
+			//
+			{
+				if e.InstanceMetadataOptions != nil {
+					opt := new(aws.InstanceMetadataOptions)
+					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+					ocean.Compute.LaunchSpecification.SetInstanceMetadataOptions(opt)
+				}
+			}
 			if !fi.ValueOf(e.UseAsTemplateOnly) {
 				// User data.
 				{
@@ -809,6 +825,24 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 					ocean.Compute.LaunchSpecification.SetKeyPair(e.SSHKey.Name)
 					changes.SSHKey = nil
+					changed = true
+				}
+			}
+			// Instance Metadata Options
+			{
+				if changes.InstanceMetadataOptions != nil {
+					if ocean.Compute == nil {
+						ocean.Compute = new(aws.Compute)
+					}
+					if ocean.Compute.LaunchSpecification == nil {
+						ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+					}
+
+					opt := new(aws.InstanceMetadataOptions)
+					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+					ocean.Compute.LaunchSpecification.SetInstanceMetadataOptions(opt)
+					changes.InstanceMetadataOptions = nil
 					changed = true
 				}
 			}
