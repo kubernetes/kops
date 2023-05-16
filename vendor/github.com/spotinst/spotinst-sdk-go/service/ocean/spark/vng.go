@@ -25,3 +25,11 @@ type DetachVngInput struct {
 }
 
 type DetachVngOutput struct{}
+
+type ListVngsInput struct {
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ListVngsOutput struct {
+	VirtualNodeGroups []*DedicatedVirtualNodeGroup `json:"virtualNodeGroups,omitempty"`
+}
