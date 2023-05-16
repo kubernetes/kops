@@ -25,7 +25,7 @@ spec:
       value: 90d
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230201
+    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230516
     name: etcd-manager
     resources:
       requests:
