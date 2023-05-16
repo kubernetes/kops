@@ -560,11 +560,13 @@ func Test_BuildClients(t *testing.T) {
 	}
 
 	grid := []struct {
-		name         string
-		spec         *kops.OpenstackSpec
-		expectLB     bool
-		expectedType string
-		expectError  bool
+		name                  string
+		spec                  *kops.OpenstackSpec
+		expectLB              bool
+		expectedType          string
+		expectFloatingEnabled bool
+		expectError           bool
+		expectedExtNetName    *string
 	}{
 		{
 			name:         "Empty openstack spec means no load balancer",
@@ -591,9 +593,10 @@ func Test_BuildClients(t *testing.T) {
 				},
 				Router: &kops.OpenstackRouter{},
 			},
-			expectLB:     true,
-			expectedType: "load-balancer",
-			expectError:  false,
+			expectLB:              true,
+			expectedType:          "load-balancer",
+			expectFloatingEnabled: true,
+			expectError:           false,
 		},
 		{
 			name: "When octavia is not set, network should be returned",
@@ -603,6 +606,18 @@ func Test_BuildClients(t *testing.T) {
 			expectLB:     true,
 			expectedType: "network",
 			expectError:  false,
+		},
+		{
+			name: "When router is set, but no LB, FIP support should be enabled",
+			spec: &kops.OpenstackSpec{
+				Router: &kops.OpenstackRouter{
+					ExternalNetwork: fi.PtrTo("some-ext-net"),
+				},
+			},
+			expectLB:              false,
+			expectedType:          "",
+			expectFloatingEnabled: true,
+			expectedExtNetName:    fi.PtrTo("some-ext-net"),
 		}}
 
 	for _, g := range grid {
@@ -632,6 +647,16 @@ func Test_BuildClients(t *testing.T) {
 				}
 			}
 
+			actualFloatingEnabled := cloud.(*openstackCloud).floatingEnabled
+			if g.expectFloatingEnabled != actualFloatingEnabled {
+				t.Fatalf("did not match expectation. Expected: %v, actual: %v", g.expectFloatingEnabled, actualFloatingEnabled)
+			}
+
+			actualExtNetName := fi.ValueOf(cloud.(*openstackCloud).extNetworkName)
+			expectedExtNetName := fi.ValueOf(g.expectedExtNetName)
+			if expectedExtNetName != actualExtNetName {
+				t.Fatalf("did not match expectation. Expected: %v, actual: %v", expectedExtNetName, actualExtNetName)
+			}
 		})
 	}
 }

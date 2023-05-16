@@ -435,6 +435,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 		useOctavia:    false,
 	}
 
+	setFloatingIPSupport(c, spec)
 	err = buildLoadBalancerClient(c, spec, provider, region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build load balancer client: %w", err)
@@ -445,23 +446,29 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 
 }
 
-func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provider *gophercloud.ProviderClient, region string) error {
+func setFloatingIPSupport(c *openstackCloud, spec *kops.OpenstackSpec) {
+	if spec == nil || spec.Router == nil {
+		c.floatingEnabled = false
+		klog.V(2).Infof("Floating IP support for OpenStack disabled")
+		return
+	}
 
+	c.floatingEnabled = true
+	c.extNetworkName = spec.Router.ExternalNetwork
+
+	if spec.Router.ExternalSubnet != nil {
+		c.extSubnetName = spec.Router.ExternalSubnet
+	}
+}
+
+func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provider *gophercloud.ProviderClient, region string) error {
 	if spec == nil || spec.Loadbalancer == nil {
-		klog.V(2).Infof("Openstack disabled loadbalancer support")
+		klog.V(2).Infof("Loadbalancer support for OpenStack disabled")
 		return nil
 	}
 
 	octavia := false
-	floatingEnabled := false
 	if spec.Router != nil {
-
-		floatingEnabled = true
-		c.extNetworkName = spec.Router.ExternalNetwork
-
-		if spec.Router.ExternalSubnet != nil {
-			c.extSubnetName = spec.Router.ExternalSubnet
-		}
 		if spec.Loadbalancer.FloatingNetworkID == nil &&
 			spec.Loadbalancer.FloatingNetwork != nil {
 			// This field is derived
@@ -483,7 +490,6 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 	} else if fi.ValueOf(spec.Loadbalancer.UseOctavia) {
 		return fmt.Errorf("cluster configured to use octavia, but router was not configured")
 	}
-	c.floatingEnabled = floatingEnabled
 	c.useOctavia = octavia
 
 	var lbClient *gophercloud.ServiceClient
