@@ -552,9 +552,6 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 	// Capacity.
 	minSize, maxSize := b.buildCapacity(ig)
 	if fi.ValueOf(ocean.UseAsTemplateOnly) {
-		ocean.MinSize = minSize
-		ocean.MaxSize = maxSize
-	} else {
 		ocean.MinSize = fi.PtrTo(fi.ValueOf(ocean.MinSize) + fi.ValueOf(minSize))
 		ocean.MaxSize = fi.PtrTo(fi.ValueOf(ocean.MaxSize) + fi.ValueOf(maxSize))
 	}
