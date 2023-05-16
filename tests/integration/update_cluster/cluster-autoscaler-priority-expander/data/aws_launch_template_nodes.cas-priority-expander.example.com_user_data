@@ -149,6 +149,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: cas-priority-expander.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -175,7 +176,7 @@ ConfigServer:
   - https://kops-controller.internal.cas-priority-expander.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: sgXwFyowoKhKg7yzJjPv57CYwGH/Jn5C/py03H2NkFI=
+NodeupConfigHash: 1bOyriSMueg1VMYFXybWnNadaPBg3ZqxzQ14LcGLXGA=
 
 __EOF_KUBE_ENV
 

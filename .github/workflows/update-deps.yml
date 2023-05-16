@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9
         with:
-          go-version: '1.20.3'
+          go-version: '1.20.4'
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - name: Update Dependencies
         id: update_deps
@@ -30,7 +30,7 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
       - name: Create PR
         if: ${{ steps.update_deps.outputs.changes != '' }}
-        uses: peter-evans/create-pull-request@5b4a9f6a9e2af26e5f02351490b90d01eb8ec1e5
+        uses: peter-evans/create-pull-request@284f54f989303d2699d373481a0cfa13ad5a6666
         with:
           title: 'Update dependencies'
           commit-message: Update dependencies

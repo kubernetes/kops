@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: privatecalico.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.privatecalico.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: fT+MNDlPBlHRbNYdYoiIDzcQbYvNprXHStYyXH95bPQ=
+NodeupConfigHash: GAUi29Ypjmvel05f+Q2G+qt3yOgecon6L2VUCIZhPps=
 
 __EOF_KUBE_ENV
 

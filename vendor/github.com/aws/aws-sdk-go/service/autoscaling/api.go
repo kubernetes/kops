@@ -155,6 +155,12 @@ func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBal
 
 // AttachLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by AttachTrafficSources, which can attach
+// multiple traffic sources types. We recommend using AttachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// AttachLoadBalancerTargetGroups. You can use both the original AttachLoadBalancerTargetGroups
+// API operation and AttachTrafficSources on the same Auto Scaling group.
+//
 // Attaches one or more target groups to the specified Auto Scaling group.
 //
 // This operation is used with the following load balancer types:
@@ -260,8 +266,11 @@ func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput
 
 // AttachLoadBalancers API operation for Auto Scaling.
 //
-// To attach an Application Load Balancer, Network Load Balancer, or Gateway
-// Load Balancer, use the AttachLoadBalancerTargetGroups API operation instead.
+// This API operation is superseded by AttachTrafficSources, which can attach
+// multiple traffic sources types. We recommend using AttachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// AttachLoadBalancers. You can use both the original AttachLoadBalancers API
+// operation and AttachTrafficSources on the same Auto Scaling group.
 //
 // Attaches one or more Classic Load Balancers to the specified Auto Scaling
 // group. Amazon EC2 Auto Scaling registers the running instances with these
@@ -360,18 +369,27 @@ func (c *AutoScaling) AttachTrafficSourcesRequest(input *AttachTrafficSourcesInp
 
 // AttachTrafficSources API operation for Auto Scaling.
 //
-// Reserved for use with Amazon VPC Lattice, which is in preview and subject
-// to change. Do not use this API for production workloads. This API is also
-// subject to change.
-//
 // Attaches one or more traffic sources to the specified Auto Scaling group.
 //
-// To describe the traffic sources for an Auto Scaling group, call the DescribeTrafficSources
-// API. To detach a traffic source from the Auto Scaling group, call the DetachTrafficSources
-// API.
+// You can use any of the following as traffic sources for an Auto Scaling group:
+//
+//   - Application Load Balancer
+//
+//   - Classic Load Balancer
+//
+//   - Gateway Load Balancer
+//
+//   - Network Load Balancer
+//
+//   - VPC Lattice
 //
 // This operation is additive and does not detach existing traffic sources from
 // the Auto Scaling group.
+//
+// After the operation completes, use the DescribeTrafficSources API to return
+// details about the state of the attachments between traffic sources and your
+// Auto Scaling group. To detach a traffic source from the Auto Scaling group,
+// call the DetachTrafficSources API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2807,6 +2825,12 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 
 // DescribeLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by DescribeTrafficSources, which can describe
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DescribeLoadBalancerTargetGroups. You can use both the original DescribeLoadBalancerTargetGroups
+// API operation and DescribeTrafficSources on the same Auto Scaling group.
+//
 // Gets information about the Elastic Load Balancing target groups for the specified
 // Auto Scaling group.
 //
@@ -2918,11 +2942,17 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 
 // DescribeLoadBalancers API operation for Auto Scaling.
 //
+// This API operation is superseded by DescribeTrafficSources, which can describe
+// multiple traffic sources types. We recommend using DescribeTrafficSources
+// to simplify how you manage traffic sources. However, we continue to support
+// DescribeLoadBalancers. You can use both the original DescribeLoadBalancers
+// API operation and DescribeTrafficSources on the same Auto Scaling group.
+//
 // Gets information about the load balancers for the specified Auto Scaling
 // group.
 //
 // This operation describes only Classic Load Balancers. If you have Application
-// Load Balancers, Network Load Balancers, or Gateway Load Balancer, use the
+// Load Balancers, Network Load Balancers, or Gateway Load Balancers, use the
 // DescribeLoadBalancerTargetGroups API instead.
 //
 // To determine the attachment status of the load balancer, use the State element
@@ -3990,6 +4020,12 @@ func (c *AutoScaling) DescribeTrafficSourcesRequest(input *DescribeTrafficSource
 		Name:       opDescribeTrafficSources,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4003,12 +4039,14 @@ func (c *AutoScaling) DescribeTrafficSourcesRequest(input *DescribeTrafficSource
 
 // DescribeTrafficSources API operation for Auto Scaling.
 //
-// Reserved for use with Amazon VPC Lattice, which is in preview and subject
-// to change. Do not use this API for production workloads. This API is also
-// subject to change.
-//
 // Gets information about the traffic sources for the specified Auto Scaling
 // group.
+//
+// You can optionally provide a traffic source type. If you provide a traffic
+// source type, then the results only include that traffic source type.
+//
+// If you do not provide a traffic source type, then the results include all
+// the traffic sources for the specified Auto Scaling group.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4046,6 +4084,57 @@ func (c *AutoScaling) DescribeTrafficSourcesWithContext(ctx aws.Context, input *
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeTrafficSourcesPages iterates over the pages of a DescribeTrafficSources operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrafficSources method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrafficSources operation.
+//	pageNum := 0
+//	err := client.DescribeTrafficSourcesPages(params,
+//	    func(page *autoscaling.DescribeTrafficSourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeTrafficSourcesPages(input *DescribeTrafficSourcesInput, fn func(*DescribeTrafficSourcesOutput, bool) bool) error {
+	return c.DescribeTrafficSourcesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrafficSourcesPagesWithContext same as DescribeTrafficSourcesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeTrafficSourcesPagesWithContext(ctx aws.Context, input *DescribeTrafficSourcesInput, fn func(*DescribeTrafficSourcesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrafficSourcesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrafficSourcesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrafficSourcesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeWarmPool = "DescribeWarmPool"
@@ -4278,6 +4367,12 @@ func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBal
 
 // DetachLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by DetachTrafficSources, which can detach
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DetachLoadBalancerTargetGroups. You can use both the original DetachLoadBalancerTargetGroups
+// API operation and DetachTrafficSources on the same Auto Scaling group.
+//
 // Detaches one or more target groups from the specified Auto Scaling group.
 //
 // When you detach a target group, it enters the Removing state while deregistering
@@ -4367,11 +4462,17 @@ func (c *AutoScaling) DetachLoadBalancersRequest(input *DetachLoadBalancersInput
 
 // DetachLoadBalancers API operation for Auto Scaling.
 //
+// This API operation is superseded by DetachTrafficSources, which can detach
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DetachLoadBalancers. You can use both the original DetachLoadBalancers API
+// operation and DetachTrafficSources on the same Auto Scaling group.
+//
 // Detaches one or more Classic Load Balancers from the specified Auto Scaling
 // group.
 //
 // This operation detaches only Classic Load Balancers. If you have Application
-// Load Balancers, Network Load Balancers, or Gateway Load Balancer, use the
+// Load Balancers, Network Load Balancers, or Gateway Load Balancers, use the
 // DetachLoadBalancerTargetGroups API instead.
 //
 // When you detach a load balancer, it enters the Removing state while deregistering
@@ -4457,11 +4558,12 @@ func (c *AutoScaling) DetachTrafficSourcesRequest(input *DetachTrafficSourcesInp
 
 // DetachTrafficSources API operation for Auto Scaling.
 //
-// Reserved for use with Amazon VPC Lattice, which is in preview and subject
-// to change. Do not use this API for production workloads. This API is also
-// subject to change.
-//
 // Detaches one or more traffic sources from the specified Auto Scaling group.
+//
+// When you detach a taffic, it enters the Removing state while deregistering
+// the instances in the group. When all instances are deregistered, then you
+// can no longer describe the traffic source using the DescribeTrafficSources
+// API call. The instances continue to run.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7143,11 +7245,6 @@ type AttachTrafficSourcesInput struct {
 	// The unique identifiers of one or more traffic sources. You can specify up
 	// to 10 traffic sources.
 	//
-	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
-	// VPC Lattice target group. Amazon EC2 Auto Scaling registers the running instances
-	// with the attached target groups. The target groups receive incoming traffic
-	// and route requests to one or more registered targets.
-	//
 	// TrafficSources is a required field
 	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
 }
@@ -7925,14 +8022,14 @@ type CreateAutoScalingGroupInput struct {
 	// Default: 0 seconds
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// Determines whether any additional health checks are performed on the instances
-	// in this group. Amazon EC2 health checks are always on. For more information,
-	// see Health checks for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// A comma-separated value string of one or more health check types.
+	//
+	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
+	// check and cannot be disabled. For more information, see Health checks for
+	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
-	// health check type is reserved for use with VPC Lattice, which is in preview
-	// release and is subject to change.
+	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The ID of the instance used to base the launch configuration on. If specified,
@@ -7970,7 +8067,7 @@ type CreateAutoScalingGroupInput struct {
 
 	// A list of Classic Load Balancers associated with this Auto Scaling group.
 	// For Application Load Balancers, Network Load Balancers, and Gateway Load
-	// Balancer, specify the TargetGroupARNs property instead.
+	// Balancers, specify the TargetGroupARNs property instead.
 	LoadBalancerNames []*string `type:"list"`
 
 	// The maximum amount of time, in seconds, that an instance can be in service.
@@ -8055,16 +8152,10 @@ type CreateAutoScalingGroupInput struct {
 	// | arn:aws:lambda:region:account-id:function:my-function:my-alias
 	TerminationPolicies []*string `type:"list"`
 
-	// Reserved for use with Amazon VPC Lattice, which is in preview release and
-	// is subject to change. Do not use this parameter for production workloads.
-	// It is also subject to change.
-	//
-	// The unique identifiers of one or more traffic sources.
-	//
-	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
-	// VPC Lattice target group. Amazon EC2 Auto Scaling registers the running instances
-	// with the attached target groups. The target groups receive incoming traffic
-	// and route requests to one or more registered targets.
+	// The list of traffic sources to attach to this Auto Scaling group. You can
+	// use any of the following as traffic sources for an Auto Scaling group: Classic
+	// Load Balancer, Application Load Balancer, Gateway Load Balancer, Network
+	// Load Balancer, and VPC Lattice.
 	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// A comma-separated list of subnet IDs for a virtual private cloud (VPC) where
@@ -11375,11 +11466,17 @@ type DescribeTrafficSourcesInput struct {
 	// a previous call.)
 	NextToken *string `type:"string"`
 
-	// The type of traffic source you are describing. Currently, the only valid
-	// value is vpc-lattice.
+	// The traffic source type that you want to describe.
 	//
-	// TrafficSourceType is a required field
-	TrafficSourceType *string `min:"1" type:"string" required:"true"`
+	// The following lists the valid values:
+	//
+	//    * elb if the traffic source is a Classic Load Balancer.
+	//
+	//    * elbv2 if the traffic source is a Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer.
+	//
+	//    * vpc-lattice if the traffic source is VPC Lattice.
+	TrafficSourceType *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -11408,9 +11505,6 @@ func (s *DescribeTrafficSourcesInput) Validate() error {
 	}
 	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
-	}
-	if s.TrafficSourceType == nil {
-		invalidParams.Add(request.NewErrParamRequired("TrafficSourceType"))
 	}
 	if s.TrafficSourceType != nil && len(*s.TrafficSourceType) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("TrafficSourceType", 1))
@@ -11967,14 +12061,8 @@ type DetachTrafficSourcesInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
-	// The unique identifiers of one or more traffic sources you are detaching.
-	// You can specify up to 10 traffic sources.
-	//
-	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
-	// VPC Lattice target group. When you detach a target group, it enters the Removing
-	// state while deregistering the instances in the group. When all instances
-	// are deregistered, then you can no longer describe the target group using
-	// the DescribeTrafficSources API call. The instances continue to run.
+	// The unique identifiers of one or more traffic sources. You can specify up
+	// to 10 traffic sources.
 	//
 	// TrafficSources is a required field
 	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
@@ -13251,12 +13339,7 @@ type Group struct {
 	// The duration of the health check grace period, in seconds.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// Determines whether any additional health checks are performed on the instances
-	// in this group. Amazon EC2 health checks are always on.
-	//
-	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
-	// health check type is reserved for use with VPC Lattice, which is in preview
-	// release and is subject to change.
+	// A comma-separated value string of one or more health check types.
 	//
 	// HealthCheckType is a required field
 	HealthCheckType *string `min:"1" type:"string" required:"true"`
@@ -13321,11 +13404,7 @@ type Group struct {
 	// The termination policies for the group.
 	TerminationPolicies []*string `type:"list"`
 
-	// Reserved for use with Amazon VPC Lattice, which is in preview release and
-	// is subject to change. Do not use this parameter for production workloads.
-	// It is also subject to change.
-	//
-	// The unique identifiers of the traffic sources.
+	// The traffic sources associated with this Auto Scaling group.
 	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// One or more subnet IDs, if applicable, separated by commas.
@@ -13569,10 +13648,10 @@ type Instance struct {
 	// AvailabilityZone is a required field
 	AvailabilityZone *string `min:"1" type:"string" required:"true"`
 
-	// The last reported health status of the instance. "Healthy" means that the
-	// instance is healthy and should remain in service. "Unhealthy" means that
-	// the instance is unhealthy and that Amazon EC2 Auto Scaling should terminate
-	// and replace it.
+	// The last reported health status of the instance. Healthy means that the instance
+	// is healthy and should remain in service. Unhealthy means that the instance
+	// is unhealthy and that Amazon EC2 Auto Scaling should terminate and replace
+	// it.
 	//
 	// HealthStatus is a required field
 	HealthStatus *string `min:"1" type:"string" required:"true"`
@@ -13697,10 +13776,10 @@ type InstanceDetails struct {
 	// AvailabilityZone is a required field
 	AvailabilityZone *string `min:"1" type:"string" required:"true"`
 
-	// The last reported health status of this instance. "Healthy" means that the
-	// instance is healthy and should remain in service. "Unhealthy" means that
-	// the instance is unhealthy and Amazon EC2 Auto Scaling should terminate and
-	// replace it.
+	// The last reported health status of this instance. Healthy means that the
+	// instance is healthy and should remain in service. Unhealthy means that the
+	// instance is unhealthy and Amazon EC2 Auto Scaling should terminate and replace
+	// it.
 	//
 	// HealthStatus is a required field
 	HealthStatus *string `min:"1" type:"string" required:"true"`
@@ -13974,7 +14053,7 @@ type InstanceRefresh struct {
 	// rollback. This value gradually goes back down to zero during a rollback.
 	PercentageComplete *int64 `type:"integer"`
 
-	// Describes the preferences for an instance refresh.
+	// The preferences for an instance refresh.
 	Preferences *RefreshPreferences `type:"structure"`
 
 	// Additional progress details for an Auto Scaling group that has a warm pool.
@@ -20471,8 +20550,8 @@ func (s *TargetTrackingMetricDataQuery) SetReturnData(v bool) *TargetTrackingMet
 	return s
 }
 
-// This structure defines the CloudWatch metric to return, along with the statistic,
-// period, and unit.
+// This structure defines the CloudWatch metric to return, along with the statistic
+// and unit.
 //
 // For more information about the CloudWatch terminology below, see Amazon CloudWatch
 // concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
@@ -20480,7 +20559,7 @@ func (s *TargetTrackingMetricDataQuery) SetReturnData(v bool) *TargetTrackingMet
 type TargetTrackingMetricStat struct {
 	_ struct{} `type:"structure"`
 
-	// Represents a specific metric.
+	// The metric to use.
 	//
 	// Metric is a required field
 	Metric *Metric `type:"structure" required:"true"`
@@ -20489,7 +20568,7 @@ type TargetTrackingMetricStat struct {
 	// statistic. For a list of valid values, see the table in Statistics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Statistic)
 	// in the Amazon CloudWatch User Guide.
 	//
-	// The most commonly used metrics for scaling is Average
+	// The most commonly used metric for scaling is Average.
 	//
 	// Stat is a required field
 	Stat *string `min:"1" type:"string" required:"true"`
@@ -20697,15 +20776,51 @@ func (s *TotalLocalStorageGBRequest) SetMin(v float64) *TotalLocalStorageGBReque
 	return s
 }
 
-// Describes the identifier of a traffic source.
-//
-// Currently, you must specify an Amazon Resource Name (ARN) for an existing
-// VPC Lattice target group.
+// Identifying information for a traffic source.
 type TrafficSourceIdentifier struct {
 	_ struct{} `type:"structure"`
 
-	// The unique identifier of the traffic source.
-	Identifier *string `min:"1" type:"string"`
+	// Identifies the traffic source.
+	//
+	// For Application Load Balancers, Gateway Load Balancers, Network Load Balancers,
+	// and VPC Lattice, this will be the Amazon Resource Name (ARN) for a target
+	// group in this account and Region. For Classic Load Balancers, this will be
+	// the name of the Classic Load Balancer in this account and Region.
+	//
+	// For example:
+	//
+	//    * Application Load Balancer ARN: arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/1234567890123456
+	//
+	//    * Classic Load Balancer name: my-classic-load-balancer
+	//
+	//    * VPC Lattice ARN: arn:aws:vpc-lattice:us-west-2:123456789012:targetgroup/tg-1234567890123456
+	//
+	// To get the ARN of a target group for a Application Load Balancer, Gateway
+	// Load Balancer, or Network Load Balancer, or the name of a Classic Load Balancer,
+	// use the Elastic Load Balancing DescribeTargetGroups (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html)
+	// and DescribeLoadBalancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
+	// API operations.
+	//
+	// To get the ARN of a target group for VPC Lattice, use the VPC Lattice GetTargetGroup
+	// (https://docs.aws.amazon.com/vpc-lattice/latest/APIReference/API_GetTargetGroup.html)
+	// API operation.
+	//
+	// Identifier is a required field
+	Identifier *string `min:"1" type:"string" required:"true"`
+
+	// Provides additional context for the value of Identifier.
+	//
+	// The following lists the valid values:
+	//
+	//    * elb if Identifier is the name of a Classic Load Balancer.
+	//
+	//    * elbv2 if Identifier is the ARN of an Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer target group.
+	//
+	//    * vpc-lattice if Identifier is the ARN of a VPC Lattice target group.
+	//
+	// Required if the identifier is the name of a Classic Load Balancer.
+	Type *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -20729,8 +20844,14 @@ func (s TrafficSourceIdentifier) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *TrafficSourceIdentifier) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TrafficSourceIdentifier"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
 	if s.Identifier != nil && len(*s.Identifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+	if s.Type != nil && len(*s.Type) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Type", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -20745,31 +20866,61 @@ func (s *TrafficSourceIdentifier) SetIdentifier(v string) *TrafficSourceIdentifi
 	return s
 }
 
+// SetType sets the Type field's value.
+func (s *TrafficSourceIdentifier) SetType(v string) *TrafficSourceIdentifier {
+	s.Type = &v
+	return s
+}
+
 // Describes the state of a traffic source.
 type TrafficSourceState struct {
 	_ struct{} `type:"structure"`
 
-	// The following are the possible states for a VPC Lattice target group:
+	// The unique identifier of the traffic source.
+	Identifier *string `min:"1" type:"string"`
+
+	// Describes the current state of a traffic source.
 	//
-	//    * Adding - The Auto Scaling instances are being registered with the target
-	//    group.
+	// The state values are as follows:
 	//
-	//    * Added - All Auto Scaling instances are registered with the target group.
+	//    * Adding - The Auto Scaling instances are being registered with the load
+	//    balancer or target group.
 	//
-	//    * InService - At least one Auto Scaling instance passed the VPC_LATTICE
-	//    health check.
+	//    * Added - All Auto Scaling instances are registered with the load balancer
+	//    or target group.
+	//
+	//    * InService - For an Elastic Load Balancing load balancer or target group,
+	//    at least one Auto Scaling instance passed an ELB health check. For VPC
+	//    Lattice, at least one Auto Scaling instance passed an VPC_LATTICE health
+	//    check.
 	//
 	//    * Removing - The Auto Scaling instances are being deregistered from the
-	//    target group. If connection draining is enabled, VPC Lattice waits for
-	//    in-flight requests to complete before deregistering the instances.
+	//    load balancer or target group. If connection draining (deregistration
+	//    delay) is enabled, Elastic Load Balancing or VPC Lattice waits for in-flight
+	//    requests to complete before deregistering the instances.
 	//
-	//    * Removed - All Auto Scaling instances are deregistered from the target
-	//    group.
+	//    * Removed - All Auto Scaling instances are deregistered from the load
+	//    balancer or target group.
 	State *string `min:"1" type:"string"`
 
-	// The unique identifier of the traffic source. Currently, this is the Amazon
-	// Resource Name (ARN) for a VPC Lattice target group.
-	TrafficSource *string `min:"1" type:"string"`
+	// This is replaced by Identifier.
+	//
+	// Deprecated: TrafficSource has been replaced by Identifier
+	TrafficSource *string `min:"1" deprecated:"true" type:"string"`
+
+	// Provides additional context for the value of Identifier.
+	//
+	// The following lists the valid values:
+	//
+	//    * elb if Identifier is the name of a Classic Load Balancer.
+	//
+	//    * elbv2 if Identifier is the ARN of an Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer target group.
+	//
+	//    * vpc-lattice if Identifier is the ARN of a VPC Lattice target group.
+	//
+	// Required if the identifier is the name of a Classic Load Balancer.
+	Type *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -20790,6 +20941,12 @@ func (s TrafficSourceState) GoString() string {
 	return s.String()
 }
 
+// SetIdentifier sets the Identifier field's value.
+func (s *TrafficSourceState) SetIdentifier(v string) *TrafficSourceState {
+	s.Identifier = &v
+	return s
+}
+
 // SetState sets the State field's value.
 func (s *TrafficSourceState) SetState(v string) *TrafficSourceState {
 	s.State = &v
@@ -20799,6 +20956,12 @@ func (s *TrafficSourceState) SetState(v string) *TrafficSourceState {
 // SetTrafficSource sets the TrafficSource field's value.
 func (s *TrafficSourceState) SetTrafficSource(v string) *TrafficSourceState {
 	s.TrafficSource = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *TrafficSourceState) SetType(v string) *TrafficSourceState {
+	s.Type = &v
 	return s
 }
 
@@ -20876,12 +21039,14 @@ type UpdateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// Determines whether any additional health checks are performed on the instances
-	// in this group. Amazon EC2 health checks are always on.
+	// A comma-separated value string of one or more health check types.
 	//
-	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
-	// health check type is reserved for use with VPC Lattice, which is in preview
-	// release and is subject to change.
+	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
+	// check and cannot be disabled. For more information, see Health checks for
+	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The name of the launch configuration. If you specify LaunchConfigurationName
@@ -21884,6 +22049,9 @@ const (
 
 	// ScalingActivityStatusCodeCancelled is a ScalingActivityStatusCode enum value
 	ScalingActivityStatusCodeCancelled = "Cancelled"
+
+	// ScalingActivityStatusCodeWaitingForConnectionDraining is a ScalingActivityStatusCode enum value
+	ScalingActivityStatusCodeWaitingForConnectionDraining = "WaitingForConnectionDraining"
 )
 
 // ScalingActivityStatusCode_Values returns all elements of the ScalingActivityStatusCode enum
@@ -21901,6 +22069,7 @@ func ScalingActivityStatusCode_Values() []string {
 		ScalingActivityStatusCodeSuccessful,
 		ScalingActivityStatusCodeFailed,
 		ScalingActivityStatusCodeCancelled,
+		ScalingActivityStatusCodeWaitingForConnectionDraining,
 	}
 }
 

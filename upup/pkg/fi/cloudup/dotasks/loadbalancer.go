@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/util/pkg/vfs"
@@ -129,6 +130,13 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 			EntryPort:      80,
 			TargetProtocol: "http",
 			TargetPort:     80,
+		},
+		{
+			EntryProtocol:  "https",
+			EntryPort:      wellknownports.KopsControllerPort,
+			TargetProtocol: "https",
+			TargetPort:     wellknownports.KopsControllerPort,
+			TlsPassthrough: true,
 		},
 	}
 

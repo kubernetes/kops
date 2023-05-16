@@ -396,6 +396,11 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
 }
 
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func (c *NodeupModelContext) UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
+	return model.UseChallengeCallback(cloudProvider)
+}
+
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
 	return (c.NodeupConfig.Networking.CNI != nil && c.NodeupConfig.Networking.CNI.UsesSecondaryIP) ||
@@ -630,14 +635,19 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
 
+// CloudProvider returns the cloud provider we are running on
+func (c *NodeupModelContext) CloudProvider() kops.CloudProviderID {
+	return c.BootConfig.CloudProvider
+}
+
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
-	return c.BootConfig.CloudProvider == kops.CloudProviderGCE
+	return c.CloudProvider() == kops.CloudProviderGCE
 }
 
 // RunningOnAzure returns true if we are running on Azure
 func (c *NodeupModelContext) RunningOnAzure() bool {
-	return c.BootConfig.CloudProvider == kops.CloudProviderAzure
+	return c.CloudProvider() == kops.CloudProviderAzure
 }
 
 // GetMetadataLocalIP returns the local IP address read from metadata

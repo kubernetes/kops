@@ -38,6 +38,21 @@ type ConfigFile struct {
 	Config        Config    `json:"config"`
 	OSVersion     string    `json:"os.version,omitempty"`
 	Variant       string    `json:"variant,omitempty"`
+	OSFeatures    []string  `json:"os.features,omitempty"`
+}
+
+// Platform attempts to generates a Platform from the ConfigFile fields.
+func (cf *ConfigFile) Platform() *Platform {
+	if cf.OS == "" && cf.Architecture == "" && cf.OSVersion == "" && cf.Variant == "" && len(cf.OSFeatures) == 0 {
+		return nil
+	}
+	return &Platform{
+		OS:           cf.OS,
+		Architecture: cf.Architecture,
+		OSVersion:    cf.OSVersion,
+		Variant:      cf.Variant,
+		OSFeatures:   cf.OSFeatures,
+	}
 }
 
 // History is one entry of a list recording how this container image was built.

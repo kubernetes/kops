@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: privatecilium.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.privatecilium.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: hqp5ZKj6Abpn8IgDnWDctQpdAoeCX17HsWYVqp4n4CQ=
+NodeupConfigHash: iY95TQ9SSLc52J5C1W2KZDrL8lIkUxHJLZo91zVFYkE=
 
 __EOF_KUBE_ENV
 

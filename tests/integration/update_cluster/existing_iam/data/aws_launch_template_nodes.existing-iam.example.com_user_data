@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: existing-iam.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.existing-iam.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: y+PfJ2uYm6cL+eeQj/yi7ZheZeankl6gb0jS61zMgaI=
+NodeupConfigHash: yN8qBCkvBlGImHhIXR4iLGriAsRFE223HPTheARAEHU=
 
 __EOF_KUBE_ENV
 

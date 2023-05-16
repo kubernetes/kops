@@ -186,14 +186,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
-			Tags:          tags,
-			ForAPIServer:  true,
-			VPC:           b.LinkToVPC(),
-			Type:          fi.PtrTo("network"),
-			IpAddressType: fi.PtrTo("ipv4"),
-		}
-		if b.UseIPv6ForAPI() {
-			nlb.IpAddressType = fi.PtrTo("dualstack")
+			Tags:         tags,
+			ForAPIServer: true,
+			VPC:          b.LinkToVPC(),
+			Type:         fi.PtrTo("network"),
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{

@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: externallb.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.externallb.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: DCDyIUPQkdfaZmilPNddXcfbAY8BQQ6nkwEDkYWbhck=
+NodeupConfigHash: ZSIbluibuIt4Xrceb9xr2Jr9cQD+AuDLS9hPbuVR/Fc=
 
 __EOF_KUBE_ENV
 

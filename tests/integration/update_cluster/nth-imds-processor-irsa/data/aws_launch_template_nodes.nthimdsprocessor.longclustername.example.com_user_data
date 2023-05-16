@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: nthimdsprocessor.longclustername.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.nthimdsprocessor.longclustername.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: vln5dMCMZSF75BGjWAg4bRtf60l1unmDGICCCojNU7w=
+NodeupConfigHash: CNeJwMkoOXcz6Pk8P8uFBRtx17U6ZOy9RcC0cWxdFkI=
 
 __EOF_KUBE_ENV
 

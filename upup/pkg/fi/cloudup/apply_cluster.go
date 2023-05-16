@@ -1025,7 +1025,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
 		baseURL = c.Cluster.Spec.KubernetesVersion
 	} else {
-		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
+		baseURL = "https://dl.k8s.io/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
 	c.Assets = make(map[architectures.Architecture][]*mirrors.MirroredAsset)
@@ -1433,6 +1433,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 						bootConfig.APIServerIPs = append(bootConfig.APIServerIPs, additionalIP)
 					}
 				}
+			}
+
+		case kops.CloudProviderDO:
+			// Use any IP address that is found (including public ones)
+			for _, additionalIP := range apiserverAdditionalIPs {
+				bootConfig.APIServerIPs = append(bootConfig.APIServerIPs, additionalIP)
 			}
 
 		case kops.CloudProviderGCE:

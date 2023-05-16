@@ -31,6 +31,20 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 		return true
 	case kops.CloudProviderOpenstack:
 		return true
+	case kops.CloudProviderDO:
+		return true
+	default:
+		return false
+	}
+}
+
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
+	switch cloudProvider {
+	case kops.CloudProviderHetzner:
+		return true
+	case kops.CloudProviderDO:
+		return true
 	default:
 		return false
 	}

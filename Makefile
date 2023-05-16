@@ -42,7 +42,7 @@ endif
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
 CODEGEN_VERSION=v0.24.0
 
-KO=go run github.com/google/ko@v0.12.0
+KO=go run github.com/google/ko@v0.13.0
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
@@ -317,7 +317,7 @@ gomod:
 
 .PHONY: goget
 goget:
-	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all)
+	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all | grep -v spotinst-sdk-go)
 
 .PHONY: depup
 depup: goget gomod gen-cli-docs

@@ -254,10 +254,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: OprU7+SSGxEoNK+rQa/YpXTuCHaqnujpKumSq2OT2Hw=
+NodeupConfigHash: NeuXkTTkEcakNOZ0Lt86kclZfpyojWe7AIplvWRdQWE=
 
 __EOF_KUBE_ENV
 

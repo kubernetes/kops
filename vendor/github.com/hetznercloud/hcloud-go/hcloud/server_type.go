@@ -11,15 +11,16 @@ import (
 
 // ServerType represents a server type in the Hetzner Cloud.
 type ServerType struct {
-	ID          int
-	Name        string
-	Description string
-	Cores       int
-	Memory      float32
-	Disk        int
-	StorageType StorageType
-	CPUType     CPUType
-	Pricings    []ServerTypeLocationPricing
+	ID           int
+	Name         string
+	Description  string
+	Cores        int
+	Memory       float32
+	Disk         int
+	StorageType  StorageType
+	CPUType      CPUType
+	Architecture Architecture
+	Pricings     []ServerTypeLocationPricing
 }
 
 // StorageType specifies the type of storage.

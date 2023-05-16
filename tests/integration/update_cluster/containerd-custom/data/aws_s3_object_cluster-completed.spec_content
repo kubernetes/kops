@@ -38,8 +38,8 @@ spec:
       docker.io:
       - https://registry-1.docker.io
     runc:
-      version: 1.1.4
-    version: 1.6.20
+      version: 1.1.5
+    version: 1.6.21
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true

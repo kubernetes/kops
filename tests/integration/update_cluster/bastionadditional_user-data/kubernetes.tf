@@ -752,6 +752,17 @@ resource "aws_route53_record" "api-bastionuserdata-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-bastionuserdata-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-bastionuserdata-example-com.dns_name
+    zone_id                = aws_elb.api-bastionuserdata-example-com.zone_id
+  }
+  name    = "api.bastionuserdata.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "bastionuserdata-example-com" {
   tags = {
     "KubernetesCluster"                                 = "bastionuserdata.example.com"

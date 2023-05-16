@@ -58,6 +58,7 @@ type BootstrapScriptBuilder struct {
 type BootstrapScript struct {
 	Name      string
 	Lifecycle fi.Lifecycle
+	cluster   *kops.Cluster
 	ig        *kops.InstanceGroup
 	builder   *BootstrapScriptBuilder
 	resource  fi.CloudupTaskDependentResource
@@ -124,18 +125,27 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 	return bootConfig, nil
 }
 
-func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
+func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error) {
+	cluster := b.cluster
+
 	env := make(map[string]string)
 
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
 		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	}
 
-	if os.Getenv("S3_ENDPOINT") != "" && (!model.UseKopsControllerForNodeConfig(cluster) || b.ig.HasAPIServer()) {
-		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
-		env["S3_REGION"] = os.Getenv("S3_REGION")
-		env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
-		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	if os.Getenv("S3_ENDPOINT") != "" {
+		passEnvs := false
+		if b.ig.IsControlPlane() || !b.builder.UseKopsControllerForNodeBootstrap() {
+			passEnvs = true
+		}
+
+		if passEnvs {
+			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+			env["S3_REGION"] = os.Getenv("S3_REGION")
+			env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+			env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+		}
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
@@ -181,9 +191,16 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
-		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
-		if doToken != "" {
-			env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+		passEnvs := false
+		if b.ig.IsControlPlane() || !b.builder.UseKopsControllerForNodeBootstrap() {
+			passEnvs = true
+		}
+
+		if passEnvs {
+			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+			if doToken != "" {
+				env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+			}
 		}
 	}
 
@@ -272,6 +289,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 	task := &BootstrapScript{
 		Name:      ig.Name,
 		Lifecycle: b.Lifecycle,
+		cluster:   b.Cluster,
 		ig:        ig,
 		builder:   b,
 		caTasks:   caTasks,
@@ -326,7 +344,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 	{
 		nodeupScript.EnvironmentVariables = func() (string, error) {
-			env, err := b.buildEnvironmentVariables(c.T.Cluster)
+			env, err := b.buildEnvironmentVariables()
 			if err != nil {
 				return "", err
 			}

@@ -626,6 +626,13 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.OperatorPodAnnotations != nil {
+		in, out := &in.OperatorPodAnnotations, &out.OperatorPodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.InstallIptablesRules != nil {
 		in, out := &in.InstallIptablesRules, &out.InstallIptablesRules
 		*out = new(bool)
@@ -4714,6 +4721,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 	}
 	if in.IngressHostnameSuffix != nil {
 		in, out := &in.IngressHostnameSuffix, &out.IngressHostnameSuffix
+		*out = new(string)
+		**out = **in
+	}
+	if in.FlavorID != nil {
+		in, out := &in.FlavorID, &out.FlavorID
 		*out = new(string)
 		**out = **in
 	}

@@ -101,6 +101,10 @@ func (r SecGroupPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a SecGroupPage struct is empty.
 func (r SecGroupPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractGroups(r)
 	return len(is) == 0, err
 }

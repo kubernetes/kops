@@ -30,6 +30,17 @@ type BootstrapRequest struct {
 	// IncludeNodeConfig controls whether the cluster & instance group configuration should be returned.
 	// This allows for nodes without access to the kops state store.
 	IncludeNodeConfig bool `json:"includeNodeConfig"`
+
+	// Challenge is for a callback challenge.
+	Challenge *ChallengeRequest `json:"challenge,omitempty"`
+}
+
+// ChallengeRequest describes the callback challenge.
+type ChallengeRequest struct {
+	Endpoint        string `json:"endpoint,omitempty"`
+	ServerCA        []byte `json:"ca,omitempty"`
+	ChallengeID     string `json:"challengeID,omitempty"`
+	ChallengeSecret []byte `json:"challengeSecret,omitempty"`
 }
 
 // BootstrapResponse is a response to a BootstrapRequest.

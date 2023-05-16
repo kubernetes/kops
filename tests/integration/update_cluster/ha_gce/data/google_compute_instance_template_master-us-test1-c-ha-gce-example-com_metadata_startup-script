@@ -252,10 +252,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: gce
+ClusterName: ha-gce.example.com
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-c
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: EeZ5Lo/B5C8CPkbHBKOTJ/NR+OpLX1qqV1H7L1pSlVY=
+NodeupConfigHash: d+/3TxqNNwYmZE+0lcYOS3TtnK25dM3CCt23zDihmtQ=
 
 __EOF_KUBE_ENV
 

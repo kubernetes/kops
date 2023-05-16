@@ -252,10 +252,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 1n2QcBF/g4XExX0ewiwW+vgZKIK/XPSbcCZcGxfVnWI=
+NodeupConfigHash: StQ3L3tZy3dNVtE8jD0x2Fnaf13juqhj/n3pEmGRcSU=
 
 __EOF_KUBE_ENV
 

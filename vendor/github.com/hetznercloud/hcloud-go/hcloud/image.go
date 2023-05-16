@@ -26,8 +26,9 @@ type Image struct {
 	BoundTo     *Server
 	RapidDeploy bool
 
-	OSFlavor  string
-	OSVersion string
+	OSFlavor     string
+	OSVersion    string
+	Architecture Architecture
 
 	Protection ImageProtection
 	Deprecated time.Time // The zero value denotes the image is not deprecated.
@@ -98,6 +99,8 @@ func (c *ImageClient) GetByID(ctx context.Context, id int) (*Image, *Response, e
 }
 
 // GetByName retrieves an image by its name. If the image does not exist, nil is returned.
+//
+// Deprecated: Use [ImageClient.GetByNameAndArchitecture] instead.
 func (c *ImageClient) GetByName(ctx context.Context, name string) (*Image, *Response, error) {
 	if name == "" {
 		return nil, nil, nil
@@ -109,13 +112,42 @@ func (c *ImageClient) GetByName(ctx context.Context, name string) (*Image, *Resp
 	return images[0], response, err
 }
 
+// GetByNameAndArchitecture retrieves an image by its name and architecture. If the image does not exist,
+// nil is returned.
+// In contrast to [ImageClient.Get], this method also returns deprecated images. Depending on your needs you should
+// check for this in your calling method.
+func (c *ImageClient) GetByNameAndArchitecture(ctx context.Context, name string, architecture Architecture) (*Image, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
+	images, response, err := c.List(ctx, ImageListOpts{Name: name, Architecture: []Architecture{architecture}, IncludeDeprecated: true})
+	if len(images) == 0 {
+		return nil, response, err
+	}
+	return images[0], response, err
+}
+
 // Get retrieves an image by its ID if the input can be parsed as an integer, otherwise it
 // retrieves an image by its name. If the image does not exist, nil is returned.
+//
+// Deprecated: Use [ImageClient.GetForArchitecture] instead.
 func (c *ImageClient) Get(ctx context.Context, idOrName string) (*Image, *Response, error) {
 	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
+}
+
+// GetForArchitecture retrieves an image by its ID if the input can be parsed as an integer, otherwise it
+// retrieves an image by its name and architecture. If the image does not exist, nil is returned.
+//
+// In contrast to [ImageClient.Get], this method also returns deprecated images. Depending on your needs you should
+// check for this in your calling method.
+func (c *ImageClient) GetForArchitecture(ctx context.Context, idOrName string, architecture Architecture) (*Image, *Response, error) {
+	if id, err := strconv.Atoi(idOrName); err == nil {
+		return c.GetByID(ctx, id)
+	}
+	return c.GetByNameAndArchitecture(ctx, idOrName, architecture)
 }
 
 // ImageListOpts specifies options for listing images.
@@ -127,6 +159,7 @@ type ImageListOpts struct {
 	Sort              []string
 	Status            []ImageStatus
 	IncludeDeprecated bool
+	Architecture      []Architecture
 }
 
 func (l ImageListOpts) values() url.Values {
@@ -148,6 +181,9 @@ func (l ImageListOpts) values() url.Values {
 	}
 	for _, status := range l.Status {
 		vals.Add("status", string(status))
+	}
+	for _, arch := range l.Architecture {
+		vals.Add("architecture", string(arch))
 	}
 	return vals
 }

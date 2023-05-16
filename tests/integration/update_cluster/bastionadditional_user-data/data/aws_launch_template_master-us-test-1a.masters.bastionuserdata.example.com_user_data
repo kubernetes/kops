@@ -254,10 +254,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: bastionuserdata.example.com
 ConfigBase: memfs://clusters.example.com/bastionuserdata.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 1r6ZmeR68FkkXIoN2TfL8kSrTitlOIjqUda1DrrUFs4=
+NodeupConfigHash: ySFCYJMxSAYJRLJ7g8a8HwUN0I0GP4tglgBesG8lUyA=
 
 __EOF_KUBE_ENV
 

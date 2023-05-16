@@ -256,10 +256,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: externalpolicies.example.com
 ConfigBase: memfs://clusters.example.com/externalpolicies.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: UgSSTVFnebn7lpOBRdprATdihnHOQ1JeSacFYCgmUO0=
+NodeupConfigHash: XWuAVv5F07N9MQDTSffwprpucPfXmAPhesr3LbN0E8E=
 
 __EOF_KUBE_ENV
 

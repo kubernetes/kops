@@ -110,7 +110,10 @@ func (b *KubeSchedulerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	} else {
 		// We didn't get a kubescheduler configuration; warn as we're aiming to move this to generation in the kops CLI
 		klog.Warningf("using embedded kubescheduler configuration")
-		config := NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta2")
+		config := NewSchedulerConfig("kubescheduler.config.k8s.io/v1")
+		if b.IsKubernetesLT("1.25") {
+			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta2")
+		}
 
 		kubeSchedulerConfig, err := configbuilder.BuildConfigYaml(&kubeScheduler, config)
 		if err != nil {
@@ -245,7 +248,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	kubemanifest.AddHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {

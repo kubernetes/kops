@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: minimal.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: karpenter-nodes-default
 InstanceGroupRole: Node
-NodeupConfigHash: L8oj2Wd9gm9CtRavVfRQbXI4tPjyeyxrd8FRzV3L4RA=
+NodeupConfigHash: RDJombduclfCVjfTfieiWcUbmjZ58e0MmtYhP24qwTU=
 
 __EOF_KUBE_ENV
 

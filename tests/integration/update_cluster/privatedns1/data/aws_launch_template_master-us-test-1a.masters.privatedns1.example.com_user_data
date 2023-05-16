@@ -256,10 +256,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: privatedns1.example.com
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: ca71iLZ+Ft4BU5CJaB9BbWYzjZR6CzK+e9iggAvNLZY=
+NodeupConfigHash: KjG5XIBA2WlkRTJEJMzz8w4X2AeG2S+8X1w/oUdm1lY=
 
 __EOF_KUBE_ENV
 

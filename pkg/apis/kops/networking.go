@@ -391,6 +391,9 @@ type CiliumNetworkingSpec struct {
 	// AgentPodAnnotations makes possible to add additional annotations to cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
+	// OperatorPodAnnotations makes possible to add additional annotations to cilium operator.
+	// Default: none
+	OperatorPodAnnotations map[string]string `json:"operatorPodAnnotations,omitempty"`
 	// Tunnel specifies the Cilium tunnelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`

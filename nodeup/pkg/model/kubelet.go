@@ -526,7 +526,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 	// TODO: leverage assets for this tar file (but we want to avoid expansion of the archive)
 	c.AddTask(&nodetasks.Archive{
 		Name:      "containerized_mounter",
-		Source:    "https://storage.googleapis.com/kubernetes-release/gci-mounter/mounter.tar",
+		Source:    "https://dl.k8s.io/gci-mounter/mounter.tar",
 		Hash:      "6a9f5f52e0b066183e6b90a3820b8c2c660d30f6ac7aeafb5064355bf0a5b6dd",
 		TargetDir: path.Join(containerizedMounterHome, "rootfs"),
 	})
@@ -737,7 +737,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 }
 
 func (b *KubeletBuilder) kubeletNames() ([]string, error) {
-	if b.BootConfig.CloudProvider != kops.CloudProviderAWS {
+	if b.CloudProvider() != kops.CloudProviderAWS {
 		name, err := os.Hostname()
 		if err != nil {
 			return nil, err

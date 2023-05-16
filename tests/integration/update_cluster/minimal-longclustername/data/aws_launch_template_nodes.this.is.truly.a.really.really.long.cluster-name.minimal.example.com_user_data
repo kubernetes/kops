@@ -149,6 +149,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -175,7 +176,7 @@ ConfigServer:
   - https://kops-controller.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 61LCbYHuIvYJCxvKWLE6KAU+jQRdnPrX/8rTNDC3ejg=
+NodeupConfigHash: rU5mE/H2te2TxfrKQO20H93QWuBAdNTsQYXcLsPi3ZU=
 
 __EOF_KUBE_ENV
 

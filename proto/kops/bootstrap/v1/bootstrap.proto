@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package kops.bootstrap.v1;
+
+option go_package = "k8s.io/kops/proto/kops/bootstrap/v1";
+
+// CallbackService is the service that the node must run during bootstrapping,
+// we perform a simple callback from the controller.
+service CallbackService {
+  // Answers challenges to cross-check bootstrap requests.
+  rpc Challenge(ChallengeRequest) returns (ChallengeResponse) {}
+} 
+
+message ChallengeRequest {
+  // challenge_id is a random value (nonce) that the node generated and passed in its bootstrap request.
+  string challenge_id = 1;
+
+  // challenge_random is a random value (nonce) that kops-controller generated, it is hashed into the response.
+  bytes challenge_random = 2;
+}
+
+message ChallengeResponse {
+  // challenge_response combines the node nonce with the kops-controller nonce.
+  // The node nonce is passed in the bootstrap request.
+  // The kops-controller nonce is challenge_random in the ChallengeRequest.
+  // challenge_response is expected to be sha256(node-node + kops-controller-nonce)
+  bytes challenge_response = 1;
+}

@@ -75,6 +75,7 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "dns:v1"
 const apiName = "dns"
@@ -2491,7 +2492,8 @@ func (s *RRSetRoutingPolicyHealthCheckTargets) MarshalJSON() ([]byte, error) {
 }
 
 type RRSetRoutingPolicyLoadBalancerTarget struct {
-	// IpAddress: The frontend IP address of the
+	// IpAddress: The frontend IP address of the Load Balancer to health
+	// check.
 	IpAddress string `json:"ipAddress,omitempty"`
 
 	// Possible values:
@@ -2502,25 +2504,27 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 
 	Kind string `json:"kind,omitempty"`
 
+	// LoadBalancerType: The type of Load Balancer specified by this target.
+	// Must match the configuration of the Load Balancer located at the
+	// LoadBalancerTarget's IP address/port and region.
+	//
 	// Possible values:
 	//   "none"
 	//   "regionalL4ilb"
 	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 
 	// NetworkUrl: The fully qualified url of the network on which the ILB
-	// is
+	// is present. This should be formatted like
+	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
 	NetworkUrl string `json:"networkUrl,omitempty"`
 
-	// Port: Load Balancer to health check. The configured port of the Load
-	// Balancer.
+	// Port: The configured port of the Load Balancer.
 	Port string `json:"port,omitempty"`
 
-	// Project: present. This should be formatted like
-	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
-	// The project ID in which the ILB exists.
+	// Project: The project ID in which the ILB exists.
 	Project string `json:"project,omitempty"`
 
-	// Region: The region for regional ILBs.
+	// Region: The region in which the ILB exists.
 	Region string `json:"region,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "IpAddress") to

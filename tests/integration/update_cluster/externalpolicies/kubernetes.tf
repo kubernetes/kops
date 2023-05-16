@@ -571,6 +571,17 @@ resource "aws_route53_record" "api-externalpolicies-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-externalpolicies-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-externalpolicies-example-com.dns_name
+    zone_id                = aws_elb.api-externalpolicies-example-com.zone_id
+  }
+  name    = "api.externalpolicies.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"

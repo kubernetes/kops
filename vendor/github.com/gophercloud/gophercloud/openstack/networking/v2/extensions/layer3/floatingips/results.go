@@ -157,6 +157,10 @@ func (r FloatingIPPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a FloatingIPPage struct is empty.
 func (r FloatingIPPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractFloatingIPs(r)
 	return len(is) == 0, err
 }

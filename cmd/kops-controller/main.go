@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -41,6 +42,7 @@ import (
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -61,6 +63,8 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
@@ -97,7 +101,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	kubeConfig := ctrl.GetConfigOrDie()
+	mgr, err := ctrl.NewManager(kubeConfig, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddress,
 		LeaderElection:     true,
@@ -131,6 +136,12 @@ func main() {
 			}
 		} else if opt.Server.Provider.OpenStack != nil {
 			verifier, err = openstack.NewOpenstackVerifier(opt.Server.Provider.OpenStack)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.DigitalOcean != nil {
+			verifier, err = do.NewVerifier(ctx, opt.Server.Provider.DigitalOcean)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)

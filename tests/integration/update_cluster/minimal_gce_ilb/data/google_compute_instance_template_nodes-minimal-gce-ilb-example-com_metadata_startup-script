@@ -147,6 +147,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: gce
+ClusterName: minimal-gce-ilb.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -173,7 +174,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-gce-ilb.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: E7M0Nq33f5tz9ChCVAnK5q5V+s7vS4Q3LYsbhyaXXLw=
+NodeupConfigHash: 5bA5TTrbC+/CIoEFFej/rickecjqBSUnGrKgNgXKyrE=
 
 __EOF_KUBE_ENV
 

@@ -106,11 +106,10 @@ const GuestRequestInvalidLength SevFirmwareStatus = 0x100000000
 
 // SevFirmwareErr is an error that interprets firmware status codes from the AMD secure processor.
 type SevFirmwareErr struct {
-	error
 	Status SevFirmwareStatus
 }
 
-func (e SevFirmwareErr) Error() string {
+func (e *SevFirmwareErr) Error() string {
 	if e.Status == Success {
 		return "success"
 	}

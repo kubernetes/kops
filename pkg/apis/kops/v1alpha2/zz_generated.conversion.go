@@ -1963,6 +1963,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.Masquerade = in.Masquerade
 	// INFO: in.Nat46Range opted out of conversion generation
 	out.AgentPodAnnotations = in.AgentPodAnnotations
+	out.OperatorPodAnnotations = in.OperatorPodAnnotations
 	// INFO: in.Pprof opted out of conversion generation
 	// INFO: in.PrefilterDevice opted out of conversion generation
 	// INFO: in.PrometheusServeAddr opted out of conversion generation
@@ -2037,6 +2038,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
 	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
+	out.OperatorPodAnnotations = in.OperatorPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
 	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
@@ -6465,6 +6467,7 @@ func autoConvert_v1alpha2_OpenstackLoadbalancerConfig_To_kops_OpenstackLoadbalan
 	out.ManageSecGroups = in.ManageSecGroups
 	out.EnableIngressHostname = in.EnableIngressHostname
 	out.IngressHostnameSuffix = in.IngressHostnameSuffix
+	out.FlavorID = in.FlavorID
 	return nil
 }
 
@@ -6484,6 +6487,7 @@ func autoConvert_kops_OpenstackLoadbalancerConfig_To_v1alpha2_OpenstackLoadbalan
 	out.ManageSecGroups = in.ManageSecGroups
 	out.EnableIngressHostname = in.EnableIngressHostname
 	out.IngressHostnameSuffix = in.IngressHostnameSuffix
+	out.FlavorID = in.FlavorID
 	return nil
 }
 

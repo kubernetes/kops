@@ -137,17 +137,13 @@ func stringKeyFunc(obj interface{}) (string, error) {
 // getServer queries Scaleway for the server with the specified ID, returning an error if not found
 func (i *nodeIdentifier) getServer(ctx context.Context, id string) (*instance.Server, error) {
 	api := instance.NewAPI(i.client)
-	zone, exists := i.client.GetDefaultZone()
-	if !exists {
-		return nil, fmt.Errorf("client default zone is empty")
-	}
 	uuid := strings.Split(id, "/")
 	if len(uuid) != 3 {
 		return nil, fmt.Errorf("unexpected format for server id %s", id)
 	}
 	server, err := api.GetServer(&instance.GetServerRequest{
 		ServerID: uuid[2],
-		Zone:     scw.Zone(zone),
+		Zone:     scw.Zone(uuid[1]),
 	}, scw.WithContext(ctx))
 	if err != nil || server == nil {
 		return nil, fmt.Errorf("failed to get server %s: %w", id, err)

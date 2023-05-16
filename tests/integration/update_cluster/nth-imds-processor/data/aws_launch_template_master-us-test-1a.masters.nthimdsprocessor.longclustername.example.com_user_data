@@ -254,10 +254,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: nthimdsprocessor.longclustername.example.com
 ConfigBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: SlRR/DlGOU3IeG/HGPuGVtODhw1WFlOnjYD4HNyXCaM=
+NodeupConfigHash: ZsDd2I2oPA98k9bmZtn6YXAZaNZnP+UT9LoL2eeTvfA=
 
 __EOF_KUBE_ENV
 

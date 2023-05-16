@@ -150,6 +150,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: privateflannel.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -176,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.privateflannel.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 1+0shgbR9gJlrLM/VV1tvaTt7keCx3+t5d/LKMWORSs=
+NodeupConfigHash: RtWfQ5cBT8D6iJKZEsUDw9C7KBkD+hQSAtiuIv0VWHQ=
 
 __EOF_KUBE_ENV
 
