@@ -54,6 +54,28 @@ func listDNSZones(c OpenstackCloud, opt zones.ListOptsBuilder) ([]zones.Zone, er
 	}
 }
 
+func deleteDNSRecordset(c OpenstackCloud, zoneID string, rrsetID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := recordsets.Delete(c.DNSClient(), zoneID, rrsetID).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("failed to delete dns recordset: %s", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+// DeleteDNSRecordset will delete single DNS recordset in zone
+func (c *openstackCloud) DeleteDNSRecordset(zoneID string, rrsetID string) error {
+	return deleteDNSRecordset(c, zoneID, rrsetID)
+}
+
 // ListDNSRecordsets will list DNS recordsets
 func (c *openstackCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error) {
 	return listDNSRecordsets(c, zoneID, opt)

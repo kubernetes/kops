@@ -252,6 +252,8 @@ type OpenstackCloud interface {
 
 	// ListDNSRecordsets will list the DNS recordsets for the given zone id
 	ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error)
+	DeleteDNSRecordset(zoneID string, rrsetID string) error
+
 	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
 	GetLBStats(loadbalancerID string) (*loadbalancers.Stats, error)
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
@@ -412,13 +414,10 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 
 	var dnsClient *gophercloud.ServiceClient
 	if hasDNS {
-		// TODO: This should be replaced with the environment variable methods as done above
-		endpointOpt, err := config.GetServiceConfig("Designate")
-		if err != nil {
-			return nil, fmt.Errorf("failed to get service config: %w", err)
-		}
-
-		dnsClient, err = openstack.NewDNSV2(provider, endpointOpt)
+		dnsClient, err = openstack.NewDNSV2(provider, gophercloud.EndpointOpts{
+			Type:   "dns",
+			Region: region,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error building dns client: %w", err)
 		}

@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/do"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
@@ -66,7 +67,7 @@ func main() {
 	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
 	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, gossip)")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, gossip, openstack-designate)")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
 	flags.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipWeaveMesh), "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")

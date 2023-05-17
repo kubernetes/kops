@@ -166,6 +166,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	// will return openstack external ccm image location for current kubernetes version
 	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
 	dest["OpenStackCSITag"] = tf.OpenStackCSITag
+	dest["DNSControllerEnvs"] = tf.DNSControllerEnvs
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -610,6 +611,8 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
 			argv = append(argv, "--dns=digitalocean")
+		case kops.CloudProviderOpenstack:
+			argv = append(argv, "--dns=openstack-designate")
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())
@@ -805,6 +808,20 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	}
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) DNSControllerEnvs() map[string]string {
+	if tf.Cluster.Spec.GetCloudProvider() != kops.CloudProviderOpenstack {
+		return nil
+	}
+	envs := env.BuildSystemComponentEnvVars(&tf.Cluster.Spec)
+	out := make(map[string]string)
+	for k, v := range envs {
+		if strings.HasPrefix(k, "OS_") {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 func (tf *TemplateFunctions) ProxyEnv() map[string]string {
