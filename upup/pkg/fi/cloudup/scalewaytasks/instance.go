@@ -30,6 +30,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
+var commercialTypesWithBlockStorageOnly = []string{"PRO", "PLAY", "ENT"}
+
 // +kops:fitask
 type Instance struct {
 	Name      *string
@@ -155,19 +157,34 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		}
 		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i+actualCount)
 
-		// We create the instance
-		srv, err := instanceService.CreateServer(&instance.CreateServerRequest{
+		// If the instance's commercial type is one that has no local storage, we have to specify for the
+		// block storage volume a big enough size (default size is 10GB)
+		commercialType := fi.ValueOf(expected.CommercialType)
+		createServerRequest := instance.CreateServerRequest{
 			Zone:           zone,
 			Name:           uniqueName,
-			CommercialType: fi.ValueOf(expected.CommercialType),
+			CommercialType: commercialType,
 			Image:          fi.ValueOf(expected.Image),
 			Tags:           expected.Tags,
-		})
+		}
+		for _, ct := range commercialTypesWithBlockStorageOnly {
+			if strings.HasPrefix(commercialType, ct) {
+				continue
+			}
+			createServerRequest.Volumes = map[string]*instance.VolumeServerTemplate{
+				"0": {
+					Boot:       true,
+					Size:       scw.GB * 50,
+					VolumeType: instance.VolumeVolumeTypeBSSD,
+				},
+			}
+		}
+
+		// We create the instance and wait for it to be ready
+		srv, err := instanceService.CreateServer(&createServerRequest)
 		if err != nil {
 			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
-
-		// We wait for the instance to be ready
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
 			ServerID: srv.Server.ID,
 			Zone:     zone,
