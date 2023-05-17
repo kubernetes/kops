@@ -64,6 +64,7 @@ type Ocean struct {
 	RootVolumeOpts           *RootVolumeOpts
 	AutoScalerOpts           *AutoScalerOpts
 	InstanceMetadataOptions  *InstanceMetadataOptions
+	SpreadNodesBy            *string
 }
 
 var (
@@ -164,6 +165,7 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 			if strategy.GracePeriod != nil {
 				actual.GracePeriod = fi.PtrTo(int64(fi.ValueOf(strategy.GracePeriod)))
 			}
+			actual.SpreadNodesBy = strategy.SpreadNodesBy
 		}
 	}
 
@@ -402,6 +404,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		if e.GracePeriod != nil {
 			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
 		}
+		ocean.Strategy.SetSpreadNodesBy(e.SpreadNodesBy)
 	}
 
 	// Compute.
@@ -677,6 +680,17 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			changes.GracePeriod = nil
 			changed = true
 		}
+
+		//Spread nodes by.
+		if changes.SpreadNodesBy != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+			ocean.Strategy.SetSpreadNodesBy(e.SpreadNodesBy)
+			changes.SpreadNodesBy = nil
+			changed = true
+		}
+
 	}
 
 	// Compute.
@@ -1084,6 +1098,7 @@ type terraformOcean struct {
 	IAMInstanceProfile       *terraformWriter.Literal   `cty:"iam_instance_profile"`
 	KeyName                  *terraformWriter.Literal   `cty:"key_name"`
 	SecurityGroups           []*terraformWriter.Literal `cty:"security_groups"`
+	SpreadNodesBy            *string                    `cty:"spread_nodes_by"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
@@ -1098,6 +1113,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 		UtilizeCommitments:       e.UtilizeCommitments,
 		DrainingTimeout:          e.DrainingTimeout,
 		GracePeriod:              e.GracePeriod,
+		SpreadNodesBy:            e.SpreadNodesBy,
 	}
 
 	// Image.

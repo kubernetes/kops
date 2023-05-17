@@ -127,6 +127,10 @@ const (
 	// InstanceGroupLabelRestrictScaleDown is the metadata label used on the
 	// instance group to specify whether the scale-down activities should be restricted.
 	SpotInstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
+
+	// SpotClusterLabelSpreadNodesBy is the cloud  label used on the
+	// cluster spec to specify how Ocean will spread the nodes across markets by this value
+	SpotClusterLabelSpreadNodesBy = "spotinstSpreadNodesBy"
 )
 
 // SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
@@ -372,6 +376,13 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 	}
 
 	klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
+
+	for k, v := range b.Cluster.Labels {
+		switch k {
+		case SpotClusterLabelSpreadNodesBy:
+			ocean.SpreadNodesBy = fi.PtrTo(v)
+		}
+	}
 
 	// Image.
 	ocean.ImageID = fi.PtrTo(ig.Spec.Image)
