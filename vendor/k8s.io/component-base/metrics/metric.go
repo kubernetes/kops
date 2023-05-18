@@ -90,13 +90,14 @@ func (r *lazyMetric) lazyInit(self kubeCollector, fqName string) {
 // preprocessMetric figures out whether the lazy metric should be hidden or not.
 // This method takes a Version argument which should be the version of the binary in which
 // this code is currently being executed. A metric can be hidden under two conditions:
-//      1.  if the metric is deprecated and is outside the grace period (i.e. has been
-// 			deprecated for more than one release
-//		2. if the metric is manually disabled via a CLI flag.
+//  1. if the metric is deprecated and is outside the grace period (i.e. has been
+//     deprecated for more than one release
+//  2. if the metric is manually disabled via a CLI flag.
 //
 // Disclaimer:  disabling a metric via a CLI flag has higher precedence than
-// 			  	deprecation and will override show-hidden-metrics for the explicitly
-//				disabled metric.
+//
+//	  	deprecation and will override show-hidden-metrics for the explicitly
+//		disabled metric.
 func (r *lazyMetric) preprocessMetric(version semver.Version) {
 	disabledMetricsLock.RLock()
 	defer disabledMetricsLock.RUnlock()
@@ -204,7 +205,6 @@ func (c *selfCollector) Collect(ch chan<- prometheus.Metric) {
 var noopCounterVec = &prometheus.CounterVec{}
 var noopHistogramVec = &prometheus.HistogramVec{}
 var noopGaugeVec = &prometheus.GaugeVec{}
-var noopObserverVec = &noopObserverVector{}
 
 // just use a convenience struct for all the no-ops
 var noop = &noopMetric{}
@@ -222,22 +222,3 @@ func (noopMetric) Desc() *prometheus.Desc           { return nil }
 func (noopMetric) Write(*dto.Metric) error          { return nil }
 func (noopMetric) Describe(chan<- *prometheus.Desc) {}
 func (noopMetric) Collect(chan<- prometheus.Metric) {}
-
-type noopObserverVector struct{}
-
-func (noopObserverVector) GetMetricWith(prometheus.Labels) (prometheus.Observer, error) {
-	return noop, nil
-}
-func (noopObserverVector) GetMetricWithLabelValues(...string) (prometheus.Observer, error) {
-	return noop, nil
-}
-func (noopObserverVector) With(prometheus.Labels) prometheus.Observer    { return noop }
-func (noopObserverVector) WithLabelValues(...string) prometheus.Observer { return noop }
-func (noopObserverVector) CurryWith(prometheus.Labels) (prometheus.ObserverVec, error) {
-	return noopObserverVec, nil
-}
-func (noopObserverVector) MustCurryWith(prometheus.Labels) prometheus.ObserverVec {
-	return noopObserverVec
-}
-func (noopObserverVector) Describe(chan<- *prometheus.Desc) {}
-func (noopObserverVector) Collect(chan<- prometheus.Metric) {}
