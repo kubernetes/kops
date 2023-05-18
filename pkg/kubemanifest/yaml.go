@@ -28,8 +28,8 @@ import (
 // KubeObjectToApplyYAML returns the kubernetes object converted to YAML, with "noisy" fields removed.
 //
 // We remove:
-//  * status (can't be applied, shouldn't be specified)
-//  * metadata.creationTimestamp (can't be applied, shouldn't be specified)
+//   - status (can't be applied, shouldn't be specified)
+//   - metadata.creationTimestamp (can't be applied, shouldn't be specified)
 func KubeObjectToApplyYAML(data runtime.Object) (string, error) {
 	// This logic is inlined sigs.k8s.io/yaml.Marshal, but we delete some fields in the middle.
 

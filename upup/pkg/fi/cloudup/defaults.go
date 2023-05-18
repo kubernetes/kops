@@ -40,7 +40,6 @@ import (
 // PerformAssignments is called on create, as well as an update. In fact
 // any time Run() is called in apply_cluster.go we will reach this function.
 // Please do all after-market logic here.
-//
 func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	ctx := context.TODO()
 
