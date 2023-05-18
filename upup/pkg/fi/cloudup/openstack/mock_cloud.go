@@ -405,6 +405,10 @@ func (c *MockCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuil
 	return listDNSRecordsets(c, zoneID, opt)
 }
 
+func (c *MockCloud) DeleteDNSRecordset(zoneID string, rrsetID string) error {
+	return deleteDNSRecordset(c, zoneID, rrsetID)
+}
+
 func (c *MockCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {
 	return listInstances(c, opt)
 }
