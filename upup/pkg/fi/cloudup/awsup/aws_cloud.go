@@ -268,8 +268,20 @@ func updateAwsCloudInstances(region string, cloud AWSCloud) {
 	awsCloudInstances.mutex.Unlock()
 }
 
+func getCloudInstancesFromRegion(region string) AWSCloud {
+	awsCloudInstances.mutex.Lock()
+	defer awsCloudInstances.mutex.Unlock()
+
+	cloud, ok := awsCloudInstances.regionMap[region]
+	if !ok {
+		return nil
+
+	}
+	return cloud
+}
+
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
-	raw := awsCloudInstances.regionMap[region]
+	raw := getCloudInstancesFromRegion(region)
 
 	if raw == nil {
 		c := &awsCloudImplementation{
