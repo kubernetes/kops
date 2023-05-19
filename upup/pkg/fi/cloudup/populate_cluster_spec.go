@@ -69,7 +69,6 @@ func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, c
 	return c.fullCluster, nil
 }
 
-//
 // Here be dragons
 //
 // This function has some `interesting` things going on.
@@ -78,7 +77,6 @@ func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, c
 // very wrong.. but at least now my new cluster.Spec.Topology
 // struct is falling through..
 // @kris-nova
-//
 func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	if errs := validation.ValidateCluster(c.InputCluster, false); len(errs) != 0 {
 		return errs.ToAggregate()
