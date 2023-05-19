@@ -36,7 +36,7 @@ contents: |
       - --log-file=/var/log/kube-controller-manager.log
       command:
       - /usr/local/bin/kube-controller-manager
-      image: k8s.gcr.io/kube-controller-manager-amd64:v1.22.0
+      image: registry.k8s.io/kube-controller-manager-amd64:v1.22.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
