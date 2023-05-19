@@ -275,8 +275,8 @@ func getCloudInstancesFromRegion(region string) AWSCloud {
 	cloud, ok := awsCloudInstances.regionMap[region]
 	if !ok {
 		return nil
-
 	}
+
 	return cloud
 }
 
