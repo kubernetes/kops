@@ -87,17 +87,17 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
-  - range: ">=1.27.0"
+  - range: ">=1.27.2"
     recommendedVersion: 1.27.2
-    requiredVersion: 1.27.0
+    requiredVersion: 1.27.2
   - range: ">=1.26.0"
-    recommendedVersion: 1.26.5
+    recommendedVersion: 1.26.6
     requiredVersion: 1.26.0
   - range: ">=1.25.0"
-    recommendedVersion: 1.25.10
+    recommendedVersion: 1.25.11
     requiredVersion: 1.25.0
   - range: ">=1.24.0"
-    recommendedVersion: 1.24.14
+    recommendedVersion: 1.24.15
     requiredVersion: 1.24.0
   - range: ">=1.23.0"
     recommendedVersion: 1.23.17
@@ -145,15 +145,15 @@ spec:
   - range: ">=1.26.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.26.0
-    kubernetesVersion: 1.26.5
+    kubernetesVersion: 1.26.6
   - range: ">=1.25.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.25.0
-    kubernetesVersion: 1.25.10
+    kubernetesVersion: 1.25.11
   - range: ">=1.24.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.24.0
-    kubernetesVersion: 1.24.14
+    kubernetesVersion: 1.24.15
   - range: ">=1.23.0-alpha.1"
     recommendedVersion: "1.26.2"
     #requiredVersion: 1.23.0
