@@ -296,19 +296,25 @@ func (cm *controllerManager) GetControllerOptions() config.Controller {
 	return cm.controllerConfig
 }
 
-func (cm *controllerManager) serveMetrics() {
+func (cm *controllerManager) addMetricsServer() error {
+	mux := http.NewServeMux()
+	srv := httpserver.New(mux)
+
 	handler := promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{
 		ErrorHandling: promhttp.HTTPErrorOnError,
 	})
 	// TODO(JoelSpeed): Use existing Kubernetes machinery for serving metrics
-	mux := http.NewServeMux()
 	mux.Handle(defaultMetricsEndpoint, handler)
 	for path, extraHandler := range cm.metricsExtraHandlers {
 		mux.Handle(path, extraHandler)
 	}
 
-	server := httpserver.New(mux)
-	go cm.httpServe("metrics", cm.logger.WithValues("path", defaultMetricsEndpoint), server, cm.metricsListener)
+	return cm.add(&server{
+		Kind:     "metrics",
+		Log:      cm.logger.WithValues("path", defaultMetricsEndpoint),
+		Server:   srv,
+		Listener: cm.metricsListener,
+	})
 }
 
 func (cm *controllerManager) serveHealthProbes() {
@@ -436,7 +442,9 @@ func (cm *controllerManager) Start(ctx context.Context) (err error) {
 	// (If we don't serve metrics for non-leaders, prometheus will still scrape
 	// the pod but will get a connection refused).
 	if cm.metricsListener != nil {
-		cm.serveMetrics()
+		if err := cm.addMetricsServer(); err != nil {
+			return fmt.Errorf("failed to add metrics server: %w", err)
+		}
 	}
 
 	// Serve health probes.

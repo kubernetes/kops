@@ -18,7 +18,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/google/go-containerregistry/pkg/logs"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -72,21 +71,6 @@ func (r *reader) init(ctx context.Context) error {
 }
 
 func (p *Puller) fetcher(ctx context.Context, target resource) (*fetcher, error) {
-	// If we are Reuse()ing a Pusher, we want to use that for token handshakes and scopes,
-	// but we want to do read requests via a fetcher{}.
-	//
-	// TODO(jonjohnsonjr): Unify fetcher, writer, and repoWriter.
-	if p.o.pusher != nil {
-		if repo, ok := target.(name.Repository); ok {
-			w, err := p.o.pusher.writer(ctx, repo, p.o)
-			if err == nil {
-				return fetcherFromWriter(w.w), nil
-			}
-			logs.Debug.Printf("reusing Pusher failed: %v", err)
-		}
-	}
-
-	// Normal path for NewPuller.
 	v, _ := p.readers.LoadOrStore(target, &reader{
 		target: target,
 		o:      p.o,

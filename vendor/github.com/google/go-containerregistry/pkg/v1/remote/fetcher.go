@@ -32,13 +32,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
-func fetcherFromWriter(w *writer) *fetcher {
-	return &fetcher{
-		target: w.repo,
-		client: w.client,
-	}
-}
-
 // fetcher implements methods for reading from a registry.
 type fetcher struct {
 	target resource

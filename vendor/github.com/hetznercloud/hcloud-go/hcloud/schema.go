@@ -278,15 +278,16 @@ func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 // ServerTypeFromSchema converts a schema.ServerType to a ServerType.
 func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 	st := &ServerType{
-		ID:           s.ID,
-		Name:         s.Name,
-		Description:  s.Description,
-		Cores:        s.Cores,
-		Memory:       s.Memory,
-		Disk:         s.Disk,
-		StorageType:  StorageType(s.StorageType),
-		CPUType:      CPUType(s.CPUType),
-		Architecture: Architecture(s.Architecture),
+		ID:              s.ID,
+		Name:            s.Name,
+		Description:     s.Description,
+		Cores:           s.Cores,
+		Memory:          s.Memory,
+		Disk:            s.Disk,
+		StorageType:     StorageType(s.StorageType),
+		CPUType:         CPUType(s.CPUType),
+		Architecture:    Architecture(s.Architecture),
+		IncludedTraffic: s.IncludedTraffic,
 	}
 	for _, price := range s.Prices {
 		st.Pricings = append(st.Pricings, ServerTypeLocationPricing{

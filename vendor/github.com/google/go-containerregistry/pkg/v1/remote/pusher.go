@@ -386,6 +386,9 @@ func (rw *repoWriter) writeChild(ctx context.Context, child partial.Describable,
 	return nil
 }
 
+// TODO: Consider caching some representation of the tags/digests in the destination
+// repository as a hint to avoid this optimistic check in cases where we will most
+// likely have to do a PUT anyway, e.g. if we are overwriting a tag we just wrote.
 func (rw *repoWriter) manifestExists(ctx context.Context, ref name.Reference, t Taggable) (bool, error) {
 	f := &fetcher{
 		target: ref.Context(),
@@ -407,6 +410,14 @@ func (rw *repoWriter) manifestExists(ctx context.Context, ref name.Reference, t 
 		var terr *transport.Error
 		if errors.As(err, &terr) {
 			if terr.StatusCode == http.StatusNotFound {
+				return false, nil
+			}
+
+			// We treat a 403 here as non-fatal because this existence check is an optimization and
+			// some registries will return a 403 instead of a 404 in certain situations.
+			// E.g. https://jfrog.atlassian.net/browse/RTFACT-13797
+			if terr.StatusCode == http.StatusForbidden {
+				logs.Debug.Printf("manifestExists unexpected 403: %v", err)
 				return false, nil
 			}
 		}

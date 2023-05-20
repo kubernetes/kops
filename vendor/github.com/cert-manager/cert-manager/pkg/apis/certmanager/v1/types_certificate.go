@@ -357,9 +357,10 @@ type JKSKeystore struct {
 	// Secret resource, encrypted using the password stored in
 	// `passwordSecretRef`.
 	// The keystore file will be updated immediately.
-	// A file named `truststore.jks` will also be created in the target
-	// Secret resource, encrypted using the password stored in
-	// `passwordSecretRef` containing the issuing Certificate Authority
+	// If the issuer provided a CA certificate, a file named `truststore.jks`
+	// will also be created in the target Secret resource, encrypted using the
+	// password stored in `passwordSecretRef`
+	// containing the issuing Certificate Authority
 	Create bool `json:"create"`
 
 	// PasswordSecretRef is a reference to a key in a Secret resource
@@ -375,9 +376,10 @@ type PKCS12Keystore struct {
 	// Secret resource, encrypted using the password stored in
 	// `passwordSecretRef`.
 	// The keystore file will be updated immediately.
-	// A file named `truststore.p12` will also be created in the target
-	// Secret resource, encrypted using the password stored in
-	// `passwordSecretRef` containing the issuing Certificate Authority
+	// If the issuer provided a CA certificate, a file named `truststore.p12` will
+	// also be created in the target Secret resource, encrypted using the
+	// password stored in `passwordSecretRef` containing the issuing Certificate
+	// Authority
 	Create bool `json:"create"`
 
 	// PasswordSecretRef is a reference to a key in a Secret resource
@@ -394,11 +396,11 @@ type CertificateStatus struct {
 	// +optional
 	Conditions []CertificateCondition `json:"conditions,omitempty"`
 
-	// LastFailureTime is the time as recorded by the Certificate controller
-	// of the most recent failure to complete a CertificateRequest for this
-	// Certificate resource.
-	// If set, cert-manager will not re-request another Certificate until
-	// 1 hour has elapsed from this time.
+	// LastFailureTime is set only if the lastest issuance for this
+	// Certificate failed and contains the time of the failure. If an
+	// issuance has failed, the delay till the next issuance will be
+	// calculated using formula time.Hour * 2 ^ (failedIssuanceAttempts -
+	// 1). If the latest issuance has succeeded this field will be unset.
 	// +optional
 	LastFailureTime *metav1.Time `json:"lastFailureTime,omitempty"`
 

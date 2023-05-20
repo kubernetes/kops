@@ -115,6 +115,7 @@ func (blder *WebhookBuilder) setLogConstructor() {
 					blder.gvk.Kind, klog.KRef(req.Namespace, req.Name),
 					"namespace", req.Namespace, "name", req.Name,
 					"resource", req.Resource, "user", req.UserInfo.Username,
+					"requestID", req.UID,
 				)
 			}
 			return log

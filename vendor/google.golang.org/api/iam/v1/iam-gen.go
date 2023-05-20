@@ -1065,6 +1065,11 @@ type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 	// the 'https' scheme.
 	IssuerUri string `json:"issuerUri,omitempty"`
 
+	// WebSsoConfig: Required. Configuration for web single sign-on for the
+	// OIDC provider. Here, web sign-in refers to console sign-in and gcloud
+	// sign-in through the browser.
+	WebSsoConfig *GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig `json:"webSsoConfig,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "ClientId") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
@@ -1084,6 +1089,53 @@ type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderOidc) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidc
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig: Configuration
+// for web single sign-on for the OIDC provider.
+type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
+	// AssertionClaimsBehavior: Required. The behavior for how OIDC Claims
+	// are included in the `assertion` object used for attribute mapping and
+	// attribute condition.
+	//
+	// Possible values:
+	//   "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED" - No assertion claims
+	// behavior specified.
+	//   "ONLY_ID_TOKEN_CLAIMS" - Only include ID Token Claims.
+	AssertionClaimsBehavior string `json:"assertionClaimsBehavior,omitempty"`
+
+	// ResponseType: Required. The Response Type to request for in the OIDC
+	// Authorization Request for web sign-in.
+	//
+	// Possible values:
+	//   "RESPONSE_TYPE_UNSPECIFIED" - No Response Type specified.
+	//   "ID_TOKEN" - The `response_type=id_token` selection uses the
+	// Implicit Flow for web sign-in.
+	ResponseType string `json:"responseType,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "AssertionClaimsBehavior") to unconditionally include in API
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AssertionClaimsBehavior")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -3037,9 +3089,9 @@ type WorkforcePool struct {
 	// 256 characters.
 	Description string `json:"description,omitempty"`
 
-	// Disabled: Whether the pool is disabled. You cannot use a disabled
-	// pool to exchange tokens, or use existing tokens to access resources.
-	// If the pool is re-enabled, existing tokens grant access again.
+	// Disabled: Disables the workforce pool. You cannot use a disabled pool
+	// to exchange tokens, or use existing tokens to access resources. If
+	// the pool is re-enabled, existing tokens grant access again.
 	Disabled bool `json:"disabled,omitempty"`
 
 	// DisplayName: A user-specified display name of the pool in Google
@@ -3178,9 +3230,9 @@ type WorkforcePoolProvider struct {
 	// exceed 256 characters.
 	Description string `json:"description,omitempty"`
 
-	// Disabled: Whether the provider is disabled. You cannot use a disabled
-	// provider to exchange tokens. However, existing tokens still grant
-	// access.
+	// Disabled: Disables the workforce pool provider. You cannot use a
+	// disabled provider to exchange tokens. However, existing tokens still
+	// grant access.
 	Disabled bool `json:"disabled,omitempty"`
 
 	// DisplayName: A user-specified display name for the provider. Cannot
@@ -14960,6 +15012,7 @@ func (c *ProjectsServiceAccountsSignBlobCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
+	//   "deprecated": true,
 	//   "description": "**Note:** This method is deprecated. Use the [`signBlob`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signBlob) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a blob using the system-managed private key for a ServiceAccount.",
 	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signBlob",
 	//   "httpMethod": "POST",
@@ -15121,6 +15174,7 @@ func (c *ProjectsServiceAccountsSignJwtCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
+	//   "deprecated": true,
 	//   "description": "**Note:** This method is deprecated. Use the [`signJwt`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signJwt) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a JSON Web Token (JWT) using the system-managed private key for a ServiceAccount.",
 	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signJwt",
 	//   "httpMethod": "POST",

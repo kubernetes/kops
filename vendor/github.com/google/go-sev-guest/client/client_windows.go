@@ -24,7 +24,7 @@ import (
 type WindowsDevice struct{}
 
 // Open is not supported on Windows.
-func (d *WindowsDevice) Open(path string) error {
+func (_ *WindowsDevice) Open(_ string) error {
 	return fmt.Errorf("Windows is unsupported")
 }
 
@@ -34,12 +34,12 @@ func OpenDevice() (*WindowsDevice, error) {
 }
 
 // Close is not supported on Windows.
-func (d *WindowsDevice) Close() error {
+func (_ *WindowsDevice) Close() error {
 	return fmt.Errorf("Windows is unsupported")
 }
 
 // Ioctl is not supported on Windows.
-func (d *WindowsDevice) Ioctl(command uintptr, req any) (uintptr, error) {
+func (_ *WindowsDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 	// The GuestAttestation library on Windows is closed source.
 	return 0, fmt.Errorf("Windows is unsupported")
 }

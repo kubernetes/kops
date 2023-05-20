@@ -1225,7 +1225,12 @@ type Cluster struct {
 	// PrivateClusterConfig: Configuration for private cluster.
 	PrivateClusterConfig *PrivateClusterConfig `json:"privateClusterConfig,omitempty"`
 
-	// ReleaseChannel: Release channel configuration.
+	// ReleaseChannel: Release channel configuration. If left unspecified on
+	// cluster creation and a version is specified, the cluster is enrolled
+	// in the most mature release channel where the version is available
+	// (first checking STABLE, then REGULAR, and finally RAPID). Otherwise,
+	// if no release channel configuration and no version is specified, the
+	// cluster is enrolled in the REGULAR channel with its default version.
 	ReleaseChannel *ReleaseChannel `json:"releaseChannel,omitempty"`
 
 	// ResourceLabels: The resource labels for the cluster to use to
@@ -1438,6 +1443,9 @@ type ClusterUpdate struct {
 	// DesiredEnablePrivateEndpoint: Enable/Disable private endpoint for the
 	// cluster's master.
 	DesiredEnablePrivateEndpoint bool `json:"desiredEnablePrivateEndpoint,omitempty"`
+
+	// DesiredFleet: The desired fleet configuration for the cluster.
+	DesiredFleet *Fleet `json:"desiredFleet,omitempty"`
 
 	// DesiredGatewayApiConfig: The desired config of Gateway API on this
 	// cluster.
@@ -4980,11 +4988,11 @@ type Operation struct {
 	// format of this is a URI to the resource being modified (such as a
 	// cluster, node pool, or node). For node pool repairs, there may be
 	// multiple nodes being repaired, but only one will be the target.
-	// Examples: -
+	// Examples: - ##
 	// `https://container.googleapis.com/v1/projects/123/locations/us-central
-	// 1/clusters/my-cluster` -
+	// 1/clusters/my-cluster` ##
 	// `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/
-	// clusters/my-cluster/nodePools/my-np` -
+	// clusters/my-cluster/nodePools/my-np`
 	// `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/
 	// clusters/my-cluster/nodePools/my-np/node/my-node`
 	TargetLink string `json:"targetLink,omitempty"`
@@ -9359,6 +9367,7 @@ func (c *ProjectsLocationsClustersSetLocationsCall) Do(opts ...googleapi.CallOpt
 	}
 	return ret, nil
 	// {
+	//   "deprecated": true,
 	//   "description": "Sets the locations for a specific cluster. Deprecated. Use [projects.locations.clusters.update](https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters/update) instead.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setLocations",
 	//   "httpMethod": "POST",
@@ -14468,6 +14477,7 @@ func (c *ProjectsZonesClustersLocationsCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
+	//   "deprecated": true,
 	//   "description": "Sets the locations for a specific cluster. Deprecated. Use [projects.locations.clusters.update](https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters/update) instead.",
 	//   "flatPath": "v1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/locations",
 	//   "httpMethod": "POST",

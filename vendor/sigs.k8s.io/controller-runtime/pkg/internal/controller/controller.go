@@ -314,7 +314,11 @@ func (c *Controller) reconcileHandler(ctx context.Context, obj interface{}) {
 	result, err := c.Reconcile(ctx, req)
 	switch {
 	case err != nil:
-		c.Queue.AddRateLimited(req)
+		if errors.Is(err, reconcile.TerminalError(nil)) {
+			ctrlmetrics.TerminalReconcileErrors.WithLabelValues(c.Name).Inc()
+		} else {
+			c.Queue.AddRateLimited(req)
+		}
 		ctrlmetrics.ReconcileErrors.WithLabelValues(c.Name).Inc()
 		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelError).Inc()
 		log.Error(err, "Reconciler error")

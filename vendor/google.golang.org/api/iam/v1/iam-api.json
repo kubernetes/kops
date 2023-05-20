@@ -2284,6 +2284,7 @@
               ]
             },
             "signBlob": {
+              "deprecated": true,
               "description": "**Note:** This method is deprecated. Use the [`signBlob`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signBlob) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a blob using the system-managed private key for a ServiceAccount.",
               "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signBlob",
               "httpMethod": "POST",
@@ -2312,6 +2313,7 @@
               ]
             },
             "signJwt": {
+              "deprecated": true,
               "description": "**Note:** This method is deprecated. Use the [`signJwt`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signJwt) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a JSON Web Token (JWT) using the system-managed private key for a ServiceAccount.",
               "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signJwt",
               "httpMethod": "POST",
@@ -2749,7 +2751,7 @@
       }
     }
   },
-  "revision": "20230406",
+  "revision": "20230427",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AdminAuditData": {
@@ -3050,6 +3052,41 @@
         },
         "issuerUri": {
           "description": "Required. The OIDC issuer URI. Must be a valid URI using the 'https' scheme.",
+          "type": "string"
+        },
+        "webSsoConfig": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig",
+          "description": "Required. Configuration for web single sign-on for the OIDC provider. Here, web sign-in refers to console sign-in and gcloud sign-in through the browser."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig": {
+      "description": "Configuration for web single sign-on for the OIDC provider.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig",
+      "properties": {
+        "assertionClaimsBehavior": {
+          "description": "Required. The behavior for how OIDC Claims are included in the `assertion` object used for attribute mapping and attribute condition.",
+          "enum": [
+            "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED",
+            "ONLY_ID_TOKEN_CLAIMS"
+          ],
+          "enumDescriptions": [
+            "No assertion claims behavior specified.",
+            "Only include ID Token Claims."
+          ],
+          "type": "string"
+        },
+        "responseType": {
+          "description": "Required. The Response Type to request for in the OIDC Authorization Request for web sign-in.",
+          "enum": [
+            "RESPONSE_TYPE_UNSPECIFIED",
+            "ID_TOKEN"
+          ],
+          "enumDescriptions": [
+            "No Response Type specified.",
+            "The `response_type=id_token` selection uses the Implicit Flow for web sign-in."
+          ],
           "type": "string"
         }
       },
@@ -4089,7 +4126,7 @@
           "type": "string"
         },
         "disabled": {
-          "description": "Whether the pool is disabled. You cannot use a disabled pool to exchange tokens, or use existing tokens to access resources. If the pool is re-enabled, existing tokens grant access again.",
+          "description": "Disables the workforce pool. You cannot use a disabled pool to exchange tokens, or use existing tokens to access resources. If the pool is re-enabled, existing tokens grant access again.",
           "type": "boolean"
         },
         "displayName": {
@@ -4148,7 +4185,7 @@
           "type": "string"
         },
         "disabled": {
-          "description": "Whether the provider is disabled. You cannot use a disabled provider to exchange tokens. However, existing tokens still grant access.",
+          "description": "Disables the workforce pool provider. You cannot use a disabled provider to exchange tokens. However, existing tokens still grant access.",
           "type": "boolean"
         },
         "displayName": {
