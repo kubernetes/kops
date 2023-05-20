@@ -153,7 +153,7 @@ ClusterName: scw-minimal.k8s.local
 ConfigBase: memfs://tests/scw-minimal.k8s.local
 InstanceGroupName: nodes-fr-par-1
 InstanceGroupRole: Node
-NodeupConfigHash: Rmmv9+UkAzD94VY3zt14KpdcMhv8a3VmSvJ/ObP0SpY=
+NodeupConfigHash: MWSZsDqWyS1C8817sqQQ56g9jFp2uUO9nI46HqL/vqI=
 
 __EOF_KUBE_ENV
 

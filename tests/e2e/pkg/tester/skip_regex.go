@@ -79,6 +79,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
+		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
 	}
