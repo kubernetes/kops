@@ -34,9 +34,13 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	// defaultCNIAssetAmd64K8s_22 is the CNI tarball for k8s >= 1.22
+	// CNI tarball for k8s >= 1.22
 	defaultCNIAssetAmd64K8s_22 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz"
 	defaultCNIAssetArm64K8s_22 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz"
+
+	// CNI tarball for k8s >= 1.27
+	defaultCNIAssetAmd64K8s_27 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz"
+	defaultCNIAssetArm64K8s_27 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz"
 
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
@@ -72,10 +76,18 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		cniAssetURL = defaultCNIAssetAmd64K8s_22
+		if c.IsKubernetesLT("1.27") {
+			cniAssetURL = defaultCNIAssetAmd64K8s_22
+		} else {
+			cniAssetURL = defaultCNIAssetAmd64K8s_27
+		}
 		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
-		cniAssetURL = defaultCNIAssetArm64K8s_22
+		if c.IsKubernetesLT("1.27") {
+			cniAssetURL = defaultCNIAssetArm64K8s_22
+		} else {
+			cniAssetURL = defaultCNIAssetArm64K8s_27
+		}
 		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:
 		return nil, nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
