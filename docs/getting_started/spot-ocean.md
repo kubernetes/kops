@@ -178,7 +178,7 @@ metadata:
 ## Cluster Metadata Labels
 ```yaml
 # cluster.yaml
-# An Cluster with Ocean configuration.
+# A Cluster with Ocean configuration.
 ---
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
@@ -191,10 +191,10 @@ metadata:
 ```
 
 
-| Label | Description                                                           | Default |
-|---|-----------------------------------------------------------------------|---|
-| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value. | `count` |
-| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach that Ocean takes while launching nodes.              | `balanced` |
+| Label | Description                                                                        | Default |
+|---|---|---|
+| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count]. | `count` |
+| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.  | `balanced` |
 
 ## Documentation
 
