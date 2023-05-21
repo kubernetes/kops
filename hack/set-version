@@ -56,6 +56,7 @@ KOPS_CI_VERSION=`grep 'KOPS_CI_VERSION\s*=' kops-version.go  |  awk '{print $3}'
 echo "KOPS_RELEASE_VERSION ${KOPS_RELEASE_VERSION} -> ${NEW_RELEASE_VERSION}"
 echo "KOPS_CI_VERSION ${KOPS_CI_VERSION} -> ${NEW_CI_VERSION}"
 
+sed -i.bak -e "s@KOPS_COPY_TAG=${KOPS_RELEASE_VERSION}@KOPS_COPY_TAG=${NEW_RELEASE_VERSION}@g" Makefile
 sed -i.bak -e "s@DNS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@DNS_CONTROLLER_TAG=${NEW_RELEASE_VERSION}@g" Makefile
 sed -i.bak -e "s@KOPS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@KOPS_CONTROLLER_TAG=${NEW_RELEASE_VERSION}@g" Makefile
 sed -i.bak -e "s@KUBE_APISERVER_HEALTHCHECK_TAG=${KOPS_RELEASE_VERSION}@KUBE_APISERVER_HEALTHCHECK_TAG=${NEW_RELEASE_VERSION}@g" Makefile
@@ -68,6 +69,7 @@ git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/ad
 git grep -l registry.k8s.io/kops/kops-controller | xargs -I {} sed -i.bak -e "s@kops-controller:${KOPS_RELEASE_VERSION}@kops-controller:${NEW_RELEASE_VERSION}@g" {}
 git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/ | xargs -I {} sed -i.bak -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
 
+git grep -l registry.k8s.io/kops/kops-copy | xargs -I {} sed -i.bak -e "s@kops-copy:${KOPS_RELEASE_VERSION}@kops-copy:${NEW_RELEASE_VERSION}@g" {}
 git grep -l registry.k8s.io/kops/kube-apiserver-healthcheck | xargs -I {} sed -i.bak -e "s@kube-apiserver-healthcheck:${KOPS_RELEASE_VERSION}@kube-apiserver-healthcheck:${NEW_RELEASE_VERSION}@g" {}
 
 git grep -l "version..${KOPS_RELEASE_VERSION}" upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/ | xargs -I {} sed -i.bak -e "s@version: ${KOPS_RELEASE_VERSION}@version: ${NEW_RELEASE_VERSION}@g" {}
