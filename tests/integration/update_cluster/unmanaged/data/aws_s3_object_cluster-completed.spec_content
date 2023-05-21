@@ -49,7 +49,7 @@ spec:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://clusters.example.com/unmanaged.example.com/backups/etcd/events
     etcdMembers:
@@ -61,7 +61,7 @@ spec:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
     name: events
-    version: 3.5.7
+    version: 3.5.9
   externalDns:
     provider: dns-controller
   iam:

@@ -142,14 +142,14 @@ etcdClusters:
       env:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
-    version: 3.5.7
+    version: 3.5.9
   main:
     manager:
       backupRetentionDays: 90
       env:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
-    version: 3.5.7
+    version: 3.5.9
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false

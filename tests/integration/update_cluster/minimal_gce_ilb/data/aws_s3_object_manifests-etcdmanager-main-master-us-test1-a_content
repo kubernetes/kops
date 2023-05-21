@@ -80,11 +80,11 @@ spec:
       name: bin
   - args:
     - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.7/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.7/etcdctl
+    - cp /usr/local/bin/etcd /opt/etcd-v3.5.9/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.9/etcdctl
     command:
     - /bin/sh
-    image: registry.k8s.io/etcd:3.5.7-0
-    name: init-etcd-3-5-7
+    image: registry.k8s.io/etcd:3.5.9-0
+    name: init-etcd-3-5-9
     resources: {}
     volumeMounts:
     - mountPath: /opt
