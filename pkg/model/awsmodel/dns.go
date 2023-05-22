@@ -34,7 +34,7 @@ type DNSModelBuilder struct {
 var _ fi.CloudupModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error {
-	if b.Cluster.IsGossip() || b.Cluster.UsesNoneDNS() {
+	if !b.Cluster.PublishesDNSRecords() {
 		return nil
 	}
 
@@ -73,7 +73,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error 
 
 func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// Add a HostedZone if we are going to publish a dns record that depends on it
-	if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+	if b.Cluster.PublishesDNSRecords() {
 		if err := b.ensureDNSZone(c); err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		// This will point our external DNS record to the load balancer, and put the
 		// pieces together for kubectl to work
 
-		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+		if b.Cluster.PublishesDNSRecords() {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		// This will point the internal API DNS record to the load balancer.
 		// This means kubelet connections go via the load balancer and are more HA.
 
-		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+		if b.Cluster.PublishesDNSRecords() {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -155,7 +155,7 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		// is similar to others, but I would like to keep it on it's own in case we need
 		// to change anything.
 
-		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+		if b.Cluster.PublishesDNSRecords() {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}

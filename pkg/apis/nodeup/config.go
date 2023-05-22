@@ -114,6 +114,10 @@ type Config struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+
+	// Discovery methods
+	UsesLegacyGossip bool `json:"usesLegacyGossip"`
+	UsesNoneDNS      bool `json:"usesNoneDNS"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
@@ -198,6 +202,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
 		ContainerRuntime: cluster.Spec.ContainerRuntime,
 		Docker:           cluster.Spec.Docker,
+		UsesLegacyGossip: cluster.UsesLegacyGossip(),
+		UsesNoneDNS:      cluster.UsesNoneDNS(),
 	}
 
 	bootConfig := BootConfig{
@@ -302,7 +308,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.HasAPIServer() || cluster.IsGossip() {
+	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 

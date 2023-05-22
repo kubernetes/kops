@@ -179,7 +179,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 
 		// credentials needed always in control-plane and when using gossip also in nodes
 		passEnvs := false
-		if b.ig.IsControlPlane() || cluster.IsGossip() {
+		if b.ig.IsControlPlane() || cluster.UsesLegacyGossip() {
 			passEnvs = true
 		}
 		// Pass in required credentials when using user-defined swift endpoint
@@ -204,7 +204,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.IsGossip()) {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken

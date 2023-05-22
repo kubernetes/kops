@@ -158,6 +158,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
 		}
 	}
+	// Hack to force usage of NodeupConfig
 	c.cluster.Name = "use NodeupConfig.ClusterName instead"
 
 	var nodeupConfig nodeup.Config

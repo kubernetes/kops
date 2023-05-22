@@ -56,7 +56,7 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 	case kops.CloudProviderGCE:
 		// We can use cloud-discovery here.
 	default:
-		if cluster.IsGossip() {
+		if cluster.UsesLegacyGossip() {
 			return false
 		}
 	}

@@ -93,7 +93,7 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 }
 
 func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
-	if cluster.IsGossip() || cluster.UsesPrivateDNS() || cluster.UsesNoneDNS() {
+	if !cluster.PublishesDNSRecords() || cluster.UsesPrivateDNS() {
 		klog.V(2).Infof("Skipping DNS validation for non-public DNS")
 		return nil
 	}
@@ -137,7 +137,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
 	// Nothing to do for Gossip clusters and clusters without DNS
-	if cluster.IsGossip() || cluster.UsesNoneDNS() {
+	if !cluster.PublishesDNSRecords() {
 		return nil
 	}
 

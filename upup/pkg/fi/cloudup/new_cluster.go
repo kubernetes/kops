@@ -1271,7 +1271,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup.Spec.MinSize = fi.PtrTo(int32(1))
 			bastions = append(bastions, bastionGroup)
 
-			if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+			if cluster.PublishesDNSRecords() {
 				cluster.Spec.Networking.Topology.Bastion = &api.BastionSpec{
 					PublicName: "bastion." + cluster.Name,
 				}
@@ -1323,7 +1323,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
-		if cluster.IsGossip() {
+		if cluster.UsesLegacyGossip() {
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
 		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
@@ -1356,7 +1356,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else {
 		switch cluster.Spec.Networking.Topology.ControlPlane {
 		case api.TopologyPublic:
-			if cluster.IsGossip() || cluster.UsesNoneDNS() {
+			if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {

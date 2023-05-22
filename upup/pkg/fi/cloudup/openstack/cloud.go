@@ -367,7 +367,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 	}
 
 	if cluster != nil {
-		hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()
+		hasDNS := cluster.PublishesDNSRecords()
 		tags := map[string]string{
 			TagClusterName: cluster.Name,
 		}

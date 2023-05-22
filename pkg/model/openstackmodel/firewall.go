@@ -511,7 +511,7 @@ func (b *FirewallModelBuilder) addKopsControllerRules(c *fi.CloudupModelBuilderC
 
 // addProtokubeRules - Add rules for protokube if gossip DNS is enabled
 func (b *FirewallModelBuilder) addProtokubeRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	if b.Cluster.IsGossip() {
+	if b.Cluster.UsesLegacyGossip() {
 		masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]
