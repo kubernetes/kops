@@ -902,6 +902,15 @@ func (c *Cluster) UsesNoneDNS() bool {
 	if c.Spec.Networking.Topology != nil && c.Spec.Networking.Topology.DNS == DNSTypeNone {
 		return true
 	}
+
+	if dns.IsGossipClusterName(c.Name) {
+		// Default implementation of k8s.local clusters is now "dns=none" for a few clouds
+		switch c.Spec.GetCloudProvider() {
+		case CloudProviderDO, CloudProviderHetzner, CloudProviderGCE:
+			return true
+		}
+	}
+
 	return false
 }
 
