@@ -135,7 +135,7 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		generationName := fmt.Sprintf("%d-%d", cluster.GetGeneration(), ig.Generation)
 
 		status := cloudinstances.CloudInstanceStatusUpToDate
-		if generationName != observedName {
+		if generationName != observedName || server.Status == errorStatus {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
 		cm, err := cg.NewCloudInstance(instanceId, status, nodeMap[instanceId])
