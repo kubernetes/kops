@@ -30,27 +30,7 @@ var _ fi.NodeupModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
 func (b *CommonBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	// Based on https://github.com/containernetworking/plugins/releases/tag/v0.7.5
-	assets := []string{
-		"bridge",
-		"dhcp",
-		"flannel",
-		"host-device",
-		"host-local",
-		"ipvlan",
-		"loopback",
-		"macvlan",
-		"portmap",
-		"ptp",
-		"tuning",
-		"vlan",
-		"bandwidth",
-		"firewall",
-		"sbr",
-		"static",
-	}
-
-	if err := b.AddCNIBinAssets(c, assets); err != nil {
+	if err := b.AddCNIBinAssets(c); err != nil {
 		return err
 	}
 

@@ -589,31 +589,17 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
 }
 
-func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext, assetNames []string) error {
-	for _, assetName := range assetNames {
-		re, err := regexp.Compile(fmt.Sprintf("^%s$", regexp.QuoteMeta(assetName)))
-		if err != nil {
-			return err
-		}
-		if err := b.addCNIBinAsset(c, re); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) error {
+	f := b.Assets.FindMatches(regexp.MustCompile(".*"))
 
-func (b *NodeupModelContext) addCNIBinAsset(c *fi.NodeupModelBuilderContext, assetPath *regexp.Regexp) error {
-	name, res, err := b.Assets.FindMatch(assetPath)
-	if err != nil {
-		return err
+	for name, res := range f {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.CNIBinDir(), name),
+			Contents: res,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.PtrTo("0755"),
+		})
 	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(b.CNIBinDir(), name),
-		Contents: res,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.PtrTo("0755"),
-	})
 
 	return nil
 }
