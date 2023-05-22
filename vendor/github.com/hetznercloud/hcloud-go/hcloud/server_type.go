@@ -20,7 +20,9 @@ type ServerType struct {
 	StorageType  StorageType
 	CPUType      CPUType
 	Architecture Architecture
-	Pricings     []ServerTypeLocationPricing
+	// IncludedTraffic is the free traffic per month in bytes
+	IncludedTraffic int64
+	Pricings        []ServerTypeLocationPricing
 }
 
 // StorageType specifies the type of storage.

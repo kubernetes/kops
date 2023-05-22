@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/klog/v2"
+
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
 )
@@ -163,7 +164,6 @@ func (wh *Webhook) Handle(ctx context.Context, req Request) (response Response) 
 	}
 
 	reqLog := wh.getLogger(&req)
-	reqLog = reqLog.WithValues("requestID", req.UID)
 	ctx = logf.IntoContext(ctx, reqLog)
 
 	resp := wh.Handler.Handle(ctx, req)
@@ -196,6 +196,7 @@ func DefaultLogConstructor(base logr.Logger, req *Request) logr.Logger {
 		return base.WithValues("object", klog.KRef(req.Namespace, req.Name),
 			"namespace", req.Namespace, "name", req.Name,
 			"resource", req.Resource, "user", req.UserInfo.Username,
+			"requestID", req.UID,
 		)
 	}
 	return base

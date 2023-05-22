@@ -25,7 +25,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/internal/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -37,7 +36,20 @@ import (
 
 // Options are the arguments for creating a new Controller.
 type Options struct {
-	config.Controller
+	// MaxConcurrentReconciles is the maximum number of concurrent Reconciles which can be run. Defaults to 1.
+	MaxConcurrentReconciles int
+
+	// CacheSyncTimeout refers to the time limit set to wait for syncing caches.
+	// Defaults to 2 minutes if not set.
+	CacheSyncTimeout time.Duration
+
+	// RecoverPanic indicates whether the panic caused by reconcile should be recovered.
+	// Defaults to the Controller.RecoverPanic setting from the Manager if unset.
+	RecoverPanic *bool
+
+	// NeedLeaderElection indicates whether the controller needs to use leader election.
+	// Defaults to true, which means the controller will use leader election.
+	NeedLeaderElection *bool
 
 	// Reconciler reconciles an object
 	Reconciler reconcile.Reconciler
@@ -116,11 +128,19 @@ func NewUnmanaged(name string, mgr manager.Manager, options Options) (Controller
 	}
 
 	if options.MaxConcurrentReconciles <= 0 {
-		options.MaxConcurrentReconciles = 1
+		if mgr.GetControllerOptions().MaxConcurrentReconciles > 0 {
+			options.MaxConcurrentReconciles = mgr.GetControllerOptions().MaxConcurrentReconciles
+		} else {
+			options.MaxConcurrentReconciles = 1
+		}
 	}
 
 	if options.CacheSyncTimeout == 0 {
-		options.CacheSyncTimeout = 2 * time.Minute
+		if mgr.GetControllerOptions().CacheSyncTimeout != 0 {
+			options.CacheSyncTimeout = mgr.GetControllerOptions().CacheSyncTimeout
+		} else {
+			options.CacheSyncTimeout = 2 * time.Minute
+		}
 	}
 
 	if options.RateLimiter == nil {
@@ -129,6 +149,10 @@ func NewUnmanaged(name string, mgr manager.Manager, options Options) (Controller
 
 	if options.RecoverPanic == nil {
 		options.RecoverPanic = mgr.GetControllerOptions().RecoverPanic
+	}
+
+	if options.NeedLeaderElection == nil {
+		options.NeedLeaderElection = mgr.GetControllerOptions().NeedLeaderElection
 	}
 
 	// Create controller with dependencies set

@@ -44,6 +44,9 @@ type CertWatcher struct {
 
 	certPath string
 	keyPath  string
+
+	// callback is a function to be invoked when the certificate changes.
+	callback func(tls.Certificate)
 }
 
 // New returns a new CertWatcher watching the given certificate and key.
@@ -66,6 +69,17 @@ func New(certPath, keyPath string) (*CertWatcher, error) {
 	}
 
 	return cw, nil
+}
+
+// RegisterCallback registers a callback to be invoked when the certificate changes.
+func (cw *CertWatcher) RegisterCallback(callback func(tls.Certificate)) {
+	cw.Lock()
+	defer cw.Unlock()
+	// If the current certificate is not nil, invoke the callback immediately.
+	if cw.currentCert != nil {
+		callback(*cw.currentCert)
+	}
+	cw.callback = callback
 }
 
 // GetCertificate fetches the currently loaded certificate, which may be nil.
@@ -146,6 +160,14 @@ func (cw *CertWatcher) ReadCertificate() error {
 
 	log.Info("Updated current TLS certificate")
 
+	// If a callback is registered, invoke it with the new certificate.
+	cw.RLock()
+	defer cw.RUnlock()
+	if cw.callback != nil {
+		go func() {
+			cw.callback(cert)
+		}()
+	}
 	return nil
 }
 

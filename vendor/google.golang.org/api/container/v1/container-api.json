@@ -447,6 +447,7 @@
                   ]
                 },
                 "setLocations": {
+                  "deprecated": true,
                   "description": "Sets the locations for a specific cluster. Deprecated. Use [projects.locations.clusters.update](https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters/update) instead.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setLocations",
                   "httpMethod": "POST",
@@ -1517,6 +1518,7 @@
                   ]
                 },
                 "locations": {
+                  "deprecated": true,
                   "description": "Sets the locations for a specific cluster. Deprecated. Use [projects.locations.clusters.update](https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters/update) instead.",
                   "flatPath": "v1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/locations",
                   "httpMethod": "POST",
@@ -2487,7 +2489,7 @@
       }
     }
   },
-  "revision": "20230404",
+  "revision": "20230501",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3084,7 +3086,7 @@
         },
         "releaseChannel": {
           "$ref": "ReleaseChannel",
-          "description": "Release channel configuration."
+          "description": "Release channel configuration. If left unspecified on cluster creation and a version is specified, the cluster is enrolled in the most mature release channel where the version is available (first checking STABLE, then REGULAR, and finally RAPID). Otherwise, if no release channel configuration and no version is specified, the cluster is enrolled in the REGULAR channel with its default version."
         },
         "resourceLabels": {
           "additionalProperties": {
@@ -3258,6 +3260,10 @@
         "desiredEnablePrivateEndpoint": {
           "description": "Enable/Disable private endpoint for the cluster's master.",
           "type": "boolean"
+        },
+        "desiredFleet": {
+          "$ref": "Fleet",
+          "description": "The desired fleet configuration for the cluster."
         },
         "desiredGatewayApiConfig": {
           "$ref": "GatewayAPIConfig",
@@ -5278,7 +5284,7 @@
           "type": "string"
         },
         "targetLink": {
-          "description": "Server-defined URI for the target of the operation. The format of this is a URI to the resource being modified (such as a cluster, node pool, or node). For node pool repairs, there may be multiple nodes being repaired, but only one will be the target. Examples: - `https://container.googleapis.com/v1/projects/123/locations/us-central1/clusters/my-cluster` - `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/clusters/my-cluster/nodePools/my-np` - `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/clusters/my-cluster/nodePools/my-np/node/my-node`",
+          "description": "Server-defined URI for the target of the operation. The format of this is a URI to the resource being modified (such as a cluster, node pool, or node). For node pool repairs, there may be multiple nodes being repaired, but only one will be the target. Examples: - ## `https://container.googleapis.com/v1/projects/123/locations/us-central1/clusters/my-cluster` ## `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/clusters/my-cluster/nodePools/my-np` `https://container.googleapis.com/v1/projects/123/zones/us-central1-c/clusters/my-cluster/nodePools/my-np/node/my-node`",
           "type": "string"
         },
         "zone": {

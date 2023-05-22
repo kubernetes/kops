@@ -136,7 +136,7 @@ func (r *SnpReportReqABI) Pointer() unsafe.Pointer {
 }
 
 // Finish is a no-op.
-func (r *SnpReportReqABI) Finish(b BinaryConvertible) error { return nil }
+func (r *SnpReportReqABI) Finish(_ BinaryConvertible) error { return nil }
 
 // ABI returns the same object since it doesn't need a separate representation across the interface.
 func (r *SnpReportRespABI) ABI() BinaryConversion { return r }
@@ -147,7 +147,7 @@ func (r *SnpReportRespABI) Pointer() unsafe.Pointer {
 }
 
 // Finish checks the status of the message and translates it to a Golang error.
-func (r *SnpReportRespABI) Finish(b BinaryConvertible) error {
+func (r *SnpReportRespABI) Finish(_ BinaryConvertible) error {
 	if r.Status != 0 {
 		switch r.Status {
 		case 0x16: // Value from MSG_REPORT_RSP specification in SNP API.

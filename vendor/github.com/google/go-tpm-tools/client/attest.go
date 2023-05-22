@@ -39,6 +39,9 @@ type AttestOpts struct {
 	// attestation protocols:
 	// https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.70.4562&rep=rep1&type=pdf
 	Nonce []byte
+	// TCG Event Log to add to the attestation.
+	// If not specified then it take Event Log by calling GetEventLog().
+	TCGEventLog []byte
 	// TCG Canonical Event Log to add to the attestation.
 	// Currently, we only support PCR replay for PCRs orthogonal to those in the
 	// firmware event log, where PCRs 0-9 and 14 are often measured. If the two
@@ -236,8 +239,12 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 		}
 		attestation.Quotes = append(attestation.Quotes, quote)
 	}
-	if attestation.EventLog, err = GetEventLog(k.rw); err != nil {
-		return nil, fmt.Errorf("failed to retrieve TCG Event Log: %w", err)
+	if opts.TCGEventLog == nil {
+		if attestation.EventLog, err = GetEventLog(k.rw); err != nil {
+			return nil, fmt.Errorf("failed to retrieve TCG Event Log: %w", err)
+		}
+	} else {
+		attestation.EventLog = opts.TCGEventLog
 	}
 	if len(opts.CanonicalEventLog) != 0 {
 		attestation.CanonicalEventLog = opts.CanonicalEventLog

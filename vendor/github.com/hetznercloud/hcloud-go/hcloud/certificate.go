@@ -260,7 +260,7 @@ func (o CertificateCreateOpts) validateUploaded() error {
 	return nil
 }
 
-// Create creates a new certificate uploaded certificate.
+// Create creates a new uploaded certificate.
 //
 // Create returns an error for certificates of any other type. Use
 // CreateCertificate to create such certificates.

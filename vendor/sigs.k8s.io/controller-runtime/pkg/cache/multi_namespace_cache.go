@@ -31,9 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
-// NewCacheFunc - Function for creating a new cache from the options and a rest config.
-type NewCacheFunc func(config *rest.Config, opts Options) (Cache, error)
-
 // a new global namespaced cache to handle cluster scoped resources.
 const globalCache = "_cluster-scope"
 
@@ -44,7 +41,7 @@ const globalCache = "_cluster-scope"
 // to be used for excluding namespaces, this is better done via a Predicate. Also note that
 // you may face performance issues when using this with a high number of namespaces.
 //
-// Deprecated: Use cache.Options.View.Namespaces instead.
+// Deprecated: Use cache.Options.Namespaces instead.
 func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
 	return func(config *rest.Config, opts Options) (Cache, error) {
 		opts.Namespaces = namespaces

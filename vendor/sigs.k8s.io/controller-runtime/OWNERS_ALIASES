@@ -9,14 +9,14 @@ aliases:
 
   # non-admin folks who have write-access and can approve any PRs in the repo
   controller-runtime-maintainers:
-  - vincepri
+  - alvaroaleman
   - joelanford
+  - sbueringer
+  - vincepri
 
   # non-admin folks who can approve any PRs in the repo
   controller-runtime-approvers:
-  - alvaroaleman
   - fillzpp
-  - sbueringer
 
   # folks who can review and LGTM any PRs in the repo (doesn't
   # include approvers & admins -- those count too via the OWNERS
