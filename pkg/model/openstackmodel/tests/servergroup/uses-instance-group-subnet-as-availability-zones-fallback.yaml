@@ -71,6 +71,7 @@ ServerGroup:
   Name: cluster-node
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""

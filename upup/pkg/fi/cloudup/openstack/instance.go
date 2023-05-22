@@ -101,10 +101,6 @@ func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID stri
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		if server != nil {
-			// Note: this will delete the server from the last try, even if it is now ACTIVE or still in BUILD state
-			c.DeleteInstanceWithID(server.ID)
-		}
 
 		v, err := servers.Create(c.ComputeClient(), opt).Extract()
 		if err != nil {
@@ -131,7 +127,7 @@ func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID stri
 
 		err = waitForStatusActive(c, server.ID, nil)
 		if err != nil {
-			return false, fmt.Errorf("error while waiting for server '%s' to become '%s': %v", server.ID, activeStatus, err)
+			return true, err
 		}
 
 		return true, nil

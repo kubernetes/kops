@@ -109,6 +109,7 @@ ServerGroup:
   Name: cluster-master-a
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -185,6 +186,7 @@ ServerGroup:
   Name: cluster-master-b
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -261,6 +263,7 @@ ServerGroup:
   Name: cluster-master-c
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -334,6 +337,7 @@ ServerGroup:
   Name: cluster-node-a
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -407,6 +411,7 @@ ServerGroup:
   Name: cluster-node-b
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -480,6 +485,7 @@ ServerGroup:
   Name: cluster-node-c
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""

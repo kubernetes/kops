@@ -101,6 +101,7 @@ ServerGroup:
   Name: tom-software-dev-playground-real33-k8s-local-master
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -180,6 +181,7 @@ ServerGroup:
   Name: tom-software-dev-playground-real33-k8s-local-node
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
