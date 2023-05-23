@@ -46,3 +46,5 @@ containerdConfig:
   logLevel: info
 docker:
   logLevel: INFO
+usesLegacyGossip: false
+usesNoneDNS: false

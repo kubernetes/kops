@@ -177,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: yq7I3HPq2ua8nT+68Pg4GNn1Gjm5hsL1rHCe58oHCG0=
+NodeupConfigHash: 0iyC5pvvzNYY6UjiSI811A2x9oZK+mBc2NTj0gM3DGw=
 
 __EOF_KUBE_ENV
 

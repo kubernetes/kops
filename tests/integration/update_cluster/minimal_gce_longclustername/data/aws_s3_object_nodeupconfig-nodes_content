@@ -62,3 +62,5 @@ docker:
   skipInstall: true
 multizone: true
 nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
+usesLegacyGossip: false
+usesNoneDNS: false

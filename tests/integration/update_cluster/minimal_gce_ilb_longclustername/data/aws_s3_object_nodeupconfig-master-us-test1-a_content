@@ -293,3 +293,5 @@ nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
+usesLegacyGossip: false
+usesNoneDNS: false

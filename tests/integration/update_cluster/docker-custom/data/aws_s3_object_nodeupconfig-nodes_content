@@ -74,3 +74,5 @@ docker:
     urlArm64: https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
   storage: overlay2,overlay,aufs
   version: 20.10.17
+usesLegacyGossip: false
+usesNoneDNS: false
