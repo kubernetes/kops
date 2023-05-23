@@ -147,7 +147,10 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 			cm.MachineType = server.Flavor["original_name"].(string)
 		}
 
-		ip, _ := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
+		ip, err := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
+		if err != nil {
+			klog.Warningf("Unable to find fixed ip for %s: %v", server.Name, err)
+		}
 
 		cm.PrivateIP = ip
 
