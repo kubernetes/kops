@@ -129,7 +129,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["GossipEnabled"] = func() bool {
-		if cluster.IsGossip() {
+		if cluster.UsesLegacyGossip() {
 			return true
 		}
 		return false
@@ -553,7 +553,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		}
 	}
 
-	if cluster.IsGossip() {
+	if cluster.UsesLegacyGossip() {
 		argv = append(argv, "--dns=gossip")
 
 		// Configuration specifically for the DNS controller gossip
@@ -747,7 +747,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.EnableCloudIPAM = true
 	}
 
-	if cluster.IsGossip() {
+	if cluster.UsesLegacyGossip() {
 		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
 			Enabled: true,
 		}

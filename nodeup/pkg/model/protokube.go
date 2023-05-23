@@ -45,7 +45,7 @@ var _ fi.NodeupModelBuilder = &ProtokubeBuilder{}
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
-	if !t.IsMaster && !t.IsGossip {
+	if !t.IsMaster && !t.UsesLegacyGossip() {
 		klog.V(2).Infof("skipping the provisioning of protokube on the nodes")
 		return nil
 	}
@@ -199,8 +199,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 		// argv = append(argv, "--zone=*/*")
 	}
 
-	if t.IsGossip {
-		klog.Warningf("Cluster name %q implies gossip DNS", t.NodeupConfig.ClusterName)
+	if t.UsesLegacyGossip() {
+		klog.Warningf("using (legacy) gossip DNS", t.NodeupConfig.ClusterName)
 		f.Gossip = fi.PtrTo(true)
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol

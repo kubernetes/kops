@@ -294,3 +294,5 @@ nodeTags: minimal-example-com-k8s-io-role-node
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
+usesLegacyGossip: false
+usesNoneDNS: false

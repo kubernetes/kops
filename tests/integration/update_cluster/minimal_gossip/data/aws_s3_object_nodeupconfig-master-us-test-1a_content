@@ -295,3 +295,5 @@ staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
 useInstanceIDForNodeName: true
+usesLegacyGossip: true
+usesNoneDNS: false

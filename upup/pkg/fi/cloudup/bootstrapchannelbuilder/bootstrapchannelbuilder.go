@@ -502,8 +502,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			}
 
 			// Generate dns-controller ServiceAccount IAM permissions.
-			// Gossip clsuters do not require any cloud permissions.
-			if b.UseServiceAccountExternalPermissions() && !b.Cluster.IsGossip() {
+			// Gossip and dns=none clusters do not require any cloud permissions.
+			if b.UseServiceAccountExternalPermissions() && b.Cluster.PublishesDNSRecords() {
 				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 			}
 		} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {

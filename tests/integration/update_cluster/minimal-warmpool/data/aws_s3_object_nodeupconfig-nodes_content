@@ -63,6 +63,8 @@ containerdConfig:
 docker:
   skipInstall: true
 useInstanceIDForNodeName: true
+usesLegacyGossip: false
+usesNoneDNS: false
 warmPoolImages:
 - quay.io/cilium/cilium:v1.12.5
 - quay.io/cilium/operator:v1.12.5

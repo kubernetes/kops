@@ -58,3 +58,5 @@ containerdConfig:
   version: 1.4.13
 docker:
   skipInstall: true
+usesLegacyGossip: false
+usesNoneDNS: false

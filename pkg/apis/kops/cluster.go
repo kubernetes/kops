@@ -870,7 +870,14 @@ func (c *Cluster) IsSharedAzureRouteTable() bool {
 	return c.Spec.CloudProvider.Azure.RouteTableName != ""
 }
 
-func (c *Cluster) IsGossip() bool {
+func (c *Cluster) PublishesDNSRecords() bool {
+	if c.UsesNoneDNS() || dns.IsGossipClusterName(c.Name) {
+		return false
+	}
+	return true
+}
+
+func (c *Cluster) UsesLegacyGossip() bool {
 	if c.UsesNoneDNS() || !dns.IsGossipClusterName(c.Name) {
 		return false
 	}

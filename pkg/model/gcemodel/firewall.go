@@ -115,7 +115,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
 			},
 		}
-		if b.Cluster.IsGossip() {
+		if b.Cluster.UsesLegacyGossip() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))

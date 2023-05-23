@@ -260,7 +260,7 @@ ClusterName: privateweave.example.com
 ConfigBase: memfs://clusters.example.com/privateweave.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: XcYHWLW61sNZUp0jugbs7rqyhJTMZ7trku2Q3pfA+ao=
+NodeupConfigHash: hxBY39lKI4eo119+5Wdid/+qy/X2MNMJUe4BZnz2C78=
 
 __EOF_KUBE_ENV
 

@@ -220,7 +220,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err

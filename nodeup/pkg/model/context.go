@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -70,8 +69,11 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
-	// IsGossip is true if the cluster runs Gossip DNS.
-	IsGossip bool
+	// usesLegacyGossip is true if the cluster runs (legacy) Gossip DNS.
+	usesLegacyGossip bool
+
+	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
+	usesNoneDNS bool
 
 	kubernetesVersion   semver.Version
 	bootstrapCerts      map[string]*nodetasks.BootstrapCert
@@ -103,9 +105,8 @@ func (c *NodeupModelContext) Init() error {
 		c.HasAPIServer = true
 	}
 
-	if !c.Cluster.UsesNoneDNS() && dns.IsGossipClusterName(c.NodeupConfig.ClusterName) {
-		c.IsGossip = true
-	}
+	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
+	c.usesLegacyGossip = c.NodeupConfig.UsesLegacyGossip
 
 	return nil
 }
@@ -707,4 +708,19 @@ func (c *NodeupModelContext) findFileAsset(path string) *kops.FileAssetSpec {
 		}
 	}
 	return nil
+}
+
+func (c *NodeupModelContext) UsesLegacyGossip() bool {
+	return c.usesLegacyGossip
+}
+
+func (c *NodeupModelContext) UsesNoneDNS() bool {
+	return c.usesNoneDNS
+}
+
+func (c *NodeupModelContext) PublishesDNSRecords() bool {
+	if c.UsesLegacyGossip() || c.UsesNoneDNS() {
+		return false
+	}
+	return true
 }

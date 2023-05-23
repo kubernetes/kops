@@ -306,7 +306,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
 		return fmt.Errorf("DNSZone not set")
 	}
 
@@ -501,7 +501,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext.SSHPublicKeys = sshPublicKeys
 	modelContext.Region = cloud.Region()
 
-	if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+	if cluster.PublishesDNSRecords() {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
 			return err
@@ -794,7 +794,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
 
-	if cluster.IsGossip() || cluster.UsesNoneDNS() {
+	if !cluster.PublishesDNSRecords() {
 		shouldPrecreateDNS = false
 	}
 
@@ -1325,7 +1325,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		return nil, nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
-	useGossip := cluster.IsGossip()
+	usesLegacyGossip := cluster.UsesLegacyGossip()
 	isMaster := role == kops.InstanceGroupRoleControlPlane
 	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
 
@@ -1399,7 +1399,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			}
 		}
 
-		if isMaster || useGossip {
+		if isMaster || usesLegacyGossip {
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
 					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
