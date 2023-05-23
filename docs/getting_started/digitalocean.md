@@ -68,7 +68,7 @@ Ensure the master-count is odd-numbered. A load balancer is created dynamically 
 
 ```bash
 # debian (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
-kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
+kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --dns none --ssh-public-key=~/.ssh/id_rsa.pub --yes
 
 # to delete a cluster - this will also delete the load balancer associated with the cluster.
 kops delete cluster dev5.k8s.local --yes
