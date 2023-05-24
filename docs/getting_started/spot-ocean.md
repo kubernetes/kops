@@ -146,7 +146,7 @@ metadata:
   ...
 ```
 
-## Metadata Labels
+## InstanceGroup Metadata Labels
 
 | Label | Description | Default |
 |---|---|---|
@@ -174,6 +174,27 @@ metadata:
 | `spotinst.io/autoscaler-resource-limits-max-vcpu` | Specify the maximum number of virtual CPUs that can be allocated to the cluster. | none |
 | `spotinst.io/autoscaler-resource-limits-max-memory` | Specify the maximum amount of total physical memory (in GiB units) that can be allocated to the cluster. | none |
 | `spotinst.io/restrict-scale-down` | Specify whether the scale-down activities should be restricted. | none |
+
+## Cluster Metadata Labels
+```yaml
+# cluster.yaml
+# A Cluster with Ocean configuration.
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: "example"
+  labels:
+    spotinst.io/strategy-cluster-spread-nodes-by: "count"
+    spotinst.io/strategy-cluster-orientation-availability-vs-cost: "balanced"    
+  ...
+```
+
+
+| Label | Description                                                                        | Default |
+|---|---|---|
+| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count]. | `count` |
+| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.  | `balanced` |
 
 ## Documentation
 

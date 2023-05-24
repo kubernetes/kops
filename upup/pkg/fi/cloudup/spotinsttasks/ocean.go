@@ -64,6 +64,8 @@ type Ocean struct {
 	RootVolumeOpts           *RootVolumeOpts
 	AutoScalerOpts           *AutoScalerOpts
 	InstanceMetadataOptions  *InstanceMetadataOptions
+	SpreadNodesBy            *string
+	AvailabilityVsCost       *string
 }
 
 var (
@@ -163,6 +165,10 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 
 			if strategy.GracePeriod != nil {
 				actual.GracePeriod = fi.PtrTo(int64(fi.ValueOf(strategy.GracePeriod)))
+			}
+			actual.SpreadNodesBy = strategy.SpreadNodesBy
+			if strategy.ClusterOrientation != nil && strategy.ClusterOrientation.AvailabilityVsCost != nil {
+				actual.AvailabilityVsCost = fi.PtrTo(fi.ValueOf(strategy.ClusterOrientation.AvailabilityVsCost))
 			}
 		}
 	}
@@ -401,6 +407,11 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 		if e.GracePeriod != nil {
 			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
+		}
+		ocean.Strategy.SetSpreadNodesBy(e.SpreadNodesBy)
+		if e.AvailabilityVsCost != nil {
+			orientation := new(aws.ClusterOrientation)
+			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(fi.PtrTo(*e.AvailabilityVsCost)))
 		}
 	}
 
@@ -677,6 +688,29 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			changes.GracePeriod = nil
 			changed = true
 		}
+
+		//Spread nodes by.
+		if changes.SpreadNodesBy != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+			ocean.Strategy.SetSpreadNodesBy(e.SpreadNodesBy)
+			changes.SpreadNodesBy = nil
+			changed = true
+		}
+
+		// Availability vs cost.
+		if changes.AvailabilityVsCost != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+
+			orientation := new(aws.ClusterOrientation)
+			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(fi.PtrTo(*changes.AvailabilityVsCost)))
+			changes.AvailabilityVsCost = nil
+			changed = true
+		}
+
 	}
 
 	// Compute.
@@ -1084,6 +1118,8 @@ type terraformOcean struct {
 	IAMInstanceProfile       *terraformWriter.Literal   `cty:"iam_instance_profile"`
 	KeyName                  *terraformWriter.Literal   `cty:"key_name"`
 	SecurityGroups           []*terraformWriter.Literal `cty:"security_groups"`
+	SpreadNodesBy            *string                    `cty:"spread_nodes_by"`
+	AvailabilityVsCost       *string                    `cty:"availability_vs_cost"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
@@ -1098,6 +1134,8 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 		UtilizeCommitments:       e.UtilizeCommitments,
 		DrainingTimeout:          e.DrainingTimeout,
 		GracePeriod:              e.GracePeriod,
+		SpreadNodesBy:            e.SpreadNodesBy,
+		AvailabilityVsCost:       e.AvailabilityVsCost,
 	}
 
 	// Image.
@@ -1270,4 +1308,29 @@ func (o *Ocean) buildTags() []*aws.Tag {
 	}
 
 	return tags
+}
+
+type ClusterOrientation string
+
+const (
+	ClusterOrientationBalanced ClusterOrientation = "balanced"
+	ClusterOrientationCheapest ClusterOrientation = "cheapest"
+	ClusterOrientationCost     ClusterOrientation = "costOriented"
+)
+
+func NormalizeClusterOrientation(orientation *string) ClusterOrientation {
+	out := ClusterOrientationBalanced
+
+	if orientation == nil {
+		return out
+	}
+
+	switch *orientation {
+	case "cost":
+		out = ClusterOrientationCost
+	case "cheapest":
+		out = ClusterOrientationCheapest
+	}
+
+	return out
 }
