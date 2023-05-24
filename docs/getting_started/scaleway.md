@@ -63,6 +63,8 @@ Note that for now you can only create a kops cluster in a single availability zo
 # The default cluster uses ubuntu images on DEV1-M machines with cilium as Container Network Interface
   # This creates a cluster with the gossip DNS in zone fr-par-1
 kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=fr-par-1 --yes
+  # This creates a cluster with no DNS in zone nl-ams-2
+kops create cluster --cloud=scaleway --name=my.cluster --zones=nl-ams-2 --yes
 ```
 
 ### Editing your cluster
