@@ -63,17 +63,12 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/cilium/cilium/issues/15361
 		skipRegex += "|external.IP.is.not.assigned.to.a.node"
 		// https://github.com/cilium/cilium/issues/14287
-		skipRegex += "|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol"
+		skipRegex += "|same.port.number.but.different.protocols"
+		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
 		// This may be fixed in Cilium 1.13 but skipping for now
 		skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-		if k8sVersion.Minor >= 22 {
-			// ref:
-			// https://github.com/kubernetes/kubernetes/issues/96717
-			// https://github.com/cilium/cilium/issues/5719
-			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
-		}
 		// https://github.com/cilium/cilium/issues/18241
 		skipRegex += "|Services.should.create.endpoints.for.unready.pods"
 		skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
