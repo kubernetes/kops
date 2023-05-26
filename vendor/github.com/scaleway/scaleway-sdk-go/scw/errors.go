@@ -102,7 +102,8 @@ func hasResponseError(res *http.Response) error {
 	newErr.RawBody = body
 
 	// The error content is not encoded in JSON, only returns HTTP data.
-	if res.Header.Get("Content-Type") != "application/json" {
+	contentType := res.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "application/json") {
 		newErr.Message = res.Status
 		return newErr
 	}

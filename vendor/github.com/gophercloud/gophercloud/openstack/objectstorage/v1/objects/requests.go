@@ -5,7 +5,10 @@ import (
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
+	"hash"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -16,6 +19,25 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/pagination"
 )
+
+// ErrTempURLKeyNotFound is an error indicating that the Temp URL key was
+// neigther set nor resolved from a container or account metadata.
+type ErrTempURLKeyNotFound struct{ gophercloud.ErrMissingInput }
+
+func (e ErrTempURLKeyNotFound) Error() string {
+	return "Unable to obtain the Temp URL key."
+}
+
+// ErrTempURLDigestNotValid is an error indicating that the requested
+// cryptographic hash function is not supported.
+type ErrTempURLDigestNotValid struct {
+	gophercloud.ErrMissingInput
+	Digest string
+}
+
+func (e ErrTempURLDigestNotValid) Error() string {
+	return fmt.Sprintf("The requested %q digest is not supported.", e.Digest)
+}
 
 // ListOptsBuilder allows extensions to add additional parameters to the List
 // request.
@@ -504,15 +526,20 @@ type HTTPMethod string
 var (
 	// GET represents an HTTP "GET" method.
 	GET HTTPMethod = "GET"
-
+	// HEAD represents an HTTP "HEAD" method.
+	HEAD HTTPMethod = "HEAD"
+	// PUT represents an HTTP "PUT" method.
+	PUT HTTPMethod = "PUT"
 	// POST represents an HTTP "POST" method.
 	POST HTTPMethod = "POST"
+	// DELETE represents an HTTP "DELETE" method.
+	DELETE HTTPMethod = "DELETE"
 )
 
 // CreateTempURLOpts are options for creating a temporary URL for an object.
 type CreateTempURLOpts struct {
 	// (REQUIRED) Method is the HTTP method to allow for users of the temp URL.
-	// Valid values are "GET" and "POST".
+	// Valid values are "GET", "HEAD", "PUT", "POST" and "DELETE".
 	Method HTTPMethod
 
 	// (REQUIRED) TTL is the number of seconds the temp URL should be active.
@@ -523,8 +550,21 @@ type CreateTempURLOpts struct {
 	// empty, the default OpenStack URL split point will be used ("/v1/").
 	Split string
 
-	// Timestamp is a timestamp to calculate Temp URL signature. Optional.
+	// (Optional) Timestamp is the current timestamp used to calculate the Temp URL
+	// signature. If not specified, the current UNIX timestamp is used as the base
+	// timestamp.
 	Timestamp time.Time
+
+	// (Optional) TempURLKey overrides the Swift container or account Temp URL key.
+	// TempURLKey must correspond to a target container/account key, otherwise the
+	// generated link will be invalid. If not specified, the key is obtained from
+	// a Swift container or account.
+	TempURLKey string
+
+	// (Optional) Digest specifies the cryptographic hash function used to
+	// calculate the signature. Valid values include sha1, sha256, and
+	// sha512. If not specified, the default hash function is sha1.
+	Digest string
 }
 
 // CreateTempURL is a function for creating a temporary URL for an object. It
@@ -541,50 +581,83 @@ func CreateTempURL(c *gophercloud.ServiceClient, containerName, objectName strin
 	}
 
 	// Initialize time if it was not passed as opts
-	var date time.Time
-	if opts.Timestamp.IsZero() {
-		date = time.Now().UTC()
-	} else {
-		date = opts.Timestamp
+	date := opts.Timestamp
+	if date.IsZero() {
+		date = time.Now()
 	}
-
 	duration := time.Duration(opts.TTL) * time.Second
+	// UNIX time is always UTC
 	expiry := date.Add(duration).Unix()
-	getHeader, err := containers.Get(c, containerName, nil).Extract()
-	if err != nil {
-		return "", err
-	}
-	tempURLKey := getHeader.TempURLKey
+
+	// Initialize the tempURLKey to calculate a signature
+	tempURLKey := opts.TempURLKey
 	if tempURLKey == "" {
-		// fallback to an account TempURL key
-		getHeader, err := accounts.Get(c, nil).Extract()
+		// fallback to a container TempURL key
+		getHeader, err := containers.Get(c, containerName, nil).Extract()
 		if err != nil {
 			return "", err
 		}
 		tempURLKey = getHeader.TempURLKey
+		if tempURLKey == "" {
+			// fallback to an account TempURL key
+			getHeader, err := accounts.Get(c, nil).Extract()
+			if err != nil {
+				return "", err
+			}
+			tempURLKey = getHeader.TempURLKey
+		}
+		if tempURLKey == "" {
+			return "", ErrTempURLKeyNotFound{}
+		}
 	}
+
 	secretKey := []byte(tempURLKey)
 	splitPath := strings.Split(url, opts.Split)
 	baseURL, objectPath := splitPath[0], splitPath[1]
 	objectPath = opts.Split + objectPath
 	body := fmt.Sprintf("%s\n%d\n%s", opts.Method, expiry, objectPath)
-	hash := hmac.New(sha1.New, secretKey)
+	var hash hash.Hash
+	switch opts.Digest {
+	case "", "sha1":
+		hash = hmac.New(sha1.New, secretKey)
+	case "sha256":
+		hash = hmac.New(sha256.New, secretKey)
+	case "sha512":
+		hash = hmac.New(sha512.New, secretKey)
+	default:
+		return "", ErrTempURLDigestNotValid{Digest: opts.Digest}
+	}
 	hash.Write([]byte(body))
 	hexsum := fmt.Sprintf("%x", hash.Sum(nil))
 	return fmt.Sprintf("%s%s?temp_url_sig=%s&temp_url_expires=%d", baseURL, objectPath, hexsum, expiry), nil
 }
 
 // BulkDelete is a function that bulk deletes objects.
+// In Swift, the maximum number of deletes per request is set by default to 10000.
+//
+// See:
+// * https://github.com/openstack/swift/blob/6d3d4197151f44bf28b51257c1a4c5d33411dcae/etc/proxy-server.conf-sample#L1029-L1034
+// * https://github.com/openstack/swift/blob/e8cecf7fcc1630ee83b08f9a73e1e59c07f8d372/swift/common/middleware/bulk.py#L309
 func BulkDelete(c *gophercloud.ServiceClient, container string, objects []string) (r BulkDeleteResult) {
-	// urlencode object names to be on the safe side
-	// https://github.com/openstack/swift/blob/stable/train/swift/common/middleware/bulk.py#L160
-	// https://github.com/openstack/swift/blob/stable/train/swift/common/swob.py#L302
-	encodedObjects := make([]string, len(objects))
-	for i, v := range objects {
-		encodedObjects[i] = strings.Join([]string{container, v}, "/")
+	err := containers.CheckContainerName(container)
+	if err != nil {
+		r.Err = err
+		return
 	}
-	b := strings.NewReader(strings.Join(encodedObjects, "\n") + "\n")
-	resp, err := c.Post(bulkDeleteURL(c), b, &r.Body, &gophercloud.RequestOpts{
+
+	var body bytes.Buffer
+	for i := range objects {
+		if objects[i] == "" {
+			r.Err = fmt.Errorf("object names must not be the empty string")
+			return
+		}
+		body.WriteString(container)
+		body.WriteRune('/')
+		body.WriteString(objects[i])
+		body.WriteRune('\n')
+	}
+
+	resp, err := c.Post(bulkDeleteURL(c), &body, &r.Body, &gophercloud.RequestOpts{
 		MoreHeaders: map[string]string{
 			"Accept":       "application/json",
 			"Content-Type": "text/plain",

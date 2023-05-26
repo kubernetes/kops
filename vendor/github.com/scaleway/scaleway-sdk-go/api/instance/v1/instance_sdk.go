@@ -1127,7 +1127,7 @@ type SecurityGroup struct {
 	Name string `json:"name"`
 	// Description: security group description.
 	Description string `json:"description"`
-	// EnableDefaultSecurity: true if SMTP is blocked on IPv4 and IPv6.
+	// EnableDefaultSecurity: true if SMTP is blocked on IPv4 and IPv6. This feature is read only, please open a support ticket if you need to make it configurable.
 	EnableDefaultSecurity bool `json:"enable_default_security"`
 	// InboundDefaultPolicy: default inbound policy.
 	// Default value: accept
@@ -1777,7 +1777,7 @@ type ListVolumesTypesRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListVolumesTypes: list volumes types.
+// ListVolumesTypes: list volume types.
 // List all volume types and their technical details.
 func (s *API) ListVolumesTypes(req *ListVolumesTypesRequest, opts ...scw.RequestOption) (*ListVolumesTypesResponse, error) {
 	var err error
@@ -2309,7 +2309,7 @@ type ServerActionRequest struct {
 //
 // Keep in mind that terminating an Instance will result in the deletion of all attached volumes, including local and block storage.
 // If you want to preserve your local volumes, you should use the `archive` action instead of `terminate`. Similarly, if you want to keep your block storage volumes, you must first detach them before issuing the `terminate` command.
-// For more information, read the [Volumes](#volumes-7e8a39) documentation.
+// For more information, read the [Volumes](#path-volumes-list-volumes) documentation.
 func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) (*ServerActionResponse, error) {
 	var err error
 
@@ -3438,7 +3438,7 @@ type CreateSecurityGroupRequest struct {
 	// OutboundDefaultPolicy: default policy for outbound rules.
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// EnableDefaultSecurity: true to block SMTP on IPv4 and IPv6.
+	// EnableDefaultSecurity: true to block SMTP on IPv4 and IPv6. This feature is read only, please open a support ticket if you need to make it configurable.
 	EnableDefaultSecurity *bool `json:"enable_default_security,omitempty"`
 }
 
@@ -3583,7 +3583,7 @@ type setSecurityGroupRequest struct {
 	ModificationDate *time.Time `json:"modification_date"`
 	// Description: description of the security group.
 	Description string `json:"description"`
-	// EnableDefaultSecurity: true to block SMTP on IPv4 and IPv6.
+	// EnableDefaultSecurity: true to block SMTP on IPv4 and IPv6. This feature is read only, please open a support ticket if you need to make it configurable.
 	EnableDefaultSecurity bool `json:"enable_default_security"`
 	// InboundDefaultPolicy: default inbound policy.
 	// Default value: accept

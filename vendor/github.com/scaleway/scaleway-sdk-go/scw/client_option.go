@@ -38,6 +38,13 @@ func WithAuth(accessKey, secretKey string) ClientOption {
 	}
 }
 
+// WithJWT client option sets the client session token.
+func WithJWT(token string) ClientOption {
+	return func(s *settings) {
+		s.token = auth.NewJWT(token)
+	}
+}
+
 // WithAPIURL client option overrides the API URL of the Scaleway API to the given URL.
 func WithAPIURL(apiURL string) ClientOption {
 	return func(s *settings) {
