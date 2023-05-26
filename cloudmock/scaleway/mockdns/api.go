@@ -55,7 +55,7 @@ func (f *FakeDomainAPI) DeleteDNSZone(req *domain.DeleteDNSZoneRequest, opts ...
 	if f.DNSZones == nil {
 		return nil, fmt.Errorf("error response")
 	}
-	newZoneList := []*domain.DNSZone(nil)
+	var newZoneList []*domain.DNSZone
 	for _, zone := range f.DNSZones {
 		if req.DNSZone == fmt.Sprintf("%s.%s", zone.Subdomain, zone.Domain) {
 			continue
@@ -67,7 +67,7 @@ func (f *FakeDomainAPI) DeleteDNSZone(req *domain.DeleteDNSZoneRequest, opts ...
 }
 
 func (f *FakeDomainAPI) ListDNSZoneRecords(req *domain.ListDNSZoneRecordsRequest, opts ...scw.RequestOption) (*domain.ListDNSZoneRecordsResponse, error) {
-	recordsList := []*domain.Record(nil)
+	var recordsList []*domain.Record
 	for _, record := range f.Records {
 		recordsList = append(recordsList, record)
 	}
@@ -89,14 +89,15 @@ func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsReq
 
 		} else if change.Set != nil {
 			if len(change.Set.Records) != 1 {
-				return nil, fmt.Errorf("expected exactly 1 record change in request, got %d", len(change.Set.Records))
+				fmt.Printf("only 1 record change will be applied from %d changes requested", len(change.Set.Records))
 			}
-			if _, ok := f.Records[change.Set.Records[0].Name]; !ok {
-				return nil, fmt.Errorf("could not find record %s to upsert", change.Set.Records[0].Name)
+			for _, toUpsert := range change.Set.Records {
+				if _, ok := f.Records[toUpsert.Name]; !ok {
+					return nil, fmt.Errorf("could not find record %s to upsert", toUpsert.Name)
+				}
+				toUpsert.ID = *change.Set.ID
+				f.Records[toUpsert.Name] = toUpsert
 			}
-			change.Set.Records[0].ID = *change.Set.ID
-			f.Records[change.Set.Records[0].Name] = change.Set.Records[0]
-
 		} else if change.Delete != nil {
 			found := false
 			for name, record := range f.Records {
@@ -115,7 +116,7 @@ func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsReq
 		}
 	}
 
-	recordsList := []*domain.Record(nil)
+	var recordsList []*domain.Record
 	for _, record := range f.Records {
 		recordsList = append(recordsList, record)
 	}
