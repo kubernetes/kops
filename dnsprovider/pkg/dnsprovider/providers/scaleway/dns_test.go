@@ -33,11 +33,11 @@ func setUpFakeZones() *mockdns.FakeDomainAPI {
 	return &mockdns.FakeDomainAPI{
 		DNSZones: []*domain.DNSZone{
 			{
-				Domain:    "test.fr",
+				Domain:    "example.com",
 				Subdomain: "zone",
 			},
 			{
-				Domain:    "test.fr",
+				Domain:    "example.com",
 				Subdomain: "kops",
 			},
 			{
@@ -96,7 +96,7 @@ func TestAddValid(t *testing.T) {
 	zs := getDNSProviderZones(domainAPI)
 
 	inZone := &zone{
-		name:      "dns.test.fr",
+		name:      "dns.example.com",
 		domainAPI: domainAPI,
 	}
 	outZone, err := zs.Add(inZone)
@@ -117,7 +117,7 @@ func TestAddShouldFail(t *testing.T) {
 	zs := getDNSProviderZones(domainAPI)
 
 	inZone := &zone{
-		name:      "dns.test.fr",
+		name:      "dns.example.com",
 		domainAPI: domainAPI,
 	}
 	outZone, err := zs.Add(inZone)
@@ -135,7 +135,7 @@ func TestRemoveValid(t *testing.T) {
 	zs := getDNSProviderZones(domainAPI)
 
 	inZone := &zone{
-		name:      "kops.test.fr",
+		name:      "kops.example.com",
 		domainAPI: domainAPI,
 	}
 	err := zs.Remove(inZone)
@@ -150,7 +150,7 @@ func TestRemoveShouldFail(t *testing.T) {
 	zs := getDNSProviderZones(domainAPI)
 
 	inZone := &zone{
-		name:      "kops.test.fr",
+		name:      "kops.example.com",
 		domainAPI: domainAPI,
 	}
 	err := zs.Remove(inZone)
@@ -208,7 +208,7 @@ func setUpFakeRecords() *mockdns.FakeDomainAPI {
 
 func TestNewResourceRecordSet(t *testing.T) {
 	domainAPI := setUpFakeRecords()
-	zoneName := "kops.test.fr"
+	zoneName := "kops.example.com"
 	zone := zone{
 		domainAPI: domainAPI,
 		name:      zoneName,
@@ -252,7 +252,7 @@ func TestNewResourceRecordSet(t *testing.T) {
 func TestResourceRecordChangeset(t *testing.T) {
 	ctx := context.Background()
 	domainAPI := setUpFakeRecords()
-	zoneName := "kops.test.fr"
+	zoneName := "kops.example.com"
 	zone := zone{
 		domainAPI: domainAPI,
 		name:      zoneName,
