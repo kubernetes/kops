@@ -963,10 +963,13 @@ type Backend struct {
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field.
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
 	// TimeoutServer: maximum allowed time for a backend server to process a request.
+	// Default value: 300000
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum allowed time for establishing a connection to a backend server.
+	// Default value: 5000
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
 	// TimeoutTunnel: maximum allowed tunnel inactivity time after Websocket is established (takes precedence over client and server timeout).
+	// Default value: 900000
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: action to take when a backend server is marked as down.
 	// Default value: on_marked_down_action_none
@@ -988,6 +991,10 @@ type Backend struct {
 	RedispatchAttemptCount *int32 `json:"redispatch_attempt_count"`
 	// MaxRetries: number of retries when a backend server connection failed.
 	MaxRetries *int32 `json:"max_retries"`
+	// MaxConnections: maximum number of connections allowed per backend server.
+	MaxConnections *int32 `json:"max_connections"`
+	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
+	TimeoutQueue *scw.Duration `json:"timeout_queue"`
 }
 
 func (m *Backend) UnmarshalJSON(b []byte) error {
@@ -1107,6 +1114,7 @@ type Frontend struct {
 	// LB: load Balancer object the frontend is attached to.
 	LB *LB `json:"lb"`
 	// TimeoutClient: maximum allowed inactivity time on the client side.
+	// Default value: 300000
 	TimeoutClient *time.Duration `json:"timeout_client"`
 	// Deprecated: Certificate: certificate, deprecated in favor of certificate_ids array.
 	Certificate *Certificate `json:"certificate,omitempty"`
@@ -1157,8 +1165,10 @@ type HealthCheck struct {
 	// Port: port to use for the backend server health check.
 	Port int32 `json:"port"`
 	// CheckDelay: time to wait between two consecutive health checks.
+	// Default value: 3000
 	CheckDelay *time.Duration `json:"check_delay"`
 	// CheckTimeout: maximum time a backend server has to reply to the health check.
+	// Default value: 1000
 	CheckTimeout *time.Duration `json:"check_timeout"`
 	// CheckMaxRetries: number of consecutive unsuccessful health checks after which the server will be considered dead.
 	CheckMaxRetries int32 `json:"check_max_retries"`
@@ -1186,6 +1196,7 @@ type HealthCheck struct {
 	// CheckSendProxy: defines whether proxy protocol should be activated for the health check.
 	CheckSendProxy bool `json:"check_send_proxy"`
 	// TransientCheckDelay: time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN).
+	// Default value: 0.5s
 	TransientCheckDelay *scw.Duration `json:"transient_check_delay"`
 }
 
@@ -2226,10 +2237,13 @@ type ZonedAPICreateBackendRequest struct {
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field.
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
 	// TimeoutServer: maximum allowed time for a backend server to process a request.
+	// Default value: 300000
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum allowed time for establishing a connection to a backend server.
+	// Default value: 5000
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
 	// TimeoutTunnel: maximum allowed tunnel inactivity time after Websocket is established (takes precedence over client and server timeout).
+	// Default value: 900000
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: action to take when a backend server is marked as down.
 	// Default value: on_marked_down_action_none
@@ -2247,6 +2261,10 @@ type ZonedAPICreateBackendRequest struct {
 	RedispatchAttemptCount *int32 `json:"redispatch_attempt_count"`
 	// MaxRetries: number of retries when a backend server connection failed.
 	MaxRetries *int32 `json:"max_retries"`
+	// MaxConnections: maximum number of connections allowed per backend server.
+	MaxConnections *int32 `json:"max_connections"`
+	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
+	TimeoutQueue *scw.Duration `json:"timeout_queue"`
 }
 
 func (m *ZonedAPICreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -2394,10 +2412,13 @@ type ZonedAPIUpdateBackendRequest struct {
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field.
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
 	// TimeoutServer: maximum allowed time for a backend server to process a request.
+	// Default value: 300000
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum allowed time for establishing a connection to a backend server.
+	// Default value: 5000
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
 	// TimeoutTunnel: maximum allowed tunnel inactivity time after Websocket is established (takes precedence over client and server timeout).
+	// Default value: 900000
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: action to take when a backend server is marked as down.
 	// Default value: on_marked_down_action_none
@@ -2415,6 +2436,10 @@ type ZonedAPIUpdateBackendRequest struct {
 	RedispatchAttemptCount *int32 `json:"redispatch_attempt_count"`
 	// MaxRetries: number of retries when a backend server connection failed.
 	MaxRetries *int32 `json:"max_retries"`
+	// MaxConnections: maximum number of connections allowed per backend server.
+	MaxConnections *int32 `json:"max_connections"`
+	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
+	TimeoutQueue *scw.Duration `json:"timeout_queue"`
 }
 
 func (m *ZonedAPIUpdateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -2711,6 +2736,7 @@ type ZonedAPIUpdateHealthCheckRequest struct {
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
 	// TransientCheckDelay: time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN).
+	// Default value: 0.5s
 	TransientCheckDelay *scw.Duration `json:"transient_check_delay"`
 }
 
@@ -2861,6 +2887,7 @@ type ZonedAPICreateFrontendRequest struct {
 	// BackendID: backend ID (ID of the backend the frontend should pass traffic to).
 	BackendID string `json:"backend_id"`
 	// TimeoutClient: maximum allowed inactivity time on the client side.
+	// Default value: 300000
 	TimeoutClient *time.Duration `json:"timeout_client"`
 	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array.
 	CertificateID *string `json:"certificate_id,omitempty"`
@@ -2996,6 +3023,7 @@ type ZonedAPIUpdateFrontendRequest struct {
 	// BackendID: backend ID (ID of the backend the frontend should pass traffic to).
 	BackendID string `json:"backend_id"`
 	// TimeoutClient: maximum allowed inactivity time on the client side.
+	// Default value: 300000
 	TimeoutClient *time.Duration `json:"timeout_client"`
 	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array.
 	CertificateID *string `json:"certificate_id,omitempty"`
@@ -5173,10 +5201,13 @@ type CreateBackendRequest struct {
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field.
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
 	// TimeoutServer: maximum allowed time for a backend server to process a request.
+	// Default value: 300000
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum allowed time for establishing a connection to a backend server.
+	// Default value: 5000
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
 	// TimeoutTunnel: maximum allowed tunnel inactivity time after Websocket is established (takes precedence over client and server timeout).
+	// Default value: 900000
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: action to take when a backend server is marked as down.
 	// Default value: on_marked_down_action_none
@@ -5194,6 +5225,10 @@ type CreateBackendRequest struct {
 	RedispatchAttemptCount *int32 `json:"redispatch_attempt_count"`
 	// MaxRetries: number of retries when a backend server connection failed.
 	MaxRetries *int32 `json:"max_retries"`
+	// MaxConnections: maximum number of connections allowed per backend server.
+	MaxConnections *int32 `json:"max_connections"`
+	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
+	TimeoutQueue *scw.Duration `json:"timeout_queue"`
 }
 
 func (m *CreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -5339,10 +5374,13 @@ type UpdateBackendRequest struct {
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field.
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
 	// TimeoutServer: maximum allowed time for a backend server to process a request.
+	// Default value: 300000
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum allowed time for establishing a connection to a backend server.
+	// Default value: 5000
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
 	// TimeoutTunnel: maximum allowed tunnel inactivity time after Websocket is established (takes precedence over client and server timeout).
+	// Default value: 900000
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: action to take when a backend server is marked as down.
 	// Default value: on_marked_down_action_none
@@ -5360,6 +5398,10 @@ type UpdateBackendRequest struct {
 	RedispatchAttemptCount *int32 `json:"redispatch_attempt_count"`
 	// MaxRetries: number of retries when a backend server connection failed.
 	MaxRetries *int32 `json:"max_retries"`
+	// MaxConnections: maximum number of connections allowed per backend server.
+	MaxConnections *int32 `json:"max_connections"`
+	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
+	TimeoutQueue *scw.Duration `json:"timeout_queue"`
 }
 
 func (m *UpdateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -5651,6 +5693,7 @@ type UpdateHealthCheckRequest struct {
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
 	// TransientCheckDelay: time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN).
+	// Default value: 0.5s
 	TransientCheckDelay *scw.Duration `json:"transient_check_delay"`
 }
 
@@ -5799,6 +5842,7 @@ type CreateFrontendRequest struct {
 	// BackendID: backend ID (ID of the backend the frontend should pass traffic to).
 	BackendID string `json:"backend_id"`
 	// TimeoutClient: maximum allowed inactivity time on the client side.
+	// Default value: 300000
 	TimeoutClient *time.Duration `json:"timeout_client"`
 	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array.
 	CertificateID *string `json:"certificate_id,omitempty"`
@@ -5932,6 +5976,7 @@ type UpdateFrontendRequest struct {
 	// BackendID: backend ID (ID of the backend the frontend should pass traffic to).
 	BackendID string `json:"backend_id"`
 	// TimeoutClient: maximum allowed inactivity time on the client side.
+	// Default value: 300000
 	TimeoutClient *time.Duration `json:"timeout_client"`
 	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array.
 	CertificateID *string `json:"certificate_id,omitempty"`

@@ -496,9 +496,9 @@ type APIKey struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 	// ExpiresAt: date and time of API key expiration.
 	ExpiresAt *time.Time `json:"expires_at"`
-	// DefaultProjectID: the default Project ID specified for this API key.
+	// DefaultProjectID: default Project ID specified for this API key.
 	DefaultProjectID string `json:"default_project_id"`
-	// Editable: whether or not the API key is editable.
+	// Editable: defines whether or not the API key is editable.
 	Editable bool `json:"editable"`
 	// CreationIP: IP address of the device that created the API key.
 	CreationIP string `json:"creation_ip"`
@@ -518,7 +518,7 @@ type Application struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 	// OrganizationID: ID of the Organization.
 	OrganizationID string `json:"organization_id"`
-	// Editable: whether or not the application is editable.
+	// Editable: defines whether or not the application is editable.
 	Editable bool `json:"editable"`
 	// NbAPIKeys: number of API keys attributed to the application.
 	NbAPIKeys uint32 `json:"nb_api_keys"`
@@ -671,7 +671,7 @@ type Policy struct {
 	CreatedAt *time.Time `json:"created_at"`
 	// UpdatedAt: date and time of last policy update.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Editable: whether or not a policy is editable.
+	// Editable: defines whether or not a policy is editable.
 	Editable bool `json:"editable"`
 	// NbRules: number of rules of the policy.
 	NbRules uint32 `json:"nb_rules"`
@@ -688,7 +688,7 @@ type Policy struct {
 	// ApplicationID: ID of the application attributed to the policy.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	ApplicationID *string `json:"application_id,omitempty"`
-	// NoPrincipal: whether or not a policy is attributed to a principal.
+	// NoPrincipal: defines whether or not a policy is attributed to a principal.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	NoPrincipal *bool `json:"no_principal,omitempty"`
 }
@@ -700,7 +700,7 @@ type Quotum struct {
 	// Limit: maximum limit of the quota.
 	// Precisely one of Limit, Unlimited must be set.
 	Limit *uint64 `json:"limit,omitempty"`
-	// Unlimited: whether or not the quota is unlimited.
+	// Unlimited: defines whether or not the quota is unlimited.
 	// Precisely one of Limit, Unlimited must be set.
 	Unlimited *bool `json:"unlimited,omitempty"`
 }
@@ -789,8 +789,10 @@ type User struct {
 	// Status: status of user invitation.
 	// Default value: unknown_status
 	Status UserStatus `json:"status"`
-	// Mfa: whether MFA is enabled.
+	// Mfa: defines whether MFA is enabled.
 	Mfa bool `json:"mfa"`
+	// AccountRootUserID: ID of the account root user associated with the user.
+	AccountRootUserID string `json:"account_root_user_id"`
 }
 
 // Service API
@@ -811,7 +813,7 @@ type ListSSHKeysRequest struct {
 	Name *string `json:"-"`
 	// ProjectID: filter by Project ID.
 	ProjectID *string `json:"-"`
-	// Disabled: whether to include disabled SSH keys or not.
+	// Disabled: defines whether to include disabled SSH keys or not.
 	Disabled *bool `json:"-"`
 }
 
@@ -851,7 +853,7 @@ func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*
 }
 
 type CreateSSHKeyRequest struct {
-	// Name: the name of the SSH key. Max length is 1000.
+	// Name: name of the SSH key. Max length is 1000.
 	Name string `json:"name"`
 	// PublicKey: SSH public key. Currently only the ssh-rsa, ssh-dss (DSA), ssh-ed25519 and ecdsa keys with NIST curves are supported. Max length is 65000.
 	PublicKey string `json:"public_key"`
@@ -894,7 +896,7 @@ func (s *API) CreateSSHKey(req *CreateSSHKeyRequest, opts ...scw.RequestOption) 
 }
 
 type GetSSHKeyRequest struct {
-	// SSHKeyID: the ID of the SSH key.
+	// SSHKeyID: ID of the SSH key.
 	SSHKeyID string `json:"-"`
 }
 
@@ -1107,7 +1109,7 @@ type ListApplicationsRequest struct {
 	Name *string `json:"-"`
 	// OrganizationID: ID of the Organization to filter.
 	OrganizationID *string `json:"-"`
-	// Editable: whether to filter out editable applications or not.
+	// Editable: defines whether to filter out editable applications or not.
 	Editable *bool `json:"-"`
 	// ApplicationIDs: filter by list of IDs.
 	ApplicationIDs []string `json:"-"`
@@ -1530,6 +1532,44 @@ func (s *API) AddGroupMember(req *AddGroupMemberRequest, opts ...scw.RequestOpti
 	return &resp, nil
 }
 
+type AddGroupMembersRequest struct {
+	// GroupID: ID of the group.
+	GroupID string `json:"-"`
+	// UserIDs: iDs of the users to add.
+	UserIDs []string `json:"user_ids"`
+	// ApplicationIDs: iDs of the applications to add.
+	ApplicationIDs []string `json:"application_ids"`
+}
+
+// AddGroupMembers: add multiple users and applications to a group.
+// Add multiple users and applications to a group in a single call. You can specify an array of `user_id`s and `application_id`s. Note that any existing users and applications in the group will remain. To add new users/applications and delete pre-existing ones, use the [Overwrite users and applications of a group](#path-groups-overwrite-users-and-applications-of-a-group) method.
+func (s *API) AddGroupMembers(req *AddGroupMembersRequest, opts ...scw.RequestOption) (*Group, error) {
+	var err error
+
+	if fmt.Sprint(req.GroupID) == "" {
+		return nil, errors.New("field GroupID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/iam/v1alpha1/groups/" + fmt.Sprint(req.GroupID) + "/add-members",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Group
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 type RemoveGroupMemberRequest struct {
 	// GroupID: ID of the group.
 	GroupID string `json:"-"`
@@ -1609,15 +1649,15 @@ type ListPoliciesRequest struct {
 	Page *int32 `json:"-"`
 	// OrganizationID: ID of the Organization to filter.
 	OrganizationID *string `json:"-"`
-	// Editable: whether or not filter out editable policies.
+	// Editable: defines whether or not filter out editable policies.
 	Editable *bool `json:"-"`
-	// UserIDs: whether or not to filter by list of user IDs.
+	// UserIDs: defines whether or not to filter by list of user IDs.
 	UserIDs []string `json:"-"`
-	// GroupIDs: whether or not to filter by list of group IDs.
+	// GroupIDs: defines whether or not to filter by list of group IDs.
 	GroupIDs []string `json:"-"`
 	// ApplicationIDs: filter by a list of application IDs.
 	ApplicationIDs []string `json:"-"`
-	// NoPrincipal: whether or not the policy is attributed to a principal.
+	// NoPrincipal: defines whether or not the policy is attributed to a principal.
 	NoPrincipal *bool `json:"-"`
 	// PolicyName: name of the policy to fetch.
 	PolicyName *string `json:"-"`
@@ -1679,7 +1719,7 @@ type CreatePolicyRequest struct {
 	// ApplicationID: ID of application attributed to the policy.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	ApplicationID *string `json:"application_id,omitempty"`
-	// NoPrincipal: whether or not a policy is attributed to a principal.
+	// NoPrincipal: defines whether or not a policy is attributed to a principal.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	NoPrincipal *bool `json:"no_principal,omitempty"`
 }
@@ -1763,7 +1803,7 @@ type UpdatePolicyRequest struct {
 	// ApplicationID: new ID of application attributed to the policy.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	ApplicationID *string `json:"application_id,omitempty"`
-	// NoPrincipal: whether or not the policy is attributed to a principal.
+	// NoPrincipal: defines whether or not the policy is attributed to a principal.
 	// Precisely one of ApplicationID, GroupID, NoPrincipal, UserID must be set.
 	NoPrincipal *bool `json:"no_principal,omitempty"`
 }
@@ -1998,9 +2038,9 @@ type ListAPIKeysRequest struct {
 	ApplicationID *string `json:"-"`
 	// Deprecated: UserID: ID of user that bears the API key.
 	UserID *string `json:"-"`
-	// Editable: whether to filter out editable API keys or not.
+	// Editable: defines whether to filter out editable API keys or not.
 	Editable *bool `json:"-"`
-	// Expired: whether to filter out expired API keys or not.
+	// Expired: defines whether to filter out expired API keys or not.
 	Expired *bool `json:"-"`
 	// AccessKey: filter by access key.
 	AccessKey *string `json:"-"`
@@ -2062,9 +2102,9 @@ type CreateAPIKeyRequest struct {
 	UserID *string `json:"user_id,omitempty"`
 	// ExpiresAt: expiration date of the API key.
 	ExpiresAt *time.Time `json:"expires_at"`
-	// DefaultProjectID: the default Project ID to use with Object Storage.
+	// DefaultProjectID: default Project ID to use with Object Storage.
 	DefaultProjectID *string `json:"default_project_id"`
-	// Description: the description of the API key (max length is 200 characters).
+	// Description: description of the API key (max length is 200 characters).
 	Description string `json:"description"`
 }
 
@@ -2125,9 +2165,9 @@ func (s *API) GetAPIKey(req *GetAPIKeyRequest, opts ...scw.RequestOption) (*APIK
 type UpdateAPIKeyRequest struct {
 	// AccessKey: access key to update.
 	AccessKey string `json:"-"`
-	// DefaultProjectID: the new default Project ID to set.
+	// DefaultProjectID: new default Project ID to set.
 	DefaultProjectID *string `json:"default_project_id"`
-	// Description: the new description to update.
+	// Description: new description to update.
 	Description *string `json:"description"`
 }
 

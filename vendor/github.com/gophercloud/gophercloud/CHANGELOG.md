@@ -1,3 +1,28 @@
+## v1.4.0 (2023-05-25)
+
+New features and improvements:
+
+* [GH-2465](https://github.com/gophercloud/gophercloud/pull/2465) keystone: add v3 limits update operation
+* [GH-2596](https://github.com/gophercloud/gophercloud/pull/2596) keystone: add v3 limits get operation
+* [GH-2618](https://github.com/gophercloud/gophercloud/pull/2618) keystone: add v3 limits delete operation
+* [GH-2616](https://github.com/gophercloud/gophercloud/pull/2616) Add CRUD support for register limit APIs
+* [GH-2610](https://github.com/gophercloud/gophercloud/pull/2610) Add PUT/HEAD/DELETE for identity/v3/OS-INHERIT
+* [GH-2597](https://github.com/gophercloud/gophercloud/pull/2597) Add validation and optimise objects.BulkDelete
+* [GH-2602](https://github.com/gophercloud/gophercloud/pull/2602) [swift v1]: introduce a TempURLKey argument for objects.CreateTempURLOpts struct
+* [GH-2623](https://github.com/gophercloud/gophercloud/pull/2623) Add the ability to remove ingress/egress policies from fwaas_v2 groups
+* [GH-2625](https://github.com/gophercloud/gophercloud/pull/2625) neutron: Support trunk_details extension
+
+CI changes:
+
+* [GH-2608](https://github.com/gophercloud/gophercloud/pull/2608) Drop train and ussuri jobs
+* [GH-2589](https://github.com/gophercloud/gophercloud/pull/2589) Bump EmilienM/devstack-action from 0.10 to 0.11
+* [GH-2604](https://github.com/gophercloud/gophercloud/pull/2604) Bump mheap/github-action-required-labels from 3 to 4
+* [GH-2620](https://github.com/gophercloud/gophercloud/pull/2620) Pin goimport dep to a version that works with go 1.14
+* [GH-2619](https://github.com/gophercloud/gophercloud/pull/2619) Fix version comparison for acceptance tests
+* [GH-2627](https://github.com/gophercloud/gophercloud/pull/2627) Limits: Fix ToDo to create registered limit and use it
+* [GH-2629](https://github.com/gophercloud/gophercloud/pull/2629) [manila]: Add share from snapshot restore functional test
+
+
 ## v1.3.0 (2023-03-28)
 
 * [GH-2464](https://github.com/gophercloud/gophercloud/pull/2464) keystone: add v3 limits create operation
