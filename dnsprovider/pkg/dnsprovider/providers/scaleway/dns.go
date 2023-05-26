@@ -108,7 +108,7 @@ type zones struct {
 func (z *zones) List() ([]dnsprovider.Zone, error) {
 	dnsZones, err := z.domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{}, scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("failed to list DNS zones: %v", err)
+		return nil, fmt.Errorf("failed to list DNS zones: %w", err)
 	}
 
 	zonesList := []dnsprovider.Zone(nil)
@@ -210,8 +210,9 @@ func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 		// The scaleway API returns the record without the zone
 		// but the consumers of this interface expect the zone to be included
 		recordName := dns.EnsureDotSuffix(record.Name) + r.Zone().Name()
-		if rrset, ok := rrsetsWithoutDups[recordName]; !ok {
-			rrsetsWithoutDups[recordName] = &resourceRecordSet{
+		recordKey := recordName + "_" + record.Type.String()
+		if rrset, ok := rrsetsWithoutDups[recordKey]; !ok {
+			rrsetsWithoutDups[recordKey] = &resourceRecordSet{
 				name:       recordName,
 				data:       []string{record.Data},
 				ttl:        int(record.TTL),
@@ -379,7 +380,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 			for _, rrdata := range rrset.Rrdatas() {
 				for _, record := range records {
 					recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, r.zone.Name())
-					if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) {
+					if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && rrset.Type() == rrstype.RrsType(record.Type) {
 						klog.V(8).Infof("changing DNS record %q of zone %q", record.Name, r.zone.Name())
 						updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
 							Set: &domain.RecordChangeSet{
@@ -404,7 +405,8 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		for _, rrset := range r.removals {
 			for _, record := range records {
 				recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, r.zone.Name())
-				if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && record.Data == rrset.Rrdatas()[0] {
+				if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && record.Data == rrset.Rrdatas()[0] &&
+					rrset.Type() == rrstype.RrsType(record.Type) {
 					klog.V(8).Infof("removing DNS record %q of zone %q", record.Name, r.zone.name)
 					updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
 						Delete: &domain.RecordChangeDelete{
@@ -449,7 +451,7 @@ func listRecords(api DomainAPI, zoneName string) ([]*domain.Record, error) {
 		DNSZone: zoneName,
 	}, scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("failed to list records: %v", err)
+		return nil, fmt.Errorf("failed to list records: %w", err)
 	}
 
 	return records.Records, err
