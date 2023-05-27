@@ -30,8 +30,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
@@ -175,15 +175,17 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	// Once the node is registered, we don't allow further registrations, this protects against a pod or escaped workload attempting to impersonate the node.
 	{
-		node := &unstructured.Unstructured{}
-		node.SetAPIVersion("v1")
-		node.SetKind("node")
+		node := &corev1.Node{}
 		err := s.uncachedClient.Get(ctx, types.NamespacedName{Name: id.NodeName}, node)
 		if err == nil {
-			klog.Infof("bootstrap %s node %q already exists; denying to avoid node-impersonation attacks", r.RemoteAddr, id.NodeName)
-			w.WriteHeader(http.StatusForbidden)
-			_, _ = w.Write([]byte("node already registered"))
-			return
+			for _, condition := range node.Status.Conditions {
+				if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
+					klog.Infof("bootstrap %s node %q already exists; denying to avoid node-impersonation attacks", r.RemoteAddr, id.NodeName)
+					w.WriteHeader(http.StatusConflict)
+					_, _ = w.Write([]byte("node already registered"))
+					return
+				}
+			}
 		}
 		if err != nil && !errors.IsNotFound(err) {
 			klog.Infof("bootstrap %s error querying for node %q: %v", r.RemoteAddr, id.NodeName, err)
