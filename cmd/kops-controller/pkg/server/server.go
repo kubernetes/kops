@@ -181,7 +181,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		err := s.uncachedClient.Get(ctx, types.NamespacedName{Name: id.NodeName}, node)
 		if err == nil {
 			klog.Infof("bootstrap %s node %q already exists; denying to avoid node-impersonation attacks", r.RemoteAddr, id.NodeName)
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusConflict)
 			_, _ = w.Write([]byte("node already registered"))
 			return
 		}
