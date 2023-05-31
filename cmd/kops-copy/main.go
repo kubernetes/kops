@@ -21,7 +21,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 
 	"k8s.io/klog/v2"
 )
@@ -40,7 +40,7 @@ func copyFile(source, target string) error {
 		return fmt.Errorf("unable to stat source file %q: %w", source, err)
 	}
 
-	fn := path.Join(target, path.Base(source))
+	fn := filepath.Join(target, filepath.Base(source))
 	df, err := os.Create(fn)
 	if err != nil {
 		return fmt.Errorf("unable to create target file %q: %w", fn, err)
