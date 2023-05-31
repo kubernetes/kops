@@ -37,58 +37,71 @@ spec:
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
     - mountPath: /opt
-      name: bin
+      name: opt
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
   hostPID: true
   initContainers:
   - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.2.24/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.2.24/
+    - /ko-app/kops-copy
+    - /opt/bin
     command:
-    - /bin/sh
+    - /ko-app/kops-copy
+    image: registry.k8s.io/kops/kops-copy:1.27.0-alpha.2
+    name: kops-copy
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.2.24
+    command:
+    - /opt/bin/kops-copy
     image: registry.k8s.io/etcd:3.2.24-1
     name: init-etcd-3-2-24
     resources: {}
     volumeMounts:
     - mountPath: /opt
-      name: bin
+      name: opt
   - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.3.17/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.3.17/
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.3.17
     command:
-    - /bin/sh
+    - /opt/bin/kops-copy
     image: registry.k8s.io/etcd:3.3.17-0
     name: init-etcd-3-3-17
     resources: {}
     volumeMounts:
     - mountPath: /opt
-      name: bin
+      name: opt
   - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.4.13/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.4.13/etcdctl
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.4.13
     command:
-    - /bin/sh
+    - /opt/bin/kops-copy
     image: registry.k8s.io/etcd:3.4.13-0
     name: init-etcd-3-4-13
     resources: {}
     volumeMounts:
     - mountPath: /opt
-      name: bin
+      name: opt
   - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.7/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.7/etcdctl
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.9
     command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.7-0
-    name: init-etcd-3-5-7
+    - /opt/bin/kops-copy
+    image: registry.k8s.io/etcd:3.5.9-0
+    name: init-etcd-3-5-9
     resources: {}
     volumeMounts:
     - mountPath: /opt
-      name: bin
+      name: opt
   priorityClassName: system-cluster-critical
   tolerations:
   - key: CriticalAddonsOnly
@@ -107,7 +120,7 @@ spec:
       type: DirectoryOrCreate
     name: pki
   - emptyDir: {}
-    name: bin
+    name: opt
   - hostPath:
       path: /var/log/etcd-events.log
       type: FileOrCreate

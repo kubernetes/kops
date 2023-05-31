@@ -1419,19 +1419,12 @@ func validateEtcdStorage(specs []kops.EtcdClusterSpec, fieldPath *field.Path) fi
 }
 
 // validateEtcdVersion is responsible for validating the storage version of etcd
-// @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1; could be a problem later down the line
 func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
-	// @check if the storage is specified that it's valid
-
-	if minimalVersion == nil {
-		v := semver.MustParse("0.0.0")
-		minimalVersion = &v
+	if spec.Version == "" {
+		return nil
 	}
 
 	version := spec.Version
-	if spec.Version == "" {
-		version = components.DefaultEtcd3Version_1_20
-	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
@@ -1440,7 +1433,7 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 
 	// we only support v3 for now
 	if sem.Major == 3 {
-		if sem.LT(*minimalVersion) {
+		if minimalVersion != nil && sem.LT(*minimalVersion) {
 			return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, fmt.Sprintf("minimum version required is %s", minimalVersion.String()))}
 		}
 		return nil

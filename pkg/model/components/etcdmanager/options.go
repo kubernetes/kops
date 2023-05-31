@@ -69,7 +69,7 @@ var etcdSupportedImages = map[string]string{
 	"3.2.24": "registry.k8s.io/etcd:3.2.24-1",
 	"3.3.17": "registry.k8s.io/etcd:3.3.17-0",
 	"3.4.13": "registry.k8s.io/etcd:3.4.13-0",
-	"3.5.7":  "registry.k8s.io/etcd:3.5.7-0",
+	"3.5.9":  "registry.k8s.io/etcd:3.5.9-0",
 }
 
 func etcdSupportedVersions() []string {

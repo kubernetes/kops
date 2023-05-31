@@ -22,7 +22,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -198,9 +197,21 @@ spec:
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
     - mountPath: /opt
-      name: bin
+      name: opt
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
+  initContainers:
+  - args:
+    - /ko-app/kops-copy
+    - /opt/bin
+    command:
+    - /ko-app/kops-copy
+    image: registry.k8s.io/kops/kops-copy:1.27.0-alpha.2
+    name: kops-copy
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
   volumes:
   - hostPath:
       path: /
@@ -214,7 +225,7 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
     name: pki
-  - name: bin
+  - name: opt
     emptyDir: {}
 `
 
@@ -249,27 +260,19 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			initContainer := v1.Container{
 				Name:    "init-etcd-" + strings.ReplaceAll(etcdVersion, ".", "-"),
 				Image:   etcdSupportedImages[etcdVersion],
-				Command: []string{"/bin/sh"},
+				Command: []string{"/opt/bin/kops-copy"},
 				Args: []string{
-					"-c",
+					"/usr/local/bin/etcd",
+					"/usr/local/bin/etcdctl",
+					"/opt/etcd-v" + etcdVersion,
 				},
 				VolumeMounts: []v1.VolumeMount{
 					{
 						MountPath: "/opt",
-						Name:      "bin",
+						Name:      "opt",
 					},
 				},
 			}
-			// Add the command for copying the etcd binaries
-			var command string
-			if semver.MustParse(etcdVersion).GE(semver.MustParse("3.4.13")) {
-				// Newer images bundle a custom go based `cp` utility that recursively creates the necessary dirs
-				// https://github.com/kubernetes/kubernetes/pull/91171
-				command = "cp /usr/local/bin/etcd /opt/etcd-v" + etcdVersion + "/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/etcdctl"
-			} else {
-				command = "mkdir -p /opt/etcd-v" + etcdVersion + "/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/"
-			}
-			initContainer.Args = append(initContainer.Args, command)
 			// Remap image via AssetBuilder
 			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
 			if err != nil {
