@@ -197,7 +197,7 @@ spec:
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
     - mountPath: /opt
-      name: bin
+      name: opt
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   initContainers:
@@ -211,7 +211,7 @@ spec:
     resources: {}
     volumeMounts:
     - mountPath: /opt
-      name: bin
+      name: opt
   volumes:
   - hostPath:
       path: /
@@ -225,7 +225,7 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
     name: pki
-  - name: bin
+  - name: opt
     emptyDir: {}
 `
 
@@ -269,7 +269,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				VolumeMounts: []v1.VolumeMount{
 					{
 						MountPath: "/opt",
-						Name:      "bin",
+						Name:      "opt",
 					},
 				},
 			}
