@@ -52,7 +52,3 @@ CNIs must not masquerade IPv6 addresses.
 ### Calico
 
 Running IPv6 with Calico requires a Ubuntu 22.04 or Flatcar based AMI.
-
-## Future work
-
-* External-DNS does not, as of the writing of this document, support registering AAAA records.

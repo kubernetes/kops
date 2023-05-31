@@ -222,7 +222,11 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 		}
 		if !foundTXT {
 			if cluster.Spec.ExternalDNS != nil && cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
-				changeset.Add(rrs.New(recordKey.hostname, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))
+				domain := recordKey.hostname
+				if ip == PlaceholderIPv6 {
+					domain = "aaaa-" + domain
+				}
+				changeset.Add(rrs.New(domain, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))
 			}
 		}
 		created = append(created, recordKey)

@@ -1827,6 +1827,11 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 				}
 				prefix := strings.TrimSuffix(name, clusterName)
 
+				// Also trim ownership records for AAAA records
+				if aws.StringValue(rrs.Type) == "TXT" && strings.HasPrefix(prefix, ".aaaa-") {
+					prefix = "." + strings.TrimPrefix(prefix, ".aaaa-")
+				}
+
 				remove := false
 				// TODO: Compute the actual set of names?
 				if prefix == ".api" || prefix == ".api.internal" || prefix == ".bastion" || prefix == ".kops-controller.internal" {
