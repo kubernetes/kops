@@ -10,6 +10,8 @@ spec:
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   maxSize: 10
   role: Node
+  rollingUpdate:
+    maxUnavailable: 50%
   subnets:
   - subnet-us-test-1a
   taints:
