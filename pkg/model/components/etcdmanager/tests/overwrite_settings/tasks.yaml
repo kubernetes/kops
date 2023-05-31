@@ -104,7 +104,7 @@ Contents: |
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
       - mountPath: /opt
-        name: bin
+        name: opt
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
@@ -120,7 +120,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -132,7 +132,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -144,7 +144,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -156,7 +156,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -168,7 +168,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     priorityClassName: system-cluster-critical
     tolerations:
     - key: CriticalAddonsOnly
@@ -187,7 +187,7 @@ Contents: |
         type: DirectoryOrCreate
       name: pki
     - emptyDir: {}
-      name: bin
+      name: opt
     - hostPath:
         path: /var/log/etcd-events.log
         type: FileOrCreate
@@ -239,7 +239,7 @@ Contents: |
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
       - mountPath: /opt
-        name: bin
+        name: opt
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
@@ -255,7 +255,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -267,7 +267,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -279,7 +279,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -291,7 +291,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
@@ -303,7 +303,7 @@ Contents: |
       resources: {}
       volumeMounts:
       - mountPath: /opt
-        name: bin
+        name: opt
     priorityClassName: system-cluster-critical
     tolerations:
     - key: CriticalAddonsOnly
@@ -322,7 +322,7 @@ Contents: |
         type: DirectoryOrCreate
       name: pki
     - emptyDir: {}
-      name: bin
+      name: opt
     - hostPath:
         path: /var/log/etcd.log
         type: FileOrCreate
