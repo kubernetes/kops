@@ -85,6 +85,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	b.Context = clusterName
 	b.Server = server
+	b.TLSServerName = cluster.APIInternalName()
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port
