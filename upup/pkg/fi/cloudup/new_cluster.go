@@ -1323,12 +1323,16 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
-		if cluster.UsesLegacyGossip() {
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
-		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderHetzner, api.CloudProviderDO:
+			// Use dns=none if not specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
-		} else {
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+		default:
+			if cluster.UsesLegacyGossip() {
+				cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
+			} else {
+				cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+			}
 		}
 	case "public":
 		cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
