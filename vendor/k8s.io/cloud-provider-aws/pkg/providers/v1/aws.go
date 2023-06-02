@@ -5124,6 +5124,12 @@ func nodeNameToIPAddress(nodeName string) string {
 
 func (c *Cloud) nodeNameToInstanceID(nodeName types.NodeName) (InstanceID, error) {
 	if strings.HasPrefix(string(nodeName), rbnNamePrefix) {
+		// depending on if you use a RHEL (e.g. AL2) or Debian (e.g. standard Ubuntu) based distribution, the
+		// hostname on the machine may be either i-00000000000000001 or i-00000000000000001.region.compute.internal.
+		// This handles both scenarios by returning anything before the first '.' in the node name if it has an RBN prefix.
+		if idx := strings.IndexByte(string(nodeName), '.'); idx != -1 {
+			return InstanceID(nodeName[0:idx]), nil
+		}
 		return InstanceID(nodeName), nil
 	}
 	if len(nodeName) == 0 {

@@ -33369,7 +33369,7 @@
       }
     }
   },
-  "revision": "20230509",
+  "revision": "20230516",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -34614,6 +34614,18 @@
           ],
           "type": "string"
         },
+        "savedState": {
+          "description": "For LocalSSD disks on VM Instances in STOPPED or SUSPENDED state, this field is set to PRESERVED if the LocalSSD data has been saved to a persistent location by customer request. (see the discard_local_ssd option on Stop/Suspend). Read-only in the api.",
+          "enum": [
+            "DISK_SAVED_STATE_UNSPECIFIED",
+            "PRESERVED"
+          ],
+          "enumDescriptions": [
+            "*[Default]* Disk state has not been preserved.",
+            "Disk state has been preserved."
+          ],
+          "type": "string"
+        },
         "shieldedInstanceInitialState": {
           "$ref": "InitialStateConfig",
           "description": "[Output Only] shielded vm initial state stored on disk"
@@ -35336,7 +35348,7 @@
       "id": "AutoscalingPolicy",
       "properties": {
         "coolDownPeriodSec": {
-          "description": "The number of seconds that the autoscaler waits before it starts collecting information from a new instance. This prevents the autoscaler from collecting information when the instance is initializing, during which the collected usage would not be reliable. The default time autoscaler waits is 60 seconds. Virtual machine initialization times might vary because of numerous factors. We recommend that you test how long an instance may take to initialize. To do this, create an instance and time the startup process.",
+          "description": "The number of seconds that your application takes to initialize on a VM instance. This is referred to as the [initialization period](/compute/docs/autoscaler#cool_down_period). Specifying an accurate initialization period improves autoscaler decisions. For example, when scaling out, the autoscaler ignores data from VMs that are still initializing because those VMs might not yet represent normal usage of your application. The default initialization period is 60 seconds. Initialization periods might vary because of numerous factors. We recommend that you test how long your application takes to initialize. To do this, create a VM and time your application's startup process.",
           "format": "int32",
           "type": "integer"
         },
@@ -35366,7 +35378,7 @@
           "type": "integer"
         },
         "mode": {
-          "description": "Defines operating mode for this policy.",
+          "description": "Defines the operating mode for this policy. The following modes are available: - OFF: Disables the autoscaler but maintains its configuration. - ONLY_SCALE_OUT: Restricts the autoscaler to add VM instances only. - ON: Enables all autoscaler activities according to its policy. For more information, see \"Turning off or restricting an autoscaler\"",
           "enum": [
             "OFF",
             "ON",
@@ -41326,7 +41338,7 @@
       "id": "GuestOsFeature",
       "properties": {
         "type": {
-          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_LIVE_MIGRATABLE - SEV_SNP_CAPABLE - TDX_CAPABLE For more information, see Enabling guest operating system features.",
+          "description": "The ID of a supported feature. To add multiple values, use commas to separate values. Set to one or more of the following values: - VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE - SEV_LIVE_MIGRATABLE - SEV_SNP_CAPABLE For more information, see Enabling guest operating system features.",
           "enum": [
             "FEATURE_TYPE_UNSPECIFIED",
             "GVNIC",
@@ -50374,7 +50386,7 @@
       "id": "NetworkAttachmentConnectedEndpoint",
       "properties": {
         "ipAddress": {
-          "description": "The IP address assigned to the producer instance network interface. This value will be a range in case of Serverless.",
+          "description": "The IPv4 address assigned to the producer instance network interface. This value will be a range in case of Serverless.",
           "type": "string"
         },
         "projectIdOrNum": {
