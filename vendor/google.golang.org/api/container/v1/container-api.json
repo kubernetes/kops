@@ -2489,7 +2489,7 @@
       }
     }
   },
-  "revision": "20230501",
+  "revision": "20230515",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -4649,6 +4649,38 @@
       },
       "type": "object"
     },
+    "NodeAffinity": {
+      "description": "Specifies the NodeAffinity key, values, and affinity operator according to [shared sole tenant node group affinities](https://cloud.google.com/compute/docs/nodes/sole-tenant-nodes#node_affinity_and_anti-affinity).",
+      "id": "NodeAffinity",
+      "properties": {
+        "key": {
+          "description": "Key for NodeAffinity.",
+          "type": "string"
+        },
+        "operator": {
+          "description": "Operator for NodeAffinity.",
+          "enum": [
+            "OPERATOR_UNSPECIFIED",
+            "IN",
+            "NOT_IN"
+          ],
+          "enumDescriptions": [
+            "Invalid or unspecified affinity operator.",
+            "Affinity operator.",
+            "Anti-affinity operator."
+          ],
+          "type": "string"
+        },
+        "values": {
+          "description": "Values for NodeAffinity.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "NodeConfig": {
       "description": "Parameters that describe the nodes in a cluster. GKE Autopilot clusters do not recognize parameters in `NodeConfig`. Use AutoprovisioningNodePoolDefaults instead.",
       "id": "NodeConfig",
@@ -4781,6 +4813,10 @@
         "shieldedInstanceConfig": {
           "$ref": "ShieldedInstanceConfig",
           "description": "Shielded Instance options."
+        },
+        "soleTenantConfig": {
+          "$ref": "SoleTenantConfig",
+          "description": "Parameters for node pools to be backed by shared sole tenant node groups."
         },
         "spot": {
           "description": "Spot flag for enabling Spot VM, which is a rebrand of the existing preemptible flag.",
@@ -6141,6 +6177,20 @@
         "enabled": {
           "description": "Whether Shielded Nodes features are enabled on all nodes in this cluster.",
           "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "SoleTenantConfig": {
+      "description": "SoleTenantConfig contains the NodeAffinities to specify what shared sole tenant node groups should back the node pool.",
+      "id": "SoleTenantConfig",
+      "properties": {
+        "nodeAffinities": {
+          "description": "NodeAffinities used to match to a shared sole tenant node group.",
+          "items": {
+            "$ref": "NodeAffinity"
+          },
+          "type": "array"
         }
       },
       "type": "object"
