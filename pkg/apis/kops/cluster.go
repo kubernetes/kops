@@ -585,6 +585,8 @@ type NodeLocalDNSConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// ExternalCoreFile is used to provide a complete NodeLocalDNS CoreFile by the user - ignores other provided flags which modify the CoreFile.
 	ExternalCoreFile string `json:"externalCoreFile,omitempty"`
+	// AdditionalConfig is used to provide additional config for node local dns by the user - it will include the original CoreFile made by kOps.
+	AdditionalConfig string `json:"additionalConfig,omitempty"`
 	// Image overrides the default docker image used for node-local-dns addon.
 	Image *string `json:"image,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.

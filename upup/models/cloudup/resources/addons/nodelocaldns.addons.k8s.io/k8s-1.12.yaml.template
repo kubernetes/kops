@@ -107,6 +107,7 @@ data:
         {{- end }}
     }
     {{- end }}
+{{ KubeDNS.NodeLocalDNS.AdditionalConfig | indent 4 }}
   {{- end }}
 ---
 apiVersion: apps/v1

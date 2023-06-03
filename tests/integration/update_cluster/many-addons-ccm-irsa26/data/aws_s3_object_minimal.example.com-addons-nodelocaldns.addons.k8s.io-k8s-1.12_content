@@ -44,7 +44,7 @@ spec:
 
 apiVersion: v1
 data:
-  Corefile: |-
+  Corefile: |
     cluster.local:53 {
         errors
         cache {
@@ -90,6 +90,10 @@ data:
         bind 169.254.20.10
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
+    }
+    googleapis.com:53 {
+        bind 169.254.20.10
+        forward . 10.238.1.130
     }
 kind: ConfigMap
 metadata:
