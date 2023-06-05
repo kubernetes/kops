@@ -160,6 +160,18 @@ Contents: |
     - args:
       - /usr/local/bin/etcd
       - /usr/local/bin/etcdctl
+      - /opt/etcd-v3.5.7
+      command:
+      - /opt/bin/kops-copy
+      image: registry.k8s.io/etcd:3.5.7-0
+      name: init-etcd-3-5-7
+      resources: {}
+      volumeMounts:
+      - mountPath: /opt
+        name: opt
+    - args:
+      - /usr/local/bin/etcd
+      - /usr/local/bin/etcdctl
       - /opt/etcd-v3.5.9
       command:
       - /opt/bin/kops-copy
@@ -288,6 +300,18 @@ Contents: |
       - /opt/bin/kops-copy
       image: registry.k8s.io/etcd:3.4.13-0
       name: init-etcd-3-4-13
+      resources: {}
+      volumeMounts:
+      - mountPath: /opt
+        name: opt
+    - args:
+      - /usr/local/bin/etcd
+      - /usr/local/bin/etcdctl
+      - /opt/etcd-v3.5.7
+      command:
+      - /opt/bin/kops-copy
+      image: registry.k8s.io/etcd:3.5.7-0
+      name: init-etcd-3-5-7
       resources: {}
       volumeMounts:
       - mountPath: /opt
