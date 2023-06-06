@@ -136,7 +136,7 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 
 		backendCreated, err := lbService.CreateBackend(&lb.ZonedAPICreateBackendRequest{
 			Zone:                 scw.Zone(fi.ValueOf(expected.Zone)),
-			LBID:                 fi.ValueOf(expected.LoadBalancer.LBID), // try expected instead of l
+			LBID:                 fi.ValueOf(expected.LoadBalancer.LBID),
 			Name:                 fi.ValueOf(expected.Name),
 			ForwardProtocol:      lb.Protocol(fi.ValueOf(expected.ForwardProtocol)),
 			ForwardPort:          fi.ValueOf(expected.ForwardPort),

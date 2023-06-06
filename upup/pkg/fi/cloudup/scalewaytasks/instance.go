@@ -278,42 +278,37 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 			if err != nil {
 				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
 			}
-			if backEnds.TotalCount > 1 {
-				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.Name)
-			} else if backEnds.TotalCount < 1 {
-				return fmt.Errorf("load-balancer %s should have 1 back-end, got 0", loadBalancer.Name)
-			}
-			backEnd := backEnds.Backends[0]
 
-			// If we are adding instances, we also need to add them to the load-balancer's backend
-			if newInstanceCount > 0 {
-				_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
-					Zone:      zone,
-					BackendID: backEnd.ID,
-					ServerIP:  controlPlanePrivateIPs,
+			for _, backEnd := range backEnds.Backends {
+				// If we are adding instances, we also need to add them to the load-balancer's backend
+				if newInstanceCount > 0 {
+					_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
+						Zone:      zone,
+						BackendID: backEnd.ID,
+						ServerIP:  controlPlanePrivateIPs,
+					})
+					if err != nil {
+						return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+					}
+
+				} else {
+					// If we are deleting instances, we also need to delete them from the load-balancer's backend
+					_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+						Zone:      zone,
+						BackendID: backEnd.ID,
+						ServerIP:  controlPlanePrivateIPs,
+					})
+					if err != nil {
+						return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
+					}
+				}
+				_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+					LBID: loadBalancer.ID,
+					Zone: zone,
 				})
 				if err != nil {
-					return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+					return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 				}
-
-			} else {
-				// If we are deleting instances, we also need to delete them from the load-balancer's backend
-				_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
-					Zone:      zone,
-					BackendID: backEnd.ID,
-					ServerIP:  controlPlanePrivateIPs,
-				})
-				if err != nil {
-					return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
-				}
-			}
-
-			_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-				LBID: loadBalancer.ID,
-				Zone: zone,
-			})
-			if err != nil {
-				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 			}
 		}
 	}
