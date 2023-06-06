@@ -33,6 +33,8 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 		return true
 	case kops.CloudProviderDO:
 		return true
+	case kops.CloudProviderScaleway:
+		return true
 	default:
 		return false
 	}
@@ -44,6 +46,8 @@ func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 	case kops.CloudProviderHetzner:
 		return true
 	case kops.CloudProviderDO:
+		return true
+	case kops.CloudProviderScaleway:
 		return true
 	default:
 		return false

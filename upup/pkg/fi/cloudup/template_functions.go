@@ -738,6 +738,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderDO:
 			config.Server.Provider.DigitalOcean = &do.DigitalOceanVerifierOptions{}
 
+		case kops.CloudProviderScaleway:
+			config.Server.Provider.Scaleway = &scaleway.ScalewayVerifierOptions{}
+
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())
 		}

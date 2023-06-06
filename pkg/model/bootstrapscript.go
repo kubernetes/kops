@@ -231,7 +231,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
 		profile, err := scaleway.CreateValidScalewayProfile()
 		if err != nil {
 			return nil, err
