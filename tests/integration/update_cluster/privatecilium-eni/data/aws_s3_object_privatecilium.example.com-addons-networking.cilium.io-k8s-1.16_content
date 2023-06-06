@@ -221,6 +221,13 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - nodes
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - services
   - endpoints
   - namespaces
