@@ -445,6 +445,9 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce.example.com"
@@ -492,6 +495,9 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     "k8s-io-cluster-name"   = "minimal-gce-example-com"
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   machine_type = "e2-medium"
   metadata = {

@@ -489,6 +489,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 }
 
 type terraformInstanceTemplate struct {
+	Lifecycle             *terraform.Lifecycle                     `cty:"lifecycle"`
 	NamePrefix            string                                   `cty:"name_prefix"`
 	CanIPForward          bool                                     `cty:"can_ip_forward"`
 	MachineType           string                                   `cty:"machine_type"`
@@ -623,6 +624,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	name := fi.ValueOf(e.Name)
 
 	tf := &terraformInstanceTemplate{
+		Lifecycle:  &terraform.Lifecycle{CreateBeforeDestroy: fi.PtrTo(true)},
 		NamePrefix: fi.ValueOf(e.NamePrefix) + "-",
 	}
 
