@@ -581,6 +581,9 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
@@ -629,6 +632,9 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     "k8s-io-instance-group"     = "master-us-test1-b"
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   machine_type = "e2-medium"
   metadata = {
@@ -679,6 +685,9 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
@@ -726,6 +735,9 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     "k8s-io-cluster-name"   = "ha-gce-example-com"
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   machine_type = "e2-medium"
   metadata = {
