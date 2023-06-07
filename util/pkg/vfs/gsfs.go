@@ -22,7 +22,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -420,7 +419,7 @@ type terraformGSObjectAccessControl struct {
 }
 
 func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
-	bytes, err := ioutil.ReadAll(data)
+	bytes, err := io.ReadAll(data)
 	if err != nil {
 		return fmt.Errorf("reading data: %v", err)
 	}

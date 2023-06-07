@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -86,7 +85,7 @@ func newMetadataService(serviceURL string, configDrivePath string, mounter *moun
 
 // GetLocalMetadata returns a local metadata for the server
 func GetLocalMetadata() (*InstanceMetadata, error) {
-	mountTarget, err := ioutil.TempDir("", "configdrive")
+	mountTarget, err := os.MkdirTemp("", "configdrive")
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +152,7 @@ func (mds MetadataService) getFromMetadataService() (*InstanceMetadata, error) {
 func (mds MetadataService) parseMetadata(r io.Reader) (*InstanceMetadata, error) {
 	var meta InstanceMetadata
 
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
