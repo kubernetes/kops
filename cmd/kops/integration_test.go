@@ -279,6 +279,19 @@ func TestMinimal_v1_26(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_27(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	newIntegrationTest("minimal.example.com", "minimal-1.27").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
 	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
