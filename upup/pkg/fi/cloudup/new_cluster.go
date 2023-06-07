@@ -1526,30 +1526,36 @@ func addCiliumNetwork(cluster *api.Cluster) {
 
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture architectures.Architecture) (string, error) {
+	kubernetesVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse kubernetes version %q", cluster.Spec.KubernetesVersion)
+	}
+
 	if channel != nil {
-		var kubernetesVersion *semver.Version
-		if cluster.Spec.KubernetesVersion != "" {
-			var err error
-			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-			if err != nil {
-				return "", fmt.Errorf("unable to parse kubernetes version %q", cluster.Spec.KubernetesVersion)
-			}
-		}
-		if channel != nil && kubernetesVersion != nil {
-			image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
-			if image != nil {
-				return image.Name, nil
-			}
+		image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
+		if image != nil {
+			return image.Name, nil
 		}
 	}
 
-	switch cluster.Spec.GetCloudProvider() {
-	case api.CloudProviderDO:
-		return defaultDOImage, nil
-	case api.CloudProviderHetzner:
-		return defaultHetznerImage, nil
-	case api.CloudProviderScaleway:
-		return defaultScalewayImage, nil
+	if kubernetesVersion.LT(semver.MustParse("1.27.0")) {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderDO:
+			return defaultDOImageFocal, nil
+		case api.CloudProviderHetzner:
+			return defaultHetznerImageFocal, nil
+		case api.CloudProviderScaleway:
+			return defaultScalewayImageFocal, nil
+		}
+	} else {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderDO:
+			return defaultDOImageJammy, nil
+		case api.CloudProviderHetzner:
+			return defaultHetznerImageJammy, nil
+		case api.CloudProviderScaleway:
+			return defaultScalewayImageJammy, nil
+		}
 	}
 
 	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.Spec.GetCloudProvider(), architecture)

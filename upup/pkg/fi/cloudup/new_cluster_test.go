@@ -400,7 +400,19 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultDOImage,
+			expected:     defaultDOImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						DO: &api.DOSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultDOImageJammy,
 		},
 		{
 			cluster: &api.Cluster{
@@ -412,7 +424,19 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultHetznerImage,
+			expected:     defaultHetznerImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						Hetzner: &api.HetznerSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultHetznerImageJammy,
 		},
 		{
 			cluster: &api.Cluster{
@@ -424,7 +448,19 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultScalewayImage,
+			expected:     defaultScalewayImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						Scaleway: &api.ScalewaySpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultScalewayImageJammy,
 		},
 	}
 
