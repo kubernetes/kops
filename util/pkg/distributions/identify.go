@@ -82,6 +82,9 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	if strings.HasPrefix(distro, "rhel-8.") {
 		return DistributionRhel8, nil
 	}
+	if strings.HasPrefix(distro, "rhel-9.") {
+		return DistributionRhel9, nil
+	}
 	if strings.HasPrefix(distro, "rocky-8.") {
 		return DistributionRocky8, nil
 	}
