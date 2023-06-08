@@ -4,6 +4,12 @@
 
 ## Installing
 
+If using kOps 1.26 or older, enable the Karpenter feature flag :
+
+```sh
+export KOPS_FEATURE_FLAGS="Karpenter"
+```
+
 Karpenter requires that external permissions for ServiceAccounts be enabled for the cluster. See [AWS IAM roles for ServiceAccounts documentation](/cluster_spec#service-account-issuer-discovery-and-aws-iam-roles-for-service-accounts-irsa) for how to enable this. 
 
 ### Existing clusters
