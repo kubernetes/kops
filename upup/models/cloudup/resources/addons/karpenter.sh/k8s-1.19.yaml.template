@@ -961,7 +961,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.27.3
+          image: public.ecr.aws/karpenter/controller:v0.27.5
           imagePullPolicy: IfNotPresent
           env:
             - name: KUBERNETES_MIN_VERSION
