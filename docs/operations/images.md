@@ -46,6 +46,7 @@ The following table provides the support status for various distros with regards
 | Kope.io                                 |            - |      - |       1.18 |    1.23 |
 | RHEL 7                                  |            - |    1.5 |       1.21 |    1.23 |
 | [RHEL 8](#rhel-8)                       |         1.15 |   1.18 |          - |       - |
+| [RHEL 9](#rhel-9)                       |         1.27 |      - |          - |       - |
 | [Rocky 8](#rocky-8)                     |       1.23.2 |   1.24 |          - |       - |
 | Ubuntu 16.04                            |          1.5 |   1.10 |       1.17 |    1.20 |
 | [Ubuntu 18.04](#ubuntu-1804-bionic)     |         1.10 |   1.16 |       1.26 |       - |
@@ -170,6 +171,19 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 309956199498 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=RHEL-8.*x86_64*"
+```
+
+### RHEL 9
+
+RHEL 9 is based on Kernel version **5.15** which fixes all the known major Kernel bugs.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 309956199498 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=RHEL-9.*x86_64*"
 ```
 
 ### Rocky 8
