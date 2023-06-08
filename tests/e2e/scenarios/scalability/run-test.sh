@@ -85,13 +85,16 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
-create_args="--networking calico"
+create_args=()
+create_args+=("--networking=calico")
+create_args+=("--node-count=${KUBE_NODE_COUNT:101}")
 # TODO: Use the newer non-DNS mode, more scalable than gossip and generally recommended
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
 #create_args="--dns none"
-create_args="${create_args} --node-size=c6g.medium --master-size=c6g.xlarge --node-count=101"
+create_args+=("--node-size=c6g.medium")
+create_args+=("--master-size=c6g.xlarge")
 if [[ -n "${ZONES:-}" ]]; then
-    create_args="${create_args} --zones=${ZONES}"
+    create_args+=("--zones=${ZONES}")
 fi
 
 
@@ -120,10 +123,14 @@ fi
 kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --up \
   --kubernetes-version="${K8S_VERSION}" \
-  --create-args="${create_args}" \
+  --create-args="${create_args[*]}" \
   --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}"
 
-kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
+  # TODO
+  echo "Run CL2 tests"
+else
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=kops \
   --kubernetes-version="${K8S_VERSION}" \
   -- \
@@ -131,6 +138,7 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --parallel=30 \
   --skip-regex="\[Serial\]" \
   --focus-regex="\[Conformance\]"
+fi
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
   kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
