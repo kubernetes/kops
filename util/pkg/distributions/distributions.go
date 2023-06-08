@@ -49,6 +49,7 @@ var (
 	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
 	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
+	DistributionRhel9           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel9", version: 9}
 	DistributionRocky8          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
 	DistributionFlatcar         = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
 	DistributionContainerOS     = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}

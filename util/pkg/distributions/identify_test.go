@@ -100,6 +100,11 @@ func TestFindDistribution(t *testing.T) {
 			expected: DistributionRhel8,
 		},
 		{
+			rootfs:   "rhel9",
+			err:      nil,
+			expected: DistributionRhel9,
+		},
+		{
 			rootfs:   "rocky8",
 			err:      nil,
 			expected: DistributionRocky8,
