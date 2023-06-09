@@ -190,6 +190,11 @@ spec:
             drop:
             - all
           readOnlyRootFilesystem: true
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         livenessProbe:
           httpGet:
             path: /health

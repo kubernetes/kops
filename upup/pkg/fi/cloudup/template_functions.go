@@ -412,6 +412,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
 	dest["KopsVersion"] = func() string { return kopsroot.KOPS_RELEASE_VERSION }
 
+	dest["ContainerdSELinuxEnabled"] = func() bool {
+		if cluster.Spec.Containerd != nil {
+			return cluster.Spec.Containerd.SeLinuxEnabled
+		}
+		return false
+	}
+
 	return nil
 }
 

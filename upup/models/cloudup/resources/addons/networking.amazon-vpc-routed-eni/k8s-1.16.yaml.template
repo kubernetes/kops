@@ -143,8 +143,12 @@ spec:
       terminationGracePeriodSeconds: 10
       tolerations:
         - operator: Exists
+{{ if ContainerdSELinuxEnabled }}
       securityContext:
-        {}
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       containers:
         - name: aws-node
           image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.6" }}"

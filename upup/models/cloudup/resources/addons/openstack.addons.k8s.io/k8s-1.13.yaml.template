@@ -212,6 +212,11 @@ spec:
       nodeSelector: null
       securityContext:
         runAsUser: 1001
+{{ if ContainerdSELinuxEnabled }}
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccountName: cloud-controller-manager
       tolerations:
       - effect: NoSchedule

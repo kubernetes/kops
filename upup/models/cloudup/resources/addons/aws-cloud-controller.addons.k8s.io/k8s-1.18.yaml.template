@@ -38,6 +38,12 @@ spec:
         effect: NoSchedule
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccountName: aws-cloud-controller-manager
       containers:
       - name: aws-cloud-controller-manager

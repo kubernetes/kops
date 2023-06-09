@@ -99,6 +99,11 @@ spec:
         securityContext:
           runAsNonRoot: true
           runAsUser: 10011
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
       volumes:
 {{ if .UseHostCertificates }}
       - hostPath:
