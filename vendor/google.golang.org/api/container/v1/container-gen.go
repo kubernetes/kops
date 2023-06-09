@@ -563,6 +563,62 @@ func (s *Autopilot) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// AutopilotCompatibilityIssue: AutopilotCompatibilityIssue contains
+// information about a specific compatibility issue with Autopilot mode.
+type AutopilotCompatibilityIssue struct {
+	// ConstraintType: The constraint type of the issue.
+	ConstraintType string `json:"constraintType,omitempty"`
+
+	// Description: The description of the issue.
+	Description string `json:"description,omitempty"`
+
+	// DocumentationUrl: A URL to a public documnetation, which addresses
+	// resolving this issue.
+	DocumentationUrl string `json:"documentationUrl,omitempty"`
+
+	// IncompatibilityType: The incompatibility type of this issue.
+	//
+	// Possible values:
+	//   "UNSPECIFIED" - Default value, should not be used.
+	//   "INCOMPATIBILITY" - Indicates that the issue is a known
+	// incompatibility between the cluster and Autopilot mode.
+	//   "ADDITIONAL_CONFIG_REQUIRED" - Indicates the issue is an
+	// incompatibility if customers take no further action to resolve.
+	//   "PASSED_WITH_OPTIONAL_CONFIG" - Indicates the issue is not an
+	// incompatibility, but depending on the workloads business logic, there
+	// is a potential that they won't work on Autopilot.
+	IncompatibilityType string `json:"incompatibilityType,omitempty"`
+
+	// LastObservation: The last time when this issue was observed.
+	LastObservation string `json:"lastObservation,omitempty"`
+
+	// Subjects: The name of the resources which are subject to this issue.
+	Subjects []string `json:"subjects,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ConstraintType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ConstraintType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AutopilotCompatibilityIssue) MarshalJSON() ([]byte, error) {
+	type NoMethod AutopilotCompatibilityIssue
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // AutoprovisioningNodePoolDefaults: AutoprovisioningNodePoolDefaults
 // contains defaults for a node pool created by NAP.
 type AutoprovisioningNodePoolDefaults struct {
@@ -641,6 +697,42 @@ type AutoprovisioningNodePoolDefaults struct {
 
 func (s *AutoprovisioningNodePoolDefaults) MarshalJSON() ([]byte, error) {
 	type NoMethod AutoprovisioningNodePoolDefaults
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// BestEffortProvisioning: Best effort provisioning.
+type BestEffortProvisioning struct {
+	// Enabled: When this is enabled, cluster/node pool creations will
+	// ignore non-fatal errors like stockout to best provision as many nodes
+	// as possible right now and eventually bring up all target number of
+	// nodes
+	Enabled bool `json:"enabled,omitempty"`
+
+	// MinProvisionNodes: Minimum number of nodes to be provisioned to be
+	// considered as succeeded, and the rest of nodes will be provisioned
+	// gradually and eventually when stockout issue has been resolved.
+	MinProvisionNodes int64 `json:"minProvisionNodes,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BestEffortProvisioning) MarshalJSON() ([]byte, error) {
+	type NoMethod BestEffortProvisioning
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -858,6 +950,43 @@ func (s *CancelOperationRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// CheckAutopilotCompatibilityResponse:
+// CheckAutopilotCompatibilityResponse has a list of compatibility
+// issues.
+type CheckAutopilotCompatibilityResponse struct {
+	// Issues: The list of issues for the given operation.
+	Issues []*AutopilotCompatibilityIssue `json:"issues,omitempty"`
+
+	// Summary: The summary of the autopilot compatibility response.
+	Summary string `json:"summary,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Issues") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Issues") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *CheckAutopilotCompatibilityResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod CheckAutopilotCompatibilityResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // CidrBlock: CidrBlock contains an optional name and one CIDR block.
 type CidrBlock struct {
 	// CidrBlock: cidr_block must be specified in CIDR notation.
@@ -1029,6 +1158,9 @@ type Cluster struct {
 
 	// Description: An optional description of this cluster.
 	Description string `json:"description,omitempty"`
+
+	// EnableK8sBetaApis: Beta APIs Config
+	EnableK8sBetaApis *K8sBetaAPIConfig `json:"enableK8sBetaApis,omitempty"`
 
 	// EnableKubernetesAlpha: Kubernetes alpha features are enabled on this
 	// cluster. This includes alpha API groups (e.g. v1alpha1) and features
@@ -1440,6 +1572,10 @@ type ClusterUpdate struct {
 	// cluster.
 	DesiredDnsConfig *DNSConfig `json:"desiredDnsConfig,omitempty"`
 
+	// DesiredEnableFqdnNetworkPolicy: Enable/Disable FQDN Network Policy
+	// for the cluster.
+	DesiredEnableFqdnNetworkPolicy bool `json:"desiredEnableFqdnNetworkPolicy,omitempty"`
+
 	// DesiredEnablePrivateEndpoint: Enable/Disable private endpoint for the
 	// cluster's master.
 	DesiredEnablePrivateEndpoint bool `json:"desiredEnablePrivateEndpoint,omitempty"`
@@ -1465,6 +1601,9 @@ type ClusterUpdate struct {
 	// DesiredIntraNodeVisibilityConfig: The desired config of Intra-node
 	// visibility.
 	DesiredIntraNodeVisibilityConfig *IntraNodeVisibilityConfig `json:"desiredIntraNodeVisibilityConfig,omitempty"`
+
+	// DesiredK8sBetaApis: Desired Beta APIs to be enabled for cluster.
+	DesiredK8sBetaApis *K8sBetaAPIConfig `json:"desiredK8sBetaApis,omitempty"`
 
 	// DesiredL4ilbSubsettingConfig: The desired L4 Internal Load Balancer
 	// Subsetting configuration.
@@ -1607,6 +1746,10 @@ type ClusterUpdate struct {
 
 	// DesiredWorkloadIdentityConfig: Configuration for Workload Identity.
 	DesiredWorkloadIdentityConfig *WorkloadIdentityConfig `json:"desiredWorkloadIdentityConfig,omitempty"`
+
+	// EnableK8sBetaApis: Kubernetes open source beta apis enabled on the
+	// cluster. Only beta apis
+	EnableK8sBetaApis *K8sBetaAPIConfig `json:"enableK8sBetaApis,omitempty"`
 
 	// Etag: The current etag of the cluster. If an etag is provided and
 	// does not match the current etag of the cluster, update will be
@@ -2946,6 +3089,34 @@ func (s *Jwk) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// K8sBetaAPIConfig: K8sBetaAPIConfig , configuration for beta APIs
+type K8sBetaAPIConfig struct {
+	// EnabledApis: Enabled k8s beta APIs.
+	EnabledApis []string `json:"enabledApis,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EnabledApis") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EnabledApis") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *K8sBetaAPIConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod K8sBetaAPIConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // KubernetesDashboard: Configuration for the Kubernetes Dashboard.
 type KubernetesDashboard struct {
 	// Disabled: Whether the Kubernetes Dashboard is enabled for this
@@ -3808,6 +3979,10 @@ type NetworkConfig struct {
 	// DnsConfig: DNSConfig contains clusterDNS config for this cluster.
 	DnsConfig *DNSConfig `json:"dnsConfig,omitempty"`
 
+	// EnableFqdnNetworkPolicy: Whether FQDN Network Policy is enabled on
+	// this cluster.
+	EnableFqdnNetworkPolicy bool `json:"enableFqdnNetworkPolicy,omitempty"`
+
 	// EnableIntraNodeVisibility: Whether Intra-node visibility is enabled
 	// for this cluster. This makes same node pod to pod traffic visible for
 	// VPC network.
@@ -4502,6 +4677,9 @@ type NodePool struct {
 	// Autoscaling: Autoscaler configuration for this NodePool. Autoscaler
 	// is enabled only if a valid configuration is present.
 	Autoscaling *NodePoolAutoscaling `json:"autoscaling,omitempty"`
+
+	// BestEffortProvisioning: Enable best effort provisioning for nodes
+	BestEffortProvisioning *BestEffortProvisioning `json:"bestEffortProvisioning,omitempty"`
 
 	// Conditions: Which conditions caused the current node pool state.
 	Conditions []*StatusCondition `json:"conditions,omitempty"`
@@ -8040,6 +8218,156 @@ func (c *ProjectsLocationsGetServerConfigCall) Do(opts ...googleapi.CallOption) 
 	//   "path": "v1/{+name}/serverConfig",
 	//   "response": {
 	//     "$ref": "ServerConfig"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "container.projects.locations.clusters.checkAutopilotCompatibility":
+
+type ProjectsLocationsClustersCheckAutopilotCompatibilityCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// CheckAutopilotCompatibility: Checks the cluster compatibility with
+// Autopilot mode, and returns a list of compatibility issues.
+//
+//   - name: The name (project, location, cluster) of the cluster to
+//     retrieve. Specified in the format
+//     `projects/*/locations/*/clusters/*`.
+func (r *ProjectsLocationsClustersService) CheckAutopilotCompatibility(name string) *ProjectsLocationsClustersCheckAutopilotCompatibilityCall {
+	c := &ProjectsLocationsClustersCheckAutopilotCompatibilityCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) Fields(s ...googleapi.Field) *ProjectsLocationsClustersCheckAutopilotCompatibilityCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) IfNoneMatch(entityTag string) *ProjectsLocationsClustersCheckAutopilotCompatibilityCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) Context(ctx context.Context) *ProjectsLocationsClustersCheckAutopilotCompatibilityCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:checkAutopilotCompatibility")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "container.projects.locations.clusters.checkAutopilotCompatibility" call.
+// Exactly one of *CheckAutopilotCompatibilityResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *CheckAutopilotCompatibilityResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *ProjectsLocationsClustersCheckAutopilotCompatibilityCall) Do(opts ...googleapi.CallOption) (*CheckAutopilotCompatibilityResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &CheckAutopilotCompatibilityResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Checks the cluster compatibility with Autopilot mode, and returns a list of compatibility issues.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:checkAutopilotCompatibility",
+	//   "httpMethod": "GET",
+	//   "id": "container.projects.locations.clusters.checkAutopilotCompatibility",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The name (project, location, cluster) of the cluster to retrieve. Specified in the format `projects/*/locations/*/clusters/*`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:checkAutopilotCompatibility",
+	//   "response": {
+	//     "$ref": "CheckAutopilotCompatibilityResponse"
 	//   },
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform"

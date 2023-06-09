@@ -1108,13 +1108,6 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 // use HMAC keys to generate (GenerateMac) and verify (VerifyMac) HMAC codes
 // for messages up to 4096 bytes.
 //
-// HMAC KMS keys are not supported in all Amazon Web Services Regions. If you
-// try to create an HMAC KMS key in an Amazon Web Services Region in which HMAC
-// keys are not supported, the CreateKey operation returns an UnsupportedOperationException.
-// For a list of Regions in which HMAC KMS keys are supported, see HMAC keys
-// in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html)
-// in the Key Management Service Developer Guide.
-//
 // # Multi-Region primary keys
 //
 // # Imported key material
@@ -1140,18 +1133,20 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 // keys, see Multi-Region keys in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
 // in the Key Management Service Developer Guide.
 //
-// To import your own key material into a KMS key, begin by creating a symmetric
-// encryption KMS key with no key material. To do this, use the Origin parameter
-// of CreateKey with a value of EXTERNAL. Next, use GetParametersForImport operation
-// to get a public key and import token, and use the public key to encrypt your
+// To import your own key material into a KMS key, begin by creating a KMS key
+// with no key material. To do this, use the Origin parameter of CreateKey with
+// a value of EXTERNAL. Next, use GetParametersForImport operation to get a
+// public key and import token. Use the wrapping public key to encrypt your
 // key material. Then, use ImportKeyMaterial with your import token to import
 // the key material. For step-by-step instructions, see Importing Key Material
 // (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide .
 //
-// This feature supports only symmetric encryption KMS keys, including multi-Region
-// symmetric encryption KMS keys. You cannot import key material into any other
-// type of KMS key.
+// You can import key material into KMS keys of all supported KMS key types:
+// symmetric encryption KMS keys, HMAC KMS keys, asymmetric encryption KMS keys,
+// and asymmetric signing KMS keys. You can also create multi-Region keys with
+// imported key material. However, you can't import key material into a KMS
+// key in a custom key store.
 //
 // To create a multi-Region primary key with imported key material, use the
 // Origin parameter of CreateKey with a value of EXTERNAL and the MultiRegion
@@ -1944,17 +1939,15 @@ func (c *KMS) DeleteImportedKeyMaterialRequest(input *DeleteImportedKeyMaterialI
 
 // DeleteImportedKeyMaterial API operation for AWS Key Management Service.
 //
-// Deletes key material that you previously imported. This operation makes the
-// specified KMS key unusable. For more information about importing key material
-// into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// Deletes key material that was previously imported. This operation makes the
+// specified KMS key temporarily unusable. To restore the usability of the KMS
+// key, reimport the same key material. For more information about importing
+// key material into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
 // When the specified KMS key is in the PendingDeletion state, this operation
 // does not change the KMS key's state. Otherwise, it changes the KMS key's
 // state to PendingImport.
-//
-// After you delete key material, you can use ImportKeyMaterial to reimport
-// the same key material into the KMS key.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -4769,27 +4762,56 @@ func (c *KMS) GetParametersForImportRequest(input *GetParametersForImportInput) 
 
 // GetParametersForImport API operation for AWS Key Management Service.
 //
-// Returns the items you need to import key material into a symmetric encryption
-// KMS key. For more information about importing key material into KMS, see
-// Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// Returns the public key and an import token you need to import or reimport
+// key material for a KMS key.
+//
+// By default, KMS keys are created with key material that KMS generates. This
+// operation supports Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+// an advanced feature that lets you generate and import the cryptographic key
+// material for a KMS key. For more information about importing key material
+// into KMS, see Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
-// This operation returns a public key and an import token. Use the public key
-// to encrypt the symmetric key material. Store the import token to send with
-// a subsequent ImportKeyMaterial request.
+// Before calling GetParametersForImport, use the CreateKey operation with an
+// Origin value of EXTERNAL to create a KMS key with no key material. You can
+// import key material for a symmetric encryption KMS key, HMAC KMS key, asymmetric
+// encryption KMS key, or asymmetric signing KMS key. You can also import key
+// material into a multi-Region key (kms/latest/developerguide/multi-region-keys-overview.html)
+// of any supported type. However, you can't import key material into a KMS
+// key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html).
+// You can also use GetParametersForImport to get a public key and import token
+// to reimport the original key material (kms/latest/developerguide/importing-keys.html#reimport-key-material)
+// into a KMS key whose key material expired or was deleted.
 //
-// You must specify the key ID of the symmetric encryption KMS key into which
-// you will import key material. The KMS key Origin must be EXTERNAL. You must
-// also specify the wrapping algorithm and type of wrapping key (public key)
-// that you will use to encrypt the key material. You cannot perform this operation
-// on an asymmetric KMS key, an HMAC KMS key, or on any KMS key in a different
-// Amazon Web Services account.
+// GetParametersForImport returns the items that you need to import your key
+// material.
 //
-// To import key material, you must use the public key and import token from
-// the same response. These items are valid for 24 hours. The expiration date
-// and time appear in the GetParametersForImport response. You cannot use an
-// expired token in an ImportKeyMaterial request. If your key and token expire,
-// send another GetParametersForImport request.
+//   - The public key (or "wrapping key") of an RSA key pair that KMS generates.
+//     You will use this public key to encrypt ("wrap") your key material while
+//     it's in transit to KMS.
+//
+//   - A import token that ensures that KMS can decrypt your key material and
+//     associate it with the correct KMS key.
+//
+// The public key and its import token are permanently linked and must be used
+// together. Each public key and import token set is valid for 24 hours. The
+// expiration date and time appear in the ParametersValidTo field in the GetParametersForImport
+// response. You cannot use an expired public key or import token in an ImportKeyMaterial
+// request. If your key and token expire, send another GetParametersForImport
+// request.
+//
+// GetParametersForImport requires the following information:
+//
+//   - The key ID of the KMS key for which you are importing the key material.
+//
+//   - The key spec of the public key ("wrapping key") that you will use to
+//     encrypt your key material during import.
+//
+//   - The wrapping algorithm that you will use with the public key to encrypt
+//     your key material.
+//
+// You can use the same or a different public key spec and wrapping algorithm
+// each time you import or reimport the same key material.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -5109,44 +5131,83 @@ func (c *KMS) ImportKeyMaterialRequest(input *ImportKeyMaterialInput) (req *requ
 
 // ImportKeyMaterial API operation for AWS Key Management Service.
 //
-// Imports key material into an existing symmetric encryption KMS key that was
-// created without key material. After you successfully import key material
-// into a KMS key, you can reimport the same key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material)
-// into that KMS key, but you cannot import different key material.
+// Imports or reimports key material into an existing KMS key that was created
+// without key material. ImportKeyMaterial also sets the expiration model and
+// expiration date of the imported key material.
 //
-// You cannot perform this operation on an asymmetric KMS key, an HMAC KMS key,
-// or on any KMS key in a different Amazon Web Services account. For more information
-// about creating KMS keys with no key material and then importing key material,
-// see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// By default, KMS keys are created with key material that KMS generates. This
+// operation supports Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+// an advanced feature that lets you generate and import the cryptographic key
+// material for a KMS key. For more information about importing key material
+// into KMS, see Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
-// Before using this operation, call GetParametersForImport. Its response includes
-// a public key and an import token. Use the public key to encrypt the key material.
-// Then, submit the import token from the same GetParametersForImport response.
+// After you successfully import key material into a KMS key, you can reimport
+// the same key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material)
+// into that KMS key, but you cannot import different key material. You might
+// reimport key material to replace key material that expired or key material
+// that you deleted. You might also reimport key material to change the expiration
+// model or expiration date of the key material. Before reimporting key material,
+// if necessary, call DeleteImportedKeyMaterial to delete the current imported
+// key material.
 //
-// When calling this operation, you must specify the following values:
+// Each time you import key material into KMS, you can determine whether (ExpirationModel)
+// and when (ValidTo) the key material expires. To change the expiration of
+// your key material, you must import it again, either by calling ImportKeyMaterial
+// or using the import features (kms/latest/developerguide/importing-keys-import-key-material.html#importing-keys-import-key-material-console)
+// of the KMS console.
 //
-//   - The key ID or key ARN of a KMS key with no key material. Its Origin
-//     must be EXTERNAL. To create a KMS key with no key material, call CreateKey
-//     and set the value of its Origin parameter to EXTERNAL. To get the Origin
-//     of a KMS key, call DescribeKey.)
+// Before calling ImportKeyMaterial:
 //
-//   - The encrypted key material. To get the public key to encrypt the key
-//     material, call GetParametersForImport.
+//   - Create or identify a KMS key with no key material. The KMS key must
+//     have an Origin value of EXTERNAL, which indicates that the KMS key is
+//     designed for imported key material. To create an new KMS key for imported
+//     key material, call the CreateKey operation with an Origin value of EXTERNAL.
+//     You can create a symmetric encryption KMS key, HMAC KMS key, asymmetric
+//     encryption KMS key, or asymmetric signing KMS key. You can also import
+//     key material into a multi-Region key (kms/latest/developerguide/multi-region-keys-overview.html)
+//     of any supported type. However, you can't import key material into a KMS
+//     key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html).
+//
+//   - Use the DescribeKey operation to verify that the KeyState of the KMS
+//     key is PendingImport, which indicates that the KMS key has no key material.
+//     If you are reimporting the same key material into an existing KMS key,
+//     you might need to call the DeleteImportedKeyMaterial to delete its existing
+//     key material.
+//
+//   - Call the GetParametersForImport operation to get a public key and import
+//     token set for importing key material.
+//
+//   - Use the public key in the GetParametersForImport response to encrypt
+//     your key material.
+//
+// Then, in an ImportKeyMaterial request, you submit your encrypted key material
+// and import token. When calling this operation, you must specify the following
+// values:
+//
+//   - The key ID or key ARN of the KMS key to associate with the imported
+//     key material. Its Origin must be EXTERNAL and its KeyState must be PendingImport.
+//     You cannot perform this operation on a KMS key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html),
+//     or on a KMS key in a different Amazon Web Services account. To get the
+//     Origin and KeyState of a KMS key, call DescribeKey.
+//
+//   - The encrypted key material.
 //
 //   - The import token that GetParametersForImport returned. You must use
 //     a public key and token from the same GetParametersForImport response.
 //
 //   - Whether the key material expires (ExpirationModel) and, if so, when
-//     (ValidTo). If you set an expiration date, on the specified date, KMS deletes
-//     the key material from the KMS key, making the KMS key unusable. To use
-//     the KMS key in cryptographic operations again, you must reimport the same
-//     key material. The only way to change the expiration model or expiration
-//     date is by reimporting the same key material and specifying a new expiration
-//     date.
+//     (ValidTo). For help with this choice, see Setting an expiration time (https://docs.aws.amazon.com/en_us/kms/latest/developerguide/importing-keys.html#importing-keys-expiration)
+//     in the Key Management Service Developer Guide. If you set an expiration
+//     date, KMS deletes the key material from the KMS key on the specified date,
+//     making the KMS key unusable. To use the KMS key in cryptographic operations
+//     again, you must reimport the same key material. However, you can delete
+//     and reimport the key material at any time, including before the key material
+//     expires. Each time you reimport, you can eliminate or reset the expiration
+//     time.
 //
 // When this operation is successful, the key state of the KMS key changes from
-// PendingImport to Enabled, and you can use the KMS key.
+// PendingImport to Enabled, and you can use the KMS key in cryptographic operations.
 //
 // If this operation fails, use the exception to help determine the problem.
 // If the error is related to the key material, the import token, or wrapping
@@ -7266,8 +7327,10 @@ func (c *KMS) ScheduleKeyDeletionRequest(input *ScheduleKeyDeletionInput) (req *
 //
 // Deleting a KMS key is a destructive and potentially dangerous operation.
 // When a KMS key is deleted, all data that was encrypted under the KMS key
-// is unrecoverable. (The only exception is a multi-Region replica key.) To
-// prevent the use of a KMS key without deleting it, use DisableKey.
+// is unrecoverable. (The only exception is a multi-Region replica key (kms/latest/developerguide/multi-region-keys-delete.html),
+// or an asymmetric or HMAC KMS key with imported key material[BUGBUG-link to
+// importing-keys-managing.html#import-delete-key.) To prevent the use of a
+// KMS key without deleting it, use DisableKey.
 //
 // You can schedule the deletion of a multi-Region primary key and its replica
 // keys at any time. However, KMS will not delete a multi-Region primary key
@@ -14217,8 +14280,11 @@ func (s *GetKeyRotationStatusOutput) SetKeyRotationEnabled(v bool) *GetKeyRotati
 type GetParametersForImportInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the symmetric encryption KMS key into which you will import
-	// key material. The Origin of the KMS key must be EXTERNAL.
+	// The identifier of the KMS key that will be associated with the imported key
+	// material. The Origin of the KMS key must be EXTERNAL.
+	//
+	// All KMS key types are supported, including multi-Region keys. However, you
+	// cannot import key material into a KMS key in a custom key store.
 	//
 	// Specify the key ID or key ARN of the KMS key.
 	//
@@ -14233,22 +14299,50 @@ type GetParametersForImportInput struct {
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
 
-	// The algorithm you will use to encrypt the key material before using the ImportKeyMaterial
-	// operation to import it. For more information, see Encrypt the key material
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-encrypt-key-material.html)
+	// The algorithm you will use with the RSA public key (PublicKey) in the response
+	// to protect your key material during import. For more information, see Select
+	// a wrapping algorithm (kms/latest/developerguide/importing-keys-get-public-key-and-token.html#select-wrapping-algorithm)
 	// in the Key Management Service Developer Guide.
 	//
-	// The RSAES_PKCS1_V1_5 wrapping algorithm is deprecated. We recommend that
-	// you begin using a different wrapping algorithm immediately. KMS will end
-	// support for RSAES_PKCS1_V1_5 by October 1, 2023 pursuant to cryptographic
-	// key management guidance (https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-131Ar2.pdf)
-	// from the National Institute of Standards and Technology (NIST).
+	// For RSA_AES wrapping algorithms, you encrypt your key material with an AES
+	// key that you generate, then encrypt your AES key with the RSA public key
+	// from KMS. For RSAES wrapping algorithms, you encrypt your key material directly
+	// with the RSA public key from KMS.
+	//
+	// The wrapping algorithms that you can use depend on the type of key material
+	// that you are importing. To import an RSA private key, you must use an RSA_AES
+	// wrapping algorithm.
+	//
+	//    * RSA_AES_KEY_WRAP_SHA_256 — Supported for wrapping RSA and ECC key
+	//    material.
+	//
+	//    * RSA_AES_KEY_WRAP_SHA_1 — Supported for wrapping RSA and ECC key material.
+	//
+	//    * RSAES_OAEP_SHA_256 — Supported for all types of key material, except
+	//    RSA key material (private key). You cannot use the RSAES_OAEP_SHA_256
+	//    wrapping algorithm with the RSA_2048 wrapping key spec to wrap ECC_NIST_P521
+	//    key material.
+	//
+	//    * RSAES_OAEP_SHA_1 — Supported for all types of key material, except
+	//    RSA key material (private key). You cannot use the RSAES_OAEP_SHA_1 wrapping
+	//    algorithm with the RSA_2048 wrapping key spec to wrap ECC_NIST_P521 key
+	//    material.
+	//
+	//    * RSAES_PKCS1_V1_5 (Deprecated) — Supported only for symmetric encryption
+	//    key material (and only in legacy mode).
 	//
 	// WrappingAlgorithm is a required field
 	WrappingAlgorithm *string `type:"string" required:"true" enum:"AlgorithmSpec"`
 
-	// The type of wrapping key (public key) to return in the response. Only 2048-bit
-	// RSA public keys are supported.
+	// The type of RSA public key to return in the response. You will use this wrapping
+	// key with the specified wrapping algorithm to protect your key material during
+	// import.
+	//
+	// Use the longest RSA wrapping key that is practical.
+	//
+	// You cannot use an RSA_2048 public key to directly wrap an ECC_NIST_P521 private
+	// key. Instead, use an RSA_AES wrapping algorithm or choose a longer RSA public
+	// key.
 	//
 	// WrappingKeySpec is a required field
 	WrappingKeySpec *string `type:"string" required:"true" enum:"WrappingKeySpec"`
@@ -14761,7 +14855,7 @@ type ImportKeyMaterialInput struct {
 	_ struct{} `type:"structure"`
 
 	// The encrypted key material to import. The key material must be encrypted
-	// with the public wrapping key that GetParametersForImport returned, using
+	// under the public wrapping key that GetParametersForImport returned, using
 	// the wrapping algorithm that you specified in the same GetParametersForImport
 	// request.
 	// EncryptedKeyMaterial is automatically base64 encoded/decoded by the SDK.
@@ -14770,14 +14864,16 @@ type ImportKeyMaterialInput struct {
 	EncryptedKeyMaterial []byte `min:"1" type:"blob" required:"true"`
 
 	// Specifies whether the key material expires. The default is KEY_MATERIAL_EXPIRES.
+	// For help with this choice, see Setting an expiration time (https://docs.aws.amazon.com/en_us/kms/latest/developerguide/importing-keys.html#importing-keys-expiration)
+	// in the Key Management Service Developer Guide.
 	//
 	// When the value of ExpirationModel is KEY_MATERIAL_EXPIRES, you must specify
 	// a value for the ValidTo parameter. When value is KEY_MATERIAL_DOES_NOT_EXPIRE,
 	// you must omit the ValidTo parameter.
 	//
 	// You cannot change the ExpirationModel or ValidTo values for the current import
-	// after the request completes. To change either value, you must delete (DeleteImportedKeyMaterial)
-	// and reimport the key material.
+	// after the request completes. To change either value, you must reimport the
+	// key material.
 	ExpirationModel *string `type:"string" enum:"ExpirationModelType"`
 
 	// The import token that you received in the response to a previous GetParametersForImport
@@ -14788,12 +14884,16 @@ type ImportKeyMaterialInput struct {
 	// ImportToken is a required field
 	ImportToken []byte `min:"1" type:"blob" required:"true"`
 
-	// The identifier of the symmetric encryption KMS key that receives the imported
-	// key material. This must be the same KMS key specified in the KeyID parameter
+	// The identifier of the KMS key that will be associated with the imported key
+	// material. This must be the same KMS key specified in the KeyID parameter
 	// of the corresponding GetParametersForImport request. The Origin of the KMS
-	// key must be EXTERNAL. You cannot perform this operation on an asymmetric
-	// KMS key, an HMAC KMS key, a KMS key in a custom key store, or on a KMS key
-	// in a different Amazon Web Services account
+	// key must be EXTERNAL and its KeyState must be PendingImport.
+	//
+	// The KMS key can be a symmetric encryption KMS key, HMAC KMS key, asymmetric
+	// encryption KMS key, or asymmetric signing KMS key, including a multi-Region
+	// key (kms/latest/developerguide/multi-region-keys-overview.html) of any supported
+	// type. You cannot perform this operation on a KMS key in a custom key store,
+	// or on a KMS key in a different Amazon Web Services account.
 	//
 	// Specify the key ID or key ARN of the KMS key.
 	//
@@ -18513,7 +18613,10 @@ type ScheduleKeyDeletionInput struct {
 	// waiting period begins immediately.
 	//
 	// This value is optional. If you include a value, it must be between 7 and
-	// 30, inclusive. If you do not include a value, it defaults to 30.
+	// 30, inclusive. If you do not include a value, it defaults to 30. You can
+	// use the kms:ScheduleKeyDeletionPendingWindowInDays (https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-pending-deletion-window)
+	// condition key to further constrain the values that principals can specify
+	// in the PendingWindowInDays parameter.
 	PendingWindowInDays *int64 `min:"1" type:"integer"`
 }
 
@@ -18818,7 +18921,7 @@ type SignOutput struct {
 	//    this value is defined by PKCS #1 in RFC 8017 (https://tools.ietf.org/html/rfc8017).
 	//
 	//    * When used with the ECDSA_SHA_256, ECDSA_SHA_384, or ECDSA_SHA_512 signing
-	//    algorithms, this value is a DER-encoded object as defined by ANS X9.62–2005
+	//    algorithms, this value is a DER-encoded object as defined by ANSI X9.62–2005
 	//    and RFC 3279 Section 2.2.3 (https://tools.ietf.org/html/rfc3279#section-2.2.3).
 	//    This is the most commonly used signature format and is appropriate for
 	//    most uses.
@@ -21302,6 +21405,12 @@ const (
 
 	// AlgorithmSpecRsaesOaepSha256 is a AlgorithmSpec enum value
 	AlgorithmSpecRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
+
+	// AlgorithmSpecRsaAesKeyWrapSha1 is a AlgorithmSpec enum value
+	AlgorithmSpecRsaAesKeyWrapSha1 = "RSA_AES_KEY_WRAP_SHA_1"
+
+	// AlgorithmSpecRsaAesKeyWrapSha256 is a AlgorithmSpec enum value
+	AlgorithmSpecRsaAesKeyWrapSha256 = "RSA_AES_KEY_WRAP_SHA_256"
 )
 
 // AlgorithmSpec_Values returns all elements of the AlgorithmSpec enum
@@ -21310,6 +21419,8 @@ func AlgorithmSpec_Values() []string {
 		AlgorithmSpecRsaesPkcs1V15,
 		AlgorithmSpecRsaesOaepSha1,
 		AlgorithmSpecRsaesOaepSha256,
+		AlgorithmSpecRsaAesKeyWrapSha1,
+		AlgorithmSpecRsaAesKeyWrapSha256,
 	}
 }
 
@@ -21944,12 +22055,20 @@ func SigningAlgorithmSpec_Values() []string {
 const (
 	// WrappingKeySpecRsa2048 is a WrappingKeySpec enum value
 	WrappingKeySpecRsa2048 = "RSA_2048"
+
+	// WrappingKeySpecRsa3072 is a WrappingKeySpec enum value
+	WrappingKeySpecRsa3072 = "RSA_3072"
+
+	// WrappingKeySpecRsa4096 is a WrappingKeySpec enum value
+	WrappingKeySpecRsa4096 = "RSA_4096"
 )
 
 // WrappingKeySpec_Values returns all elements of the WrappingKeySpec enum
 func WrappingKeySpec_Values() []string {
 	return []string{
 		WrappingKeySpecRsa2048,
+		WrappingKeySpecRsa3072,
+		WrappingKeySpecRsa4096,
 	}
 }
 
