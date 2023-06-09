@@ -62,7 +62,7 @@ func (s *gcsAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *kops.C
 	}
 
 	if bucketPolicyOnly {
-		klog.Infof("bucket gs://%s has bucket-policy only; won't try to set ACLs", bucketName)
+		klog.V(8).Infof("bucket gs://%s has bucket-policy only; won't try to set ACLs", bucketName)
 		return nil, nil
 	}
 
