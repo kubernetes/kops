@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.24
     manifest: scaleway-cloud-controller.addons.k8s.io/k8s-1.24.yaml
-    manifestHash: f6c221c3faf7d34d12c58776592cf36a6c46ba28948d19b4ca5f0d34148065d2
+    manifestHash: 62cf06c0ba8f17ad6a877108c1f4bb26a167791aac8c3c6f04804c9e2f61ddab
     name: scaleway-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: scaleway-cloud-controller.addons.k8s.io
