@@ -920,9 +920,9 @@ func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *re
 // CreateAccountAlias API operation for AWS Identity and Access Management.
 //
 // Creates an alias for your Amazon Web Services account. For information about
-// using an Amazon Web Services account alias, see Using an alias for your Amazon
-// Web Services account ID (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html)
-// in the IAM User Guide.
+// using an Amazon Web Services account alias, see Creating, deleting, and listing
+// an Amazon Web Services account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -932,6 +932,11 @@ func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *re
 // API operation CreateAccountAlias for usage and error information.
 //
 // Returned Error Codes:
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 //   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
 //     The request was rejected because it attempted to create a resource that already
@@ -2365,6 +2370,11 @@ func (c *IAM) DeactivateMFADeviceRequest(input *DeactivateMFADeviceInput) (req *
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeactivateMFADevice
 func (c *IAM) DeactivateMFADevice(input *DeactivateMFADeviceInput) (*DeactivateMFADeviceOutput, error) {
 	req, out := c.DeactivateMFADeviceRequest(input)
@@ -2528,9 +2538,9 @@ func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *re
 // DeleteAccountAlias API operation for AWS Identity and Access Management.
 //
 // Deletes the specified Amazon Web Services account alias. For information
-// about using an Amazon Web Services account alias, see Using an alias for
-// your Amazon Web Services account ID (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html)
-// in the IAM User Guide.
+// about using an Amazon Web Services account alias, see Creating, deleting,
+// and listing an Amazon Web Services account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2540,6 +2550,11 @@ func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *re
 // API operation DeleteAccountAlias for usage and error information.
 //
 // Returned Error Codes:
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 //   - ErrCodeNoSuchEntityException "NoSuchEntity"
 //     The request was rejected because it referenced a resource entity that does
@@ -4271,6 +4286,11 @@ func (c *IAM) DeleteSigningCertificateRequest(input *DeleteSigningCertificateInp
 //     the current Amazon Web Services account limits. The error message describes
 //     the limit exceeded.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
@@ -4677,6 +4697,11 @@ func (c *IAM) DeleteVirtualMFADeviceRequest(input *DeleteVirtualMFADeviceInput) 
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteVirtualMFADevice
 func (c *IAM) DeleteVirtualMFADevice(input *DeleteVirtualMFADeviceInput) (*DeleteVirtualMFADeviceOutput, error) {
@@ -5087,6 +5112,11 @@ func (c *IAM) EnableMFADeviceRequest(input *EnableMFADeviceInput) (req *request.
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/EnableMFADevice
 func (c *IAM) EnableMFADevice(input *EnableMFADeviceInput) (*EnableMFADeviceOutput, error) {
@@ -8224,9 +8254,9 @@ func (c *IAM) ListAccountAliasesRequest(input *ListAccountAliasesInput) (req *re
 //
 // Lists the account alias associated with the Amazon Web Services account (Note:
 // you can have only one). For information about using an Amazon Web Services
-// account alias, see Using an alias for your Amazon Web Services account ID
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html) in the
-// IAM User Guide.
+// account alias, see Creating, deleting, and listing an Amazon Web Services
+// account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13448,6 +13478,11 @@ func (c *IAM) ResyncMFADeviceRequest(input *ResyncMFADeviceInput) (req *request.
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResyncMFADevice
 func (c *IAM) ResyncMFADevice(input *ResyncMFADeviceInput) (*ResyncMFADeviceOutput, error) {
 	req, out := c.ResyncMFADeviceRequest(input)
@@ -17579,6 +17614,11 @@ func (c *IAM) UploadSigningCertificateRequest(input *UploadSigningCertificateInp
 //   - ErrCodeNoSuchEntityException "NoSuchEntity"
 //     The request was rejected because it referenced a resource entity that does
 //     not exist. The error message describes the resource.
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
@@ -40381,7 +40421,7 @@ type VirtualMFADevice struct {
 	_ struct{} `type:"structure"`
 
 	// The base32 seed defined as specified in RFC3548 (https://tools.ietf.org/html/rfc3548.txt).
-	// The Base32StringSeed is base64-encoded.
+	// The Base32StringSeed is base32-encoded.
 	//
 	// Base32StringSeed is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by VirtualMFADevice's
