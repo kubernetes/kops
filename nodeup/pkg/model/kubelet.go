@@ -463,7 +463,7 @@ providers:
   - name: ecr-credential-provider
     matchImages:
       - "*.dkr.ecr.*.amazonaws.com"
-      - "*.dkr.ecr.*.amazonaws.cn"
+      - "*.dkr.ecr.*.amazonaws.com.cn"
       - "*.dkr.ecr-fips.*.amazonaws.com"
       - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
       - "*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov"
