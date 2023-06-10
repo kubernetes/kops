@@ -3224,6 +3224,11 @@ spec:
                     description: NodeLocalDNS specifies the configuration for the
                       node-local-dns addon
                     properties:
+                      additionalConfig:
+                        description: AdditionalConfig is used to provide additional
+                          config for node local dns by the user - it will include
+                          the original CoreFile made by kOps.
+                        type: string
                       cpuRequest:
                         anyOf:
                         - type: integer

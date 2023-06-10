@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: nodelocaldns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: fabeb460a56eda2aa329fe1f932a98f60de82f54bb4baedcdf9d5b2393557d73
+    manifestHash: 0d1c36564e406cde717c45ea59f8a89f2990a6f1c105d97295d0e1612e570114
     name: nodelocaldns.addons.k8s.io
     needsRollingUpdate: all
     selector:

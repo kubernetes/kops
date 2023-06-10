@@ -155,6 +155,11 @@ spec:
     memoryLimit: 170Mi
     memoryRequest: 70Mi
     nodeLocalDNS:
+      additionalConfig: |
+        googleapis.com:53 {
+            bind 169.254.20.10
+            forward . 10.238.1.130
+        }
       cpuRequest: 25m
       enabled: true
       forwardToKubeDNS: false
