@@ -60,7 +60,7 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) error
 		},
 	}
 
-	if b.Cluster.UsesNoneDNS() {
+	if b.Cluster.UsesNoneDNS() || b.UseKopsControllerForNodeBootstrap() {
 		loadbalancer.Services = append(loadbalancer.Services, &hetznertasks.LoadBalancerService{
 			Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
 			ListenerPort:    fi.PtrTo(wellknownports.KopsControllerPort),

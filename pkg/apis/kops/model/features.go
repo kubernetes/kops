@@ -52,11 +52,14 @@ func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
-	switch cluster.Spec.GetCloudProvider() {
-	case kops.CloudProviderGCE:
-		// We can use cloud-discovery here.
-	default:
-		if cluster.UsesLegacyGossip() {
+	if cluster.UsesLegacyGossip() {
+		switch cluster.Spec.GetCloudProvider() {
+		case kops.CloudProviderGCE:
+			// We can use cloud-discovery here.
+		case kops.CloudProviderHetzner:
+			// We don't have a cloud-discovery mechanism implemented in nodeup for hetzner,
+			// but we assume that we're using a load balancer with a fixed IP address
+		default:
 			return false
 		}
 	}
