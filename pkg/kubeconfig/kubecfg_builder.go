@@ -19,7 +19,6 @@ package kubeconfig
 import (
 	"fmt"
 
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
@@ -28,7 +27,8 @@ import (
 // KubeconfigBuilder builds a kubecfg file
 // This logic previously lives in the bash scripts (create-kubeconfig in cluster/common.sh)
 type KubeconfigBuilder struct {
-	Server string
+	Server        string
+	TLSServerName string
 
 	Context   string
 	Namespace string
@@ -77,20 +77,6 @@ func (b *KubeconfigBuilder) DeleteKubeConfig(configAccess clientcmd.ConfigAccess
 	return nil
 }
 
-// Create new Rest Client
-func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
-	restConfig := &rest.Config{
-		Host: c.Server,
-	}
-	restConfig.CAData = c.CACerts
-	restConfig.CertData = c.ClientCert
-	restConfig.KeyData = c.ClientKey
-	restConfig.Username = c.KubeUser
-	restConfig.Password = c.KubePassword
-
-	return restConfig, nil
-}
-
 // Write out a new kubeconfig
 func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) error {
 	config, err := configAccess.GetStartingConfig()
@@ -108,6 +94,7 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			cluster = clientcmdapi.NewCluster()
 		}
 		cluster.Server = b.Server
+		cluster.TLSServerName = b.TLSServerName
 		cluster.CertificateAuthorityData = b.CACerts
 
 		if config.Clusters == nil {
