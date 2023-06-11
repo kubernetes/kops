@@ -17,12 +17,16 @@ limitations under the License.
 package hetznertasks
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -128,6 +132,11 @@ func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 				matches.Services = append(matches.Services, &loadbalancerService)
 			}
 
+			// Put the services into a stable order
+			sort.Slice(matches.Services, func(i, j int) bool {
+				return fi.ValueOf(matches.Services[i].DestinationPort) < fi.ValueOf(matches.Services[j].ListenerPort)
+			})
+
 			for _, target := range loadbalancer.Targets {
 				if target.Type == hcloud.LoadBalancerTargetTypeLabelSelector && target.LabelSelector != nil {
 					matches.Target = target.LabelSelector.Selector
@@ -163,8 +172,27 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 		if changes.Type != "" {
 			return fi.CannotChangeField("Type")
 		}
-		if len(changes.Services) > 0 && len(a.Services) > 0 {
-			return fi.CannotChangeField("Subnets")
+		if len(changes.Services) > 0 {
+			for _, aService := range a.Services {
+				aServiceJSON, err := json.Marshal(aService)
+				if err != nil {
+					return err
+				}
+				found := false
+				for _, eService := range e.Services {
+					eServiceJSON, err := json.Marshal(eService)
+					if err != nil {
+						return err
+					}
+					if bytes.Equal(aServiceJSON, eServiceJSON) {
+						found = true
+					}
+				}
+				if !found {
+					klog.Infof("cannot remove service %v", string(aServiceJSON))
+					return fi.CannotChangeField("Services")
+				}
+			}
 		}
 		if changes.Target != "" && a.Target != "" {
 			return fi.CannotChangeField("Target")
@@ -268,19 +296,36 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 		// Update the services
 		if len(changes.Services) > 0 {
 			for _, service := range e.Services {
-				action, _, err := client.AddService(ctx, loadbalancer, hcloud.LoadBalancerAddServiceOpts{
-					Protocol:        hcloud.LoadBalancerServiceProtocol(service.Protocol),
-					ListenPort:      service.ListenerPort,
-					DestinationPort: service.DestinationPort,
-				})
+				eServiceJSON, err := json.Marshal(service)
 				if err != nil {
+					return err
+				}
+
+				found := false
+				for _, aService := range a.Services {
+					aServiceJSON, err := json.Marshal(aService)
 					if err != nil {
 						return err
 					}
+
+					if bytes.Equal(aServiceJSON, eServiceJSON) {
+						found = true
+					}
 				}
-				_, errCh := actionClient.WatchProgress(ctx, action)
-				if err := <-errCh; err != nil {
-					return err
+
+				if !found {
+					action, _, err := client.AddService(ctx, loadbalancer, hcloud.LoadBalancerAddServiceOpts{
+						Protocol:        hcloud.LoadBalancerServiceProtocol(service.Protocol),
+						ListenPort:      service.ListenerPort,
+						DestinationPort: service.DestinationPort,
+					})
+					if err != nil {
+						return err
+					}
+					_, errCh := actionClient.WatchProgress(ctx, action)
+					if err := <-errCh; err != nil {
+						return err
+					}
 				}
 			}
 		}
