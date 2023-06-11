@@ -101,7 +101,7 @@ func TestRenderChannelFunctions(t *testing.T) {
 		},
 		{
 			Context:  map[string]interface{}{},
-			Template: `{{ ChannelRecommendedImage "aws" "1.19.2" "arm64" }}`,
+			Template: `{{ ChannelRecommendedImage "aws" "1.20.2" "arm64" }}`,
 			Expected: "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315",
 		},
 	}

@@ -52,9 +52,12 @@ const (
 	defaultMasterMachineTypeHetzner  = "cx21"
 	defaultMasterMachineTypeScaleway = "DEV1-M"
 
-	defaultDOImage       = "ubuntu-20-04-x64"
-	defaultHetznerImage  = "ubuntu-20.04"
-	defaultScalewayImage = "ubuntu_focal"
+	defaultDOImageFocal       = "ubuntu-20-04-x64"
+	defaultHetznerImageFocal  = "ubuntu-20.04"
+	defaultScalewayImageFocal = "ubuntu_focal"
+	defaultDOImageJammy       = "ubuntu-22-04-x64"
+	defaultHetznerImageJammy  = "ubuntu-22.04"
+	defaultScalewayImageJammy = "ubuntu_jammy"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field

@@ -61,11 +61,19 @@ spec:
     - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230502
       providerID: aws
       architectureID: amd64
-      kubernetesVersion: ">=1.18.0"
+      kubernetesVersion: ">=1.18.0 <1.27.0"
     - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230502
       providerID: aws
       architectureID: arm64
-      kubernetesVersion: ">=1.20.0"
+      kubernetesVersion: ">=1.20.0 <1.27.0"
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230601
+      providerID: aws
+      architectureID: amd64
+      kubernetesVersion: ">=1.27.0"
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230601
+      providerID: aws
+      architectureID: arm64
+      kubernetesVersion: ">=1.27.0"
     - name: cos-cloud/cos-stable-65-10323-99-0
       providerID: gce
       architectureID: amd64
@@ -77,11 +85,19 @@ spec:
     - name: ubuntu-os-cloud/ubuntu-2004-focal-v20230302
       providerID: gce
       architectureID: amd64
-      kubernetesVersion: ">=1.18.0"
+      kubernetesVersion: ">=1.18.0 <1.27.0"
+    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20230606
+      providerID: gce
+      architectureID: amd64
+      kubernetesVersion: ">=1.27.0"
     - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202303020
       providerID: azure
       architectureID: amd64
-      kubernetesVersion: ">=1.20.0"
+      kubernetesVersion: ">=1.20.0 <1.27.0"
+    - name: Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:22.04.202306010
+      providerID: azure
+      architectureID: amd64
+      kubernetesVersion: ">=1.27.0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
