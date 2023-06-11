@@ -378,6 +378,50 @@ func (b *FirewallModelBuilder) addNodeExporterAndOccmRules(c *fi.CloudupModelBui
 	return nil
 }
 
+// addKubeControllerManagerMetricsRules - Add rules to 10257 port
+func (b *FirewallModelBuilder) addKubeControllerManagerMetricsRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+	// TODO: This is the default port for kube-controller-manager metrics and may be overridden
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
+	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
+	masterSG := sgMap[masterName]
+	nodeSG := sgMap[nodeName]
+
+	kubeControllerManagerMetricsRule := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(IPProtocolTCP),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(10257),
+		PortRangeMax: i(10257),
+	}
+
+	// allow port 10257 from nodeSG to masterSG
+	b.addDirectionalGroupRule(c, masterSG, nodeSG, kubeControllerManagerMetricsRule)
+	return nil
+}
+
+// addKubeSchedulerMetricsRules - Add rules to 10259 port
+func (b *FirewallModelBuilder) addKubeSchedulerMetricsRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+	// TODO: This is the default port for kube-scheduler metrics and may be overridden
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
+	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
+	masterSG := sgMap[masterName]
+	nodeSG := sgMap[nodeName]
+
+	kubeSchedulerMetricsRule := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(IPProtocolTCP),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(10259),
+		PortRangeMax: i(10259),
+	}
+
+	// allow port 10259 from nodeSG to masterSG
+	b.addDirectionalGroupRule(c, masterSG, nodeSG, kubeSchedulerMetricsRule)
+	return nil
+}
+
 // addDNSRules - Add DNS rules for internal DNS queries
 func (b *FirewallModelBuilder) addDNSRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
@@ -678,6 +722,10 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	b.addKubeletRules(c, sgMap)
 	// Add Node exporter and occm metrics Rules
 	b.addNodeExporterAndOccmRules(c, sgMap)
+	// Add kube controller manager metrics Rules
+	b.addKubeControllerManagerMetricsRules(c, sgMap)
+	// Add kube scheduler metrics Rules
+	b.addKubeSchedulerMetricsRules(c, sgMap)
 	// Protokube Rules
 	b.addProtokubeRules(c, sgMap)
 	// Kops-controller Rules
