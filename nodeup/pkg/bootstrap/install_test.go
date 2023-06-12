@@ -26,8 +26,16 @@ import (
 
 func TestBootstarapBuilder_Simple(t *testing.T) {
 	t.Setenv("AWS_REGION", "us-test1")
+	t.Setenv("KOPS_FEATURE_FLAGS", "")
 
 	runInstallBuilderTest(t, "tests/simple")
+}
+
+func TestBootstarapBuilder_FeatureFlag(t *testing.T) {
+	t.Setenv("AWS_REGION", "us-test1")
+	t.Setenv("KOPS_FEATURE_FLAGS", "Foo")
+
+	runInstallBuilderTest(t, "tests/featureflag")
 }
 
 func runInstallBuilderTest(t *testing.T, basedir string) {

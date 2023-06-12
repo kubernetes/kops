@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
@@ -239,6 +240,10 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		env["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
 		env["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
 		env["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
+	}
+
+	if val := os.Getenv(featureflag.Name); val != "" {
+		env[featureflag.Name] = val
 	}
 
 	return env, nil

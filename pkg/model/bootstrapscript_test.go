@@ -83,6 +83,7 @@ func TestBootstrapUserData(t *testing.T) {
 		ExpectedFileIndex  int
 		HookSpecRoles      []kops.InstanceGroupRole
 		FileAssetSpecRoles []kops.InstanceGroupRole
+		FeatureFlags       string
 	}{
 		{
 			Role:               "ControlPlane",
@@ -132,9 +133,18 @@ func TestBootstrapUserData(t *testing.T) {
 			HookSpecRoles:      []kops.InstanceGroupRole{"ControlPlane", "Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"ControlPlane", "Node"},
 		},
+		{
+			Role:               "ControlPlane",
+			ExpectedFileIndex:  6,
+			HookSpecRoles:      []kops.InstanceGroupRole{""},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
+			FeatureFlags:       "Foo",
+		},
 	}
 
 	for i, x := range cs {
+		t.Setenv("KOPS_FEATURE_FLAGS", x.FeatureFlags)
+
 		cluster := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles)
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
 		c := &fi.CloudupModelBuilderContext{

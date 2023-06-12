@@ -20,9 +20,11 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -144,8 +146,19 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		envVars["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
+	if val := os.Getenv(featureflag.Name); val != "" {
+		envVars[featureflag.Name] = val
+	}
+	// Sort keys to have a stable sequence in kops-configuration
+	var keys []string
+	for k := range envVars {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	sysconfig := ""
-	for key, value := range envVars {
+	for _, key := range keys {
+		value := envVars[key]
 		sysconfig += key + "=" + value + "\n"
 	}
 
