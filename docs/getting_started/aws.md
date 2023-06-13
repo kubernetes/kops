@@ -263,6 +263,12 @@ The ACL must be public so that the AWS STS service can access them.
 aws s3api create-bucket \
     --bucket prefix-example-com-oidc-store \
     --region us-east-1 \
+    --object-ownership BucketOwnerPreferred
+aws s3api put-public-access-block \
+    --bucket prefix-example-com-oidc-store \
+    --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+aws s3api put-bucket-acl \
+    --bucket prefix-example-com-oidc-store \
     --acl public-read
 ```
 
