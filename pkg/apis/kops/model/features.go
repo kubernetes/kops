@@ -33,6 +33,8 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 		return true
 	case kops.CloudProviderDO:
 		return true
+	case kops.CloudProviderScaleway:
+		return true
 	default:
 		return false
 	}
@@ -45,6 +47,8 @@ func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 		return true
 	case kops.CloudProviderDO:
 		return true
+	case kops.CloudProviderScaleway:
+		return true
 	default:
 		return false
 	}
@@ -56,7 +60,7 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			// We can use cloud-discovery here.
-		case kops.CloudProviderHetzner:
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway:
 			// We don't have a cloud-discovery mechanism implemented in nodeup for hetzner,
 			// but we assume that we're using a load balancer with a fixed IP address
 		default:

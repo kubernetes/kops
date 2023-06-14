@@ -22,6 +22,7 @@ import (
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
 type Options struct {
@@ -71,6 +72,7 @@ type ServerProviderOptions struct {
 	Hetzner      *hetzner.HetznerVerifierOptions     `json:"hetzner,omitempty"`
 	OpenStack    *openstack.OpenStackVerifierOptions `json:"openstack,omitempty"`
 	DigitalOcean *do.DigitalOceanVerifierOptions     `json:"do,omitempty"`
+	Scaleway     *scaleway.ScalewayVerifierOptions   `json:"scaleway,omitempty"`
 }
 
 // DiscoveryOptions configures our support for discovery, particularly gossip DNS (i.e. k8s.local)

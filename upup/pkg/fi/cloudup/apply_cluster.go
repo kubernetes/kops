@@ -1465,7 +1465,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	} else {
 		// If we do have a fixed IP, we use it (on some clouds, initially)
 		switch cluster.Spec.GetCloudProvider() {
-		case kops.CloudProviderHetzner:
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway:
 			bootConfig.APIServerIPs = controlPlaneIPs
 		}
 	}

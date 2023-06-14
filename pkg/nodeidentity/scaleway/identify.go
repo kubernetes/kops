@@ -48,12 +48,16 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Scaleway
 func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	scwClient, err := scw.NewClient(
-		scw.WithUserAgent("kubernetes-kops/"+kopsv.Version),
-		scw.WithEnv(),
-	)
+	profile, err := scaleway.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
+	}
+	scwClient, err := scw.NewClient(
+		scw.WithProfile(profile),
+		scw.WithUserAgent(scaleway.KopsUserAgentPrefix+kopsv.Version),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating client for Scaleway NodeIdentifier: %w", err)
 	}
 
 	return &nodeIdentifier{

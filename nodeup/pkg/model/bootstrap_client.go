@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -80,9 +81,14 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			return err
 		}
 		authenticator = a
-
 	case kops.CloudProviderDO:
 		a, err := do.NewAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+	case kops.CloudProviderScaleway:
+		a, err := scaleway.NewScalewayAuthenticator()
 		if err != nil {
 			return err
 		}

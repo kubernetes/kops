@@ -46,6 +46,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -142,6 +143,12 @@ func main() {
 			}
 		} else if opt.Server.Provider.DigitalOcean != nil {
 			verifier, err = do.NewVerifier(ctx, opt.Server.Provider.DigitalOcean)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.Scaleway != nil {
+			verifier, err = scaleway.NewScalewayVerifier(ctx, opt.Server.Provider.Scaleway)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)

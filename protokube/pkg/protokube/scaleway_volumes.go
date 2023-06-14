@@ -66,14 +66,18 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	privateIP := metadata.PrivateIP
 	klog.V(4).Infof("Found first private net IP of the running server: %q", privateIP)
 
+	profile, err := scaleway.CreateValidScalewayProfile()
+	if err != nil {
+		return nil, err
+	}
 	scwClient, err := scw.NewClient(
+		scw.WithProfile(profile),
 		scw.WithUserAgent(scaleway.KopsUserAgentPrefix+kopsv.Version),
-		scw.WithEnv(),
 		scw.WithDefaultZone(zone),
 		scw.WithDefaultRegion(region),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating client: %w", err)
+		return nil, fmt.Errorf("error creating client for Protokube: %w", err)
 	}
 
 	instanceAPI := instance.NewAPI(scwClient)

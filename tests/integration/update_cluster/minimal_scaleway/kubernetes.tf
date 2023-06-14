@@ -148,14 +148,6 @@ resource "aws_s3_object" "scw-minimal-k8s-local-addons-networking-cilium-io-k8s-
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "scw-minimal-k8s-local-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_scw-minimal.k8s.local-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "tests/scw-minimal.k8s.local/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "scw-minimal-k8s-local-addons-scaleway-cloud-controller-addons-k8s-io-k8s-1-24" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_scw-minimal.k8s.local-addons-scaleway-cloud-controller.addons.k8s.io-k8s-1.24_content")
@@ -226,18 +218,32 @@ resource "scaleway_lb" "api-scw-minimal-k8s-local" {
   type  = "LB-S"
 }
 
-resource "scaleway_lb_backend" "lb-backend" {
+resource "scaleway_lb_backend" "lb-backend-https" {
   forward_port     = 443
   forward_protocol = "tcp"
   lb_id            = scaleway_lb.api-scw-minimal-k8s-local.id
-  name             = "lb-backend"
+  name             = "lb-backend-https"
 }
 
-resource "scaleway_lb_frontend" "lb-frontend" {
-  backend_id   = scaleway_lb_backend.lb-backend.id
+resource "scaleway_lb_backend" "lb-backend-kops-controller" {
+  forward_port     = 3988
+  forward_protocol = "tcp"
+  lb_id            = scaleway_lb.api-scw-minimal-k8s-local.id
+  name             = "lb-backend-kops-controller"
+}
+
+resource "scaleway_lb_frontend" "lb-frontend-https" {
+  backend_id   = scaleway_lb_backend.lb-backend-https.id
   inbound_port = 443
   lb_id        = scaleway_lb.api-scw-minimal-k8s-local.id
-  name         = "lb-frontend"
+  name         = "lb-frontend-https"
+}
+
+resource "scaleway_lb_frontend" "lb-frontend-kops-controller" {
+  backend_id   = scaleway_lb_backend.lb-backend-kops-controller.id
+  inbound_port = 3988
+  lb_id        = scaleway_lb.api-scw-minimal-k8s-local.id
+  name         = "lb-frontend-kops-controller"
 }
 
 resource "scaleway_lb_ip" "api-scw-minimal-k8s-local" {
