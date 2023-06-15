@@ -40,6 +40,8 @@ type ContainerdConfig struct {
 	NvidiaGPU *NvidiaGPUConfig `json:"nvidiaGPU,omitempty"`
 	// Runc configures the runc runtime.
 	Runc *Runc `json:"runc,omitempty"`
+	// SelinuxEnabled enables SELinux support
+	SeLinuxEnabled bool `json:"selinuxEnabled,omitempty"`
 }
 
 type NvidiaGPUConfig struct {

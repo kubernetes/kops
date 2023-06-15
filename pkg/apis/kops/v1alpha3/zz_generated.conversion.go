@@ -3325,6 +3325,7 @@ func autoConvert_v1alpha3_ContainerdConfig_To_kops_ContainerdConfig(in *Containe
 	} else {
 		out.Runc = nil
 	}
+	out.SeLinuxEnabled = in.SeLinuxEnabled
 	return nil
 }
 
@@ -3369,6 +3370,7 @@ func autoConvert_kops_ContainerdConfig_To_v1alpha3_ContainerdConfig(in *kops.Con
 	} else {
 		out.Runc = nil
 	}
+	out.SeLinuxEnabled = in.SeLinuxEnabled
 	return nil
 }
 
