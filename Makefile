@@ -66,8 +66,8 @@ GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
 # We lock the versions of our controllers also
 # We need to keep in sync with:
 #   pkg/model/components/etcdmanager/model.go
-KOPS_COPY_TAG=1.27.0-alpha.2
-KOPS_COPY_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_COPY_TAG | awk '{print $$2}')
+KOPS_UTILS_CP_TAG=1.27.0-alpha.2
+KOPS_UTILS_CP_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_UTILS_CP_TAG | awk '{print $$2}')
 #   upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.27.0-alpha.2
 DNS_CONTROLLER_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_DNS_CONTROLLER_TAG | awk '{print $$2}')
@@ -115,7 +115,7 @@ nodeup-install: nodeup
 all-install: all kops-install channels-install nodeup-install
 
 .PHONY: all
-all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kops-copy-export ko-kube-apiserver-healthcheck-export
+all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export
 
 include tests/e2e/e2e.mk
 
@@ -308,12 +308,12 @@ dns-controller-push: ko-dns-controller-push
 ko-dns-controller-push:
 	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
-.PHONY: kops-copy-push
-kops-copy-push-push: ko-kops-copy-push
+.PHONY: kops-utils-cp-push
+kops-utils-cp-push-push: ko-kops-utils-cp-push
 
-.PHONY: ko-kops-copy-push
-ko-kops-copy-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-copy" ${KO} build --tags ${KOPS_COPY_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-copy/
+.PHONY: ko-kops-utils-cp-push
+ko-kops-utils-cp-push:
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-utils-cp" ${KO} build --tags ${KOPS_UTILS_CP_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-utils-cp/
 
 # --------------------------------------------------
 # development targets
@@ -551,16 +551,16 @@ ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64: ko-dn
 ko-dns-controller-export: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
 	echo "Done exporting dns-controller images"
 
-.PHONY: ko-kops-copy-export-linux-amd64 ko-kops-copy-export-linux-arm64
-ko-kops-copy-export-linux-amd64 ko-kops-copy-export-linux-arm64: ko-kops-copy-export-linux-%:
+.PHONY: ko-kops-utils-cp-export-linux-amd64 ko-kops-utils-cp-export-linux-arm64
+ko-kops-utils-cp-export-linux-amd64 ko-kops-utils-cp-export-linux-arm64: ko-kops-utils-cp-export-linux-%:
 	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KOPS_COPY_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-copy-$*.tar ./cmd/kops-copy/
-	gzip -f ${IMAGES}/kops-copy-$*.tar
-	tools/sha256 ${IMAGES}/kops-copy-$*.tar.gz ${IMAGES}/kops-copy-$*.tar.gz.sha256
+	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KOPS_UTILS_CP_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-utils-cp-$*.tar ./cmd/kops-utils-cp/
+	gzip -f ${IMAGES}/kops-utils-cp-$*.tar
+	tools/sha256 ${IMAGES}/kops-utils-cp-$*.tar.gz ${IMAGES}/kops-utils-cp-$*.tar.gz.sha256
 
-.PHONY: ko-kops-copy-export
-ko-kops-copy-export: ko-kops-copy-export-linux-amd64 ko-kops-copy-export-linux-arm64
-	echo "Done exporting kops-copy images"
+.PHONY: ko-kops-utils-cp-export
+ko-kops-utils-cp-export: ko-kops-utils-cp-export-linux-amd64 ko-kops-utils-cp-export-linux-arm64
+	echo "Done exporting kops-utils-cp images"
 
 .PHONY: version-dist
 version-dist: dev-version-dist-amd64 dev-version-dist-arm64 crossbuild
@@ -717,28 +717,28 @@ dev-upload-dns-controller: version-dist-dns-controller
 dev-upload-dns-controller-amd64 dev-upload-dns-controller-arm64: dev-upload-dns-controller-%: version-dist-dns-controller-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
-# dev-upload-kops-copy uploads kops-copy
-.PHONY: version-dist-kops-copy version-dist-kops-copy-amd64 version-dist-kops-copy-arm64
-version-dist-kops-copy: version-dist-kops-copy-amd64 version-dist-kops-copy-arm64
+# dev-upload-kops-utils-cp uploads kops-utils-cp
+.PHONY: version-dist-kops-utils-cp version-dist-kops-utils-cp-amd64 version-dist-kops-utils-cp-arm64
+version-dist-kops-utils-cp: version-dist-kops-utils-cp-amd64 version-dist-kops-utils-cp-arm64
 
-version-dist-kops-copy-amd64 version-dist-kops-copy-arm64: version-dist-kops-copy-%: ko-kops-copy-export-linux-%
+version-dist-kops-utils-cp-amd64 version-dist-kops-utils-cp-arm64: version-dist-kops-utils-cp-%: ko-kops-utils-cp-export-linux-%
 	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp -fp ${IMAGES}/kops-copy-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-copy-$*.tar.gz
-	cp -fp ${IMAGES}/kops-copy-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-copy-$*.tar.gz.sha256
+	cp -fp ${IMAGES}/kops-utils-cp-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-utils-cp-$*.tar.gz
+	cp -fp ${IMAGES}/kops-utils-cp-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-utils-cp-$*.tar.gz.sha256
 
-.PHONY: dev-upload-kops-copy
-dev-upload-kops-copy: version-dist-kops-copy
+.PHONY: dev-upload-kops-utils-cp
+dev-upload-kops-utils-cp: version-dist-kops-utils-cp
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
-.PHONY: dev-upload-kops-copy-amd64 dev-upload-kops-copy-arm64
-dev-upload-kops-copy-amd64 dev-upload-kops-copy-arm64: dev-upload-kops-copy-%: version-dist-kops-copy-%
+.PHONY: dev-upload-kops-utils-cp-amd64 dev-upload-kops-utils-cp-arm64
+dev-upload-kops-utils-cp-amd64 dev-upload-kops-utils-cp-arm64: dev-upload-kops-utils-cp-%: version-dist-kops-utils-cp-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-copy-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%

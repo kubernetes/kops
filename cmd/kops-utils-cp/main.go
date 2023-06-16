@@ -64,7 +64,7 @@ func copyFile(source, target string) error {
 
 func main() {
 	if len(os.Args) < 3 {
-		log.Fatal("Usage: kops-copy SOURCE ... TARGET")
+		log.Fatal("Usage: kops-utils-cp SOURCE ... TARGET")
 	}
 
 	target := os.Args[len(os.Args)-1]
