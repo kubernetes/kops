@@ -177,7 +177,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// Prevent image GC from pruning the pause image
 	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2040-kubelet-cri#pinned-images
-	image := "registry.k8s.io/pause:3.6"
+	image := "registry.k8s.io/pause:3.9"
 	var err error
 	if image, err = b.AssetBuilder.RemapImage(image); err != nil {
 		return err
