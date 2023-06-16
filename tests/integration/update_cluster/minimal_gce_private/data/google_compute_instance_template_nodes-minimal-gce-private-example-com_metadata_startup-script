@@ -136,7 +136,7 @@ kubelet:
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -174,7 +174,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-gce-private.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: Y4siienVMamIm7jhv4/stUoh04gJFDsVOcZVPGmI6zM=
+NodeupConfigHash: nNOr5VMgckDCWWgLGHg+c/4qtpax1NgVjJ2uHNEVGAY=
 
 __EOF_KUBE_ENV
 

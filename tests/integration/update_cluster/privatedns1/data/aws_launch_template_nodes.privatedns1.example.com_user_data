@@ -140,7 +140,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -178,7 +178,7 @@ ConfigServer:
   - https://kops-controller.internal.privatedns1.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: L1Tx70p0KK5EYfSzoaL5/OEoQuPibe3YPwZ+8DgF+HM=
+NodeupConfigHash: OQVolkOKHllG4ToRe+nK5ATq+1QMsWml9ZItnjOTTNs=
 
 __EOF_KUBE_ENV
 

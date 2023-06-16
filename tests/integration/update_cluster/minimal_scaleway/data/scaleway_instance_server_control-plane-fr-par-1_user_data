@@ -217,7 +217,7 @@ kubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -234,7 +234,7 @@ masterKubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -249,7 +249,7 @@ ClusterName: scw-minimal.k8s.local
 ConfigBase: memfs://tests/scw-minimal.k8s.local
 InstanceGroupName: control-plane-fr-par-1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: jKEtxsHZO5+OHL66/MYUPT34T8z6YjE5BJVgH6JYxRA=
+NodeupConfigHash: FmRPx+bq82phZfN/chCDgrJSYQWtID17d9stamPAz6s=
 
 __EOF_KUBE_ENV
 

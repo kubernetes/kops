@@ -170,7 +170,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: api-server
     node-role.kubernetes.io/api-server: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
