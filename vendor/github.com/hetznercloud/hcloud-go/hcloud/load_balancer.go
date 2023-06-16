@@ -103,7 +103,7 @@ type LoadBalancerAlgorithmType string
 
 const (
 	// LoadBalancerAlgorithmTypeRoundRobin is an algorithm which distributes
-	// requests to targets in a round robin fashion.
+	// requests to targets in a round-robin fashion.
 	LoadBalancerAlgorithmTypeRoundRobin LoadBalancerAlgorithmType = "round_robin"
 	// LoadBalancerAlgorithmTypeLeastConnections is an algorithm which distributes
 	// requests to targets with the least number of connections.
@@ -116,7 +116,7 @@ type LoadBalancerAlgorithm struct {
 	Type LoadBalancerAlgorithmType
 }
 
-// LoadBalancerTargetType specifies the type of a Load Balancer target.
+// LoadBalancerTargetType specifies the type of Load Balancer target.
 type LoadBalancerTargetType string
 
 const (
@@ -197,7 +197,7 @@ type LoadBalancerProtection struct {
 	Delete bool
 }
 
-// changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
+// changeDNSPtr changes or resets the reverse DNS pointer for an IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
 func (lb *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	reqBody := schema.LoadBalancerActionChangeDNSPtrRequest{
@@ -274,7 +274,7 @@ func (c *LoadBalancerClient) GetByName(ctx context.Context, name string) (*LoadB
 // retrieves a Load Balancer by its name. If the Load Balancer does not exist, nil is returned.
 func (c *LoadBalancerClient) Get(ctx context.Context, idOrName string) (*LoadBalancer, *Response, error) {
 	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -322,25 +322,7 @@ func (c *LoadBalancerClient) List(ctx context.Context, opts LoadBalancerListOpts
 
 // All returns all Load Balancers.
 func (c *LoadBalancerClient) All(ctx context.Context) ([]*LoadBalancer, error) {
-	allLoadBalancer := []*LoadBalancer{}
-
-	opts := LoadBalancerListOpts{}
-	opts.PerPage = 50
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		LoadBalancer, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allLoadBalancer = append(allLoadBalancer, LoadBalancer...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allLoadBalancer, nil
+	return c.AllWithOpts(ctx, LoadBalancerListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all Load Balancers for the given options.
@@ -665,7 +647,7 @@ type LoadBalancerAddServiceOptsHTTP struct {
 	StickySessions *bool
 }
 
-// LoadBalancerAddServiceOptsHealthCheck holds options for specifying an health check
+// LoadBalancerAddServiceOptsHealthCheck holds options for specifying a health check
 // when adding a service to a Load Balancer.
 type LoadBalancerAddServiceOptsHealthCheck struct {
 	Protocol LoadBalancerServiceProtocol

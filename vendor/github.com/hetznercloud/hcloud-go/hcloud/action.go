@@ -140,30 +140,12 @@ func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action
 
 // All returns all actions.
 func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
-	allActions := []*Action{}
-
-	opts := ActionListOpts{}
-	opts.PerPage = 50
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		actions, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allActions = append(allActions, actions...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allActions, nil
+	return c.AllWithOpts(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all actions for the given options.
 func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	allActions := []*Action{}
+	var allActions []*Action
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
@@ -192,7 +174,7 @@ func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]
 //     complete successfully, as well as any errors that happened while
 //     querying the API.
 //
-// By default the method keeps watching until all actions have finished
+// By default, the method keeps watching until all actions have finished
 // processing. If you want to be able to cancel the method or configure a
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.
@@ -269,7 +251,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 //     API, as well as the error of the action if it did not complete
 //     successfully, or nil if it did.
 //
-// By default the method keeps watching until the action has finished
+// By default, the method keeps watching until the action has finished
 // processing. If you want to be able to cancel the method or configure a
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.
