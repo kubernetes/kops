@@ -30,8 +30,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.5
-    version: 1.6.20
+      version: 1.1.7
+    version: 1.7.2
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -97,7 +97,7 @@ spec:
     - /events#https://127.0.0.1:4002
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.27.0
+    image: registry.k8s.io/kube-apiserver:v1.27.2
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -125,7 +125,7 @@ spec:
     configureCloudRoutes: false
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.27.0
+    image: registry.k8s.io/kube-controller-manager:v1.27.2
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -147,12 +147,12 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.27.0
+    image: registry.k8s.io/kube-proxy:v1.27.2
     logLevel: 2
   kubeScheduler:
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.27.0
+    image: registry.k8s.io/kube-scheduler:v1.27.2
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -178,7 +178,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.27.0
+  kubernetesVersion: 1.27.2
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
