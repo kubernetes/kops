@@ -42166,6 +42166,9 @@ const (
 
 	// ServerSideEncryptionAwsKms is a ServerSideEncryption enum value
 	ServerSideEncryptionAwsKms = "aws:kms"
+
+	// ServerSideEncryptionAwsKmsDsse is a ServerSideEncryption enum value
+	ServerSideEncryptionAwsKmsDsse = "aws:kms:dsse"
 )
 
 // ServerSideEncryption_Values returns all elements of the ServerSideEncryption enum
@@ -42173,6 +42176,7 @@ func ServerSideEncryption_Values() []string {
 	return []string{
 		ServerSideEncryptionAes256,
 		ServerSideEncryptionAwsKms,
+		ServerSideEncryptionAwsKmsDsse,
 	}
 }
 

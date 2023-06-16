@@ -47,7 +47,7 @@ func (c *DatacenterClient) GetByID(ctx context.Context, id int) (*Datacenter, *R
 	return DatacenterFromSchema(body.Datacenter), resp, nil
 }
 
-// GetByName retrieves an datacenter by its name. If the datacenter does not exist, nil is returned.
+// GetByName retrieves a datacenter by its name. If the datacenter does not exist, nil is returned.
 func (c *DatacenterClient) GetByName(ctx context.Context, name string) (*Datacenter, *Response, error) {
 	if name == "" {
 		return nil, nil, nil
@@ -111,10 +111,12 @@ func (c *DatacenterClient) List(ctx context.Context, opts DatacenterListOpts) ([
 
 // All returns all datacenters.
 func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
-	allDatacenters := []*Datacenter{}
+	return c.AllWithOpts(ctx, DatacenterListOpts{ListOpts: ListOpts{PerPage: 50}})
+}
 
-	opts := DatacenterListOpts{}
-	opts.PerPage = 50
+// AllWithOpts returns all datacenters for the given options.
+func (c *DatacenterClient) AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error) {
+	var allDatacenters []*Datacenter
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

@@ -44,8 +44,8 @@ RUN --mount=from=binary,target=/build \
       VERSION=$(cat /tmp/.version) \
       && mkdir -p /out \
       && cp /build/registry /src/README.md /src/LICENSE . \
-      && tar -czvf "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.tgz" * \
-      && sha256sum -z "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.tgz" | awk '{ print $1 }' > "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.tgz.sha256"
+      && tar -czvf "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.gz" * \
+      && sha256sum -z "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.gz" | awk '{ print $1 }' > "/out/registry_${VERSION#v}_${TARGETOS}_${TARGETARCH}${TARGETVARIANT}.tar.gz.sha256"
 
 FROM scratch AS artifact
 COPY --from=releaser /out /

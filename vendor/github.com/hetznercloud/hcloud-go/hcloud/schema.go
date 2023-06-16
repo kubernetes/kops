@@ -288,6 +288,9 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 		CPUType:         CPUType(s.CPUType),
 		Architecture:    Architecture(s.Architecture),
 		IncludedTraffic: s.IncludedTraffic,
+		DeprecatableResource: DeprecatableResource{
+			DeprecationFromSchema(s.Deprecation),
+		},
 	}
 	for _, price := range s.Prices {
 		st.Pricings = append(st.Pricings, ServerTypeLocationPricing{
@@ -302,6 +305,7 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 			},
 		})
 	}
+
 	return st
 }
 
@@ -1248,4 +1252,16 @@ func loadBalancerMetricsFromSchema(s *schema.LoadBalancerGetMetricsResponse) (*L
 	ms.TimeSeries = timeSeries
 
 	return &ms, nil
+}
+
+// DeprecationFromSchema converts a [schema.DeprecationInfo] to a [DeprecationInfo].
+func DeprecationFromSchema(s *schema.DeprecationInfo) *DeprecationInfo {
+	if s == nil {
+		return nil
+	}
+
+	return &DeprecationInfo{
+		Announced:        s.Announced,
+		UnavailableAfter: s.UnavailableAfter,
+	}
 }

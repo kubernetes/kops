@@ -340,6 +340,10 @@ type EC2API interface {
 	CreateImageWithContext(aws.Context, *ec2.CreateImageInput, ...request.Option) (*ec2.CreateImageOutput, error)
 	CreateImageRequest(*ec2.CreateImageInput) (*request.Request, *ec2.CreateImageOutput)
 
+	CreateInstanceConnectEndpoint(*ec2.CreateInstanceConnectEndpointInput) (*ec2.CreateInstanceConnectEndpointOutput, error)
+	CreateInstanceConnectEndpointWithContext(aws.Context, *ec2.CreateInstanceConnectEndpointInput, ...request.Option) (*ec2.CreateInstanceConnectEndpointOutput, error)
+	CreateInstanceConnectEndpointRequest(*ec2.CreateInstanceConnectEndpointInput) (*request.Request, *ec2.CreateInstanceConnectEndpointOutput)
+
 	CreateInstanceEventWindow(*ec2.CreateInstanceEventWindowInput) (*ec2.CreateInstanceEventWindowOutput, error)
 	CreateInstanceEventWindowWithContext(aws.Context, *ec2.CreateInstanceEventWindowInput, ...request.Option) (*ec2.CreateInstanceEventWindowOutput, error)
 	CreateInstanceEventWindowRequest(*ec2.CreateInstanceEventWindowInput) (*request.Request, *ec2.CreateInstanceEventWindowOutput)
@@ -643,6 +647,10 @@ type EC2API interface {
 	DeleteFpgaImage(*ec2.DeleteFpgaImageInput) (*ec2.DeleteFpgaImageOutput, error)
 	DeleteFpgaImageWithContext(aws.Context, *ec2.DeleteFpgaImageInput, ...request.Option) (*ec2.DeleteFpgaImageOutput, error)
 	DeleteFpgaImageRequest(*ec2.DeleteFpgaImageInput) (*request.Request, *ec2.DeleteFpgaImageOutput)
+
+	DeleteInstanceConnectEndpoint(*ec2.DeleteInstanceConnectEndpointInput) (*ec2.DeleteInstanceConnectEndpointOutput, error)
+	DeleteInstanceConnectEndpointWithContext(aws.Context, *ec2.DeleteInstanceConnectEndpointInput, ...request.Option) (*ec2.DeleteInstanceConnectEndpointOutput, error)
+	DeleteInstanceConnectEndpointRequest(*ec2.DeleteInstanceConnectEndpointInput) (*request.Request, *ec2.DeleteInstanceConnectEndpointOutput)
 
 	DeleteInstanceEventWindow(*ec2.DeleteInstanceEventWindowInput) (*ec2.DeleteInstanceEventWindowOutput, error)
 	DeleteInstanceEventWindowWithContext(aws.Context, *ec2.DeleteInstanceEventWindowInput, ...request.Option) (*ec2.DeleteInstanceEventWindowOutput, error)
@@ -1186,6 +1194,13 @@ type EC2API interface {
 	DescribeInstanceAttribute(*ec2.DescribeInstanceAttributeInput) (*ec2.DescribeInstanceAttributeOutput, error)
 	DescribeInstanceAttributeWithContext(aws.Context, *ec2.DescribeInstanceAttributeInput, ...request.Option) (*ec2.DescribeInstanceAttributeOutput, error)
 	DescribeInstanceAttributeRequest(*ec2.DescribeInstanceAttributeInput) (*request.Request, *ec2.DescribeInstanceAttributeOutput)
+
+	DescribeInstanceConnectEndpoints(*ec2.DescribeInstanceConnectEndpointsInput) (*ec2.DescribeInstanceConnectEndpointsOutput, error)
+	DescribeInstanceConnectEndpointsWithContext(aws.Context, *ec2.DescribeInstanceConnectEndpointsInput, ...request.Option) (*ec2.DescribeInstanceConnectEndpointsOutput, error)
+	DescribeInstanceConnectEndpointsRequest(*ec2.DescribeInstanceConnectEndpointsInput) (*request.Request, *ec2.DescribeInstanceConnectEndpointsOutput)
+
+	DescribeInstanceConnectEndpointsPages(*ec2.DescribeInstanceConnectEndpointsInput, func(*ec2.DescribeInstanceConnectEndpointsOutput, bool) bool) error
+	DescribeInstanceConnectEndpointsPagesWithContext(aws.Context, *ec2.DescribeInstanceConnectEndpointsInput, func(*ec2.DescribeInstanceConnectEndpointsOutput, bool) bool, ...request.Option) error
 
 	DescribeInstanceCreditSpecifications(*ec2.DescribeInstanceCreditSpecificationsInput) (*ec2.DescribeInstanceCreditSpecificationsOutput, error)
 	DescribeInstanceCreditSpecificationsWithContext(aws.Context, *ec2.DescribeInstanceCreditSpecificationsInput, ...request.Option) (*ec2.DescribeInstanceCreditSpecificationsOutput, error)

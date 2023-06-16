@@ -14,6 +14,7 @@ const (
 	AwsIsoPartitionID   = "aws-iso"    // AWS ISO (US) partition.
 	AwsIsoBPartitionID  = "aws-iso-b"  // AWS ISOB (US) partition.
 	AwsIsoEPartitionID  = "aws-iso-e"  // AWS ISOE (Europe) partition.
+	AwsIsoFPartitionID  = "aws-iso-f"  // AWS ISOF partition.
 )
 
 // AWS Standard partition's regions.
@@ -73,8 +74,11 @@ const (
 // AWS ISOE (Europe) partition's regions.
 const ()
 
+// AWS ISOF partition's regions.
+const ()
+
 // DefaultResolver returns an Endpoint resolver that will be able
-// to resolve endpoints for: AWS Standard, AWS China, AWS GovCloud (US), AWS ISO (US), AWS ISOB (US), and AWS ISOE (Europe).
+// to resolve endpoints for: AWS Standard, AWS China, AWS GovCloud (US), AWS ISO (US), AWS ISOB (US), AWS ISOE (Europe), and AWS ISOF.
 //
 // Use DefaultPartitions() to get the list of the default partitions.
 func DefaultResolver() Resolver {
@@ -82,7 +86,7 @@ func DefaultResolver() Resolver {
 }
 
 // DefaultPartitions returns a list of the partitions the SDK is bundled
-// with. The available partitions are: AWS Standard, AWS China, AWS GovCloud (US), AWS ISO (US), AWS ISOB (US), and AWS ISOE (Europe).
+// with. The available partitions are: AWS Standard, AWS China, AWS GovCloud (US), AWS ISO (US), AWS ISOB (US), AWS ISOE (Europe), and AWS ISOF.
 //
 //    partitions := endpoints.DefaultPartitions
 //    for _, p := range partitions {
@@ -99,6 +103,7 @@ var defaultPartitions = partitions{
 	awsisoPartition,
 	awsisobPartition,
 	awsisoePartition,
+	awsisofPartition,
 }
 
 // AwsPartition returns the Resolver for AWS Standard.
@@ -18212,6 +18217,9 @@ var awsPartition = partition{
 					Region: "eu-west-2",
 				}: endpoint{},
 				endpointKey{
+					Region: "eu-west-3",
+				}: endpoint{},
+				endpointKey{
 					Region: "me-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -28479,6 +28487,91 @@ var awsPartition = partition{
 				},
 			},
 		},
+		"verifiedpermissions": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "af-south-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-northeast-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-northeast-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-northeast-3",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-south-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-south-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-southeast-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-southeast-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-southeast-3",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-southeast-4",
+				}: endpoint{},
+				endpointKey{
+					Region: "ca-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-central-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-north-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-south-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-south-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-west-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-west-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-west-3",
+				}: endpoint{},
+				endpointKey{
+					Region: "me-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "me-south-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "sa-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-east-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-west-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-west-2",
+				}: endpoint{},
+			},
+		},
 		"voice-chime": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
@@ -38723,6 +38816,16 @@ var awsisoPartition = partition{
 				}: endpoint{},
 			},
 		},
+		"dlm": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-iso-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-iso-west-1",
+				}: endpoint{},
+			},
+		},
 		"dms": service{
 			Defaults: endpointDefaults{
 				defaultKey{}: endpoint{},
@@ -40051,6 +40154,40 @@ var awsisoePartition = partition{
 		}: endpoint{
 			Hostname:          "{service}-fips.{region}.{dnsSuffix}",
 			DNSSuffix:         "cloud.adc-e.uk",
+			Protocols:         []string{"https"},
+			SignatureVersions: []string{"v4"},
+		},
+	},
+	Regions:  regions{},
+	Services: services{},
+}
+
+// AwsIsoFPartition returns the Resolver for AWS ISOF.
+func AwsIsoFPartition() Partition {
+	return awsisofPartition.Partition()
+}
+
+var awsisofPartition = partition{
+	ID:        "aws-iso-f",
+	Name:      "AWS ISOF",
+	DNSSuffix: "csp.hci.ic.gov",
+	RegionRegex: regionRegex{
+		Regexp: func() *regexp.Regexp {
+			reg, _ := regexp.Compile("^us\\-isof\\-\\w+\\-\\d+$")
+			return reg
+		}(),
+	},
+	Defaults: endpointDefaults{
+		defaultKey{}: endpoint{
+			Hostname:          "{service}.{region}.{dnsSuffix}",
+			Protocols:         []string{"https"},
+			SignatureVersions: []string{"v4"},
+		},
+		defaultKey{
+			Variant: fipsVariant,
+		}: endpoint{
+			Hostname:          "{service}-fips.{region}.{dnsSuffix}",
+			DNSSuffix:         "csp.hci.ic.gov",
 			Protocols:         []string{"https"},
 			SignatureVersions: []string{"v4"},
 		},
