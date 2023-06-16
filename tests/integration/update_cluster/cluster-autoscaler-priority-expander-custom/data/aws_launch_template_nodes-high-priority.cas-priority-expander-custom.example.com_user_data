@@ -138,7 +138,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -176,7 +176,7 @@ ConfigServer:
   - https://kops-controller.internal.cas-priority-expander-custom.example.com:3988/
 InstanceGroupName: nodes-high-priority
 InstanceGroupRole: Node
-NodeupConfigHash: RGK+8XQTlx3C7inK+OP+r0Pj1HXVUvlEjj2rr+Ju07I=
+NodeupConfigHash: 1Q+oAfo0v+RLBV5GCay7T58jn7igSMli1j0ba+HPPQY=
 
 __EOF_KUBE_ENV
 

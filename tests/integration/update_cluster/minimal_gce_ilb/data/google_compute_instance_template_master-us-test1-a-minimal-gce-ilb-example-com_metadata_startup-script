@@ -215,7 +215,7 @@ kubelet:
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -233,7 +233,7 @@ masterKubelet:
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -248,7 +248,7 @@ ClusterName: minimal-gce-ilb.example.com
 ConfigBase: memfs://tests/minimal-gce-ilb.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: uLvfuqngiDIxFtBYmk91Fc4s5+fyjM368nDFcNcnYYw=
+NodeupConfigHash: kYDxi9CQz1pOsyZ4Cu8AttY3tzNaUNwqWdxl+M+T8Zg=
 
 __EOF_KUBE_ENV
 

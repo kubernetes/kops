@@ -138,7 +138,7 @@ kubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -176,7 +176,7 @@ ConfigServer:
   - https://kops-controller.internal.scw-minimal.k8s.local:3988/
 InstanceGroupName: nodes-fr-par-1
 InstanceGroupRole: Node
-NodeupConfigHash: l6ITXtzPONIgO+uyEAe0rYXGYgBVjPkJ9/Ov2xKxX/U=
+NodeupConfigHash: gkG+XyeiX3GAi1s4adzicFnfOkZ/AxpBl0ii4qxaWAs=
 
 __EOF_KUBE_ENV
 

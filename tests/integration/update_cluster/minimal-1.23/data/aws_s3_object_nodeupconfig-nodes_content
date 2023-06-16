@@ -43,7 +43,7 @@ KubeletConfig:
     kops.k8s.io/instancegroup: nodes-us-test-1a
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true

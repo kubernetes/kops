@@ -139,7 +139,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -177,7 +177,7 @@ ConfigServer:
   - https://kops-controller.internal.privatekopeio.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: lDHNbpYixaLfjQ5L01+MLfh7H7WNFYyyYEeeV87c9p0=
+NodeupConfigHash: c8XIRJdHf/n8gNcEexfrO88hluwwiG5rTElr1VTwOLw=
 
 __EOF_KUBE_ENV
 
