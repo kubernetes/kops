@@ -161,7 +161,6 @@ func setType(v reflect.Value, newValue string) error {
 		default:
 			panic("missing case in switch")
 		}
-	
 	case "intstr.IntOrString":
 		newV = reflect.ValueOf(intstr.Parse(newValue))
 
