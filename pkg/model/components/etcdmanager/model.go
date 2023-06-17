@@ -202,12 +202,12 @@ spec:
   hostPID: true # helps with mounting volumes from inside a container
   initContainers:
   - args:
-    - /ko-app/kops-copy
+    - /ko-app/kops-utils-cp
     - /opt/bin
     command:
-    - /ko-app/kops-copy
-    image: registry.k8s.io/kops/kops-copy:1.27.0-alpha.2
-    name: kops-copy
+    - /ko-app/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2
+    name: kops-utils-cp
     resources: {}
     volumeMounts:
     - mountPath: /opt
@@ -260,7 +260,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			initContainer := v1.Container{
 				Name:    "init-etcd-" + strings.ReplaceAll(etcdVersion, ".", "-"),
 				Image:   etcdSupportedImages[etcdVersion],
-				Command: []string{"/opt/bin/kops-copy"},
+				Command: []string{"/opt/bin/kops-utils-cp"},
 				Args: []string{
 					"/usr/local/bin/etcd",
 					"/usr/local/bin/etcdctl",
