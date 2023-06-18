@@ -133,9 +133,6 @@ etcdClusters:
       volumeSize: 20
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     version: 3.5.9
   main:
     etcdMembers:
@@ -143,9 +140,6 @@ etcdClusters:
       volumeSize: 50
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     version: 3.5.9
 kubeAPIServer:
   allowPrivileged: true

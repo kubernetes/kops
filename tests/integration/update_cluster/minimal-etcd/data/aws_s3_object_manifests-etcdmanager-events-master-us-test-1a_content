@@ -20,10 +20,10 @@ spec:
       --volume-tag=kubernetes.io/cluster/minimal-etcd.example.com=owned > /tmp/pipe
       2>&1
     env:
-    - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
-      value: 1d
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
+    - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
+      value: 1d
     image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
     name: etcd-manager
     resources:
