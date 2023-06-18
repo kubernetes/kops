@@ -157,7 +157,11 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	}
 
 	// Apply labels for cluster autoscaler node labels
-	for k, v := range nodelabels.BuildNodeLabels(b.Cluster, ig) {
+	nodeLabels, err := nodelabels.BuildNodeLabels(b.Cluster, ig)
+	if err != nil {
+		return nil, fmt.Errorf("error building node labels: %w", err)
+	}
+	for k, v := range nodeLabels {
 		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 	}
 

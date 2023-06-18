@@ -111,7 +111,10 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("unable to load instance group object for node %s: %v", node.Name, err)
 	}
 
-	labels := nodelabels.BuildNodeLabels(cluster, ig)
+	labels, err := nodelabels.BuildNodeLabels(cluster, ig)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error building node labels for node %q: %w", node.Name, err)
+	}
 
 	lifecycle, err := r.getInstanceLifecycle(ctx, node)
 	if err != nil {
