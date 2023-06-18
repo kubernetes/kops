@@ -44,8 +44,8 @@ spec:
   hostPID: true
   initContainers:
   - args:
-    - /ko-app/kops-utils-cp
-    - /opt/bin
+    - --target-dir=/opt/kops-utils/
+    - --src=/ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
     image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
@@ -55,11 +55,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.2.24
+    - --target-dir=/opt/etcd-v3.2.24
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.2.24-1
     name: init-etcd-3-2-24
     resources: {}
@@ -67,11 +67,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.3.10
+    - --target-dir=/opt/etcd-v3.3.10
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.3.10-0
     name: init-etcd-3-3-10
     resources: {}
@@ -79,11 +79,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.3.17
+    - --target-dir=/opt/etcd-v3.3.17
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.3.17-0
     name: init-etcd-3-3-17
     resources: {}
@@ -91,11 +91,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.4.13
+    - --target-dir=/opt/etcd-v3.4.13
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.4.13-0
     name: init-etcd-3-4-13
     resources: {}
@@ -103,11 +103,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.4.3
+    - --target-dir=/opt/etcd-v3.4.3
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.4.3-0
     name: init-etcd-3-4-3
     resources: {}
@@ -115,11 +115,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.0
+    - --target-dir=/opt/etcd-v3.5.0
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.0-0
     name: init-etcd-3-5-0
     resources: {}
@@ -127,11 +127,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.1
+    - --target-dir=/opt/etcd-v3.5.1
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.1-0
     name: init-etcd-3-5-1
     resources: {}
@@ -139,11 +139,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.3
+    - --target-dir=/opt/etcd-v3.5.3
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.3-0
     name: init-etcd-3-5-3
     resources: {}
@@ -151,11 +151,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.4
+    - --target-dir=/opt/etcd-v3.5.4
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.4-0
     name: init-etcd-3-5-4
     resources: {}
@@ -163,11 +163,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.6
+    - --target-dir=/opt/etcd-v3.5.6
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.6-0
     name: init-etcd-3-5-6
     resources: {}
@@ -175,11 +175,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.7
+    - --target-dir=/opt/etcd-v3.5.7
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.7-0
     name: init-etcd-3-5-7
     resources: {}
@@ -187,11 +187,11 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - /usr/local/bin/etcd
-    - /usr/local/bin/etcdctl
-    - /opt/etcd-v3.5.9
+    - --target-dir=/opt/etcd-v3.5.9
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
     command:
-    - /opt/bin/kops-utils-cp
+    - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.9-0
     name: init-etcd-3-5-9
     resources: {}
