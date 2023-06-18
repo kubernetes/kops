@@ -64,9 +64,6 @@ spec:
       name: a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: main
     version: 3.5.9
@@ -78,9 +75,6 @@ spec:
       name: a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: events
     version: 3.5.9
