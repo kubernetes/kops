@@ -200,18 +200,6 @@ spec:
       name: opt
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
-  initContainers:
-  - args:
-    - /ko-app/kops-utils-cp
-    - /opt/bin
-    command:
-    - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2
-    name: kops-utils-cp
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: opt
   volumes:
   - hostPath:
       path: /
@@ -228,6 +216,8 @@ spec:
   - name: opt
     emptyDir: {}
 `
+
+const kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2"
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instanceGroupName string) (*v1.Pod, error) {
@@ -256,30 +246,74 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
+		utilMounts := []v1.VolumeMount{
+			{
+				MountPath: "/opt",
+				Name:      "opt",
+			},
+		}
+		{
+			initContainer := v1.Container{
+				Name:    "kops-utils-cp",
+				Command: []string{"/ko-app/kops-utils-cp"},
+				Args: []string{
+					"-t", "/opt/kops-utils/",
+					"/ko-app/kops-utils-cp",
+				},
+				Image:        kopsUtilsImage,
+				VolumeMounts: utilMounts,
+			}
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+		{
+			initContainer := v1.Container{
+				Name:    "kops-utils-symlinks",
+				Command: []string{"/opt/kops-utils/kops-utils-cp"},
+				Args: []string{
+					"-s",
+					"/opt/kops-utils/kops-utils-cp",
+					"/opt/kops-utils/ln",
+				},
+				Image:        kopsUtilsImage,
+				VolumeMounts: utilMounts,
+			}
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+
 		for _, etcdVersion := range etcdSupportedVersions() {
 			initContainer := v1.Container{
-				Name:    "init-etcd-" + strings.ReplaceAll(etcdVersion, ".", "-"),
-				Image:   etcdSupportedImages[etcdVersion],
-				Command: []string{"/opt/bin/kops-utils-cp"},
-				Args: []string{
+				Name:         "init-etcd-" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
+				VolumeMounts: utilMounts,
+			}
+			if etcdVersion.Image != "" {
+				initContainer.Command = []string{"/opt/kops-utils/kops-utils-cp"}
+				initContainer.Args = []string{
+					"-t", "/opt/etcd-v" + etcdVersion.Version,
 					"/usr/local/bin/etcd",
 					"/usr/local/bin/etcdctl",
-					"/opt/etcd-v" + etcdVersion,
-				},
-				VolumeMounts: []v1.VolumeMount{
-					{
-						MountPath: "/opt",
-						Name:      "opt",
-					},
-				},
+				}
+				initContainer.Image = etcdVersion.Image
+			} else {
+				initContainer.Command = []string{"/opt/kops-utils/ln"}
+				initContainer.Args = []string{
+					"-s",
+					"/opt/etcd-v" + etcdVersion.SymlinkToVersion,
+					"/opt/etcd-v" + etcdVersion.Version,
+				}
+				initContainer.Image = kopsUtilsImage
 			}
-			// Remap image via AssetBuilder
+
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+
+		// Remap image via AssetBuilder
+		for i := range pod.Spec.InitContainers {
+			initContainer := &pod.Spec.InitContainers[i]
 			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
 			if err != nil {
 				return nil, fmt.Errorf("unable to remap container image %q: %w", initContainer.Image, err)
 			}
 			initContainer.Image = remapped
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
 		}
 	}
 

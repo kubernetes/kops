@@ -17,17 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
 	"k8s.io/klog/v2"
 )
 
-func copyFile(source, target string) error {
-	klog.Infof("Copying source file %q to target directory %q", source, target)
+func copyFile(source, dest string) error {
+	klog.Infof("Copying source file %q to %q", source, dest)
 
 	sf, err := os.Open(source)
 	if err != nil {
@@ -40,42 +40,124 @@ func copyFile(source, target string) error {
 		return fmt.Errorf("unable to stat source file %q: %w", source, err)
 	}
 
-	fn := filepath.Join(target, filepath.Base(source))
-	df, err := os.Create(fn)
+	df, err := os.Create(dest)
 	if err != nil {
-		return fmt.Errorf("unable to create target file %q: %w", fn, err)
+		return fmt.Errorf("unable to create dest file %q: %w", dest, err)
 	}
 	defer df.Close()
 
 	_, err = io.Copy(df, sf)
 	if err != nil {
-		return fmt.Errorf("unable to copy source file %q contents to target file %q: %w", source, fn, err)
+		return fmt.Errorf("unable to copy source file %q contents to dest file %q: %w", source, dest, err)
 	}
 
 	if err := df.Close(); err != nil {
-		return fmt.Errorf("unable to close target file %q: %w", fn, err)
+		return fmt.Errorf("unable to close dest file %q: %w", dest, err)
 	}
-	if err := os.Chmod(fn, fi.Mode()); err != nil {
-		return fmt.Errorf("unable to change mode of target file %q: %w", fn, err)
+	if err := os.Chmod(dest, fi.Mode()); err != nil {
+		return fmt.Errorf("unable to change mode of dest file %q: %w", dest, err)
 	}
 
 	return nil
 }
 
+// main is the entrypoint, and performs some simple busybox-style all-in-one binary dispatching.
 func main() {
-	if len(os.Args) < 3 {
-		log.Fatal("Usage: kops-utils-cp SOURCE ... TARGET")
+	cmdName := filepath.Base(os.Args[0])
+
+	var cmd func() error
+	switch cmdName {
+	case "ln", "kops-utils-ln":
+		cmd = commandLn
+	default:
+		cmd = commandCp
 	}
 
-	target := os.Args[len(os.Args)-1]
-
-	if err := os.MkdirAll(target, 0755); err != nil {
-		klog.Exitf("unable to create target directory %q: %v", target, err)
+	if err := cmd(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
 	}
+}
 
-	for _, src := range os.Args[1 : len(os.Args)-1] {
-		if err := copyFile(src, target); err != nil {
-			klog.Exitf("unable to copy source file %q to target directory %q: %v", src, target, err)
+// commandCp is a lightweight substitute for the `cp` command.
+func commandCp() error {
+	var symlink bool
+	flag.BoolVar(&symlink, "s", symlink, "make symbolic link")
+	var targetDirectory bool
+	flag.BoolVar(&targetDirectory, "t", targetDirectory, "copy to directory")
+
+	flag.Parse()
+
+	args := flag.Args()
+
+	if targetDirectory {
+		if len(args) < 2 {
+			return fmt.Errorf("usage: kops-utils-cp -t DIRECTORY SOURCE...")
+		}
+
+		if symlink {
+			return fmt.Errorf("symlink not supported with directory copying")
+		}
+
+		targetDir := args[0]
+		if err := os.MkdirAll(targetDir, 0755); err != nil {
+			return fmt.Errorf("unable to create target directory %q: %v", targetDir, err)
+		}
+
+		for _, src := range args[1:] {
+			name := filepath.Base(src)
+			target := filepath.Join(targetDir, name)
+			if err := copyFile(src, target); err != nil {
+				return fmt.Errorf("unable to copy source file %q to target directory %q: %w", src, target, err)
+			}
+		}
+	} else {
+		if len(args) != 2 {
+			return fmt.Errorf("usage: kops-utils-cp [-s] SOURCE DEST")
+		}
+
+		src := args[0]
+		dest := args[1]
+
+		if symlink {
+			if err := os.Symlink(src, dest); err != nil {
+				return fmt.Errorf("unable to symlink %q -> %q: %w", dest, src, err)
+			}
+		} else {
+			if err := copyFile(src, dest); err != nil {
+				return fmt.Errorf("unable to copy source file %q to target %q: %w", src, dest, err)
+			}
 		}
 	}
+
+	return nil
+}
+
+// commandLn is a lightweight substitute for the `ln` command.
+func commandLn() error {
+	var symlink bool
+	flag.BoolVar(&symlink, "s", symlink, "make symbolic link")
+
+	flag.Parse()
+
+	args := flag.Args()
+
+	if len(args) != 2 {
+		return fmt.Errorf("usage: kops-utils-ln [-s] SOURCE TARGET")
+	}
+
+	target := args[0]
+	linkName := args[1]
+
+	if symlink {
+		if err := os.Symlink(target, linkName); err != nil {
+			return fmt.Errorf("unable to create symlink from %q -> %q: %w", linkName, target, err)
+		}
+	} else {
+		if err := os.Link(target, linkName); err != nil {
+			return fmt.Errorf("unable to create hard link from %q -> %q: %w", linkName, target, err)
+		}
+	}
+
+	return nil
 }
