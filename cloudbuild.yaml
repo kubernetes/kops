@@ -16,7 +16,7 @@ steps:
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
   args:
-  - kops-utils-cp
+  - kops-utils-cp-push
   - kops-controller-push
   - dns-controller-push
   - kube-apiserver-healthcheck-push
