@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  cluster.x-k8s.io/v1beta1: v1beta1
+
+resources:
+- crds/bootstrap.cluster.x-k8s.io_kopsconfigs.yaml
+- crds/bootstrap.cluster.x-k8s.io_kopsconfigtemplates.yaml
+- crds/controlplane.cluster.x-k8s.io_kopscontrolplanes.yaml
+- crds/controlplane.cluster.x-k8s.io_kopscontrolplanetemplates.yaml
