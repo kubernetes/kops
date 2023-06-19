@@ -148,11 +148,6 @@ resource "aws_autoscaling_group" "bastion-private-shared-ip-example-com" {
     value               = "bastion.private-shared-ip.example.com"
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -467,32 +462,29 @@ resource "aws_launch_template" "bastion-private-shared-ip-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                          = "private-shared-ip.example.com"
-      "Name"                                                                       = "bastion.private-shared-ip.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/private-shared-ip.example.com"                        = "owned"
+      "KubernetesCluster"                                   = "private-shared-ip.example.com"
+      "Name"                                                = "bastion.private-shared-ip.example.com"
+      "k8s.io/role/bastion"                                 = "1"
+      "kops.k8s.io/instancegroup"                           = "bastion"
+      "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                          = "private-shared-ip.example.com"
-      "Name"                                                                       = "bastion.private-shared-ip.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/private-shared-ip.example.com"                        = "owned"
+      "KubernetesCluster"                                   = "private-shared-ip.example.com"
+      "Name"                                                = "bastion.private-shared-ip.example.com"
+      "k8s.io/role/bastion"                                 = "1"
+      "kops.k8s.io/instancegroup"                           = "bastion"
+      "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                          = "private-shared-ip.example.com"
-    "Name"                                                                       = "bastion.private-shared-ip.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-    "k8s.io/role/bastion"                                                        = "1"
-    "kops.k8s.io/instancegroup"                                                  = "bastion"
-    "kubernetes.io/cluster/private-shared-ip.example.com"                        = "owned"
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastion.private-shared-ip.example.com"
+    "k8s.io/role/bastion"                                 = "1"
+    "kops.k8s.io/instancegroup"                           = "bastion"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
 }
 
