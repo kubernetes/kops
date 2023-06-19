@@ -66,7 +66,7 @@ GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
 # We lock the versions of our controllers also
 # We need to keep in sync with:
 #   pkg/model/components/etcdmanager/model.go
-KOPS_UTILS_CP_TAG=1.27.0-alpha.2
+KOPS_UTILS_CP_TAG=1.27.0-beta.1
 KOPS_UTILS_CP_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_UTILS_CP_TAG | awk '{print $$2}')
 #   upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.27.0-beta.1
