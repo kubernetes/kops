@@ -888,6 +888,12 @@ spec:
             memory: 100Mi
       restartPolicy: Always
       priorityClassName: system-node-critical
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccount: cilium
       serviceAccountName: cilium
       terminationGracePeriodSeconds: 1
@@ -1072,6 +1078,12 @@ spec:
       hostNetwork: true
       restartPolicy: Always
       priorityClassName: system-cluster-critical
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
       tolerations:

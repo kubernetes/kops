@@ -287,5 +287,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
 
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
+
 	return pod, nil
 }

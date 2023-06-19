@@ -199,6 +199,9 @@ spec:
                         description: Version used to pick the runc package.
                         type: string
                     type: object
+                  selinuxEnabled:
+                    description: SelinuxEnabled enables SELinux support
+                    type: boolean
                   skipInstall:
                     description: SkipInstall prevents kOps from installing and modifying
                       containerd in any way (default "false").

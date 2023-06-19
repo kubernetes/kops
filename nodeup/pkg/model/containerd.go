@@ -484,6 +484,9 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(2))
+	if containerd.SeLinuxEnabled {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "enable_selinux"}, true)
+	}
 	if b.NodeupConfig.KubeletConfig.PodInfraContainerImage != "" {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, b.NodeupConfig.KubeletConfig.PodInfraContainerImage)
 	}

@@ -239,6 +239,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	// PodPriority is enabled.
 	kubemanifest.MarkPodAsNodeCritical(pod)
 
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
+
 	return pod, nil
 }
 

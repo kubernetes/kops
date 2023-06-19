@@ -287,7 +287,6 @@ spec:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
       priorityClassName: system-node-critical
-      securityContext: {}
       serviceAccountName: aws-node
       terminationGracePeriodSeconds: 10
       tolerations:

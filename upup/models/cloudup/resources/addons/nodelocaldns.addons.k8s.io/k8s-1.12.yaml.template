@@ -163,6 +163,11 @@ spec:
           capabilities:
             add:
             - NET_ADMIN
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         ports:
         - containerPort: 53
           name: dns

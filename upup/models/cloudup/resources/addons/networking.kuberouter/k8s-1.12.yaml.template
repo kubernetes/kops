@@ -53,6 +53,12 @@ spec:
         tier: node
     spec:
       priorityClassName: system-node-critical
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccountName: kube-router
       containers:
       - name: kube-router

@@ -739,6 +739,8 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
 
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
+
 	if useHealthcheckProxy {
 		if err := b.addHealthcheckSidecar(ctx, pod); err != nil {
 			return nil, err
