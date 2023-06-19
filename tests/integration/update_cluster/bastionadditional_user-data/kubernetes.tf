@@ -148,11 +148,6 @@ resource "aws_autoscaling_group" "bastion-bastionuserdata-example-com" {
     value               = "bastion.bastionuserdata.example.com"
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -485,32 +480,29 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                          = "bastionuserdata.example.com"
-      "Name"                                                                       = "bastion.bastionuserdata.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/bastionuserdata.example.com"                          = "owned"
+      "KubernetesCluster"                                 = "bastionuserdata.example.com"
+      "Name"                                              = "bastion.bastionuserdata.example.com"
+      "k8s.io/role/bastion"                               = "1"
+      "kops.k8s.io/instancegroup"                         = "bastion"
+      "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                          = "bastionuserdata.example.com"
-      "Name"                                                                       = "bastion.bastionuserdata.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/bastionuserdata.example.com"                          = "owned"
+      "KubernetesCluster"                                 = "bastionuserdata.example.com"
+      "Name"                                              = "bastion.bastionuserdata.example.com"
+      "k8s.io/role/bastion"                               = "1"
+      "kops.k8s.io/instancegroup"                         = "bastion"
+      "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                          = "bastionuserdata.example.com"
-    "Name"                                                                       = "bastion.bastionuserdata.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-    "k8s.io/role/bastion"                                                        = "1"
-    "kops.k8s.io/instancegroup"                                                  = "bastion"
-    "kubernetes.io/cluster/bastionuserdata.example.com"                          = "owned"
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastion.bastionuserdata.example.com"
+    "k8s.io/role/bastion"                               = "1"
+    "kops.k8s.io/instancegroup"                         = "bastion"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_bastion.bastionuserdata.example.com_user_data")
 }
