@@ -309,7 +309,7 @@ ko-dns-controller-push:
 	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
 .PHONY: kops-utils-cp-push
-kops-utils-cp-push-push: ko-kops-utils-cp-push
+kops-utils-cp-push: ko-kops-utils-cp-push
 
 .PHONY: ko-kops-utils-cp-push
 ko-kops-utils-cp-push:
