@@ -522,7 +522,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpAssets:        c.NodeUpAssets,
-		Cluster:             cluster,
 	}
 
 	{
