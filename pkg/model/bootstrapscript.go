@@ -27,30 +27,32 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type NodeUpConfigBuilder interface {
 	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error)
+
+	// NodeUpAssets returns the locations where we can download nodeup
+	NodeUpAssets() map[architectures.Architecture]*mirrors.MirroredAsset
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
 	*KopsModelContext
 	Lifecycle           fi.Lifecycle
-	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
 	Cluster             *kops.Cluster
 }
@@ -339,7 +341,8 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 	}
 
 	var nodeupScript resources.NodeUpScript
-	nodeupScript.NodeUpAssets = b.builder.NodeUpAssets
+	nodeupAssets := b.builder.NodeUpConfigBuilder.NodeUpAssets()
+	nodeupScript.NodeUpAssets = nodeupAssets
 	nodeupScript.BootConfig = bootConfig
 
 	{
