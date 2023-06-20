@@ -600,16 +600,6 @@ func TestBastionAdditionalUserData(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-const weaveAddon = "networking.weave-k8s-1.12"
-
-// TestPrivateWeave runs the test on a configuration with private topology, weave networking
-func TestPrivateWeave(t *testing.T) {
-	newIntegrationTest("privateweave.example.com", "privateweave").
-		withPrivate().
-		withAddons(awsEBSCSIAddon, weaveAddon, dnsControllerAddon).
-		runTestTerraformAWS(t)
-}
-
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
 	newIntegrationTest("privateflannel.example.com", "privateflannel").
@@ -739,7 +729,11 @@ func TestPrivateSharedIP(t *testing.T) {
 func TestPrivateDns1(t *testing.T) {
 	newIntegrationTest("privatedns1.example.com", "privatedns1").
 		withPrivate().
-		withAddons(awsEBSCSIAddon, weaveAddon, dnsControllerAddon).
+		withAddons(
+			awsCCMAddon,
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+		).
 		runTestTerraformAWS(t)
 }
 
@@ -1159,7 +1153,11 @@ func TestAPIServerNodes(t *testing.T) {
 	defer unsetFeatureFlags()
 
 	newIntegrationTest("minimal.example.com", "apiservernodes").
-		withAddons(dnsControllerAddon, awsEBSCSIAddon).
+		withAddons(
+			awsCCMAddon,
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+		).
 		withDedicatedAPIServer().
 		runTestTerraformAWS(t)
 }

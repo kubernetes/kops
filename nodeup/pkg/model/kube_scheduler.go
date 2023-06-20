@@ -220,13 +220,10 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	image := b.RemapImage(kubeScheduler.Image)
 
 	healthAction := &v1.HTTPGetAction{
-		Host: "127.0.0.1",
-		Path: "/healthz",
-		Port: intstr.FromInt(10251),
-	}
-	if b.IsKubernetesGTE("1.23") {
-		healthAction.Port = intstr.FromInt(10259)
-		healthAction.Scheme = v1.URISchemeHTTPS
+		Host:   "127.0.0.1",
+		Path:   "/healthz",
+		Port:   intstr.FromInt(10259),
+		Scheme: v1.URISchemeHTTPS,
 	}
 
 	container := &v1.Container{
@@ -251,7 +248,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-scheduler.log",
@@ -259,19 +256,6 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 			"/usr/local/bin/kube-scheduler",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-scheduler"}
-		if kubeScheduler.LogFormat != "" && kubeScheduler.LogFormat != "text" {
-			// When logging-format is not text, some flags are not accepted.
-			// https://github.com/kubernetes/kops/issues/14100
-			container.Args = sortedStrings(flags)
-		} else {
-			container.Args = append(
-				sortedStrings(flags),
-				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-				"--alsologtostderr",
-				"--log-file=/var/log/kube-scheduler.log")
-		}
 	}
 
 	if kubeScheduler.MaxPersistentVolumes != nil {

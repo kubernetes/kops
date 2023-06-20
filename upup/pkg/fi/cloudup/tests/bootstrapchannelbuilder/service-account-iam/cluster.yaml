@@ -22,7 +22,7 @@ spec:
     name: events
   iam:
     useServiceAccountExternalPermissions: true
-  kubernetesVersion: v1.22.6
+  kubernetesVersion: v1.27.0
   masterPublicName: api.minimal.example.com
   additionalSans:
   - proxy.api.minimal.example.com

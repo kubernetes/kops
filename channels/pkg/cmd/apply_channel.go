@@ -22,7 +22,6 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/blang/semver/v4"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
@@ -32,9 +31,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/channels"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/tables"
 )
 
@@ -227,23 +224,10 @@ func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*chann
 		return nil, fmt.Errorf("unable to parse argument %q as url", channelLocation)
 	}
 	if !location.IsAbs() {
-		// We recognize the following "well-known" format:
-		// <name> with no slashes ->
-		if strings.Contains(channelLocation, "/") {
-			return nil, fmt.Errorf("channel format not recognized (did you mean to use `-f` to specify a local file?): %q", channelLocation)
-		}
 		expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + channelLocation + "/addon.yaml"
-		location, err = url.Parse(expanded)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse expanded argument %q as url", expanded)
-		}
 		// Disallow the use of legacy addons from the "well-known" location starting Kubernetes 1.23:
 		// https://raw.githubusercontent.com/kubernetes/kops/master/addons/<name>/addon.yaml
-		if util.IsKubernetesGTE("1.23", kubernetesVersion) {
-			return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-		} else {
-			klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-		}
+		return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
 	}
 	o, err := channels.LoadAddons(channelLocation, location)
 	if err != nil {

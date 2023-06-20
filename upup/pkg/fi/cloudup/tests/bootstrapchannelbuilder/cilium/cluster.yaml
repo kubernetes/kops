@@ -21,7 +21,7 @@ spec:
       name: master-us-test-1a
     name: events
   iam: {}
-  kubernetesVersion: 1.22.0
+  kubernetesVersion: 1.27.0
   masterPublicName: api.minimal.example.com
   additionalSans:
   - proxy.api.minimal.example.com

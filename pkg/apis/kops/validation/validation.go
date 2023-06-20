@@ -1055,11 +1055,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		if cluster.IsKubernetesGTE("1.23") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave is not supported for Kubernetes >= 1.23"))
-		} else if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave does not support IPv6"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave is no longer supported"))
 	}
 
 	if v.Flannel != nil {

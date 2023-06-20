@@ -183,7 +183,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-proxy.log",
@@ -191,13 +191,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			"/usr/local/bin/kube-proxy",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-proxy"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-proxy.log")
 	}
 	{
 		kubemanifest.AddHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")

@@ -37,7 +37,7 @@ func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if gce.PDCSIDriver == nil {
 		gce.PDCSIDriver = &kops.PDCSIDriver{
-			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.23")),
+			Enabled: fi.PtrTo(true),
 		}
 	}
 
