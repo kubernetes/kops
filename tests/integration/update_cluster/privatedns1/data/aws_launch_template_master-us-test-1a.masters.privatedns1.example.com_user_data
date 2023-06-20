@@ -149,7 +149,7 @@ kubeAPIServer:
   apiServerCount: 1
   authorizationMode: AlwaysAllow
   bindAddress: 0.0.0.0
-  cloudProvider: aws
+  cloudProvider: external
   enableAdmissionPlugins:
   - NamespaceLifecycle
   - LimitRanger
@@ -165,9 +165,8 @@ kubeAPIServer:
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.22.0
+  image: registry.k8s.io/kube-apiserver:v1.27.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -189,23 +188,21 @@ kubeAPIServer:
 kubeControllerManager:
   allocateNodeCIDRs: true
   attachDetachReconcileSyncPeriod: 1m0s
-  cloudProvider: aws
+  cloudProvider: external
   clusterCIDR: 100.96.0.0/11
   clusterName: privatedns1.example.com
   configureCloudRoutes: false
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.22.0
+  image: registry.k8s.io/kube-controller-manager:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
 kubeScheduler:
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.22.0
+  image: registry.k8s.io/kube-scheduler:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -213,17 +210,15 @@ kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -234,17 +229,15 @@ masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -260,7 +253,7 @@ ClusterName: privatedns1.example.com
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: o4y8EmBv12exLhOyO7r8fq3ZdF2AY3v3yy1QOGdT91A=
+NodeupConfigHash: 91rhU68bjHBvXgAdyTaKzfShk60Su3eS8U0ftbIISgg=
 
 __EOF_KUBE_ENV
 

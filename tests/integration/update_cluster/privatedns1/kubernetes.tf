@@ -215,17 +215,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns1-example-
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -288,11 +278,6 @@ resource "aws_autoscaling_group" "nodes-privatedns1-example-com" {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -534,7 +519,7 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -610,7 +595,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -630,9 +615,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
       "Owner"                                                                                                 = "John Doe"
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -648,9 +631,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
       "Owner"                                                                                                 = "John Doe"
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -664,9 +645,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
     "Owner"                                                                                                 = "John Doe"
     "foo/bar"                                                                                               = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
@@ -701,7 +680,7 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -720,7 +699,6 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
       "Name"                                                                       = "nodes.privatedns1.example.com"
       "Owner"                                                                      = "John Doe"
       "foo/bar"                                                                    = "fib+baz"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -734,7 +712,6 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
       "Name"                                                                       = "nodes.privatedns1.example.com"
       "Owner"                                                                      = "John Doe"
       "foo/bar"                                                                    = "fib+baz"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -746,7 +723,6 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
     "Name"                                                                       = "nodes.privatedns1.example.com"
     "Owner"                                                                      = "John Doe"
     "foo/bar"                                                                    = "fib+baz"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -967,6 +943,14 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "privatedns1-example-com-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privatedns1.example.com-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/privatedns1.example.com/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "privatedns1-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privatedns1.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
@@ -1019,14 +1003,6 @@ resource "aws_s3_object" "privatedns1-example-com-addons-limit-range-addons-k8s-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privatedns1.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/privatedns1.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "privatedns1-example-com-addons-networking-weave-k8s-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_privatedns1.example.com-addons-networking.weave-k8s-1.12_content")
-  key                    = "clusters.example.com/privatedns1.example.com/addons/networking.weave/k8s-1.12.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1308,8 +1284,10 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
 }
 
 resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.privatedns1.example.com"
@@ -1325,8 +1303,10 @@ resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.4.0/22"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.4.0/22"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "utility-us-test-1a.privatedns1.example.com"

@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 1777b09b9dbad5721d6273523d787efdc5ca50fdd9a4a1232d5c03ef3cb1b3c8
+    manifestHash: cf18fee164c0b94212c91ebf9c1691ddcf05afe7af61aed498680aa92ba2376b
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 49273720e8c046ae8b72a3fe666d670f6efb5e26111dc521027218b1e8e1de51
+    manifestHash: d2bbb7cbee5835c3891fe80fbacf8963508359ef9159f8480325ce9a7174f14a
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -46,16 +46,16 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.12
-    manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: c58a7acc6ed931d26b59892beb1f43e240fd51cbde223e3d95e15b3e04ced54d
-    name: networking.weave
+  - id: k8s-1.18
+    manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
+    manifestHash: cff48979a983d2e54a115ca5176cfaf16b629b8c67cc429d0fff3951141f4193
+    name: aws-cloud-controller.addons.k8s.io
     selector:
-      role.kubernetes.io/networking: "1"
+      k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 1b9a5e1ba9092ab22b11c9c8754747774873a7f0457509107707766c6ff44cc9
+    manifestHash: f0791dbf64945b9eb57ad23463b5e2716a83bb2b952f15ea5b766e3bd36f339f
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
