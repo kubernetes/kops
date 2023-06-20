@@ -33,9 +33,6 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition)
 	iam.AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
-	if b.Cluster.IsKubernetesLT("1.23") {
-		iam.AddLegacyCCMPermissions(p)
-	}
 	return p, nil
 }
 

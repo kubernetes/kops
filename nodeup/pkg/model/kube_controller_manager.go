@@ -231,7 +231,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-controller-manager.log",
@@ -239,19 +239,6 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 			"/usr/local/bin/kube-controller-manager",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-controller-manager"}
-		if kcm.LogFormat != "" && kcm.LogFormat != "text" {
-			// When logging-format is not text, some flags are not accepted.
-			// https://github.com/kubernetes/kops/issues/14100
-			container.Args = sortedStrings(flags)
-		} else {
-			container.Args = append(
-				sortedStrings(flags),
-				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-				"--alsologtostderr",
-				"--log-file=/var/log/kube-controller-manager.log")
-		}
 	}
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)

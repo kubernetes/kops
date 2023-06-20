@@ -418,10 +418,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
-
-			if b.Cluster.IsKubernetesLT("1.23") {
-				AddLegacyCCMPermissions(p)
-			}
 		}
 
 		if c := b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {

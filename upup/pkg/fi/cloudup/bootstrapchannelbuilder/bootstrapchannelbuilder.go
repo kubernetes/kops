@@ -455,7 +455,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.IsKubernetesGTE("1.23") && b.IsKubernetesLT("1.26") &&
+	if b.IsKubernetesLT("1.26") &&
 		(b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS ||
 			b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE) {
 		// AWS and GCE KCM-to-CCM leader migration

@@ -108,7 +108,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
-		if b.IsKubernetesGTE("1.23") && (kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce") {
+		if kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce" {
 			kcm.EnableLeaderMigration = fi.PtrTo(true)
 		}
 	} else {
