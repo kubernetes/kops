@@ -180,7 +180,6 @@ func TestBootstrapUserData(t *testing.T) {
 					Hash:      hashing.MustFromString("e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c71"),
 				},
 			},
-			Cluster: cluster,
 		}
 
 		res, err := bs.ResourceNodeUp(c, group)

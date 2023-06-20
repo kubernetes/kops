@@ -72,13 +72,17 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle: fi.LifecycleSync,
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					CloudProvider: kops.CloudProviderSpec{
-						AWS: &kops.AWSSpec{},
+			KopsModelContext: &model.KopsModelContext{
+				IAMModelContext: iam.IAMModelContext{
+					Cluster: &kops.Cluster{
+						Spec: kops.ClusterSpec{
+							CloudProvider: kops.CloudProviderSpec{
+								AWS: &kops.AWSSpec{},
+							},
+							Networking:        kops.NetworkingSpec{},
+							KubernetesVersion: "1.20.0",
+						},
 					},
-					Networking:        kops.NetworkingSpec{},
-					KubernetesVersion: "1.20.0",
 				},
 			},
 		},
@@ -184,7 +188,6 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 				InstanceGroups:  igs,
 			},
 			Lifecycle: fi.LifecycleSync,
-			Cluster:   cluster,
 		},
 		Cluster: cluster,
 	}
