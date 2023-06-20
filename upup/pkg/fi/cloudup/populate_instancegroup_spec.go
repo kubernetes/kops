@@ -258,7 +258,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
 	// rolling update will still replace nodes when they change.
-	igKubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
+	nodeLabels, err := nodelabels.BuildNodeLabels(cluster, ig)
+	if err != nil {
+		return nil, fmt.Errorf("error building node labels: %w", err)
+	}
+	igKubeletConfig.NodeLabels = nodeLabels
 
 	useSecureKubelet := fi.ValueOf(igKubeletConfig.AnonymousAuth)
 

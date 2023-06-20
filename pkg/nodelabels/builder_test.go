@@ -115,7 +115,10 @@ func TestBuildNodeLabels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			out := BuildNodeLabels(test.cluster, test.ig)
+			out, err := BuildNodeLabels(test.cluster, test.ig)
+			if err != nil {
+				t.Fatalf("unexpected error from BuildNodeLabels: %v", err)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				t.Fatalf("Actual result:\n%v\nExpect:\n%v", out, test.expected)
 			}

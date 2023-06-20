@@ -148,11 +148,6 @@ resource "aws_autoscaling_group" "bastion-privateciliumadvanced-example-com" {
     value               = "bastion.privateciliumadvanced.example.com"
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -502,32 +497,29 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
-      "Name"                                                                       = "bastion.privateciliumadvanced.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/privateciliumadvanced.example.com"                    = "owned"
+      "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+      "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+      "k8s.io/role/bastion"                                     = "1"
+      "kops.k8s.io/instancegroup"                               = "bastion"
+      "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
-      "Name"                                                                       = "bastion.privateciliumadvanced.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/bastion"                                                        = "1"
-      "kops.k8s.io/instancegroup"                                                  = "bastion"
-      "kubernetes.io/cluster/privateciliumadvanced.example.com"                    = "owned"
+      "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+      "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+      "k8s.io/role/bastion"                                     = "1"
+      "kops.k8s.io/instancegroup"                               = "bastion"
+      "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
-    "Name"                                                                       = "bastion.privateciliumadvanced.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-    "k8s.io/role/bastion"                                                        = "1"
-    "kops.k8s.io/instancegroup"                                                  = "bastion"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com"                    = "owned"
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+    "k8s.io/role/bastion"                                     = "1"
+    "kops.k8s.io/instancegroup"                               = "bastion"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
 }
 
