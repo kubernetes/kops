@@ -30,7 +30,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: https://dl.k8s.io/release/v1.22.0
+  kubernetesVersion: https://dl.k8s.io/release/v1.27.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
