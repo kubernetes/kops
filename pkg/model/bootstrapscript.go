@@ -52,7 +52,6 @@ type BootstrapScriptBuilder struct {
 	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
-	Cluster             *kops.Cluster
 }
 
 type BootstrapScript struct {
