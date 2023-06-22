@@ -126,8 +126,7 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --create-args="${create_args[*]}" \
   --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}"
 
-KUBECONFIG=$(mktemp -t kubeconfig)
-export KUBECONFIG
+KUBECONFIG=$(mktemp -t kubeconfig.XXXXXXXXX)
 kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
 
 if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
@@ -135,7 +134,6 @@ if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
   -- \
-  --alsologtostderr \
   --provider="${CLOUD_PROVIDER}" \
   --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
   --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
