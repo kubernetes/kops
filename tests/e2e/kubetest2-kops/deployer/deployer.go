@@ -59,8 +59,15 @@ type deployer struct {
 	KubernetesFeatureGates string   `flag:"kubernetes-feature-gates" desc:"Feature Gates to enable on Kubernetes components"`
 	createBucket           bool     `flag:"-"`
 
-	// ControlPlaneCount specifies the number of VMs in the control-plane.
-	ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control-plane instances"`
+	// // ControlPlaneCount specifies the number of VMs in the control-plane.
+	// ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control-plane instances"`
+	// ClusterName      string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
+	// ControlPlaneSize int      `flag:"control-plane-size" desc:"Number of control plane instances"`
+	// CloudProvider    string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
+	// GCPProject       string   `flag:"gcp-project" desc:"Which GCP Project to use when --cloud-provider=gce"`
+	// Env              []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
+	// CreateArgs       string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
+	// KopsBinaryPath   string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
 
 	ControlPlaneIGOverrides []string `flag:"control-plane-instance-group-overrides" desc:"overrides for the control plane instance groups"`
 	NodeIGOverrides         []string `flag:"node-instance-group-overrides" desc:"overrides for the node instance groups"`
@@ -104,6 +111,13 @@ type deployer struct {
 
 	// boskos boskosHelper
 
+	// // awsCredentials holds credentials for AWS loaded from boskos
+	// awsCredentials *credentials.Credentials
+
+	// // stateStore holds the kops state-store URL
+	// stateStore string
+
+	// createStateStoreBucket bool `flag:"-"`
 	// // awsStaticCredentials holds credentials for AWS loaded from boskos
 	// awsStaticCredentials *awsStaticCredentials
 }

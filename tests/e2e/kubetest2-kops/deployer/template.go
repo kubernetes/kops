@@ -80,6 +80,7 @@ func (d *deployer) templateValues(zones []string, publicIP string) (map[string]i
 		"publicIP":          publicIP,
 		"stateStore":        d.stateStore(),
 		"discoveryStore":    d.discoveryStore(),
+		"stateStore":        d.stateStore,
 		"zones":             zones,
 		"sshPublicKey":      string(publicKey),
 	}, nil

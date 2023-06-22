@@ -24,7 +24,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
@@ -70,7 +72,7 @@ func (d *deployer) initialize(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("init failed to get resource %q from boskos: %w", d.BoskosResourceType, err)
 			}
-			klog.V(1).Infof("Got AWS account %s from boskos", resource.Name)
+			klog.Infof("got AWS account %q from boskos", resource.Name)
 
 			accessKeyIDObj, ok := resource.UserData.Load("access-key-id")
 			if !ok {
@@ -80,10 +82,8 @@ func (d *deployer) initialize(ctx context.Context) error {
 			if !ok {
 				return fmt.Errorf("secret-access-key not found in boskos resource %q", resource.Name)
 			}
-			d.awsStaticCredentials = &awsStaticCredentials{
-				AccessKeyID:     accessKeyIDObj.(string),
-				SecretAccessKey: secretAccessKeyObj.(string),
-			}
+			d.awsCredentials = credentials.NewStaticCredentials(accessKeyIDObj.(string), secretAccessKeyObj.(string), "")
+			d.createStateStoreBucket = true
 		}
 
 		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
@@ -154,6 +154,10 @@ func (d *deployer) initialize(ctx context.Context) error {
 		}
 	}
 
+	if err := d.initStateStore(ctx); err != nil {
+		return err
+	}
+
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
 	}
@@ -216,7 +220,7 @@ func (d *deployer) env() []string {
 	vars = append(vars, []string{
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
-		fmt.Sprintf("KOPS_STATE_STORE=%v", d.stateStore()),
+		fmt.Sprintf("KOPS_STATE_STORE=%v", d.stateStore),
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
@@ -244,9 +248,23 @@ func (d *deployer) env() []string {
 		// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
 		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
 
-		if d.awsStaticCredentials != nil {
-			vars = append(vars, fmt.Sprintf("AWS_ACCESS_KEY_ID=%v", d.awsStaticCredentials.AccessKeyID))
-			vars = append(vars, fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%v", d.awsStaticCredentials.SecretAccessKey))
+		if d.awsCredentials != nil {
+			credentials, err := d.awsCredentials.Get()
+			if err != nil {
+				klog.Fatalf("error getting aws credentials: %v", err)
+			}
+			if credentials.AccessKeyID != "" {
+				klog.Infof("setting AWS_ACCESS_KEY_ID")
+				vars = append(vars, fmt.Sprintf("AWS_ACCESS_KEY_ID=%v", credentials.AccessKeyID))
+			} else {
+				klog.Warningf("AWS credentials configured but AWS_ACCESS_KEY_ID was empty")
+			}
+			if credentials.SecretAccessKey != "" {
+				klog.Infof("setting AWS_SECRET_ACCESS_KEY")
+				vars = append(vars, fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%v", credentials.SecretAccessKey))
+			} else {
+				klog.Warningf("AWS credentials configured but AWS_SECRET_ACCESS_KEY was empty")
+			}
 		}
 	} else if d.CloudProvider == "digitalocean" {
 		// Pass through some env vars if set
@@ -347,22 +365,55 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	return fmt.Sprintf("%v.%v", jobName, suffix), nil
 }
 
-// stateStore returns the kops state store to use
-// defaulting to values used in prow jobs
-func (d *deployer) stateStore() string {
+// initStateStore initializes the kops state store to use
+// defaulting to values used in prow jobs,
+// but creating a bucket if we are using a dynamic bucket.
+func (d *deployer) initStateStore(ctx context.Context) error {
 	ss := os.Getenv("KOPS_STATE_STORE")
-	if ss == "" {
-		switch d.CloudProvider {
-		case "aws":
-			ss = "s3://k8s-kops-prow"
-		case "gce":
-			d.createBucket = true
-			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
-		case "digitalocean":
-			ss = "do://e2e-kops-space"
+
+	switch d.CloudProvider {
+	case "aws":
+		if d.createStateStoreBucket {
+			bucketName, err := aws.AWSBucketName(ctx, d.awsCredentials)
+			if err != nil {
+				return fmt.Errorf("error building aws bucket name: %w", err)
+			}
+
+			if err := aws.EnsureAWSBucket(ctx, d.awsCredentials, bucketName); err != nil {
+				return err
+			}
+
+			ss = "s3://" + bucketName
+		} else {
+			if ss == "" {
+				ss = "s3://k8s-kops-prow"
+			}
+		}
+	case "gce":
+		if d.createStateStoreBucket {
+			ss = "gs://" + gce.GCSBucketName(d.GCPProject)
+			if err := gce.EnsureGCSBucket(ss, d.GCPProject); err != nil {
+				return err
+			}
+		}
+		d.createBucket = true
+		ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
+
+	case "digitalocean":
+		ss = "do://e2e-kops-space"
+
+	default:
+		if d.createStateStoreBucket {
+			return fmt.Errorf("bucket creation not implemented for cloud %q", d.CloudProvider)
 		}
 	}
-	return ss
+
+	if ss == "" {
+		return fmt.Errorf("cannot determine KOPS_STATE_STORE")
+	}
+
+	d.stateStore = ss
+	return nil
 }
 
 // discoveryStore returns the VFS path to use for public OIDC documents

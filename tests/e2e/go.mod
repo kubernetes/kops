@@ -8,6 +8,7 @@ replace k8s.io/kops => ../../.
 replace k8s.io/client-go => k8s.io/client-go v0.31.0
 
 require (
+	github.com/aws/aws-sdk-go v1.44.283
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0

@@ -18,9 +18,11 @@ package deployer
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"sigs.k8s.io/kubetest2/pkg/exec"
@@ -73,9 +75,24 @@ func (d *deployer) Down() error {
 		return err
 	}
 
-	if d.CloudProvider == "gce" && d.createBucket {
-		gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
-		gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
+	if d.createStateStoreBucket {
+		switch d.CloudProvider {
+		case "gce":
+			gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
+			gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
+			// gce.DeleteGCSBucket(d.stateStore, d.GCPProject)
+		case "aws":
+			bucketName, err := aws.AWSBucketName(ctx, d.awsCredentials)
+			if err != nil {
+				return fmt.Errorf("error building aws bucket name: %w", err)
+			}
+
+			if err := aws.DeleteAWSBucket(ctx, d.awsCredentials, bucketName); err != nil {
+				klog.Warningf("error deleting AWS bucket: %w", err)
+			}
+		default:
+			return fmt.Errorf("bucket cleanup not implemented for cloud %q", d.CloudProvider)
+		}
 	}
 
 	if err := d.boskos.Cleanup(ctx); err != nil {
