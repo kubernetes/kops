@@ -100,7 +100,18 @@ type deployer struct {
 	// this channel serves as a signal channel for the hearbeat goroutine
 	// so that it can be explicitly closed
 	boskosHeartbeatClose chan struct{}
+	// BoskosResourceType string `flag:"boskos-resource-type" desc:"Resource type to acquire from boskos, for credentials"`
+
+	// boskos boskosHelper
+
+	// // awsStaticCredentials holds credentials for AWS loaded from boskos
+	// awsStaticCredentials *awsStaticCredentials
 }
+
+// type awsStaticCredentials struct {
+// 	AccessKeyID     string
+// 	SecretAccessKey string
+// }
 
 // assert that New implements types.NewDeployer
 var _ types.NewDeployer = New
