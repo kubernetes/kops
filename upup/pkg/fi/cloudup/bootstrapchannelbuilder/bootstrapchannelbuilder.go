@@ -975,22 +975,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Weave != nil {
-		key := "networking.weave"
-
-		{
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-		}
-	}
-
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
 

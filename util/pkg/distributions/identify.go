@@ -58,8 +58,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		return DistributionDebian11, nil
 	case "debian-12":
 		return DistributionDebian12, nil
-	case "ubuntu-18.04":
-		return DistributionUbuntu1804, nil
 	case "ubuntu-20.04":
 		return DistributionUbuntu2004, nil
 	case "ubuntu-20.10":

@@ -26,5 +26,4 @@ Create a secret.
 * [kops create secret ciliumpassword](kops_create_secret_ciliumpassword.md)	 - Create a Cilium IPsec configuration.
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a Docker config.
 * [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.
-* [kops create secret weavepassword](kops_create_secret_weavepassword.md)	 - Create a Weave password.
 

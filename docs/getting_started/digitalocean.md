@@ -36,8 +36,8 @@ Note that you kOps will only be able to successfully provision clusters in regio
 kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
 kops update cluster my-cluster.example.com --yes
 
-# ubuntu + weave overlay cluster in nyc1 using larger droplets
-kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=weave --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb
+# ubuntu + calico overlay cluster in nyc1 using larger droplets
+kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=calico --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb
 kops update cluster my-cluster.example.com --yes
 
 # debian + flannel overlay cluster in ams3 using optimized droplets

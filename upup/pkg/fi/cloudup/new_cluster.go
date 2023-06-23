@@ -1108,15 +1108,6 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
 	case "kopeio-vxlan", "kopeio":
 		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-
-		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
-			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
-			// sets the default to the largest number that leaves enough overhead and is divisible by 4
-			jumboFrameMTUSize := int32(8912)
-			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
-		}
 	case "flannel", "flannel-vxlan":
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "vxlan",

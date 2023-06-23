@@ -324,20 +324,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
 
-	if cluster.Spec.Networking.Weave != nil {
-		weavesecretString := ""
-		weavesecret, _ := secretStore.Secret("weavepassword")
-		if weavesecret != nil {
-			weavesecretString, err = weavesecret.AsString()
-			if err != nil {
-				return err
-			}
-			klog.V(4).Info("Weave secret function successfully registered")
-		}
-
-		dest["WeaveSecret"] = func() string { return weavesecretString }
-	}
-
 	dest["CloudLabels"] = func() string {
 		labels := []string{
 			fmt.Sprintf("KubernetesCluster=%s", cluster.ObjectMeta.Name),

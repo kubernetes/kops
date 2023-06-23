@@ -83,7 +83,7 @@ const (
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in kOps.
 	OldestSupportedKubernetesVersion = "1.23.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
-	OldestRecommendedKubernetesVersion = "1.27.0"
+	OldestRecommendedKubernetesVersion = "1.25.0"
 )
 
 // TerraformCloudProviders is the list of cloud providers with terraform target support
@@ -1582,7 +1582,6 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 		//"docker.io/calico/",
 		//"docker.io/cilium/",
 		//"docker.io/cloudnativelabs/kube-router:",
-		//"docker.io/weaveworks/",
 		"registry.k8s.io/kube-proxy:",
 		"registry.k8s.io/provider-aws/",
 		"registry.k8s.io/sig-storage/csi-node-driver-registrar:",

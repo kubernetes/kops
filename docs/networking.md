@@ -70,7 +70,6 @@ Several CNI providers are currently built into kOps:
 * [Cilium](networking/cilium.md)
 * [Flannel](networking/flannel.md)
 * [Kube-router](networking/kube-router.md)
-* [Weave](networking/weave.md)
 
 kOps makes it easy for cluster operators to choose one of these options. The manifests for the providers
 are included with kOps, and you simply use `--networking <provider-name>`. Replace the provider name

@@ -38,7 +38,7 @@ export KOPS_STATE_STORE=s3://example-state-store
 kops create cluster $NAME \
     --zones "us-east-2a,us-east-2b,us-east-2c" \
     --master-zones "us-east-2a,us-east-2b,us-east-2c" \
-    --networking weave \
+    --networking calico \
     --topology private \
     --bastion \
     --node-count 3 \
@@ -94,7 +94,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   networkID: vpc-6335dd1a
   networking:
-    weave: {}
+    calico: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

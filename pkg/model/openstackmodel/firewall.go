@@ -461,12 +461,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 		tcpPorts = append(tcpPorts, 4240)
 	}
 
-	if b.Cluster.Spec.Networking.Weave != nil {
-		udpPorts = append(udpPorts, 6783)
-		tcpPorts = append(tcpPorts, 6783)
-		udpPorts = append(udpPorts, 6784)
-	}
-
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		switch b.Cluster.Spec.Networking.Flannel.Backend {
 		case "", "udp":

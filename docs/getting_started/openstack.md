@@ -48,7 +48,7 @@ If your OpenStack does not have Swift you can use any other VFS store, such as S
 # to see your etcd storage type
 openstack volume type list
 
-# coreos (the default) + flannel overlay cluster in Default
+# coreos (the default) + calico overlay cluster in Default
 kops create cluster \
   --cloud openstack \
   --name my-cluster.k8s.local \
@@ -65,7 +65,7 @@ kops create cluster \
   --topology private \
   --bastion \
   --ssh-public-key ~/.ssh/id_rsa.pub \
-  --networking weave \
+  --networking calico \
   --os-ext-net <externalnetworkname>
 
 # to update a cluster

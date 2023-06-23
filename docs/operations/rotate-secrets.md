@@ -177,14 +177,6 @@ Following that, use `kops update cluster --yes` and `kops rolling-update cluster
 Use `kops create secret dockerconfig --force` to update the Docker secret.
 Following that, use `kops update cluster --yes` and `kops rolling-update cluster --yes`.
 
-## Rotating the Weave password
-
-It is not possible to rotate the Weave password without a disruptive partition of the Weave network.
-As of the writing of this document, this is a limitation of Weave itself.
-
-Use `kops create secret weavepassword --force` to update the Docker secret.
-Following that, use `kops update cluster --yes` and `kops rolling-update cluster --cloudonly --yes`.
-
 ## Legacy procedure
 
 The following is the procedure to rotate secrets and keypairs in kOps versions
