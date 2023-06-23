@@ -151,18 +151,6 @@ func TestSetupNetworking(t *testing.T) {
 		},
 		{
 			options: NewClusterOptions{
-				Networking: "weave",
-			},
-			expected: api.Cluster{
-				Spec: api.ClusterSpec{
-					Networking: api.NetworkingSpec{
-						Weave: &api.WeaveNetworkingSpec{},
-					},
-				},
-			},
-		},
-		{
-			options: NewClusterOptions{
 				Networking: "flannel",
 			},
 			expected: api.Cluster{

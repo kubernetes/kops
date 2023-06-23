@@ -54,7 +54,7 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	networking := cluster.Spec.LegacyNetworking
 	switch {
-	case networking.Kubenet != nil, networking.Canal != nil, networking.Weave != nil, networking.Cilium != nil:
+	case networking.Kubenet != nil, networking.Canal != nil, networking.Cilium != nil:
 		skipRegex += "|Services.*rejected.*endpoints"
 	}
 	if networking.Cilium != nil {

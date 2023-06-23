@@ -1582,7 +1582,6 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 		//"docker.io/calico/",
 		//"docker.io/cilium/",
 		//"docker.io/cloudnativelabs/kube-router:",
-		//"docker.io/weaveworks/",
 		"registry.k8s.io/kube-proxy:",
 		"registry.k8s.io/provider-aws/",
 		"registry.k8s.io/sig-storage/csi-node-driver-registrar:",

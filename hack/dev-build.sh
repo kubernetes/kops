@@ -80,7 +80,7 @@ KOPS_CREATE=${KOPS_CREATE:-yes}
 
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
-NETWORKING=${NETWORKING:-weave}
+NETWORKING=${NETWORKING:-calico}
 
 # How verbose go logging is
 VERBOSITY=${VERBOSITY:-10}

@@ -99,7 +99,7 @@ kops create cluster [CLUSTER] [flags]
       --kubernetes-version string               Version of Kubernetes to run (defaults to version in channel)
       --network-cidr string                     Network CIDR to use
       --network-id string                       Shared Network or VPC to use
-      --networking string                       Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "cilium")
+      --networking string                       Networking mode.  kubenet, external, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "cilium")
       --node-count int32                        Total number of worker nodes. Defaults to one node per zone
       --node-image string                       Machine image for worker nodes. Takes precedence over --image
       --node-security-groups strings            Additional pre-created security groups to add to worker nodes.
