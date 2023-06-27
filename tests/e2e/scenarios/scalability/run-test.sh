@@ -88,6 +88,7 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 create_args=()
 create_args+=("--networking=calico")
 create_args+=("--etcd-clusters=main")
+create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: Use the newer non-DNS mode, more scalable than gossip and generally recommended
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
