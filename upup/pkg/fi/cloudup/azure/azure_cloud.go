@@ -201,13 +201,23 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 					})
 				case kops.LoadBalancerTypePublic:
 					if i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress == nil ||
-						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil ||
-						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress == nil {
+						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID == nil {
 						continue
 					}
-					ingresses = append(ingresses, fi.ApiIngressStatus{
-						IP: *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress,
-					})
+					pips, err := c.publicIPAddressesClient.List(context.TODO(), rg)
+					if err != nil {
+						return nil, fmt.Errorf("error getting PublicIPAddress for API Ingress Status: %w", err)
+					}
+					for _, pip := range pips {
+						if *pip.ID != *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID {
+							continue
+						}
+						if pip.IPAddress != nil {
+							ingresses = append(ingresses, fi.ApiIngressStatus{
+								IP: *pip.IPAddress,
+							})
+						}
+					}
 				default:
 					return nil, fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 				}
