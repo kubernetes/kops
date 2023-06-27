@@ -161,6 +161,24 @@ func setType(v reflect.Value, newValue string) error {
 		default:
 			panic("missing case in switch")
 		}
+	case "uint64", "uint32", "uint":
+		v, err := strconv.Atoi(newValue)
+		if err != nil {
+			return fmt.Errorf("cannot interpret %q value as unsigned integer", newValue)
+		}
+
+		switch t {
+		case "uint":
+			newV = reflect.ValueOf(v)
+		case "uint32":
+			v32 := uint32(v)
+			newV = reflect.ValueOf(v32)
+		case "uint64":
+			v64 := uint64(v)
+			newV = reflect.ValueOf(v64)
+		default:
+			panic("missing case in switch")
+		}
 	case "intstr.IntOrString":
 		newV = reflect.ValueOf(intstr.Parse(newValue))
 
