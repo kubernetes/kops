@@ -541,6 +541,15 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			container.Env = append(container.Env, envVar)
 		}
 
+		if len(etcdCluster.Manager.ListenMetricsURLs) > 0 {
+			envVar := v1.EnvVar{
+				Name:  "ETCD_LISTEN_METRICS_URLS",
+				Value: strings.Join(etcdCluster.Manager.ListenMetricsURLs, ","),
+			}
+
+			container.Env = append(container.Env, envVar)
+		}
+
 		for _, envVar := range etcdCluster.Manager.Env {
 			klog.V(2).Infof("overloading ENV var in manifest %s with %s=%s", bundle, envVar.Name, envVar.Value)
 			configOverwrite := v1.EnvVar{

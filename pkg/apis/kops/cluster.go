@@ -680,6 +680,8 @@ type EtcdManagerSpec struct {
 	BackupRetentionDays *uint32 `json:"backupRetentionDays,omitempty"`
 	// DiscoveryPollInterval which is used for discovering other cluster members. The default is 60 seconds.
 	DiscoveryPollInterval *metav1.Duration `json:"discoveryPollInterval,omitempty"`
+	// ListenMetricsURLs is the list of URLs to listen on that will respond to both the /metrics and /health endpoints
+	ListenMetricsURLs []string `json:"listenMetricsURLs,omitempty"`
 	// LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6.
 	// https://github.com/google/glog#verbose-logging
 	LogLevel *int32 `json:"logLevel,omitempty"`
