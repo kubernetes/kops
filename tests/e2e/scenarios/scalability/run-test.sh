@@ -92,7 +92,7 @@ create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
 #create_args="--dns none"
 create_args+=("--node-size=c6g.medium")
-create_args+=("--master-size=c6g.xlarge")
+create_args+=("--master-size=c6g.2xlarge")
 if [[ -n "${ZONES:-}" ]]; then
     create_args+=("--zones=${ZONES}")
 fi
