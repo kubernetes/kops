@@ -154,7 +154,7 @@ func (s *VMScaleSet) CompareWithID() *string {
 func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 	cloud := c.T.Cloud.(azure.AzureCloud)
 	found, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, *s.Name)
-	if err != nil && !strings.Contains(err.Error(), "ResourceNotFound") {
+	if err != nil && !strings.Contains(err.Error(), "NotFound") {
 		return nil, err
 	}
 	if found == nil {
