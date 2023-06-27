@@ -3813,6 +3813,7 @@ func autoConvert_v1alpha3_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManage
 	out.BackupInterval = in.BackupInterval
 	out.BackupRetentionDays = in.BackupRetentionDays
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
+	out.ListenMetricsURLs = in.ListenMetricsURLs
 	out.LogLevel = in.LogLevel
 	return nil
 }
@@ -3838,6 +3839,7 @@ func autoConvert_kops_EtcdManagerSpec_To_v1alpha3_EtcdManagerSpec(in *kops.EtcdM
 	out.BackupInterval = in.BackupInterval
 	out.BackupRetentionDays = in.BackupRetentionDays
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
+	out.ListenMetricsURLs = in.ListenMetricsURLs
 	out.LogLevel = in.LogLevel
 	return nil
 }

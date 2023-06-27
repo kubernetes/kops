@@ -1802,6 +1802,11 @@ func (in *EtcdManagerSpec) DeepCopyInto(out *EtcdManagerSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.ListenMetricsURLs != nil {
+		in, out := &in.ListenMetricsURLs, &out.ListenMetricsURLs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		*out = new(int32)
