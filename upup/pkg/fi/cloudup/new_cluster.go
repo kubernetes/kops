@@ -123,6 +123,9 @@ type NewClusterOptions struct {
 	APIServerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
 	EncryptEtcdStorage *bool
+
+	// EtcdClusters contains the names of the etcd clusters.
+	EtcdClusters []string
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
 
@@ -166,6 +169,7 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
 	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
+	o.EtcdClusters = []string{"main", "events"}
 	o.Networking = "cilium"
 	o.InstanceManager = "cloudgroups"
 }
@@ -915,7 +919,7 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			klog.Warningf("Running with control-plane nodes in the same AZs; redundancy will be reduced")
 		}
 
-		clusters := EtcdClusters
+		clusters := opt.EtcdClusters
 
 		if opt.Networking == "cilium-etcd" {
 			clusters = append(clusters, "cilium")

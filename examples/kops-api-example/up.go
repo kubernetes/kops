@@ -56,7 +56,7 @@ func up(ctx context.Context) error {
 		})
 	}
 
-	for _, etcdClusterName := range cloudup.EtcdClusters {
+	for _, etcdClusterName := range etcdClusters {
 		etcdCluster := api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}

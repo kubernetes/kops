@@ -40,6 +40,8 @@ var masterZones []string
 
 var sshPublicKey = "~/.ssh/id_rsa.pub"
 
+var etcdClusters = []string{"main", "events"}
+
 var (
 	flagRegistryBase = flag.String("registry", os.Getenv("KOPS_STATE_STORE"), "VFS path where files are kept")
 	flagClusterName  = flag.String("name", "", "Name of cluster to create")

@@ -90,6 +90,7 @@ kops create cluster [CLUSTER] [flags]
       --dns-zone string                         DNS hosted zone (defaults to longest matching zone)
       --dry-run                                 If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage                    Generate key in AWS KMS and use it for encrypt etcd volumes
+      --etcd-clusters strings                   Names of the etcd clusters: main, events (default [main,events])
       --etcd-storage-type string                The default storage type for etcd members
       --gce-service-account string              Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                                    help for cluster
