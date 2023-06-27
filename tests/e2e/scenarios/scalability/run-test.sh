@@ -132,10 +132,8 @@ KUBECONFIG=$(mktemp -t kubeconfig.XXXXXXXXX)
 kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
 
 if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
-  # CL2 uses AWS_SSH_KEY path to ssh to instances for scraping metrics
-  export AWS_SSH_KEY=/root/.ssh/id_ecdsa
-  ssh-keygen -N '' -t ecdsa -b 521 -f "${AWS_SSH_KEY}" <<<y >/dev/null 2>&1
-  KUBETEST2_ARGS+=("--ssh-public-key=${AWS_SSH_KEY}.pub")
+  # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
+  export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
