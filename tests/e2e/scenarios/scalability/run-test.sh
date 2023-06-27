@@ -134,6 +134,7 @@ kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
 if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
+  KUBETEST2_ARGS+=('--set scheduler-args="--authorization-always-allow-paths=/healthz,/metrics"')
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
