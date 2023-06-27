@@ -192,9 +192,9 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 	}
 
 	return &compute.VirtualMachineScaleSetStorageProfile{
-		ImageReference: imageReference,
+		DiskControllerType: fi.PtrTo(string(compute.SCSI)),
+		ImageReference:     imageReference,
 		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
-			// TODO(kenji): Support Windows.
 			OsType:       compute.OperatingSystemTypes(compute.Linux),
 			CreateOption: compute.DiskCreateOptionTypesFromImage,
 			DiskSizeGB:   to.Int32Ptr(volumeSize),

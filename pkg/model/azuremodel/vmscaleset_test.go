@@ -154,6 +154,7 @@ func TestGetStorageProfile(t *testing.T) {
 				},
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
+				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
 					Publisher: to.StringPtr("Canonical"),
 					Offer:     to.StringPtr("UbuntuServer"),
@@ -177,6 +178,7 @@ func TestGetStorageProfile(t *testing.T) {
 				Role:  kops.InstanceGroupRoleControlPlane,
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
+				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
 					Publisher: to.StringPtr("Canonical"),
 					Offer:     to.StringPtr("UbuntuServer"),
