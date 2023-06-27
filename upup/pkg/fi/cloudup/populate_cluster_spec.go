@@ -37,9 +37,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-// EtcdClusters is a list of the etcd clusters kops creates
-var EtcdClusters = []string{"main", "events"}
-
 type populateClusterSpec struct {
 	cloud fi.Cloud
 
