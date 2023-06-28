@@ -87,6 +87,8 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 #create_args="--networking cilium"
 create_args=()
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
+# IMAGE configures the image used for control plane and kube nodes
+create_args+=("--image=${IMAGE:-ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/arm64/hvm/ebs-gp2/ami-id}")
 create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
@@ -96,7 +98,7 @@ create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
 #create_args="--dns none"
 create_args+=("--node-size=c6g.medium")
-create_args+=("--master-size=c6g.2xlarge")
+create_args+=("--master-size=${CONTROL_PLANE_INSTANCE_TYPE:-c6g.2xlarge}")
 if [[ -n "${ZONES:-}" ]]; then
     create_args+=("--zones=${ZONES}")
 fi
