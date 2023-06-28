@@ -87,12 +87,16 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 #create_args="--networking cilium"
 create_args=()
 create_args+=("--networking=calico")
+create_args+=("--etcd-clusters=main")
+create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: Use the newer non-DNS mode, more scalable than gossip and generally recommended
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
 #create_args="--dns none"
 create_args+=("--node-size=c6g.medium")
-create_args+=("--master-size=c6g.xlarge")
+create_args+=("--master-size=c6g.2xlarge")
 if [[ -n "${ZONES:-}" ]]; then
     create_args+=("--zones=${ZONES}")
 fi
@@ -126,9 +130,21 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --create-args="${create_args[*]}" \
   --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}"
 
+KUBECONFIG=$(mktemp -t kubeconfig.XXXXXXXXX)
+kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
+
 if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
-  # TODO
-  echo "Run CL2 tests"
+  # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
+  export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
+
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+  --test=clusterloader2 \
+  --kubernetes-version="${K8S_VERSION}" \
+  -- \
+  --provider="${CLOUD_PROVIDER}" \
+  --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
+  --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
+  --kube-config="${KUBECONFIG}"
 else
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=kops \
