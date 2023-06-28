@@ -89,6 +89,8 @@ create_args=()
 create_args+=("--networking=calico")
 create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: Use the newer non-DNS mode, more scalable than gossip and generally recommended
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
@@ -134,7 +136,7 @@ kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
 if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
-  KUBETEST2_ARGS+=('--set scheduler-args="--authorization-always-allow-paths=/healthz,/metrics"')
+
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
