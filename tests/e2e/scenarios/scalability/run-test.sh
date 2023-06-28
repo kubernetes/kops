@@ -86,7 +86,8 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
-create_args+=("--networking=calico")
+create_args+=("--image=ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id")
+create_args+=("--networking=amazonvpc")
 create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
