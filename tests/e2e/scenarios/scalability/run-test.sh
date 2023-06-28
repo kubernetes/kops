@@ -98,7 +98,8 @@ create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # However, it currently fails two tests (HostPort & OIDC) so need to track that down
 #create_args="--dns none"
 create_args+=("--node-size=c6g.medium")
-create_args+=("--master-size=${CONTROL_PLANE_INSTANCE_TYPE:-c6g.2xlarge}")
+create_args+=("--control-plane-count=2")
+create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
 if [[ -n "${ZONES:-}" ]]; then
     create_args+=("--zones=${ZONES}")
 fi
