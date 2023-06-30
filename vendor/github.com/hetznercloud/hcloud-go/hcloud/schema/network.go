@@ -4,15 +4,16 @@ import "time"
 
 // Network defines the schema of a network.
 type Network struct {
-	ID         int               `json:"id"`
-	Name       string            `json:"name"`
-	Created    time.Time         `json:"created"`
-	IPRange    string            `json:"ip_range"`
-	Subnets    []NetworkSubnet   `json:"subnets"`
-	Routes     []NetworkRoute    `json:"routes"`
-	Servers    []int             `json:"servers"`
-	Protection NetworkProtection `json:"protection"`
-	Labels     map[string]string `json:"labels"`
+	ID                    int               `json:"id"`
+	Name                  string            `json:"name"`
+	Created               time.Time         `json:"created"`
+	IPRange               string            `json:"ip_range"`
+	Subnets               []NetworkSubnet   `json:"subnets"`
+	Routes                []NetworkRoute    `json:"routes"`
+	Servers               []int             `json:"servers"`
+	Protection            NetworkProtection `json:"protection"`
+	Labels                map[string]string `json:"labels"`
+	ExposeRoutesToVSwitch bool              `json:"expose_routes_to_vswitch"`
 }
 
 // NetworkSubnet represents a subnet of a network.
@@ -37,8 +38,9 @@ type NetworkProtection struct {
 
 // NetworkUpdateRequest defines the schema of the request to update a network.
 type NetworkUpdateRequest struct {
-	Name   string             `json:"name,omitempty"`
-	Labels *map[string]string `json:"labels,omitempty"`
+	Name                  string             `json:"name,omitempty"`
+	Labels                *map[string]string `json:"labels,omitempty"`
+	ExposeRoutesToVSwitch *bool              `json:"expose_routes_to_vswitch,omitempty"`
 }
 
 // NetworkUpdateResponse defines the schema of the response when updating a network.
@@ -60,11 +62,12 @@ type NetworkGetResponse struct {
 
 // NetworkCreateRequest defines the schema of the request to create a network.
 type NetworkCreateRequest struct {
-	Name    string             `json:"name"`
-	IPRange string             `json:"ip_range"`
-	Subnets []NetworkSubnet    `json:"subnets,omitempty"`
-	Routes  []NetworkRoute     `json:"routes,omitempty"`
-	Labels  *map[string]string `json:"labels,omitempty"`
+	Name                  string             `json:"name"`
+	IPRange               string             `json:"ip_range"`
+	Subnets               []NetworkSubnet    `json:"subnets,omitempty"`
+	Routes                []NetworkRoute     `json:"routes,omitempty"`
+	Labels                *map[string]string `json:"labels,omitempty"`
+	ExposeRoutesToVSwitch bool               `json:"expose_routes_to_vswitch"`
 }
 
 // NetworkCreateResponse defines the schema of the response when

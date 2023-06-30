@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.11.0](https://github.com/googleapis/gax-go/compare/v2.10.0...v2.11.0) (2023-06-13)
+
+
+### Features
+
+* **v2:** add GoVersion package variable ([#283](https://github.com/googleapis/gax-go/issues/283)) ([26553cc](https://github.com/googleapis/gax-go/commit/26553ccadb4016b189881f52e6c253b68bb3e3d5))
+
+
+### Bug Fixes
+
+* **v2:** handle space in non-devel go version ([#288](https://github.com/googleapis/gax-go/issues/288)) ([fd7bca0](https://github.com/googleapis/gax-go/commit/fd7bca029a1c5e63def8f0a5fd1ec3f725d92f75))
+
 ## [2.10.0](https://github.com/googleapis/gax-go/compare/v2.9.1...v2.10.0) (2023-05-30)
 
 

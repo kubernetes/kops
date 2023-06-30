@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-tpm-tools/internal"
 	pb "github.com/google/go-tpm-tools/proto/tpm"
-	"github.com/google/go-tpm/tpm2"
+	"github.com/google/go-tpm/legacy/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 )
 
@@ -40,7 +40,7 @@ func (k *Key) Import(blob *pb.ImportBlob) ([]byte, error) {
 	}
 	defer tpm2.FlushContext(k.rw, handle)
 
-	unsealSession, err := newPCRSession(k.rw, internal.PCRSelection(blob.Pcrs))
+	unsealSession, err := NewPCRSession(k.rw, internal.PCRSelection(blob.Pcrs))
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (k *Key) ImportSigningKey(blob *pb.ImportBlob) (key *Key, err error) {
 	if key.pubArea, _, _, err = tpm2.ReadPublic(k.rw, handle); err != nil {
 		return
 	}
-	if key.session, err = newPCRSession(k.rw, internal.PCRSelection(blob.Pcrs)); err != nil {
+	if key.session, err = NewPCRSession(k.rw, internal.PCRSelection(blob.Pcrs)); err != nil {
 		return
 	}
 	return key, key.finish()

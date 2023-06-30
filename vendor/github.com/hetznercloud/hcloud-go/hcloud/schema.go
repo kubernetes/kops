@@ -403,7 +403,8 @@ func NetworkFromSchema(s schema.Network) *Network {
 		Protection: NetworkProtection{
 			Delete: s.Protection.Delete,
 		},
-		Labels: map[string]string{},
+		Labels:                map[string]string{},
+		ExposeRoutesToVSwitch: s.ExposeRoutesToVSwitch,
 	}
 
 	_, n.IPRange, _ = net.ParseCIDR(s.IPRange)

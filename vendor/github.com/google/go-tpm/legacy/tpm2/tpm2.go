@@ -1003,7 +1003,7 @@ func Quote(rw io.ReadWriter, signingHandle tpmutil.Handle, signerAuth, unused st
 
 // QuoteRaw is very similar to Quote, except that it will return
 // the raw signature in a byte array without decoding.
-func QuoteRaw(rw io.ReadWriter, signingHandle tpmutil.Handle, signerAuth, unused string, toQuote []byte, sel PCRSelection, sigAlg Algorithm) ([]byte, []byte, error) {
+func QuoteRaw(rw io.ReadWriter, signingHandle tpmutil.Handle, signerAuth, _ string, toQuote []byte, sel PCRSelection, sigAlg Algorithm) ([]byte, []byte, error) {
 	// TODO: Remove "unused" parameter on next breaking change.
 	Cmd, err := encodeQuote(signingHandle, signerAuth, toQuote, sel, sigAlg)
 	if err != nil {

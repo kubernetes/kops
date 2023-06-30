@@ -1,3 +1,14 @@
+## v1.5.0 (2023-06-21)
+
+New features and improvements:
+
+* [GH-2634](https://github.com/gophercloud/gophercloud/pull/2634) baremetal: update inspection inventory with recent additions
+* [GH-2635](https://github.com/gophercloud/gophercloud/pull/2635) [manila]: Add Share Replicas support
+* [GH-2637](https://github.com/gophercloud/gophercloud/pull/2637) [FWaaS_v2]: Add FWaaS_V2 workflow and enable tests
+* [GH-2639](https://github.com/gophercloud/gophercloud/pull/2639) Implement errors.Unwrap() on unexpected status code errors
+* [GH-2648](https://github.com/gophercloud/gophercloud/pull/2648) [manila]: implement share transfer API
+
+
 ## v1.4.0 (2023-05-25)
 
 New features and improvements:

@@ -205,8 +205,7 @@ func (c *SSM) AssociateOpsItemRelatedItemRequest(input *AssociateOpsItemRelatedI
 //     The specified OpsItem ID doesn't exist. Verify the ID and try again.
 //
 //   - OpsItemLimitExceededException
-//     The request caused OpsItems to exceed one or more quotas. For information
-//     about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+//     The request caused OpsItems to exceed one or more quotas.
 //
 //   - OpsItemInvalidParameterException
 //     A specified parameter argument isn't valid. Verify the available arguments
@@ -1043,8 +1042,8 @@ func (c *SSM) CreateOpsItemRequest(input *CreateOpsItemInput) (req *request.Requ
 // CreateOpsItem API operation for Amazon Simple Systems Manager (SSM).
 //
 // Creates a new OpsItem. You must have permission in Identity and Access Management
-// (IAM) to create a new OpsItem. For more information, see Getting started
-// with OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-getting-started.html)
+// (IAM) to create a new OpsItem. For more information, see Set up OpsCenter
+// (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Operations engineers and IT professionals use Amazon Web Services Systems
@@ -1069,8 +1068,7 @@ func (c *SSM) CreateOpsItemRequest(input *CreateOpsItemInput) (req *request.Requ
 //     The OpsItem already exists.
 //
 //   - OpsItemLimitExceededException
-//     The request caused OpsItems to exceed one or more quotas. For information
-//     about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+//     The request caused OpsItems to exceed one or more quotas.
 //
 //   - OpsItemInvalidParameterException
 //     A specified parameter argument isn't valid. Verify the available arguments
@@ -4414,18 +4412,19 @@ func (c *SSM) DescribeInstanceInformationRequest(input *DescribeInstanceInformat
 
 // DescribeInstanceInformation API operation for Amazon Simple Systems Manager (SSM).
 //
-// Describes one or more of your managed nodes, including information about
-// the operating system platform, the version of SSM Agent installed on the
-// managed node, node status, and so on.
+// Provides information about one or more of your managed nodes, including the
+// operating system platform, SSM Agent version, association status, and IP
+// address. This operation does not return information for nodes that are either
+// Stopped or Terminated.
 //
-// If you specify one or more managed node IDs, it returns information for those
-// managed nodes. If you don't specify node IDs, it returns information for
-// all your managed nodes. If you specify a node ID that isn't valid or a node
-// that you don't own, you receive an error.
+// If you specify one or more node IDs, the operation returns information for
+// those managed nodes. If you don't specify node IDs, it returns information
+// for all your managed nodes. If you specify a node ID that isn't valid or
+// a node that you don't own, you receive an error.
 //
-// The IamRole field for this API operation is the Identity and Access Management
-// (IAM) role assigned to on-premises managed nodes. This call doesn't return
-// the IAM role for EC2 instances.
+// The IamRole field returned for this API operation is the Identity and Access
+// Management (IAM) role assigned to on-premises managed nodes. This operation
+// does not return the IAM role for EC2 instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6303,8 +6302,8 @@ func (c *SSM) DescribeOpsItemsRequest(input *DescribeOpsItemsInput) (req *reques
 // DescribeOpsItems API operation for Amazon Simple Systems Manager (SSM).
 //
 // Query a set of OpsItems. You must have permission in Identity and Access
-// Management (IAM) to query a list of OpsItems. For more information, see Getting
-// started with OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-getting-started.html)
+// Management (IAM) to query a list of OpsItems. For more information, see Set
+// up OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Operations engineers and IT professionals use Amazon Web Services Systems
@@ -8761,7 +8760,7 @@ func (c *SSM) GetOpsItemRequest(input *GetOpsItemInput) (req *request.Request, o
 //
 // Get information about an OpsItem by using the ID. You must have permission
 // in Identity and Access Management (IAM) to view information about an OpsItem.
-// For more information, see Getting started with OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-getting-started.html)
+// For more information, see Set up OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Operations engineers and IT professionals use Amazon Web Services Systems
@@ -11525,8 +11524,7 @@ func (c *SSM) ListOpsItemEventsRequest(input *ListOpsItemEventsInput) (req *requ
 //     The specified OpsItem ID doesn't exist. Verify the ID and try again.
 //
 //   - OpsItemLimitExceededException
-//     The request caused OpsItems to exceed one or more quotas. For information
-//     about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+//     The request caused OpsItems to exceed one or more quotas.
 //
 //   - OpsItemInvalidParameterException
 //     A specified parameter argument isn't valid. Verify the available arguments
@@ -15459,8 +15457,8 @@ func (c *SSM) UpdateOpsItemRequest(input *UpdateOpsItemInput) (req *request.Requ
 // UpdateOpsItem API operation for Amazon Simple Systems Manager (SSM).
 //
 // Edit or change an OpsItem. You must have permission in Identity and Access
-// Management (IAM) to update an OpsItem. For more information, see Getting
-// started with OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-getting-started.html)
+// Management (IAM) to update an OpsItem. For more information, see Set up OpsCenter
+// (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Operations engineers and IT professionals use Amazon Web Services Systems
@@ -15488,8 +15486,7 @@ func (c *SSM) UpdateOpsItemRequest(input *UpdateOpsItemInput) (req *request.Requ
 //     The OpsItem already exists.
 //
 //   - OpsItemLimitExceededException
-//     The request caused OpsItems to exceed one or more quotas. For information
-//     about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+//     The request caused OpsItems to exceed one or more quotas.
 //
 //   - OpsItemInvalidParameterException
 //     A specified parameter argument isn't valid. Verify the available arguments
@@ -16085,7 +16082,8 @@ type AddTagsToResourceInput struct {
 	// object with an ARN of arn:aws:ssm:us-east-2:1234567890:opsmetadata/aws/ssm/MyGroup/appmanager
 	// has a ResourceID of either aws/ssm/MyGroup/appmanager or /aws/ssm/MyGroup/appmanager.
 	//
-	// For the Document and Parameter values, use the name of the resource.
+	// For the Document and Parameter values, use the name of the resource. If you're
+	// tagging a shared document, you must use the full ARN of the document.
 	//
 	// ManagedInstance: mi-012345abcde
 	//
@@ -22795,8 +22793,7 @@ type CreateOpsItemInput struct {
 
 	// The target Amazon Web Services account where you want to create an OpsItem.
 	// To make this call, your account must be configured to work with OpsItems
-	// across accounts. For more information, see Setting up OpsCenter to work with
-	// OpsItems across accounts (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-OpsCenter-multiple-accounts.html)
+	// across accounts. For more information, see Set up OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	AccountId *string `type:"string"`
 
@@ -22839,7 +22836,7 @@ type CreateOpsItemInput struct {
 	// Use the /aws/resources key in OperationalData to specify a related resource
 	// in the request. Use the /aws/automations key in OperationalData to associate
 	// an Automation runbook with the OpsItem. To view Amazon Web Services CLI example
-	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-creating-OpsItems.html#OpsCenter-manually-create-OpsItems)
+	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
@@ -22882,10 +22879,7 @@ type CreateOpsItemInput struct {
 	// Source is a required field
 	Source *string `min:"1" type:"string" required:"true"`
 
-	// Optional metadata that you assign to a resource. You can restrict access
-	// to OpsItems by using an inline IAM policy that specifies tags. For more information,
-	// see Getting started with OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-getting-started.html#OpsCenter-getting-started-user-permissions)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// Optional metadata that you assign to a resource.
 	//
 	// Tags use a key-value pair. For example:
 	//
@@ -26597,8 +26591,9 @@ type DescribeInstanceInformationInput struct {
 	_ struct{} `type:"structure"`
 
 	// One or more filters. Use a filter to return a more specific list of managed
-	// nodes. You can filter based on tags applied to your managed nodes. Use this
-	// Filters data type instead of InstanceInformationFilterList, which is deprecated.
+	// nodes. You can filter based on tags applied to your managed nodes. Tag filters
+	// can't be combined with other filter types. Use this Filters data type instead
+	// of InstanceInformationFilterList, which is deprecated.
 	Filters []*InstanceInformationStringFilter `type:"list"`
 
 	// This is a legacy method. We recommend that you don't use this method. Instead,
@@ -26611,7 +26606,7 @@ type DescribeInstanceInformationInput struct {
 
 	// The maximum number of items to return for this call. The call also returns
 	// a token that you can specify in a subsequent call to get the next set of
-	// results.
+	// results. The default value is 10 items.
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// The token for the next set of items to return. (You received this token from
@@ -28390,6 +28385,8 @@ type DescribeOpsItemsInput struct {
 	//    * Key: ResourceId Operations: Contains
 	//
 	//    * Key: AutomationId Operations: Equals
+	//
+	//    * Key: AccountId Operations: Equals
 	//
 	// *The Equals operator for Title matches the first 100 characters. If you specify
 	// more than 100 characters, they system returns an error that the filter value
@@ -35897,7 +35894,7 @@ type InstanceInformation struct {
 	// Elastic Compute Cloud (Amazon EC2) instances. To retrieve the IAM role for
 	// an EC2 instance, use the Amazon EC2 DescribeInstances operation. For information,
 	// see DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
-	// in the Amazon EC2 API Reference or describe-instances (https://docs.aws.amazon.com/cli/latest/ec2/describe-instances.html)
+	// in the Amazon EC2 API Reference or describe-instances (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)
 	// in the Amazon Web Services CLI Command Reference.
 	IamRole *string `type:"string"`
 
@@ -35928,7 +35925,7 @@ type InstanceInformation struct {
 	// and Install SSM Agent for a hybrid environment (Windows) (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-win.html).
 	// To retrieve the Name tag of an EC2 instance, use the Amazon EC2 DescribeInstances
 	// operation. For information, see DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
-	// in the Amazon EC2 API Reference or describe-instances (https://docs.aws.amazon.com/cli/latest/ec2/describe-instances.html)
+	// in the Amazon EC2 API Reference or describe-instances (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)
 	// in the Amazon Web Services CLI Command Reference.
 	Name *string `type:"string"`
 
@@ -45290,7 +45287,7 @@ type OpsItem struct {
 	// Use the /aws/resources key in OperationalData to specify a related resource
 	// in the request. Use the /aws/automations key in OperationalData to associate
 	// an Automation runbook with the OpsItem. To view Amazon Web Services CLI example
-	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-creating-OpsItems.html#OpsCenter-manually-create-OpsItems)
+	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
@@ -46013,8 +46010,7 @@ func (s *OpsItemInvalidParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The request caused OpsItems to exceed one or more quotas. For information
-// about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+// The request caused OpsItems to exceed one or more quotas.
 type OpsItemLimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -58903,7 +58899,7 @@ type UpdateOpsItemInput struct {
 	// Use the /aws/resources key in OperationalData to specify a related resource
 	// in the request. Use the /aws/automations key in OperationalData to associate
 	// an Automation runbook with the OpsItem. To view Amazon Web Services CLI example
-	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-creating-OpsItems.html#OpsCenter-manually-create-OpsItems)
+	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
@@ -58938,7 +58934,7 @@ type UpdateOpsItemInput struct {
 	Severity *string `min:"1" type:"string"`
 
 	// The OpsItem status. Status can be Open, In Progress, or Resolved. For more
-	// information, see Editing OpsItem details (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-working-with-OpsItems.html#OpsCenter-working-with-OpsItems-editing-details)
+	// information, see Editing OpsItem details (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-working-with-OpsItems-editing-details.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Status *string `type:"string" enum:"OpsItemStatus"`
 

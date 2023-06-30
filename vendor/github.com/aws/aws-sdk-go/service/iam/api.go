@@ -363,7 +363,7 @@ func (c *IAM) AttachGroupPolicyRequest(input *AttachGroupPolicyInput) (req *requ
 // Attaches the specified managed policy to the specified IAM group.
 //
 // You use this operation to attach a managed policy to a group. To embed an
-// inline policy in a group, use PutGroupPolicy.
+// inline policy in a group, use PutGroupPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutGroupPolicy.html).
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
 // Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
@@ -474,12 +474,13 @@ func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *reques
 // role's permission (access) policy.
 //
 // You cannot use a managed policy as the role's trust policy. The role's trust
-// policy is created at the same time as the role, using CreateRole. You can
-// update a role's trust policy using UpdateAssumeRolePolicy.
+// policy is created at the same time as the role, using CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html).
+// You can update a role's trust policy using UpdateAssumerolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
 //
 // Use this operation to attach a managed policy to a role. To embed an inline
-// policy in a role, use PutRolePolicy. For more information about policies,
-// see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy in a role, use PutRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutRolePolicy.html).
+// For more information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
@@ -592,7 +593,7 @@ func (c *IAM) AttachUserPolicyRequest(input *AttachUserPolicyInput) (req *reques
 // Attaches the specified managed policy to the specified user.
 //
 // You use this operation to attach a managed policy to a user. To embed an
-// inline policy in a user, use PutUserPolicy.
+// inline policy in a user, use PutUserPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutUserPolicy.html).
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
 // Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
@@ -6668,6 +6669,90 @@ func (c *IAM) GetLoginProfileWithContext(ctx aws.Context, input *GetLoginProfile
 	return out, req.Send()
 }
 
+const opGetMFADevice = "GetMFADevice"
+
+// GetMFADeviceRequest generates a "aws/request.Request" representing the
+// client's request for the GetMFADevice operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetMFADevice for more information on using the GetMFADevice
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetMFADeviceRequest method.
+//	req, resp := client.GetMFADeviceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetMFADevice
+func (c *IAM) GetMFADeviceRequest(input *GetMFADeviceInput) (req *request.Request, output *GetMFADeviceOutput) {
+	op := &request.Operation{
+		Name:       opGetMFADevice,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetMFADeviceInput{}
+	}
+
+	output = &GetMFADeviceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetMFADevice API operation for AWS Identity and Access Management.
+//
+// Retrieves information about an MFA device for a specified user.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Identity and Access Management's
+// API operation GetMFADevice for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetMFADevice
+func (c *IAM) GetMFADevice(input *GetMFADeviceInput) (*GetMFADeviceOutput, error) {
+	req, out := c.GetMFADeviceRequest(input)
+	return out, req.Send()
+}
+
+// GetMFADeviceWithContext is the same as GetMFADevice with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetMFADevice for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) GetMFADeviceWithContext(ctx aws.Context, input *GetMFADeviceInput, opts ...request.Option) (*GetMFADeviceOutput, error) {
+	req, out := c.GetMFADeviceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetOpenIDConnectProvider = "GetOpenIDConnectProvider"
 
 // GetOpenIDConnectProviderRequest generates a "aws/request.Request" representing the
@@ -9427,6 +9512,12 @@ func (c *IAM) ListInstanceProfileTagsRequest(input *ListInstanceProfileTagsInput
 		Name:       opListInstanceProfileTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -9482,6 +9573,57 @@ func (c *IAM) ListInstanceProfileTagsWithContext(ctx aws.Context, input *ListIns
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListInstanceProfileTagsPages iterates over the pages of a ListInstanceProfileTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListInstanceProfileTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListInstanceProfileTags operation.
+//	pageNum := 0
+//	err := client.ListInstanceProfileTagsPages(params,
+//	    func(page *iam.ListInstanceProfileTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListInstanceProfileTagsPages(input *ListInstanceProfileTagsInput, fn func(*ListInstanceProfileTagsOutput, bool) bool) error {
+	return c.ListInstanceProfileTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListInstanceProfileTagsPagesWithContext same as ListInstanceProfileTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListInstanceProfileTagsPagesWithContext(ctx aws.Context, input *ListInstanceProfileTagsInput, fn func(*ListInstanceProfileTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListInstanceProfileTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListInstanceProfileTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListInstanceProfileTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListInstanceProfiles = "ListInstanceProfiles"
@@ -9804,6 +9946,12 @@ func (c *IAM) ListMFADeviceTagsRequest(input *ListMFADeviceTagsInput) (req *requ
 		Name:       opListMFADeviceTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -9863,6 +10011,57 @@ func (c *IAM) ListMFADeviceTagsWithContext(ctx aws.Context, input *ListMFADevice
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListMFADeviceTagsPages iterates over the pages of a ListMFADeviceTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListMFADeviceTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListMFADeviceTags operation.
+//	pageNum := 0
+//	err := client.ListMFADeviceTagsPages(params,
+//	    func(page *iam.ListMFADeviceTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListMFADeviceTagsPages(input *ListMFADeviceTagsInput, fn func(*ListMFADeviceTagsOutput, bool) bool) error {
+	return c.ListMFADeviceTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListMFADeviceTagsPagesWithContext same as ListMFADeviceTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListMFADeviceTagsPagesWithContext(ctx aws.Context, input *ListMFADeviceTagsInput, fn func(*ListMFADeviceTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListMFADeviceTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListMFADeviceTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListMFADeviceTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListMFADevices = "ListMFADevices"
@@ -10042,6 +10241,12 @@ func (c *IAM) ListOpenIDConnectProviderTagsRequest(input *ListOpenIDConnectProvi
 		Name:       opListOpenIDConnectProviderTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10103,6 +10308,57 @@ func (c *IAM) ListOpenIDConnectProviderTagsWithContext(ctx aws.Context, input *L
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListOpenIDConnectProviderTagsPages iterates over the pages of a ListOpenIDConnectProviderTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListOpenIDConnectProviderTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListOpenIDConnectProviderTags operation.
+//	pageNum := 0
+//	err := client.ListOpenIDConnectProviderTagsPages(params,
+//	    func(page *iam.ListOpenIDConnectProviderTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListOpenIDConnectProviderTagsPages(input *ListOpenIDConnectProviderTagsInput, fn func(*ListOpenIDConnectProviderTagsOutput, bool) bool) error {
+	return c.ListOpenIDConnectProviderTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListOpenIDConnectProviderTagsPagesWithContext same as ListOpenIDConnectProviderTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListOpenIDConnectProviderTagsPagesWithContext(ctx aws.Context, input *ListOpenIDConnectProviderTagsInput, fn func(*ListOpenIDConnectProviderTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListOpenIDConnectProviderTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListOpenIDConnectProviderTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListOpenIDConnectProviderTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListOpenIDConnectProviders = "ListOpenIDConnectProviders"
@@ -10491,6 +10747,12 @@ func (c *IAM) ListPolicyTagsRequest(input *ListPolicyTagsInput) (req *request.Re
 		Name:       opListPolicyTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10550,6 +10812,57 @@ func (c *IAM) ListPolicyTagsWithContext(ctx aws.Context, input *ListPolicyTagsIn
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListPolicyTagsPages iterates over the pages of a ListPolicyTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPolicyTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPolicyTags operation.
+//	pageNum := 0
+//	err := client.ListPolicyTagsPages(params,
+//	    func(page *iam.ListPolicyTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListPolicyTagsPages(input *ListPolicyTagsInput, fn func(*ListPolicyTagsOutput, bool) bool) error {
+	return c.ListPolicyTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPolicyTagsPagesWithContext same as ListPolicyTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListPolicyTagsPagesWithContext(ctx aws.Context, input *ListPolicyTagsInput, fn func(*ListPolicyTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPolicyTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPolicyTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPolicyTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListPolicyVersions = "ListPolicyVersions"
@@ -10883,6 +11196,12 @@ func (c *IAM) ListRoleTagsRequest(input *ListRoleTagsInput) (req *request.Reques
 		Name:       opListRoleTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10940,6 +11259,57 @@ func (c *IAM) ListRoleTagsWithContext(ctx aws.Context, input *ListRoleTagsInput,
 	return out, req.Send()
 }
 
+// ListRoleTagsPages iterates over the pages of a ListRoleTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRoleTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRoleTags operation.
+//	pageNum := 0
+//	err := client.ListRoleTagsPages(params,
+//	    func(page *iam.ListRoleTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListRoleTagsPages(input *ListRoleTagsInput, fn func(*ListRoleTagsOutput, bool) bool) error {
+	return c.ListRoleTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRoleTagsPagesWithContext same as ListRoleTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListRoleTagsPagesWithContext(ctx aws.Context, input *ListRoleTagsInput, fn func(*ListRoleTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRoleTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRoleTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRoleTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListRoles = "ListRoles"
 
 // ListRolesRequest generates a "aws/request.Request" representing the
@@ -10994,9 +11364,16 @@ func (c *IAM) ListRolesRequest(input *ListRolesInput) (req *request.Request, out
 // Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
 //
 // IAM resource-listing operations return a subset of the available attributes
-// for the resource. For example, this operation does not return tags, even
-// though they are an attribute of the returned object. To view all of the information
-// for a role, see GetRole.
+// for the resource. This operation does not return the following attributes,
+// even though they are an attribute of the returned object:
+//
+//   - PermissionsBoundary
+//
+//   - RoleLastUsed
+//
+//   - Tags
+//
+// To view all of the information for a role, see GetRole.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -11115,6 +11492,12 @@ func (c *IAM) ListSAMLProviderTagsRequest(input *ListSAMLProviderTagsInput) (req
 		Name:       opListSAMLProviderTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -11176,6 +11559,57 @@ func (c *IAM) ListSAMLProviderTagsWithContext(ctx aws.Context, input *ListSAMLPr
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListSAMLProviderTagsPages iterates over the pages of a ListSAMLProviderTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListSAMLProviderTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListSAMLProviderTags operation.
+//	pageNum := 0
+//	err := client.ListSAMLProviderTagsPages(params,
+//	    func(page *iam.ListSAMLProviderTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListSAMLProviderTagsPages(input *ListSAMLProviderTagsInput, fn func(*ListSAMLProviderTagsOutput, bool) bool) error {
+	return c.ListSAMLProviderTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListSAMLProviderTagsPagesWithContext same as ListSAMLProviderTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListSAMLProviderTagsPagesWithContext(ctx aws.Context, input *ListSAMLProviderTagsInput, fn func(*ListSAMLProviderTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListSAMLProviderTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListSAMLProviderTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListSAMLProviderTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListSAMLProviders = "ListSAMLProviders"
@@ -11439,6 +11873,12 @@ func (c *IAM) ListServerCertificateTagsRequest(input *ListServerCertificateTagsI
 		Name:       opListServerCertificateTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -11500,6 +11940,57 @@ func (c *IAM) ListServerCertificateTagsWithContext(ctx aws.Context, input *ListS
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListServerCertificateTagsPages iterates over the pages of a ListServerCertificateTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListServerCertificateTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListServerCertificateTags operation.
+//	pageNum := 0
+//	err := client.ListServerCertificateTagsPages(params,
+//	    func(page *iam.ListServerCertificateTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListServerCertificateTagsPages(input *ListServerCertificateTagsInput, fn func(*ListServerCertificateTagsOutput, bool) bool) error {
+	return c.ListServerCertificateTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListServerCertificateTagsPagesWithContext same as ListServerCertificateTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListServerCertificateTagsPagesWithContext(ctx aws.Context, input *ListServerCertificateTagsInput, fn func(*ListServerCertificateTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListServerCertificateTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListServerCertificateTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListServerCertificateTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListServerCertificates = "ListServerCertificates"
@@ -12240,9 +12731,14 @@ func (c *IAM) ListUsersRequest(input *ListUsersInput) (req *request.Request, out
 // account. If there are none, the operation returns an empty list.
 //
 // IAM resource-listing operations return a subset of the available attributes
-// for the resource. For example, this operation does not return tags, even
-// though they are an attribute of the returned object. To view all of the information
-// for a user, see GetUser.
+// for the resource. This operation does not return the following attributes,
+// even though they are an attribute of the returned object:
+//
+//   - PermissionsBoundary
+//
+//   - Tags
+//
+// To view all of the information for a user, see GetUser.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -12519,9 +13015,10 @@ func (c *IAM) PutGroupPolicyRequest(input *PutGroupPolicyInput) (req *request.Re
 // IAM group.
 //
 // A user can also have managed policies attached to it. To attach a managed
-// policy to a group, use AttachGroupPolicy. To create a new managed policy,
-// use CreatePolicy. For information about policies, see Managed policies and
-// inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a group, use AttachGroupPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachGroupPolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -12742,14 +13239,16 @@ func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Requ
 //
 // When you embed an inline policy in a role, the inline policy is used as part
 // of the role's access (permissions) policy. The role's trust policy is created
-// at the same time as the role, using CreateRole. You can update a role's trust
-// policy using UpdateAssumeRolePolicy. For more information about IAM roles,
-// see Using roles to delegate permissions and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
+// at the same time as the role, using CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html).
+// You can update a role's trust policy using UpdateAssumerolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
+// For more information about IAM roles, see Using roles to delegate permissions
+// and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
 //
 // A role can also have a managed policy attached to it. To attach a managed
-// policy to a role, use AttachRolePolicy. To create a new managed policy, use
-// CreatePolicy. For information about policies, see Managed policies and inline
-// policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a role, use AttachRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachRolePolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -12967,9 +13466,10 @@ func (c *IAM) PutUserPolicyRequest(input *PutUserPolicyInput) (req *request.Requ
 // IAM user.
 //
 // An IAM user can also have a managed policy attached to it. To attach a managed
-// policy to a user, use AttachUserPolicy. To create a new managed policy, use
-// CreatePolicy. For information about policies, see Managed policies and inline
-// policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a user, use AttachUserPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachUserPolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -24899,6 +25399,131 @@ func (s GetLoginProfileOutput) GoString() string {
 // SetLoginProfile sets the LoginProfile field's value.
 func (s *GetLoginProfileOutput) SetLoginProfile(v *LoginProfile) *GetLoginProfileOutput {
 	s.LoginProfile = v
+	return s
+}
+
+type GetMFADeviceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Serial number that uniquely identifies the MFA device. For this API, we only
+	// accept FIDO security key ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html).
+	//
+	// SerialNumber is a required field
+	SerialNumber *string `min:"9" type:"string" required:"true"`
+
+	// The friendly name identifying the user.
+	UserName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetMFADeviceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetMFADeviceInput"}
+	if s.SerialNumber == nil {
+		invalidParams.Add(request.NewErrParamRequired("SerialNumber"))
+	}
+	if s.SerialNumber != nil && len(*s.SerialNumber) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("SerialNumber", 9))
+	}
+	if s.UserName != nil && len(*s.UserName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSerialNumber sets the SerialNumber field's value.
+func (s *GetMFADeviceInput) SetSerialNumber(v string) *GetMFADeviceInput {
+	s.SerialNumber = &v
+	return s
+}
+
+// SetUserName sets the UserName field's value.
+func (s *GetMFADeviceInput) SetUserName(v string) *GetMFADeviceInput {
+	s.UserName = &v
+	return s
+}
+
+type GetMFADeviceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The certifications of a specified user's MFA device. We currently provide
+	// FIPS-140-2, FIPS-140-3, and FIDO certification levels obtained from FIDO
+	// Alliance Metadata Service (MDS) (https://fidoalliance.org/metadata/).
+	Certifications map[string]*string `type:"map"`
+
+	// The date that a specified user's MFA device was first enabled.
+	EnableDate *time.Time `type:"timestamp"`
+
+	// Serial number that uniquely identifies the MFA device. For this API, we only
+	// accept FIDO security key ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html).
+	//
+	// SerialNumber is a required field
+	SerialNumber *string `min:"9" type:"string" required:"true"`
+
+	// The friendly name identifying the user.
+	UserName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceOutput) GoString() string {
+	return s.String()
+}
+
+// SetCertifications sets the Certifications field's value.
+func (s *GetMFADeviceOutput) SetCertifications(v map[string]*string) *GetMFADeviceOutput {
+	s.Certifications = v
+	return s
+}
+
+// SetEnableDate sets the EnableDate field's value.
+func (s *GetMFADeviceOutput) SetEnableDate(v time.Time) *GetMFADeviceOutput {
+	s.EnableDate = &v
+	return s
+}
+
+// SetSerialNumber sets the SerialNumber field's value.
+func (s *GetMFADeviceOutput) SetSerialNumber(v string) *GetMFADeviceOutput {
+	s.SerialNumber = &v
+	return s
+}
+
+// SetUserName sets the UserName field's value.
+func (s *GetMFADeviceOutput) SetUserName(v string) *GetMFADeviceOutput {
+	s.UserName = &v
 	return s
 }
 

@@ -659,7 +659,7 @@
       }
     }
   },
-  "revision": "20230420",
+  "revision": "20230621",
   "rootUrl": "https://tpu.googleapis.com/",
   "schemas": {
     "AcceleratorType": {
@@ -909,6 +909,7 @@
           "type": "string"
         },
         "ipAddress": {
+          "deprecated": true,
           "description": "Output only. DEPRECATED! Use network_endpoints instead. The network address for the TPU Node as visible to Compute Engine instances.",
           "type": "string"
         },
@@ -937,6 +938,7 @@
           "type": "array"
         },
         "port": {
+          "deprecated": true,
           "description": "Output only. DEPRECATED! Use network_endpoints instead. The network port for the TPU Node as visible to Compute Engine instances.",
           "type": "string"
         },
