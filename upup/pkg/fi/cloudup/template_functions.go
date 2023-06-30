@@ -613,6 +613,8 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=digitalocean")
 		case kops.CloudProviderOpenstack:
 			argv = append(argv, "--dns=openstack-designate")
+		case kops.CloudProviderScaleway:
+			argv = append(argv, "--dns=scaleway")
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())

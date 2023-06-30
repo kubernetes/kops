@@ -10,15 +10,14 @@
 
 ### Coming soon
 
-* Scaleway DNS (to create clusters with a custom domain name)
+* [Terraform](https://github.com/scaleway/terraform-provider-scaleway) support
 * Private network
 
 ### Next features to implement
 
 * `kops rolling-update`
-* BareMetal servers
-* [Terraform](https://github.com/scaleway/terraform-provider-scaleway) support
 * [Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/scaleway) support
+* BareMetal servers
 
 ## Requirements
 
@@ -30,7 +29,7 @@
 ### Optional
 
 * [SSH key](https://www.scaleway.com/en/docs/configure-new-ssh-key/) : creating a cluster can be done without an SSH key, but it is required to update it. `id_rsa` and `id_ed25519` keys are supported
-
+* [Domain name](https://www.scaleway.com/en/docs/network/domains-and-dns/quickstart/) : if you want to host your cluster on your own domain, you will have to register it with Scaleway.
 
 ## Environment Variables
 
@@ -65,6 +64,8 @@ Note that for now you can only create a kops cluster in a single availability zo
 kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=fr-par-1 --yes
   # This creates a cluster with no DNS in zone nl-ams-2
 kops create cluster --cloud=scaleway --name=my.cluster --zones=nl-ams-2 --yes
+  # This creates a cluster with the Scaleway DNS (on a domain name that you own and have registered with Scaleway) in zone pl-waw-1
+kops create cluster --cloud=scaleway --name=mycluster.mydomain.com --zones=pl-waw-1 --yes 
 ```
 
 ### Editing your cluster
