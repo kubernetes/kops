@@ -162,7 +162,7 @@ func setType(v reflect.Value, newValue string) error {
 			v64 := int64(v)
 			newV = reflect.ValueOf(v64)
 		default:
-			panic("missing case in switch")
+			panic("missing case in int switch")
 		}
 	case "uint64", "uint32", "uint16", "uint":
 		v, err := strconv.Atoi(newValue)
@@ -183,7 +183,7 @@ func setType(v reflect.Value, newValue string) error {
 			v64 := uint64(v)
 			newV = reflect.ValueOf(v64)
 		default:
-			panic("missing case in switch")
+			panic("missing case in uint switch")
 		}
 	case "intstr.IntOrString":
 		newV = reflect.ValueOf(intstr.Parse(newValue))
