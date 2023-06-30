@@ -38,7 +38,6 @@ import (
 	"k8s.io/kops/pkg/util/subnet"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -277,9 +276,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		fldPath := fieldPath.Child("karpenter", "enabled")
 		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
-		}
-		if !featureflag.Karpenter.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fldPath, "karpenter requires the Karpenter feature flag"))
 		}
 	}
 
