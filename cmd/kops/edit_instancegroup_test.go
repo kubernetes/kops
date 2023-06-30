@@ -66,7 +66,7 @@ func TestEditInstanceGroup(t *testing.T) {
 		editOptions := &EditInstanceGroupOptions{
 			ClusterName: clusterName,
 			GroupName:   "nodes",
-			Sets:        []string{"spec.maxSize=10"},
+			Sets:        []string{"spec.maxSize=10", "spec.rollingUpdate.maxUnavailable=50%"},
 		}
 		err := RunEditInstanceGroup(ctx, factory, &stdout, editOptions)
 		if err != nil {
