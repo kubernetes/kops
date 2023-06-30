@@ -143,7 +143,7 @@ func setType(v reflect.Value, newValue string) error {
 		}
 		newV = reflect.ValueOf(b)
 
-	case "int64", "int32", "int":
+	case "int64", "int32", "int16", "int":
 		v, err := strconv.Atoi(newValue)
 		if err != nil {
 			return fmt.Errorf("cannot interpret %q value as integer", newValue)
@@ -152,6 +152,9 @@ func setType(v reflect.Value, newValue string) error {
 		switch t {
 		case "int":
 			newV = reflect.ValueOf(v)
+		case "int16":
+			v16 := int16(v)
+			newV = reflect.ValueOf(v16)
 		case "int32":
 			v32 := int32(v)
 			newV = reflect.ValueOf(v32)
@@ -161,7 +164,7 @@ func setType(v reflect.Value, newValue string) error {
 		default:
 			panic("missing case in switch")
 		}
-	case "uint64", "uint32", "uint":
+	case "uint64", "uint32", "uint16", "uint":
 		v, err := strconv.Atoi(newValue)
 		if err != nil {
 			return fmt.Errorf("cannot interpret %q value as unsigned integer", newValue)
@@ -170,6 +173,9 @@ func setType(v reflect.Value, newValue string) error {
 		switch t {
 		case "uint":
 			newV = reflect.ValueOf(v)
+		case "uint16":
+			v16 := uint16(v)
+			newV = reflect.ValueOf(v16)
 		case "uint32":
 			v32 := uint32(v)
 			newV = reflect.ValueOf(v32)
