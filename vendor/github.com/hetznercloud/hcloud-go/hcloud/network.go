@@ -45,6 +45,9 @@ type Network struct {
 	Servers    []*Server
 	Protection NetworkProtection
 	Labels     map[string]string
+
+	// ExposeRoutesToVSwitch indicates if the routes from this network should be exposed to the vSwitch connection.
+	ExposeRoutesToVSwitch bool
 }
 
 // NetworkSubnet represents a subnet of a network in the Hetzner Cloud.
@@ -190,6 +193,9 @@ func (c *NetworkClient) Delete(ctx context.Context, network *Network) (*Response
 type NetworkUpdateOpts struct {
 	Name   string
 	Labels map[string]string
+	// ExposeRoutesToVSwitch indicates if the routes from this network should be exposed to the vSwitch connection.
+	// The exposing only takes effect if a vSwitch connection is active.
+	ExposeRoutesToVSwitch *bool
 }
 
 // Update updates a network.
@@ -200,6 +206,10 @@ func (c *NetworkClient) Update(ctx context.Context, network *Network, opts Netwo
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
 	}
+	if opts.ExposeRoutesToVSwitch != nil {
+		reqBody.ExposeRoutesToVSwitch = opts.ExposeRoutesToVSwitch
+	}
+
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, nil, err
@@ -226,6 +236,9 @@ type NetworkCreateOpts struct {
 	Subnets []NetworkSubnet
 	Routes  []NetworkRoute
 	Labels  map[string]string
+	// ExposeRoutesToVSwitch indicates if the routes from this network should be exposed to the vSwitch connection.
+	// The exposing only takes effect if a vSwitch connection is active.
+	ExposeRoutesToVSwitch bool
 }
 
 // Validate checks if options are valid.
@@ -245,8 +258,9 @@ func (c *NetworkClient) Create(ctx context.Context, opts NetworkCreateOpts) (*Ne
 		return nil, nil, err
 	}
 	reqBody := schema.NetworkCreateRequest{
-		Name:    opts.Name,
-		IPRange: opts.IPRange.String(),
+		Name:                  opts.Name,
+		IPRange:               opts.IPRange.String(),
+		ExposeRoutesToVSwitch: opts.ExposeRoutesToVSwitch,
 	}
 	for _, subnet := range opts.Subnets {
 		s := schema.NetworkSubnet{

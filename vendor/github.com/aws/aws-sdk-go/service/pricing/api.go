@@ -77,18 +77,18 @@ func (c *Pricing) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 //
 // Returned Error Types:
 //
-//   - InternalErrorException
-//     An error on the server occurred during the processing of your request. Try
-//     again later.
-//
 //   - InvalidParameterException
 //     One or more parameters had an invalid value.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 //   - NotFoundException
 //     The requested resource can't be found.
 //
-//   - InvalidNextTokenException
-//     The pagination token is invalid. Try again without a pagination token.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -229,18 +229,18 @@ func (c *Pricing) GetAttributeValuesRequest(input *GetAttributeValuesInput) (req
 //
 // Returned Error Types:
 //
-//   - InternalErrorException
-//     An error on the server occurred during the processing of your request. Try
-//     again later.
-//
 //   - InvalidParameterException
 //     One or more parameters had an invalid value.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 //   - NotFoundException
 //     The requested resource can't be found.
 //
-//   - InvalidNextTokenException
-//     The pagination token is invalid. Try again without a pagination token.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -380,10 +380,6 @@ func (c *Pricing) GetPriceListFileUrlRequest(input *GetPriceListFileUrlInput) (r
 //
 // Returned Error Types:
 //
-//   - InternalErrorException
-//     An error on the server occurred during the processing of your request. Try
-//     again later.
-//
 //   - InvalidParameterException
 //     One or more parameters had an invalid value.
 //
@@ -392,6 +388,10 @@ func (c *Pricing) GetPriceListFileUrlRequest(input *GetPriceListFileUrlInput) (r
 //
 //   - AccessDeniedException
 //     General authentication failure. The request wasn't signed correctly.
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetPriceListFileUrl
 func (c *Pricing) GetPriceListFileUrl(input *GetPriceListFileUrlInput) (*GetPriceListFileUrlOutput, error) {
@@ -475,18 +475,18 @@ func (c *Pricing) GetProductsRequest(input *GetProductsInput) (req *request.Requ
 //
 // Returned Error Types:
 //
-//   - InternalErrorException
-//     An error on the server occurred during the processing of your request. Try
-//     again later.
-//
 //   - InvalidParameterException
 //     One or more parameters had an invalid value.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 //   - NotFoundException
 //     The requested resource can't be found.
 //
-//   - InvalidNextTokenException
-//     The pagination token is invalid. Try again without a pagination token.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -636,24 +636,24 @@ func (c *Pricing) ListPriceListsRequest(input *ListPriceListsInput) (req *reques
 //
 // Returned Error Types:
 //
-//   - InternalErrorException
-//     An error on the server occurred during the processing of your request. Try
-//     again later.
-//
 //   - InvalidParameterException
 //     One or more parameters had an invalid value.
-//
-//   - NotFoundException
-//     The requested resource can't be found.
 //
 //   - InvalidNextTokenException
 //     The pagination token is invalid. Try again without a pagination token.
 //
-//   - ExpiredNextTokenException
-//     The pagination token expired. Try again without a pagination token.
+//   - NotFoundException
+//     The requested resource can't be found.
 //
 //   - AccessDeniedException
 //     General authentication failure. The request wasn't signed correctly.
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ExpiredNextTokenException
+//     The pagination token expired. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/ListPriceLists
 func (c *Pricing) ListPriceLists(input *ListPriceListsInput) (*ListPriceListsOutput, error) {

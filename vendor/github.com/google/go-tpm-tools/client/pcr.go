@@ -7,7 +7,7 @@ import (
 	"math"
 
 	pb "github.com/google/go-tpm-tools/proto/tpm"
-	"github.com/google/go-tpm/tpm2"
+	"github.com/google/go-tpm/legacy/tpm2"
 )
 
 // NumPCRs is set to the spec minimum of 24, as that's all go-tpm supports.
@@ -16,7 +16,7 @@ const NumPCRs = 24
 // We hard-code SHA256 as the policy session hash algorithms. Note that this
 // differs from the PCR hash algorithm (which selects the bank of PCRs to use)
 // and the Public area Name algorithm. We also chose this for compatibility with
-// github.com/google/go-tpm/tpm2, as it hardcodes the nameAlg as SHA256 in
+// github.com/google/go-tpm/legacy/tpm2, as it hardcodes the nameAlg as SHA256 in
 // several places. Two constants are used to avoid repeated conversions.
 const (
 	SessionHashAlg    = crypto.SHA256

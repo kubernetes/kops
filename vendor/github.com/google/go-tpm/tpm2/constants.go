@@ -1,575 +1,677 @@
-// Copyright (c) 2018, Google LLC All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package tpm2
 
-import (
-	"crypto"
-	"crypto/elliptic"
-	"fmt"
-	"strings"
+//go:generate stringer -trimprefix=TPM -type=TPMAlgID,TPMECCCurve,TPMCC,TPMRC,TPMEO,TPMST,TPMCap,TPMPT,TPMPTPCR,TPMHT,TPMHandle,TPMNT -output=constants_string.go constants.go
 
-	// Register the relevant hash implementations to prevent a runtime failure.
+import (
+
+	// Register the relevant hash implementations.
 	_ "crypto/sha1"
 	_ "crypto/sha256"
 	_ "crypto/sha512"
-
-	"github.com/google/go-tpm/tpmutil"
 )
 
-var hashInfo = []struct {
-	alg  Algorithm
-	hash crypto.Hash
-}{
-	{AlgSHA1, crypto.SHA1},
-	{AlgSHA256, crypto.SHA256},
-	{AlgSHA384, crypto.SHA384},
-	{AlgSHA512, crypto.SHA512},
-	{AlgSHA3_256, crypto.SHA3_256},
-	{AlgSHA3_384, crypto.SHA3_384},
-	{AlgSHA3_512, crypto.SHA3_512},
-}
+// TPMAlgID represents a TPM_ALG_ID.
+// See definition in Part 2: Structures, section 6.3.
+type TPMAlgID uint16
 
-// MAX_DIGEST_BUFFER is the maximum size of []byte request or response fields.
-// Typically used for chunking of big blobs of data (such as for hashing or
-// encryption).
-const maxDigestBuffer = 1024
-
-// Algorithm represents a TPM_ALG_ID value.
-type Algorithm uint16
-
-// HashToAlgorithm looks up the TPM2 algorithm corresponding to the provided crypto.Hash
-func HashToAlgorithm(hash crypto.Hash) (Algorithm, error) {
-	for _, info := range hashInfo {
-		if info.hash == hash {
-			return info.alg, nil
-		}
-	}
-	return AlgUnknown, fmt.Errorf("go hash algorithm #%d has no TPM2 algorithm", hash)
-}
-
-// IsNull returns true if a is AlgNull or zero (unset).
-func (a Algorithm) IsNull() bool {
-	return a == AlgNull || a == AlgUnknown
-}
-
-// UsesCount returns true if a signature algorithm uses count value.
-func (a Algorithm) UsesCount() bool {
-	return a == AlgECDAA
-}
-
-// UsesHash returns true if the algorithm requires the use of a hash.
-func (a Algorithm) UsesHash() bool {
-	return a == AlgOAEP
-}
-
-// Hash returns a crypto.Hash based on the given TPM_ALG_ID.
-// An error is returned if the given algorithm is not a hash algorithm or is not available.
-func (a Algorithm) Hash() (crypto.Hash, error) {
-	for _, info := range hashInfo {
-		if info.alg == a {
-			if !info.hash.Available() {
-				return crypto.Hash(0), fmt.Errorf("go hash algorithm #%d not available", info.hash)
-			}
-			return info.hash, nil
-		}
-	}
-	return crypto.Hash(0), fmt.Errorf("hash algorithm not supported: 0x%x", a)
-}
-
-func (a Algorithm) String() string {
-	var s strings.Builder
-	var err error
-	switch a {
-	case AlgUnknown:
-		_, err = s.WriteString("AlgUnknown")
-	case AlgRSA:
-		_, err = s.WriteString("RSA")
-	case AlgSHA1:
-		_, err = s.WriteString("SHA1")
-	case AlgHMAC:
-		_, err = s.WriteString("HMAC")
-	case AlgAES:
-		_, err = s.WriteString("AES")
-	case AlgKeyedHash:
-		_, err = s.WriteString("KeyedHash")
-	case AlgXOR:
-		_, err = s.WriteString("XOR")
-	case AlgSHA256:
-		_, err = s.WriteString("SHA256")
-	case AlgSHA384:
-		_, err = s.WriteString("SHA384")
-	case AlgSHA512:
-		_, err = s.WriteString("SHA512")
-	case AlgNull:
-		_, err = s.WriteString("AlgNull")
-	case AlgRSASSA:
-		_, err = s.WriteString("RSASSA")
-	case AlgRSAES:
-		_, err = s.WriteString("RSAES")
-	case AlgRSAPSS:
-		_, err = s.WriteString("RSAPSS")
-	case AlgOAEP:
-		_, err = s.WriteString("OAEP")
-	case AlgECDSA:
-		_, err = s.WriteString("ECDSA")
-	case AlgECDH:
-		_, err = s.WriteString("ECDH")
-	case AlgECDAA:
-		_, err = s.WriteString("ECDAA")
-	case AlgKDF2:
-		_, err = s.WriteString("KDF2")
-	case AlgECC:
-		_, err = s.WriteString("ECC")
-	case AlgSymCipher:
-		_, err = s.WriteString("SymCipher")
-	case AlgSHA3_256:
-		_, err = s.WriteString("SHA3_256")
-	case AlgSHA3_384:
-		_, err = s.WriteString("SHA3_384")
-	case AlgSHA3_512:
-		_, err = s.WriteString("SHA3_512")
-	case AlgCTR:
-		_, err = s.WriteString("CTR")
-	case AlgOFB:
-		_, err = s.WriteString("OFB")
-	case AlgCBC:
-		_, err = s.WriteString("CBC")
-	case AlgCFB:
-		_, err = s.WriteString("CFB")
-	case AlgECB:
-		_, err = s.WriteString("ECB")
-	default:
-		return fmt.Sprintf("Alg?<%d>", int(a))
-	}
-	if err != nil {
-		return fmt.Sprintf("Writing to string builder failed: %v", err)
-	}
-	return s.String()
-}
-
-// Supported Algorithms.
+// TPMAlgID values come from Part 2: Structures, section 6.3.
 const (
-	AlgUnknown   Algorithm = 0x0000
-	AlgRSA       Algorithm = 0x0001
-	AlgSHA1      Algorithm = 0x0004
-	AlgHMAC      Algorithm = 0x0005
-	AlgAES       Algorithm = 0x0006
-	AlgKeyedHash Algorithm = 0x0008
-	AlgXOR       Algorithm = 0x000A
-	AlgSHA256    Algorithm = 0x000B
-	AlgSHA384    Algorithm = 0x000C
-	AlgSHA512    Algorithm = 0x000D
-	AlgNull      Algorithm = 0x0010
-	AlgRSASSA    Algorithm = 0x0014
-	AlgRSAES     Algorithm = 0x0015
-	AlgRSAPSS    Algorithm = 0x0016
-	AlgOAEP      Algorithm = 0x0017
-	AlgECDSA     Algorithm = 0x0018
-	AlgECDH      Algorithm = 0x0019
-	AlgECDAA     Algorithm = 0x001A
-	AlgKDF2      Algorithm = 0x0021
-	AlgECC       Algorithm = 0x0023
-	AlgSymCipher Algorithm = 0x0025
-	AlgSHA3_256  Algorithm = 0x0027
-	AlgSHA3_384  Algorithm = 0x0028
-	AlgSHA3_512  Algorithm = 0x0029
-	AlgCTR       Algorithm = 0x0040
-	AlgOFB       Algorithm = 0x0041
-	AlgCBC       Algorithm = 0x0042
-	AlgCFB       Algorithm = 0x0043
-	AlgECB       Algorithm = 0x0044
+	TPMAlgRSA          TPMAlgID = 0x0001
+	TPMAlgTDES         TPMAlgID = 0x0003
+	TPMAlgSHA1         TPMAlgID = 0x0004
+	TPMAlgHMAC         TPMAlgID = 0x0005
+	TPMAlgAES          TPMAlgID = 0x0006
+	TPMAlgMGF1         TPMAlgID = 0x0007
+	TPMAlgKeyedHash    TPMAlgID = 0x0008
+	TPMAlgXOR          TPMAlgID = 0x000A
+	TPMAlgSHA256       TPMAlgID = 0x000B
+	TPMAlgSHA384       TPMAlgID = 0x000C
+	TPMAlgSHA512       TPMAlgID = 0x000D
+	TPMAlgNull         TPMAlgID = 0x0010
+	TPMAlgSM3256       TPMAlgID = 0x0012
+	TPMAlgSM4          TPMAlgID = 0x0013
+	TPMAlgRSASSA       TPMAlgID = 0x0014
+	TPMAlgRSAES        TPMAlgID = 0x0015
+	TPMAlgRSAPSS       TPMAlgID = 0x0016
+	TPMAlgOAEP         TPMAlgID = 0x0017
+	TPMAlgECDSA        TPMAlgID = 0x0018
+	TPMAlgECDH         TPMAlgID = 0x0019
+	TPMAlgECDAA        TPMAlgID = 0x001A
+	TPMAlgSM2          TPMAlgID = 0x001B
+	TPMAlgECSchnorr    TPMAlgID = 0x001C
+	TPMAlgECMQV        TPMAlgID = 0x001D
+	TPMAlgKDF1SP80056A TPMAlgID = 0x0020
+	TPMAlgKDF2         TPMAlgID = 0x0021
+	TPMAlgKDF1SP800108 TPMAlgID = 0x0022
+	TPMAlgECC          TPMAlgID = 0x0023
+	TPMAlgSymCipher    TPMAlgID = 0x0025
+	TPMAlgCamellia     TPMAlgID = 0x0026
+	TPMAlgSHA3256      TPMAlgID = 0x0027
+	TPMAlgSHA3384      TPMAlgID = 0x0028
+	TPMAlgSHA3512      TPMAlgID = 0x0029
+	TPMAlgCMAC         TPMAlgID = 0x003F
+	TPMAlgCTR          TPMAlgID = 0x0040
+	TPMAlgOFB          TPMAlgID = 0x0041
+	TPMAlgCBC          TPMAlgID = 0x0042
+	TPMAlgCFB          TPMAlgID = 0x0043
+	TPMAlgECB          TPMAlgID = 0x0044
 )
 
-// HandleType defines a type of handle.
-type HandleType uint8
+// TPMECCCurve represents a TPM_ECC_Curve.
+// See definition in Part 2: Structures, section 6.4.
+type TPMECCCurve uint16
 
-// Supported handle types
+// TPMECCCurve values come from Part 2: Structures, section 6.4.
 const (
-	HandleTypePCR           HandleType = 0x00
-	HandleTypeNVIndex       HandleType = 0x01
-	HandleTypeHMACSession   HandleType = 0x02
-	HandleTypeLoadedSession HandleType = 0x02
-	HandleTypePolicySession HandleType = 0x03
-	HandleTypeSavedSession  HandleType = 0x03
-	HandleTypePermanent     HandleType = 0x40
-	HandleTypeTransient     HandleType = 0x80
-	HandleTypePersistent    HandleType = 0x81
+	TPMECCNone     TPMECCCurve = 0x0000
+	TPMECCNistP192 TPMECCCurve = 0x0001
+	TPMECCNistP224 TPMECCCurve = 0x0002
+	TPMECCNistP256 TPMECCCurve = 0x0003
+	TPMECCNistP384 TPMECCCurve = 0x0004
+	TPMECCNistP521 TPMECCCurve = 0x0005
+	TPMECCBNP256   TPMECCCurve = 0x0010
+	TPMECCBNP638   TPMECCCurve = 0x0011
+	TPMECCSM2P256  TPMECCCurve = 0x0020
 )
 
-// SessionType defines the type of session created in StartAuthSession.
-type SessionType uint8
+// TPMCC represents a TPM_CC.
+// See definition in Part 2: Structures, section 6.5.2.
+type TPMCC uint32
 
-// Supported session types.
+// TPMCC values come from Part 2: Structures, section 6.5.2.
 const (
-	SessionHMAC   SessionType = 0x00
-	SessionPolicy SessionType = 0x01
-	SessionTrial  SessionType = 0x03
+	TPMCCNVUndefineSpaceSpecial     TPMCC = 0x0000011F
+	TPMCCEvictControl               TPMCC = 0x00000120
+	TPMCCHierarchyControl           TPMCC = 0x00000121
+	TPMCCNVUndefineSpace            TPMCC = 0x00000122
+	TPMCCChangeEPS                  TPMCC = 0x00000124
+	TPMCCChangePPS                  TPMCC = 0x00000125
+	TPMCCClear                      TPMCC = 0x00000126
+	TPMCCClearControl               TPMCC = 0x00000127
+	TPMCCClockSet                   TPMCC = 0x00000128
+	TPMCCHierarchyChanegAuth        TPMCC = 0x00000129
+	TPMCCNVDefineSpace              TPMCC = 0x0000012A
+	TPMCCPCRAllocate                TPMCC = 0x0000012B
+	TPMCCPCRSetAuthPolicy           TPMCC = 0x0000012C
+	TPMCCPPCommands                 TPMCC = 0x0000012D
+	TPMCCSetPrimaryPolicy           TPMCC = 0x0000012E
+	TPMCCFieldUpgradeStart          TPMCC = 0x0000012F
+	TPMCCClockRateAdjust            TPMCC = 0x00000130
+	TPMCCCreatePrimary              TPMCC = 0x00000131
+	TPMCCNVGlobalWriteLock          TPMCC = 0x00000132
+	TPMCCGetCommandAuditDigest      TPMCC = 0x00000133
+	TPMCCNVIncrement                TPMCC = 0x00000134
+	TPMCCNVSetBits                  TPMCC = 0x00000135
+	TPMCCNVExtend                   TPMCC = 0x00000136
+	TPMCCNVWrite                    TPMCC = 0x00000137
+	TPMCCNVWriteLock                TPMCC = 0x00000138
+	TPMCCDictionaryAttackLockReset  TPMCC = 0x00000139
+	TPMCCDictionaryAttackParameters TPMCC = 0x0000013A
+	TPMCCNVChangeAuth               TPMCC = 0x0000013B
+	TPMCCPCREvent                   TPMCC = 0x0000013C
+	TPMCCPCRReset                   TPMCC = 0x0000013D
+	TPMCCSequenceComplete           TPMCC = 0x0000013E
+	TPMCCSetAlgorithmSet            TPMCC = 0x0000013F
+	TPMCCSetCommandCodeAuditStatus  TPMCC = 0x00000140
+	TPMCCFieldUpgradeData           TPMCC = 0x00000141
+	TPMCCIncrementalSelfTest        TPMCC = 0x00000142
+	TPMCCSelfTest                   TPMCC = 0x00000143
+	TPMCCStartup                    TPMCC = 0x00000144
+	TPMCCShutdown                   TPMCC = 0x00000145
+	TPMCCStirRandom                 TPMCC = 0x00000146
+	TPMCCActivateCredential         TPMCC = 0x00000147
+	TPMCCCertify                    TPMCC = 0x00000148
+	TPMCCPolicyNV                   TPMCC = 0x00000149
+	TPMCCCertifyCreation            TPMCC = 0x0000014A
+	TPMCCDuplicate                  TPMCC = 0x0000014B
+	TPMCCGetTime                    TPMCC = 0x0000014C
+	TPMCCGetSessionAuditDigest      TPMCC = 0x0000014D
+	TPMCCNVRead                     TPMCC = 0x0000014E
+	TPMCCNVReadLock                 TPMCC = 0x0000014F
+	TPMCCObjectChangeAuth           TPMCC = 0x00000150
+	TPMCCPolicySecret               TPMCC = 0x00000151
+	TPMCCRewrap                     TPMCC = 0x00000152
+	TPMCCCreate                     TPMCC = 0x00000153
+	TPMCCECDHZGen                   TPMCC = 0x00000154
+	TPMCCMAC                        TPMCC = 0x00000155
+	TPMCCImport                     TPMCC = 0x00000156
+	TPMCCLoad                       TPMCC = 0x00000157
+	TPMCCQuote                      TPMCC = 0x00000158
+	TPMCCRSADecrypt                 TPMCC = 0x00000159
+	TPMCCMACStart                   TPMCC = 0x0000015B
+	TPMCCSequenceUpdate             TPMCC = 0x0000015C
+	TPMCCSign                       TPMCC = 0x0000015D
+	TPMCCUnseal                     TPMCC = 0x0000015E
+	TPMCCPolicySigned               TPMCC = 0x00000160
+	TPMCCContextLoad                TPMCC = 0x00000161
+	TPMCCContextSave                TPMCC = 0x00000162
+	TPMCCECDHKeyGen                 TPMCC = 0x00000163
+	TPMCCEncryptDecrypt             TPMCC = 0x00000164
+	TPMCCFlushContext               TPMCC = 0x00000165
+	TPMCCLoadExternal               TPMCC = 0x00000167
+	TPMCCMakeCredential             TPMCC = 0x00000168
+	TPMCCNVReadPublic               TPMCC = 0x00000169
+	TPMCCPolicyAuthorize            TPMCC = 0x0000016A
+	TPMCCPolicyAuthValue            TPMCC = 0x0000016B
+	TPMCCPolicyCommandCode          TPMCC = 0x0000016C
+	TPMCCPolicyCounterTimer         TPMCC = 0x0000016D
+	TPMCCPolicyCpHash               TPMCC = 0x0000016E
+	TPMCCPolicyLocality             TPMCC = 0x0000016F
+	TPMCCPolicyNameHash             TPMCC = 0x00000170
+	TPMCCPolicyOR                   TPMCC = 0x00000171
+	TPMCCPolicyTicket               TPMCC = 0x00000172
+	TPMCCReadPublic                 TPMCC = 0x00000173
+	TPMCCRSAEncrypt                 TPMCC = 0x00000174
+	TPMCCStartAuthSession           TPMCC = 0x00000176
+	TPMCCVerifySignature            TPMCC = 0x00000177
+	TPMCCECCParameters              TPMCC = 0x00000178
+	TPMCCFirmwareRead               TPMCC = 0x00000179
+	TPMCCGetCapability              TPMCC = 0x0000017A
+	TPMCCGetRandom                  TPMCC = 0x0000017B
+	TPMCCGetTestResult              TPMCC = 0x0000017C
+	TPMCCHash                       TPMCC = 0x0000017D
+	TPMCCPCRRead                    TPMCC = 0x0000017E
+	TPMCCPolicyPCR                  TPMCC = 0x0000017F
+	TPMCCPolicyRestart              TPMCC = 0x00000180
+	TPMCCReadClock                  TPMCC = 0x00000181
+	TPMCCPCRExtend                  TPMCC = 0x00000182
+	TPMCCPCRSetAuthValue            TPMCC = 0x00000183
+	TPMCCNVCertify                  TPMCC = 0x00000184
+	TPMCCEventSequenceComplete      TPMCC = 0x00000185
+	TPMCCHashSequenceStart          TPMCC = 0x00000186
+	TPMCCPolicyPhysicalPresence     TPMCC = 0x00000187
+	TPMCCPolicyDuplicationSelect    TPMCC = 0x00000188
+	TPMCCPolicyGetDigest            TPMCC = 0x00000189
+	TPMCCTestParams                 TPMCC = 0x0000018A
+	TPMCCCommit                     TPMCC = 0x0000018B
+	TPMCCPolicyPassword             TPMCC = 0x0000018C
+	TPMCCZGen2Phase                 TPMCC = 0x0000018D
+	TPMCCECEphemeral                TPMCC = 0x0000018E
+	TPMCCPolicyNvWritten            TPMCC = 0x0000018F
+	TPMCCPolicyTemplate             TPMCC = 0x00000190
+	TPMCCCreateLoaded               TPMCC = 0x00000191
+	TPMCCPolicyAuthorizeNV          TPMCC = 0x00000192
+	TPMCCEncryptDecrypt2            TPMCC = 0x00000193
+	TPMCCACGetCapability            TPMCC = 0x00000194
+	TPMCCACSend                     TPMCC = 0x00000195
+	TPMCCPolicyACSendSelect         TPMCC = 0x00000196
+	TPMCCCertifyX509                TPMCC = 0x00000197
+	TPMCCACTSetTimeout              TPMCC = 0x00000198
 )
 
-// SessionAttributes represents an attribute of a session.
-type SessionAttributes byte
+// TPMRC represents a TPM_RC.
+// See definition in Part 2: Structures, section 6.6.
+type TPMRC uint32
 
-// Session Attributes (Structures 8.4 TPMA_SESSION)
+// TPMRC values come from Part 2: Structures, section 6.6.3.
 const (
-	AttrContinueSession SessionAttributes = 1 << iota
-	AttrAuditExclusive
-	AttrAuditReset
-	_ // bit 3 reserved
-	_ // bit 4 reserved
-	AttrDecrypt
-	AttrEcrypt
-	AttrAudit
+	rcVer1             = 0x00000100
+	rcFmt1             = 0x00000080
+	rcWarn             = 0x00000900
+	rcP                = 0x00000040
+	rcS                = 0x00000800
+	TPMRCSuccess TPMRC = 0x00000000
+	// FMT0 error codes
+	TPMRCInitialize      TPMRC = rcVer1 + 0x000
+	TPMRCFailure         TPMRC = rcVer1 + 0x001
+	TPMRCSequence        TPMRC = rcVer1 + 0x003
+	TPMRCPrivate         TPMRC = rcVer1 + 0x00B
+	TPMRCHMAC            TPMRC = rcVer1 + 0x019
+	TPMRCDisabled        TPMRC = rcVer1 + 0x020
+	TPMRCExclusive       TPMRC = rcVer1 + 0x021
+	TPMRCAuthType        TPMRC = rcVer1 + 0x024
+	TPMRCAuthMissing     TPMRC = rcVer1 + 0x025
+	TPMRCPolicy          TPMRC = rcVer1 + 0x026
+	TPMRCPCR             TPMRC = rcVer1 + 0x027
+	TPMRCPCRChanged      TPMRC = rcVer1 + 0x028
+	TPMRCUpgrade         TPMRC = rcVer1 + 0x02D
+	TPMRCTooManyContexts TPMRC = rcVer1 + 0x02E
+	TPMRCAuthUnavailable TPMRC = rcVer1 + 0x02F
+	TPMRCReboot          TPMRC = rcVer1 + 0x030
+	TPMRCUnbalanced      TPMRC = rcVer1 + 0x031
+	TPMRCCommandSize     TPMRC = rcVer1 + 0x042
+	TPMRCCommandCode     TPMRC = rcVer1 + 0x043
+	TPMRCAuthSize        TPMRC = rcVer1 + 0x044
+	TPMRCAuthContext     TPMRC = rcVer1 + 0x045
+	TPMRCNVRange         TPMRC = rcVer1 + 0x046
+	TPMRCNVSize          TPMRC = rcVer1 + 0x047
+	TPMRCNVLocked        TPMRC = rcVer1 + 0x048
+	TPMRCNVAuthorization TPMRC = rcVer1 + 0x049
+	TPMRCNVUninitialized TPMRC = rcVer1 + 0x04A
+	TPMRCNVSpace         TPMRC = rcVer1 + 0x04B
+	TPMRCNVDefined       TPMRC = rcVer1 + 0x04C
+	TPMRCBadContext      TPMRC = rcVer1 + 0x050
+	TPMRCCPHash          TPMRC = rcVer1 + 0x051
+	TPMRCParent          TPMRC = rcVer1 + 0x052
+	TPMRCNeedsTest       TPMRC = rcVer1 + 0x053
+	TPMRCNoResult        TPMRC = rcVer1 + 0x054
+	TPMRCSensitive       TPMRC = rcVer1 + 0x055
+	// FMT1 error codes
+	TPMRCAsymmetric   TPMRC = rcFmt1 + 0x001
+	TPMRCAttributes   TPMRC = rcFmt1 + 0x002
+	TPMRCHash         TPMRC = rcFmt1 + 0x003
+	TPMRCValue        TPMRC = rcFmt1 + 0x004
+	TPMRCHierarchy    TPMRC = rcFmt1 + 0x005
+	TPMRCKeySize      TPMRC = rcFmt1 + 0x007
+	TPMRCMGF          TPMRC = rcFmt1 + 0x008
+	TPMRCMode         TPMRC = rcFmt1 + 0x009
+	TPMRCType         TPMRC = rcFmt1 + 0x00A
+	TPMRCHandle       TPMRC = rcFmt1 + 0x00B
+	TPMRCKDF          TPMRC = rcFmt1 + 0x00C
+	TPMRCRange        TPMRC = rcFmt1 + 0x00D
+	TPMRCAuthFail     TPMRC = rcFmt1 + 0x00E
+	TPMRCNonce        TPMRC = rcFmt1 + 0x00F
+	TPMRCPP           TPMRC = rcFmt1 + 0x010
+	TPMRCScheme       TPMRC = rcFmt1 + 0x012
+	TPMRCSize         TPMRC = rcFmt1 + 0x015
+	TPMRCSymmetric    TPMRC = rcFmt1 + 0x016
+	TPMRCTag          TPMRC = rcFmt1 + 0x017
+	TPMRCSelector     TPMRC = rcFmt1 + 0x018
+	TPMRCInsufficient TPMRC = rcFmt1 + 0x01A
+	TPMRCSignature    TPMRC = rcFmt1 + 0x01B
+	TPMRCKey          TPMRC = rcFmt1 + 0x01C
+	TPMRCPolicyFail   TPMRC = rcFmt1 + 0x01D
+	TPMRCIntegrity    TPMRC = rcFmt1 + 0x01F
+	TPMRCTicket       TPMRC = rcFmt1 + 0x020
+	TPMRCReservedBits TPMRC = rcFmt1 + 0x021
+	TPMRCBadAuth      TPMRC = rcFmt1 + 0x022
+	TPMRCExpired      TPMRC = rcFmt1 + 0x023
+	TPMRCPolicyCC     TPMRC = rcFmt1 + 0x024
+	TPMRCBinding      TPMRC = rcFmt1 + 0x025
+	TPMRCCurve        TPMRC = rcFmt1 + 0x026
+	TPMRCECCPoint     TPMRC = rcFmt1 + 0x027
+	// Warnings
+	TPMRCContextGap     TPMRC = rcWarn + 0x001
+	TPMRCObjectMemory   TPMRC = rcWarn + 0x002
+	TPMRCSessionMemory  TPMRC = rcWarn + 0x003
+	TPMRCMemory         TPMRC = rcWarn + 0x004
+	TPMRCSessionHandles TPMRC = rcWarn + 0x005
+	TPMRCObjectHandles  TPMRC = rcWarn + 0x006
+	TPMRCLocality       TPMRC = rcWarn + 0x007
+	TPMRCYielded        TPMRC = rcWarn + 0x008
+	TPMRCCanceled       TPMRC = rcWarn + 0x009
+	TPMRCTesting        TPMRC = rcWarn + 0x00A
+	TPMRCReferenceH0    TPMRC = rcWarn + 0x010
+	TPMRCReferenceH1    TPMRC = rcWarn + 0x011
+	TPMRCReferenceH2    TPMRC = rcWarn + 0x012
+	TPMRCReferenceH3    TPMRC = rcWarn + 0x013
+	TPMRCReferenceH4    TPMRC = rcWarn + 0x014
+	TPMRCReferenceH5    TPMRC = rcWarn + 0x015
+	TPMRCReferenceH6    TPMRC = rcWarn + 0x016
+	TPMRCReferenceS0    TPMRC = rcWarn + 0x018
+	TPMRCReferenceS1    TPMRC = rcWarn + 0x019
+	TPMRCReferenceS2    TPMRC = rcWarn + 0x01A
+	TPMRCReferenceS3    TPMRC = rcWarn + 0x01B
+	TPMRCReferenceS4    TPMRC = rcWarn + 0x01C
+	TPMRCReferenceS5    TPMRC = rcWarn + 0x01D
+	TPMRCReferenceS6    TPMRC = rcWarn + 0x01E
+	TPMRCNVRate         TPMRC = rcWarn + 0x020
+	TPMRCLockout        TPMRC = rcWarn + 0x021
+	TPMRCRetry          TPMRC = rcWarn + 0x022
+	TPMRCNVUnavailable  TPMRC = rcWarn + 0x023
 )
 
-// EmptyAuth represents the empty authorization value.
-var EmptyAuth []byte
+// TPMEO represents a TPM_EO.
+// See definition in Part 2: Structures, section 6.8.
+type TPMEO uint16
 
-// KeyProp is a bitmask used in Attributes field of key templates. Individual
-// flags should be OR-ed to form a full mask.
-type KeyProp uint32
-
-// Key properties.
+// TPMEO values come from Part 2: Structures, section 6.8.
 const (
-	FlagFixedTPM            KeyProp = 0x00000002
-	FlagStClear             KeyProp = 0x00000004
-	FlagFixedParent         KeyProp = 0x00000010
-	FlagSensitiveDataOrigin KeyProp = 0x00000020
-	FlagUserWithAuth        KeyProp = 0x00000040
-	FlagAdminWithPolicy     KeyProp = 0x00000080
-	FlagNoDA                KeyProp = 0x00000400
-	FlagRestricted          KeyProp = 0x00010000
-	FlagDecrypt             KeyProp = 0x00020000
-	FlagSign                KeyProp = 0x00040000
-
-	FlagSealDefault   = FlagFixedTPM | FlagFixedParent
-	FlagSignerDefault = FlagSign | FlagRestricted | FlagFixedTPM |
-		FlagFixedParent | FlagSensitiveDataOrigin | FlagUserWithAuth
-	FlagStorageDefault = FlagDecrypt | FlagRestricted | FlagFixedTPM |
-		FlagFixedParent | FlagSensitiveDataOrigin | FlagUserWithAuth
+	TPMEOEq         TPMEO = 0x0000
+	TPMEONeq        TPMEO = 0x0001
+	TPMEOSignedGT   TPMEO = 0x0002
+	TPMEOUnsignedGT TPMEO = 0x0003
+	TPMEOSignedLT   TPMEO = 0x0004
+	TPMEOUnsignedLT TPMEO = 0x0005
+	TPMEOSignedGE   TPMEO = 0x0006
+	TPMEOUnsignedGE TPMEO = 0x0007
+	TPMEOSignedLE   TPMEO = 0x0008
+	TPMEOUnsignedLE TPMEO = 0x0009
+	TPMEOBitSet     TPMEO = 0x000A
+	TPMEOBitClear   TPMEO = 0x000B
 )
 
-// TPMProp represents a Property Tag (TPM_PT) used with calls to GetCapability(CapabilityTPMProperties).
-type TPMProp uint32
+// TPMST represents a TPM_ST.
+// See definition in Part 2: Structures, section 6.9.
+type TPMST uint16
 
-// TPM Capability Properties, see TPM 2.0 Spec, Rev 1.38, Table 23.
-// Fixed TPM Properties (PT_FIXED)
+// TPMST values come from Part 2: Structures, section 6.9.
 const (
-	FamilyIndicator TPMProp = 0x100 + iota
-	SpecLevel
-	SpecRevision
-	SpecDayOfYear
-	SpecYear
-	Manufacturer
-	VendorString1
-	VendorString2
-	VendorString3
-	VendorString4
-	VendorTPMType
-	FirmwareVersion1
-	FirmwareVersion2
-	InputMaxBufferSize
-	TransientObjectsMin
-	PersistentObjectsMin
-	LoadedObjectsMin
-	ActiveSessionsMax
-	PCRCount
-	PCRSelectMin
-	ContextGapMax
-	_ // (PT_FIXED + 21) is skipped
-	NVCountersMax
-	NVIndexMax
-	MemoryMethod
-	ClockUpdate
-	ContextHash
-	ContextSym
-	ContextSymSize
-	OrderlyCount
-	CommandMaxSize
-	ResponseMaxSize
-	DigestMaxSize
-	ObjectContextMaxSize
-	SessionContextMaxSize
-	PSFamilyIndicator
-	PSSpecLevel
-	PSSpecRevision
-	PSSpecDayOfYear
-	PSSpecYear
-	SplitSigningMax
-	TotalCommands
-	LibraryCommands
-	VendorCommands
-	NVMaxBufferSize
-	TPMModes
-	CapabilityMaxBufferSize
+	TPMSTRspCommand         TPMST = 0x00C4
+	TPMSTNull               TPMST = 0x8000
+	TPMSTNoSessions         TPMST = 0x8001
+	TPMSTSessions           TPMST = 0x8002
+	TPMSTAttestNV           TPMST = 0x8014
+	TPMSTAttestCommandAudit TPMST = 0x8015
+	TPMSTAttestSessionAudit TPMST = 0x8016
+	TPMSTAttestCertify      TPMST = 0x8017
+	TPMSTAttestQuote        TPMST = 0x8018
+	TPMSTAttestTime         TPMST = 0x8019
+	TPMSTAttestCreation     TPMST = 0x801A
+	TPMSTAttestNVDigest     TPMST = 0x801C
+	TPMSTCreation           TPMST = 0x8021
+	TPMSTVerified           TPMST = 0x8022
+	TPMSTAuthSecret         TPMST = 0x8023
+	TPMSTHashCheck          TPMST = 0x8024
+	TPMSTAuthSigned         TPMST = 0x8025
+	TPMSTFuManifest         TPMST = 0x8029
 )
 
-// Variable TPM Properties (PT_VAR)
+// TPMSU represents a TPM_SU.
+// See definition in Part 2: Structures, section 6.10.
+type TPMSU uint16
+
+// TPMSU values come from Part 2: Structures, section  6.10.
 const (
-	TPMAPermanent TPMProp = 0x200 + iota
-	TPMAStartupClear
-	HRNVIndex
-	HRLoaded
-	HRLoadedAvail
-	HRActive
-	HRActiveAvail
-	HRTransientAvail
-	CurrentPersistent
-	AvailPersistent
-	NVCounters
-	NVCountersAvail
-	AlgorithmSet
-	LoadedCurves
-	LockoutCounter
-	MaxAuthFail
-	LockoutInterval
-	LockoutRecovery
-	NVWriteRecovery
-	AuditCounter0
-	AuditCounter1
+	TPMSUClear TPMSU = 0x0000
+	TPMSUState TPMSU = 0x0001
 )
 
-// Allowed ranges of different kinds of Handles (TPM_HANDLE)
-// These constants have type TPMProp for backwards compatibility.
+// TPMSE represents a TPM_SE.
+// See definition in Part 2: Structures, section 6.11.
+type TPMSE uint8
+
+// TPMSE values come from Part 2: Structures, section 6.11.
 const (
-	PCRFirst           TPMProp = 0x00000000
-	HMACSessionFirst   TPMProp = 0x02000000
-	LoadedSessionFirst TPMProp = 0x02000000
-	PolicySessionFirst TPMProp = 0x03000000
-	ActiveSessionFirst TPMProp = 0x03000000
-	TransientFirst     TPMProp = 0x80000000
-	PersistentFirst    TPMProp = 0x81000000
-	PersistentLast     TPMProp = 0x81FFFFFF
-	PlatformPersistent TPMProp = 0x81800000
-	NVIndexFirst       TPMProp = 0x01000000
-	NVIndexLast        TPMProp = 0x01FFFFFF
-	PermanentFirst     TPMProp = 0x40000000
-	PermanentLast      TPMProp = 0x4000010F
+	TPMSEHMAC   TPMSE = 0x00
+	TPMSEPolicy TPMSE = 0x01
+	TPMSETrial  TPMSE = 0x03
 )
 
-// Reserved Handles.
+// TPMCap represents a TPM_CAP.
+// See definition in Part 2: Structures, section 6.12.
+type TPMCap uint32
+
+// TPMCap values come from Part 2: Structures, section 6.12.
 const (
-	HandleOwner tpmutil.Handle = 0x40000001 + iota
-	HandleRevoke
-	HandleTransport
-	HandleOperator
-	HandleAdmin
-	HandleEK
-	HandleNull
-	HandleUnassigned
-	HandlePasswordSession
-	HandleLockout
-	HandleEndorsement
-	HandlePlatform
+	TPMCapAlgs          TPMCap = 0x00000000
+	TPMCapHandles       TPMCap = 0x00000001
+	TPMCapCommands      TPMCap = 0x00000002
+	TPMCapPPCommands    TPMCap = 0x00000003
+	TPMCapAuditCommands TPMCap = 0x00000004
+	TPMCapPCRs          TPMCap = 0x00000005
+	TPMCapTPMProperties TPMCap = 0x00000006
+	TPMCapPCRProperties TPMCap = 0x00000007
+	TPMCapECCCurves     TPMCap = 0x00000008
+	TPMCapAuthPolicies  TPMCap = 0x00000009
+	TPMCapACT           TPMCap = 0x0000000A
 )
 
-// Capability identifies some TPM property or state type.
-type Capability uint32
+// TPMPT represents a TPM_PT.
+// See definition in Part 2: Structures, section 6.13.
+type TPMPT uint32
 
-// TPM Capabilities.
+// TPMPT values come from Part 2: Structures, section  6.13.
 const (
-	CapabilityAlgs Capability = iota
-	CapabilityHandles
-	CapabilityCommands
-	CapabilityPPCommands
-	CapabilityAuditCommands
-	CapabilityPCRs
-	CapabilityTPMProperties
-	CapabilityPCRProperties
-	CapabilityECCCurves
-	CapabilityAuthPolicies
+	// a 4-octet character string containing the TPM Family value
+	// (TPM_SPEC_FAMILY)
+	TPMPTFamilyIndicator TPMPT = 0x00000100
+	// the level of the specification
+	TPMPTLevel TPMPT = 0x00000101
+	// the specification Revision times 100
+	TPMPTRevision TPMPT = 0x00000102
+	// the specification day of year using TCG calendar
+	TPMPTDayofYear TPMPT = 0x00000103
+	// the specification year using the CE
+	TPMPTYear TPMPT = 0x00000104
+	// the vendor ID unique to each TPM manufacturer
+	TPMPTManufacturer TPMPT = 0x00000105
+	// the first four characters of the vendor ID string
+	TPMPTVendorString1 TPMPT = 0x00000106
+	// the second four characters of the vendor ID string
+	TPMPTVendorString2 TPMPT = 0x00000107
+	// the third four characters of the vendor ID string
+	TPMPTVendorString3 TPMPT = 0x00000108
+	// the fourth four characters of the vendor ID sting
+	TPMPTVendorString4 TPMPT = 0x00000109
+	// vendor-defined value indicating the TPM model
+	TPMPTVendorTPMType TPMPT = 0x0000010A
+	// the most-significant 32 bits of a TPM vendor-specific value
+	// indicating the version number of the firmware.
+	TPMPTFirmwareVersion1 TPMPT = 0x0000010B
+	// the least-significant 32 bits of a TPM vendor-specific value
+	// indicating the version number of the firmware.
+	TPMPTFirmwareVersion2 TPMPT = 0x0000010C
+	// the maximum size of a parameter TPM2B_MAX_BUFFER)
+	TPMPTInputBuffer TPMPT = 0x0000010D
+	// the minimum number of transient objects that can be held in TPM RAM
+	TPMPTHRTransientMin TPMPT = 0x0000010E
+	// the minimum number of persistent objects that can be held in TPM NV
+	// memory
+	TPMPTHRPersistentMin TPMPT = 0x0000010F
+	// the minimum number of authorization sessions that can be held in TPM
+	// RAM
+	TPMPTHRLoadedMin TPMPT = 0x00000110
+	// the number of authorization sessions that may be active at a time
+	TPMPTActiveSessionsMax TPMPT = 0x00000111
+	// the number of PCR implemented
+	TPMPTPCRCount TPMPT = 0x00000112
+	// the minimum number of octets in a TPMS_PCR_SELECT.sizeOfSelect
+	TPMPTPCRSelectMin TPMPT = 0x00000113
+	// the maximum allowed difference (unsigned) between the contextID
+	// values of two saved session contexts
+	TPMPTContextGapMax TPMPT = 0x00000114
+	// the maximum number of NV Indexes that are allowed to have the
+	// TPM_NT_COUNTER attribute
+	TPMPTNVCountersMax TPMPT = 0x00000116
+	// the maximum size of an NV Index data area
+	TPMPTNVIndexMax TPMPT = 0x00000117
+	// a TPMA_MEMORY indicating the memory management method for the TPM
+	TPMPTMemory TPMPT = 0x00000118
+	// interval, in milliseconds, between updates to the copy of
+	// TPMS_CLOCK_INFO.clock in NV
+	TPMPTClockUpdate TPMPT = 0x00000119
+	// the algorithm used for the integrity HMAC on saved contexts and for
+	// hashing the fuData of TPM2_FirmwareRead()
+	TPMPTContextHash TPMPT = 0x0000011A
+	// TPM_ALG_ID, the algorithm used for encryption of saved contexts
+	TPMPTContextSym TPMPT = 0x0000011B
+	// TPM_KEY_BITS, the size of the key used for encryption of saved
+	// contexts
+	TPMPTContextSymSize TPMPT = 0x0000011C
+	// the modulus - 1 of the count for NV update of an orderly counter
+	TPMPTOrderlyCount TPMPT = 0x0000011D
+	// the maximum value for commandSize in a command
+	TPMPTMaxCommandSize TPMPT = 0x0000011E
+	// the maximum value for responseSize in a response
+	TPMPTMaxResponseSize TPMPT = 0x0000011F
+	// the maximum size of a digest that can be produced by the TPM
+	TPMPTMaxDigest TPMPT = 0x00000120
+	// the maximum size of an object context that will be returned by
+	// TPM2_ContextSave
+	TPMPTMaxObjectContext TPMPT = 0x00000121
+	// the maximum size of a session context that will be returned by
+	// TPM2_ContextSave
+	TPMPTMaxSessionContext TPMPT = 0x00000122
+	// platform-specific family (a TPM_PS value)(see Table 25)
+	TPMPTPSFamilyIndicator TPMPT = 0x00000123
+	// the level of the platform-specific specification
+	TPMPTPSLevel TPMPT = 0x00000124
+	// a platform specific value
+	TPMPTPSRevision TPMPT = 0x00000125
+	// the platform-specific TPM specification day of year using TCG
+	// calendar
+	TPMPTPSDayOfYear TPMPT = 0x00000126
+	// the platform-specific TPM specification year using the CE
+	TPMPTPSYear TPMPT = 0x00000127
+	// the number of split signing operations supported by the TPM
+	TPMPTSplitMax TPMPT = 0x00000128
+	// total number of commands implemented in the TPM
+	TPMPTTotalCommands TPMPT = 0x00000129
+	// number of commands from the TPM library that are implemented
+	TPMPTLibraryCommands TPMPT = 0x0000012A
+	// number of vendor commands that are implemented
+	TPMPTVendorCommands TPMPT = 0x0000012B
+	// the maximum data size in one NV write, NV read, NV extend, or NV
+	// certify command
+	TPMPTNVBufferMax TPMPT = 0x0000012C
+	// a TPMA_MODES value, indicating that the TPM is designed for these
+	// modes.
+	TPMPTModes TPMPT = 0x0000012D
+	// the maximum size of a TPMS_CAPABILITY_DATA structure returned in
+	// TPM2_GetCapability().
+	TPMPTMaxCapBuffer TPMPT = 0x0000012E
+	// TPMA_PERMANENT
+	TPMPTPermanent TPMPT = 0x00000200
+	// TPMA_STARTUP_CLEAR
+	TPMPTStartupClear TPMPT = 0x00000201
+	// the number of NV Indexes currently defined
+	TPMPTHRNVIndex TPMPT = 0x00000202
+	// the number of authorization sessions currently loaded into TPM RAM
+	TPMPTHRLoaded TPMPT = 0x00000203
+	// the number of additional authorization sessions, of any type, that
+	// could be loaded into TPM RAM
+	TPMPTHRLoadedAvail TPMPT = 0x00000204
+	// the number of active authorization sessions currently being tracked
+	// by the TPM
+	TPMPTHRActive TPMPT = 0x00000205
+	// the number of additional authorization sessions, of any type, that
+	// could be created
+	TPMPTHRActiveAvail TPMPT = 0x00000206
+	// estimate of the number of additional transient objects that could be
+	// loaded into TPM RAM
+	TPMPTHRTransientAvail TPMPT = 0x00000207
+	// the number of persistent objects currently loaded into TPM NV memory
+	TPMPTHRPersistent TPMPT = 0x00000208
+	// the number of additional persistent objects that could be loaded into
+	// NV memory
+	TPMPTHRPersistentAvail TPMPT = 0x00000209
+	// the number of defined NV Indexes that have NV the TPM_NT_COUNTER
+	// attribute
+	TPMPTNVCounters TPMPT = 0x0000020A
+	// the number of additional NV Indexes that can be defined with their
+	// TPM_NT of TPM_NV_COUNTER and the TPMA_NV_ORDERLY attribute SET
+	TPMPTNVCountersAvail TPMPT = 0x0000020B
+	// code that limits the algorithms that may be used with the TPM
+	TPMPTAlgorithmSet TPMPT = 0x0000020C
+	// the number of loaded ECC curves
+	TPMPTLoadedCurves TPMPT = 0x0000020D
+	// the current value of the lockout counter (failedTries)
+	TPMPTLockoutCounter TPMPT = 0x0000020E
+	// the number of authorization failures before DA lockout is invoked
+	TPMPTMaxAuthFail TPMPT = 0x0000020F
+	// the number of seconds before the value reported by
+	// TPM_PT_LOCKOUT_COUNTER is decremented
+	TPMPTLockoutInterval TPMPT = 0x00000210
+	// the number of seconds after a lockoutAuth failure before use of
+	// lockoutAuth may be attempted again
+	TPMPTLockoutRecovery TPMPT = 0x00000211
+	// number of milliseconds before the TPM will accept another command
+	// that will modify NV
+	TPMPTNVWriteRecovery TPMPT = 0x00000212
+	// the high-order 32 bits of the command audit counter
+	TPMPTAuditCounter0 TPMPT = 0x00000213
+	// the low-order 32 bits of the command audit counter
+	TPMPTAuditCounter1 TPMPT = 0x00000214
 )
 
-// TPM Structure Tags. Tags are used to disambiguate structures, similar to Alg
-// values: tag value defines what kind of data lives in a nested field.
+// TPMPTPCR represents a TPM_PT_PCR.
+// See definition in Part 2: Structures, section 6.14.
+type TPMPTPCR uint32
+
+// TPMPTPCR values come from Part 2: Structures, section 6.14.
 const (
-	TagNull           tpmutil.Tag = 0x8000
-	TagNoSessions     tpmutil.Tag = 0x8001
-	TagSessions       tpmutil.Tag = 0x8002
-	TagAttestCertify  tpmutil.Tag = 0x8017
-	TagAttestQuote    tpmutil.Tag = 0x8018
-	TagAttestCreation tpmutil.Tag = 0x801a
-	TagAuthSecret     tpmutil.Tag = 0x8023
-	TagHashCheck      tpmutil.Tag = 0x8024
-	TagAuthSigned     tpmutil.Tag = 0x8025
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR is saved and
+	// restored by TPM_SU_STATE
+	TPMPTPCRSave TPMPTPCR = 0x00000000
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be
+	// extended from locality 0
+	TPMPTPCRExtendL0 TPMPTPCR = 0x00000001
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset
+	// by TPM2_PCR_Reset() from locality 0
+	TPMPTPCRResetL0 TPMPTPCR = 0x00000002
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be
+	// extended from locality 1
+	TPMPTPCRExtendL1 TPMPTPCR = 0x00000003
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset
+	// by TPM2_PCR_Reset() from locality 1
+	TPMPTPCRResetL1 TPMPTPCR = 0x00000004
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be
+	// extended from locality 2
+	TPMPTPCRExtendL2 TPMPTPCR = 0x00000005
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset
+	// by TPM2_PCR_Reset() from locality 2
+	TPMPTPCRResetL2 TPMPTPCR = 0x00000006
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be
+	// extended from locality 3
+	TPMPTPCRExtendL3 TPMPTPCR = 0x00000007
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset
+	// by TPM2_PCR_Reset() from locality 3
+	TPMPTPCRResetL3 TPMPTPCR = 0x00000008
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be
+	// extended from locality 4
+	TPMPTPCRExtendL4 TPMPTPCR = 0x00000009
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset
+	// by TPM2_PCR_Reset() from locality 4
+	TPMPTPCRResetL4 TPMPTPCR = 0x0000000A
+	// a SET bit in the TPMS_PCR_SELECT indicates that modifications to this
+	// PCR (reset or Extend) will not increment the pcrUpdateCounter
+	TPMPTPCRNoIncrement TPMPTPCR = 0x00000011
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a
+	// D-RTM event
+	TPMPTPCRDRTMRest TPMPTPCR = 0x00000012
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled
+	// by policy
+	TPMPTPCRPolicy TPMPTPCR = 0x00000013
+	// a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled
+	// by an authorization value
+	TPMPTPCRAuth TPMPTPCR = 0x00000014
 )
 
-// StartupType instructs the TPM on how to handle its state during Shutdown or
-// Startup.
-type StartupType uint16
+// TPMHT represents a TPM_HT.
+// See definition in Part 2: Structures, section 7.2.
+type TPMHT uint8
 
-// Startup types
+// TPMHT values come from Part 2: Structures, section 7.2.
 const (
-	StartupClear StartupType = iota
-	StartupState
+	TPMHTPCR           TPMHT = 0x00
+	TPMHTNVIndex       TPMHT = 0x01
+	TPMHTHMACSession   TPMHT = 0x02
+	TPMHTPolicySession TPMHT = 0x03
+	TPMHTPermanent     TPMHT = 0x40
+	TPMHTTransient     TPMHT = 0x80
+	TPMHTPersistent    TPMHT = 0x81
+	TPMHTAC            TPMHT = 0x90
 )
 
-// EllipticCurve identifies specific EC curves.
-type EllipticCurve uint16
+// TPMHandle represents a TPM_HANDLE.
+// See definition in Part 2: Structures, section 7.1.
+type TPMHandle uint32
 
-// ECC curves supported by TPM 2.0 spec.
+// TPMHandle values come from Part 2: Structures, section 7.4.
 const (
-	CurveNISTP192 = EllipticCurve(iota + 1)
-	CurveNISTP224
-	CurveNISTP256
-	CurveNISTP384
-	CurveNISTP521
-
-	CurveBNP256 = EllipticCurve(iota + 10)
-	CurveBNP638
-
-	CurveSM2P256 = EllipticCurve(0x0020)
+	TPMRHOwner       TPMHandle = 0x40000001
+	TPMRHNull        TPMHandle = 0x40000007
+	TPMRSPW          TPMHandle = 0x40000009
+	TPMRHLockout     TPMHandle = 0x4000000A
+	TPMRHEndorsement TPMHandle = 0x4000000B
+	TPMRHPlatform    TPMHandle = 0x4000000C
+	TPMRHPlatformNV  TPMHandle = 0x4000000D
 )
 
-var toGoCurve = map[EllipticCurve]elliptic.Curve{
-	CurveNISTP224: elliptic.P224(),
-	CurveNISTP256: elliptic.P256(),
-	CurveNISTP384: elliptic.P384(),
-	CurveNISTP521: elliptic.P521(),
-}
+// TPMNT represents a TPM_NT.
+// See definition in Part 2: Structures, section 13.4.
+type TPMNT uint8
 
-// Supported TPM operations.
+// TPMNT values come from Part 2: Structures, section 13.2.
 const (
-	CmdNVUndefineSpaceSpecial     tpmutil.Command = 0x0000011F
-	CmdEvictControl               tpmutil.Command = 0x00000120
-	CmdUndefineSpace              tpmutil.Command = 0x00000122
-	CmdClear                      tpmutil.Command = 0x00000126
-	CmdHierarchyChangeAuth        tpmutil.Command = 0x00000129
-	CmdDefineSpace                tpmutil.Command = 0x0000012A
-	CmdCreatePrimary              tpmutil.Command = 0x00000131
-	CmdIncrementNVCounter         tpmutil.Command = 0x00000134
-	CmdWriteNV                    tpmutil.Command = 0x00000137
-	CmdWriteLockNV                tpmutil.Command = 0x00000138
-	CmdDictionaryAttackLockReset  tpmutil.Command = 0x00000139
-	CmdDictionaryAttackParameters tpmutil.Command = 0x0000013A
-	CmdPCREvent                   tpmutil.Command = 0x0000013C
-	CmdPCRReset                   tpmutil.Command = 0x0000013D
-	CmdSequenceComplete           tpmutil.Command = 0x0000013E
-	CmdStartup                    tpmutil.Command = 0x00000144
-	CmdShutdown                   tpmutil.Command = 0x00000145
-	CmdActivateCredential         tpmutil.Command = 0x00000147
-	CmdCertify                    tpmutil.Command = 0x00000148
-	CmdCertifyCreation            tpmutil.Command = 0x0000014A
-	CmdReadNV                     tpmutil.Command = 0x0000014E
-	CmdReadLockNV                 tpmutil.Command = 0x0000014F
-	CmdPolicySecret               tpmutil.Command = 0x00000151
-	CmdCreate                     tpmutil.Command = 0x00000153
-	CmdECDHZGen                   tpmutil.Command = 0x00000154
-	CmdImport                     tpmutil.Command = 0x00000156
-	CmdLoad                       tpmutil.Command = 0x00000157
-	CmdQuote                      tpmutil.Command = 0x00000158
-	CmdRSADecrypt                 tpmutil.Command = 0x00000159
-	CmdSequenceUpdate             tpmutil.Command = 0x0000015C
-	CmdSign                       tpmutil.Command = 0x0000015D
-	CmdUnseal                     tpmutil.Command = 0x0000015E
-	CmdPolicySigned               tpmutil.Command = 0x00000160
-	CmdContextLoad                tpmutil.Command = 0x00000161
-	CmdContextSave                tpmutil.Command = 0x00000162
-	CmdECDHKeyGen                 tpmutil.Command = 0x00000163
-	CmdEncryptDecrypt             tpmutil.Command = 0x00000164
-	CmdFlushContext               tpmutil.Command = 0x00000165
-	CmdLoadExternal               tpmutil.Command = 0x00000167
-	CmdMakeCredential             tpmutil.Command = 0x00000168
-	CmdReadPublicNV               tpmutil.Command = 0x00000169
-	CmdPolicyCommandCode          tpmutil.Command = 0x0000016C
-	CmdPolicyOr                   tpmutil.Command = 0x00000171
-	CmdReadPublic                 tpmutil.Command = 0x00000173
-	CmdRSAEncrypt                 tpmutil.Command = 0x00000174
-	CmdStartAuthSession           tpmutil.Command = 0x00000176
-	CmdGetCapability              tpmutil.Command = 0x0000017A
-	CmdGetRandom                  tpmutil.Command = 0x0000017B
-	CmdHash                       tpmutil.Command = 0x0000017D
-	CmdPCRRead                    tpmutil.Command = 0x0000017E
-	CmdPolicyPCR                  tpmutil.Command = 0x0000017F
-	CmdReadClock                  tpmutil.Command = 0x00000181
-	CmdPCRExtend                  tpmutil.Command = 0x00000182
-	CmdEventSequenceComplete      tpmutil.Command = 0x00000185
-	CmdHashSequenceStart          tpmutil.Command = 0x00000186
-	CmdPolicyGetDigest            tpmutil.Command = 0x00000189
-	CmdPolicyPassword             tpmutil.Command = 0x0000018C
-	CmdEncryptDecrypt2            tpmutil.Command = 0x00000193
+	// contains data that is opaque to the TPM that can only be modified
+	// using TPM2_NV_Write().
+	TPMNTOrdinary TPMNT = 0x0
+	// contains an 8-octet value that is to be used as a counter and can
+	// only be modified with TPM2_NV_Increment()
+	TPMNTCounter TPMNT = 0x1
+	// contains an 8-octet value to be used as a bit field and can only be
+	// modified with TPM2_NV_SetBits().
+	TPMNTBits TPMNT = 0x2
+	// contains a digest-sized value used like a PCR. The Index can only be
+	// modified using TPM2_NV_Extend(). The extend will use the nameAlg of
+	// the Index.
+	TPMNTExtend TPMNT = 0x4
+	// contains pinCount that increments on a PIN authorization failure and
+	// a pinLimit
+	TPMNTPinFail TPMNT = 0x8
+	// contains pinCount that increments on a PIN authorization success and
+	// a pinLimit
+	TPMNTPinPass TPMNT = 0x9
 )
-
-// Regular TPM 2.0 devices use 24-bit mask (3 bytes) for PCR selection.
-const sizeOfPCRSelect = 3
-
-const defaultRSAExponent = 1<<16 + 1
-
-// NVAttr is a bitmask used in Attributes field of NV indexes. Individual
-// flags should be OR-ed to form a full mask.
-type NVAttr uint32
-
-// NV Attributes
-const (
-	AttrPPWrite        NVAttr = 0x00000001
-	AttrOwnerWrite     NVAttr = 0x00000002
-	AttrAuthWrite      NVAttr = 0x00000004
-	AttrPolicyWrite    NVAttr = 0x00000008
-	AttrPolicyDelete   NVAttr = 0x00000400
-	AttrWriteLocked    NVAttr = 0x00000800
-	AttrWriteAll       NVAttr = 0x00001000
-	AttrWriteDefine    NVAttr = 0x00002000
-	AttrWriteSTClear   NVAttr = 0x00004000
-	AttrGlobalLock     NVAttr = 0x00008000
-	AttrPPRead         NVAttr = 0x00010000
-	AttrOwnerRead      NVAttr = 0x00020000
-	AttrAuthRead       NVAttr = 0x00040000
-	AttrPolicyRead     NVAttr = 0x00080000
-	AttrNoDA           NVAttr = 0x02000000
-	AttrOrderly        NVAttr = 0x04000000
-	AttrClearSTClear   NVAttr = 0x08000000
-	AttrReadLocked     NVAttr = 0x10000000
-	AttrWritten        NVAttr = 0x20000000
-	AttrPlatformCreate NVAttr = 0x40000000
-	AttrReadSTClear    NVAttr = 0x80000000
-)
-
-var permMap = map[NVAttr]string{
-	AttrPPWrite:        "PPWrite",
-	AttrOwnerWrite:     "OwnerWrite",
-	AttrAuthWrite:      "AuthWrite",
-	AttrPolicyWrite:    "PolicyWrite",
-	AttrPolicyDelete:   "PolicyDelete",
-	AttrWriteLocked:    "WriteLocked",
-	AttrWriteAll:       "WriteAll",
-	AttrWriteDefine:    "WriteDefine",
-	AttrWriteSTClear:   "WriteSTClear",
-	AttrGlobalLock:     "GlobalLock",
-	AttrPPRead:         "PPRead",
-	AttrOwnerRead:      "OwnerRead",
-	AttrAuthRead:       "AuthRead",
-	AttrPolicyRead:     "PolicyRead",
-	AttrNoDA:           "No Do",
-	AttrOrderly:        "Oderly",
-	AttrClearSTClear:   "ClearSTClear",
-	AttrReadLocked:     "ReadLocked",
-	AttrWritten:        "Writte",
-	AttrPlatformCreate: "PlatformCreate",
-	AttrReadSTClear:    "ReadSTClear",
-}
-
-// String returns a textual representation of the set of NVAttr
-func (p NVAttr) String() string {
-	var retString strings.Builder
-	for iterator, item := range permMap {
-		if (p & iterator) != 0 {
-			retString.WriteString(item + " + ")
-		}
-	}
-	if retString.String() == "" {
-		return "Permission/s not found"
-	}
-	return strings.TrimSuffix(retString.String(), " + ")
-
-}
