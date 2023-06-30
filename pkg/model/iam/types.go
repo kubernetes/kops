@@ -43,6 +43,7 @@ type IAMModelContext struct {
 	// AWSPartition defines the partition of the AWS account, typically "aws", "aws-cn", or "aws-us-gov"
 	AWSPartition string
 
+	// Cluster holds the cluster we are working with.
 	Cluster *kops.Cluster
 }
 
