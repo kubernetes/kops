@@ -390,13 +390,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		config.BackupInterval = fi.PtrTo(etcdCluster.Manager.BackupInterval.Duration.String())
 	}
 
-	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupRetentionDays != nil {
-		etcdCluster.Manager.Env = append(etcdCluster.Manager.Env, kops.EnvVar{
-			Name:  "ETCD_MANAGER_DAILY_BACKUPS_RETENTION",
-			Value: strconv.FormatUint(uint64(fi.ValueOf(etcdCluster.Manager.BackupRetentionDays)), 10) + "d",
-		})
-	}
-
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
 		config.DiscoveryPollInterval = fi.PtrTo(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
 	}
@@ -538,7 +531,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	container.Env = envMap.ToEnvVars()
 
-	if etcdCluster.Manager != nil && len(etcdCluster.Manager.Env) > 0 {
+	if etcdCluster.Manager != nil {
+		if etcdCluster.Manager.BackupRetentionDays != nil {
+			envVar := v1.EnvVar{
+				Name:  "ETCD_MANAGER_DAILY_BACKUPS_RETENTION",
+				Value: strconv.FormatUint(uint64(fi.ValueOf(etcdCluster.Manager.BackupRetentionDays)), 10) + "d",
+			}
+
+			container.Env = append(container.Env, envVar)
+		}
+
 		for _, envVar := range etcdCluster.Manager.Env {
 			klog.V(2).Infof("overloading ENV var in manifest %s with %s=%s", bundle, envVar.Name, envVar.Value)
 			configOverwrite := v1.EnvVar{
