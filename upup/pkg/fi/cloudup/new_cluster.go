@@ -1344,13 +1344,7 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
 	klog.Infof("Cloud Provider ID: %q", cluster.Spec.GetCloudProvider())
-	if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
-		// Do nothing to disable the use of loadbalancer for the k8s API server.
-		// TODO(kenji): Remove this condition once we support the loadbalancer
-		// in pkg/model/azuremodel/api_loadbalancer.go.
-		cluster.Spec.API.LoadBalancer = nil
-		return nil
-	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
+	if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
 		switch cluster.Spec.Networking.Topology.ControlPlane {
