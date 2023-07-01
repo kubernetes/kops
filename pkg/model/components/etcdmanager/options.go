@@ -77,17 +77,14 @@ type etcdVersion struct {
 }
 
 var etcdSupportedImages = []etcdVersion{
-	{Version: "3.2.24", Image: "registry.k8s.io/etcd:3.2.24-1"},
-	{Version: "3.3.10", Image: "registry.k8s.io/etcd:3.3.10-0"},
-	{Version: "3.3.17", Image: "registry.k8s.io/etcd:3.3.17-0"},
-	{Version: "3.4.3", Image: "registry.k8s.io/etcd:3.4.3-0"},
+	{Version: "3.4.3", SymlinkToVersion: "3.4.13"},
 	{Version: "3.4.13", Image: "registry.k8s.io/etcd:3.4.13-0"},
-	{Version: "3.5.0", Image: "registry.k8s.io/etcd:3.5.0-0"},
-	{Version: "3.5.1", Image: "registry.k8s.io/etcd:3.5.1-0"},
-	{Version: "3.5.3", Image: "registry.k8s.io/etcd:3.5.3-0"},
-	{Version: "3.5.4", Image: "registry.k8s.io/etcd:3.5.4-0"},
-	{Version: "3.5.6", Image: "registry.k8s.io/etcd:3.5.6-0"},
-	{Version: "3.5.7", Image: "registry.k8s.io/etcd:3.5.7-0"},
+	{Version: "3.5.0", SymlinkToVersion: "3.5.9"},
+	{Version: "3.5.1", SymlinkToVersion: "3.5.9"},
+	{Version: "3.5.3", SymlinkToVersion: "3.5.9"},
+	{Version: "3.5.4", SymlinkToVersion: "3.5.9"},
+	{Version: "3.5.6", SymlinkToVersion: "3.5.9"},
+	{Version: "3.5.7", SymlinkToVersion: "3.5.9"},
 	{Version: "3.5.9", Image: "registry.k8s.io/etcd:3.5.9-0"},
 }
 
