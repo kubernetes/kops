@@ -17,8 +17,12 @@ limitations under the License.
 package azuremodel
 
 import (
+	"fmt"
+
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
+	"k8s.io/utils/net"
 )
 
 // NetworkModelBuilder configures a Virtual Network and subnets.
@@ -41,14 +45,134 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(networkTask)
 
+	nsgTask := &azuretasks.NetworkSecurityGroup{
+		Name:          fi.PtrTo(b.NameForVirtualNetwork()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          map[string]*string{},
+	}
+	var sshAccessIPv4, sshAccessIPv6 []string
+	for _, cidr := range b.Cluster.Spec.SSHAccess {
+		switch net.IPFamilyOfCIDRString(cidr) {
+		case net.IPv4:
+			sshAccessIPv4 = append(sshAccessIPv4, cidr)
+		case net.IPv6:
+			sshAccessIPv6 = append(sshAccessIPv6, cidr)
+		default:
+			return fmt.Errorf("unknown IP family for CIDR: %q", cidr)
+		}
+	}
+	if len(sshAccessIPv4) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowSSH"),
+			Priority:                 fi.PtrTo[int32](100),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &sshAccessIPv4,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("22"),
+		})
+	}
+	if len(sshAccessIPv6) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowSSH_v6"),
+			Priority:                 fi.PtrTo[int32](101),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &sshAccessIPv6,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("22"),
+		})
+	}
+	var k8sAccessIPv4, k8sAccessIPv6 []string
+	for _, cidr := range b.Cluster.Spec.API.Access {
+		switch net.IPFamilyOfCIDRString(cidr) {
+		case net.IPv4:
+			k8sAccessIPv4 = append(k8sAccessIPv4, cidr)
+		case net.IPv6:
+			k8sAccessIPv6 = append(k8sAccessIPv6, cidr)
+		default:
+			return fmt.Errorf("unknown IP family for CIDR: %q", cidr)
+		}
+	}
+	if len(k8sAccessIPv4) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowKubernetesAPI"),
+			Priority:                 fi.PtrTo[int32](200),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &k8sAccessIPv4,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("443"),
+		})
+	}
+	if len(k8sAccessIPv6) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowKubernetesAPI_v6"),
+			Priority:                 fi.PtrTo[int32](201),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &k8sAccessIPv6,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("443"),
+		})
+	}
+	var nodePortAccessIPv4, nodePortAccessIPv6 []string
+	for _, cidr := range b.Cluster.Spec.NodePortAccess {
+		switch net.IPFamilyOfCIDRString(cidr) {
+		case net.IPv4:
+			nodePortAccessIPv4 = append(nodePortAccessIPv4, cidr)
+		case net.IPv6:
+			nodePortAccessIPv6 = append(nodePortAccessIPv6, cidr)
+		default:
+			return fmt.Errorf("unknown IP family for CIDR: %q", cidr)
+		}
+	}
+	if len(nodePortAccessIPv4) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowNodePort"),
+			Priority:                 fi.PtrTo[int32](300),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &nodePortAccessIPv4,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("443"),
+		})
+	}
+	if len(nodePortAccessIPv6) > 0 {
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowNodePort_v6"),
+			Priority:                 fi.PtrTo[int32](301),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefixes:    &nodePortAccessIPv6,
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo("443"),
+		})
+	}
+	c.AddTask(nsgTask)
+
 	for _, subnetSpec := range b.Cluster.Spec.Networking.Subnets {
 		subnetTask := &azuretasks.Subnet{
-			Name:           fi.PtrTo(subnetSpec.Name),
-			Lifecycle:      b.Lifecycle,
-			ResourceGroup:  b.LinkToResourceGroup(),
-			VirtualNetwork: b.LinkToVirtualNetwork(),
-			CIDR:           fi.PtrTo(subnetSpec.CIDR),
-			Shared:         fi.PtrTo(b.Cluster.SharedVPC()),
+			Name:                 fi.PtrTo(subnetSpec.Name),
+			Lifecycle:            b.Lifecycle,
+			ResourceGroup:        b.LinkToResourceGroup(),
+			VirtualNetwork:       b.LinkToVirtualNetwork(),
+			NetworkSecurityGroup: nsgTask,
+			CIDR:                 fi.PtrTo(subnetSpec.CIDR),
+			Shared:               fi.PtrTo(b.Cluster.SharedVPC()),
 		}
 		c.AddTask(subnetTask)
 	}
