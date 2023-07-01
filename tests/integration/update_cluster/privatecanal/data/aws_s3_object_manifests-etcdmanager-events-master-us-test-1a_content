@@ -70,6 +70,18 @@ spec:
   - args:
     - /usr/local/bin/etcd
     - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.3.10
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.3.10-0
+    name: init-etcd-3-3-10
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
     - /opt/etcd-v3.3.17
     command:
     - /opt/bin/kops-utils-cp
@@ -87,6 +99,78 @@ spec:
     - /opt/bin/kops-utils-cp
     image: registry.k8s.io/etcd:3.4.13-0
     name: init-etcd-3-4-13
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.4.3
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.4.3-0
+    name: init-etcd-3-4-3
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.0
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.0-0
+    name: init-etcd-3-5-0
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.1
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.1-0
+    name: init-etcd-3-5-1
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.3
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.3-0
+    name: init-etcd-3-5-3
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.4
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.4-0
+    name: init-etcd-3-5-4
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /opt/etcd-v3.5.6
+    command:
+    - /opt/bin/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.6-0
+    name: init-etcd-3-5-6
     resources: {}
     volumeMounts:
     - mountPath: /opt
