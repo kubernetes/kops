@@ -1248,7 +1248,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		{
 			id := "k8s-1.19"
 			location := key + "/" + id + ".yaml"
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.PtrTo(key),
 				Manifest: fi.PtrTo(location),
 				Selector: map[string]string{"k8s-addon": key},
@@ -1257,6 +1257,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
 			}
+			addon.BuildPrune = true
 		}
 	}
 

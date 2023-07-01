@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
+    controller-gen.kubebuilder.io/version: v0.11.3
   creationTimestamp: null
   name: provisioners.karpenter.sh
 spec:
@@ -42,6 +42,11 @@ spec:
               Node properties are determined from a combination of provisioner and
               pod scheduling constraints.
             properties:
+              annotations:
+                additionalProperties:
+                  type: string
+                description: Annotations are applied to every node.
+                type: object
               consolidation:
                 description: Consolidation are the consolidation parameters
                 properties:
@@ -63,6 +68,10 @@ spec:
                     description: ContainerRuntime is the container runtime to be used
                       with your worker nodes.
                     type: string
+                  cpuCFSQuota:
+                    description: CPUCFSQuota enables CPU CFS quota enforcement for
+                      containers that specify CPU limits.
+                    type: boolean
                   evictionHard:
                     additionalProperties:
                       type: string
@@ -87,6 +96,27 @@ spec:
                     description: EvictionSoftGracePeriod is the map of signal names
                       to quantities that define grace periods for each eviction signal
                     type: object
+                  imageGCHighThresholdPercent:
+                    description: ImageGCHighThresholdPercent is the percent of disk
+                      usage after which image garbage collection is always run. The
+                      percent is calculated by dividing this field value by 100, so
+                      this field must be between 0 and 100, inclusive. When specified,
+                      the value must be greater than ImageGCLowThresholdPercent.
+                    format: int32
+                    maximum: 100
+                    minimum: 0
+                    type: integer
+                  imageGCLowThresholdPercent:
+                    description: ImageGCLowThresholdPercent is the percent of disk
+                      usage before which image garbage collection is never run. Lowest
+                      disk usage to garbage collect to. The percent is calculated
+                      by dividing this field value by 100, so the field value must
+                      be between 0 and 100, inclusive. When specified, the value must
+                      be less than imageGCHighThresholdPercent
+                    format: int32
+                    maximum: 100
+                    minimum: 0
+                    type: integer
                   kubeReserved:
                     additionalProperties:
                       anyOf:
@@ -159,6 +189,8 @@ spec:
                   name:
                     description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
                     type: string
+                required:
+                - name
                 type: object
               requirements:
                 description: Requirements are layered with Labels and applied to every
@@ -341,18 +373,13 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
+
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
+    controller-gen.kubebuilder.io/version: v0.11.3
   creationTimestamp: null
   name: awsnodetemplates.karpenter.k8s.aws
 spec:
@@ -475,6 +502,10 @@ spec:
               context:
                 description: Context is a Reserved field in EC2 APIs https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet.html
                 type: string
+              detailedMonitoring:
+                description: DetailedMonitoring controls if detailed monitoring is
+                  enabled for instances that are launched
+                type: boolean
               instanceProfile:
                 description: InstanceProfile is the AWS identity that instances use.
                 type: string
@@ -562,17 +593,43 @@ spec:
                   being provisioned with the correct configuration.
                 type: string
             type: object
+          status:
+            description: AWSNodeTemplateStatus contains the resolved state of the
+              AWSNodeTemplate
+            properties:
+              securityGroups:
+                description: SecurityGroups contains the current Security Groups values
+                  that are available to the cluster under the SecurityGroups selectors.
+                items:
+                  description: SecurityGroupStatus contains resolved SecurityGroup
+                    selector values utilized for node launch
+                  properties:
+                    id:
+                      description: Id of the security group
+                      type: string
+                  type: object
+                type: array
+              subnets:
+                description: Subnets contains the current Subnet values that are available
+                  to the cluster under the subnet selectors.
+                items:
+                  description: SubnetStatus contains resolved Subnet selector values
+                    utilized for node launch
+                  properties:
+                    id:
+                      description: Id of the subnet
+                      type: string
+                    zone:
+                      description: The associated availability zone
+                      type: string
+                  type: object
+                type: array
+            type: object
         type: object
     served: true
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 ---
 # Source: karpenter/templates/serviceaccount.yaml
 apiVersion: v1
@@ -581,19 +638,19 @@ metadata:
   name: karpenter
   namespace: kube-system
 ---
-# Source: karpenter/templates/webhook/deployment.yaml
+# Source: karpenter/templates/secret-webhook-cert.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: karpenter-webhook-cert
+  name: karpenter-cert
   namespace: kube-system
-data: {} # Injected by karpenter-webhook
+data: {} # Injected by karpenter
 ---
-# Source: karpenter/templates/100-config-logging.yaml
+# Source: karpenter/templates/configmap-logging.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: karpenter-config-logging
+  name: config-logging
   namespace: kube-system
   labels:
     app.kubernetes.io/part-of: karpenter
@@ -602,7 +659,7 @@ data:
   zap-logger-config: |
     {
       "level": "debug",
-      "development": true,
+      "development": false,
       "disableStacktrace": true,
       "disableCaller": true,
       "sampling": {
@@ -611,7 +668,7 @@ data:
       },
       "outputPaths": ["stdout"],
       "errorOutputPaths": ["stderr"],
-      "encoding": "console",
+      "encoding": "json",
       "encoderConfig": {
         "timeKey": "time",
         "levelKey": "level",
@@ -623,9 +680,7 @@ data:
         "timeEncoder": "iso8601"
       }
     }
-  # Log level overrides
-  loglevel.controller: debug
-  loglevel.webhook: debug
+  loglevel.webhook: "debug"
 ---
 # Source: karpenter/templates/configmap.yaml
 apiVersion: v1
@@ -633,261 +688,313 @@ kind: ConfigMap
 metadata:
   name: karpenter-global-settings
   namespace: kube-system
-  labels:
-    app.kubernetes.io/part-of: karpenter
-data:
-  "batchMaxDuration": "10s"
-  "batchIdleDuration": "1s"
+data:  
+    "aws.clusterEndpoint": "https://{{ APIInternalName }}"
+    "aws.clusterName": "{{ ClusterName }}"
+    "aws.defaultInstanceProfile": ""
+    {{ if not .Networking.AmazonVPC }}
+    "aws.enableENILimitedPodDensity": "true"
+    {{ else }}
+    "aws.enableENILimitedPodDensity": "false"
+    {{ end }}
+    "aws.enablePodENI": "false"
+    "aws.interruptionQueueName": ""
+    "aws.isolatedVPC": "false"
+    {{ if UsesInstanceIDForNodeName }}
+    "aws.nodeNameConvention": "resource-name"
+    {{ else }}
+    "aws.nodeNameConvention": "ip-name"
+    {{ end }}
+    "aws.vmMemoryOverheadPercent": "0.075"
+    "batchIdleDuration": "1s"
+    "batchMaxDuration": "10s"
 ---
-# Source: karpenter/templates/controller/rbac.yaml
+
+# Source: karpenter/templates/aggregate-clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: karpenter-controller
+  name: karpenter-admin
 rules:
-# Read
-- apiGroups: ["karpenter.sh"]
-  resources: ["provisioners", "provisioners/status"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["karpenter.k8s.aws"]
-  resources: ["awsnodetemplates"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["pods", "nodes", "namespaces", "persistentvolumes", "persistentvolumeclaims", "replicationcontrollers"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses", "csinodes"]
-  verbs: ["get", "watch", "list"]
-- apiGroups: ["apps"]
-  resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
-  verbs: ["list", "watch"]
-- apiGroups: [ "policy" ]
-  resources: [ "poddisruptionbudgets" ]
-  verbs: [ "get", "list", "watch" ]
-# Write
-- apiGroups: ["karpenter.sh"]
-  resources: ["provisioners/status"]
-  verbs: ["create", "delete", "patch"]
-- apiGroups: [""]
-  resources: ["events"]
-  verbs: ["create", "patch"]
-- apiGroups: [""]
-  resources: ["nodes"]
-  verbs: ["create", "patch", "delete"]
-- apiGroups: [""]
-  resources: ["pods/eviction"]
-  verbs: ["create"]
+  - apiGroups: ["karpenter.sh"]
+    resources: ["provisioners", "provisioners/status"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups: ["karpenter.k8s.aws"]
+    resources: ["awsnodetemplates"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+
 ---
-# Source: karpenter/templates/webhook/rbac.yaml
+# Source: karpenter/templates/clusterrole-core.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: karpenter-webhook
+  name: karpenter-core
 rules:
-- apiGroups: ["admissionregistration.k8s.io"]
-  resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
-  verbs: ["get", "watch", "list"]
-- apiGroups: ["admissionregistration.k8s.io"]
-  resources: ["validatingwebhookconfigurations"]
-  verbs: ["update"]
-  resourceNames: ["validation.webhook.provisioners.karpenter.sh", "validation.webhook.config.karpenter.sh"]
-- apiGroups: ["admissionregistration.k8s.io"]
-  resources: ["mutatingwebhookconfigurations"]
-  verbs: ["update"]
-  resourceNames: ["defaulting.webhook.provisioners.karpenter.sh"]
+  # Read
+  - apiGroups: ["karpenter.sh"]
+    resources: ["provisioners", "provisioners/status", "machines", "machines/status"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods", "nodes", "persistentvolumes", "persistentvolumeclaims", "replicationcontrollers", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["apps"]
+    resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
+    verbs: ["list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: [ "policy" ]
+    resources: [ "poddisruptionbudgets" ]
+    verbs: [ "get", "list", "watch" ]
+  # Write
+  - apiGroups: ["karpenter.sh"]
+    resources: ["provisioners/status", "machines", "machines/status"]
+    verbs: ["create", "delete", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["create", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    verbs: ["update"]
+    resourceNames: ["validation.webhook.karpenter.sh", "validation.webhook.config.karpenter.sh"]
+
 ---
-# Source: karpenter/templates/controller/rbac.yaml
+# Source: karpenter/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: karpenter
+rules:
+  # Read
+  - apiGroups: ["karpenter.k8s.aws"]
+    resources: ["awsnodetemplates"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    verbs: ["update"]
+    resourceNames: ["validation.webhook.karpenter.k8s.aws"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["update"]
+    resourceNames: ["defaulting.webhook.karpenter.k8s.aws"]
+  # Write
+  - apiGroups: ["karpenter.k8s.aws"]
+    resources: ["awsnodetemplates/status"]
+    verbs: ["patch", "update"]
+
+---
+
+# Source: karpenter/templates/clusterrole-core.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: karpenter-controller
+  name: karpenter-core
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: karpenter-controller
+  name: karpenter-core
 subjects:
-- kind: ServiceAccount
-  name: karpenter
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: karpenter
+    namespace: kube-system
 ---
-# Source: karpenter/templates/webhook/rbac.yaml
+# Source: karpenter/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: karpenter-webhook
+  name: karpenter
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: karpenter-webhook
+  name: karpenter
 subjects:
-- kind: ServiceAccount
+  - kind: ServiceAccount
+    name: karpenter
+    namespace: kube-system
+
+---
+
+# Source: karpenter/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: karpenter
   namespace: kube-system
+rules:
+  # Read
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps", "namespaces", "secrets"]
+    verbs: ["get", "list", "watch"]
+  # Write
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["update"]
+    resourceNames: ["karpenter-cert"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["update", "patch", "delete"]
+    resourceNames:
+      - karpenter-global-settings
+      - config-logging
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["patch", "update"]
+    resourceNames:
+      - "karpenter-leader-election"
+      - "webhook.configmapwebhook.00-of-01"
+      - "webhook.defaultingwebhook.00-of-01"
+      - "webhook.validationwebhook.00-of-01"
+      - "webhook.webhookcertificates.00-of-01"
+  # Cannot specify resourceNames on create
+  # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
 ---
-# Source: karpenter/templates/controller/rbac.yaml
+# Source: karpenter/templates/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: karpenter-controller
+  name: karpenter-dns
   namespace: kube-system
 rules:
-# Read
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["get", "watch"]
-- apiGroups: [""]
-  resources: ["configmaps", "namespaces", "secrets"]
-  verbs: ["get", "list", "watch"]
-# Write
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["update"]
-  resourceNames: ["karpenter-webhook-cert"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["update", "patch", "delete"]
-  resourceNames:
-    - karpenter-global-settings
-    - karpenter-config-logging
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["patch", "update"]
-  resourceNames:
-    - "karpenter-leader-election"
-    - "webhook.configmapwebhook.00-of-01"
-    - "webhook.defaultingwebhook.00-of-01"
-    - "webhook.validationwebhook.00-of-01"
-    - "webhook.webhookcertificates.00-of-01"
-# Cannot specify resourceNames on create
-# https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["create"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["create"]
+  # Read
+  - apiGroups: [""]
+    resources: ["services"]
+    resourceNames: ["kube-dns"]
+    verbs: ["get"]
+
 ---
-# Source: karpenter/templates/webhook/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: karpenter-webhook
-  namespace: kube-system
-rules:
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list", "watch", "update"]
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["get", "watch", "create", "update"]
----
-# Source: karpenter/templates/controller/rbac.yaml
+
+# Source: karpenter/templates/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: karpenter-controller
+  name: karpenter
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: karpenter-controller
-subjects:
-- kind: ServiceAccount
   name: karpenter
-  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: karpenter
+    namespace: kube-system
 ---
-# Source: karpenter/templates/webhook/rbac.yaml
+# Source: karpenter/templates/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: karpenter-webhook
+  name: karpenter-dns
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: karpenter-webhook
+  name: karpenter-dns
 subjects:
-- kind: ServiceAccount
-  name: karpenter
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: karpenter
+    namespace: kube-system
+
 ---
-# Source: karpenter/templates/controller/deployment.yaml
+# Source: karpenter/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: karpenter-metrics
+  name: karpenter
   namespace: kube-system
 spec:
+  type: ClusterIP
   ports:
-    - port: 8080
+    - name: http-metrics
+      port: 8080
       targetPort: http-metrics
-  selector:
-    karpenter: controller
----
-# Source: karpenter/templates/webhook/deployment.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: karpenter-webhook
-  namespace: kube-system
-spec:
-  ports:
-    - port: 443
+      protocol: TCP
+    - name: https-webhook
+      port: 443
       targetPort: https-webhook
+      protocol: TCP
   selector:
     karpenter: webhook
 ---
-# Source: karpenter/templates/controller/deployment.yaml
+# Source: karpenter/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: karpenter-controller
+  name: karpenter
   namespace: kube-system
 spec:
   replicas: {{ ControlPlaneControllerReplicas false }}
+  revisionHistoryLimit: 10
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxUnavailable: 1
   selector:
     matchLabels:
-      karpenter: controller
+      karpenter: webhook
   template:
     metadata:
       labels:
-        karpenter: controller
         app.kubernetes.io/name: karpenter
+        app.kubernetes.io/instance: karpenter
+        karpenter: webhook
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
-            - matchExpressions:
-              - key: node-role.kubernetes.io/master
-                operator: Exists
-      priorityClassName: system-cluster-critical
       serviceAccountName: karpenter
+      securityContext:
+        fsGroup: 1000
+      priorityClassName: "system-cluster-critical"
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.16.3
+          image: public.ecr.aws/karpenter/controller:v0.27.5
           imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              memory: 1Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
+          env:
+            - name: KUBERNETES_MIN_VERSION
+              value: "1.19.0-0"
+            - name: KARPENTER_SERVICE
+              value: karpenter
+            - name: WEBHOOK_PORT
+              value: "8443"
+            - name: METRICS_PORT
+              value: "8080"
+            - name: HEALTH_PROBE_PORT
+              value: "8081"
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MEMORY_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: controller
+                  divisor: "0"
+                  resource: limits.memory
+            - name: AWS_REGION
+              value: {{ Region }}
           ports:
             - name: http-metrics
               containerPort: 8080
               protocol: TCP
             - name: http
               containerPort: 8081
+              protocol: TCP
+            - name: https-webhook
+              containerPort: 8443
               protocol: TCP
           livenessProbe:
             initialDelaySeconds: 30
@@ -900,138 +1007,23 @@ spec:
             httpGet:
               path: /readyz
               port: http
-          env:
-            {{ if not .Networking.AmazonVPC }}
-            - name: AWS_ENI_LIMITED_POD_DENSITY
-              value: "true"
-            {{ end }}
-            {{ if UsesInstanceIDForNodeName }}
-            - name: AWS_NODE_NAME_CONVENTION
-              value: "resource-name"
-            {{ end }}
-            - name: AWS_REGION
-              value: {{ Region }}
-            - name: CLUSTER_NAME
-              value: {{ ClusterName }}
-            - name: CLUSTER_ENDPOINT
-              value: https://{{ APIInternalName }}
-            - name: CONFIG_LOGGING_NAME
-              value: "karpenter-config-logging"
-            - name: KARPENTER_SERVICE
-              value: karpenter-webhook
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: MEMORY_LIMIT
-              valueFrom:
-                resourceFieldRef:
-                  containerName: controller
-                  divisor: "0"
-                  resource: limits.memory
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+      nodeSelector: null
       affinity:
-        nodeAffinity:
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/instance
                 operator: In
                 values:
-                - linux
-              - key: karpenter.sh/provisioner-name
-                operator: DoesNotExist
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-      topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: "topology.kubernetes.io/zone"
-        whenUnsatisfiable: ScheduleAnyway
-        labelSelector:
-          matchLabels:
-            karpenter: webhook
-      - maxSkew: 1
-        topologyKey: "kubernetes.io/hostname"
-        whenUnsatisfiable: DoNotSchedule
-        labelSelector:
-          matchLabels:
-            karpenter: webhook
-      nodeSelector: null
-
----
-# Source: karpenter/templates/webhook/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: karpenter-webhook
-  namespace: kube-system
-spec:
-  replicas: {{ ControlPlaneControllerReplicas false }}
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      karpenter: webhook
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: karpenter
-        karpenter: webhook
-    spec:
-      priorityClassName: system-cluster-critical
-      serviceAccountName: karpenter
-      dnsPolicy: Default
-      containers:
-        - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.16.3
-          imagePullPolicy: IfNotPresent
-          args:
-            - -port=8443
-          resources: 
-            limits:
-              cpu: 100m
-              memory: 50Mi
-            requests:
-              cpu: 100m
-              memory: 50Mi
-          ports:
-            - name: https-webhook
-              containerPort: 8443
-              protocol: TCP
-          livenessProbe:
-            initialDelaySeconds: 30
-            httpGet:
-              scheme: HTTPS
-              port: https-webhook
-          readinessProbe:
-            httpGet:
-              scheme: HTTPS
-              port: https-webhook
-          startupProbe:
-            httpGet:
-              scheme: HTTPS
-              port: https-webhook
-            failureThreshold: 6
-          env:
-            - name: AWS_REGION
-              value: {{ Region }}
-            - name: CLUSTER_NAME
-              value: {{ ClusterName }}
-            - name: KUBERNETES_MIN_VERSION
-              value: "1.19.0-0"
-            - name: CLUSTER_ENDPOINT
-              value: https://{{ APIInternalName }}
-            - name: CONFIG_LOGGING_NAME
-              value: "karpenter-config-logging"
-            - name: KARPENTER_SERVICE
-              value: karpenter-webhook
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-      affinity:
+                - 'karpenter'
+            topologyKey: kubernetes.io/hostname
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -1059,113 +1051,140 @@ spec:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
       topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: topology.kubernetes.io/zone
-        whenUnsatisfiable: ScheduleAnyway
-        labelSelector:
-          matchLabels:
-            karpenter: webhook
-      - maxSkew: 1
-        topologyKey: "kubernetes.io/hostname"
-        whenUnsatisfiable: DoNotSchedule
-        labelSelector:
-          matchLabels:
-            karpenter: webhook
-      nodeSelector: null
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: karpenter
+              app.kubernetes.io/instance: karpenter
+              karpenter: webhook
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: karpenter
+              app.kubernetes.io/instance: karpenter
+              karpenter: webhook
 ---
-# Source: karpenter/templates/webhook/webhooks.yaml
+# Source: karpenter/templates/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: defaulting.webhook.provisioners.karpenter.sh
+  name: defaulting.webhook.karpenter.k8s.aws
 webhooks:
-- admissionReviewVersions: ["v1"]
-  clientConfig:
-    service:
-      name: karpenter-webhook
-      namespace: 'kube-system'
-  failurePolicy: Fail
-  sideEffects: None
-  name: defaulting.webhook.provisioners.karpenter.sh
-  rules:
-  - apiGroups:
-    - karpenter.k8s.aws
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - awsnodetemplates
-    - awsnodetemplates/status
-    scope: '*'
-  - apiGroups:
-    - karpenter.sh
-    apiVersions:
-    - v1alpha5
-    resources:
-    - provisioners
-    - provisioners/status
-    operations:
-    - CREATE
-    - UPDATE
+  - name: defaulting.webhook.karpenter.k8s.aws
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: karpenter
+        namespace: kube-system
+    failurePolicy: Fail
+    sideEffects: None
+    rules:
+      - apiGroups:
+          - karpenter.k8s.aws
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - awsnodetemplates
+          - awsnodetemplates/status
+        scope: '*'
+      - apiGroups:
+          - karpenter.sh
+        apiVersions:
+          - v1alpha5
+        resources:
+          - provisioners
+          - provisioners/status
+        operations:
+          - CREATE
+          - UPDATE
 ---
-# Source: karpenter/templates/webhook/webhooks.yaml
+# Source: karpenter/templates/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: validation.webhook.provisioners.karpenter.sh
+  name: validation.webhook.karpenter.k8s.aws
 webhooks:
-- admissionReviewVersions: ["v1"]
-  clientConfig:
-    service:
-      name: karpenter-webhook
-      namespace: 'kube-system'
-  failurePolicy: Fail
-  sideEffects: None
-  name: validation.webhook.provisioners.karpenter.sh
-  rules:
-  - apiGroups:
-    - karpenter.k8s.aws
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    - DELETE
-    resources:
-    - awsnodetemplates
-    - awsnodetemplates/status
-    scope: '*'
-  - apiGroups:
-    - karpenter.sh
-    apiVersions:
-    - v1alpha5
-    resources:
-    - provisioners
-    - provisioners/status
-    operations:
-    - CREATE
-    - UPDATE
-    - DELETE
+  - name: validation.webhook.karpenter.k8s.aws
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: karpenter
+        namespace: kube-system
+    failurePolicy: Fail
+    sideEffects: None
+    rules:
+      - apiGroups:
+          - karpenter.k8s.aws
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - awsnodetemplates
+          - awsnodetemplates/status
+        scope: '*'
+      - apiGroups:
+          - karpenter.sh
+        apiVersions:
+          - v1alpha5
+        resources:
+          - provisioners
+          - provisioners/status
+        operations:
+          - CREATE
+          - UPDATE
 ---
-# Source: karpenter/templates/webhook/webhooks.yaml
+# Source: karpenter/templates/webhooks-core.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.webhook.karpenter.sh
+webhooks:
+  - name: validation.webhook.karpenter.sh
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: karpenter
+        namespace: kube-system
+    failurePolicy: Fail
+    sideEffects: None
+    rules:
+      - apiGroups:
+          - karpenter.sh
+        apiVersions:
+          - v1alpha5
+        resources:
+          - provisioners
+          - provisioners/status
+        operations:
+          - CREATE
+          - UPDATE
+---
+# Source: karpenter/templates/webhooks-core.yaml
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.config.karpenter.sh
 webhooks:
-- admissionReviewVersions: ["v1"]
-  clientConfig:
-    service:
-      name: karpenter-webhook
-      namespace: 'kube-system'
-  failurePolicy: Fail
-  sideEffects: None
-  name: validation.webhook.config.karpenter.sh
-  objectSelector:
-    matchLabels:
-      app.kubernetes.io/part-of: karpenter
+  - name: validation.webhook.config.karpenter.sh
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: karpenter
+        namespace: kube-system
+    failurePolicy: Fail
+    sideEffects: None
+    objectSelector:
+      matchLabels:
+        app.kubernetes.io/part-of: karpenter
 ---
 # Source: karpenter/templates/poddisruptionbudget.yaml
 {{ if IsKubernetesGTE "1.23" }}
@@ -1176,6 +1195,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: karpenter
+  namespace: kube-system
 spec:
   maxUnavailable: 1
   selector:
@@ -1184,6 +1204,16 @@ spec:
 
 {{ range $name, $spec := GetNodeInstanceGroups }}
 {{ if eq $spec.Manager "Karpenter" }}
+---
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: {{ $name }}
+spec:
+  subnetSelector:
+    kops.k8s.io/instance-group/{{ $name }}: "*"
+    kubernetes.io/cluster/{{ ClusterName }}: "*"
+  launchTemplate: {{ $name }}.{{ ClusterName }}
 ---
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
@@ -1247,10 +1277,7 @@ spec:
     {{ $key }}: "{{ $value }}"
   {{ end }}
 {{ end }}
-  provider:
-    launchTemplate: {{ $name }}.{{ ClusterName }}
-    subnetSelector:
-      kops.k8s.io/instance-group/{{ $name }}: "*"
-      kubernetes.io/cluster/{{ ClusterName }}: "*"
+  providerRef:
+    name: {{ $name }}
 {{ end }}
 {{ end }}

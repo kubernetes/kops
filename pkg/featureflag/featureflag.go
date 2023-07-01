@@ -81,8 +81,6 @@ var (
 	UseAddonOperators = new("UseAddonOperators", Bool(false))
 	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.
 	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
-	// Karpenter enables karpenter-managed Instance Groups
-	Karpenter = new("Karpenter", Bool(false))
 	// ImageDigest remaps all manifests with image digests
 	ImageDigest = new("ImageDigest", Bool(true))
 	// Scaleway toggles the Scaleway Cloud support.

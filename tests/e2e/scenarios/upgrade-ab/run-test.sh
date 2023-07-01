@@ -78,7 +78,10 @@ else
   KOPS="${KOPS_A}"
 fi
 
-
+create_args=""
+if [[ ${KOPS_IRSA-} = true ]]; then
+  create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
+fi
 
 ${KUBETEST2} \
     --up \
@@ -86,7 +89,7 @@ ${KUBETEST2} \
     --kubernetes-version="${K8S_VERSION_A}" \
     --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
-    --create-args="--networking calico"
+    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-} ${create_args}"
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)

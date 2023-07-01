@@ -228,6 +228,10 @@ func (d *deployer) featureFlags() string {
 			return e[1]
 		}
 	}
+	// if not set by the env flag, but set in the environment, use that.
+	if e := os.Getenv("KOPS_FEATURE_FLAGS"); e != "" {
+		return e
+	}
 	return ""
 }
 
