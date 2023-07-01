@@ -206,7 +206,7 @@ spec:
     - /opt/bin
     command:
     - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-beta.2
+    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-beta.3
     name: kops-utils-cp
     resources: {}
     volumeMounts:
