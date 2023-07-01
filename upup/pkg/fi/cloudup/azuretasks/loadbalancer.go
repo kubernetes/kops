@@ -85,18 +85,23 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	feConfig := feConfigs[0]
 	subnet := feConfig.FrontendIPConfigurationPropertiesFormat.Subnet
 
-	return &LoadBalancer{
-		Name:      lb.Name,
-		Lifecycle: lb.Lifecycle,
+	actual := &LoadBalancer{
+		Name:         lb.Name,
+		Lifecycle:    lb.Lifecycle,
+		ForAPIServer: lb.ForAPIServer,
 		ResourceGroup: &ResourceGroup{
 			Name: lb.ResourceGroup.Name,
 		},
-		Subnet: &Subnet{
-			Name: subnet.Name,
-		},
 		External: to.BoolPtr(feConfig.FrontendIPConfigurationPropertiesFormat.PublicIPAddress != nil),
 		Tags:     found.Tags,
-	}, nil
+	}
+	if subnet != nil {
+		actual.Subnet = &Subnet{
+			Name: subnet.Name,
+		}
+	}
+
+	return actual, nil
 }
 
 func (lb *LoadBalancer) Normalize(c *fi.CloudupContext) error {
