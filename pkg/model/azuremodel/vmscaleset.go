@@ -41,6 +41,19 @@ var _ fi.CloudupModelBuilder = &VMScaleSetModelBuilder{}
 
 // Build is responsible for constructing the VM ScaleSet from the kops spec.
 func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
+	c.AddTask(&azuretasks.ApplicationSecurityGroup{
+		Name:          fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          map[string]*string{},
+	})
+	c.AddTask(&azuretasks.ApplicationSecurityGroup{
+		Name:          fi.PtrTo(b.NameForApplicationSecurityGroupNodes()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          map[string]*string{},
+	})
+
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 		vmss, err := b.buildVMScaleSetTask(c, name, ig)
@@ -90,6 +103,15 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		ComputerNamePrefix: fi.PtrTo(ig.Name),
 		AdminUser:          fi.PtrTo(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
 		Zones:              azNumbers,
+	}
+
+	switch ig.Spec.Role {
+	case kops.InstanceGroupRoleControlPlane:
+		t.ApplicationSecurityGroups = append(t.ApplicationSecurityGroups, b.LinkToApplicationSecurityGroupControlPlane())
+	case kops.InstanceGroupRoleNode:
+		t.ApplicationSecurityGroups = append(t.ApplicationSecurityGroups, b.LinkToApplicationSecurityGroupNodes())
+	default:
+		return nil, fmt.Errorf("unexpected instance group role for instance group: %q, %q", ig.Name, ig.Spec.Role)
 	}
 
 	var err error

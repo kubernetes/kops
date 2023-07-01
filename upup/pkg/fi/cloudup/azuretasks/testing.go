@@ -46,19 +46,20 @@ const (
 
 // MockAzureCloud is a mock implementation of AzureCloud.
 type MockAzureCloud struct {
-	Location                    string
-	ResourceGroupsClient        *MockResourceGroupsClient
-	VirtualNetworksClient       *MockVirtualNetworksClient
-	SubnetsClient               *MockSubnetsClient
-	RouteTablesClient           *MockRouteTablesClient
-	NetworkSecurityGroupsClient *MockNetworkSecurityGroupsClient
-	VMScaleSetsClient           *MockVMScaleSetsClient
-	VMScaleSetVMsClient         *MockVMScaleSetVMsClient
-	DisksClient                 *MockDisksClient
-	RoleAssignmentsClient       *MockRoleAssignmentsClient
-	NetworkInterfacesClient     *MockNetworkInterfacesClient
-	LoadBalancersClient         *MockLoadBalancersClient
-	PublicIPAddressesClient     *MockPublicIPAddressesClient
+	Location                        string
+	ResourceGroupsClient            *MockResourceGroupsClient
+	VirtualNetworksClient           *MockVirtualNetworksClient
+	SubnetsClient                   *MockSubnetsClient
+	RouteTablesClient               *MockRouteTablesClient
+	NetworkSecurityGroupsClient     *MockNetworkSecurityGroupsClient
+	ApplicationSecurityGroupsClient *MockApplicationSecurityGroupsClient
+	VMScaleSetsClient               *MockVMScaleSetsClient
+	VMScaleSetVMsClient             *MockVMScaleSetVMsClient
+	DisksClient                     *MockDisksClient
+	RoleAssignmentsClient           *MockRoleAssignmentsClient
+	NetworkInterfacesClient         *MockNetworkInterfacesClient
+	LoadBalancersClient             *MockLoadBalancersClient
+	PublicIPAddressesClient         *MockPublicIPAddressesClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -81,6 +82,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		NetworkSecurityGroupsClient: &MockNetworkSecurityGroupsClient{
 			NSGs: map[string]network.SecurityGroup{},
+		},
+		ApplicationSecurityGroupsClient: &MockApplicationSecurityGroupsClient{
+			ASGs: map[string]network.ApplicationSecurityGroup{},
 		},
 		VMScaleSetsClient: &MockVMScaleSetsClient{
 			VMSSes: map[string]compute.VirtualMachineScaleSet{},
@@ -199,9 +203,14 @@ func (c *MockAzureCloud) RouteTable() azure.RouteTablesClient {
 	return c.RouteTablesClient
 }
 
-// NetworkSecurityGroup returns the VM Scale Set client.
+// NetworkSecurityGroup returns the Network Security Group client.
 func (c *MockAzureCloud) NetworkSecurityGroup() azure.NetworkSecurityGroupsClient {
 	return c.NetworkSecurityGroupsClient
+}
+
+// ApplicationSecurityGroup returns the Application Security Group client.
+func (c *MockAzureCloud) ApplicationSecurityGroup() azure.ApplicationSecurityGroupsClient {
+	return c.ApplicationSecurityGroupsClient
 }
 
 // VMScaleSet returns the VM Scale Set client.
@@ -640,13 +649,13 @@ type MockNetworkSecurityGroupsClient struct {
 var _ azure.NetworkSecurityGroupsClient = &MockNetworkSecurityGroupsClient{}
 
 // CreateOrUpdate creates or updates a Network Security Group.
-func (c *MockNetworkSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, asgName string, parameters network.SecurityGroup) (*network.SecurityGroup, error) {
+func (c *MockNetworkSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, nsgName string, parameters network.SecurityGroup) (*network.SecurityGroup, error) {
 	// Ignore resourceGroupName for simplicity.
-	if _, ok := c.NSGs[asgName]; ok {
+	if _, ok := c.NSGs[nsgName]; ok {
 		return nil, fmt.Errorf("update not supported")
 	}
-	parameters.Name = &asgName
-	c.NSGs[asgName] = parameters
+	parameters.Name = &nsgName
+	c.NSGs[nsgName] = parameters
 	return &parameters, nil
 }
 
@@ -675,5 +684,51 @@ func (c *MockNetworkSecurityGroupsClient) Delete(ctx context.Context, resourceGr
 		return fmt.Errorf("%s does not exist", nsgName)
 	}
 	delete(c.NSGs, nsgName)
+	return nil
+}
+
+// MockApplicationSecurityGroupsClient is a mock implementation of Application Security Group client.
+type MockApplicationSecurityGroupsClient struct {
+	ASGs map[string]network.ApplicationSecurityGroup
+}
+
+var _ azure.ApplicationSecurityGroupsClient = &MockApplicationSecurityGroupsClient{}
+
+// CreateOrUpdate creates or updates a Application Security Group.
+func (c *MockApplicationSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, asgName string, parameters network.ApplicationSecurityGroup) (*network.ApplicationSecurityGroup, error) {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.ASGs[asgName]; ok {
+		return nil, fmt.Errorf("update not supported")
+	}
+	parameters.Name = &asgName
+	c.ASGs[asgName] = parameters
+	return &parameters, nil
+}
+
+// List returns a slice of Application Security Groups.
+func (c *MockApplicationSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]network.ApplicationSecurityGroup, error) {
+	var l []network.ApplicationSecurityGroup
+	for _, nsg := range c.ASGs {
+		l = append(l, nsg)
+	}
+	return l, nil
+}
+
+// Get Returns a specified Application Security Group.
+func (c *MockApplicationSecurityGroupsClient) Get(ctx context.Context, resourceGroupName string, asgName string) (*network.ApplicationSecurityGroup, error) {
+	asg, ok := c.ASGs[asgName]
+	if !ok {
+		return nil, nil
+	}
+	return &asg, nil
+}
+
+// Delete deletes a specified Application Security Group.
+func (c *MockApplicationSecurityGroupsClient) Delete(ctx context.Context, resourceGroupName, asgName string) error {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.ASGs[asgName]; !ok {
+		return fmt.Errorf("%s does not exist", asgName)
+	}
+	delete(c.ASGs, asgName)
 	return nil
 }

@@ -100,6 +100,34 @@ func ParseNetworkSecurityGroupID(s string) (*NetworkSecurityGroupID, error) {
 	}, nil
 }
 
+// ApplicationSecurityGroupID contains the resource ID/names required to construct a ApplicationSecurityGroup ID.
+type ApplicationSecurityGroupID struct {
+	SubscriptionID               string
+	ResourceGroupName            string
+	ApplicationSecurityGroupName string
+}
+
+// String returns the ApplicationSecurityGroup ID in the path format.
+func (s *ApplicationSecurityGroupID) String() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/applicationSecurityGroups/%s",
+		s.SubscriptionID,
+		s.ResourceGroupName,
+		s.ApplicationSecurityGroupName)
+}
+
+// ParseApplicationSecurityGroupID parses a given ApplicationSecurityGroup ID string and returns a ApplicationSecurityGroup ID.
+func ParseApplicationSecurityGroupID(s string) (*ApplicationSecurityGroupID, error) {
+	l := strings.Split(s, "/")
+	if len(l) != 9 {
+		return nil, fmt.Errorf("malformed format of ApplicationSecurityGroup ID: %s, %d", s, len(l))
+	}
+	return &ApplicationSecurityGroupID{
+		SubscriptionID:               l[2],
+		ResourceGroupName:            l[4],
+		ApplicationSecurityGroupName: l[8],
+	}, nil
+}
+
 // LoadBalancerID contains the resource ID/names required to construct a load balancer ID.
 type LoadBalancerID struct {
 	SubscriptionID    string
