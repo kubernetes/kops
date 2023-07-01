@@ -31,15 +31,16 @@ import (
 )
 
 const (
-	typeResourceGroup   = "ResourceGroup"
-	typeVirtualNetwork  = "VirtualNetwork"
-	typeSubnet          = "Subnet"
-	typeRouteTable      = "RouteTable"
-	typeVMScaleSet      = "VMScaleSet"
-	typeDisk            = "Disk"
-	typeRoleAssignment  = "RoleAssignment"
-	typeLoadBalancer    = "LoadBalancer"
-	typePublicIPAddress = "PublicIPAddress"
+	typeResourceGroup        = "ResourceGroup"
+	typeVirtualNetwork       = "VirtualNetwork"
+	typeNetworkSecurityGroup = "NetworkSecurityGroup"
+	typeSubnet               = "Subnet"
+	typeRouteTable           = "RouteTable"
+	typeVMScaleSet           = "VMScaleSet"
+	typeDisk                 = "Disk"
+	typeRoleAssignment       = "RoleAssignment"
+	typeLoadBalancer         = "LoadBalancer"
+	typePublicIPAddress      = "PublicIPAddress"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -85,6 +86,7 @@ func (g *resourceGetter) listAll() ([]*resources.Resource, error) {
 	fns := []func(ctx context.Context) ([]*resources.Resource, error){
 		g.listResourceGroups,
 		g.listVirtualNetworksAndSubnets,
+		g.listNetworkSecurityGroups,
 		g.listRouteTables,
 		g.listVMScaleSetsAndRoleAssignments,
 		g.listDisks,
@@ -207,6 +209,39 @@ func (g *resourceGetter) toSubnetResource(subnet *network.Subnet, vnetName strin
 
 func (g *resourceGetter) deleteSubnet(vnetName string, r *resources.Resource) error {
 	return g.cloud.Subnet().Delete(context.TODO(), g.resourceGroupName(), vnetName, r.Name)
+}
+
+func (g *resourceGetter) listNetworkSecurityGroups(ctx context.Context) ([]*resources.Resource, error) {
+	NetworkSecurityGroups, err := g.cloud.NetworkSecurityGroup().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for i := range NetworkSecurityGroups {
+		rs = append(rs, g.toNetworkSecurityGroupResource(&NetworkSecurityGroups[i]))
+	}
+	return rs, nil
+}
+
+func (g *resourceGetter) toNetworkSecurityGroupResource(NetworkSecurityGroup *network.SecurityGroup) *resources.Resource {
+	return &resources.Resource{
+		Obj:  NetworkSecurityGroup,
+		Type: typeNetworkSecurityGroup,
+		ID:   *NetworkSecurityGroup.Name,
+		Name: *NetworkSecurityGroup.Name,
+		Deleter: func(_ fi.Cloud, r *resources.Resource) error {
+			return g.deleteNetworkSecurityGroup(r)
+		},
+		Blocks: []string{
+			toKey(typeResourceGroup, g.resourceGroupName()),
+		},
+		Shared: g.clusterInfo.AzureNetworkShared,
+	}
+}
+
+func (g *resourceGetter) deleteNetworkSecurityGroup(r *resources.Resource) error {
+	return g.cloud.NetworkSecurityGroup().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
 func (g *resourceGetter) listRouteTables(ctx context.Context) ([]*resources.Resource, error) {

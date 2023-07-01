@@ -46,18 +46,19 @@ const (
 
 // MockAzureCloud is a mock implementation of AzureCloud.
 type MockAzureCloud struct {
-	Location                string
-	ResourceGroupsClient    *MockResourceGroupsClient
-	VirtualNetworksClient   *MockVirtualNetworksClient
-	SubnetsClient           *MockSubnetsClient
-	RouteTablesClient       *MockRouteTablesClient
-	VMScaleSetsClient       *MockVMScaleSetsClient
-	VMScaleSetVMsClient     *MockVMScaleSetVMsClient
-	DisksClient             *MockDisksClient
-	RoleAssignmentsClient   *MockRoleAssignmentsClient
-	NetworkInterfacesClient *MockNetworkInterfacesClient
-	LoadBalancersClient     *MockLoadBalancersClient
-	PublicIPAddressesClient *MockPublicIPAddressesClient
+	Location                    string
+	ResourceGroupsClient        *MockResourceGroupsClient
+	VirtualNetworksClient       *MockVirtualNetworksClient
+	SubnetsClient               *MockSubnetsClient
+	RouteTablesClient           *MockRouteTablesClient
+	NetworkSecurityGroupsClient *MockNetworkSecurityGroupsClient
+	VMScaleSetsClient           *MockVMScaleSetsClient
+	VMScaleSetVMsClient         *MockVMScaleSetVMsClient
+	DisksClient                 *MockDisksClient
+	RoleAssignmentsClient       *MockRoleAssignmentsClient
+	NetworkInterfacesClient     *MockNetworkInterfacesClient
+	LoadBalancersClient         *MockLoadBalancersClient
+	PublicIPAddressesClient     *MockPublicIPAddressesClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -77,6 +78,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		RouteTablesClient: &MockRouteTablesClient{
 			RTs: map[string]network.RouteTable{},
+		},
+		NetworkSecurityGroupsClient: &MockNetworkSecurityGroupsClient{
+			NSGs: map[string]network.SecurityGroup{},
 		},
 		VMScaleSetsClient: &MockVMScaleSetsClient{
 			VMSSes: map[string]compute.VirtualMachineScaleSet{},
@@ -193,6 +197,11 @@ func (c *MockAzureCloud) Subnet() azure.SubnetsClient {
 // RouteTable returns the route table client.
 func (c *MockAzureCloud) RouteTable() azure.RouteTablesClient {
 	return c.RouteTablesClient
+}
+
+// NetworkSecurityGroup returns the VM Scale Set client.
+func (c *MockAzureCloud) NetworkSecurityGroup() azure.NetworkSecurityGroupsClient {
+	return c.NetworkSecurityGroupsClient
 }
 
 // VMScaleSet returns the VM Scale Set client.
@@ -610,5 +619,51 @@ func (c *MockPublicIPAddressesClient) Delete(ctx context.Context, scope, publicI
 		return fmt.Errorf("%s does not exist", publicIPAddressName)
 	}
 	delete(c.PubIPs, publicIPAddressName)
+	return nil
+}
+
+// MockNetworkSecurityGroupsClient is a mock implementation of Network Security Group client.
+type MockNetworkSecurityGroupsClient struct {
+	NSGs map[string]network.SecurityGroup
+}
+
+var _ azure.NetworkSecurityGroupsClient = &MockNetworkSecurityGroupsClient{}
+
+// CreateOrUpdate creates or updates a Network Security Group.
+func (c *MockNetworkSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, asgName string, parameters network.SecurityGroup) (*network.SecurityGroup, error) {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.NSGs[asgName]; ok {
+		return nil, fmt.Errorf("update not supported")
+	}
+	parameters.Name = &asgName
+	c.NSGs[asgName] = parameters
+	return &parameters, nil
+}
+
+// List returns a slice of Network Security Groups.
+func (c *MockNetworkSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]network.SecurityGroup, error) {
+	var l []network.SecurityGroup
+	for _, nsg := range c.NSGs {
+		l = append(l, nsg)
+	}
+	return l, nil
+}
+
+// Get Returns a specified Network Security Group.
+func (c *MockNetworkSecurityGroupsClient) Get(ctx context.Context, resourceGroupName string, nsgName string) (*network.SecurityGroup, error) {
+	asg, ok := c.NSGs[nsgName]
+	if !ok {
+		return nil, nil
+	}
+	return &asg, nil
+}
+
+// Delete deletes a specified Network Security Group.
+func (c *MockNetworkSecurityGroupsClient) Delete(ctx context.Context, resourceGroupName, nsgName string) error {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.NSGs[nsgName]; !ok {
+		return fmt.Errorf("%s does not exist", nsgName)
+	}
+	delete(c.NSGs, nsgName)
 	return nil
 }

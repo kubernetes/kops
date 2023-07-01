@@ -31,10 +31,12 @@ type Subnet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ResourceGroup  *ResourceGroup
-	VirtualNetwork *VirtualNetwork
-	CIDR           *string
-	Shared         *bool
+	ResourceGroup        *ResourceGroup
+	VirtualNetwork       *VirtualNetwork
+	NetworkSecurityGroup *NetworkSecurityGroup
+
+	CIDR   *string
+	Shared *bool
 }
 
 var (
@@ -65,7 +67,7 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		return nil, nil
 	}
 
-	return &Subnet{
+	fs := &Subnet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
 		Shared:    s.Shared,
@@ -76,7 +78,14 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 			Name: s.VirtualNetwork.Name,
 		},
 		CIDR: found.AddressPrefix,
-	}, nil
+	}
+	if found.NetworkSecurityGroup != nil {
+		fs.NetworkSecurityGroup = &NetworkSecurityGroup{
+			ID: found.NetworkSecurityGroup.ID,
+		}
+	}
+
+	return fs, nil
 }
 
 // Run implements fi.Task.Run.
@@ -109,12 +118,17 @@ func (*Subnet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Subnet) error
 		klog.Infof("Updating a Subnet with name: %s", fi.ValueOf(e.Name))
 	}
 
-	// TODO(kenji): Be able to specify security groups.
 	subnet := network.Subnet{
 		SubnetPropertiesFormat: &network.SubnetPropertiesFormat{
 			AddressPrefix: e.CIDR,
 		},
 	}
+	if e.NetworkSecurityGroup != nil {
+		subnet.NetworkSecurityGroup = &network.SecurityGroup{
+			ID: e.NetworkSecurityGroup.ID,
+		}
+	}
+
 	return t.Cloud.Subnet().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
