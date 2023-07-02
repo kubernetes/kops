@@ -159,27 +159,27 @@ spec:
     requiredVersion: 1.11.10
   kopsVersions:
   - range: ">=1.26.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.26.0
     kubernetesVersion: 1.26.6
   - range: ">=1.25.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.25.0
     kubernetesVersion: 1.25.11
   - range: ">=1.24.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.24.0
     kubernetesVersion: 1.24.15
   - range: ">=1.23.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.23.0
     kubernetesVersion: 1.23.17
   - range: ">=1.22.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.22.0
     kubernetesVersion: 1.22.17
   - range: ">=1.21.0-alpha.1"
-    recommendedVersion: "1.26.2"
+    recommendedVersion: "1.26.4"
     #requiredVersion: 1.21.0
     kubernetesVersion: 1.21.14
   - range: ">=1.20.0-alpha.1"
