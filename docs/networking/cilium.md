@@ -112,7 +112,7 @@ kops rolling-update cluster --yes
 
 {{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
-You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.13/network/concepts/ipam/eni/)
 
 Enable this by setting `--networking=cilium-eni` (as of kOps 1.26) or by specifying the following in the cluster spec:
 
@@ -158,7 +158,7 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
 ##### WireGuard
 {{ kops_feature_table(kops_added_default='1.22', k8s_min='1.17') }}
 
-Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/#limitations).
+Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/#limitations).
 
 ```yaml
   networking:
@@ -183,7 +183,7 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
 ## Hubble
 {{ kops_feature_table(kops_added_default='1.20.1', k8s_min='1.20') }}
 
-Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.10/gettingstarted/hubble_setup/) for more information.
+Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.13/gettingstarted/hubble_setup/) for more information.
 
 Hubble can be enabled by adding the following to the spec:
 ```yaml
