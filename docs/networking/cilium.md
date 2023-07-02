@@ -29,7 +29,7 @@ kops create cluster \
 
 {{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
-By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/v1.12/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/v1.13/installation/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
 For new clusters you can use the `cilium-etcd` networking provider:
 
@@ -85,7 +85,7 @@ Then enable etcd as kvstore:
 As of kOps 1.19, BPF NodePort is enabled by default for new clusters if the kubernetes version is 1.12 or newer. It can be safely enabled as of kOps 1.18.
 
 In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
-Read more about this in the [Cilium docs - kubeproxy free](https://docs.cilium.io/en/v1.12/gettingstarted/kubeproxy-free/) and [Cilium docs - NodePort](https://docs.cilium.io/en/v1.12/gettingstarted/kubeproxy-free/#nodeport-devices)
+Read more about this in the [Cilium docs - kubeproxy free](https://docs.cilium.io/en/v1.13/network/kubernetes/kubeproxy-free/) and [Cilium docs - NodePort](https://docs.cilium.io/en/v1.13/network/kubernetes/kubeproxy-free/#nodeport-devices-port-and-bind-settings)
 
 Be aware that you need to use an AMI with at least Linux 4.19.57 for this feature to work.
 
