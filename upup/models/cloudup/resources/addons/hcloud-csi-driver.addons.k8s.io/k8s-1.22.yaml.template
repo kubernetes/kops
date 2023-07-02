@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/hetznercloud/csi-driver/main/deploy/kubernetes/hcloud-csi.yml
+# Pulled and modified using: kustomize build https://github.com/hetznercloud/csi-driver.git/deploy
 ---
 apiVersion: v1
 kind: Secret
