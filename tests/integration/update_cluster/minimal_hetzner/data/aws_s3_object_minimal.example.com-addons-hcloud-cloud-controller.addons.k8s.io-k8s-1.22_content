@@ -76,7 +76,7 @@ spec:
         - --allocate-node-cidrs=true
         - --allow-untagged-cloud=true
         - --cloud-provider=hcloud
-        - --cluster-cidr=100.64.0.0/10
+        - --cluster-cidr=100.96.0.0/11
         - --configure-cloud-routes=false
         - --leader-elect=false
         - --v=2
@@ -96,14 +96,16 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.15.0
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.16.0
         name: hcloud-cloud-controller-manager
+        ports:
+        - containerPort: 8233
+          name: metrics
         resources:
           requests:
             cpu: 100m
             memory: 50Mi
       dnsPolicy: Default
-      hostNetwork: true
       priorityClassName: system-cluster-critical
       serviceAccountName: cloud-controller-manager
       tolerations:
@@ -118,5 +120,5 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/control-plane
         operator: Exists
-      - effect: NoSchedule
+      - effect: NoExecute
         key: node.kubernetes.io/not-ready
