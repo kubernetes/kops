@@ -72,7 +72,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -1072,37 +1071,49 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
-		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
-		if err != nil {
-			return err
+		{
+			cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
 		}
-		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
 
-		var containerRuntimeAssetUrl *url.URL
-		var containerRuntimeAssetHash *hashing.Hash
 		switch c.Cluster.Spec.ContainerRuntime {
 		case "docker":
-			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findDockerAsset(c.Cluster, assetBuilder, arch)
-		case "containerd":
-			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findContainerdAsset(c.Cluster, assetBuilder, arch)
-		default:
-			err = fmt.Errorf("unknown container runtime: %q", c.Cluster.Spec.ContainerRuntime)
-		}
-		if err != nil {
-			return err
-		}
-		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerRuntimeAssetUrl, containerRuntimeAssetHash))
+			if c.Cluster.Spec.Docker != nil && c.Cluster.Spec.Docker.SkipInstall {
+				break
+			}
 
-		if c.Cluster.Spec.ContainerRuntime == "containerd" {
-			var runcAssetUrl *url.URL
-			var runcAssetHash *hashing.Hash
-			runcAssetUrl, runcAssetHash, err = findRuncAsset(c.Cluster, assetBuilder, arch)
+			dockerAssetUrl, dockerAssetHash, err := findDockerAsset(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			if dockerAssetUrl != nil && dockerAssetHash != nil {
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(dockerAssetUrl, dockerAssetHash))
+			}
+		case "containerd":
+			if c.Cluster.Spec.Containerd != nil && c.Cluster.Spec.Containerd.SkipInstall {
+				break
+			}
+
+			containerdAssetUrl, containerdAssetHash, err := findContainerdAsset(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			if containerdAssetUrl != nil && containerdAssetHash != nil {
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerdAssetUrl, containerdAssetHash))
+			}
+
+			runcAssetUrl, runcAssetHash, err := findRuncAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
 			if runcAssetUrl != nil && runcAssetHash != nil {
 				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
 			}
+		default:
+			return fmt.Errorf("unknown container runtime: %q", c.Cluster.Spec.ContainerRuntime)
 		}
 
 		asset, err := NodeUpAsset(assetBuilder, arch)
