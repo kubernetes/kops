@@ -90,8 +90,10 @@ func (e *EBSVolume) Find(context *fi.CloudupContext) (*EBSVolume, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
-
 	e.ID = actual.ID
+	if fi.ValueOf(e.Encrypted) && e.KmsKeyId == nil {
+		e.KmsKeyId = actual.KmsKeyId
+	}
 
 	return actual, nil
 }
