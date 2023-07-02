@@ -16,9 +16,9 @@ spec:
     allocateNodeCIDRs: true
     allowUntaggedCloud: true
     cloudProvider: hcloud
-    clusterCIDR: 100.64.0.0/10
+    clusterCIDR: 100.96.0.0/11
     configureCloudRoutes: false
-    image: hetznercloud/hcloud-cloud-controller-manager:v1.13.2
+    image: hetznercloud/hcloud-cloud-controller-manager:v1.16.0
     leaderElection:
       leaderElect: false
   cloudProvider: hetzner
