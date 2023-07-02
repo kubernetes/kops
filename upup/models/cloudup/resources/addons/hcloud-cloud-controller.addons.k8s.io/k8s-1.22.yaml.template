@@ -1,4 +1,5 @@
-# Pulled and modified from: https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm-networks.yaml
+# Pulled and modified using: kustomize build https://github.com/hetznercloud/hcloud-cloud-controller-manager.git/deploy
+
 ---
 apiVersion: v1
 kind: Secret
@@ -6,8 +7,8 @@ metadata:
   name: hcloud
   namespace: kube-system
 stringData:
-  token: "{{ HCLOUD_TOKEN }}"
   network: "{{ HCLOUD_NETWORK }}"
+  token: "{{ HCLOUD_TOKEN }}"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -15,8 +16,8 @@ metadata:
   name: cloud-controller-manager
   namespace: kube-system
 ---
-kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
   name: system:cloud-controller-manager
 roleRef:
@@ -24,9 +25,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-  - kind: ServiceAccount
-    name: cloud-controller-manager
-    namespace: kube-system
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -44,51 +45,50 @@ spec:
       labels:
         app: hcloud-cloud-controller-manager
     spec:
-      serviceAccountName: cloud-controller-manager
-      dnsPolicy: Default
-      tolerations:
-        # this taint is set by all kubelets running `--cloud-provider=external`
-        # so we should tolerate it to schedule the cloud controller manager
-        - key: "node.cloudprovider.kubernetes.io/uninitialized"
-          value: "true"
-          effect: "NoSchedule"
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
-        # cloud controller manages should be able to run on masters
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
-          operator: Exists
-        - key: "node-role.kubernetes.io/control-plane"
-          effect: NoSchedule
-          operator: Exists
-        - key: "node.kubernetes.io/not-ready"
-          effect: "NoSchedule"
-      hostNetwork: true
       containers:
-        - image: "{{ .ExternalCloudControllerManager.Image }}"
-          name: hcloud-cloud-controller-manager
-          command:
-            - "/bin/hcloud-cloud-controller-manager"
-            {{- range $arg := CloudControllerConfigArgv }}
-            - "{{ $arg }}"
-            {{- end }}
-          resources:
-            requests:
-              cpu: 100m
-              memory: 50Mi
-          env:
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: HCLOUD_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: hcloud
-                  key: token
-            - name: HCLOUD_NETWORK
-              valueFrom:
-                secretKeyRef:
-                  name: hcloud
-                  key: network
+      - command:
+        - /bin/hcloud-cloud-controller-manager
+        {{- range $arg := CloudControllerConfigArgv }}
+        - "{{ $arg }}"
+        {{- end }}
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: HCLOUD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: hcloud
+        - name: HCLOUD_NETWORK
+          valueFrom:
+            secretKeyRef:
+              key: network
+              name: hcloud
+        image: '{{ .ExternalCloudControllerManager.Image }}'
+        name: hcloud-cloud-controller-manager
+        ports:
+        - containerPort: 8233
+          name: metrics
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+      dnsPolicy: Default
       priorityClassName: system-cluster-critical
+      serviceAccountName: cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
