@@ -48,12 +48,14 @@ func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}
 		LeaderElect: fi.PtrTo(false),
 	}
 
-	eccm.ClusterCIDR = clusterSpec.Networking.NonMasqueradeCIDR
+	if eccm.ClusterCIDR == "" {
+		eccm.ClusterCIDR = clusterSpec.Networking.PodCIDR
+	}
 	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
 	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 
 	if eccm.Image == "" {
-		eccm.Image = "hetznercloud/hcloud-cloud-controller-manager:v1.15.0"
+		eccm.Image = "hetznercloud/hcloud-cloud-controller-manager:v1.16.0"
 	}
 
 	return nil
