@@ -125,7 +125,7 @@ kOps should create instances to all three zones, but provision volumes from the 
 
 ## Using external cloud controller manager
 
-If you want use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
+If you want to use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
 
 Create cluster without `--yes` flag (or modify existing cluster):
 
@@ -133,15 +133,39 @@ Create cluster without `--yes` flag (or modify existing cluster):
 kops edit cluster <cluster>
 ```
 
-Add following to clusterspec:
+Add the following to clusterspec:
 
 ```yaml
 spec:
   cloudControllerManager: {}
 ```
 
-Finally:
+Finally, update the cluster:
 
+```bash
+kops update cluster --name <cluster> --yes
+```
+
+## Using CCM created Loadbalancers
+
+With the default configuration, the loadbalancers created using the [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack) cloud controller provider do not have access to the exposed NodePorts.
+
+A fix is to add the clouster network to the authorized nodeIds.
+
+First, you have to edit the cluster:
+
+```bash
+kops edit cluster <cluster>
+```
+
+Add the following to the clusterspec:
+```yaml
+spec:
+  nodePortAccess:
+    - <Your network CIDR>
+```
+
+Finally, update the cluster:
 ```bash
 kops update cluster --name <cluster> --yes
 ```
