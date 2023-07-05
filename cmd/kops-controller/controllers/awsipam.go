@@ -146,8 +146,10 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return ctrl.Result{}, fmt.Errorf("unexpected amount of ipv6 prefixes on interface %q: %v", *eni.NetworkInterfaces[0].NetworkInterfaceId, len(eni.NetworkInterfaces[0].Ipv6Prefixes))
 		}
 
-		patchNodePodCIDRs(r.coreV1Client, ctx, node, *eni.NetworkInterfaces[0].Ipv6Prefixes[0].Ipv6Prefix)
-
+		ipv6Address := aws.StringValue(eni.NetworkInterfaces[0].Ipv6Prefixes[0].Ipv6Prefix)
+		if err := patchNodePodCIDRs(r.coreV1Client, ctx, node, ipv6Address); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
