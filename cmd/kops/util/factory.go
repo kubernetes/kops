@@ -152,6 +152,8 @@ func (f *Factory) restConfig() (*rest.Config, error) {
 			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
 		}
 		restConfig.UserAgent = "kops"
+		restConfig.Burst = 50
+		restConfig.QPS = 20
 		f.cachedRESTConfig = restConfig
 	}
 	return f.cachedRESTConfig, nil
