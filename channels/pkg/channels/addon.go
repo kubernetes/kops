@@ -212,6 +212,9 @@ func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface,
 		// If we failed to apply, but not prune, we should try to apply again
 		if err := applier.Apply(ctx, data); err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("error applying update after prune: %w", err))
+		} else {
+			// If we succeeded to apply after prune, clear the errors
+			merr = nil
 		}
 	}
 
