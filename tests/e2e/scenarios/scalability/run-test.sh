@@ -105,7 +105,6 @@ create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
-
 # Enable cluster addons, this enables us to replace the built-in manifest
 KOPS_FEATURE_FLAGS="ClusterAddons,${KOPS_FEATURE_FLAGS:-}"
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
