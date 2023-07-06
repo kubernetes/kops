@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -72,7 +73,9 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
 		if b.NodeupConfig.UsesKubenet {
-			b.buildCNIConfigTemplateFile(c)
+			if err := b.buildCNIConfigTemplateFile(c); err != nil {
+				return err
+			}
 			if err := b.buildIPMasqueradeRules(c); err != nil {
 				return err
 			}
@@ -439,7 +442,7 @@ iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is
 }
 
 // buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
-func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderContext) {
+func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderContext) error {
 	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
 
 	contents := `{
@@ -451,7 +454,7 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
             "ipam": {
                 "type": "host-local",
                 "ranges": [[{"subnet": "{{.PodCIDR}}"}]],
-                "routes": [{ "dst": "0.0.0.0/0" }]
+                "routes": {{Routes}}
             }
         },
         {
@@ -461,6 +464,24 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
     ]
 }
 `
+
+	// We will gradually build up the schema here, as needed
+	type Route struct {
+		Dest string `json:"dst"`
+	}
+
+	routes := []Route{
+		{Dest: "0.0.0.0/0"},
+	}
+	if b.IsIPv6Only() {
+		routes = append(routes, Route{Dest: "::/0"})
+	}
+	routesJSON, err := json.Marshal(routes)
+	if err != nil {
+		return fmt.Errorf("building json: %w", err)
+	}
+	contents = strings.ReplaceAll(contents, "{{Routes}}", string(routesJSON))
+
 	klog.V(8).Infof("Built containerd CNI config template\n%s", contents)
 
 	c.AddTask(&nodetasks.File{
@@ -468,6 +489,7 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 	})
+	return nil
 }
 
 func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
