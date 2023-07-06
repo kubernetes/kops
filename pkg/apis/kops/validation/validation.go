@@ -290,6 +290,7 @@ type cloudProviderConstraints struct {
 	requiresSubnets                                 bool
 	requiresNetworkCIDR                             bool
 	prohibitsNetworkCIDR                            bool
+	prohibitsMultipleNetworkCIDRs                   bool
 	requiresNonMasqueradeCIDR                       bool
 	requiresServiceClusterSubnetOfNonMasqueradeCIDR bool
 	requiresSubnetCIDR                              bool
@@ -299,6 +300,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 	constraints = &cloudProviderConstraints{
 		requiresSubnets:                                 true,
 		requiresNetworkCIDR:                             true,
+		prohibitsMultipleNetworkCIDRs:                   true,
 		requiresNonMasqueradeCIDR:                       true,
 		requiresServiceClusterSubnetOfNonMasqueradeCIDR: true,
 		requiresSubnetCIDR:                              true,
@@ -308,6 +310,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 	if c.Spec.CloudProvider.AWS != nil {
 		optionTaken = true
 		allErrs = append(allErrs, validateAWS(c, provider.AWS, fieldSpec.Child("aws"))...)
+		constraints.prohibitsMultipleNetworkCIDRs = false
 	}
 	if c.Spec.CloudProvider.Azure != nil {
 		if optionTaken {
@@ -946,11 +949,15 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 	}
 
-	for i, cidr := range v.AdditionalNetworkCIDRs {
-		networkCIDR, errs := parseCIDR(fldPath.Child("additionalNetworkCIDRs").Index(i), cidr)
-		allErrs = append(allErrs, errs...)
-		if networkCIDR != nil {
-			networkCIDRs = append(networkCIDRs, networkCIDR)
+	if len(v.AdditionalNetworkCIDRs) > 0 && providerConstraints.prohibitsMultipleNetworkCIDRs {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("additionalNetworkCIDRs"), fmt.Sprintf("%s doesn't support additionalNetworkCIDRs", c.GetCloudProvider())))
+	} else {
+		for i, cidr := range v.AdditionalNetworkCIDRs {
+			networkCIDR, errs := parseCIDR(fldPath.Child("additionalNetworkCIDRs").Index(i), cidr)
+			allErrs = append(allErrs, errs...)
+			if networkCIDR != nil {
+				networkCIDRs = append(networkCIDRs, networkCIDR)
+			}
 		}
 	}
 
