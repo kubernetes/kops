@@ -335,10 +335,6 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		constraints.requiresNetworkCIDR = false
 		constraints.requiresSubnetCIDR = false
 		constraints.prohibitsNetworkCIDR = true
-		// TODO move to validateNetworking
-		if c.Spec.Networking.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "networkCIDR"), "networkCIDR should not be set on GCE"))
-		}
 		constraints.requiresNonMasqueradeCIDR = false
 		constraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR = false
 	}
@@ -930,6 +926,8 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		if providerConstraints.requiresNetworkCIDR {
 			allErrs = append(allErrs, field.Required(fldPath.Child("networkCIDR"), "Cluster does not have networkCIDR set"))
 		}
+	} else if providerConstraints.prohibitsNetworkCIDR {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("networkCIDR"), fmt.Sprintf("%s doesn't support networkCIDR", c.GetCloudProvider())))
 	} else {
 		networkCIDR, errs := parseCIDR(fldPath.Child("networkCIDR"), v.NetworkCIDR)
 		allErrs = append(allErrs, errs...)
