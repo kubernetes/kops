@@ -51,6 +51,31 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to control-plane / worker node instances")
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
+		b.AddFirewallRulesTasks(c, "ssh-external-to-bastion", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Allowed:      []string{"tcp:22"},
+			SourceRanges: b.Cluster.Spec.SSHAccess,
+			Network:      network,
+		})
+		b.AddFirewallRulesTasks(c, "bastion-to-master", &gcetasks.FirewallRule{
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
+			Allowed:    []string{"tcp:22"},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Network:    network,
+		})
+		b.AddFirewallRulesTasks(c, "bastion-to-node", &gcetasks.FirewallRule{
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed:    []string{"tcp:22"},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Network:    network,
+		})
 	} else {
 		network, err := b.LinkToNetwork()
 		if err != nil {

@@ -96,7 +96,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility),
+				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion()),
 
 				Scopes: []string{
 					"compute-rw",
@@ -104,11 +104,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 					"logging-write",
 				},
 				Metadata: map[string]fi.Resource{
-					"startup-script": startupScript,
-					//"config": resources/config.yaml $nodeset.Name
 					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
 					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
+			}
+
+			if startupScript != nil {
+				t.Metadata["startup-script"] = startupScript
 			}
 
 			if ig.Spec.Role == kops.InstanceGroupRoleNode {
@@ -168,6 +170,9 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+
+			case kops.InstanceGroupRoleBastion:
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
 			}
 			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
