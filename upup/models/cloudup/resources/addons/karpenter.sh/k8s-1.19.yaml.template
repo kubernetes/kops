@@ -1119,7 +1119,7 @@ data:
   # https://github.com/uber-go/zap/blob/aa3e73ec0896f8b066ddf668597a02f89628ee50/config.go
   zap-logger-config: |
     {
-      "level": "debug",
+      "level": "{{ .Karpenter.LogLevel }}",
       "development": false,
       "disableStacktrace": true,
       "disableCaller": true,
@@ -1129,7 +1129,7 @@ data:
       },
       "outputPaths": ["stdout"],
       "errorOutputPaths": ["stderr"],
-      "encoding": "console",
+      "encoding": "{{ .Karpenter.LogEncoding }}",
       "encoderConfig": {
         "timeKey": "time",
         "levelKey": "level",
@@ -1482,7 +1482,7 @@ spec:
       dnsPolicy: ClusterFirst
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.28.1
+          image: {{ .Karpenter.Image }}
           imagePullPolicy: IfNotPresent
           env:
             - name: KUBERNETES_MIN_VERSION

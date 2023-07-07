@@ -1498,6 +1498,12 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  image:
+                    type: string
+                  logEncoding:
+                    type: string
+                  logLevel:
+                    type: string
                 type: object
               keyStore:
                 description: KeyStore is the VFS path to where SSL keys and certificates
