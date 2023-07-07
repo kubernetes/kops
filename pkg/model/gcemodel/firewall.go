@@ -180,23 +180,27 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 	ipv4 := *rule
 	ipv4.Name = s(b.NameForFirewallRule(name))
 	ipv4.Family = gcetasks.AddressFamilyIPv4
-	ipv4.SourceRanges = ipv4SourceRanges
-	if len(ipv4.SourceRanges) == 0 {
-		// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
-		// but the intent is usually to block everything, which can be achieved with Disabled=true.
-		ipv4.Disabled = true
-		ipv4.SourceRanges = []string{"0.0.0.0/0"}
+	if len(ipv4.SourceTags) == 0 {
+		ipv4.SourceRanges = ipv4SourceRanges
+		if len(ipv4.SourceRanges) == 0 {
+			// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
+			// but the intent is usually to block everything, which can be achieved with Disabled=true.
+			ipv4.Disabled = true
+			ipv4.SourceRanges = []string{"0.0.0.0/0"}
+		}
 	}
 	c.AddTask(&ipv4)
 
 	ipv6 := *rule
 	ipv6.Name = s(b.NameForFirewallRule(name + "-ipv6"))
 	ipv6.Family = gcetasks.AddressFamilyIPv6
-	ipv6.SourceRanges = ipv6SourceRanges
-	if len(ipv6.SourceRanges) == 0 {
-		// We specify explicitly so the rule is in IPv6 mode
-		ipv6.Disabled = true
-		ipv6.SourceRanges = []string{"::/0"}
+	if len(ipv6.SourceTags) == 0 {
+		ipv6.SourceRanges = ipv6SourceRanges
+		if len(ipv6.SourceRanges) == 0 {
+			// We specify explicitly so the rule is in IPv6 mode
+			ipv6.Disabled = true
+			ipv6.SourceRanges = []string{"::/0"}
+		}
 	}
 	var ipv6Allowed []string
 	for _, allowed := range ipv6.Allowed {
