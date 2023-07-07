@@ -1283,9 +1283,11 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 
 			if cluster.IsKubernetesLT("1.27") {
-				bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
+				if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+					bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+						HTTPTokens:              fi.PtrTo("required"),
+					}
 				}
 			}
 
