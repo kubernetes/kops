@@ -178,6 +178,13 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "google_compute_address" "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
+  address_type = "INTERNAL"
+  name         = "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi"
+  purpose      = "SHARED_LOADBALANCER_VIP"
+  subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
+}
+
 resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
   backend {
     group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
@@ -210,6 +217,17 @@ resource "google_compute_disk" "a-etcd-main-minimal-gce-with-a-very-very-very-ve
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
+}
+
+resource "google_compute_firewall" "lb-health-checks-minimal-gce-with-a-very-very-very-very--96dqvi" {
+  allow {
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "lb-health-checks-minimal-gce-with-a-very-very-very-very--96dqvi"
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi" {
@@ -390,14 +408,15 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
 
-resource "google_compute_forwarding_rule" "us-test-1-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi" {
+resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
   backend_service       = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
+  ip_address            = google_compute_address.api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi.address
   ip_protocol           = "TCP"
   load_balancing_scheme = "INTERNAL"
-  name                  = "us-test-1-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi"
+  name                  = "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi"
   network               = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   ports                 = ["443"]
-  subnetwork            = "us-test-1"
+  subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
 }
 
 resource "google_compute_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
