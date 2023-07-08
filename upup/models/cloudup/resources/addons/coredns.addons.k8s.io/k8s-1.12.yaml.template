@@ -132,6 +132,12 @@ spec:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
         {{- end }}
+        {{- if KarpenterEnabled }}
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
 {{- if .KubeDNS.Affinity }}
