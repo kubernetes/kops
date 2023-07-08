@@ -381,6 +381,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
 	}
 
+	dest["KarpenterEnabled"] = func() bool {
+		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
+	}
 	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
 		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
 	}

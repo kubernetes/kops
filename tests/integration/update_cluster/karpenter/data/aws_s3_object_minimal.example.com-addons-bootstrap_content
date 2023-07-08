@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: d2bbb7cbee5835c3891fe80fbacf8963508359ef9159f8480325ce9a7174f14a
+    manifestHash: 8834e41010ae2fb8a533107c4a32cf068ac161359956e7a52921b2a07ad8ebf5
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -69,7 +69,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: f59d4c21751b3fc33c84e664fb41199b8efb58cc5976ade6e937abc109cb612b
+    manifestHash: aab89cad4f4a52b8620f581548694a6fc096bdbd1a297310beda01b57d3550ae
     name: karpenter.sh
     prune:
       kinds:

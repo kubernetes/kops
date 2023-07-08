@@ -1478,7 +1478,8 @@ spec:
       securityContext:
         fsGroup: 1000
       priorityClassName: "system-cluster-critical"
-      dnsPolicy: Default
+      # Must use ClusterFirst on IPv6 clusters in order to get DNS64
+      dnsPolicy: ClusterFirst
       containers:
         - name: controller
           image: public.ecr.aws/karpenter/controller:v0.28.1
