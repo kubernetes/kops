@@ -211,6 +211,54 @@ resource "google_compute_disk" "a-etcd-main-minimal-gce-example-com" {
   zone = "us-test1-a"
 }
 
+resource "google_compute_firewall" "https-api-ipv6-minimal-gce-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-ipv6-minimal-gce-example-com"
+  network       = google_compute_network.minimal-gce-example-com.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "https-api-minimal-gce-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-minimal-gce-example-com"
+  network       = google_compute_network.minimal-gce-example-com.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "kops-controller-ipv6-minimal-gce-example-com" {
+  allow {
+    ports    = ["3988"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "kops-controller-ipv6-minimal-gce-example-com"
+  network       = google_compute_network.minimal-gce-example-com.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "kops-controller-minimal-gce-example-com" {
+  allow {
+    ports    = ["3988"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "kops-controller-minimal-gce-example-com"
+  network       = google_compute_network.minimal-gce-example-com.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
+}
+
 resource "google_compute_firewall" "lb-health-checks-minimal-gce-example-com" {
   allow {
     protocol = "tcp"

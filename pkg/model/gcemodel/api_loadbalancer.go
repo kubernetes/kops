@@ -38,7 +38,7 @@ var _ fi.CloudupModelBuilder = &APILoadBalancerBuilder{}
 
 // createPublicLB validates the existence of a target pool with the given name,
 // and creates an IP address and forwarding rule pointing to that target pool.
-func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
+func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext) error {
 	healthCheck := &gcetasks.HTTPHealthcheck{
 		Name:        s(b.NameForHealthcheck("api")),
 		Port:        i64(wellknownports.KubeAPIServerHealthCheck),
@@ -89,6 +89,10 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 		})
 	}
 
+	return b.addFirewallRules(c)
+}
+
+func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderContext) error {
 	// Allow traffic into the API from KubernetesAPIAccess CIDRs
 	{
 		network, err := b.LinkToNetwork()
@@ -132,7 +136,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 // createInternalLB creates an internal load balancer for the cluster.  In
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
-func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
+func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
 		Port:      wellknownports.KubeAPIServer,
@@ -215,8 +219,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContex
 			})
 		}
 	}
-
-	return nil
+	return b.addFirewallRules(c)
 }
 
 func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -232,10 +235,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-		return createPublicLB(b, c)
+		return b.createPublicLB(c)
 
 	case kops.LoadBalancerTypeInternal:
-		return createInternalLB(b, c)
+		return b.createInternalLB(c)
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
