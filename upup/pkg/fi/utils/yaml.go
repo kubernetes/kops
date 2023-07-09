@@ -28,6 +28,9 @@ func YAMLToJSON(yamlBytes []byte) ([]byte, error) {
 }
 
 // YamlUnmarshal unmarshals the yaml content to an interface
+// Note: if you are loading a kops.k8s.io API object,
+// normally you want something like kopscodecs.Decode,
+// so that we can convert between apiVersions.
 func YamlUnmarshal(yamlBytes []byte, dest interface{}) error {
 	return yaml.Unmarshal(yamlBytes, dest)
 }
