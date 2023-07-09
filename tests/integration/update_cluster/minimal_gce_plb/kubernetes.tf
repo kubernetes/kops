@@ -483,7 +483,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-plb-e
     "cluster-name"                    = "minimal-gce-plb.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-plb-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-plb-example-com_metadata_user-data")
   }
   name_prefix = "master-us-test1-a-minimal-b9uem4-"
   network_interface {
@@ -533,7 +533,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-plb-example-com" 
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-plb-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-plb-example-com_metadata_user-data")
   }
   name_prefix = "nodes-minimal-gce-plb-exa-7p2hv9-"
   network_interface {
