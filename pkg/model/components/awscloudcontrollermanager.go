@@ -64,7 +64,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 	networking := &clusterSpec.Networking
 	if networking.Kubenet != nil {
 		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
-	} else if networking.GCE != nil {
+	} else if networking.GCP != nil {
 		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 		eccm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 

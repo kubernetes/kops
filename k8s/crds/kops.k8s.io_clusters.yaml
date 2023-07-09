@@ -5181,8 +5181,8 @@ spec:
                         type: integer
                     type: object
                   gce:
-                    description: GCENetworkingSpec is the specification of GCE's native
-                      networking mode, using IP aliases
+                    description: GCPNetworkingSpec is the specification of GCP's native
+                      networking mode, using IP aliases.
                     type: object
                   kopeio:
                     description: KopeioNetworkingSpec declares that we want Kopeio

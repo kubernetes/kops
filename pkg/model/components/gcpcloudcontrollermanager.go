@@ -58,8 +58,8 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 		ccmConfig.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
 
-	if clusterSpec.Networking.GCE != nil {
-		// "GCE" networking mode is called "ip-alias" or "vpc-native" on GKE.
+	if clusterSpec.Networking.GCP != nil {
+		// "GCP" networking mode is called "ip-alias" or "vpc-native" on GKE.
 		// We don't need to configure routes if we are using "real" IPs.
 		ccmConfig.ConfigureCloudRoutes = fi.PtrTo(false)
 	}

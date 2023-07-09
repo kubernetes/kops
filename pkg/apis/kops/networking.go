@@ -77,7 +77,7 @@ type NetworkingSpec struct {
 	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonVPC,omitempty"`
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
-	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
+	GCP        *GCPNetworkingSpec        `json:"gcp,omitempty"`
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
@@ -87,8 +87,8 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	}
 	if n.Kubenet != nil {
 		return true
-	} else if n.GCE != nil {
-		// GCE IP Alias networking is based on kubenet
+	} else if n.GCP != nil {
+		// GCP IP Alias networking is based on kubenet
 		return true
 	} else if n.External != nil {
 		// external is based on kubenet
@@ -505,5 +505,5 @@ type LyftVPCNetworkingSpec struct {
 	SubnetTags map[string]string `json:"subnetTags,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
-type GCENetworkingSpec struct{}
+// GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
+type GCPNetworkingSpec struct{}

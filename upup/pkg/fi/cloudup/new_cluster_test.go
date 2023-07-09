@@ -296,7 +296,19 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					Networking: api.NetworkingSpec{
-						GCE: &api.GCENetworkingSpec{},
+						GCP: &api.GCPNetworkingSpec{},
+					},
+				},
+			},
+		},
+		{
+			options: NewClusterOptions{
+				Networking: "gcp",
+			},
+			expected: api.Cluster{
+				Spec: api.ClusterSpec{
+					Networking: api.NetworkingSpec{
+						GCP: &api.GCPNetworkingSpec{},
 					},
 				},
 			},
