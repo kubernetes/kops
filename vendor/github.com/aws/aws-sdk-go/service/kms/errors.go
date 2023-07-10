@@ -166,6 +166,12 @@ const (
 	// The request was rejected because the specified KMS key is not enabled.
 	ErrCodeDisabledException = "DisabledException"
 
+	// ErrCodeDryRunOperationException for service response error code
+	// "DryRunOperationException".
+	//
+	// The request was rejected because the DryRun parameter was specified.
+	ErrCodeDryRunOperationException = "DryRunOperationException"
+
 	// ErrCodeExpiredImportTokenException for service response error code
 	// "ExpiredImportTokenException".
 	//
@@ -488,6 +494,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"CustomKeyStoreNotFoundException":                         newErrorCustomKeyStoreNotFoundException,
 	"DependencyTimeoutException":                              newErrorDependencyTimeoutException,
 	"DisabledException":                                       newErrorDisabledException,
+	"DryRunOperationException":                                newErrorDryRunOperationException,
 	"ExpiredImportTokenException":                             newErrorExpiredImportTokenException,
 	"IncorrectKeyException":                                   newErrorIncorrectKeyException,
 	"IncorrectKeyMaterialException":                           newErrorIncorrectKeyMaterialException,
