@@ -210,6 +210,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	for i, sysctlParameter := range spec.SysctlParameters {
+		if !strings.ContainsRune(sysctlParameter, '=') {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("sysctlParameters").Index(i), sysctlParameter, "must contain a \"=\" character"))
+		}
+	}
+
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}

@@ -54,7 +54,10 @@ func TestTaintsApplied(t *testing.T) {
 	}
 
 	for _, g := range tests {
-		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
+		cluster := &kops.Cluster{Spec: kops.ClusterSpec{
+			KubernetesVersion: g.version,
+			KubeAPIServer:     &kops.KubeAPIServerConfig{},
+		}}
 		input := testutils.BuildMinimalMasterInstanceGroup("eu-central-1a")
 		input.Spec.Taints = g.taints
 
