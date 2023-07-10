@@ -70,9 +70,9 @@ type Config struct {
 	UsesKubenet bool `json:",omitempty"`
 	// NTPUnmanaged is true when NTP is not managed by kOps.
 	NTPUnmanaged bool `json:",omitempty"`
-	// SysctlParameters will configure kernel parameters using sysctl(8). When
-	// specified, each parameter must follow the form variable=value, the way
-	// it would appear in sysctl.conf.
+	// ServiceNodePortRange is the service NodePort range.
+	ServiceNodePortRange string `json:",omitempty"`
+	// SysctlParameters will configure kernel parameters using sysctl(8).
 	SysctlParameters []string `json:",omitempty"`
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	UpdatePolicy string
@@ -195,15 +195,15 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			NonMasqueradeCIDR:     cluster.Spec.Networking.NonMasqueradeCIDR,
 			ServiceClusterIPRange: cluster.Spec.Networking.ServiceClusterIPRange,
 		},
-		UsesKubenet:      cluster.Spec.Networking.UsesKubenet(),
-		SysctlParameters: instanceGroup.Spec.SysctlParameters,
-		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
-		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
-		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
-		ContainerRuntime: cluster.Spec.ContainerRuntime,
-		Docker:           cluster.Spec.Docker,
-		UsesLegacyGossip: cluster.UsesLegacyGossip(),
-		UsesNoneDNS:      cluster.UsesNoneDNS(),
+		UsesKubenet:          cluster.Spec.Networking.UsesKubenet(),
+		ServiceNodePortRange: cluster.Spec.KubeAPIServer.ServiceNodePortRange,
+		VolumeMounts:         instanceGroup.Spec.VolumeMounts,
+		FileAssets:           append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:                [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime:     cluster.Spec.ContainerRuntime,
+		Docker:               cluster.Spec.Docker,
+		UsesLegacyGossip:     cluster.UsesLegacyGossip(),
+		UsesNoneDNS:          cluster.UsesNoneDNS(),
 	}
 
 	bootConfig := BootConfig{
@@ -310,6 +310,20 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
+	}
+
+	if len(instanceGroup.Spec.SysctlParameters) > 0 {
+		config.SysctlParameters = append(config.SysctlParameters,
+			"# Custom sysctl parameters from instance group spec",
+			"")
+		config.SysctlParameters = append(config.SysctlParameters, instanceGroup.Spec.SysctlParameters...)
+	}
+
+	if len(cluster.Spec.SysctlParameters) > 0 {
+		config.SysctlParameters = append(config.SysctlParameters,
+			"# Custom sysctl parameters from cluster spec",
+			"")
+		config.SysctlParameters = append(config.SysctlParameters, cluster.Spec.SysctlParameters...)
 	}
 
 	return &config, &bootConfig

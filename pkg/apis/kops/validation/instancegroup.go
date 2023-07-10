@@ -144,6 +144,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 
 	allErrs = append(allErrs, validateInstanceProfile(g.Spec.IAM, field.NewPath("spec", "iam"))...)
 
+	for i, sysctlParameter := range g.Spec.SysctlParameters {
+		if !strings.ContainsRune(sysctlParameter, '=') {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "sysctlParameters").Index(i), sysctlParameter, "must contain a \"=\" character"))
+		}
+	}
+
 	if g.Spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
 	}
