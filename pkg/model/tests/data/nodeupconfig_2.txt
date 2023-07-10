@@ -1,4 +1,5 @@
 APIServerConfig:
+  API: {}
   KubeAPIServer:
     image: CoreOS
   ServiceAccountPublicKeys: ""

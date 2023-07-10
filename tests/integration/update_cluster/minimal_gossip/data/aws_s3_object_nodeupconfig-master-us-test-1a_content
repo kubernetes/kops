@@ -1,4 +1,7 @@
 APIServerConfig:
+  API:
+    dns: {}
+    publicName: api.minimal.k8s.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

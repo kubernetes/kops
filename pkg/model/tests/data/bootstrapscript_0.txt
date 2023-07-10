@@ -164,7 +164,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 InstanceGroupName: testIG
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: GCb0jNcXtzAVnSqH0rScr4llsImDfK0RqOqboVMhYa8=
+NodeupConfigHash: cfESNiGdHk5bVuUZZ7h7LLEpaAs2yzSv2frMh7V0vRE=
 
 __EOF_KUBE_ENV
 

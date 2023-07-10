@@ -40,9 +40,9 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Hostname:  b.APIInternalName(),
 			Addresses: []string{"127.0.0.1"},
 		})
-		if b.Cluster.Spec.API.PublicName != "" {
+		if b.NodeupConfig.APIServerConfig.API.PublicName != "" {
 			task.Records = append(task.Records, nodetasks.HostRecord{
-				Hostname:  b.Cluster.Spec.API.PublicName,
+				Hostname:  b.NodeupConfig.APIServerConfig.API.PublicName,
 				Addresses: []string{"127.0.0.1"},
 			})
 		}

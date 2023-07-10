@@ -1,4 +1,5 @@
 APIServerConfig:
+  API: {}
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

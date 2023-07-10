@@ -252,7 +252,7 @@ ClusterName: containerd.example.com
 ConfigBase: memfs://clusters.example.com/containerd.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: M8eJSK74gm1DVgZdbXfSfieaCHiMS1swoLeVi9ob6mo=
+NodeupConfigHash: 3rVN+OZgm7FvGcWJDn3rI1KMuEHYNNXmQ6WUgOpW0AY=
 
 __EOF_KUBE_ENV
 

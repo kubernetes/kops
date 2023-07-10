@@ -1,4 +1,6 @@
 APIServerConfig:
+  API:
+    publicName: api.privateciliumadvanced.example.com
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

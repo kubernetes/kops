@@ -1,4 +1,7 @@
 APIServerConfig:
+  API:
+    dns: {}
+    publicName: api.cas-priority-expander.example.com
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
