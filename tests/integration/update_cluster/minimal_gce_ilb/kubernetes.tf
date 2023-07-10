@@ -219,6 +219,30 @@ resource "google_compute_disk" "a-etcd-main-minimal-gce-ilb-example-com" {
   zone = "us-test1-a"
 }
 
+resource "google_compute_firewall" "https-api-ipv6-minimal-gce-ilb-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-ipv6-minimal-gce-ilb-example-com"
+  network       = google_compute_network.minimal-gce-ilb-example-com.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "https-api-minimal-gce-ilb-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-minimal-gce-ilb-example-com"
+  network       = google_compute_network.minimal-gce-ilb-example-com.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-control-plane"]
+}
+
 resource "google_compute_firewall" "lb-health-checks-minimal-gce-ilb-example-com" {
   allow {
     protocol = "tcp"

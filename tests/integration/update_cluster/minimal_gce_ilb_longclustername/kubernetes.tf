@@ -219,6 +219,30 @@ resource "google_compute_disk" "a-etcd-main-minimal-gce-with-a-very-very-very-ve
   zone = "us-test1-a"
 }
 
+resource "google_compute_firewall" "https-api-ipv6-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-ipv6-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "https-api-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi"
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane"]
+}
+
 resource "google_compute_firewall" "lb-health-checks-minimal-gce-with-a-very-very-very-very--96dqvi" {
   allow {
     protocol = "tcp"
