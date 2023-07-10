@@ -81,7 +81,7 @@ type NetworkingSpec struct {
 	AmazonVPC  *AmazonVPCNetworkingSpec    `json:"amazonVPC,omitempty"`
 	Cilium     *CiliumNetworkingSpec       `json:"cilium,omitempty"`
 	LyftVPC    *kops.LyftVPCNetworkingSpec `json:"-"`
-	GCE        *GCENetworkingSpec          `json:"gce,omitempty"`
+	GCP        *GCPNetworkingSpec          `json:"gcp,omitempty"`
 }
 
 // KubenetNetworkingSpec is the specification for kubenet networking, largely integrated but intended to replace classic
@@ -462,5 +462,5 @@ type HubbleSpec struct {
 	Metrics []string `json:"metrics,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
-type GCENetworkingSpec struct{}
+// GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
+type GCPNetworkingSpec struct{}

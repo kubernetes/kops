@@ -1645,6 +1645,7 @@ the removal of fields no longer in use.
 | networking.cilium.IPTablesRulesNoinstall               | networking.cilium.installIptablesRules (value inverted)        |
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
 | networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
+| networking.gce                                         | networking.gcp                                                 |
 | networking.kuberouter                                  | networking.kubeRouter                                          |
 | nodeTerminationHandler                                 | cloudProvider.aws.nodeTerminationHandler                       |
 | nonMasqueradeCIDR                                      | networking.nonMasqueradeCIDR                                   |

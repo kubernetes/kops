@@ -1142,8 +1142,8 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "cilium-eni":
 		addCiliumNetwork(cluster)
 		cluster.Spec.Networking.Cilium.IPAM = "eni"
-	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
+	case "gcp", "gce":
+		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", opt.Networking)
 	}

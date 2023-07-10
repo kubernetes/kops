@@ -1003,7 +1003,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			}
 
 			if options.CloudProvider == "gce" || options.CloudProvider == "" {
-				completions = append(completions, "gce")
+				completions = append(completions, "gcp")
 			}
 		}
 
