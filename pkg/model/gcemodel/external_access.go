@@ -62,14 +62,14 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      network,
 		})
-		b.AddFirewallRulesTasks(c, "bastion-to-master", &gcetasks.FirewallRule{
+		b.AddFirewallRulesTasks(c, "bastion-to-master-ssh", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed:    []string{"tcp:22"},
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
 			Network:    network,
 		})
-		b.AddFirewallRulesTasks(c, "bastion-to-node", &gcetasks.FirewallRule{
+		b.AddFirewallRulesTasks(c, "bastion-to-node-ssh", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    []string{"tcp:22"},
