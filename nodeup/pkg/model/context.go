@@ -394,7 +394,7 @@ func (c *NodeupModelContext) UseVolumeMounts() bool {
 
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
 func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
+	return model.UseKopsControllerForNodeBootstrap(c.CloudProvider())
 }
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.

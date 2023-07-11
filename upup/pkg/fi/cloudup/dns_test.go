@@ -31,7 +31,13 @@ func TestPrecreateDNSNames(t *testing.T) {
 		expected []recordKey
 	}{
 		{
-			cluster: &kops.Cluster{},
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{},
+					},
+				},
+			},
 			expected: []recordKey{
 				{"api.cluster1.example.com", rrstype.A},
 				{"api.internal.cluster1.example.com", rrstype.A},
@@ -40,6 +46,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{},
+					},
 					Networking: kops.NetworkingSpec{
 						NonMasqueradeCIDR: "::/0",
 					},
@@ -57,6 +66,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
 					},
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{},
+					},
 				},
 			},
 			expected: []recordKey{
@@ -68,6 +80,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{},
 					},
 					Networking: kops.NetworkingSpec{
 						NonMasqueradeCIDR: "::/0",
@@ -85,6 +100,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 						LoadBalancer: &kops.LoadBalancerAccessSpec{
 							UseForInternalAPI: true,
 						},
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{},
 					},
 				},
 			},

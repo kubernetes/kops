@@ -276,7 +276,7 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 		})
 	}
 
-	if apimodel.UseKopsControllerForNodeBootstrap(cluster) {
+	if apimodel.UseKopsControllerForNodeBootstrap(cluster.Spec.GetCloudProvider()) {
 		name := "kops-controller.internal." + cluster.ObjectMeta.Name
 		recordKeys = append(recordKeys, recordKey{
 			hostname: name,

@@ -253,7 +253,7 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
 func (b *KopsModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(b.Cluster)
+	return model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider())
 }
 
 // UseBootstrapTokens checks if bootstrap tokens are enabled

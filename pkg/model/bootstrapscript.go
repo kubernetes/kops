@@ -255,12 +255,12 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 		}
 	}
 
-	if model.UseCiliumEtcd(b.Cluster) && !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
+	if model.UseCiliumEtcd(b.Cluster) && !model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider()) {
 		keypairs = append(keypairs, "etcd-client-cilium")
 	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
-	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
+	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider()) {
 		keypairs = append(keypairs, "kubelet", "kube-proxy")
 		if b.Cluster.Spec.Networking.KubeRouter != nil {
 			keypairs = append(keypairs, "kube-router")
