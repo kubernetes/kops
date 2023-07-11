@@ -158,7 +158,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return err
 	}
 
-	if b.Cluster.UsesExternalECRCredentialsProvider() {
+	if b.UseExternalECRCredentialsProvider() {
 		if err := b.addECRCP(c); err != nil {
 			return fmt.Errorf("failed to add ECR credential provider: %w", err)
 		}
@@ -346,7 +346,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	flags += " --config=" + kubeletConfigFilePath
 
-	if b.Cluster.UsesExternalECRCredentialsProvider() {
+	if b.UseExternalECRCredentialsProvider() {
 		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
 		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
 	}

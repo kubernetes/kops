@@ -1054,7 +1054,8 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
-		if c.Cluster.UsesExternalECRCredentialsProvider() {
+		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+		if apiModel.UseExternalECRCredentialsProvider(*kubernetesVersion, c.Cluster.Spec.GetCloudProvider()) {
 			binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
 			if binaryLocation == nil {
 				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
@@ -1354,7 +1355,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			return nil, nil, err
 		}
 		if keysets["etcd-clients-ca-cilium"] != nil {
-			if err := loadCertificates(keysets, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
+			if err := loadCertificates(keysets, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster.Spec.GetCloudProvider())); err != nil {
 				return nil, nil, err
 			}
 		}

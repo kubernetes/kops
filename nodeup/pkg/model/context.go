@@ -394,12 +394,16 @@ func (c *NodeupModelContext) UseVolumeMounts() bool {
 
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
 func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
+	return model.UseKopsControllerForNodeBootstrap(c.CloudProvider())
 }
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
 func (c *NodeupModelContext) UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 	return model.UseChallengeCallback(cloudProvider)
+}
+
+func (c *NodeupModelContext) UseExternalECRCredentialsProvider() bool {
+	return model.UseExternalECRCredentialsProvider(c.kubernetesVersion, c.CloudProvider())
 }
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.

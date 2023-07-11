@@ -702,7 +702,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 				"/igconfig/node/*",
 			)
 		}
-		if !model.UseKopsControllerForNodeBootstrap(cluster) {
+		if !model.UseKopsControllerForNodeBootstrap(cluster.Spec.GetCloudProvider()) {
 			paths = append(paths,
 				"/secrets/dockerconfig",
 				"/pki/private/kube-proxy/*",
