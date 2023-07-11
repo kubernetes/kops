@@ -394,7 +394,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			"kubernetes",
 			"kubernetes.default",
 			"kubernetes.default.svc",
-			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
+			"kubernetes.default.svc." + b.NodeupConfig.APIServerConfig.ClusterDNSDomain,
 		}
 
 		// Names specified in the cluster spec
@@ -741,7 +741,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 	annotations["kubectl.kubernetes.io/default-container"] = "kube-apiserver"
 
-	if b.Cluster.UsesNoneDNS() {
+	if b.NodeupConfig.UsesNoneDNS {
 		return annotations
 	}
 

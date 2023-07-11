@@ -155,7 +155,7 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 
 	if kubeScheduler.TLSCertFile == nil {
 		alternateNames := []string{
-			"kube-scheduler.kube-system.svc." + b.Cluster.Spec.ClusterDNSDomain,
+			"kube-scheduler.kube-system.svc." + b.NodeupConfig.APIServerConfig.ClusterDNSDomain,
 		}
 
 		issueCert := &nodetasks.IssueCert{
