@@ -18,6 +18,7 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -88,6 +89,11 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 }
 
 func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+	// Skip if we're running integration tests
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		return nil, nil
+	}
+
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
