@@ -3,6 +3,7 @@ APIServerConfig:
     publicName: api.complex.example.com
   Authentication:
     aws: {}
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

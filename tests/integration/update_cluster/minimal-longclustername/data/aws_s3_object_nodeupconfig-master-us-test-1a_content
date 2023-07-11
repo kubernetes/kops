@@ -2,6 +2,7 @@ APIServerConfig:
   API:
     dns: {}
     publicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

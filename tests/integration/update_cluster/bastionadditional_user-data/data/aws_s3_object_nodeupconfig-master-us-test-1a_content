@@ -1,6 +1,7 @@
 APIServerConfig:
   API:
     publicName: api.bastionuserdata.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

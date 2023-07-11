@@ -252,7 +252,7 @@ ClusterName: privatedns2.example.com
 ConfigBase: memfs://clusters.example.com/privatedns2.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: MK6MNzij6GrQQz60IIOqjc3FHrVEFai+aJtuf8nwRG0=
+NodeupConfigHash: FfP8Rus36DIMoJHGNYlE+9+J+V7TVOtC6Z9wXJOj03w=
 
 __EOF_KUBE_ENV
 

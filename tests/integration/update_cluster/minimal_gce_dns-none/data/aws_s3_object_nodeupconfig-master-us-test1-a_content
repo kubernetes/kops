@@ -3,6 +3,7 @@ APIServerConfig:
     loadBalancer:
       useForInternalAPI: true
     publicName: api.minimal-gce.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

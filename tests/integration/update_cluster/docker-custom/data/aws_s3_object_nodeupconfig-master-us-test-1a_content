@@ -2,6 +2,7 @@ APIServerConfig:
   API:
     dns: {}
     publicName: api.docker.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

@@ -1,6 +1,7 @@
 APIServerConfig:
   API:
     publicName: api.privateflannel.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

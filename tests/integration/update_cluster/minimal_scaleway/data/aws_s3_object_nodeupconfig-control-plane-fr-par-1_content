@@ -1,5 +1,6 @@
 APIServerConfig:
   API: {}
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

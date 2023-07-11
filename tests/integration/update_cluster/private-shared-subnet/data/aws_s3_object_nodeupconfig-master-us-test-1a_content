@@ -1,6 +1,7 @@
 APIServerConfig:
   API:
     publicName: api.private-shared-subnet.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
