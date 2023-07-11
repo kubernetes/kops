@@ -74,8 +74,6 @@ Networking:
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 UseCiliumEtcd: true
-channels:
-- memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
   runc:

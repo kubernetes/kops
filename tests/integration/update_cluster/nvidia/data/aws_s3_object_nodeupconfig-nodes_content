@@ -57,8 +57,6 @@ NvidiaGPU:
   enabled: true
   package: nvidia-headless-515-server
 UpdatePolicy: automatic
-channels:
-- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
   nvidiaGPU:

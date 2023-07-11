@@ -227,6 +227,9 @@ CAs:
     -----END CERTIFICATE-----
 ClusterName: private-shared-subnet.example.com
 ContainerRuntime: containerd
+EtcdClusterNames:
+- main
+- events
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1
