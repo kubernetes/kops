@@ -44,7 +44,9 @@ type Config struct {
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
-	// Manifests for running etcd
+	// EtcdClusterNames are the names of the etcd clusters.
+	EtcdClusterNames []string `json:",omitempty"`
+	// EtcdManifests are the manifests for running etcd.
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
 
 	// CAs are the CA certificates to trust.
