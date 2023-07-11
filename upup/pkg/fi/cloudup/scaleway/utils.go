@@ -99,26 +99,35 @@ func checkCredentials(accessKey, secretKey, projectID string) []error {
 }
 
 func CreateValidScalewayProfile() (*scw.Profile, error) {
-	profile := &scw.Profile{
-		AccessKey:        fi.PtrTo(os.Getenv("SCW_ACCESS_KEY")),
-		SecretKey:        fi.PtrTo(os.Getenv("SCW_SECRET_KEY")),
-		DefaultProjectID: fi.PtrTo(os.Getenv("SCW_DEFAULT_PROJECT_ID")),
-	}
+	var profile scw.Profile
 
 	// If the profile is REDACTED, we're running integration tests so no need to return any credentials
 	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
-		return profile, nil
+		return &profile, nil
 	}
 
-	// If SCW_PROFILE is set, we load the credentials from the profile rather than from the environment
-	p, err := getScalewayProfile()
+	// We load the credentials form the profile first
+	profileFromScwConfig, err := getScalewayProfile()
 	if err != nil {
 		return nil, err
 	}
-	if p != nil {
-		profile.AccessKey = p.AccessKey
-		profile.SecretKey = p.SecretKey
-		profile.DefaultProjectID = p.DefaultProjectID
+	// We load the credentials from the environment second
+	var profileFromEnv scw.Profile
+	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey != "" {
+		profileFromEnv.AccessKey = &accessKey
+	}
+	if secretKey := os.Getenv("SCW_SECRET_KEY"); secretKey != "" {
+		profileFromEnv.SecretKey = &secretKey
+	}
+	if projectID := os.Getenv("SCW_DEFAULT_PROJECT_ID"); projectID != "" {
+		profileFromEnv.DefaultProjectID = &projectID
+	}
+
+	// We merge the profiles: the environment will override the values from the profile
+	if profileFromScwConfig == nil {
+		profile = profileFromEnv
+	} else {
+		profile = *scw.MergeProfiles(profileFromScwConfig, &profileFromEnv)
 	}
 
 	// We check that the profile has an access key, a secret key and a default project ID
@@ -131,5 +140,6 @@ func CreateValidScalewayProfile() (*scw.Profile, error) {
 		}
 		return nil, fmt.Errorf(errMsg)
 	}
-	return profile, nil
+
+	return &profile, nil
 }
