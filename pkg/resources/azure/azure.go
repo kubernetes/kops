@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
-	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 )
 
 const (
@@ -173,7 +172,7 @@ func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) 
 	if vnet.Subnets != nil {
 		for _, sn := range *vnet.Subnets {
 			if sn.NetworkSecurityGroup != nil {
-				nsgID, err := azuretasks.ParseNetworkSecurityGroupID(*sn.NetworkSecurityGroup.ID)
+				nsgID, err := azure.ParseNetworkSecurityGroupID(*sn.NetworkSecurityGroup.ID)
 				if err != nil {
 					return nil, fmt.Errorf("parsing network security group ID: %s", err)
 				}
@@ -347,7 +346,7 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 	lbs := map[string]struct{}{}
 	for _, iface := range *vmss.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations {
 		for _, ip := range *iface.IPConfigurations {
-			subnetID, err := azuretasks.ParseSubnetID(*ip.Subnet.ID)
+			subnetID, err := azure.ParseSubnetID(*ip.Subnet.ID)
 			if err != nil {
 				return nil, fmt.Errorf("error on parsing subnet ID: %s", err)
 			}
@@ -355,7 +354,7 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 			subnets[subnetID.SubnetName] = struct{}{}
 			if ip.LoadBalancerBackendAddressPools != nil {
 				for _, lb := range *ip.LoadBalancerBackendAddressPools {
-					lbID, err := azuretasks.ParseLoadBalancerID(*lb.ID)
+					lbID, err := azure.ParseLoadBalancerID(*lb.ID)
 					if err != nil {
 						return nil, fmt.Errorf("parsing load balancer ID: %s", err)
 					}
@@ -501,7 +500,7 @@ func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalanc
 	if loadBalancer.FrontendIPConfigurations != nil {
 		for _, fip := range *loadBalancer.FrontendIPConfigurations {
 			if fip.PublicIPAddress != nil {
-				pipID, err := azuretasks.ParsePublicIPAddressID(*fip.PublicIPAddress.ID)
+				pipID, err := azure.ParsePublicIPAddressID(*fip.PublicIPAddress.ID)
 				if err != nil {
 					return nil, fmt.Errorf("parsing public IP address ID: %s", err)
 				}

@@ -89,7 +89,7 @@ func TestListResourcesAzure(t *testing.T) {
 	}
 
 	vmsses := cloud.VMScaleSetsClient.VMSSes
-	subnetID := azuretasks.SubnetID{
+	subnetID := azure.SubnetID{
 		SubscriptionID:     "sid",
 		ResourceGroupName:  rgName,
 		VirtualNetworkName: vnetName,
