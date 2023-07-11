@@ -150,7 +150,11 @@ func (g *resourceGetter) listVirtualNetworksAndSubnets(ctx context.Context) ([]*
 		if !g.isOwnedByCluster(vnet.Tags) {
 			continue
 		}
-		rs = append(rs, g.toVirtualNetworkResource(vnet))
+		r, err := g.toVirtualNetworkResource(vnet)
+		if err != nil {
+			return nil, err
+		}
+		rs = append(rs, r)
 		// Add all subnets belonging to the virtual network.
 		subnets, err := g.listSubnets(ctx, *vnet.Name)
 		if err != nil {
@@ -161,16 +165,35 @@ func (g *resourceGetter) listVirtualNetworksAndSubnets(ctx context.Context) ([]*
 	return rs, nil
 }
 
-func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) *resources.Resource {
+func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) (*resources.Resource, error) {
+	var blocks []string
+	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
+
+	nsgs := map[string]struct{}{}
+	if vnet.Subnets != nil {
+		for _, sn := range *vnet.Subnets {
+			if sn.NetworkSecurityGroup != nil {
+				nsgID, err := azuretasks.ParseNetworkSecurityGroupID(*sn.NetworkSecurityGroup.ID)
+				if err != nil {
+					return nil, fmt.Errorf("parsing network security group ID: %s", err)
+				}
+				nsgs[nsgID.NetworkSecurityGroupName] = struct{}{}
+			}
+		}
+	}
+	for nsg := range nsgs {
+		blocks = append(blocks, toKey(typeNetworkSecurityGroup, nsg))
+	}
+
 	return &resources.Resource{
 		Obj:     vnet,
 		Type:    typeVirtualNetwork,
 		ID:      *vnet.Name,
 		Name:    *vnet.Name,
 		Deleter: g.deleteVirtualNetwork,
-		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
+		Blocks:  blocks,
 		Shared:  g.clusterInfo.AzureNetworkShared,
-	}
+	}, nil
 }
 
 func (g *resourceGetter) deleteVirtualNetwork(_ fi.Cloud, r *resources.Resource) error {
@@ -321,6 +344,7 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 
 	vnets := map[string]struct{}{}
 	subnets := map[string]struct{}{}
+	lbs := map[string]struct{}{}
 	for _, iface := range *vmss.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations {
 		for _, ip := range *iface.IPConfigurations {
 			subnetID, err := azuretasks.ParseSubnetID(*ip.Subnet.ID)
@@ -329,6 +353,15 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 			}
 			vnets[subnetID.VirtualNetworkName] = struct{}{}
 			subnets[subnetID.SubnetName] = struct{}{}
+			if ip.LoadBalancerBackendAddressPools != nil {
+				for _, lb := range *ip.LoadBalancerBackendAddressPools {
+					lbID, err := azuretasks.ParseLoadBalancerID(*lb.ID)
+					if err != nil {
+						return nil, fmt.Errorf("parsing load balancer ID: %s", err)
+					}
+					lbs[lbID.LoadBalancerName] = struct{}{}
+				}
+			}
 		}
 	}
 	for vnet := range vnets {
@@ -336,6 +369,9 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 	}
 	for subnet := range subnets {
 		blocks = append(blocks, toKey(typeSubnet, subnet))
+	}
+	for lb := range lbs {
+		blocks = append(blocks, toKey(typeLoadBalancer, lb))
 	}
 
 	for _, vm := range vms {
@@ -448,20 +484,43 @@ func (g *resourceGetter) listLoadBalancers(ctx context.Context) ([]*resources.Re
 		if !g.isOwnedByCluster(lb.Tags) {
 			continue
 		}
-		rs = append(rs, g.toLoadBalancerResource(lb))
+		r, err := g.toLoadBalancerResource(lb)
+		if err != nil {
+			return nil, err
+		}
+		rs = append(rs, r)
 	}
 	return rs, nil
 }
 
-func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalancer) *resources.Resource {
+func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalancer) (*resources.Resource, error) {
+	var blocks []string
+	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
+
+	pips := map[string]struct{}{}
+	if loadBalancer.FrontendIPConfigurations != nil {
+		for _, fip := range *loadBalancer.FrontendIPConfigurations {
+			if fip.PublicIPAddress != nil {
+				pipID, err := azuretasks.ParsePublicIPAddressID(*fip.PublicIPAddress.ID)
+				if err != nil {
+					return nil, fmt.Errorf("parsing public IP address ID: %s", err)
+				}
+				pips[pipID.PublicIPAddressName] = struct{}{}
+			}
+		}
+	}
+	for pip := range pips {
+		blocks = append(blocks, toKey(typePublicIPAddress, pip))
+	}
+
 	return &resources.Resource{
 		Obj:     loadBalancer,
 		Type:    typeLoadBalancer,
 		ID:      *loadBalancer.Name,
 		Name:    *loadBalancer.Name,
 		Deleter: g.deleteLoadBalancer,
-		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
-	}
+		Blocks:  blocks,
+	}, nil
 }
 
 func (g *resourceGetter) deleteLoadBalancer(_ fi.Cloud, r *resources.Resource) error {

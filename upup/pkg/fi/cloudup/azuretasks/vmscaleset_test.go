@@ -52,7 +52,7 @@ func TestLoadBalancerIDParse(t *testing.T) {
 		ResourceGroupName: "rg",
 		LoadBalancerName:  "lb",
 	}
-	actual, err := parseLoadBalancerID(loadBalancerID.String())
+	actual, err := ParseLoadBalancerID(loadBalancerID.String())
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}

@@ -60,6 +60,34 @@ func ParseSubnetID(s string) (*SubnetID, error) {
 	}, nil
 }
 
+// NetworkSecurityGroupID contains the resource ID/names required to construct a NetworkSecurityGroup ID.
+type NetworkSecurityGroupID struct {
+	SubscriptionID           string
+	ResourceGroupName        string
+	NetworkSecurityGroupName string
+}
+
+// String returns the NetworkSecurityGroup ID in the path format.
+func (s *NetworkSecurityGroupID) String() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/networkSecurityGroups/%s",
+		s.SubscriptionID,
+		s.ResourceGroupName,
+		s.NetworkSecurityGroupName)
+}
+
+// ParseNetworkSecurityGroupID parses a given NetworkSecurityGroup ID string and returns a NetworkSecurityGroup ID.
+func ParseNetworkSecurityGroupID(s string) (*NetworkSecurityGroupID, error) {
+	l := strings.Split(s, "/")
+	if len(l) != 9 {
+		return nil, fmt.Errorf("malformed format of NetworkSecurityGroup ID: %s, %d", s, len(l))
+	}
+	return &NetworkSecurityGroupID{
+		SubscriptionID:           l[2],
+		ResourceGroupName:        l[4],
+		NetworkSecurityGroupName: l[8],
+	}, nil
+}
+
 // loadBalancerID contains the resource ID/names required to construct a loadbalancer ID.
 type loadBalancerID struct {
 	SubscriptionID    string
@@ -76,8 +104,8 @@ func (lb *loadBalancerID) String() string {
 	)
 }
 
-// parseLoadBalancerID parses a given loadbalancer ID string and returns a loadBalancerID.
-func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
+// ParseLoadBalancerID parses a given loadbalancer ID string and returns a loadBalancerID.
+func ParseLoadBalancerID(lb string) (*loadBalancerID, error) {
 	l := strings.Split(lb, "/")
 	if len(l) != 11 {
 		return nil, fmt.Errorf("malformed format of loadbalancer ID: %s, %d", lb, len(l))
@@ -86,6 +114,34 @@ func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
 		SubscriptionID:    l[2],
 		ResourceGroupName: l[4],
 		LoadBalancerName:  l[8],
+	}, nil
+}
+
+// PublicIPAddressID contains the resource ID/names required to construct a PublicIPAddress ID.
+type PublicIPAddressID struct {
+	SubscriptionID      string
+	ResourceGroupName   string
+	PublicIPAddressName string
+}
+
+// String returns the PublicIPAddress ID in the path format.
+func (s *PublicIPAddressID) String() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresss/%s",
+		s.SubscriptionID,
+		s.ResourceGroupName,
+		s.PublicIPAddressName)
+}
+
+// ParsePublicIPAddressID parses a given PublicIPAddress ID string and returns a PublicIPAddress ID.
+func ParsePublicIPAddressID(s string) (*PublicIPAddressID, error) {
+	l := strings.Split(s, "/")
+	if len(l) != 9 {
+		return nil, fmt.Errorf("malformed format of PublicIPAddress ID: %s, %d", s, len(l))
+	}
+	return &PublicIPAddressID{
+		SubscriptionID:      l[2],
+		ResourceGroupName:   l[4],
+		PublicIPAddressName: l[8],
 	}, nil
 }
 
@@ -184,7 +240,7 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 			if !strings.Contains(*i.ID, "api") {
 				continue
 			}
-			loadBalancerID, err = parseLoadBalancerID(*i.ID)
+			loadBalancerID, err = ParseLoadBalancerID(*i.ID)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse loadbalancer ID %s", *ipConfig.Subnet.ID)
 			}
