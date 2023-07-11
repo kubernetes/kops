@@ -43,9 +43,9 @@ export KOPS_FEATURE_FLAGS="Scaleway"
 ### Scaleway Credentials
 
 To be able to use Scaleway APIs, it is required to set up your credentials in the [environment](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
-You have 2 ways to pass your credentials:
+You have two ways to pass your credentials:
 
-1. If you're already familiar with Scaleway's DevTools, then you probably have a config file (its default location is `$HOME/.config/scw/config.yaml`).
+1. If you are already familiar with Scaleway's DevTools, then you probably have a config file (its default location is `$HOME/.config/scw/config.yaml`).
 If so, you can use the profile of your choice by setting:
 ```bash
 export SCW_PROFILE="my-profile"
@@ -75,12 +75,12 @@ export S3_SECRET_ACCESS_KEY="my-secret-key" # where <my-secret-key> is the S3 AP
 ## Creating a Single Master Cluster
 
 ```bash
-# This creates a cluster with the gossip DNS in zone fr-par-1
-kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=fr-par-1 --yes
-# This creates a cluster with no DNS in zone nl-ams-2
-kops create cluster --cloud=scaleway --name=my.cluster --zones=nl-ams-2 --yes
+# This creates a cluster with no DNS in zone fr-par-1
+kops create cluster --cloud=scaleway --name=my.cluster --zones=fr-par-1 --dns=none --yes
 # This creates a cluster with the Scaleway DNS (on a domain name that you own and have registered with Scaleway) in zone pl-waw-1
 kops create cluster --cloud=scaleway --name=mycluster.mydomain.com --zones=pl-waw-1 --yes 
+# This creates a cluster with the gossip DNS in zone nl-ams-2. This is not recommended since the no-DNS option is available because it is more secure.
+kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=nl-ams-2 --yes
 ```
 These basic commands create a cluster with default parameters:
 - Container Network Interface = `cilium`. To change it, set the flag `--networking=calico`. To see the list of supported CNIs, check the [networking page](../networking.md)
@@ -93,7 +93,7 @@ These basic commands create a cluster with default parameters:
 # Next steps
 
 Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure _kops_ for production workloads.
-For example, you can migrate your cluster to [high-availability](../operations/high_availability.md)
+For example, you can migrate your cluster to [high-availability](../operations/high_availability.md).
 
 ### Editing your cluster
 
