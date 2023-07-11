@@ -17,7 +17,9 @@ limitations under the License.
 package model
 
 import (
+	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 // UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
@@ -68,4 +70,8 @@ func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	}
 
 	return false
+}
+
+func UseExternalECRCredentialsProvider(k8sVersion semver.Version, cloudProvider kops.CloudProviderID) bool {
+	return util.IsKubernetesGTE("1.27", k8sVersion) && cloudProvider == kops.CloudProviderAWS
 }

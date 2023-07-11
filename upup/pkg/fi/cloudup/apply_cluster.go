@@ -1054,7 +1054,8 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
-		if c.Cluster.UsesExternalECRCredentialsProvider() {
+		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+		if apiModel.UseExternalECRCredentialsProvider(*kubernetesVersion, c.Cluster.Spec.GetCloudProvider()) {
 			binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
 			if binaryLocation == nil {
 				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")

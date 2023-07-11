@@ -909,10 +909,6 @@ func (c *Cluster) UsesNoneDNS() bool {
 	return false
 }
 
-func (c *Cluster) UsesExternalECRCredentialsProvider() bool {
-	return c.IsKubernetesGTE("1.27") && c.Spec.GetCloudProvider() == CloudProviderAWS
-}
-
 func (c *Cluster) APIInternalName() string {
 	return "api.internal." + c.ObjectMeta.Name
 }
