@@ -105,16 +105,9 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(server.IPv6.Address.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 	}
 
-	igName := ""
-	for _, tag := range server.Tags {
-		if strings.HasPrefix(tag, TagInstanceGroup) {
-			igName = strings.TrimPrefix(tag, TagInstanceGroup+"=")
-		}
-	}
-
 	result := &bootstrap.VerifyResult{
 		NodeName:          server.Name,
-		InstanceGroupName: igName,
+		InstanceGroupName: InstanceGroupNameFromTags(server.Tags),
 		CertificateNames:  addresses,
 		ChallengeEndpoint: challengeEndPoints[0],
 	}
