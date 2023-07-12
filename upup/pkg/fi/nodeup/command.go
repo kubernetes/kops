@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
@@ -772,6 +773,12 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		authenticator = a
 	case api.CloudProviderScaleway:
 		a, err := scaleway.NewScalewayAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	case api.CloudProviderAzure:
+		a, err := azure.NewAzureAuthenticator()
 		if err != nil {
 			return nil, err
 		}

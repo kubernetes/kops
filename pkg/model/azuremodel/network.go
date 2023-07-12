@@ -18,8 +18,10 @@ package azuremodel
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 	"k8s.io/utils/net"
@@ -109,7 +111,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SourceAddressPrefixes:    &k8sAccessIPv4,
 			SourcePortRange:          fi.PtrTo("*"),
 			DestinationAddressPrefix: fi.PtrTo("*"),
-			DestinationPortRange:     fi.PtrTo("443"),
+			DestinationPortRange:     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 	}
 	if len(k8sAccessIPv6) > 0 {
@@ -122,7 +124,32 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SourceAddressPrefixes:    &k8sAccessIPv6,
 			SourcePortRange:          fi.PtrTo("*"),
 			DestinationAddressPrefix: fi.PtrTo("*"),
-			DestinationPortRange:     fi.PtrTo("443"),
+			DestinationPortRange:     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
+		})
+	}
+	if b.Cluster.UsesNoneDNS() {
+		// TODO: Limit access to necessary source address prefixes instead of "0.0.0.0/0" and "::/0"
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowKopsController"),
+			Priority:                 fi.PtrTo[int32](210),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefix:      fi.PtrTo("0.0.0.0/0"),
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo(strconv.Itoa(wellknownports.KopsControllerPort)),
+		})
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                     fi.PtrTo("AllowKopsController_v6"),
+			Priority:                 fi.PtrTo[int32](211),
+			Access:                   network.SecurityRuleAccessAllow,
+			Direction:                network.SecurityRuleDirectionInbound,
+			Protocol:                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefix:      fi.PtrTo("::/0"),
+			SourcePortRange:          fi.PtrTo("*"),
+			DestinationAddressPrefix: fi.PtrTo("*"),
+			DestinationPortRange:     fi.PtrTo(strconv.Itoa(wellknownports.KopsControllerPort)),
 		})
 	}
 	var nodePortAccessIPv4, nodePortAccessIPv6 []string

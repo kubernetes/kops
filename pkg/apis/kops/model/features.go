@@ -24,7 +24,7 @@ import (
 
 // UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
 func UseKopsControllerForNodeBootstrap(cloudProvider kops.CloudProviderID) bool {
-	return cloudProvider != kops.CloudProviderAzure
+	return true
 }
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.

@@ -576,6 +576,16 @@ func (c *MockLoadBalancersClient) List(ctx context.Context, resourceGroupName st
 	return l, nil
 }
 
+// Get returns a loadbalancer.
+func (c *MockLoadBalancersClient) Get(ctx context.Context, resourceGroupName string, loadBalancerName string) (*network.LoadBalancer, error) {
+	for _, lb := range c.LBs {
+		if *lb.Name == loadBalancerName {
+			return nil, nil
+		}
+	}
+	return nil, nil
+}
+
 // Delete deletes a specified loadbalancer.
 func (c *MockLoadBalancersClient) Delete(ctx context.Context, scope, lbName string) error {
 	// Ignore scope for simplicity.

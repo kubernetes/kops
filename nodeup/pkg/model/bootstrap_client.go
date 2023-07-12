@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
@@ -89,6 +90,12 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		authenticator = a
 	case kops.CloudProviderScaleway:
 		a, err := scaleway.NewScalewayAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+	case kops.CloudProviderAzure:
+		a, err := azure.NewAzureAuthenticator()
 		if err != nil {
 			return err
 		}

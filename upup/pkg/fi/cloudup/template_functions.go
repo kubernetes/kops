@@ -62,6 +62,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
@@ -738,6 +739,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 		case kops.CloudProviderScaleway:
 			config.Server.Provider.Scaleway = &scaleway.ScalewayVerifierOptions{}
+
+		case kops.CloudProviderAzure:
+			config.Server.Provider.Azure = &azure.AzureVerifierOptions{}
 
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())

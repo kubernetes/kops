@@ -42,6 +42,7 @@ import (
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -149,6 +150,12 @@ func main() {
 			}
 		} else if opt.Server.Provider.Scaleway != nil {
 			verifier, err = scaleway.NewScalewayVerifier(ctx, opt.Server.Provider.Scaleway)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.Azure != nil {
+			verifier, err = azure.NewAzureVerifier(ctx, opt.Server.Provider.Azure)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
