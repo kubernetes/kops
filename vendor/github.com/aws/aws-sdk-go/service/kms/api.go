@@ -974,6 +974,9 @@ func (c *KMS) CreateGrantRequest(input *CreateGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/CreateGrant
 func (c *KMS) CreateGrant(input *CreateGrantInput) (*CreateGrantOutput, error) {
 	req, out := c.CreateGrantRequest(input)
@@ -1562,6 +1565,9 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Decrypt
 func (c *KMS) Decrypt(input *DecryptInput) (*DecryptOutput, error) {
@@ -3278,6 +3284,9 @@ func (c *KMS) EncryptRequest(input *EncryptInput) (req *request.Request, output 
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Encrypt
 func (c *KMS) Encrypt(input *EncryptInput) (*EncryptOutput, error) {
 	req, out := c.EncryptRequest(input)
@@ -3500,6 +3509,9 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKey
 func (c *KMS) GenerateDataKey(input *GenerateDataKeyInput) (*GenerateDataKeyOutput, error) {
 	req, out := c.GenerateDataKeyRequest(input)
@@ -3716,6 +3728,9 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 //     The request was rejected because a specified parameter is not supported or
 //     a specified resource is not valid for this operation.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyPair
 func (c *KMS) GenerateDataKeyPair(input *GenerateDataKeyPairInput) (*GenerateDataKeyPairOutput, error) {
 	req, out := c.GenerateDataKeyPairRequest(input)
@@ -3906,6 +3921,9 @@ func (c *KMS) GenerateDataKeyPairWithoutPlaintextRequest(input *GenerateDataKeyP
 //   - UnsupportedOperationException
 //     The request was rejected because a specified parameter is not supported or
 //     a specified resource is not valid for this operation.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyPairWithoutPlaintext
 func (c *KMS) GenerateDataKeyPairWithoutPlaintext(input *GenerateDataKeyPairWithoutPlaintextInput) (*GenerateDataKeyPairWithoutPlaintextOutput, error) {
@@ -4106,6 +4124,9 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyWithoutPlaintext
 func (c *KMS) GenerateDataKeyWithoutPlaintext(input *GenerateDataKeyWithoutPlaintextInput) (*GenerateDataKeyWithoutPlaintextOutput, error) {
 	req, out := c.GenerateDataKeyWithoutPlaintextRequest(input)
@@ -4264,6 +4285,9 @@ func (c *KMS) GenerateMacRequest(input *GenerateMacInput) (req *request.Request,
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateMac
 func (c *KMS) GenerateMac(input *GenerateMacInput) (*GenerateMacOutput, error) {
@@ -6751,6 +6775,9 @@ func (c *KMS) ReEncryptRequest(input *ReEncryptInput) (req *request.Request, out
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/ReEncrypt
 func (c *KMS) ReEncrypt(input *ReEncryptInput) (*ReEncryptOutput, error) {
 	req, out := c.ReEncryptRequest(input)
@@ -7107,6 +7134,9 @@ func (c *KMS) RetireGrantRequest(input *RetireGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RetireGrant
 func (c *KMS) RetireGrant(input *RetireGrantInput) (*RetireGrantOutput, error) {
 	req, out := c.RetireGrantRequest(input)
@@ -7250,6 +7280,9 @@ func (c *KMS) RevokeGrantRequest(input *RevokeGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RevokeGrant
 func (c *KMS) RevokeGrant(input *RevokeGrantInput) (*RevokeGrantOutput, error) {
 	req, out := c.RevokeGrantRequest(input)
@@ -7328,9 +7361,8 @@ func (c *KMS) ScheduleKeyDeletionRequest(input *ScheduleKeyDeletionInput) (req *
 // Deleting a KMS key is a destructive and potentially dangerous operation.
 // When a KMS key is deleted, all data that was encrypted under the KMS key
 // is unrecoverable. (The only exception is a multi-Region replica key (kms/latest/developerguide/multi-region-keys-delete.html),
-// or an asymmetric or HMAC KMS key with imported key material[BUGBUG-link to
-// importing-keys-managing.html#import-delete-key.) To prevent the use of a
-// KMS key without deleting it, use DisableKey.
+// or an asymmetric or HMAC KMS key with imported key material (kms/latest/developerguide/importing-keys-managing.html#import-delete-key).)
+// To prevent the use of a KMS key without deleting it, use DisableKey.
 //
 // You can schedule the deletion of a multi-Region primary key and its replica
 // keys at any time. However, KMS will not delete a multi-Region primary key
@@ -7597,6 +7629,9 @@ func (c *KMS) SignRequest(input *SignInput) (req *request.Request, output *SignO
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Sign
 func (c *KMS) Sign(input *SignInput) (*SignOutput, error) {
@@ -8857,6 +8892,9 @@ func (c *KMS) VerifyRequest(input *VerifyInput) (req *request.Request, output *V
 //     verification fails when it cannot confirm that signature was produced by
 //     signing the specified message with the specified KMS key and signing algorithm.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Verify
 func (c *KMS) Verify(input *VerifyInput) (*VerifyOutput, error) {
 	req, out := c.VerifyRequest(input)
@@ -9014,6 +9052,9 @@ func (c *KMS) VerifyMacRequest(input *VerifyMacInput) (req *request.Request, out
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/VerifyMac
 func (c *KMS) VerifyMac(input *VerifyMacInput) (*VerifyMacOutput, error) {
@@ -10165,6 +10206,13 @@ type CreateGrantInput struct {
 	// in the Key Management Service Developer Guide .
 	Constraints *GrantConstraints `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// A list of grant tokens.
 	//
 	// Use a grant token when your permission to call this operation comes from
@@ -10300,6 +10348,12 @@ func (s *CreateGrantInput) Validate() error {
 // SetConstraints sets the Constraints field's value.
 func (s *CreateGrantInput) SetConstraints(v *GrantConstraints) *CreateGrantInput {
 	s.Constraints = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateGrantInput) SetDryRun(v bool) *CreateGrantInput {
+	s.DryRun = &v
 	return s
 }
 
@@ -11333,6 +11387,13 @@ type DecryptInput struct {
 	// CiphertextBlob is a required field
 	CiphertextBlob []byte `min:"1" type:"blob" required:"true"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption algorithm that will be used to decrypt the ciphertext.
 	// Specify the same algorithm that was used to encrypt the data. If you specify
 	// a different algorithm, the Decrypt operation fails.
@@ -11465,6 +11526,12 @@ func (s *DecryptInput) Validate() error {
 // SetCiphertextBlob sets the CiphertextBlob field's value.
 func (s *DecryptInput) SetCiphertextBlob(v []byte) *DecryptInput {
 	s.CiphertextBlob = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DecryptInput) SetDryRun(v bool) *DecryptInput {
+	s.DryRun = &v
 	return s
 }
 
@@ -12435,6 +12502,70 @@ func (s DisconnectCustomKeyStoreOutput) GoString() string {
 	return s.String()
 }
 
+// The request was rejected because the DryRun parameter was specified.
+type DryRunOperationException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DryRunOperationException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DryRunOperationException) GoString() string {
+	return s.String()
+}
+
+func newErrorDryRunOperationException(v protocol.ResponseMetadata) error {
+	return &DryRunOperationException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *DryRunOperationException) Code() string {
+	return "DryRunOperationException"
+}
+
+// Message returns the exception's message.
+func (s *DryRunOperationException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *DryRunOperationException) OrigErr() error {
+	return nil
+}
+
+func (s *DryRunOperationException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *DryRunOperationException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *DryRunOperationException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type EnableKeyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12607,6 +12738,13 @@ func (s EnableKeyRotationOutput) GoString() string {
 type EncryptInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption algorithm that KMS will use to encrypt the plaintext
 	// message. The algorithm must be compatible with the KMS key that you specify.
 	//
@@ -12721,6 +12859,12 @@ func (s *EncryptInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *EncryptInput) SetDryRun(v bool) *EncryptInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetEncryptionAlgorithm sets the EncryptionAlgorithm field's value.
@@ -12874,6 +13018,13 @@ func (s *ExpiredImportTokenException) RequestID() string {
 type GenerateDataKeyInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
 	//
@@ -13007,6 +13158,12 @@ func (s *GenerateDataKeyInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyInput) SetDryRun(v bool) *GenerateDataKeyInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetEncryptionContext sets the EncryptionContext field's value.
 func (s *GenerateDataKeyInput) SetEncryptionContext(v map[string]*string) *GenerateDataKeyInput {
 	s.EncryptionContext = v
@@ -13128,6 +13285,13 @@ func (s *GenerateDataKeyOutput) SetPlaintext(v []byte) *GenerateDataKeyOutput {
 
 type GenerateDataKeyPairInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
@@ -13258,6 +13422,12 @@ func (s *GenerateDataKeyPairInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyPairInput) SetDryRun(v bool) *GenerateDataKeyPairInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetEncryptionContext sets the EncryptionContext field's value.
@@ -13394,6 +13564,13 @@ func (s *GenerateDataKeyPairOutput) SetPublicKey(v []byte) *GenerateDataKeyPairO
 type GenerateDataKeyPairWithoutPlaintextInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
 	//
@@ -13496,6 +13673,12 @@ func (s *GenerateDataKeyPairWithoutPlaintextInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyPairWithoutPlaintextInput) SetDryRun(v bool) *GenerateDataKeyPairWithoutPlaintextInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetEncryptionContext sets the EncryptionContext field's value.
 func (s *GenerateDataKeyPairWithoutPlaintextInput) SetEncryptionContext(v map[string]*string) *GenerateDataKeyPairWithoutPlaintextInput {
 	s.EncryptionContext = v
@@ -13585,6 +13768,13 @@ func (s *GenerateDataKeyPairWithoutPlaintextOutput) SetPublicKey(v []byte) *Gene
 
 type GenerateDataKeyWithoutPlaintextInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
@@ -13686,6 +13876,12 @@ func (s *GenerateDataKeyWithoutPlaintextInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyWithoutPlaintextInput) SetDryRun(v bool) *GenerateDataKeyWithoutPlaintextInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetEncryptionContext sets the EncryptionContext field's value.
 func (s *GenerateDataKeyWithoutPlaintextInput) SetEncryptionContext(v map[string]*string) *GenerateDataKeyWithoutPlaintextInput {
 	s.EncryptionContext = v
@@ -13761,6 +13957,13 @@ func (s *GenerateDataKeyWithoutPlaintextOutput) SetKeyId(v string) *GenerateData
 
 type GenerateMacInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -13846,6 +14049,12 @@ func (s *GenerateMacInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateMacInput) SetDryRun(v bool) *GenerateMacInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetGrantTokens sets the GrantTokens field's value.
@@ -17801,6 +18010,13 @@ type ReEncryptInput struct {
 	// DestinationKeyId is a required field
 	DestinationKeyId *string `min:"1" type:"string" required:"true"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// A list of grant tokens.
 	//
 	// Use a grant token when your permission to call this operation comes from
@@ -17932,6 +18148,12 @@ func (s *ReEncryptInput) SetDestinationEncryptionContext(v map[string]*string) *
 // SetDestinationKeyId sets the DestinationKeyId field's value.
 func (s *ReEncryptInput) SetDestinationKeyId(v string) *ReEncryptInput {
 	s.DestinationKeyId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ReEncryptInput) SetDryRun(v bool) *ReEncryptInput {
+	s.DryRun = &v
 	return s
 }
 
@@ -18387,6 +18609,13 @@ func (s *ReplicateKeyOutput) SetReplicaTags(v []*Tag) *ReplicateKeyOutput {
 type RetireGrantInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Identifies the grant to retire. To get the grant ID, use CreateGrant, ListGrants,
 	// or ListRetirableGrants.
 	//
@@ -18446,6 +18675,12 @@ func (s *RetireGrantInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *RetireGrantInput) SetDryRun(v bool) *RetireGrantInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantId sets the GrantId field's value.
 func (s *RetireGrantInput) SetGrantId(v string) *RetireGrantInput {
 	s.GrantId = &v
@@ -18488,6 +18723,13 @@ func (s RetireGrantOutput) GoString() string {
 
 type RevokeGrantInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// Identifies the grant to revoke. To get the grant ID, use CreateGrant, ListGrants,
 	// or ListRetirableGrants.
@@ -18553,6 +18795,12 @@ func (s *RevokeGrantInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *RevokeGrantInput) SetDryRun(v bool) *RevokeGrantInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantId sets the GrantId field's value.
 func (s *RevokeGrantInput) SetGrantId(v string) *RevokeGrantInput {
 	s.GrantId = &v
@@ -18614,7 +18862,7 @@ type ScheduleKeyDeletionInput struct {
 	//
 	// This value is optional. If you include a value, it must be between 7 and
 	// 30, inclusive. If you do not include a value, it defaults to 30. You can
-	// use the kms:ScheduleKeyDeletionPendingWindowInDays (https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-pending-deletion-window)
+	// use the kms:ScheduleKeyDeletionPendingWindowInDays (https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-schedule-key-deletion-pending-window-in-days)
 	// condition key to further constrain the values that principals can specify
 	// in the PendingWindowInDays parameter.
 	PendingWindowInDays *int64 `min:"1" type:"integer"`
@@ -18742,6 +18990,13 @@ func (s *ScheduleKeyDeletionOutput) SetPendingWindowInDays(v int64) *ScheduleKey
 
 type SignInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -18876,6 +19131,12 @@ func (s *SignInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *SignInput) SetDryRun(v bool) *SignInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetGrantTokens sets the GrantTokens field's value.
@@ -19953,6 +20214,13 @@ func (s UpdatePrimaryRegionOutput) GoString() string {
 type VerifyInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// A list of grant tokens.
 	//
 	// Use a grant token when your permission to call this operation comes from
@@ -20099,6 +20367,12 @@ func (s *VerifyInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *VerifyInput) SetDryRun(v bool) *VerifyInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantTokens sets the GrantTokens field's value.
 func (s *VerifyInput) SetGrantTokens(v []*string) *VerifyInput {
 	s.GrantTokens = v
@@ -20137,6 +20411,13 @@ func (s *VerifyInput) SetSigningAlgorithm(v string) *VerifyInput {
 
 type VerifyMacInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -20234,6 +20515,12 @@ func (s *VerifyMacInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *VerifyMacInput) SetDryRun(v bool) *VerifyMacInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetGrantTokens sets the GrantTokens field's value.
