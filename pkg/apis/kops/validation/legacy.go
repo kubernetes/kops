@@ -244,17 +244,6 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 	return allErrs
 }
 
-// validateSubnetCIDR is responsible for validating subnets are part of the CIDRs assigned to the cluster.
-func validateSubnetCIDR(networkCIDRs []*net.IPNet, subnetCIDR *net.IPNet) bool {
-	for _, additionalNetworkCIDR := range networkCIDRs {
-		if subnet.BelongsTo(additionalNetworkCIDR, subnetCIDR) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // DeepValidate is responsible for validating the instancegroups within the cluster spec
 func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cloud fi.Cloud) error {
 	if errs := ValidateCluster(c, strict); len(errs) != 0 {

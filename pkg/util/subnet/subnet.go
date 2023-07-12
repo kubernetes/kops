@@ -24,6 +24,9 @@ import (
 
 // Overlap checks if two subnets overlap
 func Overlap(l, r *net.IPNet) bool {
+	if l == nil || r == nil {
+		return false
+	}
 	return l.Contains(r.IP) || r.Contains(l.IP)
 }
 

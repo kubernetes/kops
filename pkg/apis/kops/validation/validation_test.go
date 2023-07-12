@@ -197,7 +197,7 @@ func TestValidateSubnets(t *testing.T) {
 			},
 		}
 		_, ipNet, _ := net.ParseCIDR(cluster.Networking.NetworkCIDR)
-		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet})
+		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet}, nil, nil)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -394,6 +394,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 				Networking: kops.NetworkingSpec{
 					NetworkCIDR:           "10.0.0.0/8",
 					NonMasqueradeCIDR:     "100.64.0.0/10",
+					PodCIDR:               "100.96.0.0/11",
 					ServiceClusterIPRange: "100.64.0.0/13",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
@@ -460,6 +461,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Networking: kops.NetworkingSpec{
 				NetworkCIDR:           "10.10.0.0/16",
 				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.96.0.0/11",
 				ServiceClusterIPRange: "100.64.0.0/13",
 				Subnets: []kops.ClusterSubnetSpec{
 					{
