@@ -1752,7 +1752,7 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      dnsPolicy: Default
+      dnsPolicy: ClusterFirst
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1000

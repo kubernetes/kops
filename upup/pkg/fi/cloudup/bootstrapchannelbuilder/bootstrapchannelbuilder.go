@@ -1242,7 +1242,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			})
 		}
 	}
-	if b.Cluster.Spec.Karpenter != nil && fi.ValueOf(&b.Cluster.Spec.Karpenter.Enabled) {
+	if b.Cluster.Spec.Karpenter != nil && b.Cluster.Spec.Karpenter.Enabled {
 		key := "karpenter.sh"
 
 		{
