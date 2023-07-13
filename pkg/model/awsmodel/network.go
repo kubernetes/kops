@@ -468,7 +468,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Tags:      nil, // We don't need to add tags here
 				}
 
-				c.AddTask(in)
+				c.EnsureTask(in)
 			} else if strings.HasPrefix(egress, "tgw-") {
 				tgwID = &egress
 			} else if egress == "External" {
