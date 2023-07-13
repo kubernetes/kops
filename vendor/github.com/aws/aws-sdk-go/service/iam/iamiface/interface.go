@@ -318,6 +318,10 @@ type IAMAPI interface {
 	GetLoginProfileWithContext(aws.Context, *iam.GetLoginProfileInput, ...request.Option) (*iam.GetLoginProfileOutput, error)
 	GetLoginProfileRequest(*iam.GetLoginProfileInput) (*request.Request, *iam.GetLoginProfileOutput)
 
+	GetMFADevice(*iam.GetMFADeviceInput) (*iam.GetMFADeviceOutput, error)
+	GetMFADeviceWithContext(aws.Context, *iam.GetMFADeviceInput, ...request.Option) (*iam.GetMFADeviceOutput, error)
+	GetMFADeviceRequest(*iam.GetMFADeviceInput) (*request.Request, *iam.GetMFADeviceOutput)
+
 	GetOpenIDConnectProvider(*iam.GetOpenIDConnectProviderInput) (*iam.GetOpenIDConnectProviderOutput, error)
 	GetOpenIDConnectProviderWithContext(aws.Context, *iam.GetOpenIDConnectProviderInput, ...request.Option) (*iam.GetOpenIDConnectProviderOutput, error)
 	GetOpenIDConnectProviderRequest(*iam.GetOpenIDConnectProviderInput) (*request.Request, *iam.GetOpenIDConnectProviderOutput)
@@ -441,6 +445,9 @@ type IAMAPI interface {
 	ListInstanceProfileTagsWithContext(aws.Context, *iam.ListInstanceProfileTagsInput, ...request.Option) (*iam.ListInstanceProfileTagsOutput, error)
 	ListInstanceProfileTagsRequest(*iam.ListInstanceProfileTagsInput) (*request.Request, *iam.ListInstanceProfileTagsOutput)
 
+	ListInstanceProfileTagsPages(*iam.ListInstanceProfileTagsInput, func(*iam.ListInstanceProfileTagsOutput, bool) bool) error
+	ListInstanceProfileTagsPagesWithContext(aws.Context, *iam.ListInstanceProfileTagsInput, func(*iam.ListInstanceProfileTagsOutput, bool) bool, ...request.Option) error
+
 	ListInstanceProfiles(*iam.ListInstanceProfilesInput) (*iam.ListInstanceProfilesOutput, error)
 	ListInstanceProfilesWithContext(aws.Context, *iam.ListInstanceProfilesInput, ...request.Option) (*iam.ListInstanceProfilesOutput, error)
 	ListInstanceProfilesRequest(*iam.ListInstanceProfilesInput) (*request.Request, *iam.ListInstanceProfilesOutput)
@@ -459,6 +466,9 @@ type IAMAPI interface {
 	ListMFADeviceTagsWithContext(aws.Context, *iam.ListMFADeviceTagsInput, ...request.Option) (*iam.ListMFADeviceTagsOutput, error)
 	ListMFADeviceTagsRequest(*iam.ListMFADeviceTagsInput) (*request.Request, *iam.ListMFADeviceTagsOutput)
 
+	ListMFADeviceTagsPages(*iam.ListMFADeviceTagsInput, func(*iam.ListMFADeviceTagsOutput, bool) bool) error
+	ListMFADeviceTagsPagesWithContext(aws.Context, *iam.ListMFADeviceTagsInput, func(*iam.ListMFADeviceTagsOutput, bool) bool, ...request.Option) error
+
 	ListMFADevices(*iam.ListMFADevicesInput) (*iam.ListMFADevicesOutput, error)
 	ListMFADevicesWithContext(aws.Context, *iam.ListMFADevicesInput, ...request.Option) (*iam.ListMFADevicesOutput, error)
 	ListMFADevicesRequest(*iam.ListMFADevicesInput) (*request.Request, *iam.ListMFADevicesOutput)
@@ -469,6 +479,9 @@ type IAMAPI interface {
 	ListOpenIDConnectProviderTags(*iam.ListOpenIDConnectProviderTagsInput) (*iam.ListOpenIDConnectProviderTagsOutput, error)
 	ListOpenIDConnectProviderTagsWithContext(aws.Context, *iam.ListOpenIDConnectProviderTagsInput, ...request.Option) (*iam.ListOpenIDConnectProviderTagsOutput, error)
 	ListOpenIDConnectProviderTagsRequest(*iam.ListOpenIDConnectProviderTagsInput) (*request.Request, *iam.ListOpenIDConnectProviderTagsOutput)
+
+	ListOpenIDConnectProviderTagsPages(*iam.ListOpenIDConnectProviderTagsInput, func(*iam.ListOpenIDConnectProviderTagsOutput, bool) bool) error
+	ListOpenIDConnectProviderTagsPagesWithContext(aws.Context, *iam.ListOpenIDConnectProviderTagsInput, func(*iam.ListOpenIDConnectProviderTagsOutput, bool) bool, ...request.Option) error
 
 	ListOpenIDConnectProviders(*iam.ListOpenIDConnectProvidersInput) (*iam.ListOpenIDConnectProvidersOutput, error)
 	ListOpenIDConnectProvidersWithContext(aws.Context, *iam.ListOpenIDConnectProvidersInput, ...request.Option) (*iam.ListOpenIDConnectProvidersOutput, error)
@@ -489,6 +502,9 @@ type IAMAPI interface {
 	ListPolicyTagsWithContext(aws.Context, *iam.ListPolicyTagsInput, ...request.Option) (*iam.ListPolicyTagsOutput, error)
 	ListPolicyTagsRequest(*iam.ListPolicyTagsInput) (*request.Request, *iam.ListPolicyTagsOutput)
 
+	ListPolicyTagsPages(*iam.ListPolicyTagsInput, func(*iam.ListPolicyTagsOutput, bool) bool) error
+	ListPolicyTagsPagesWithContext(aws.Context, *iam.ListPolicyTagsInput, func(*iam.ListPolicyTagsOutput, bool) bool, ...request.Option) error
+
 	ListPolicyVersions(*iam.ListPolicyVersionsInput) (*iam.ListPolicyVersionsOutput, error)
 	ListPolicyVersionsWithContext(aws.Context, *iam.ListPolicyVersionsInput, ...request.Option) (*iam.ListPolicyVersionsOutput, error)
 	ListPolicyVersionsRequest(*iam.ListPolicyVersionsInput) (*request.Request, *iam.ListPolicyVersionsOutput)
@@ -507,6 +523,9 @@ type IAMAPI interface {
 	ListRoleTagsWithContext(aws.Context, *iam.ListRoleTagsInput, ...request.Option) (*iam.ListRoleTagsOutput, error)
 	ListRoleTagsRequest(*iam.ListRoleTagsInput) (*request.Request, *iam.ListRoleTagsOutput)
 
+	ListRoleTagsPages(*iam.ListRoleTagsInput, func(*iam.ListRoleTagsOutput, bool) bool) error
+	ListRoleTagsPagesWithContext(aws.Context, *iam.ListRoleTagsInput, func(*iam.ListRoleTagsOutput, bool) bool, ...request.Option) error
+
 	ListRoles(*iam.ListRolesInput) (*iam.ListRolesOutput, error)
 	ListRolesWithContext(aws.Context, *iam.ListRolesInput, ...request.Option) (*iam.ListRolesOutput, error)
 	ListRolesRequest(*iam.ListRolesInput) (*request.Request, *iam.ListRolesOutput)
@@ -517,6 +536,9 @@ type IAMAPI interface {
 	ListSAMLProviderTags(*iam.ListSAMLProviderTagsInput) (*iam.ListSAMLProviderTagsOutput, error)
 	ListSAMLProviderTagsWithContext(aws.Context, *iam.ListSAMLProviderTagsInput, ...request.Option) (*iam.ListSAMLProviderTagsOutput, error)
 	ListSAMLProviderTagsRequest(*iam.ListSAMLProviderTagsInput) (*request.Request, *iam.ListSAMLProviderTagsOutput)
+
+	ListSAMLProviderTagsPages(*iam.ListSAMLProviderTagsInput, func(*iam.ListSAMLProviderTagsOutput, bool) bool) error
+	ListSAMLProviderTagsPagesWithContext(aws.Context, *iam.ListSAMLProviderTagsInput, func(*iam.ListSAMLProviderTagsOutput, bool) bool, ...request.Option) error
 
 	ListSAMLProviders(*iam.ListSAMLProvidersInput) (*iam.ListSAMLProvidersOutput, error)
 	ListSAMLProvidersWithContext(aws.Context, *iam.ListSAMLProvidersInput, ...request.Option) (*iam.ListSAMLProvidersOutput, error)
@@ -532,6 +554,9 @@ type IAMAPI interface {
 	ListServerCertificateTags(*iam.ListServerCertificateTagsInput) (*iam.ListServerCertificateTagsOutput, error)
 	ListServerCertificateTagsWithContext(aws.Context, *iam.ListServerCertificateTagsInput, ...request.Option) (*iam.ListServerCertificateTagsOutput, error)
 	ListServerCertificateTagsRequest(*iam.ListServerCertificateTagsInput) (*request.Request, *iam.ListServerCertificateTagsOutput)
+
+	ListServerCertificateTagsPages(*iam.ListServerCertificateTagsInput, func(*iam.ListServerCertificateTagsOutput, bool) bool) error
+	ListServerCertificateTagsPagesWithContext(aws.Context, *iam.ListServerCertificateTagsInput, func(*iam.ListServerCertificateTagsOutput, bool) bool, ...request.Option) error
 
 	ListServerCertificates(*iam.ListServerCertificatesInput) (*iam.ListServerCertificatesOutput, error)
 	ListServerCertificatesWithContext(aws.Context, *iam.ListServerCertificatesInput, ...request.Option) (*iam.ListServerCertificatesOutput, error)
