@@ -19,7 +19,6 @@ package protokube
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -108,11 +107,8 @@ func (s ScwCloudProvider) InstanceInternalIP() net.IP {
 }
 
 func (s *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
-	for _, tag := range s.server.Tags {
-		if !strings.HasPrefix(tag, scaleway.TagClusterName) {
-			continue
-		}
-		clusterName := strings.TrimPrefix(tag, scaleway.TagClusterName+"=")
+	clusterName := scaleway.ClusterNameFromTags(s.server.Tags)
+	if clusterName != "" {
 		return gossipscw.NewSeedProvider(s.scwClient, clusterName)
 	}
 	return nil, fmt.Errorf("failed to find cluster name label for running server: %v", s.server.Tags)

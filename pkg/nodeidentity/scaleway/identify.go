@@ -100,20 +100,16 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	labels := map[string]string{}
-	for _, tag := range server.Tags {
-		if strings.HasPrefix(tag, scaleway.TagNameRolePrefix) {
-			role := strings.TrimPrefix(tag, scaleway.TagNameRolePrefix+"=")
-			switch kops.InstanceGroupRole(role) {
-			case kops.InstanceGroupRoleControlPlane:
-				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode:
-				labels[nodelabels.RoleLabelNode16] = ""
-			case kops.InstanceGroupRoleAPIServer:
-				labels[nodelabels.RoleLabelAPIServer16] = ""
-			default:
-				klog.Warningf("Unknown node role %q for server %s(%d)", role, server.Name, server.ID)
-			}
-		}
+	role := scaleway.InstanceRoleFromTags(server.Tags)
+	switch kops.InstanceGroupRole(role) {
+	case kops.InstanceGroupRoleControlPlane:
+		labels[nodelabels.RoleLabelControlPlane20] = ""
+	case kops.InstanceGroupRoleNode:
+		labels[nodelabels.RoleLabelNode16] = ""
+	case kops.InstanceGroupRoleAPIServer:
+		labels[nodelabels.RoleLabelAPIServer16] = ""
+	default:
+		klog.Warningf("Unknown node role %q for server %s(%d)", role, server.Name, server.ID)
 	}
 
 	info := &nodeidentity.Info{

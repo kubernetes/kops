@@ -147,12 +147,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 }
 
 func (s *scwCloudImplementation) ClusterName(tags []string) string {
-	for _, tag := range tags {
-		if strings.HasPrefix(tag, TagClusterName) {
-			return strings.TrimPrefix(tag, TagClusterName+"=")
-		}
-	}
-	return ""
+	return ClusterNameFromTags(tags)
 }
 
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {
@@ -345,13 +340,7 @@ func findServerGroups(s *scwCloudImplementation, clusterName string) (map[string
 
 	serverGroups := make(map[string][]*instance.Server)
 	for _, server := range servers {
-		igName := ""
-		for _, tag := range server.Tags {
-			if strings.HasPrefix(tag, TagInstanceGroup) {
-				igName = strings.TrimPrefix(tag, TagInstanceGroup+"=")
-				break
-			}
-		}
+		igName := InstanceGroupNameFromTags(server.Tags)
 		serverGroups[igName] = append(serverGroups[igName], server)
 	}
 
@@ -376,11 +365,7 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 		}
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
-		for _, tag := range server.Tags {
-			if strings.HasPrefix(tag, TagNameRolePrefix) {
-				cloudInstance.Roles = append(cloudInstance.Roles, strings.TrimPrefix(tag, TagNameRolePrefix))
-			}
-		}
+		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
 		if server.PrivateIP != nil {
 			cloudInstance.PrivateIP = *server.PrivateIP
 		}

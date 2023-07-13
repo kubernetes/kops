@@ -68,6 +68,33 @@ func ParseRegionFromZone(zone scw.Zone) (region scw.Region, err error) {
 	return region, nil
 }
 
+func ClusterNameFromTags(tags []string) string {
+	for _, tag := range tags {
+		if strings.HasPrefix(tag, TagClusterName) {
+			return strings.TrimPrefix(tag, TagClusterName+"=")
+		}
+	}
+	return ""
+}
+
+func InstanceGroupNameFromTags(tags []string) string {
+	for _, tag := range tags {
+		if strings.HasPrefix(tag, TagInstanceGroup) {
+			return strings.TrimPrefix(tag, TagInstanceGroup+"=")
+		}
+	}
+	return ""
+}
+
+func InstanceRoleFromTags(tags []string) string {
+	for _, tag := range tags {
+		if strings.HasPrefix(tag, TagNameRolePrefix) {
+			return strings.TrimPrefix(tag, TagNameRolePrefix+"=")
+		}
+	}
+	return ""
+}
+
 func getScalewayProfile() (*scw.Profile, error) {
 	scwProfileName := os.Getenv("SCW_PROFILE")
 	if scwProfileName == "" {
