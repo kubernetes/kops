@@ -916,6 +916,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("shutdownGracePeriodCriticalPods"), k.ShutdownGracePeriodCriticalPods.String(), "shutdownGracePeriodCriticalPods cannot be greater than shutdownGracePeriod"))
 			}
 		}
+
+		if k.MemorySwapBehavior != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("memorySwapBehavior"), &k.MemorySwapBehavior, []string{"LimitedSwap", "UnlimitedSwap"})...)
+		}
 	}
 	return allErrs
 }
