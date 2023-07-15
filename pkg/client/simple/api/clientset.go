@@ -38,8 +38,21 @@ import (
 
 // RESTClientset is an implementation of clientset that uses a "real" generated REST client
 type RESTClientset struct {
+	vfsContext *vfs.VFSContext
 	BaseURL    *url.URL
 	KopsClient kopsinternalversion.KopsInterface
+}
+
+func NewRESTClientset(vfsContext *vfs.VFSContext, baseURL *url.URL, kopsClient kopsinternalversion.KopsInterface) *RESTClientset {
+	return &RESTClientset{
+		vfsContext: vfsContext,
+		BaseURL:    baseURL,
+		KopsClient: kopsClient,
+	}
+}
+
+func (c *RESTClientset) VFSContext() *vfs.VFSContext {
+	return c.vfsContext
 }
 
 // GetCluster implements the GetCluster method of Clientset for a kubernetes-API state store
@@ -79,11 +92,11 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
-		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
 	}
 	// URL for clusters looks like https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
-	return vfs.Context.BuildVfsPath(c.BaseURL.String())
+	return c.VFSContext().BuildVfsPath(c.BaseURL.String())
 }
 
 // ListClusters implements the ListClusters method of Clientset for a kubernetes-API state store

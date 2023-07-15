@@ -51,6 +51,7 @@ type Factory struct {
 
 	kubernetesClient  kubernetes.Interface
 	certManagerClient certmanager.Interface
+	vfsContext        *vfs.VFSContext
 
 	cachedRESTConfig *rest.Config
 	dynamicClient    dynamic.Interface
@@ -112,14 +113,15 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				return nil, fmt.Errorf("error building kops API client: %v", err)
 			}
 
-			f.clientset = &api.RESTClientset{
-				BaseURL: &url.URL{
+			f.clientset = api.NewRESTClientset(
+				f.VFSContext(),
+				&url.URL{
 					Scheme: "k8s",
 				},
-				KopsClient: kopsClient.Kops(),
-			}
+				kopsClient.Kops(),
+			)
 		} else {
-			basePath, err := vfs.Context.BuildVfsPath(registryPath)
+			basePath, err := f.VFSContext().BuildVfsPath(registryPath)
 			if err != nil {
 				return nil, fmt.Errorf("error building path for %q: %v", registryPath, err)
 			}
@@ -128,7 +130,7 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
 			}
 
-			f.clientset = vfsclientset.NewVFSClientset(basePath)
+			f.clientset = vfsclientset.NewVFSClientset(f.VFSContext(), basePath)
 		}
 		if strings.HasPrefix(registryPath, "file://") {
 			klog.Warning("The local filesystem state store is not functional for running clusters")
@@ -220,4 +222,12 @@ func (f *Factory) RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error) 
 	}
 
 	return f.restMapper, nil
+}
+
+func (f *Factory) VFSContext() *vfs.VFSContext {
+	if f.vfsContext == nil {
+		// TODO vfs.NewVFSContext()
+		f.vfsContext = vfs.Context
+	}
+	return f.vfsContext
 }

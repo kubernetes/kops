@@ -24,6 +24,9 @@ import (
 )
 
 func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
+	clientset := VFSClientset{
+		vfsContext: vfs.Context,
+	}
 	vfs.Context.ResetMemfsContext(true)
 	configBase := "memfs://some/config/base"
 	cluster := &kops.Cluster{
@@ -32,7 +35,7 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 		},
 	}
 
-	p, err := pkiPath(cluster)
+	p, err := clientset.pkiPath(cluster)
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}
@@ -46,6 +49,9 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 }
 
 func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
+	clientset := VFSClientset{
+		vfsContext: vfs.Context,
+	}
 	vfs.Context.ResetMemfsContext(true)
 	configBase := "memfs://some/config/base"
 	keyPath := "memfs://keys/some/config/base/pki"
@@ -56,7 +62,7 @@ func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
 		},
 	}
 
-	p, err := pkiPath(cluster)
+	p, err := clientset.pkiPath(cluster)
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}

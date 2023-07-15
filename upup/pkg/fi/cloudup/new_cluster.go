@@ -41,7 +41,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -352,7 +351,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	if opt.DiscoveryStore != "" {
-		discoveryPath, err := vfs.Context.BuildVfsPath(opt.DiscoveryStore)
+		discoveryPath, err := clientset.VFSContext().BuildVfsPath(opt.DiscoveryStore)
 		if err != nil {
 			return nil, fmt.Errorf("error building DiscoveryStore for cluster: %v", err)
 		}

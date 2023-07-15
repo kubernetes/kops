@@ -28,7 +28,6 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/text"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -91,7 +90,7 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 				return fmt.Errorf("reading from stdin: %v", err)
 			}
 		} else {
-			contents, err = vfs.Context.ReadFile(f)
+			contents, err = factory.VFSContext().ReadFile(f)
 			if err != nil {
 				return fmt.Errorf("reading file %q: %v", f, err)
 			}

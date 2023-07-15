@@ -28,6 +28,9 @@ import (
 )
 
 type Clientset interface {
+	// VFSContext returns a VFSContext.
+	VFSContext() *vfs.VFSContext
+
 	// GetCluster reads a cluster by name
 	GetCluster(ctx context.Context, name string) (*kops.Cluster, error)
 
