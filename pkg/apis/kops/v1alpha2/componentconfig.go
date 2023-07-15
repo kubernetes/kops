@@ -232,6 +232,9 @@ type KubeletConfigSpec struct {
 	// ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown.
 	// Default: 10s
 	ShutdownGracePeriodCriticalPods *metav1.Duration `json:"shutdownGracePeriodCriticalPods,omitempty"`
+	// MemorySwapBehavior defines how swap is used by container workloads.
+	// Supported values: LimitedSwap, "UnlimitedSwap.
+	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
