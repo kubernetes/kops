@@ -43,23 +43,28 @@ func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 		return "", fmt.Errorf("querying instance metadata: %w", err)
 	}
 
+	vmId := m.Compute.VMID
+	if vmId == "" {
+		return "", fmt.Errorf("missing virtual machine ID")
+	}
+
 	// The fully qualified VMSS VM resource ID format is:
 	// /subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Compute/virtualMachineScaleSets/VMSS_NAME/virtualMachines/VMSS_INDEX
 	r := strings.Split(m.Compute.ResourceID, "/")
 	if len(r) != 11 || r[7] != "virtualMachineScaleSets" || r[9] != "virtualMachines" {
 		return "", fmt.Errorf("unexpected resource ID format: %q", m.Compute.ResourceID)
 	}
-
 	vmssName := r[8]
 	vmssIndex := r[10]
 
-	return AzureAuthenticationTokenPrefix + vmssName + " " + vmssIndex, nil
+	return AzureAuthenticationTokenPrefix + vmId + " " + vmssName + " " + vmssIndex, nil
 }
 
 type instanceComputeMetadata struct {
 	ResourceGroupName string `json:"resourceGroupName"`
 	ResourceID        string `json:"resourceId"`
 	SubscriptionID    string `json:"subscriptionId"`
+	VMID              string `json:"vmId"`
 }
 
 type instanceMetadata struct {

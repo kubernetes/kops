@@ -58,15 +58,22 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	}
 
 	v := strings.Split(strings.TrimPrefix(token, AzureAuthenticationTokenPrefix), " ")
-	if len(v) != 2 {
+	if len(v) != 3 {
 		return nil, fmt.Errorf("incorrect token format")
 	}
-	vmssName := v[0]
-	vmssIndex := v[1]
+	vmId := v[0]
+	vmssName := v[1]
+	vmssIndex := v[2]
 
 	vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, "")
 	if err != nil {
 		return nil, fmt.Errorf("getting info for VMSS virtual machine %q #%s: %w", vmssName, vmssIndex, err)
+	}
+	if vm.VMID == nil {
+		return nil, fmt.Errorf("determining VMID for VMSS %q virtual machine #%s", vmssName, vmssIndex)
+	}
+	if vmId != *vm.VMID {
+		return nil, fmt.Errorf("matching VMID %q for VMSS %q virtual machine #%s", vmId, vmssName, vmssIndex)
 	}
 	if vm.OsProfile == nil || *vm.OsProfile.ComputerName == "" {
 		return nil, fmt.Errorf("determining ComputerName for VMSS %q virtual machine #%s", vmssName, vmssIndex)
