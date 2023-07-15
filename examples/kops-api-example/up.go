@@ -30,8 +30,8 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func up(ctx context.Context) error {
-	clientset := vfsclientset.NewVFSClientset(vfs.Context, registryBase)
+func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
+	clientset := vfsclientset.NewVFSClientset(vfsContext, registryBase)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName

@@ -24,8 +24,8 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func apply(ctx context.Context) error {
-	clientset := vfsclientset.NewVFSClientset(vfs.Context, registryBase)
+func apply(vfsContext *vfs.VFSContext, ctx context.Context) error {
+	clientset := vfsclientset.NewVFSClientset(vfsContext, registryBase)
 
 	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
