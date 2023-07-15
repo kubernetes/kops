@@ -18,13 +18,13 @@ As of kOps 1.26 the default network provider is Cilium. Prior to that the defaul
 |------------------|-------------:|-------:|-----------:|----------------:|
 | AWS VPC          |          1.9 |   1.21 |          - |               - |
 | Calico           |          1.6 |   1.11 |          - |               - |
-| Canal            |         1.12 |      - |          - |               - |
+| Canal            |         1.12 |      - |       1.27 | Kubernetes 1.28 |
 | Cilium           |          1.9 |   1.15 |          - |               - |
 | Cilium ENI       |         1.18 |   1.26 |          - |               - |
-| Flannel udp      |        1.5.2 |      - |          - |               - |
-| Flannel vxlan    |        1.8.0 |      - |          - |               - |
+| Flannel udp      |        1.5.2 |      - |       1.27 | Kubernetes 1.28 |
+| Flannel vxlan    |        1.8.0 |      - |       1.27 | Kubernetes 1.28 |
 | Kopeio           |          1.5 |      - |          - |               - |
-| Kube-router      |        1.6.2 |      - |          - |               - |
+| Kube-router      |        1.6.2 |      - |       1.27 | Kubernetes 1.28 |
 | Kubenet          |          1.5 |    1.5 |          - |               - |
 | Lyft VPC         |         1.11 |      - |       1.22 |            1.23 |
 | Romana           |          1.8 |      - |       1.18 |            1.19 |

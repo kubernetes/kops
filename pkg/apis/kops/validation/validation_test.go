@@ -391,6 +391,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 	for _, g := range grid {
 		cluster := &kops.Cluster{
 			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.27.0",
 				Networking: kops.NetworkingSpec{
 					NetworkCIDR:           "10.0.0.0/8",
 					NonMasqueradeCIDR:     "100.64.0.0/10",
