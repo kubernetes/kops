@@ -89,22 +89,6 @@ func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
 	return v2
 }
 
-type contextKeyType int
-
-var contextKey contextKeyType
-
-func FromContext(ctx context.Context) *VFSContext {
-	o := ctx.Value(contextKey)
-	if o != nil {
-		return o.(*VFSContext)
-	}
-	return Context
-}
-
-func WithContext(parent context.Context, vfsContext *VFSContext) context.Context {
-	return context.WithValue(parent, contextKey, vfsContext)
-}
-
 type vfsOptions struct {
 	backoff wait.Backoff
 }
