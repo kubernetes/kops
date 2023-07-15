@@ -1066,7 +1066,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("flannel"), "Flannel is not supported for Kubernetes >= 1.28"))
+		} else {
+			allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
+		}
 	}
 
 	if v.Calico != nil {
@@ -1084,7 +1088,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("canal"), "Canal is not supported for Kubernetes >= 1.28"))
+		} else {
+			allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
+		}
 	}
 
 	if v.KubeRouter != nil {
@@ -1096,8 +1104,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberRouter"), "kube-router does not support IPv6"))
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router is not supported for Kubernetes >= 1.28"))
+		} else if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router does not support IPv6"))
 		}
 	}
 
