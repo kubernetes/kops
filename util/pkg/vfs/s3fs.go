@@ -114,6 +114,57 @@ func (p *S3Path) Remove() error {
 	return nil
 }
 
+func (p *S3Path) RemoveAll() error {
+	ctx := context.TODO()
+
+	client, err := p.client(ctx)
+	if err != nil {
+		return err
+	}
+
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	objects := make([]*s3.ObjectIdentifier, len(tree))
+	for i := range tree {
+		s3Object, isS3Object := tree[i].(*S3Path)
+		if !isS3Object {
+			return fmt.Errorf("invalid path in s3fs tree: %s", tree[i].Path())
+		}
+
+		objects[i] = &s3.ObjectIdentifier{
+			Key: aws.String(s3Object.key),
+		}
+	}
+
+	klog.V(8).Infof("removing all file in %s", p)
+
+	request := &s3.DeleteObjectsInput{
+		Bucket: aws.String(p.bucket),
+		Delete: &s3.Delete{},
+	}
+
+	for len(objects) > 0 {
+		// DeleteObjects can only process 1000 objects per call
+		if len(objects) > 1000 {
+			request.Delete.Objects = objects[:1000]
+			objects = objects[1000:]
+		} else {
+			request.Delete.Objects = objects
+			objects = nil
+		}
+
+		_, err = client.DeleteObjectsWithContext(ctx, request)
+		if err != nil {
+			return fmt.Errorf("error removing %d files: %w", len(request.Delete.Objects), err)
+		}
+	}
+
+	return nil
+}
+
 func (p *S3Path) RemoveAllVersions() error {
 	ctx := context.TODO()
 

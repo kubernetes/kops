@@ -142,6 +142,22 @@ func (p *GSPath) Remove() error {
 	}
 }
 
+func (p *GSPath) RemoveAll() error {
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	for _, objectPath := range tree {
+		err := objectPath.Remove()
+		if err != nil {
+			return fmt.Errorf("error removing file %s: %w", objectPath, err)
+		}
+	}
+
+	return nil
+}
+
 func (p *GSPath) RemoveAllVersions() error {
 	return p.Remove()
 }

@@ -219,6 +219,22 @@ func (p *AzureBlobPath) Remove() error {
 	return err
 }
 
+func (p *AzureBlobPath) RemoveAll() error {
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	for _, blobPath := range tree {
+		err := blobPath.Remove()
+		if err != nil {
+			return fmt.Errorf("error removing file %s: %w", blobPath, err)
+		}
+	}
+
+	return nil
+}
+
 func (p *AzureBlobPath) RemoveAllVersions() error {
 	ctx := context.TODO()
 

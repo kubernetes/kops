@@ -71,6 +71,10 @@ func (p *KubernetesPath) Remove() error {
 	return fmt.Errorf("KubernetesPath::Remove not supported")
 }
 
+func (p *KubernetesPath) RemoveAll() error {
+	return fmt.Errorf("KubernetesPath::RemoveAll not supported")
+}
+
 func (p *KubernetesPath) RemoveAllVersions() error {
 	return p.Remove()
 }
