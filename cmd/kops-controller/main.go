@@ -47,6 +47,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/util/pkg/vfs"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -114,6 +115,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	vfsContext := vfs.NewVFSContext()
+
 	if opt.Server != nil {
 		var verifier bootstrap.Verifier
 		var err error
@@ -166,7 +169,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		srv, err := server.NewServer(&opt, verifier, uncachedClient)
+		srv, err := server.NewServer(vfsContext, &opt, verifier, uncachedClient)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
@@ -182,7 +185,7 @@ func main() {
 		}
 	}
 
-	if err := addNodeController(mgr, &opt); err != nil {
+	if err := addNodeController(mgr, vfsContext, &opt); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeController")
 		os.Exit(1)
 	}
@@ -212,7 +215,7 @@ func buildScheme() error {
 	return nil
 }
 
-func addNodeController(mgr manager.Manager, opt *config.Options) error {
+func addNodeController(mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {
 	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
@@ -282,7 +285,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 			return fmt.Errorf("must specify secretStore")
 		}
 
-		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, legacyIdentifier)
+		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, vfsContext, opt.ConfigBase, legacyIdentifier)
 		if err != nil {
 			return err
 		}
