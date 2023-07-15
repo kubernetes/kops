@@ -459,6 +459,9 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 	if b.Cluster.Spec.Networking.Cilium != nil {
 		udpPorts = append(udpPorts, 8472)
 		tcpPorts = append(tcpPorts, 4240)
+		if b.Cluster.Spec.Networking.Cilium.Hubble != nil && fi.ValueOf(b.Cluster.Spec.Networking.Cilium.Hubble.Enabled) {
+			tcpPorts = append(tcpPorts, 4244)
+		}
 	}
 
 	if b.Cluster.Spec.Networking.Weave != nil {
