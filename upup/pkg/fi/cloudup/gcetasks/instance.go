@@ -401,17 +401,16 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 }
 
 type terraformInstance struct {
-	Name                  string                              `cty:"name"`
-	CanIPForward          bool                                `cty:"can_ip_forward"`
-	MachineType           string                              `cty:"machine_type"`
-	ServiceAccounts       []*terraformTemplateServiceAccount  `cty:"service_account"`
-	Scheduling            *terraformScheduling                `cty:"scheduling"`
-	Disks                 []*terraformInstanceAttachedDisk    `cty:"disk"`
-	NetworkInterfaces     []*terraformNetworkInterface        `cty:"network_interface"`
-	Metadata              map[string]*terraformWriter.Literal `cty:"metadata"`
-	MetadataStartupScript *terraformWriter.Literal            `cty:"metadata_startup_script"`
-	Tags                  []string                            `cty:"tags"`
-	Zone                  string                              `cty:"zone"`
+	Name              string                              `cty:"name"`
+	CanIPForward      bool                                `cty:"can_ip_forward"`
+	MachineType       string                              `cty:"machine_type"`
+	ServiceAccounts   []*terraformTemplateServiceAccount  `cty:"service_account"`
+	Scheduling        *terraformScheduling                `cty:"scheduling"`
+	Disks             []*terraformInstanceAttachedDisk    `cty:"disk"`
+	NetworkInterfaces []*terraformNetworkInterface        `cty:"network_interface"`
+	Metadata          map[string]*terraformWriter.Literal `cty:"metadata"`
+	Tags              []string                            `cty:"tags"`
+	Zone              string                              `cty:"zone"`
 }
 
 type terraformInstanceAttachedDisk struct {
@@ -480,15 +479,6 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		return err
 	}
 	tf.Metadata = metadata
-
-	// Using metadata_startup_script is now mandatory (?)
-	{
-		startupScript, found := tf.Metadata["startup-script"]
-		if found {
-			delete(tf.Metadata, "startup-script")
-		}
-		tf.MetadataStartupScript = startupScript
-	}
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{

@@ -109,8 +109,9 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				},
 			}
 
+			// Use "user-data" instead of "startup-script", for compatibility with cloud-init
 			if startupScript != nil {
-				t.Metadata["startup-script"] = startupScript
+				t.Metadata["user-data"] = startupScript
 			}
 
 			if ig.Spec.Role == kops.InstanceGroupRoleNode {
