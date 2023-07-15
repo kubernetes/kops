@@ -76,9 +76,6 @@ metadata:
   name: bastions
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20230302
-  instanceMetadata:
-    httpPutResponseHopLimit: 1
-    httpTokens: required
   machineType: e2-micro
   maxSize: 1
   minSize: 1

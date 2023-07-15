@@ -108,7 +108,7 @@ func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck)
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating healthcheck: %q", hc.Name)
+		klog.V(2).Infof("Creating HealthCheck %q", hc.Name)
 
 		op, err := cloud.Compute().RegionHealthChecks().Insert(cloud.Project(), cloud.Region(), hc)
 		if err != nil {

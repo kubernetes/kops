@@ -178,6 +178,13 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "google_compute_address" "api-us-test1-minimal-gce-ilb-example-com" {
+  address_type = "INTERNAL"
+  name         = "api-us-test1-minimal-gce-ilb-example-com"
+  purpose      = "SHARED_LOADBALANCER_VIP"
+  subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-ilb-example-com.name
+}
+
 resource "google_compute_backend_service" "api-minimal-gce-ilb-example-com" {
   backend {
     group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-ilb-example-com.instance_group
@@ -210,6 +217,41 @@ resource "google_compute_disk" "a-etcd-main-minimal-gce-ilb-example-com" {
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
+}
+
+resource "google_compute_firewall" "https-api-ipv6-minimal-gce-ilb-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-ipv6-minimal-gce-ilb-example-com"
+  network       = google_compute_network.minimal-gce-ilb-example-com.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "https-api-minimal-gce-ilb-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "https-api-minimal-gce-ilb-example-com"
+  network       = google_compute_network.minimal-gce-ilb-example-com.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "lb-health-checks-minimal-gce-ilb-example-com" {
+  allow {
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "lb-health-checks-minimal-gce-ilb-example-com"
+  network       = google_compute_network.minimal-gce-ilb-example-com.name
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+  target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-control-plane"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-ilb-example-com" {
@@ -390,14 +432,15 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-ilb-example
   target_tags   = ["minimal-gce-ilb-example-com-k8s-io-role-node"]
 }
 
-resource "google_compute_forwarding_rule" "us-test-1-minimal-gce-ilb-example-com" {
+resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-ilb-example-com" {
   backend_service       = google_compute_backend_service.api-minimal-gce-ilb-example-com.id
+  ip_address            = google_compute_address.api-us-test1-minimal-gce-ilb-example-com.address
   ip_protocol           = "TCP"
   load_balancing_scheme = "INTERNAL"
-  name                  = "us-test-1-minimal-gce-ilb-example-com"
+  name                  = "api-us-test1-minimal-gce-ilb-example-com"
   network               = google_compute_network.minimal-gce-ilb-example-com.name
   ports                 = ["443"]
-  subnetwork            = "us-test-1"
+  subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-ilb-example-com.name
 }
 
 resource "google_compute_health_check" "api-minimal-gce-ilb-example-com" {
@@ -456,7 +499,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-ilb-e
     "cluster-name"                    = "minimal-gce-ilb.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-ilb-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-ilb-example-com_metadata_user-data")
   }
   name_prefix = "master-us-test1-a-minimal-k0i8ah-"
   network_interface {
@@ -506,7 +549,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-ilb-example-com" 
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-ilb-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-ilb-example-com_metadata_user-data")
   }
   name_prefix = "nodes-minimal-gce-ilb-exa-mk47iu-"
   network_interface {

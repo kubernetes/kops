@@ -309,10 +309,7 @@ func (c *gceCloudImplementation) WaitForOp(op *compute.Operation) error {
 func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
 
-	// Note that this must match GCEModelContext::NameForForwardingRule
-	name := ClusterSuffixedName("api", cluster.ObjectMeta.Name, 63)
-
-	klog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
+	klog.V(2).Infof("Querying GCE to find ForwardingRules for API")
 	// These are the ingress rules, so we search for them in the network project.
 	_, project, err := ParseNameAndProjectFromNetworkID(cluster.Spec.Networking.NetworkID)
 	if err != nil {
@@ -321,18 +318,21 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 		project = c.Project()
 	}
 
-	forwardingRule, err := c.compute.ForwardingRules().Get(project, c.region, name)
+	forwardingRules, err := c.compute.ForwardingRules().List(context.Background(), project, c.region)
 	if err != nil {
 		if !IsNotFound(err) {
-			forwardingRule = nil
+			forwardingRules = nil
 		} else {
-			return nil, fmt.Errorf("error getting ForwardingRule %q: %v", name, err)
+			return nil, fmt.Errorf("error listing ForwardingRules: %v", err)
 		}
 	}
 
-	if forwardingRule != nil {
+	for _, forwardingRule := range forwardingRules {
+		if !strings.HasPrefix(forwardingRule.Name, "api-") {
+			continue
+		}
 		if forwardingRule.IPAddress == "" {
-			return nil, fmt.Errorf("found forward rule %q, but it did not have an IPAddress", name)
+			return nil, fmt.Errorf("found forward rule %q, but it did not have an IPAddress", forwardingRule.Name)
 		}
 
 		ingresses = append(ingresses, fi.ApiIngressStatus{
