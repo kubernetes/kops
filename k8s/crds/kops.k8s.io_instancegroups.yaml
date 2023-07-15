@@ -621,6 +621,10 @@ spec:
                       Kubelet.
                     format: int32
                     type: integer
+                  memorySwapBehavior:
+                    description: 'MemorySwapBehavior defines how swap is used by container
+                      workloads. Supported values: LimitedSwap, "UnlimitedSwap.'
+                    type: string
                   networkPluginMTU:
                     description: NetworkPluginMTU is the MTU to be passed to the network
                       plugin, and overrides the default MTU for cases where it cannot

@@ -220,6 +220,7 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodeta
 	if kubeletConfig.ShutdownGracePeriodCriticalPods != nil {
 		componentConfig.ShutdownGracePeriodCriticalPods = *kubeletConfig.ShutdownGracePeriodCriticalPods
 	}
+	componentConfig.MemorySwap.SwapBehavior = kubeletConfig.MemorySwapBehavior
 
 	s := runtime.NewScheme()
 	if err := kubelet.AddToScheme(s); err != nil {
