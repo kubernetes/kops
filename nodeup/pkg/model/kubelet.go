@@ -336,10 +336,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		}
 	}
 
-	if b.UseKopsControllerForNodeBootstrap() {
-		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
-		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
-	}
+	flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
+	flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 
 	if b.IsIPv6Only() {
 		flags += " --node-ip=::"
@@ -688,51 +686,49 @@ func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.NodeupModelBui
 }
 
 func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilderContext) error {
-	if b.UseKopsControllerForNodeBootstrap() {
-		name := "kubelet-server"
-		dir := b.PathSrvKubernetes()
+	name := "kubelet-server"
+	dir := b.PathSrvKubernetes()
 
-		names, err := b.kubeletNames()
+	names, err := b.kubeletNames()
+	if err != nil {
+		return err
+	}
+
+	if !b.HasAPIServer {
+		cert, key, err := b.GetBootstrapCert(name, fi.CertificateIDCA)
 		if err != nil {
 			return err
 		}
 
-		if !b.HasAPIServer {
-			cert, key, err := b.GetBootstrapCert(name, fi.CertificateIDCA)
-			if err != nil {
-				return err
-			}
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".crt"),
+			Contents:       cert,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0644"),
+			BeforeServices: []string{"kubelet.service"},
+		})
 
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".crt"),
-				Contents:       cert,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0644"),
-				BeforeServices: []string{"kubelet.service"},
-			})
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".key"),
+			Contents:       key,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0400"),
+			BeforeServices: []string{"kubelet.service"},
+		})
 
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".key"),
-				Contents:       key,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0400"),
-				BeforeServices: []string{"kubelet.service"},
-			})
-
-		} else {
-			issueCert := &nodetasks.IssueCert{
-				Name:      name,
-				Signer:    fi.CertificateIDCA,
-				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
-				Type:      "server",
-				Subject: nodetasks.PKIXName{
-					CommonName: names[0],
-				},
-				AlternateNames: names,
-			}
-			c.AddTask(issueCert)
-			return issueCert.AddFileTasks(c, dir, name, "", nil)
+	} else {
+		issueCert := &nodetasks.IssueCert{
+			Name:      name,
+			Signer:    fi.CertificateIDCA,
+			KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:      "server",
+			Subject: nodetasks.PKIXName{
+				CommonName: names[0],
+			},
+			AlternateNames: names,
 		}
+		c.AddTask(issueCert)
+		return issueCert.AddFileTasks(c, dir, name, "", nil)
 	}
 	return nil
 }

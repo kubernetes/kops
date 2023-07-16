@@ -1355,7 +1355,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			return nil, nil, err
 		}
 		if keysets["etcd-clients-ca-cilium"] != nil {
-			if err := loadCertificates(keysets, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster.Spec.GetCloudProvider())); err != nil {
+			if err := loadCertificates(keysets, "etcd-clients-ca-cilium", config, true); err != nil {
 				return nil, nil, err
 			}
 		}

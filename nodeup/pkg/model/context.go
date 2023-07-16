@@ -284,82 +284,27 @@ func (c *NodeupModelContext) GetBootstrapCert(name string, signer string) (cert,
 
 // BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
 func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.NodeupModelBuilderContext) (fi.Resource, error) {
-	if c.UseKopsControllerForNodeBootstrap() {
-		cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
-		if err != nil {
-			return nil, err
-		}
-
-		kubeConfig := &nodetasks.KubeConfig{
-			Name: name,
-			Cert: cert,
-			Key:  key,
-			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
-		}
-		if c.HasAPIServer {
-			// @note: use https even for local connections, so we can turn off the insecure port
-			kubeConfig.ServerURL = "https://127.0.0.1"
-		} else {
-			kubeConfig.ServerURL = "https://" + c.APIInternalName()
-		}
-
-		ctx.EnsureTask(kubeConfig)
-
-		return kubeConfig.GetConfig(), nil
-	} else {
-		keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
-		if err != nil {
-			return nil, fmt.Errorf("error fetching keyset %q from keystore: %w", name, err)
-		}
-		if keyset == nil {
-			return nil, fmt.Errorf("keyset %q not found", name)
-		}
-
-		keypairID := c.NodeupConfig.KeypairIDs[name]
-		if keypairID == "" {
-			return nil, fmt.Errorf("keypairID for %s missing from NodeupConfig", name)
-		}
-		item := keyset.Items[keypairID]
-		if item == nil {
-			return nil, fmt.Errorf("keypairID %s missing from %s keyset", keypairID, name)
-		}
-
-		cert, err := item.Certificate.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-
-		key, err := item.PrivateKey.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-
-		kubeConfig := &nodetasks.KubeConfig{
-			Name: name,
-			Cert: fi.NewBytesResource(cert),
-			Key:  fi.NewBytesResource(key),
-			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
-		}
-		if c.HasAPIServer {
-			// @note: use https even for local connections, so we can turn off the insecure port
-			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
-			kubeConfig.ServerURL = "https://127.0.0.1"
-		} else {
-			kubeConfig.ServerURL = "https://" + c.APIInternalName()
-		}
-
-		err = kubeConfig.Run(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		config, err := fi.ResourceAsBytes(kubeConfig.GetConfig())
-		if err != nil {
-			return nil, err
-		}
-
-		return fi.NewBytesResource(config), nil
+	cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
+	if err != nil {
+		return nil, err
 	}
+
+	kubeConfig := &nodetasks.KubeConfig{
+		Name: name,
+		Cert: cert,
+		Key:  key,
+		CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
+	}
+	if c.HasAPIServer {
+		// @note: use https even for local connections, so we can turn off the insecure port
+		kubeConfig.ServerURL = "https://127.0.0.1"
+	} else {
+		kubeConfig.ServerURL = "https://" + c.APIInternalName()
+	}
+
+	ctx.EnsureTask(kubeConfig)
+
+	return kubeConfig.GetConfig(), nil
 }
 
 // RemapImage applies any needed remapping to an image reference.
@@ -390,11 +335,6 @@ func (c *NodeupModelContext) IsKubernetesLT(version string) bool {
 // insert requires and afters in various places
 func (c *NodeupModelContext) UseVolumeMounts() bool {
 	return len(c.NodeupConfig.VolumeMounts) > 0
-}
-
-// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
-func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(c.CloudProvider())
 }
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.

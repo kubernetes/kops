@@ -22,11 +22,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 )
 
-// UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
-func UseKopsControllerForNodeBootstrap(cloudProvider kops.CloudProviderID) bool {
-	return true
-}
-
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
 func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 	switch cloudProvider {
@@ -54,7 +49,7 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 			return false
 		}
 	}
-	return UseKopsControllerForNodeBootstrap(cluster.Spec.GetCloudProvider())
+	return true
 }
 
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.

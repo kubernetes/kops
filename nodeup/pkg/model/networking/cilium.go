@@ -168,31 +168,27 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.NodeupModelBuilderContext) 
 		c.AddTask(issueCert)
 		return issueCert.AddFileTasks(c, dir, name, "", nil)
 	} else {
-		if b.UseKopsControllerForNodeBootstrap() {
-			cert, key, err := b.GetBootstrapCert(name, signer)
-			if err != nil {
-				return err
-			}
-
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".crt"),
-				Contents:       cert,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0644"),
-				BeforeServices: []string{"kubelet.service"},
-			})
-
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".key"),
-				Contents:       key,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0400"),
-				BeforeServices: []string{"kubelet.service"},
-			})
-
-			return nil
-		} else {
-			return b.BuildCertificatePairTask(c, name, dir, name, nil, []string{"kubelet.service"})
+		cert, key, err := b.GetBootstrapCert(name, signer)
+		if err != nil {
+			return err
 		}
+
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".crt"),
+			Contents:       cert,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0644"),
+			BeforeServices: []string{"kubelet.service"},
+		})
+
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".key"),
+			Contents:       key,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0400"),
+			BeforeServices: []string{"kubelet.service"},
+		})
+
+		return nil
 	}
 }

@@ -405,37 +405,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	// @check if bootstrap tokens are enabled an if so we can forgo applying
-	// this manifest. For clusters whom are upgrading from RBAC to Node,RBAC the clusterrolebinding
-	// will remain and have to be deleted manually once all the nodes have been upgraded.
-	enableRBACAddon := true
-	if b.UseKopsControllerForNodeBootstrap() {
-		enableRBACAddon = false
-	}
-	if b.Cluster.Spec.KubeAPIServer != nil {
-		if b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken != nil && *b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken {
-			enableRBACAddon = false
-		}
-	}
-
-	if enableRBACAddon {
-		{
-			key := "rbac.addons.k8s.io"
-
-			{
-				location := key + "/k8s-1.8.yaml"
-				id := "k8s-1.8"
-
-				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
-					Id:       id,
-				})
-			}
-		}
-	}
-
 	{
 		// Adding the kubelet-api-admin binding: this is required when switching to webhook authorization on the kubelet
 		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles

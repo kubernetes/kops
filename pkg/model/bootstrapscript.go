@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
@@ -134,12 +133,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 	}
 
 	if os.Getenv("S3_ENDPOINT") != "" {
-		passEnvs := false
-		if b.ig.IsControlPlane() || !b.builder.UseKopsControllerForNodeBootstrap() {
-			passEnvs = true
-		}
-
-		if passEnvs {
+		if b.ig.IsControlPlane() {
 			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
 			env["S3_REGION"] = os.Getenv("S3_REGION")
 			env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
@@ -190,12 +184,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
-		passEnvs := false
-		if b.ig.IsControlPlane() || !b.builder.UseKopsControllerForNodeBootstrap() {
-			passEnvs = true
-		}
-
-		if passEnvs {
+		if b.ig.IsControlPlane() {
 			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 			if doToken != "" {
 				env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
@@ -255,16 +244,8 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 		}
 	}
 
-	if model.UseCiliumEtcd(b.Cluster) && !model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider()) {
-		keypairs = append(keypairs, "etcd-client-cilium")
-	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
-	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider()) {
-		keypairs = append(keypairs, "kubelet", "kube-proxy")
-		if b.Cluster.Spec.Networking.KubeRouter != nil {
-			keypairs = append(keypairs, "kube-router")
-		}
 	}
 
 	if ig.IsBastion() {
