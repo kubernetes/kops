@@ -173,11 +173,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	if len(kcm.Controllers) == 0 {
 		var changes []string
-		// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
-		// This is responsible for cleaning up bootstrap tokens which have expired
-		if fi.ValueOf(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
-			changes = append(changes, "tokencleaner")
-		}
 		if clusterSpec.IsKopsControllerIPAM() {
 			changes = append(changes, "-nodeipam")
 		}

@@ -126,7 +126,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Mode: s("0755"),
 		})
 
-		if b.HasAPIServer || !b.UseBootstrapTokens() {
+		{
 			var kubeconfig fi.Resource
 			if b.HasAPIServer {
 				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
@@ -285,11 +285,6 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
-	// @step: ensure the masters do not get a bootstrap configuration
-	if b.UseBootstrapTokens() && b.IsMaster {
-		kubeletConfig.BootstrapKubeconfig = ""
-	}
-
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
@@ -380,12 +375,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	}
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
-
-	// @check if we are using bootstrap tokens and file checker
-	if !b.IsMaster && b.UseBootstrapTokens() {
-		manifest.Set("Service", "ExecStartPre",
-			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
-	}
 
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
 	manifest.Set("Service", "Restart", "always")
@@ -582,16 +571,10 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
-	isMaster := b.IsMaster
-
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-
-	if isMaster {
-		c.BootstrapKubeconfig = ""
-	}
 
 	if b.NodeupConfig.Networking.AmazonVPC != nil {
 		sess := session.Must(session.NewSession())
