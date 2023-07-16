@@ -150,8 +150,8 @@ metadata:
       httpTokens: required
     machineType: m5.large
     #define the max and min numbers of instances in the group
-    maxSize: 1
-    minSize: 3
+    maxSize: 3
+    minSize: 1
     role: Node
     subnets:
       - us-west-2b
