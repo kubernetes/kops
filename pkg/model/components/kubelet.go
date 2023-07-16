@@ -47,14 +47,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.ControlPlaneKubelet = &kops.KubeletConfigSpec{}
 	}
 
-	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.EnableBootstrapAuthToken != nil {
-		if *clusterSpec.KubeAPIServer.EnableBootstrapAuthToken {
-			if clusterSpec.Kubelet.BootstrapKubeconfig == "" {
-				clusterSpec.Kubelet.BootstrapKubeconfig = "/var/lib/kubelet/bootstrap-kubeconfig"
-			}
-		}
-	}
-
 	// Standard options
 	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.PtrTo(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"

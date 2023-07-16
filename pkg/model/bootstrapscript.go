@@ -354,12 +354,6 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 			spec["cloudConfig"] = cs.CloudConfig
 			spec["kubelet"] = cs.Kubelet
 
-			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
-				spec["kubeAPIServer"] = map[string]interface{}{
-					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
-				}
-			}
-
 			if b.ig.IsControlPlane() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
 				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec)

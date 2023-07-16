@@ -705,6 +705,10 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	if fi.ValueOf(v.EnableBootstrapAuthToken) {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableBootstrapTokenAuth"), "bootstrap tokens are not supported"))
+	}
+
 	if len(v.AdmissionControl) > 0 {
 		if len(v.DisableAdmissionPlugins) > 0 {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"),
@@ -863,9 +867,7 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 		if k.BootstrapKubeconfig != "" {
-			if c.Spec.KubeAPIServer == nil {
-				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
-			}
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("bootstrapKubeconfig"), "bootstrap tokens are not supported"))
 		}
 
 		if k.TopologyManagerPolicy != "" {

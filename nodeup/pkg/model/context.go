@@ -218,17 +218,6 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 	}
 }
 
-// KubeletBootstrapKubeconfig is the path the bootstrap config file
-func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
-	path := c.NodeupConfig.KubeletConfig.BootstrapKubeconfig
-
-	if path != "" {
-		return path
-	}
-
-	return "/var/lib/kubelet/bootstrap-kubeconfig"
-}
-
 // KubeletKubeConfig is the path of the kubelet kubeconfig file
 func (c *NodeupModelContext) KubeletKubeConfig() string {
 	return "/var/lib/kubelet/kubeconfig"
@@ -352,15 +341,6 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 		c.NodeupConfig.Networking.AmazonVPC != nil ||
 		(c.NodeupConfig.Networking.Cilium != nil && c.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
 		c.BootConfig.CloudProvider == kops.CloudProviderHetzner
-}
-
-// UseBootstrapTokens checks if we are using bootstrap tokens
-func (c *NodeupModelContext) UseBootstrapTokens() bool {
-	if c.HasAPIServer {
-		return fi.ValueOf(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
-	}
-
-	return c.NodeupConfig.KubeletConfig.BootstrapKubeconfig != ""
 }
 
 // KubectlPath returns distro based path for kubectl
