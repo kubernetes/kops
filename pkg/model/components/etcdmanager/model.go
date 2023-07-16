@@ -145,16 +145,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Type:      "ca",
 			}
 			c.AddTask(clientsCaCilium)
-
-			if !b.UseKopsControllerForNodeBootstrap() {
-				c.AddTask(&fitasks.Keypair{
-					Name:      fi.PtrTo("etcd-client-cilium"),
-					Lifecycle: b.Lifecycle,
-					Subject:   "cn=cilium",
-					Type:      "client",
-					Signer:    clientsCaCilium,
-				})
-			}
 		}
 	}
 

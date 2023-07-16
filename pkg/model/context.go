@@ -251,20 +251,6 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	return tags
 }
 
-// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
-func (b *KopsModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(b.Cluster.Spec.GetCloudProvider())
-}
-
-// UseBootstrapTokens checks if bootstrap tokens are enabled
-func (b *KopsModelContext) UseBootstrapTokens() bool {
-	if b.Cluster.Spec.KubeAPIServer == nil || b.UseKopsControllerForNodeBootstrap() {
-		return false
-	}
-
-	return fi.ValueOf(b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
-}
-
 // UsesBastionDns checks if we should use a specific name for the bastion dns
 func (b *KopsModelContext) UsesBastionDns() bool {
 	if b.Cluster.Spec.Networking.Topology.Bastion != nil && b.Cluster.Spec.Networking.Topology.Bastion.PublicName != "" {

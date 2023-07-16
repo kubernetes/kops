@@ -91,13 +91,11 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 		// if we're not going to use an alias for it
 		loadBalancer.ForAPIServer = true
 
-		if b.Cluster.UsesNoneDNS() || b.UseKopsControllerForNodeBootstrap() {
-			lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
-			lbBackendKopsController.Lifecycle = b.Lifecycle
-			c.AddTask(lbBackendKopsController)
-			lbFrontendKopsController.Lifecycle = b.Lifecycle
-			c.AddTask(lbFrontendKopsController)
-		}
+		lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
+		lbBackendKopsController.Lifecycle = b.Lifecycle
+		c.AddTask(lbBackendKopsController)
+		lbFrontendKopsController.Lifecycle = b.Lifecycle
+		c.AddTask(lbFrontendKopsController)
 	}
 
 	return nil

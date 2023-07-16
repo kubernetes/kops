@@ -91,7 +91,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KubeObjectToApplyYAML"] = kubemanifest.KubeObjectToApplyYAML
 
 	dest["SharedVPC"] = tf.SharedVPC
-	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
@@ -171,9 +170,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
-	dest["UseKopsControllerForNodeBootstrap"] = func() bool {
-		return tf.UseKopsControllerForNodeBootstrap()
-	}
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -658,7 +654,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.CacheNodeidentityInfo = true
 	}
 
-	if tf.UseKopsControllerForNodeBootstrap() {
+	{
 		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}
 		if apiModel.UseCiliumEtcd(cluster) {

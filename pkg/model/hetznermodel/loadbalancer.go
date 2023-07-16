@@ -53,19 +53,16 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) error
 				ListenerPort:    fi.PtrTo(wellknownports.KubeAPIServer),
 				DestinationPort: fi.PtrTo(wellknownports.KubeAPIServer),
 			},
+			{
+				Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
+				ListenerPort:    fi.PtrTo(wellknownports.KopsControllerPort),
+				DestinationPort: fi.PtrTo(wellknownports.KopsControllerPort),
+			},
 		},
 		Target: strings.Join(controlPlaneLabelSelector, ","),
 		Labels: map[string]string{
 			hetzner.TagKubernetesClusterName: b.ClusterName(),
 		},
-	}
-
-	if b.Cluster.UsesNoneDNS() || b.UseKopsControllerForNodeBootstrap() {
-		loadbalancer.Services = append(loadbalancer.Services, &hetznertasks.LoadBalancerService{
-			Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
-			ListenerPort:    fi.PtrTo(wellknownports.KopsControllerPort),
-			DestinationPort: fi.PtrTo(wellknownports.KopsControllerPort),
-		})
 	}
 
 	c.AddTask(&loadbalancer)

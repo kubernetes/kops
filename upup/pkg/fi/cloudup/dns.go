@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
-	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -276,13 +275,11 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 		})
 	}
 
-	if apimodel.UseKopsControllerForNodeBootstrap(cluster.Spec.GetCloudProvider()) {
-		name := "kops-controller.internal." + cluster.ObjectMeta.Name
-		recordKeys = append(recordKeys, recordKey{
-			hostname: name,
-			rrsType:  internalType,
-		})
-	}
+	name := "kops-controller.internal." + cluster.ObjectMeta.Name
+	recordKeys = append(recordKeys, recordKey{
+		hostname: name,
+		rrsType:  internalType,
+	})
 
 	return recordKeys
 }
