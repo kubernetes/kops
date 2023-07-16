@@ -33,31 +33,17 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
+					API: kops.APISpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{},
+					},
 					CloudProvider: kops.CloudProviderSpec{
-						Azure: &kops.AzureSpec{},
+						AWS: &kops.AWSSpec{},
 					},
 				},
 			},
 			expected: []recordKey{
-				{"api.cluster1.example.com", rrstype.A},
 				{"api.internal.cluster1.example.com", rrstype.A},
-			},
-		},
-		{
-			cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					CloudProvider: kops.CloudProviderSpec{
-						Azure: &kops.AzureSpec{},
-					},
-					Networking: kops.NetworkingSpec{
-						NonMasqueradeCIDR: "::/0",
-					},
-				},
-			},
-			expected: []recordKey{
-				{"api.cluster1.example.com", rrstype.A},
-				{"api.cluster1.example.com", rrstype.AAAA},
-				{"api.internal.cluster1.example.com", rrstype.AAAA},
+				{"kops-controller.internal.cluster1.example.com", rrstype.A},
 			},
 		},
 		{
@@ -67,22 +53,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
 					},
 					CloudProvider: kops.CloudProviderSpec{
-						Azure: &kops.AzureSpec{},
-					},
-				},
-			},
-			expected: []recordKey{
-				{"api.internal.cluster1.example.com", rrstype.A},
-			},
-		},
-		{
-			cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					API: kops.APISpec{
-						LoadBalancer: &kops.LoadBalancerAccessSpec{},
-					},
-					CloudProvider: kops.CloudProviderSpec{
-						Azure: &kops.AzureSpec{},
+						AWS: &kops.AWSSpec{},
 					},
 					Networking: kops.NetworkingSpec{
 						NonMasqueradeCIDR: "::/0",
@@ -91,6 +62,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 			},
 			expected: []recordKey{
 				{"api.internal.cluster1.example.com", rrstype.AAAA},
+				{"kops-controller.internal.cluster1.example.com", rrstype.AAAA},
 			},
 		},
 		{
@@ -102,11 +74,13 @@ func TestPrecreateDNSNames(t *testing.T) {
 						},
 					},
 					CloudProvider: kops.CloudProviderSpec{
-						Azure: &kops.AzureSpec{},
+						AWS: &kops.AWSSpec{},
 					},
 				},
 			},
-			expected: nil,
+			expected: []recordKey{
+				{"kops-controller.internal.cluster1.example.com", rrstype.A},
+			},
 		},
 		{
 			cluster: &kops.Cluster{
@@ -114,7 +88,6 @@ func TestPrecreateDNSNames(t *testing.T) {
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
-					KubernetesVersion: "1.22.0",
 				},
 			},
 			expected: []recordKey{
@@ -129,7 +102,6 @@ func TestPrecreateDNSNames(t *testing.T) {
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
-					KubernetesVersion: "1.22.0",
 					Networking: kops.NetworkingSpec{
 						NonMasqueradeCIDR: "::/0",
 					},

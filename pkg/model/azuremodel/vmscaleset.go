@@ -49,17 +49,19 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		c.AddTask(vmss)
 
-		// Create tasks for assigning built-in roles to VM Scale Sets.
-		// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-		// for the ID definitions.
-		roleDefIDs := map[string]string{
-			// Owner
-			"owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
-			// Storage Blob Data Contributor
-			"blob": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
-		}
-		for k, roleDefID := range roleDefIDs {
-			c.AddTask(b.buildRoleAssignmentTask(vmss, k, roleDefID))
+		if ig.IsControlPlane() || b.Cluster.UsesLegacyGossip() {
+			// Create tasks for assigning built-in roles to VM Scale Sets.
+			// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+			// for the ID definitions.
+			roleDefIDs := map[string]string{
+				// Owner
+				"owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+				// Storage Blob Data Contributor
+				"blob": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+			}
+			for k, roleDefID := range roleDefIDs {
+				c.AddTask(b.buildRoleAssignmentTask(vmss, k, roleDefID))
+			}
 		}
 	}
 

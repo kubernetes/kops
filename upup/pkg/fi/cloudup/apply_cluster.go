@@ -1446,13 +1446,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			}
 		}
 
-	case kops.CloudProviderDO, kops.CloudProviderScaleway:
-		// Use any IP address that is found (including public ones)
-		for _, additionalIP := range apiserverAdditionalIPs {
-			controlPlaneIPs = append(controlPlaneIPs, additionalIP)
-		}
-
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderGCE, kops.CloudProviderAzure:
 		// Use any IP address that is found (including public ones)
 		for _, additionalIP := range apiserverAdditionalIPs {
 			controlPlaneIPs = append(controlPlaneIPs, additionalIP)
@@ -1460,19 +1454,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if cluster.UsesNoneDNS() {
-		switch cluster.Spec.GetCloudProvider() {
-		case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
-			bootConfig.APIServerIPs = controlPlaneIPs
-
-		case kops.CloudProviderDO, kops.CloudProviderScaleway:
-			bootConfig.APIServerIPs = controlPlaneIPs
-
-		case kops.CloudProviderGCE:
-			bootConfig.APIServerIPs = controlPlaneIPs
-
-		default:
-			return nil, nil, fmt.Errorf("'none' DNS topology is not supported for cloud %q", cluster.Spec.GetCloudProvider())
-		}
+		bootConfig.APIServerIPs = controlPlaneIPs
 	} else {
 		// If we do have a fixed IP, we use it (on some clouds, initially)
 		switch cluster.Spec.GetCloudProvider() {

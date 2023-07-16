@@ -521,17 +521,7 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	}
 
 	if topology.DNS != "" {
-		cloud := c.Spec.GetCloudProvider()
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &topology.DNS, kops.SupportedDnsTypes)...)
-
-		if topology.DNS == kops.DNSTypeNone {
-			switch cloud {
-			case kops.CloudProviderOpenstack, kops.CloudProviderHetzner, kops.CloudProviderAWS, kops.CloudProviderGCE, kops.CloudProviderDO, kops.CloudProviderScaleway:
-			// ok
-			default:
-				allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), topology.DNS, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
-			}
-		}
 	}
 
 	return allErrs

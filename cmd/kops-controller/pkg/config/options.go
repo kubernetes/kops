@@ -18,6 +18,7 @@ package config
 
 import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -73,6 +74,7 @@ type ServerProviderOptions struct {
 	OpenStack    *openstack.OpenStackVerifierOptions `json:"openstack,omitempty"`
 	DigitalOcean *do.DigitalOceanVerifierOptions     `json:"do,omitempty"`
 	Scaleway     *scaleway.ScalewayVerifierOptions   `json:"scaleway,omitempty"`
+	Azure        *azure.AzureVerifierOptions         `json:"azure,omitempty"`
 }
 
 // DiscoveryOptions configures our support for discovery, particularly gossip DNS (i.e. k8s.local)
