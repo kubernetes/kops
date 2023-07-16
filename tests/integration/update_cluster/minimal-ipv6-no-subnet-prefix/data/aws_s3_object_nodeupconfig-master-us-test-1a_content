@@ -227,6 +227,33 @@ CAs:
     -----END CERTIFICATE-----
 ClusterName: minimal-ipv6.example.com
 ContainerRuntime: containerd
+ControlPlaneConfig:
+  KubeControllerManager:
+    allocateNodeCIDRs: false
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: external
+    clusterName: minimal-ipv6.example.com
+    configureCloudRoutes: false
+    controllers:
+    - '*'
+    - -nodeipam
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-controller-manager:v1.25.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  KubeScheduler:
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-scheduler:v1.25.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+DNSZone: Z1AFAKE1ZON3YO
 EtcdClusterNames:
 - main
 - events
