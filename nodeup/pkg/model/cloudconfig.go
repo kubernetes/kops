@@ -118,12 +118,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 			}
 		}
 	case kops.CloudProviderOpenstack:
-		osc := b.Cluster.Spec.CloudProvider.Openstack
-		if osc == nil {
-			break
-		}
-
-		lines = append(lines, openstack.MakeCloudConfig(b.Cluster.Spec)...)
+		lines = append(lines, openstack.MakeCloudConfig(b.NodeupConfig.Openstack)...)
 
 	case kops.CloudProviderAzure:
 		requireGlobal = false

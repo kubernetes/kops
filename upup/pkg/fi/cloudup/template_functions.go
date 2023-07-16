@@ -186,7 +186,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["OPENSTACK_CONF"] = func() string {
-		lines := openstack.MakeCloudConfig(cluster.Spec)
+		lines := openstack.MakeCloudConfig(cluster.Spec.CloudProvider.Openstack)
 		return "[global]\n" + strings.Join(lines, "\n") + "\n"
 	}
 

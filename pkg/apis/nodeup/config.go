@@ -135,6 +135,9 @@ type Config struct {
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 
+	// Openstack-specific
+	Openstack *kops.OpenstackSpec `json:",omitempty"`
+
 	// Discovery methods
 	UsesLegacyGossip bool `json:"usesLegacyGossip"`
 	UsesNoneDNS      bool `json:"usesNoneDNS"`
@@ -288,6 +291,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.NodeTags = gce.NodeTags
 		config.NodeInstancePrefix = gce.NodeInstancePrefix
 	}
+
+	config.Openstack = cluster.Spec.CloudProvider.Openstack
 
 	if instanceGroup.Spec.UpdatePolicy != nil {
 		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy

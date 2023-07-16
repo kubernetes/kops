@@ -54,8 +54,6 @@ type NodeupModelContext struct {
 	Architecture architectures.Architecture
 	GPUVendor    architectures.GPUVendor
 	Assets       *fi.AssetStore
-	// Deprecated: Fields should be accessed from NodeupConfig or BootConfig.
-	Cluster      *kops.Cluster
 	ConfigBase   vfs.Path
 	Distribution distributions.Distribution
 	KeyStore     fi.KeystoreReader
