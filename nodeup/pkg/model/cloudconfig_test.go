@@ -60,15 +60,15 @@ func TestBuildAzure(t *testing.T) {
 					},
 				},
 			},
+			KubeAPIServer: &kops.KubeAPIServerConfig{},
 		},
 	}
 
+	nodeupConfig, bootConfig := nodeup.NewConfig(cluster, &kops.InstanceGroup{})
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			BootConfig: &nodeup.BootConfig{
-				CloudProvider: kops.CloudProviderAzure,
-			},
-			Cluster:      cluster,
+			BootConfig:   bootConfig,
+			NodeupConfig: nodeupConfig,
 			HasAPIServer: true,
 		},
 	}
