@@ -1,4 +1,7 @@
 APIServerConfig:
+  API:
+    dns: {}
+    publicName: api.nthimdsprocessor.longclustername.example.com
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

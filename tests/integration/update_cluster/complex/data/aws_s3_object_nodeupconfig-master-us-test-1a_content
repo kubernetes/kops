@@ -1,4 +1,6 @@
 APIServerConfig:
+  API:
+    publicName: api.complex.example.com
   Authentication:
     aws: {}
   KubeAPIServer:

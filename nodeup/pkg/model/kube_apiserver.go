@@ -398,11 +398,11 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		}
 
 		// Names specified in the cluster spec
-		if b.Cluster.Spec.API.PublicName != "" {
-			alternateNames = append(alternateNames, b.Cluster.Spec.API.PublicName)
+		if b.NodeupConfig.APIServerConfig.API.PublicName != "" {
+			alternateNames = append(alternateNames, b.NodeupConfig.APIServerConfig.API.PublicName)
 		}
 		alternateNames = append(alternateNames, b.APIInternalName())
-		alternateNames = append(alternateNames, b.Cluster.Spec.API.AdditionalSANs...)
+		alternateNames = append(alternateNames, b.NodeupConfig.APIServerConfig.API.AdditionalSANs...)
 
 		// Load balancer IPs passed in through NodeupConfig
 		alternateNames = append(alternateNames, b.NodeupConfig.ApiserverAdditionalIPs...)
@@ -745,12 +745,12 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 		return annotations
 	}
 
-	if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
+	if b.NodeupConfig.APIServerConfig.API.LoadBalancer == nil || !b.NodeupConfig.APIServerConfig.API.LoadBalancer.UseForInternalAPI {
 		annotations["dns.alpha.kubernetes.io/internal"] = b.APIInternalName()
 	}
 
-	if b.Cluster.Spec.API.DNS != nil && b.Cluster.Spec.API.PublicName != "" {
-		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.API.PublicName
+	if b.NodeupConfig.APIServerConfig.API.DNS != nil && b.NodeupConfig.APIServerConfig.API.PublicName != "" {
+		annotations["dns.alpha.kubernetes.io/external"] = b.NodeupConfig.APIServerConfig.API.PublicName
 	}
 
 	return annotations

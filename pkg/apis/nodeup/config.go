@@ -170,6 +170,8 @@ type StaticManifest struct {
 type APIServerConfig struct {
 	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
 	KubeAPIServer *kops.KubeAPIServerConfig
+	// API controls how the Kubernetes API is exposed.
+	API kops.APISpec
 	// Authentication is a copy of the AuthenticationSpec from the cluster spec.
 	Authentication *kops.AuthenticationSpec `json:",omitempty"`
 	// EncryptionConfigSecretHash is a hash of the encryptionconfig secret.
@@ -298,6 +300,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	if instanceGroup.HasAPIServer() {
 		config.APIServerConfig = &APIServerConfig{
 			KubeAPIServer: cluster.Spec.KubeAPIServer,
+			API: kops.APISpec{
+				PublicName:     cluster.Spec.API.PublicName,
+				AdditionalSANs: cluster.Spec.API.AdditionalSANs,
+			},
 		}
 		if cluster.Spec.Authentication != nil {
 			config.APIServerConfig.Authentication = cluster.Spec.Authentication
@@ -305,6 +311,12 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 				// The values go into the manifest and aren't needed by nodeup.
 				config.APIServerConfig.Authentication.AWS = &kops.AWSAuthenticationSpec{}
 			}
+		}
+		if cluster.Spec.API.DNS != nil {
+			config.APIServerConfig.API.DNS = &kops.DNSAccessSpec{}
+		}
+		if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.UseForInternalAPI {
+			config.APIServerConfig.API.LoadBalancer = &kops.LoadBalancerAccessSpec{UseForInternalAPI: true}
 		}
 	}
 

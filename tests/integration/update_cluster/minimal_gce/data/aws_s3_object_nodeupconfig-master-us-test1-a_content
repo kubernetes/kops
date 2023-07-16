@@ -1,4 +1,7 @@
 APIServerConfig:
+  API:
+    dns: {}
+    publicName: api.minimal-gce.example.com
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

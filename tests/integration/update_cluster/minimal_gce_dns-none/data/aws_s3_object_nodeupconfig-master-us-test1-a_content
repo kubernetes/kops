@@ -1,4 +1,8 @@
 APIServerConfig:
+  API:
+    loadBalancer:
+      useForInternalAPI: true
+    publicName: api.minimal-gce.example.com
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
