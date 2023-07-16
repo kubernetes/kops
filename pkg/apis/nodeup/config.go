@@ -44,7 +44,9 @@ type Config struct {
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
-	// Manifests for running etcd
+	// EtcdClusterNames are the names of the etcd clusters.
+	EtcdClusterNames []string `json:",omitempty"`
+	// EtcdManifests are the manifests for running etcd.
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
 
 	// CAs are the CA certificates to trust.
@@ -168,6 +170,8 @@ type StaticManifest struct {
 
 // APIServerConfig is additional configuration for nodes running an APIServer.
 type APIServerConfig struct {
+	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local).
+	ClusterDNSDomain string
 	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
 	KubeAPIServer *kops.KubeAPIServerConfig
 	// API controls how the Kubernetes API is exposed.
@@ -299,7 +303,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if instanceGroup.HasAPIServer() {
 		config.APIServerConfig = &APIServerConfig{
-			KubeAPIServer: cluster.Spec.KubeAPIServer,
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+			KubeAPIServer:    cluster.Spec.KubeAPIServer,
 			API: kops.APISpec{
 				PublicName:     cluster.Spec.API.PublicName,
 				AdditionalSANs: cluster.Spec.API.AdditionalSANs,

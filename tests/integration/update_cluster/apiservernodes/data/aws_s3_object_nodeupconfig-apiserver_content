@@ -2,6 +2,7 @@ APIServerConfig:
   API:
     dns: {}
     publicName: api.minimal.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -186,8 +187,6 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
-channels:
-- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
   runc:

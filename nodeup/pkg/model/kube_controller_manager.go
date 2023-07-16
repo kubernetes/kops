@@ -117,7 +117,7 @@ func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.NodeupModelB
 
 	if kcm.TLSCertFile == nil {
 		alternateNames := []string{
-			"kube-controller-manager.kube-system.svc." + b.Cluster.Spec.ClusterDNSDomain,
+			"kube-controller-manager.kube-system.svc." + b.NodeupConfig.APIServerConfig.ClusterDNSDomain,
 		}
 
 		issueCert := &nodetasks.IssueCert{

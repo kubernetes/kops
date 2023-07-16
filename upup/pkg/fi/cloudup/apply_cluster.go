@@ -1411,6 +1411,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 
 		if isMaster || usesLegacyGossip {
+			config.Channels = n.channels
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
 					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
@@ -1524,8 +1525,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	config.Images = n.images[role]
-	config.Channels = n.channels
-	config.EtcdManifests = n.etcdManifests[ig.Name]
+
+	if isMaster {
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
+		}
+		config.EtcdManifests = n.etcdManifests[ig.Name]
+	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {
 		if ig.Spec.WarmPool != nil || cluster.Spec.CloudProvider.AWS.WarmPool != nil {

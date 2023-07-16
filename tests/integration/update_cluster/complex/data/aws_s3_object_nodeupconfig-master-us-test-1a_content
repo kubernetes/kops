@@ -3,6 +3,7 @@ APIServerConfig:
     publicName: api.complex.example.com
   Authentication:
     aws: {}
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -234,6 +235,9 @@ CAs:
     -----END CERTIFICATE-----
 ClusterName: complex.example.com
 ContainerRuntime: containerd
+EtcdClusterNames:
+- main
+- events
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2

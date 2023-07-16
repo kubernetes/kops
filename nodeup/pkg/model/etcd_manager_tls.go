@@ -36,19 +36,17 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
-	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
-		k := etcdCluster.Name
-
-		d := "/etc/kubernetes/pki/etcd-manager-" + k
+	for _, etcdClusterName := range b.NodeupConfig.EtcdClusterNames {
+		d := "/etc/kubernetes/pki/etcd-manager-" + etcdClusterName
 
 		keys := make(map[string]string)
 
-		keys["etcd-manager-ca"] = "etcd-manager-ca-" + k
-		keys["etcd-peers-ca"] = "etcd-peers-ca-" + k
-		keys["etcd-clients-ca"] = "etcd-clients-ca-" + k
+		keys["etcd-manager-ca"] = "etcd-manager-ca-" + etcdClusterName
+		keys["etcd-peers-ca"] = "etcd-peers-ca-" + etcdClusterName
+		keys["etcd-clients-ca"] = "etcd-clients-ca-" + etcdClusterName
 
 		// Because API server can only have a single client certificate for etcd, we need to share a client CA
-		if k == "main" || k == "events" {
+		if etcdClusterName == "main" || etcdClusterName == "events" {
 			keys["etcd-clients-ca"] = "etcd-clients-ca"
 		}
 
