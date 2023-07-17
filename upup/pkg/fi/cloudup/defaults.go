@@ -48,7 +48,9 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		if etcdCluster.Manager == nil {
 			etcdCluster.Manager = &kops.EtcdManagerSpec{}
 		}
-		etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+		if etcdCluster.Manager.BackupRetentionDays == nil {
+			etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+		}
 	}
 
 	// Topology support
