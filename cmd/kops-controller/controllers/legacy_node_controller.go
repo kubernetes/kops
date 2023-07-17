@@ -132,12 +132,23 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if len(updateLabels) == 0 {
+	deleteLabels := make(map[string]struct{})
+	for k := range node.Labels {
+		// If it is one of our managed labels, "prune" values we don't want to be there
+		switch k {
+		case nodelabels.RoleLabelMaster16, nodelabels.RoleLabelAPIServer16, nodelabels.RoleLabelNode16, nodelabels.RoleLabelControlPlane20:
+			if _, found := labels[k]; !found {
+				deleteLabels[k] = struct{}{}
+			}
+		}
+	}
+
+	if len(updateLabels) == 0 && len(deleteLabels) == 0 {
 		klog.V(4).Infof("no label changes needed for %s", node.Name)
 		return ctrl.Result{}, nil
 	}
 
-	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels); err != nil {
+	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels, deleteLabels); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}
