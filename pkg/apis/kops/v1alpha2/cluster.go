@@ -255,7 +255,10 @@ type PodIdentityWebhookSpec struct {
 }
 
 type KarpenterConfig struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled     bool   `json:"enabled,omitempty"`
+	LogEncoding string `json:"logEncoding,omitempty"`
+	LogLevel    string `json:"logLevel,omitempty"`
+	Image       string `json:"image,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

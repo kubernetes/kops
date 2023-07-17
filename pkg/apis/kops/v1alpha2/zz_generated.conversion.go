@@ -4540,6 +4540,9 @@ func Convert_kops_InstanceRequirementsSpec_To_v1alpha2_InstanceRequirementsSpec(
 
 func autoConvert_v1alpha2_KarpenterConfig_To_kops_KarpenterConfig(in *KarpenterConfig, out *kops.KarpenterConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.LogEncoding = in.LogEncoding
+	out.LogLevel = in.LogLevel
+	out.Image = in.Image
 	return nil
 }
 
@@ -4550,6 +4553,9 @@ func Convert_v1alpha2_KarpenterConfig_To_kops_KarpenterConfig(in *KarpenterConfi
 
 func autoConvert_kops_KarpenterConfig_To_v1alpha2_KarpenterConfig(in *kops.KarpenterConfig, out *KarpenterConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.LogEncoding = in.LogEncoding
+	out.LogLevel = in.LogLevel
+	out.Image = in.Image
 	return nil
 }
 
