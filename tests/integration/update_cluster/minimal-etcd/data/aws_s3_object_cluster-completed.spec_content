@@ -55,7 +55,7 @@ spec:
       name: us-test-1a
       volumeSize: 20
     manager:
-      backupRetentionDays: 90
+      backupRetentionDays: 30
       env:
       - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
         value: 1d
