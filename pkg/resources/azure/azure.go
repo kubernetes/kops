@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/utils/set"
 )
 
 const (
@@ -168,7 +169,7 @@ func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) 
 	var blocks []string
 	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
 
-	nsgs := map[string]struct{}{}
+	nsgs := set.New[string]()
 	if vnet.Subnets != nil {
 		for _, sn := range *vnet.Subnets {
 			if sn.NetworkSecurityGroup != nil {
@@ -176,7 +177,7 @@ func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) 
 				if err != nil {
 					return nil, fmt.Errorf("parsing network security group ID: %s", err)
 				}
-				nsgs[nsgID.NetworkSecurityGroupName] = struct{}{}
+				nsgs.Insert(nsgID.NetworkSecurityGroupName)
 			}
 		}
 	}
@@ -341,24 +342,24 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 	var blocks []string
 	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
 
-	vnets := map[string]struct{}{}
-	subnets := map[string]struct{}{}
-	lbs := map[string]struct{}{}
+	vnets := set.New[string]()
+	subnets := set.New[string]()
+	lbs := set.New[string]()
 	for _, iface := range *vmss.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations {
 		for _, ip := range *iface.IPConfigurations {
 			subnetID, err := azure.ParseSubnetID(*ip.Subnet.ID)
 			if err != nil {
 				return nil, fmt.Errorf("error on parsing subnet ID: %s", err)
 			}
-			vnets[subnetID.VirtualNetworkName] = struct{}{}
-			subnets[subnetID.SubnetName] = struct{}{}
+			vnets.Insert(subnetID.VirtualNetworkName)
+			subnets.Insert(subnetID.SubnetName)
 			if ip.LoadBalancerBackendAddressPools != nil {
 				for _, lb := range *ip.LoadBalancerBackendAddressPools {
 					lbID, err := azure.ParseLoadBalancerID(*lb.ID)
 					if err != nil {
 						return nil, fmt.Errorf("parsing load balancer ID: %s", err)
 					}
-					lbs[lbID.LoadBalancerName] = struct{}{}
+					lbs.Insert(lbID.LoadBalancerName)
 				}
 			}
 		}
@@ -496,7 +497,7 @@ func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalanc
 	var blocks []string
 	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
 
-	pips := map[string]struct{}{}
+	pips := set.New[string]()
 	if loadBalancer.FrontendIPConfigurations != nil {
 		for _, fip := range *loadBalancer.FrontendIPConfigurations {
 			if fip.PublicIPAddress != nil {
@@ -504,7 +505,7 @@ func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalanc
 				if err != nil {
 					return nil, fmt.Errorf("parsing public IP address ID: %s", err)
 				}
-				pips[pipID.PublicIPAddressName] = struct{}{}
+				pips.Insert(pipID.PublicIPAddressName)
 			}
 		}
 	}

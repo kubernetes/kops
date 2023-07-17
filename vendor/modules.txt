@@ -1747,6 +1747,7 @@ k8s.io/utils/io
 k8s.io/utils/keymutex
 k8s.io/utils/net
 k8s.io/utils/pointer
+k8s.io/utils/set
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
 # oras.land/oras-go v1.2.3
