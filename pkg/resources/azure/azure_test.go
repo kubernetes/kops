@@ -63,8 +63,9 @@ func TestListResourcesAzure(t *testing.T) {
 
 	vnets := cloud.VirtualNetworksClient.VNets
 	vnets[vnetName] = network.VirtualNetwork{
-		Name: to.StringPtr(vnetName),
-		Tags: clusterTags,
+		Name:                           to.StringPtr(vnetName),
+		Tags:                           clusterTags,
+		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{},
 	}
 	vnets[irrelevantName] = network.VirtualNetwork{
 		Name: to.StringPtr(irrelevantName),
@@ -88,7 +89,7 @@ func TestListResourcesAzure(t *testing.T) {
 	}
 
 	vmsses := cloud.VMScaleSetsClient.VMSSes
-	subnetID := azuretasks.SubnetID{
+	subnetID := azure.SubnetID{
 		SubscriptionID:     "sid",
 		ResourceGroupName:  rgName,
 		VirtualNetworkName: vnetName,
@@ -164,8 +165,9 @@ func TestListResourcesAzure(t *testing.T) {
 
 	lbs := cloud.LoadBalancersClient.LBs
 	lbs[lbName] = network.LoadBalancer{
-		Name: to.StringPtr(lbName),
-		Tags: clusterTags,
+		Name:                         to.StringPtr(lbName),
+		Tags:                         clusterTags,
+		LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{},
 	}
 	lbs[irrelevantName] = network.LoadBalancer{
 		Name: to.StringPtr(irrelevantName),

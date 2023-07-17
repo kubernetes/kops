@@ -29,66 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-// SubnetID contains the resource ID/names required to construct a subnet ID.
-type SubnetID struct {
-	SubscriptionID     string
-	ResourceGroupName  string
-	VirtualNetworkName string
-	SubnetName         string
-}
-
-// String returns the subnet ID in the path format.
-func (s *SubnetID) String() string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s",
-		s.SubscriptionID,
-		s.ResourceGroupName,
-		s.VirtualNetworkName,
-		s.SubnetName)
-}
-
-// ParseSubnetID parses a given subnet ID string and returns a SubnetID.
-func ParseSubnetID(s string) (*SubnetID, error) {
-	l := strings.Split(s, "/")
-	if len(l) != 11 {
-		return nil, fmt.Errorf("malformed format of subnet ID: %s, %d", s, len(l))
-	}
-	return &SubnetID{
-		SubscriptionID:     l[2],
-		ResourceGroupName:  l[4],
-		VirtualNetworkName: l[8],
-		SubnetName:         l[10],
-	}, nil
-}
-
-// loadBalancerID contains the resource ID/names required to construct a loadbalancer ID.
-type loadBalancerID struct {
-	SubscriptionID    string
-	ResourceGroupName string
-	LoadBalancerName  string
-}
-
-// String returns the loadbalancer ID in the path format.
-func (lb *loadBalancerID) String() string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadbalancers/%s/backendAddressPools/LoadBalancerBackEnd",
-		lb.SubscriptionID,
-		lb.ResourceGroupName,
-		lb.LoadBalancerName,
-	)
-}
-
-// parseLoadBalancerID parses a given loadbalancer ID string and returns a loadBalancerID.
-func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
-	l := strings.Split(lb, "/")
-	if len(l) != 11 {
-		return nil, fmt.Errorf("malformed format of loadbalancer ID: %s, %d", lb, len(l))
-	}
-	return &loadBalancerID{
-		SubscriptionID:    l[2],
-		ResourceGroupName: l[4],
-		LoadBalancerName:  l[8],
-	}, nil
-}
-
 // VMScaleSet is an Azure VM Scale Set.
 // +kops:fitask
 type VMScaleSet struct {
@@ -173,18 +113,18 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 		return nil, fmt.Errorf("unexpected number of IP configs found for VM ScaleSet %s: %d", *s.Name, len(ipConfigs))
 	}
 	ipConfig := ipConfigs[0]
-	subnetID, err := ParseSubnetID(*ipConfig.Subnet.ID)
+	subnetID, err := azure.ParseSubnetID(*ipConfig.Subnet.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse subnet ID %s", *ipConfig.Subnet.ID)
 	}
 
-	var loadBalancerID *loadBalancerID
+	var loadBalancerID *azure.LoadBalancerID
 	if ipConfig.LoadBalancerBackendAddressPools != nil {
 		for _, i := range *ipConfig.LoadBalancerBackendAddressPools {
 			if !strings.Contains(*i.ID, "api") {
 				continue
 			}
-			loadBalancerID, err = parseLoadBalancerID(*i.ID)
+			loadBalancerID, err = azure.ParseLoadBalancerID(*i.ID)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse loadbalancer ID %s", *ipConfig.Subnet.ID)
 			}
@@ -301,7 +241,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		},
 	}
 
-	subnetID := SubnetID{
+	subnetID := azure.SubnetID{
 		SubscriptionID:     t.Cloud.SubscriptionID(),
 		ResourceGroupName:  *e.ResourceGroup.Name,
 		VirtualNetworkName: *e.VirtualNetwork.Name,
@@ -323,7 +263,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		}
 	}
 	if e.LoadBalancer != nil {
-		loadBalancerID := loadBalancerID{
+		loadBalancerID := azure.LoadBalancerID{
 			SubscriptionID:    t.Cloud.SubscriptionID(),
 			ResourceGroupName: *e.ResourceGroup.Name,
 			LoadBalancerName:  *e.LoadBalancer.Name,
