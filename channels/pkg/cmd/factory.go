@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
+	"k8s.io/kops/util/pkg/vfs"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
@@ -27,6 +28,7 @@ import (
 )
 
 type Factory interface {
+	VFSContext() *vfs.VFSContext
 	KubernetesClient() (kubernetes.Interface, error)
 	CertManagerClient() (certmanager.Interface, error)
 	RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error)

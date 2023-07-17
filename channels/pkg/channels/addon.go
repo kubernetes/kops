@@ -157,7 +157,7 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(ctx context.Context, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient, existingVersion)
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	var merr error
 
 	if required.NewVersion != nil {
-		err := a.updateAddon(ctx, k8sClient, pruner, applier, required)
+		err := a.updateAddon(ctx, k8sClient, vfsContext, pruner, applier, required)
 		if err != nil {
 			merr = multierr.Append(merr, err)
 		}
@@ -183,7 +183,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	return required, merr
 }
 
-func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *Pruner, applier Applier, required *AddonUpdate) error {
+func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, vfsContext *vfs.VFSContext, pruner *Pruner, applier Applier, required *AddonUpdate) error {
 	manifestURL, err := a.GetManifestFullUrl()
 	if err != nil {
 		return err
@@ -192,7 +192,7 @@ func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface,
 	klog.Infof("Applying update from %q", manifestURL)
 
 	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	data, err := vfs.Context.ReadFile(manifestURL.String())
+	data, err := vfsContext.ReadFile(manifestURL.String())
 	if err != nil {
 		return fmt.Errorf("error reading manifest: %w", err)
 	}

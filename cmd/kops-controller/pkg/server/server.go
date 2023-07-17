@@ -51,7 +51,7 @@ import (
 
 type Server struct {
 	opt         *config.Options
-	certNames   sets.String
+	certNames   sets.Set[string]
 	keypairIDs  map[string]string
 	server      *http.Server
 	verifier    bootstrap.Verifier
@@ -70,30 +70,29 @@ type Server struct {
 
 var _ manager.LeaderElectionRunnable = &Server{}
 
-func NewServer(opt *config.Options, verifier bootstrap.Verifier, uncachedClient client.Client) (*Server, error) {
+func NewServer(vfsContext *vfs.VFSContext, opt *config.Options, verifier bootstrap.Verifier, uncachedClient client.Client) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			PreferServerCipherSuites: true,
+			MinVersion: tls.VersionTLS12,
 		},
 	}
 
 	s := &Server{
 		opt:            opt,
-		certNames:      sets.NewString(opt.Server.CertNames...),
+		certNames:      sets.New(opt.Server.CertNames...),
 		server:         server,
 		verifier:       verifier,
 		uncachedClient: uncachedClient,
 	}
 
-	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
+	configBase, err := vfsContext.BuildVfsPath(opt.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse ConfigBase %q: %w", opt.ConfigBase, err)
 	}
 	s.configBase = configBase
 
-	p, err := vfs.Context.BuildVfsPath(opt.SecretStore)
+	p, err := vfsContext.BuildVfsPath(opt.SecretStore)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse SecretStore %q: %w", opt.SecretStore, err)
 	}

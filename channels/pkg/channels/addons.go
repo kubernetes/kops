@@ -34,9 +34,9 @@ type Addons struct {
 	APIObject       *api.Addons
 }
 
-func LoadAddons(name string, location *url.URL) (*Addons, error) {
+func LoadAddons(vfsContext *vfs.VFSContext, name string, location *url.URL) (*Addons, error) {
 	klog.V(2).Infof("Loading addons channel from %q", location)
-	data, err := vfs.Context.ReadFile(location.String())
+	data, err := vfsContext.ReadFile(location.String())
 	if err != nil {
 		return nil, fmt.Errorf("error reading addons from %q: %v", location, err)
 	}
