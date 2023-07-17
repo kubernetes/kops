@@ -264,7 +264,7 @@ func (d *Duration) ToTimeDuration() *time.Duration {
 	if d == nil {
 		return nil
 	}
-	timeDuration := time.Duration(d.Nanos) + time.Duration(d.Seconds/1e9)
+	timeDuration := time.Duration(d.Nanos) + time.Duration(d.Seconds)*time.Second
 	return &timeDuration
 }
 

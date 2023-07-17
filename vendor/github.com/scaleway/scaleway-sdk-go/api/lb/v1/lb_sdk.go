@@ -900,7 +900,7 @@ type ACLActionRedirect struct {
 	// Type: redirect type.
 	// Default value: location
 	Type ACLActionRedirectRedirectType `json:"type"`
-	// Target: redirect target. For a location redirect, you can use a URL e.g. `https://scaleway.com`. Using a scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme. This can be useful to implement HTTP to HTTPS redirects. Valid placeholders that can be used in a `location` redirect to preserve parts of the original request in the redirection URL are {{ host }}, {{ query }}, {{ path }} and {{ scheme }}.
+	// Target: redirect target. For a location redirect, you can use a URL e.g. `https://scaleway.com`. Using a scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme. This can be useful to implement HTTP to HTTPS redirects. Valid placeholders that can be used in a `location` redirect to preserve parts of the original request in the redirection URL are \{\{host\}\}, \{\{query\}\}, \{\{path\}\} and \{\{scheme\}\}.
 	Target string `json:"target"`
 	// Code: HTTP redirect code to use. Valid values are 301, 302, 303, 307 and 308. Default value is 302.
 	Code *int32 `json:"code"`
@@ -1589,7 +1589,7 @@ type SubscriberWebhookConfig struct {
 
 // Zones list localities the api is available in
 func (s *ZonedAPI) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZonePlWaw1, scw.ZonePlWaw2}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2}
 }
 
 type ZonedAPIListLBsRequest struct {
@@ -1666,8 +1666,10 @@ type ZonedAPICreateLBRequest struct {
 	Name string `json:"name"`
 	// Description: description for the Load Balancer.
 	Description string `json:"description"`
-	// IPID: ID of an existing flexible IP address to attach to the Load Balancer.
-	IPID *string `json:"ip_id"`
+	// Deprecated: IPID: ID of an existing flexible IP address to attach to the Load Balancer.
+	IPID *string `json:"ip_id,omitempty"`
+	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
+	AssignFlexibleIP *bool `json:"assign_flexible_ip"`
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
 	// Type: load Balancer commercial offer type. Use the Load Balancer types endpoint to retrieve a list of available offer types.
@@ -3373,6 +3375,8 @@ type ZonedAPIGetLBStatsRequest struct {
 	Zone scw.Zone `json:"-"`
 	// LBID: load Balancer ID.
 	LBID string `json:"-"`
+	// BackendID: ID of the backend.
+	BackendID *string `json:"-"`
 }
 
 // Deprecated: GetLBStats: get usage statistics of a given Load Balancer.
@@ -3383,6 +3387,9 @@ func (s *ZonedAPI) GetLBStats(req *ZonedAPIGetLBStatsRequest, opts ...scw.Reques
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
 	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "backend_id", req.BackendID)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -3395,6 +3402,7 @@ func (s *ZonedAPI) GetLBStats(req *ZonedAPIGetLBStatsRequest, opts ...scw.Reques
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
 		Path:    "/lb/v1/zones/" + fmt.Sprint(req.Zone) + "/lbs/" + fmt.Sprint(req.LBID) + "/stats",
+		Query:   query,
 		Headers: http.Header{},
 	}
 
@@ -3416,6 +3424,8 @@ type ZonedAPIListBackendStatsRequest struct {
 	Page *int32 `json:"-"`
 	// PageSize: number of items to return.
 	PageSize *uint32 `json:"-"`
+	// BackendID: ID of the backend.
+	BackendID *string `json:"-"`
 }
 
 // ListBackendStats: list backend server statistics.
@@ -3436,6 +3446,7 @@ func (s *ZonedAPI) ListBackendStats(req *ZonedAPIListBackendStatsRequest, opts .
 	query := url.Values{}
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "backend_id", req.BackendID)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -4641,8 +4652,10 @@ type CreateLBRequest struct {
 	Name string `json:"name"`
 	// Description: description for the Load Balancer.
 	Description string `json:"description"`
-	// IPID: ID of an existing flexible IP address to attach to the Load Balancer.
-	IPID *string `json:"ip_id"`
+	// Deprecated: IPID: ID of an existing flexible IP address to attach to the Load Balancer.
+	IPID *string `json:"ip_id,omitempty"`
+	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
+	AssignFlexibleIP *bool `json:"assign_flexible_ip"`
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
 	// Type: load Balancer commercial offer type. Use the Load Balancer types endpoint to retrieve a list of available offer types.
@@ -6319,6 +6332,8 @@ type GetLBStatsRequest struct {
 	Region scw.Region `json:"-"`
 	// LBID: load Balancer ID.
 	LBID string `json:"-"`
+	// BackendID: ID of the backend.
+	BackendID *string `json:"-"`
 }
 
 // Deprecated: GetLBStats: get usage statistics of a given load balancer.
@@ -6329,6 +6344,9 @@ func (s *API) GetLBStats(req *GetLBStatsRequest, opts ...scw.RequestOption) (*LB
 		defaultRegion, _ := s.client.GetDefaultRegion()
 		req.Region = defaultRegion
 	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "backend_id", req.BackendID)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")
@@ -6341,6 +6359,7 @@ func (s *API) GetLBStats(req *GetLBStatsRequest, opts ...scw.RequestOption) (*LB
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
 		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/stats",
+		Query:   query,
 		Headers: http.Header{},
 	}
 
@@ -6362,8 +6381,11 @@ type ListBackendStatsRequest struct {
 	Page *int32 `json:"-"`
 	// PageSize: number of items to return.
 	PageSize *uint32 `json:"-"`
+	// BackendID: ID of the backend.
+	BackendID *string `json:"-"`
 }
 
+// ListBackendStats: list backend server statistics.
 func (s *API) ListBackendStats(req *ListBackendStatsRequest, opts ...scw.RequestOption) (*ListBackendStatsResponse, error) {
 	var err error
 
@@ -6380,6 +6402,7 @@ func (s *API) ListBackendStats(req *ListBackendStatsRequest, opts ...scw.Request
 	query := url.Values{}
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "backend_id", req.BackendID)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")

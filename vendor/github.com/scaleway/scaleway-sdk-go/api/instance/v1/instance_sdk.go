@@ -112,6 +112,71 @@ func (enum *BootType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type IPState string
+
+const (
+	IPStateUnknownState = IPState("unknown_state")
+	IPStateDetached     = IPState("detached")
+	IPStateAttached     = IPState("attached")
+	IPStatePending      = IPState("pending")
+	IPStateError        = IPState("error")
+)
+
+func (enum IPState) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_state"
+	}
+	return string(enum)
+}
+
+func (enum IPState) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *IPState) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = IPState(IPState(tmp).String())
+	return nil
+}
+
+type IPType string
+
+const (
+	IPTypeUnknownIptype = IPType("unknown_iptype")
+	IPTypeNat           = IPType("nat")
+	IPTypeRoutedIPv4    = IPType("routed_ipv4")
+	IPTypeRoutedIPv6    = IPType("routed_ipv6")
+)
+
+func (enum IPType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_iptype"
+	}
+	return string(enum)
+}
+
+func (enum IPType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *IPType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = IPType(IPType(tmp).String())
+	return nil
+}
+
 type ImageState string
 
 const (
@@ -450,6 +515,67 @@ func (enum *ServerAction) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ServerAction(ServerAction(tmp).String())
+	return nil
+}
+
+type ServerIPIPFamily string
+
+const (
+	ServerIPIPFamilyInet  = ServerIPIPFamily("inet")
+	ServerIPIPFamilyInet6 = ServerIPIPFamily("inet6")
+)
+
+func (enum ServerIPIPFamily) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "inet"
+	}
+	return string(enum)
+}
+
+func (enum ServerIPIPFamily) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerIPIPFamily) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerIPIPFamily(ServerIPIPFamily(tmp).String())
+	return nil
+}
+
+type ServerIPProvisioningMode string
+
+const (
+	ServerIPProvisioningModeManual = ServerIPProvisioningMode("manual")
+	ServerIPProvisioningModeDHCP   = ServerIPProvisioningMode("dhcp")
+	ServerIPProvisioningModeSlaac  = ServerIPProvisioningMode("slaac")
+)
+
+func (enum ServerIPProvisioningMode) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "manual"
+	}
+	return string(enum)
+}
+
+func (enum ServerIPProvisioningMode) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerIPProvisioningMode) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerIPProvisioningMode(ServerIPProvisioningMode(tmp).String())
 	return nil
 }
 
@@ -893,8 +1019,12 @@ type GetServerResponse struct {
 	Server *Server `json:"server"`
 }
 
+// GetServerTypesAvailabilityResponse: get server types availability response.
 type GetServerTypesAvailabilityResponse struct {
+	// Servers: map of server types.
 	Servers map[string]*GetServerTypesAvailabilityResponseAvailability `json:"servers"`
+
+	TotalCount uint32 `json:"total_count"`
 }
 
 type GetServerTypesAvailabilityResponseAvailability struct {
@@ -924,6 +1054,12 @@ type IP struct {
 	Tags []string `json:"tags"`
 
 	Project string `json:"project"`
+	// Type: default value: unknown_iptype
+	Type IPType `json:"type"`
+	// State: default value: unknown_state
+	State IPState `json:"state"`
+
+	Prefix scw.IPNet `json:"prefix"`
 
 	Zone scw.Zone `json:"zone"`
 }
@@ -1212,8 +1348,10 @@ type Server struct {
 	CommercialType string `json:"commercial_type"`
 	// CreationDate: instance creation date.
 	CreationDate *time.Time `json:"creation_date"`
-	// DynamicIPRequired: true if a dynamic IP is required.
+	// DynamicIPRequired: true if a dynamic IPv4 is required.
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
+	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode.
+	RoutedIPEnabled bool `json:"routed_ip_enabled"`
 	// EnableIPv6: true if IPv6 is enabled.
 	EnableIPv6 bool `json:"enable_ipv6"`
 	// Hostname: instance host name.
@@ -1226,6 +1364,10 @@ type Server struct {
 	PrivateIP *string `json:"private_ip"`
 	// PublicIP: information about the public IP.
 	PublicIP *ServerIP `json:"public_ip"`
+	// PublicIPs: information about all the public IPs attached to the server.
+	PublicIPs []*ServerIP `json:"public_ips"`
+	// MacAddress: the server's MAC address.
+	MacAddress string `json:"mac_address"`
 	// ModificationDate: instance modification date.
 	ModificationDate *time.Time `json:"modification_date"`
 	// State: instance state.
@@ -1275,11 +1417,21 @@ type ServerActionResponse struct {
 // ServerIP: server. ip.
 type ServerIP struct {
 	// ID: unique ID of the IP address.
-	ID string `json:"id"`
-	// Address: instance public IPv4 IP-Address.
-	Address net.IP `json:"address"`
+	ID string `json:"id,omitempty"`
+	// Address: instance's public IP-Address.
+	Address net.IP `json:"address,omitempty"`
+	// Gateway: gateway's IP address.
+	Gateway net.IP `json:"gateway,omitempty"`
+	// Netmask: cIDR netmask.
+	Netmask string `json:"netmask,omitempty"`
+	// Family: IP address family (inet or inet6).
+	// Default value: inet
+	Family ServerIPIPFamily `json:"family,omitempty"`
 	// Dynamic: true if the IP address is dynamic.
-	Dynamic bool `json:"dynamic"`
+	Dynamic bool `json:"dynamic,omitempty"`
+	// ProvisioningMode: information about this address provisioning mode.
+	// Default value: manual
+	ProvisioningMode ServerIPProvisioningMode `json:"provisioning_mode,omitempty"`
 }
 
 // ServerIPv6: server. ipv6.
@@ -1574,23 +1726,23 @@ type VolumeServer struct {
 // VolumeServerTemplate: volume server template.
 type VolumeServerTemplate struct {
 	// ID: UUID of the volume.
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 	// Boot: force the Instance to boot on this volume.
 	// Default value: false
-	Boot bool `json:"boot,omitempty"`
+	Boot *bool `json:"boot,omitempty"`
 	// Name: name of the volume.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Size: disk size of the volume, must be a multiple of 512.
-	Size scw.Size `json:"size,omitempty"`
+	Size *scw.Size `json:"size,omitempty"`
 	// VolumeType: type of the volume.
 	// Default value: l_ssd
 	VolumeType VolumeVolumeType `json:"volume_type,omitempty"`
 	// BaseSnapshot: ID of the snapshot on which this volume will be based.
-	BaseSnapshot string `json:"base_snapshot,omitempty"`
+	BaseSnapshot *string `json:"base_snapshot,omitempty"`
 	// Organization: organization ID of the volume.
-	Organization string `json:"organization,omitempty"`
+	Organization *string `json:"organization,omitempty"`
 	// Project: project ID of the volume.
-	Project string `json:"project,omitempty"`
+	Project *string `json:"project,omitempty"`
 }
 
 type VolumeSummary struct {
@@ -1669,15 +1821,16 @@ type setSnapshotResponse struct {
 
 // Zones list localities the api is available in
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZonePlWaw1, scw.ZonePlWaw2}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2}
 }
 
 type GetServerTypesAvailabilityRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-
+	// PerPage: a positive integer lower or equal to 100 to select the number of items to return.
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-
+	// Page: a positive integer to choose the page to return.
 	Page *int32 `json:"-"`
 }
 
@@ -1904,8 +2057,10 @@ type CreateServerRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Name: instance name.
 	Name string `json:"name,omitempty"`
-	// DynamicIPRequired: define if a dynamic IP is required for the Instance.
+	// DynamicIPRequired: define if a dynamic IPv4 is required for the Instance.
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
+	// RoutedIPEnabled: if true, configure the Instance so it uses the new routed IP mode.
+	RoutedIPEnabled *bool `json:"routed_ip_enabled,omitempty"`
 	// CommercialType: define the Instance commercial type (i.e. GP1-S).
 	CommercialType string `json:"commercial_type,omitempty"`
 	// Image: instance image ID or label.
@@ -1914,8 +2069,10 @@ type CreateServerRequest struct {
 	Volumes map[string]*VolumeServerTemplate `json:"volumes,omitempty"`
 	// EnableIPv6: true if IPv6 is enabled on the server.
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
-	// PublicIP: ID of the reserved IP to attach to the server.
+	// PublicIP: ID of the reserved IP to attach to the Instance.
 	PublicIP *string `json:"public_ip,omitempty"`
+	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
+	PublicIPs []*string `json:"public_ips,omitempty"`
 	// BootType: boot type to use.
 	// Default value: local
 	BootType *BootType `json:"boot_type,omitempty"`
@@ -2081,8 +2238,10 @@ type setServerRequest struct {
 	CommercialType string `json:"commercial_type"`
 	// CreationDate: instance creation date.
 	CreationDate *time.Time `json:"creation_date"`
-	// DynamicIPRequired: true if a dynamic IP is required.
+	// DynamicIPRequired: true if a dynamic IPv4 is required.
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
+	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode (once this is set to True you cannot set it back to False).
+	RoutedIPEnabled *bool `json:"routed_ip_enabled"`
 	// EnableIPv6: true if IPv6 is enabled.
 	EnableIPv6 bool `json:"enable_ipv6"`
 	// Hostname: instance host name.
@@ -2095,6 +2254,8 @@ type setServerRequest struct {
 	PrivateIP *string `json:"private_ip"`
 	// PublicIP: information about the public IP.
 	PublicIP *ServerIP `json:"public_ip"`
+	// PublicIPs: information about all the public IPs attached to the server.
+	PublicIPs []*ServerIP `json:"public_ips"`
 	// ModificationDate: instance modification date.
 	ModificationDate *time.Time `json:"modification_date"`
 	// State: instance state.
@@ -2189,6 +2350,10 @@ type UpdateServerRequest struct {
 	Bootscript *string `json:"bootscript,omitempty"`
 
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
+	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode (once this is set to True you cannot set it back to False).
+	RoutedIPEnabled *bool `json:"routed_ip_enabled,omitempty"`
+
+	PublicIPs []*ServerIP `json:"public_ips,omitempty"`
 
 	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
@@ -2199,6 +2364,12 @@ type UpdateServerRequest struct {
 	PlacementGroup *NullableStringValue `json:"placement_group,omitempty"`
 	// PrivateNics: instance private NICs.
 	PrivateNics []*PrivateNIC `json:"private_nics,omitempty"`
+	// CommercialType: set the commercial_type for this Instance.
+	// Warning: This field has some restrictions:
+	// - Cannot be changed if the Instance is not in `stopped` state.
+	// - Cannot be changed if the Instance is in a placement group.
+	// - Local storage requirements of the target commercial_types must be fulfilled (i.e. if an Instance has 80GB of local storage, it can be changed into a GP1-XS, which has a maximum of 150GB, but it cannot be changed into a DEV1-S, which has only 20GB).
+	CommercialType *string `json:"commercial_type,omitempty"`
 }
 
 // updateServer: update an Instance.
@@ -2306,6 +2477,7 @@ type ServerActionRequest struct {
 // * `reboot`: Stop the instance and restart it.
 // * `backup`:  Create an image with all the volumes of an Instance.
 // * `terminate`: Delete the Instance along with all attached volumes.
+// * `enable_routed_ip`: Migrate the Instance to the new network stack.
 //
 // Keep in mind that terminating an Instance will result in the deletion of all attached volumes, including local and block storage.
 // If you want to preserve your local volumes, you should use the `archive` action instead of `terminate`. Similarly, if you want to keep your block storage volumes, you must first detach them before issuing the `terminate` command.
@@ -4550,6 +4722,9 @@ type CreateIPRequest struct {
 	Tags []string `json:"tags,omitempty"`
 	// Server: UUID of the Instance you want to attach the IP to.
 	Server *string `json:"server,omitempty"`
+	// Type: IP type to reserve (either 'nat', 'routed_ipv4' or 'routed_ipv6').
+	// Default value: unknown_iptype
+	Type IPType `json:"type"`
 }
 
 // CreateIP: reserve a flexible IP.
@@ -4643,6 +4818,9 @@ type UpdateIPRequest struct {
 	IP string `json:"-"`
 	// Reverse: reverse domain name.
 	Reverse *NullableStringValue `json:"reverse,omitempty"`
+	// Type: convert a 'nat' IP to a 'routed_ipv4'.
+	// Default value: unknown_iptype
+	Type IPType `json:"type"`
 	// Tags: an array of keywords you want to tag this IP with.
 	Tags *[]string `json:"tags,omitempty"`
 
@@ -4794,6 +4972,8 @@ type CreatePrivateNICRequest struct {
 	PrivateNetworkID string `json:"private_network_id,omitempty"`
 	// Tags: private NIC tags.
 	Tags []string `json:"tags,omitempty"`
+	// IPIDs: ip_ids defined from IPAM.
+	IPIDs []string `json:"ip_ids,omitempty"`
 }
 
 // CreatePrivateNIC: create a private NIC connecting an Instance to a Private Network.

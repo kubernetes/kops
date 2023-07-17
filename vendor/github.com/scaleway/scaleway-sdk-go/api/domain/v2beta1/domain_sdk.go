@@ -68,10 +68,14 @@ func NewRegistrarAPI(client *scw.Client) *RegistrarAPI {
 type ContactEmailStatus string
 
 const (
+	// If unspecified, the status is unknown by default.
 	ContactEmailStatusEmailStatusUnknown = ContactEmailStatus("email_status_unknown")
-	ContactEmailStatusValidated          = ContactEmailStatus("validated")
-	ContactEmailStatusNotValidated       = ContactEmailStatus("not_validated")
-	ContactEmailStatusInvalidEmail       = ContactEmailStatus("invalid_email")
+	// The contact email has been validated.
+	ContactEmailStatusValidated = ContactEmailStatus("validated")
+	// The contact email has not been validated.
+	ContactEmailStatusNotValidated = ContactEmailStatus("not_validated")
+	// The contact email is invalid.
+	ContactEmailStatusInvalidEmail = ContactEmailStatus("invalid_email")
 )
 
 func (enum ContactEmailStatus) String() string {
@@ -100,14 +104,22 @@ func (enum *ContactEmailStatus) UnmarshalJSON(data []byte) error {
 type ContactExtensionFRMode string
 
 const (
-	ContactExtensionFRModeModeUnknown               = ContactExtensionFRMode("mode_unknown")
-	ContactExtensionFRModeIndividual                = ContactExtensionFRMode("individual")
+	// If unspecified, the status is unknown by default.
+	ContactExtensionFRModeModeUnknown = ContactExtensionFRMode("mode_unknown")
+	// The contact is a physical person (only for .fr domains).
+	ContactExtensionFRModeIndividual = ContactExtensionFRMode("individual")
+	// The contact is a company with a SIRET/SIREN code (only for .fr domains).
 	ContactExtensionFRModeCompanyIdentificationCode = ContactExtensionFRMode("company_identification_code")
-	ContactExtensionFRModeDuns                      = ContactExtensionFRMode("duns")
-	ContactExtensionFRModeLocal                     = ContactExtensionFRMode("local")
-	ContactExtensionFRModeAssociation               = ContactExtensionFRMode("association")
-	ContactExtensionFRModeTrademark                 = ContactExtensionFRMode("trademark")
-	ContactExtensionFRModeCodeAuthAfnic             = ContactExtensionFRMode("code_auth_afnic")
+	// The contact has a Data Universal Numbering System code (only for .fr domains).
+	ContactExtensionFRModeDuns = ContactExtensionFRMode("duns")
+	// The contact has a local or a country ID (only for .fr domains).
+	ContactExtensionFRModeLocal = ContactExtensionFRMode("local")
+	// The contact is an association (only for .fr domains).
+	ContactExtensionFRModeAssociation = ContactExtensionFRMode("association")
+	// The contact is a brand (only for .fr domains).
+	ContactExtensionFRModeTrademark = ContactExtensionFRMode("trademark")
+	// The contact has an intervention code (DSIA) from AFNIC (only for .fr domains).
+	ContactExtensionFRModeCodeAuthAfnic = ContactExtensionFRMode("code_auth_afnic")
 )
 
 func (enum ContactExtensionFRMode) String() string {
@@ -136,26 +148,46 @@ func (enum *ContactExtensionFRMode) UnmarshalJSON(data []byte) error {
 type ContactExtensionNLLegalForm string
 
 const (
-	ContactExtensionNLLegalFormLegalFormUnknown                      = ContactExtensionNLLegalForm("legal_form_unknown")
-	ContactExtensionNLLegalFormOther                                 = ContactExtensionNLLegalForm("other")
-	ContactExtensionNLLegalFormNonDutchEuCompany                     = ContactExtensionNLLegalForm("non_dutch_eu_company")
+	// If unspecified, the status is unknown by default.
+	ContactExtensionNLLegalFormLegalFormUnknown = ContactExtensionNLLegalForm("legal_form_unknown")
+	// The contact's legal form is not listed below (only for .nl domains).
+	ContactExtensionNLLegalFormOther = ContactExtensionNLLegalForm("other")
+	// The contact is a non-Dutch EC company (only for .nl domains).
+	ContactExtensionNLLegalFormNonDutchEuCompany = ContactExtensionNLLegalForm("non_dutch_eu_company")
+	// The contact is a non-Dutch legal form/enterprise/subsidiary (only for .nl domains).
 	ContactExtensionNLLegalFormNonDutchLegalFormEnterpriseSubsidiary = ContactExtensionNLLegalForm("non_dutch_legal_form_enterprise_subsidiary")
-	ContactExtensionNLLegalFormLimitedCompany                        = ContactExtensionNLLegalForm("limited_company")
-	ContactExtensionNLLegalFormLimitedCompanyInFormation             = ContactExtensionNLLegalForm("limited_company_in_formation")
-	ContactExtensionNLLegalFormCooperative                           = ContactExtensionNLLegalForm("cooperative")
-	ContactExtensionNLLegalFormLimitedPartnership                    = ContactExtensionNLLegalForm("limited_partnership")
-	ContactExtensionNLLegalFormSoleCompany                           = ContactExtensionNLLegalForm("sole_company")
-	ContactExtensionNLLegalFormEuropeanEconomicInterestGroup         = ContactExtensionNLLegalForm("european_economic_interest_group")
-	ContactExtensionNLLegalFormReligiousEntity                       = ContactExtensionNLLegalForm("religious_entity")
-	ContactExtensionNLLegalFormPartnership                           = ContactExtensionNLLegalForm("partnership")
-	ContactExtensionNLLegalFormPublicCompany                         = ContactExtensionNLLegalForm("public_company")
-	ContactExtensionNLLegalFormMutualBenefitCompany                  = ContactExtensionNLLegalForm("mutual_benefit_company")
-	ContactExtensionNLLegalFormResidential                           = ContactExtensionNLLegalForm("residential")
-	ContactExtensionNLLegalFormShippingCompany                       = ContactExtensionNLLegalForm("shipping_company")
-	ContactExtensionNLLegalFormFoundation                            = ContactExtensionNLLegalForm("foundation")
-	ContactExtensionNLLegalFormAssociation                           = ContactExtensionNLLegalForm("association")
-	ContactExtensionNLLegalFormTradingPartnership                    = ContactExtensionNLLegalForm("trading_partnership")
-	ContactExtensionNLLegalFormNaturalPerson                         = ContactExtensionNLLegalForm("natural_person")
+	// The contact is a limited company (only for .nl domains).
+	ContactExtensionNLLegalFormLimitedCompany = ContactExtensionNLLegalForm("limited_company")
+	// The contact is a limited company in formation (only for .nl domains).
+	ContactExtensionNLLegalFormLimitedCompanyInFormation = ContactExtensionNLLegalForm("limited_company_in_formation")
+	// The contact is a cooperative (only for .nl domains).
+	ContactExtensionNLLegalFormCooperative = ContactExtensionNLLegalForm("cooperative")
+	// The contact is a limited Partnership (only for .nl domains).
+	ContactExtensionNLLegalFormLimitedPartnership = ContactExtensionNLLegalForm("limited_partnership")
+	// The contact is a sole trader (only for .nl domains).
+	ContactExtensionNLLegalFormSoleCompany = ContactExtensionNLLegalForm("sole_company")
+	// The contact is a European Economic Interest Group (only for .nl domains).
+	ContactExtensionNLLegalFormEuropeanEconomicInterestGroup = ContactExtensionNLLegalForm("european_economic_interest_group")
+	// The contact is a religious society (only for .nl domains).
+	ContactExtensionNLLegalFormReligiousEntity = ContactExtensionNLLegalForm("religious_entity")
+	// The contact is a partnership (only for .nl domains).
+	ContactExtensionNLLegalFormPartnership = ContactExtensionNLLegalForm("partnership")
+	// The contact is a public Company (only for .nl domains).
+	ContactExtensionNLLegalFormPublicCompany = ContactExtensionNLLegalForm("public_company")
+	// The contact is a mutual benefit company (only for .nl domains).
+	ContactExtensionNLLegalFormMutualBenefitCompany = ContactExtensionNLLegalForm("mutual_benefit_company")
+	// The contact is a natural person (only for .nl domains).
+	ContactExtensionNLLegalFormResidential = ContactExtensionNLLegalForm("residential")
+	// The contact is a shipping company (only for .nl domains).
+	ContactExtensionNLLegalFormShippingCompany = ContactExtensionNLLegalForm("shipping_company")
+	// The contact is a foundation (only for .nl domains).
+	ContactExtensionNLLegalFormFoundation = ContactExtensionNLLegalForm("foundation")
+	// The contact is a association (only for .nl domains).
+	ContactExtensionNLLegalFormAssociation = ContactExtensionNLLegalForm("association")
+	// The contact is a trading partnership (only for .nl domains).
+	ContactExtensionNLLegalFormTradingPartnership = ContactExtensionNLLegalForm("trading_partnership")
+	// The contact is a physical person (only for .nl domains).
+	ContactExtensionNLLegalFormNaturalPerson = ContactExtensionNLLegalForm("natural_person")
 )
 
 func (enum ContactExtensionNLLegalForm) String() string {
@@ -184,11 +216,16 @@ func (enum *ContactExtensionNLLegalForm) UnmarshalJSON(data []byte) error {
 type ContactLegalForm string
 
 const (
+	// If unspecified, the status is unknown by default.
 	ContactLegalFormLegalFormUnknown = ContactLegalForm("legal_form_unknown")
-	ContactLegalFormIndividual       = ContactLegalForm("individual")
-	ContactLegalFormCorporate        = ContactLegalForm("corporate")
-	ContactLegalFormAssociation      = ContactLegalForm("association")
-	ContactLegalFormOther            = ContactLegalForm("other")
+	// The contact is a physical person.
+	ContactLegalFormIndividual = ContactLegalForm("individual")
+	// The contact is a corporate or a society.
+	ContactLegalFormCorporate = ContactLegalForm("corporate")
+	// The contact is an association.
+	ContactLegalFormAssociation = ContactLegalForm("association")
+	// The contact is not represented by a physical person, a corporate or an association.
+	ContactLegalFormOther = ContactLegalForm("other")
 )
 
 func (enum ContactLegalForm) String() string {
@@ -217,11 +254,16 @@ func (enum *ContactLegalForm) UnmarshalJSON(data []byte) error {
 type DNSZoneStatus string
 
 const (
+	// If unspecified, the DNS zone's status is unknown by default
 	DNSZoneStatusUnknown = DNSZoneStatus("unknown")
-	DNSZoneStatusActive  = DNSZoneStatus("active")
+	// The DNS zone is active and healthy.
+	DNSZoneStatusActive = DNSZoneStatus("active")
+	// The DNS zone is updating.
 	DNSZoneStatusPending = DNSZoneStatus("pending")
-	DNSZoneStatusError   = DNSZoneStatus("error")
-	DNSZoneStatusLocked  = DNSZoneStatus("locked")
+	// An error occurred after updating the DNS zone.
+	DNSZoneStatusError = DNSZoneStatus("error")
+	// The DNS zone is locked and cannot be updated anymore.
+	DNSZoneStatusLocked = DNSZoneStatus("locked")
 )
 
 func (enum DNSZoneStatus) String() string {
@@ -250,19 +292,32 @@ func (enum *DNSZoneStatus) UnmarshalJSON(data []byte) error {
 type DSRecordAlgorithm string
 
 const (
-	DSRecordAlgorithmRsamd5           = DSRecordAlgorithm("rsamd5")
-	DSRecordAlgorithmDh               = DSRecordAlgorithm("dh")
-	DSRecordAlgorithmDsa              = DSRecordAlgorithm("dsa")
-	DSRecordAlgorithmRsasha1          = DSRecordAlgorithm("rsasha1")
-	DSRecordAlgorithmDsaNsec3Sha1     = DSRecordAlgorithm("dsa_nsec3_sha1")
+	// Code 1, algorithm: 'RSAMD5'.
+	DSRecordAlgorithmRsamd5 = DSRecordAlgorithm("rsamd5")
+	// Code 2, algorithm: 'DIFFIE_HELLMAN'.
+	DSRecordAlgorithmDh = DSRecordAlgorithm("dh")
+	// Code 3, algorithm: 'DSA_SHA1'.
+	DSRecordAlgorithmDsa = DSRecordAlgorithm("dsa")
+	// Code 5, algorithm: 'RSA_SHA1'.
+	DSRecordAlgorithmRsasha1 = DSRecordAlgorithm("rsasha1")
+	// Code 6, algorithm: 'DSA_NSEC3_SHA1'.
+	DSRecordAlgorithmDsaNsec3Sha1 = DSRecordAlgorithm("dsa_nsec3_sha1")
+	// Code 7, algorithm: 'RSASHA1_NSEC3_SHA1'.
 	DSRecordAlgorithmRsasha1Nsec3Sha1 = DSRecordAlgorithm("rsasha1_nsec3_sha1")
-	DSRecordAlgorithmRsasha256        = DSRecordAlgorithm("rsasha256")
-	DSRecordAlgorithmRsasha512        = DSRecordAlgorithm("rsasha512")
-	DSRecordAlgorithmEccGost          = DSRecordAlgorithm("ecc_gost")
-	DSRecordAlgorithmEcdsap256sha256  = DSRecordAlgorithm("ecdsap256sha256")
-	DSRecordAlgorithmEcdsap384sha384  = DSRecordAlgorithm("ecdsap384sha384")
-	DSRecordAlgorithmEd25519          = DSRecordAlgorithm("ed25519")
-	DSRecordAlgorithmEd448            = DSRecordAlgorithm("ed448")
+	// Code 8, algorithm: 'RSASHA256'.
+	DSRecordAlgorithmRsasha256 = DSRecordAlgorithm("rsasha256")
+	// Code 10, algorithm: 'RSASHA512'.
+	DSRecordAlgorithmRsasha512 = DSRecordAlgorithm("rsasha512")
+	// Code 12, algorithm: 'ECC_GOST'.
+	DSRecordAlgorithmEccGost = DSRecordAlgorithm("ecc_gost")
+	// Code 13, algorithm: 'ECDSAP256SHA256'.
+	DSRecordAlgorithmEcdsap256sha256 = DSRecordAlgorithm("ecdsap256sha256")
+	// Code 14, algorithm: 'ECDSAP384SHA384'.
+	DSRecordAlgorithmEcdsap384sha384 = DSRecordAlgorithm("ecdsap384sha384")
+	// Code 15, algorithm: 'ED25519'.
+	DSRecordAlgorithmEd25519 = DSRecordAlgorithm("ed25519")
+	// Code 16, algorithm: 'ED448'.
+	DSRecordAlgorithmEd448 = DSRecordAlgorithm("ed448")
 )
 
 func (enum DSRecordAlgorithm) String() string {
@@ -291,10 +346,14 @@ func (enum *DSRecordAlgorithm) UnmarshalJSON(data []byte) error {
 type DSRecordDigestType string
 
 const (
-	DSRecordDigestTypeSha1          = DSRecordDigestType("sha_1")
-	DSRecordDigestTypeSha256        = DSRecordDigestType("sha_256")
+	// Code 1, digest type: 'SHA_1'.
+	DSRecordDigestTypeSha1 = DSRecordDigestType("sha_1")
+	// Code 2, digest type: 'SHA_256'.
+	DSRecordDigestTypeSha256 = DSRecordDigestType("sha_256")
+	// Code 3, digest type: 'GOST_R_34_11_94'.
 	DSRecordDigestTypeGostR34_11_94 = DSRecordDigestType("gost_r_34_11_94")
-	DSRecordDigestTypeSha384        = DSRecordDigestType("sha_384")
+	// Code 4, digest type: 'SHA_384'.
+	DSRecordDigestTypeSha384 = DSRecordDigestType("sha_384")
 )
 
 func (enum DSRecordDigestType) String() string {
@@ -323,11 +382,16 @@ func (enum *DSRecordDigestType) UnmarshalJSON(data []byte) error {
 type DomainFeatureStatus string
 
 const (
+	// Default unknown status.
 	DomainFeatureStatusFeatureStatusUnknown = DomainFeatureStatus("feature_status_unknown")
-	DomainFeatureStatusEnabling             = DomainFeatureStatus("enabling")
-	DomainFeatureStatusEnabled              = DomainFeatureStatus("enabled")
-	DomainFeatureStatusDisabling            = DomainFeatureStatus("disabling")
-	DomainFeatureStatusDisabled             = DomainFeatureStatus("disabled")
+	// A feature (auto renew, DNSSEC) is being enabled.
+	DomainFeatureStatusEnabling = DomainFeatureStatus("enabling")
+	// A feature (auto renew, DNSSEC) has been enabled.
+	DomainFeatureStatusEnabled = DomainFeatureStatus("enabled")
+	// A feature (auto renew, DNSSEC) is being disabled.
+	DomainFeatureStatusDisabling = DomainFeatureStatus("disabling")
+	// A feature (auto renew, DNSSEC) has been disabled.
+	DomainFeatureStatusDisabled = DomainFeatureStatus("disabled")
 )
 
 func (enum DomainFeatureStatus) String() string {
@@ -356,12 +420,18 @@ func (enum *DomainFeatureStatus) UnmarshalJSON(data []byte) error {
 type DomainRegistrationStatusTransferStatus string
 
 const (
+	// If unspecified, the status is unknown by default.
 	DomainRegistrationStatusTransferStatusStatusUnknown = DomainRegistrationStatusTransferStatus("status_unknown")
-	DomainRegistrationStatusTransferStatusPending       = DomainRegistrationStatusTransferStatus("pending")
-	DomainRegistrationStatusTransferStatusWaitingVote   = DomainRegistrationStatusTransferStatus("waiting_vote")
-	DomainRegistrationStatusTransferStatusRejected      = DomainRegistrationStatusTransferStatus("rejected")
-	DomainRegistrationStatusTransferStatusProcessing    = DomainRegistrationStatusTransferStatus("processing")
-	DomainRegistrationStatusTransferStatusDone          = DomainRegistrationStatusTransferStatus("done")
+	// The domain transfer is being initialized.
+	DomainRegistrationStatusTransferStatusPending = DomainRegistrationStatusTransferStatus("pending")
+	// The domain transfer has started. The process can be accelerated if you accept the vote.
+	DomainRegistrationStatusTransferStatusWaitingVote = DomainRegistrationStatusTransferStatus("waiting_vote")
+	// The domain transfer has been rejected.
+	DomainRegistrationStatusTransferStatusRejected = DomainRegistrationStatusTransferStatus("rejected")
+	// The domain transfer has been accepted. Your resources are being created.
+	DomainRegistrationStatusTransferStatusProcessing = DomainRegistrationStatusTransferStatus("processing")
+	// The domain transfer is complete.
+	DomainRegistrationStatusTransferStatusDone = DomainRegistrationStatusTransferStatus("done")
 )
 
 func (enum DomainRegistrationStatusTransferStatus) String() string {
@@ -390,20 +460,34 @@ func (enum *DomainRegistrationStatusTransferStatus) UnmarshalJSON(data []byte) e
 type DomainStatus string
 
 const (
+	// If unspecified, the status is unknown by default.
 	DomainStatusStatusUnknown = DomainStatus("status_unknown")
-	DomainStatusActive        = DomainStatus("active")
-	DomainStatusCreating      = DomainStatus("creating")
-	DomainStatusCreateError   = DomainStatus("create_error")
-	DomainStatusRenewing      = DomainStatus("renewing")
-	DomainStatusRenewError    = DomainStatus("renew_error")
-	DomainStatusXfering       = DomainStatus("xfering")
-	DomainStatusXferError     = DomainStatus("xfer_error")
-	DomainStatusExpired       = DomainStatus("expired")
-	DomainStatusExpiring      = DomainStatus("expiring")
-	DomainStatusUpdating      = DomainStatus("updating")
-	DomainStatusChecking      = DomainStatus("checking")
-	DomainStatusLocked        = DomainStatus("locked")
-	DomainStatusDeleting      = DomainStatus("deleting")
+	// The domain is active.
+	DomainStatusActive = DomainStatus("active")
+	// The domain is in the process of being created.
+	DomainStatusCreating = DomainStatus("creating")
+	// An error occurred during the domain's creation process.
+	DomainStatusCreateError = DomainStatus("create_error")
+	// The domain is being renewed.
+	DomainStatusRenewing = DomainStatus("renewing")
+	// An error occurred during the domain's renewal process.
+	DomainStatusRenewError = DomainStatus("renew_error")
+	// The domain is being transferred to Scaleway Domains and DNS.
+	DomainStatusXfering = DomainStatus("xfering")
+	// An error occurred during the domain's transfer process.
+	DomainStatusXferError = DomainStatus("xfer_error")
+	// The domain is expired but it can be renewed.
+	DomainStatusExpired = DomainStatus("expired")
+	// The domain is expiring but it is still renewable.
+	DomainStatusExpiring = DomainStatus("expiring")
+	// The domain's information is updating.
+	DomainStatusUpdating = DomainStatus("updating")
+	// The external domain has not yet been validated. It will be automatically removed after 48 hours if it still has not been validated by then.
+	DomainStatusChecking = DomainStatus("checking")
+	// The domain is locked. Contact Scaleway's support team for more information.
+	DomainStatusLocked = DomainStatus("locked")
+	// The domain will be deleted soon. This process cannot be canceled.
+	DomainStatusDeleting = DomainStatus("deleting")
 )
 
 func (enum DomainStatus) String() string {
@@ -432,10 +516,14 @@ func (enum *DomainStatus) UnmarshalJSON(data []byte) error {
 type HostStatus string
 
 const (
+	// If unspecified, the status is unknown by default.
 	HostStatusUnknownStatus = HostStatus("unknown_status")
-	HostStatusActive        = HostStatus("active")
-	HostStatusUpdating      = HostStatus("updating")
-	HostStatusDeleting      = HostStatus("deleting")
+	// The host is active.
+	HostStatusActive = HostStatus("active")
+	// The host is being updated.
+	HostStatusUpdating = HostStatus("updating")
+	// The host is being deleted.
+	HostStatusDeleting = HostStatus("deleting")
 )
 
 func (enum HostStatus) String() string {
@@ -496,7 +584,9 @@ func (enum *LanguageCode) UnmarshalJSON(data []byte) error {
 type ListDNSZoneRecordsRequestOrderBy string
 
 const (
-	ListDNSZoneRecordsRequestOrderByNameAsc  = ListDNSZoneRecordsRequestOrderBy("name_asc")
+	// Order by record name (ascending).
+	ListDNSZoneRecordsRequestOrderByNameAsc = ListDNSZoneRecordsRequestOrderBy("name_asc")
+	// Order by record name (descending).
 	ListDNSZoneRecordsRequestOrderByNameDesc = ListDNSZoneRecordsRequestOrderBy("name_desc")
 )
 
@@ -526,9 +616,13 @@ func (enum *ListDNSZoneRecordsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListDNSZonesRequestOrderBy string
 
 const (
-	ListDNSZonesRequestOrderByDomainAsc     = ListDNSZonesRequestOrderBy("domain_asc")
-	ListDNSZonesRequestOrderByDomainDesc    = ListDNSZonesRequestOrderBy("domain_desc")
-	ListDNSZonesRequestOrderBySubdomainAsc  = ListDNSZonesRequestOrderBy("subdomain_asc")
+	// Order by domain name (ascending).
+	ListDNSZonesRequestOrderByDomainAsc = ListDNSZonesRequestOrderBy("domain_asc")
+	// Order by domain name (descending).
+	ListDNSZonesRequestOrderByDomainDesc = ListDNSZonesRequestOrderBy("domain_desc")
+	// Order by subdomain name (ascending).
+	ListDNSZonesRequestOrderBySubdomainAsc = ListDNSZonesRequestOrderBy("subdomain_asc")
+	// Order by subdomain name (descending).
 	ListDNSZonesRequestOrderBySubdomainDesc = ListDNSZonesRequestOrderBy("subdomain_desc")
 )
 
@@ -558,7 +652,9 @@ func (enum *ListDNSZonesRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListDomainsRequestOrderBy string
 
 const (
-	ListDomainsRequestOrderByDomainAsc  = ListDomainsRequestOrderBy("domain_asc")
+	// Order by domain name (ascending)
+	ListDomainsRequestOrderByDomainAsc = ListDomainsRequestOrderBy("domain_asc")
+	// Order by domain name (descending)
 	ListDomainsRequestOrderByDomainDesc = ListDomainsRequestOrderBy("domain_desc")
 )
 
@@ -588,7 +684,9 @@ func (enum *ListDomainsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListRenewableDomainsRequestOrderBy string
 
 const (
-	ListRenewableDomainsRequestOrderByDomainAsc  = ListRenewableDomainsRequestOrderBy("domain_asc")
+	// Order by domain name (ascending)
+	ListRenewableDomainsRequestOrderByDomainAsc = ListRenewableDomainsRequestOrderBy("domain_asc")
+	// Order by domain name (descending)
 	ListRenewableDomainsRequestOrderByDomainDesc = ListRenewableDomainsRequestOrderBy("domain_desc")
 )
 
@@ -618,13 +716,21 @@ func (enum *ListRenewableDomainsRequestOrderBy) UnmarshalJSON(data []byte) error
 type ListTasksRequestOrderBy string
 
 const (
-	ListTasksRequestOrderByDomainDesc    = ListTasksRequestOrderBy("domain_desc")
-	ListTasksRequestOrderByDomainAsc     = ListTasksRequestOrderBy("domain_asc")
-	ListTasksRequestOrderByTypeAsc       = ListTasksRequestOrderBy("type_asc")
-	ListTasksRequestOrderByTypeDesc      = ListTasksRequestOrderBy("type_desc")
-	ListTasksRequestOrderByStatusAsc     = ListTasksRequestOrderBy("status_asc")
-	ListTasksRequestOrderByStatusDesc    = ListTasksRequestOrderBy("status_desc")
-	ListTasksRequestOrderByUpdatedAtAsc  = ListTasksRequestOrderBy("updated_at_asc")
+	// Order by domain name (descending)
+	ListTasksRequestOrderByDomainDesc = ListTasksRequestOrderBy("domain_desc")
+	// Order by domain name (ascending)
+	ListTasksRequestOrderByDomainAsc = ListTasksRequestOrderBy("domain_asc")
+	// Order by type (ascending)
+	ListTasksRequestOrderByTypeAsc = ListTasksRequestOrderBy("type_asc")
+	// Order by type (descending)
+	ListTasksRequestOrderByTypeDesc = ListTasksRequestOrderBy("type_desc")
+	// Order by status (ascending)
+	ListTasksRequestOrderByStatusAsc = ListTasksRequestOrderBy("status_asc")
+	// Order by status (descending)
+	ListTasksRequestOrderByStatusDesc = ListTasksRequestOrderBy("status_desc")
+	// Order by updated date (ascending)
+	ListTasksRequestOrderByUpdatedAtAsc = ListTasksRequestOrderBy("updated_at_asc")
+	// Order by updated date (descending)
 	ListTasksRequestOrderByUpdatedAtDesc = ListTasksRequestOrderBy("updated_at_desc")
 )
 
@@ -654,8 +760,10 @@ func (enum *ListTasksRequestOrderBy) UnmarshalJSON(data []byte) error {
 type RawFormat string
 
 const (
+	// If unspecified, the format is unknown by default.
 	RawFormatUnknownRawFormat = RawFormat("unknown_raw_format")
-	RawFormatBind             = RawFormat("bind")
+	// Export the DNS zone in text bind format
+	RawFormatBind = RawFormat("bind")
 )
 
 func (enum RawFormat) String() string {
@@ -684,9 +792,12 @@ func (enum *RawFormat) UnmarshalJSON(data []byte) error {
 type RecordHTTPServiceConfigStrategy string
 
 const (
+	// Returns a random IP based of the list of IPs available.
 	RecordHTTPServiceConfigStrategyRandom = RecordHTTPServiceConfigStrategy("random")
+	// Based on the hash of bestwho, returns a random functioning IP out of the best IPs available.
 	RecordHTTPServiceConfigStrategyHashed = RecordHTTPServiceConfigStrategy("hashed")
-	RecordHTTPServiceConfigStrategyAll    = RecordHTTPServiceConfigStrategy("all")
+	// Return all functioning IPs available.
+	RecordHTTPServiceConfigStrategyAll = RecordHTTPServiceConfigStrategy("all")
 )
 
 func (enum RecordHTTPServiceConfigStrategy) String() string {
@@ -715,26 +826,46 @@ func (enum *RecordHTTPServiceConfigStrategy) UnmarshalJSON(data []byte) error {
 type RecordType string
 
 const (
+	// If unspecified, the record's type is unknown by default.
 	RecordTypeUnknown = RecordType("unknown")
-	RecordTypeA       = RecordType("A")
-	RecordTypeAAAA    = RecordType("AAAA")
-	RecordTypeCNAME   = RecordType("CNAME")
-	RecordTypeTXT     = RecordType("TXT")
-	RecordTypeSRV     = RecordType("SRV")
-	RecordTypeTLSA    = RecordType("TLSA")
-	RecordTypeMX      = RecordType("MX")
-	RecordTypeNS      = RecordType("NS")
-	RecordTypePTR     = RecordType("PTR")
-	RecordTypeCAA     = RecordType("CAA")
-	RecordTypeALIAS   = RecordType("ALIAS")
-	RecordTypeLOC     = RecordType("LOC")
-	RecordTypeSSHFP   = RecordType("SSHFP")
-	RecordTypeHINFO   = RecordType("HINFO")
-	RecordTypeRP      = RecordType("RP")
-	RecordTypeURI     = RecordType("URI")
-	RecordTypeDS      = RecordType("DS")
-	RecordTypeNAPTR   = RecordType("NAPTR")
-	RecordTypeDNAME   = RecordType("DNAME")
+	// An A record contains an IP address. Example: '203.0.113.210'.
+	RecordTypeA = RecordType("A")
+	// An AAAA record contains an IPv6 address. Example: '2001:DB8:2000:bf0::1'.
+	RecordTypeAAAA = RecordType("AAAA")
+	// A CNAME record specifies the canonical name of a record. Example 'webserver-01.yourcompany.com'.
+	RecordTypeCNAME = RecordType("CNAME")
+	// A TXT record can be used to attach textual data to a domain. Example 'v=spf1 include:_spf.tem.scw.cloud -all'.
+	RecordTypeTXT = RecordType("TXT")
+	// SRV records can be used to encode the location and port of services on a domain name. Example : '20 443 sipdir.scaleway.example.com'.
+	RecordTypeSRV = RecordType("SRV")
+	// TLSA records are used to bind SSL/TLS certificates to named hosts and ports.
+	RecordTypeTLSA = RecordType("TLSA")
+	// An MX record specifies a mail exchanger host for a domain. Example '10 mx.example.net.'.
+	RecordTypeMX = RecordType("MX")
+	// Specifies nameservers for a domain. Example: 'ns1.yourcompany.com'.
+	RecordTypeNS = RecordType("NS")
+	//  A reverse pointer is used to specify the hostname that belongs to an IP or an IPv6 address. Example: 'www.yourcompany.com.'.
+	RecordTypePTR = RecordType("PTR")
+	// A 'Certification Authority Authorization' record is used to specify certificate authorities that may issue certificates for a domain. Example: '0 issue ca.yourcompany.com'.
+	RecordTypeCAA = RecordType("CAA")
+	// The ALIAS pseudo-record type is supported to provide CNAME-like mechanisms on a zone's apex.
+	RecordTypeALIAS = RecordType("ALIAS")
+	// A LOC record is a way of expressing geographic location information for a domain name. It contains WGS84 latitude, longitude and altitude. Example: '51 56 0.123 N 5 54 0.000 E 4.00m 1.00m 10000.00m 10.00m'.
+	RecordTypeLOC = RecordType("LOC")
+	// An SSHFP record type is used for storing Secure Shell (SSH) fingerprints. Example: '2 1 123456789abcdef67890123456789abcdef67890'.
+	RecordTypeSSHFP = RecordType("SSHFP")
+	// A Hardware Info record is used to specify the CPU and operating system you are using. Example: 'i386 Linux'.
+	RecordTypeHINFO = RecordType("HINFO")
+	// A Responsible Person record stores the mailbox name and the more-information pointer. Example: 'michel.yourcompany.com michel.people.yourcompany.com', to indicate that michel@yourcompany.com is responsible and that more information about Michel is available by querying the `TXT` record of 'michel.people.yourcompany.com'.
+	RecordTypeRP = RecordType("RP")
+	// A URI record, is used to publish mappings from hostnames to URIs. Example: '10 1 'ftp://ftp.yourcompany.com/public'.
+	RecordTypeURI = RecordType("URI")
+	// DS records (Delegation Signer) are used to secure delegations (DNSSEC). Example: '2371 13 2 1F987CC6583E92DF0890718C42'.
+	RecordTypeDS = RecordType("DS")
+	// A Naming Authority Pointer record is used to set rules for how websites process requests. Example: '100 50 "s" "z3950+I2L+I2C" "" _z3950._tcp.yourcompany.com'.
+	RecordTypeNAPTR = RecordType("NAPTR")
+	// A DNAME record provides redirection from one part of the DNS name tree to another part of the DNS name tree. DNAME and CNAME records both cause a lookup to (potentially) return data corresponding to a different domain name from the queried domain name. Example: 'yourcompany.com'.
+	RecordTypeDNAME = RecordType("DNAME")
 )
 
 func (enum RecordType) String() string {
@@ -763,10 +894,14 @@ func (enum *RecordType) UnmarshalJSON(data []byte) error {
 type RenewableDomainStatus string
 
 const (
-	RenewableDomainStatusUnknown        = RenewableDomainStatus("unknown")
-	RenewableDomainStatusRenewable      = RenewableDomainStatus("renewable")
+	// If unspecified, the status is unknown by default.
+	RenewableDomainStatusUnknown = RenewableDomainStatus("unknown")
+	// The domain can be renewed.
+	RenewableDomainStatusRenewable = RenewableDomainStatus("renewable")
+	// The domain is expired, but it still can be late renewed.
 	RenewableDomainStatusLateReneweable = RenewableDomainStatus("late_reneweable")
-	RenewableDomainStatusNotRenewable   = RenewableDomainStatus("not_renewable")
+	// The domain cannot be renewed.
+	RenewableDomainStatusNotRenewable = RenewableDomainStatus("not_renewable")
 )
 
 func (enum RenewableDomainStatus) String() string {
@@ -795,11 +930,16 @@ func (enum *RenewableDomainStatus) UnmarshalJSON(data []byte) error {
 type SSLCertificateStatus string
 
 const (
+	// If unspecified, the SSL certificate's status is unknown by default.
 	SSLCertificateStatusUnknown = SSLCertificateStatus("unknown")
-	SSLCertificateStatusNew     = SSLCertificateStatus("new")
+	// The SSL certificate has been created but it has not been processed yet.
+	SSLCertificateStatusNew = SSLCertificateStatus("new")
+	// The SSL certificate's status is pending.
 	SSLCertificateStatusPending = SSLCertificateStatus("pending")
+	// The SSL certificate has been created and processed.
 	SSLCertificateStatusSuccess = SSLCertificateStatus("success")
-	SSLCertificateStatusError   = SSLCertificateStatus("error")
+	// An error occurred during the SSL certificate's creation.
+	SSLCertificateStatusError = SSLCertificateStatus("error")
 )
 
 func (enum SSLCertificateStatus) String() string {
@@ -828,12 +968,18 @@ func (enum *SSLCertificateStatus) UnmarshalJSON(data []byte) error {
 type TaskStatus string
 
 const (
-	TaskStatusUnavailable    = TaskStatus("unavailable")
-	TaskStatusNew            = TaskStatus("new")
+	// If unspecified, the status is unavailable by default.
+	TaskStatusUnavailable = TaskStatus("unavailable")
+	// The task has been created but it has not yet started.
+	TaskStatusNew = TaskStatus("new")
+	// The task is waiting for a payment to be validated.
 	TaskStatusWaitingPayment = TaskStatus("waiting_payment")
-	TaskStatusPending        = TaskStatus("pending")
-	TaskStatusSuccess        = TaskStatus("success")
-	TaskStatusError          = TaskStatus("error")
+	// The task is pending.
+	TaskStatusPending = TaskStatus("pending")
+	// The task has been completed.
+	TaskStatusSuccess = TaskStatus("success")
+	// The task is in an error state.
+	TaskStatusError = TaskStatus("error")
 )
 
 func (enum TaskStatus) String() string {
@@ -862,28 +1008,50 @@ func (enum *TaskStatus) UnmarshalJSON(data []byte) error {
 type TaskType string
 
 const (
-	TaskTypeUnknown                = TaskType("unknown")
-	TaskTypeCreateDomain           = TaskType("create_domain")
-	TaskTypeCreateExternalDomain   = TaskType("create_external_domain")
-	TaskTypeRenewDomain            = TaskType("renew_domain")
-	TaskTypeTransferDomain         = TaskType("transfer_domain")
-	TaskTypeTradeDomain            = TaskType("trade_domain")
-	TaskTypeLockDomainTransfer     = TaskType("lock_domain_transfer")
-	TaskTypeUnlockDomainTransfer   = TaskType("unlock_domain_transfer")
-	TaskTypeEnableDnssec           = TaskType("enable_dnssec")
-	TaskTypeDisableDnssec          = TaskType("disable_dnssec")
-	TaskTypeUpdateDomain           = TaskType("update_domain")
-	TaskTypeUpdateContact          = TaskType("update_contact")
-	TaskTypeDeleteDomain           = TaskType("delete_domain")
-	TaskTypeCancelTask             = TaskType("cancel_task")
+	// If unspecified, the status is unknown by default.
+	TaskTypeUnknown = TaskType("unknown")
+	// Create a new internal domain.
+	TaskTypeCreateDomain = TaskType("create_domain")
+	// Create a new external domain.
+	TaskTypeCreateExternalDomain = TaskType("create_external_domain")
+	// Renew a domain.
+	TaskTypeRenewDomain = TaskType("renew_domain")
+	// Transfer a domain to Scaleway Domains and DNS.
+	TaskTypeTransferDomain = TaskType("transfer_domain")
+	// Trade a domain to a new owner.
+	TaskTypeTradeDomain = TaskType("trade_domain")
+	// Lock the transfer of a domain for protection.
+	TaskTypeLockDomainTransfer = TaskType("lock_domain_transfer")
+	// Unlock the transfer of a domain.
+	TaskTypeUnlockDomainTransfer = TaskType("unlock_domain_transfer")
+	// Enable DNSSEC for a domain.
+	TaskTypeEnableDnssec = TaskType("enable_dnssec")
+	// Disable DNSSEC for a domain.
+	TaskTypeDisableDnssec = TaskType("disable_dnssec")
+	// Update the domain's information.
+	TaskTypeUpdateDomain = TaskType("update_domain")
+	// Change the technical or administrative contact.
+	TaskTypeUpdateContact = TaskType("update_contact")
+	// Delete a domain and destroy its zone versions, zones, and SSL certificates.
+	TaskTypeDeleteDomain = TaskType("delete_domain")
+	// Cancel a task that has not yet started.
+	TaskTypeCancelTask = TaskType("cancel_task")
+	// Generate a new SSL certificate.
 	TaskTypeGenerateSslCertificate = TaskType("generate_ssl_certificate")
-	TaskTypeRenewSslCertificate    = TaskType("renew_ssl_certificate")
-	TaskTypeSendMessage            = TaskType("send_message")
-	TaskTypeDeleteDomainExpired    = TaskType("delete_domain_expired")
-	TaskTypeDeleteExternalDomain   = TaskType("delete_external_domain")
-	TaskTypeCreateHost             = TaskType("create_host")
-	TaskTypeUpdateHost             = TaskType("update_host")
-	TaskTypeDeleteHost             = TaskType("delete_host")
+	// Renew an SSL certificate.
+	TaskTypeRenewSslCertificate = TaskType("renew_ssl_certificate")
+	// Send a message. For most cases, it will be followed by an email.
+	TaskTypeSendMessage = TaskType("send_message")
+	// Delete a domain that has expired and not been restored for at least 3 months.
+	TaskTypeDeleteDomainExpired = TaskType("delete_domain_expired")
+	// Delete a newly registered external domain that has not been validated after 48 hours or when the external domain fails to point to our name servers for more than 14 days.
+	TaskTypeDeleteExternalDomain = TaskType("delete_external_domain")
+	// Create domain's hostname with glue IPs.
+	TaskTypeCreateHost = TaskType("create_host")
+	// Update domain's hostname with glue IPs.
+	TaskTypeUpdateHost = TaskType("update_host")
+	// Delete domain's hostname.
+	TaskTypeDeleteHost = TaskType("delete_host")
 )
 
 func (enum TaskType) String() string {
@@ -1983,10 +2151,10 @@ type UpdateDNSZoneRecordsRequest struct {
 // Update records within a DNS zone that has default name servers and perform several actions on your records.
 //
 // Actions include:
-//  - add: allows you to add a new record or add a new IP to an existing A record, for example
-//  - set: allows you to edit a record or edit an IP from an existing A record, for example
-//  - delete: allows you to delete a record or delete an IP from an existing A record, for example
-//  - clear: allows you to delete all records from a DNS zone
+//   - add: allows you to add a new record or add a new IP to an existing A record, for example
+//   - set: allows you to edit a record or edit an IP from an existing A record, for example
+//   - delete: allows you to delete a record or delete an IP from an existing A record, for example
+//   - clear: allows you to delete all records from a DNS zone
 //
 // All edits will be versioned.
 func (s *API) UpdateDNSZoneRecords(req *UpdateDNSZoneRecordsRequest, opts ...scw.RequestOption) (*UpdateDNSZoneRecordsResponse, error) {
@@ -2629,8 +2797,8 @@ type RegistrarAPIListTasksRequest struct {
 }
 
 // ListTasks: list tasks.
-// List all account tasks.
-// You can filter the list by domain name.
+// List all operations performed on the account.
+// You can filter the list of tasks by domain name.
 func (s *RegistrarAPI) ListTasks(req *RegistrarAPIListTasksRequest, opts ...scw.RequestOption) (*ListTasksResponse, error) {
 	var err error
 
@@ -2691,9 +2859,9 @@ type RegistrarAPIBuyDomainsRequest struct {
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
 }
 
-// BuyDomains: buy one or more domains.
+// BuyDomains: purchase domains.
 // Request the registration of domain names.
-// You can provide an already existing domain's contact or a new contact.
+// You can provide a domain's already existing contact or a new contact.
 func (s *RegistrarAPI) BuyDomains(req *RegistrarAPIBuyDomainsRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2730,8 +2898,8 @@ type RegistrarAPIRenewDomainsRequest struct {
 	ForceLateRenewal *bool `json:"force_late_renewal"`
 }
 
-// RenewDomains: renew one or more domains.
-// Request the renewal of domain names.
+// RenewDomains: renew domains.
+// Request the renewal of one or more domain names.
 func (s *RegistrarAPI) RenewDomains(req *RegistrarAPIRenewDomainsRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2780,7 +2948,7 @@ type RegistrarAPITransferInDomainRequest struct {
 }
 
 // TransferInDomain: transfer a domain.
-// Request the transfer from another registrar domain to Scaleway.
+// Request the transfer of a domain from another registrar to Scaleway Domains and DNS.
 func (s *RegistrarAPI) TransferInDomain(req *RegistrarAPITransferInDomainRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2821,11 +2989,11 @@ type RegistrarAPITradeDomainRequest struct {
 	NewOwnerContact *NewContact `json:"new_owner_contact,omitempty"`
 }
 
-// TradeDomain: trade a domain contact.
-// Request a trade for the contact owner.<br/>
-// If an `organization_id` is given, the change is from the current Scaleway account to another Scaleway account.<br/>
-// If no contact is given, the first contact of the other Scaleway account is taken.<br/>
-// If the other Scaleway account has no contact. An error occurs.
+// TradeDomain: trade a domain's contact.
+// Request to change a domain's contact owner.<br/>
+// If you specify the `organization_id` of the domain's new owner, the contact will change from the current owner's Scaleway account to the new owner's Scaleway account.<br/>
+// If the new owner's current contact information is not available, the first ever contact they have created for previous domains is taken into account to operate the change.<br/>
+// If the new owner has never created a contact to register domains before, an error message displays.
 func (s *RegistrarAPI) TradeDomain(req *RegistrarAPITradeDomainRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2941,9 +3109,9 @@ type RegistrarAPICheckContactsCompatibilityRequest struct {
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
 }
 
-// CheckContactsCompatibility: check if contacts are compatible against a domain or a tld.
-// Check if contacts are compatible against a domain or a tld.
-// If not, it will return the information requiring a correction.
+// CheckContactsCompatibility: check if contacts are compatible with a domain or a TLD.
+// Check whether contacts are compatible with a domain or a TLD.
+// If contacts are not compatible with either the domain or the TLD, the information that needs to be corrected is returned.
 func (s *RegistrarAPI) CheckContactsCompatibility(req *RegistrarAPICheckContactsCompatibilityRequest, opts ...scw.RequestOption) (*CheckContactsCompatibilityResponse, error) {
 	var err error
 
@@ -2980,7 +3148,7 @@ type RegistrarAPIListContactsRequest struct {
 }
 
 // ListContacts: list contacts.
-// Return a list of contacts with their domains and roles.
+// Retrieve the list of contacts and their associated domains and roles.
 // You can filter the list by domain name.
 func (s *RegistrarAPI) ListContacts(req *RegistrarAPIListContactsRequest, opts ...scw.RequestOption) (*ListContactsResponse, error) {
 	var err error
@@ -3018,7 +3186,7 @@ type RegistrarAPIGetContactRequest struct {
 }
 
 // GetContact: get a contact.
-// Return a contact details retrieved from the registrar using a given contact ID.
+// Retrieve a contact's details from the registrar using the given contact's ID.
 func (s *RegistrarAPI) GetContact(req *RegistrarAPIGetContactRequest, opts ...scw.RequestOption) (*Contact, error) {
 	var err error
 
@@ -3084,7 +3252,7 @@ type RegistrarAPIUpdateContactRequest struct {
 }
 
 // UpdateContact: update contact.
-// You can edit the contact coordinates.
+// Edit the contact's information.
 func (s *RegistrarAPI) UpdateContact(req *RegistrarAPIUpdateContactRequest, opts ...scw.RequestOption) (*Contact, error) {
 	var err error
 
@@ -3133,7 +3301,7 @@ type RegistrarAPIListDomainsRequest struct {
 }
 
 // ListDomains: list domains.
-// Returns a list of domains owned by the user.
+// Retrieve the list of domains you own.
 func (s *RegistrarAPI) ListDomains(req *RegistrarAPIListDomainsRequest, opts ...scw.RequestOption) (*ListDomainsResponse, error) {
 	var err error
 
@@ -3181,8 +3349,8 @@ type RegistrarAPIListRenewableDomainsRequest struct {
 	OrganizationID *string `json:"-"`
 }
 
-// ListRenewableDomains: list scaleway domains that can or not be renewed.
-// Returns a list of domains owned by the user with a renew status and if renewable, the maximum renew duration in years.
+// ListRenewableDomains: list domains that can be renewed.
+// Retrieve the list of domains you own that can be renewed. You can also see the maximum renewal duration in years for your domains that are renewable.
 func (s *RegistrarAPI) ListRenewableDomains(req *RegistrarAPIListRenewableDomainsRequest, opts ...scw.RequestOption) (*ListRenewableDomainsResponse, error) {
 	var err error
 
@@ -3219,7 +3387,7 @@ type RegistrarAPIGetDomainRequest struct {
 }
 
 // GetDomain: get domain.
-// Returns a the domain with more informations.
+// Retrieve a specific domain and display the domain's information.
 func (s *RegistrarAPI) GetDomain(req *RegistrarAPIGetDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3264,9 +3432,9 @@ type RegistrarAPIUpdateDomainRequest struct {
 	AdministrativeContact *NewContact `json:"administrative_contact,omitempty"`
 }
 
-// UpdateDomain: update a domain.
-// Update the domain contacts or create a new one.<br/>
-// If you add the same contact for multiple roles. Only one ID will be created and used for all of them.
+// UpdateDomain: update a domain's contacts.
+// Update contacts for a specific domain or create a new contact.<br/>
+// If you add the same contact for multiple roles (owner, administrative, technical), only one ID will be created and used for all of the roles.
 func (s *RegistrarAPI) UpdateDomain(req *RegistrarAPIUpdateDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3298,8 +3466,8 @@ type RegistrarAPILockDomainTransferRequest struct {
 	Domain string `json:"-"`
 }
 
-// LockDomainTransfer: lock domain transfer.
-// Lock domain transfer. A locked domain transfer can't be transferred and the auth code can't be requested.
+// LockDomainTransfer: lock the transfer of a domain.
+// Lock the transfer of a domain. This means that the domain cannot be transferred and the authorization code cannot be requested to your current registrar.
 func (s *RegistrarAPI) LockDomainTransfer(req *RegistrarAPILockDomainTransferRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3331,8 +3499,8 @@ type RegistrarAPIUnlockDomainTransferRequest struct {
 	Domain string `json:"-"`
 }
 
-// UnlockDomainTransfer: unlock domain transfer.
-// Unlock domain transfer. An unlocked domain can be transferred and the auth code can be requested for this.
+// UnlockDomainTransfer: unlock the transfer of a domain.
+// Unlock the transfer of a domain. This means that the domain can be transferred and the authorization code can be requested to your current registrar.
 func (s *RegistrarAPI) UnlockDomainTransfer(req *RegistrarAPIUnlockDomainTransferRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3364,7 +3532,8 @@ type RegistrarAPIEnableDomainAutoRenewRequest struct {
 	Domain string `json:"-"`
 }
 
-// EnableDomainAutoRenew: enable domain auto renew.
+// EnableDomainAutoRenew: enable auto renew.
+// Enable the `auto renew` feature for a domain. This means the domain will be automatically renewed before its expiry date.
 func (s *RegistrarAPI) EnableDomainAutoRenew(req *RegistrarAPIEnableDomainAutoRenewRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3396,7 +3565,8 @@ type RegistrarAPIDisableDomainAutoRenewRequest struct {
 	Domain string `json:"-"`
 }
 
-// DisableDomainAutoRenew: disable domain auto renew.
+// DisableDomainAutoRenew: disable auto renew.
+// Disable the `auto renew` feature for a domain. This means the domain will not be renewed before its expiry date.
 func (s *RegistrarAPI) DisableDomainAutoRenew(req *RegistrarAPIDisableDomainAutoRenewRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3428,9 +3598,9 @@ type RegistrarAPIGetDomainAuthCodeRequest struct {
 	Domain string `json:"-"`
 }
 
-// GetDomainAuthCode: return domain auth code.
-// If possible, return the auth code for an unlocked domain transfer, or an error if the domain is locked.
-// Some TLD may have a different procedure to retrieve the auth code, in that case, the information is given in the message field.
+// GetDomainAuthCode: get a domain's authorization code.
+// Retrieve the authorization code to tranfer an unlocked domain. The output returns an error if the domain is locked.
+// Some TLDs may have a different procedure to retrieve the authorization code. In that case, the information displays in the message field.
 func (s *RegistrarAPI) GetDomainAuthCode(req *RegistrarAPIGetDomainAuthCodeRequest, opts ...scw.RequestOption) (*GetDomainAuthCodeResponse, error) {
 	var err error
 
@@ -3461,24 +3631,6 @@ type RegistrarAPIEnableDomainDNSSECRequest struct {
 
 // EnableDomainDNSSEC: update domain DNSSEC.
 // If your domain has the default Scaleway NS and uses another registrar, you have to update the DS record manually.
-// For the algorithm, here are the code numbers for each type:
-//   - 1: RSAMD5
-//   - 2: DIFFIE_HELLMAN
-//   - 3: DSA_SHA1
-//   - 5: RSA_SHA1
-//   - 6: DSA_NSEC3_SHA1
-//   - 7: RSASHA1_NSEC3_SHA1
-//   - 8: RSASHA256
-//   - 10: RSASHA512
-//   - 12: ECC_GOST
-//   - 13: ECDSAP256SHA256
-//   - 14: ECDSAP384SHA384
-//
-// And for the digest type:
-//   - 1: SHA_1
-//   - 2: SHA_256
-//   - 3: GOST_R_34_11_94
-//   - 4: SHA_384.
 func (s *RegistrarAPI) EnableDomainDNSSEC(req *RegistrarAPIEnableDomainDNSSECRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3510,7 +3662,8 @@ type RegistrarAPIDisableDomainDNSSECRequest struct {
 	Domain string `json:"-"`
 }
 
-// DisableDomainDNSSEC: disable domain DNSSEC.
+// DisableDomainDNSSEC: disable a domain's DNSSEC.
+// Disable DNSSEC for a domain.
 func (s *RegistrarAPI) DisableDomainDNSSEC(req *RegistrarAPIDisableDomainDNSSECRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3548,9 +3701,9 @@ type RegistrarAPISearchAvailableDomainsRequest struct {
 }
 
 // SearchAvailableDomains: search available domains.
-// Search a domain (or at maximum, 10 domains).
+// Search a domain or a maximum of 10 domains that are available.
 //
-// If the TLD list is empty or not set the search returns the results from the most popular TLDs.
+// If the TLD list is empty or not set, the search returns the results from the most popular TLDs.
 func (s *RegistrarAPI) SearchAvailableDomains(req *RegistrarAPISearchAvailableDomainsRequest, opts ...scw.RequestOption) (*SearchAvailableDomainsResponse, error) {
 	var err error
 
@@ -3583,7 +3736,8 @@ type RegistrarAPICreateDomainHostRequest struct {
 	IPs []net.IP `json:"ips"`
 }
 
-// CreateDomainHost: create domain hostname with glue IPs.
+// CreateDomainHost: create a hostname for a domain.
+// Create a hostname for a domain with glue IPs.
 func (s *RegistrarAPI) CreateDomainHost(req *RegistrarAPICreateDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 
@@ -3619,7 +3773,8 @@ type RegistrarAPIListDomainHostsRequest struct {
 	PageSize *uint32 `json:"-"`
 }
 
-// ListDomainHosts: list domain hostnames with they glue IPs.
+// ListDomainHosts: list a domain's hostnames.
+// List a domain's hostnames using their glue IPs.
 func (s *RegistrarAPI) ListDomainHosts(req *RegistrarAPIListDomainHostsRequest, opts ...scw.RequestOption) (*ListDomainHostsResponse, error) {
 	var err error
 
@@ -3660,7 +3815,8 @@ type RegistrarAPIUpdateDomainHostRequest struct {
 	IPs *[]string `json:"ips"`
 }
 
-// UpdateDomainHost: update domain hostname with glue IPs.
+// UpdateDomainHost: update a domain's hostname.
+// Update a domain's hostname with glue IPs.
 func (s *RegistrarAPI) UpdateDomainHost(req *RegistrarAPIUpdateDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 
@@ -3698,7 +3854,7 @@ type RegistrarAPIDeleteDomainHostRequest struct {
 	Name string `json:"-"`
 }
 
-// DeleteDomainHost: delete domain hostname.
+// DeleteDomainHost: delete a domain's hostname.
 func (s *RegistrarAPI) DeleteDomainHost(req *RegistrarAPIDeleteDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 

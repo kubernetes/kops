@@ -173,8 +173,8 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 			}
 			createServerRequest.Volumes = map[string]*instance.VolumeServerTemplate{
 				"0": {
-					Boot:       true,
-					Size:       scw.GB * 50,
+					Boot:       fi.PtrTo(true),
+					Size:       fi.PtrTo(scw.GB * 50),
 					VolumeType: instance.VolumeVolumeTypeBSSD,
 				},
 			}
