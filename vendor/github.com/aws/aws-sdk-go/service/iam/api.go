@@ -167,9 +167,10 @@ func (c *IAM) AddRoleToInstanceProfileRequest(input *AddRoleToInstanceProfileInp
 // The caller of this operation must be granted the PassRole permission on the
 // IAM role by a permissions policy.
 //
-// For more information about roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For more information about instance profiles, see
+// Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1357,11 +1358,12 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 // Amazon Web Services.
 //
 // Amazon Web Services secures communication with some OIDC identity providers
-// (IdPs) through our library of trusted certificate authorities (CAs) instead
-// of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Google, Auth0, and those that use an Amazon S3 bucket
-// to host a JSON Web Key Set (JWKS) endpoint. In these cases, your legacy thumbprint
-// remains in your configuration, but is no longer used for validation.
+// (IdPs) through our library of trusted root certificate authorities (CAs)
+// instead of using a certificate thumbprint to verify your IdP server certificate.
+// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
+// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
+// legacy thumbprint remains in your configuration, but is no longer used for
+// validation.
 //
 // The trust for the OIDC provider is derived from the IAM provider that this
 // operation creates. Therefore, it is best to limit access to the CreateOpenIDConnectProvider
@@ -1686,10 +1688,11 @@ func (c *IAM) CreateRoleRequest(input *CreateRoleInput) (req *request.Request, o
 
 // CreateRole API operation for AWS Identity and Access Management.
 //
-// Creates a new role for your Amazon Web Services account. For more information
-// about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For information about quotas for role names and the number of roles you can
-// create, see IAM and STS quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
+// Creates a new role for your Amazon Web Services account.
+//
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For information about quotas for role names and the
+// number of roles you can create, see IAM and STS quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
 // in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2926,8 +2929,9 @@ func (c *IAM) DeleteInstanceProfileRequest(input *DeleteInstanceProfileInput) (r
 // that is associated with a running instance will break any applications running
 // on the instance.
 //
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about instance profiles, see Using instance profiles
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6531,7 +6535,7 @@ func (c *IAM) GetInstanceProfileRequest(input *GetInstanceProfileInput) (req *re
 //
 // Retrieves information about the specified instance profile, including the
 // instance profile's path, GUID, ARN, and role. For more information about
-// instance profiles, see About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html)
+// instance profiles, see Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 // in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -7195,7 +7199,8 @@ func (c *IAM) GetRoleRequest(input *GetRoleInput) (req *request.Request, output 
 //
 // Retrieves information about the specified role, including the role's path,
 // GUID, ARN, and the role's trust policy that grants permission to assume the
-// role. For more information about roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
+// role. For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // Policies returned by this operation are URL-encoded compliant with RFC 3986
 // (https://tools.ietf.org/html/rfc3986). You can use a URL decoding method
@@ -7303,8 +7308,8 @@ func (c *IAM) GetRolePolicyRequest(input *GetRolePolicyInput) (req *request.Requ
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
-// For more information about roles, see Using roles to delegate permissions
-// and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9677,7 +9682,8 @@ func (c *IAM) ListInstanceProfilesRequest(input *ListInstanceProfilesInput) (req
 //
 // Lists the instance profiles that have the specified path prefix. If there
 // are none, the operation returns an empty list. For more information about
-// instance profiles, see About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// instance profiles, see Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // IAM resource-listing operations return a subset of the available attributes
 // for the resource. For example, this operation does not return tags, even
@@ -9822,7 +9828,8 @@ func (c *IAM) ListInstanceProfilesForRoleRequest(input *ListInstanceProfilesForR
 //
 // Lists the instance profiles that have the specified associated IAM role.
 // If there are none, the operation returns an empty list. For more information
-// about instance profiles, go to About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// about instance profiles, go to Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -11361,7 +11368,8 @@ func (c *IAM) ListRolesRequest(input *ListRolesInput) (req *request.Request, out
 //
 // Lists the IAM roles that have the specified path prefix. If there are none,
 // the operation returns an empty list. For more information about roles, see
-// Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
+// IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // IAM resource-listing operations return a subset of the available attributes
 // for the resource. This operation does not return the following attributes,
@@ -13240,9 +13248,9 @@ func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Requ
 // When you embed an inline policy in a role, the inline policy is used as part
 // of the role's access (permissions) policy. The role's trust policy is created
 // at the same time as the role, using CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html).
-// You can update a role's trust policy using UpdateAssumerolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
-// For more information about IAM roles, see Using roles to delegate permissions
-// and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
+// You can update a role's trust policy using UpdateAssumeRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html)
+// in the IAM User Guide.
 //
 // A role can also have a managed policy attached to it. To attach a managed
 // policy to a role, use AttachRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachRolePolicy.html).
@@ -13674,9 +13682,10 @@ func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstance
 // an instance profile that is associated with a running instance might break
 // any applications running on the instance.
 //
-// For more information about IAM roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For more information about instance profiles, see
+// Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16944,11 +16953,12 @@ func (c *IAM) UpdateOpenIDConnectProviderThumbprintRequest(input *UpdateOpenIDCo
 // as a principal fails until the certificate thumbprint is updated.
 //
 // Amazon Web Services secures communication with some OIDC identity providers
-// (IdPs) through our library of trusted certificate authorities (CAs) instead
-// of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Google, Auth0, and those that use an Amazon S3 bucket
-// to host a JSON Web Key Set (JWKS) endpoint. In these cases, your legacy thumbprint
-// remains in your configuration, but is no longer used for validation.
+// (IdPs) through our library of trusted root certificate authorities (CAs)
+// instead of using a certificate thumbprint to verify your IdP server certificate.
+// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
+// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
+// legacy thumbprint remains in your configuration, but is no longer used for
+// validation.
 //
 // Trust for the OIDC provider is derived from the provider certificate and
 // is validated by the thumbprint. Therefore, it is best to limit access to
@@ -33700,7 +33710,7 @@ type PutGroupPolicyInput struct {
 	// You must provide policies in JSON format in IAM. However, for CloudFormation
 	// templates formatted in YAML, you can provide the policy in JSON or YAML format.
 	// CloudFormation always converts a YAML policy to JSON format before submitting
-	// it to = IAM.
+	// it to IAM.
 	//
 	// The regex pattern (http://wikipedia.org/wiki/regex) used to validate this
 	// parameter is a string of characters consisting of the following:

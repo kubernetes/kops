@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20230522",
+  "revision": "20230626",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2575,6 +2575,14 @@
       "description": "AdditionalPodRangesConfig is the configuration for additional pod secondary ranges supporting the ClusterUpdate message.",
       "id": "AdditionalPodRangesConfig",
       "properties": {
+        "podRangeInfo": {
+          "description": "Output only. [Output only] Information for additional pod range.",
+          "items": {
+            "$ref": "RangeInfo"
+          },
+          "readOnly": true,
+          "type": "array"
+        },
         "podRangeNames": {
           "description": "Name for pod secondary ipv4 range which has the actual range defined ahead.",
           "items": {
@@ -2609,6 +2617,10 @@
           "$ref": "GcpFilestoreCsiDriverConfig",
           "description": "Configuration for the GCP Filestore CSI driver."
         },
+        "gcsFuseCsiDriverConfig": {
+          "$ref": "GcsFuseCsiDriverConfig",
+          "description": "Configuration for the Cloud Storage Fuse CSI driver."
+        },
         "gkeBackupAgentConfig": {
           "$ref": "GkeBackupAgentConfig",
           "description": "Configuration for the Backup for GKE agent addon."
@@ -2628,6 +2640,33 @@
         "networkPolicyConfig": {
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
+        }
+      },
+      "type": "object"
+    },
+    "AdvancedDatapathObservabilityConfig": {
+      "description": "AdvancedDatapathObservabilityConfig specifies configuration of observability features of advanced datapath.",
+      "id": "AdvancedDatapathObservabilityConfig",
+      "properties": {
+        "enableMetrics": {
+          "description": "Expose flow metrics on nodes",
+          "type": "boolean"
+        },
+        "relayMode": {
+          "description": "Method used to make Relay available",
+          "enum": [
+            "RELAY_MODE_UNSPECIFIED",
+            "DISABLED",
+            "INTERNAL_VPC_LB",
+            "EXTERNAL_LB"
+          ],
+          "enumDescriptions": [
+            "Default value. This shouldn't be used.",
+            "disabled",
+            "exposed via internal load balancer",
+            "exposed via external load balancer"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -2756,6 +2795,10 @@
         "imageType": {
           "description": "The image type to use for NAP created node. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
+        },
+        "insecureKubeletReadonlyPortEnabled": {
+          "description": "Enable or disable Kubelet read only port.",
+          "type": "boolean"
         },
         "management": {
           "$ref": "NodeManagement",
@@ -3351,6 +3394,25 @@
       },
       "type": "object"
     },
+    "ClusterNetworkPerformanceConfig": {
+      "description": "Configuration of network bandwidth tiers",
+      "id": "ClusterNetworkPerformanceConfig",
+      "properties": {
+        "totalEgressBandwidthTier": {
+          "description": "Specifies the total network bandwidth tier for NodePools in the cluster.",
+          "enum": [
+            "TIER_UNSPECIFIED",
+            "TIER_1"
+          ],
+          "enumDescriptions": [
+            "Default value",
+            "Higher bandwidth, actual values based on VM size."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "ClusterUpdate": {
       "description": "ClusterUpdate describes an update to the cluster. Exactly one update can be applied to a cluster with each request, so at most one field can be provided.",
       "id": "ClusterUpdate",
@@ -3483,6 +3545,10 @@
         "desiredMonitoringService": {
           "description": "The monitoring service the cluster should use to write metrics. Currently available options: * \"monitoring.googleapis.com/kubernetes\" - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
           "type": "string"
+        },
+        "desiredNetworkPerformanceConfig": {
+          "$ref": "ClusterNetworkPerformanceConfig",
+          "description": "The desired network performance config."
         },
         "desiredNodePoolAutoConfigNetworkTags": {
           "$ref": "NetworkTags",
@@ -3717,12 +3783,14 @@
           "enum": [
             "PROVIDER_UNSPECIFIED",
             "PLATFORM_DEFAULT",
-            "CLOUD_DNS"
+            "CLOUD_DNS",
+            "KUBE_DNS"
           ],
           "enumDescriptions": [
             "Default value",
             "Use GKE default DNS provider(kube-dns) for DNS resolution.",
-            "Use CloudDNS for DNS resolution."
+            "Use CloudDNS for DNS resolution.",
+            "Use KubeDNS for DNS resolution."
           ],
           "type": "string"
         },
@@ -3986,6 +4054,17 @@
       },
       "type": "object"
     },
+    "GcsFuseCsiDriverConfig": {
+      "description": "Configuration for the Cloud Storage Fuse CSI driver.",
+      "id": "GcsFuseCsiDriverConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the Cloud Storage Fuse CSI driver is enabled for this cluster.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "GetJSONWebKeysResponse": {
       "description": "GetJSONWebKeysResponse is a valid JSON Web Key Set as specififed in rfc 7517",
       "id": "GetJSONWebKeysResponse",
@@ -4146,6 +4225,12 @@
         "createSubnetwork": {
           "description": "Whether a new subnetwork will be created automatically for the cluster. This field is only applicable when `use_ip_aliases` is true.",
           "type": "boolean"
+        },
+        "defaultPodIpv4RangeUtilization": {
+          "description": "Output only. [Output only] The utilization of the cluster default IPv4 range for the pod. The ratio is Usage/[Total number of IPs in the secondary range], Usage=numNodes*numZones*podIPsPerNode.",
+          "format": "double",
+          "readOnly": true,
+          "type": "number"
         },
         "ipv6AccessType": {
           "description": "The ipv6 access type (internal or external) when create_subnetwork is true",
@@ -4707,6 +4792,10 @@
       "description": "MonitoringConfig is cluster monitoring configuration.",
       "id": "MonitoringConfig",
       "properties": {
+        "advancedDatapathObservabilityConfig": {
+          "$ref": "AdvancedDatapathObservabilityConfig",
+          "description": "Configuration of Advanced Datapath Observability features."
+        },
         "componentConfig": {
           "$ref": "MonitoringComponentConfig",
           "description": "Monitoring components configuration"
@@ -4763,6 +4852,10 @@
         "network": {
           "description": "Output only. The relative name of the Google Compute Engine network(https://cloud.google.com/compute/docs/networks-and-firewalls#networks) to which the cluster is connected. Example: projects/my-project/global/networks/my-network",
           "type": "string"
+        },
+        "networkPerformanceConfig": {
+          "$ref": "ClusterNetworkPerformanceConfig",
+          "description": "Network bandwidth tier configuration."
         },
         "privateIpv6GoogleAccess": {
           "description": "The desired state of IPv6 connectivity to Google Services. By default, no private IPv6 access to or from Google Services (all access will be via IPv4)",
@@ -5087,6 +5180,10 @@
           "description": "Control the CPU management policy on the node. See https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/ The following values are allowed. * \"none\": the default, which represents the existing scheduling behavior. * \"static\": allows pods with certain resource characteristics to be granted increased CPU affinity and exclusivity on the node. The default value is 'none' if unspecified.",
           "type": "string"
         },
+        "insecureKubeletReadonlyPortEnabled": {
+          "description": "Enable or disable Kubelet read only port.",
+          "type": "boolean"
+        },
         "podPidsLimit": {
           "description": "Set the Pod PID limits. See https://kubernetes.io/docs/concepts/policy/pid-limiting/#pod-pid-limits Controls the maximum number of processes allowed to run in a pod. The value must be greater than or equal to 1024 and less than 4194304.",
           "format": "int64",
@@ -5151,6 +5248,12 @@
         "podIpv4CidrBlock": {
           "description": "The IP address range for pod IPs in this node pool. Only applicable if `create_pod_range` is true. Set to blank to have a range chosen with the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) to pick a specific range to use. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
           "type": "string"
+        },
+        "podIpv4RangeUtilization": {
+          "description": "Output only. [Output only] The utilization of the IPv4 range for the pod. The ratio is Usage/[Total number of IPs in the secondary range], Usage=numNodes*numZones*podIPsPerNode.",
+          "format": "double",
+          "readOnly": true,
+          "type": "number"
         },
         "podRange": {
           "description": "The ID of the secondary range for pod IPs. If `create_pod_range` is true, this ID is used for the new range. If `create_pod_range` is false, uses an existing secondary range with this ID. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
@@ -5681,6 +5784,24 @@
         "topic": {
           "description": "The desired Pub/Sub topic to which notifications will be sent by GKE. Format is `projects/{project}/topics/{topic}`.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RangeInfo": {
+      "description": "RangeInfo contains the range name and the range utilization by this cluster.",
+      "id": "RangeInfo",
+      "properties": {
+        "rangeName": {
+          "description": "Output only. [Output only] Name of a range.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "utilization": {
+          "description": "Output only. [Output only] The utilization of the range.",
+          "format": "double",
+          "readOnly": true,
+          "type": "number"
         }
       },
       "type": "object"

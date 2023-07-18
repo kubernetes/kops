@@ -122,7 +122,7 @@ type NetworkListOpts struct {
 }
 
 func (l NetworkListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

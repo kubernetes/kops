@@ -445,7 +445,8 @@ type ListOpts struct {
 	LabelSelector string // Label selector for filtering by labels
 }
 
-func (l ListOpts) values() url.Values {
+// Values returns the ListOpts as URL values.
+func (l ListOpts) Values() url.Values {
 	vals := url.Values{}
 	if l.Page > 0 {
 		vals.Add("page", strconv.Itoa(l.Page))

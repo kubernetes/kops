@@ -287,7 +287,7 @@ type LoadBalancerListOpts struct {
 }
 
 func (l LoadBalancerListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

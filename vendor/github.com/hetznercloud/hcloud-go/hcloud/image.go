@@ -163,7 +163,7 @@ type ImageListOpts struct {
 }
 
 func (l ImageListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	for _, typ := range l.Type {
 		vals.Add("type", string(typ))
 	}
