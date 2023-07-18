@@ -38,7 +38,7 @@ func Test_cacheFilePath(t *testing.T) {
 	output1 := cacheFilePath(inputs[0].kopsStateStore, inputs[0].clusterName)
 	_, file := path.Split(output1)
 
-	if len(file) > 38 {
+	if len(file) > 71 {
 		t.Errorf("cacheFilePath() got %v, too long(%v)", output1, len(file))
 	}
 }

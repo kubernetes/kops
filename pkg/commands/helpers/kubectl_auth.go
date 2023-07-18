@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -177,9 +178,24 @@ func cacheFilePath(kopsStateStore string, clusterName string) string {
 	var i big.Int
 	hb := sha256.Sum224(b.Bytes())
 	i.SetBytes(hb[:])
-
 	hash := i.Text(62)
-	return filepath.Join(homedir.HomeDir(), ".kube", "cache", "kops-authentication", hash)
+
+	sanitizedName := strings.Map(func(r rune) rune {
+		switch {
+		case r >= 'a' && r <= 'z':
+			return r
+		case r >= 'A' && r <= 'Z':
+			return r
+		case r >= '0' && r <= '9':
+			return r
+		default:
+			return '_'
+		}
+	}, clusterName)
+	if len(sanitizedName) > 32 {
+		sanitizedName = sanitizedName[:32]
+	}
+	return filepath.Join(homedir.HomeDir(), ".kube", "cache", "kops-authentication", sanitizedName+"_"+hash)
 }
 
 func loadCachedExecCredential(cacheFilePath string) (*ExecCredential, error) {
