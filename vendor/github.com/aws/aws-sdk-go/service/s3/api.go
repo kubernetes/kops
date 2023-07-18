@@ -346,8 +346,9 @@ func (c *S3) CopyObjectRequest(input *CopyObjectInput) (req *request.Request, ou
 // to read the entire body.
 //
 // The copy request charge is based on the storage class and Region that you
-// specify for the destination object. For pricing information, see Amazon S3
-// pricing (http://aws.amazon.com/s3/pricing/).
+// specify for the destination object. The request can also result in a data
+// retrieval charge for the source if the source storage class bills for data
+// retrieval. For pricing information, see Amazon S3 pricing (http://aws.amazon.com/s3/pricing/).
 //
 // Amazon S3 transfer acceleration does not support cross-Region copies. If
 // you request a cross-Region copy using a transfer acceleration endpoint, you
@@ -41352,6 +41353,12 @@ const (
 
 	// BucketLocationConstraintUsWest2 is a BucketLocationConstraint enum value
 	BucketLocationConstraintUsWest2 = "us-west-2"
+
+	// BucketLocationConstraintApSouth2 is a BucketLocationConstraint enum value
+	BucketLocationConstraintApSouth2 = "ap-south-2"
+
+	// BucketLocationConstraintEuSouth2 is a BucketLocationConstraint enum value
+	BucketLocationConstraintEuSouth2 = "eu-south-2"
 )
 
 // BucketLocationConstraint_Values returns all elements of the BucketLocationConstraint enum
@@ -41383,6 +41390,8 @@ func BucketLocationConstraint_Values() []string {
 		BucketLocationConstraintUsGovWest1,
 		BucketLocationConstraintUsWest1,
 		BucketLocationConstraintUsWest2,
+		BucketLocationConstraintApSouth2,
+		BucketLocationConstraintEuSouth2,
 	}
 }
 
@@ -41832,6 +41841,12 @@ const (
 
 	// InventoryOptionalFieldChecksumAlgorithm is a InventoryOptionalField enum value
 	InventoryOptionalFieldChecksumAlgorithm = "ChecksumAlgorithm"
+
+	// InventoryOptionalFieldObjectAccessControlList is a InventoryOptionalField enum value
+	InventoryOptionalFieldObjectAccessControlList = "ObjectAccessControlList"
+
+	// InventoryOptionalFieldObjectOwner is a InventoryOptionalField enum value
+	InventoryOptionalFieldObjectOwner = "ObjectOwner"
 )
 
 // InventoryOptionalField_Values returns all elements of the InventoryOptionalField enum
@@ -41850,6 +41865,8 @@ func InventoryOptionalField_Values() []string {
 		InventoryOptionalFieldIntelligentTieringAccessTier,
 		InventoryOptionalFieldBucketKeyStatus,
 		InventoryOptionalFieldChecksumAlgorithm,
+		InventoryOptionalFieldObjectAccessControlList,
+		InventoryOptionalFieldObjectOwner,
 	}
 }
 

@@ -100,7 +100,7 @@ type ServerTypeListOpts struct {
 }
 
 func (l ServerTypeListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

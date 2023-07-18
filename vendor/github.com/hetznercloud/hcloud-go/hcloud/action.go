@@ -102,7 +102,7 @@ type ActionListOpts struct {
 }
 
 func (l ActionListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	for _, id := range l.ID {
 		vals.Add("id", fmt.Sprintf("%d", id))
 	}
@@ -223,7 +223,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 					continue
 				case ActionStatusSuccess:
 					delete(watchIDs, a.ID)
-					successIDs := append(successIDs, a.ID)
+					successIDs = append(successIDs, a.ID)
 					sendProgress(progressCh, int(float64(len(actions)-len(successIDs))/float64(len(actions))*100))
 				case ActionStatusError:
 					delete(watchIDs, a.ID)

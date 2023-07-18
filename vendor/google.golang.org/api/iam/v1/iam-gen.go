@@ -329,6 +329,7 @@ type ProjectsLocationsService struct {
 
 func NewProjectsLocationsWorkloadIdentityPoolsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsService {
 	rs := &ProjectsLocationsWorkloadIdentityPoolsService{s: s}
+	rs.Namespaces = NewProjectsLocationsWorkloadIdentityPoolsNamespacesService(s)
 	rs.Operations = NewProjectsLocationsWorkloadIdentityPoolsOperationsService(s)
 	rs.Providers = NewProjectsLocationsWorkloadIdentityPoolsProvidersService(s)
 	return rs
@@ -337,9 +338,104 @@ func NewProjectsLocationsWorkloadIdentityPoolsService(s *Service) *ProjectsLocat
 type ProjectsLocationsWorkloadIdentityPoolsService struct {
 	s *Service
 
+	Namespaces *ProjectsLocationsWorkloadIdentityPoolsNamespacesService
+
 	Operations *ProjectsLocationsWorkloadIdentityPoolsOperationsService
 
 	Providers *ProjectsLocationsWorkloadIdentityPoolsProvidersService
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesService{s: s}
+	rs.ManagedIdentities = NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService(s)
+	rs.Operations = NewProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService(s)
+	rs.WorkloadSources = NewProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService(s)
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesService struct {
+	s *Service
+
+	ManagedIdentities *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService
+
+	Operations *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService
+
+	WorkloadSources *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService{s: s}
+	rs.Operations = NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService(s)
+	rs.WorkloadSources = NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService(s)
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService struct {
+	s *Service
+
+	Operations *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService
+
+	WorkloadSources *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService struct {
+	s *Service
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService{s: s}
+	rs.Operations = NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService(s)
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesService struct {
+	s *Service
+
+	Operations *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService struct {
+	s *Service
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService struct {
+	s *Service
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService{s: s}
+	rs.Operations = NewProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService(s)
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesService struct {
+	s *Service
+
+	Operations *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService
+}
+
+func NewProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService {
+	rs := &ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService struct {
+	s *Service
 }
 
 func NewProjectsLocationsWorkloadIdentityPoolsOperationsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsOperationsService {
@@ -1061,6 +1157,10 @@ type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 	// the JWT issued by the identity provider.
 	ClientId string `json:"clientId,omitempty"`
 
+	// ClientSecret: The optional client secret. Required to enable
+	// Authorization Code flow for web sign-in.
+	ClientSecret *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret `json:"clientSecret,omitempty"`
+
 	// IssuerUri: Required. The OIDC issuer URI. Must be a valid URI using
 	// the 'https' scheme.
 	IssuerUri string `json:"issuerUri,omitempty"`
@@ -1093,9 +1193,81 @@ func (s *GoogleIamAdminV1WorkforcePoolProviderOidc) MarshalJSON() ([]byte, error
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret: Representation
+// of a client secret configured for the OIDC provider.
+type GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret struct {
+	// Value: The value of the client secret.
+	Value *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Value") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Value") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue:
+// Representation of the value of the client secret.
+type GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue struct {
+	// PlainText: Input only. The plain text of the client secret value. For
+	// security reasons, this field is only used for input and will never be
+	// populated in any response.
+	PlainText string `json:"plainText,omitempty"`
+
+	// Thumbprint: Output only. A thumbprint to represent the current client
+	// secret value.
+	Thumbprint string `json:"thumbprint,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PlainText") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PlainText") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig: Configuration
 // for web single sign-on for the OIDC provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
+	// AdditionalScopes: Additional scopes to request for in the OIDC
+	// authentication request on top of scopes requested by default. By
+	// default, the `openid`, `profile` and `email` scopes that are
+	// supported by the identity provider are requested. Each additional
+	// scope may be at most 256 characters. A maximum of 10 additional
+	// scopes may be configured.
+	AdditionalScopes []string `json:"additionalScopes,omitempty"`
+
 	// AssertionClaimsBehavior: Required. The behavior for how OIDC Claims
 	// are included in the `assertion` object used for attribute mapping and
 	// attribute condition.
@@ -1103,6 +1275,11 @@ type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
 	// Possible values:
 	//   "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED" - No assertion claims
 	// behavior specified.
+	//   "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS" - Merge the UserInfo
+	// Endpoint Claims with ID Token Claims, preferring UserInfo Claim
+	// Values for the same Claim Name. Only possible for flows granting an
+	// Access Token, which comprise only the Authorization Code Flow at the
+	// moment.
 	//   "ONLY_ID_TOKEN_CLAIMS" - Only include ID Token Claims.
 	AssertionClaimsBehavior string `json:"assertionClaimsBehavior,omitempty"`
 
@@ -1111,23 +1288,24 @@ type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
 	//
 	// Possible values:
 	//   "RESPONSE_TYPE_UNSPECIFIED" - No Response Type specified.
+	//   "CODE" - The `response_type=code` selection uses the Authorization
+	// Code Flow for web sign-in. Requires a configured client secret.
 	//   "ID_TOKEN" - The `response_type=id_token` selection uses the
 	// Implicit Flow for web sign-in.
 	ResponseType string `json:"responseType,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g.
-	// "AssertionClaimsBehavior") to unconditionally include in API
-	// requests. By default, fields with empty or default values are omitted
-	// from API requests. However, any non-pointer, non-interface field
-	// appearing in ForceSendFields will be sent to the server regardless of
-	// whether the field is empty or not. This may be used to include empty
-	// fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AdditionalScopes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "AssertionClaimsBehavior")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
+	// NullFields is a list of field names (e.g. "AdditionalScopes") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
 	// server as null. It is an error if a field in this list has a
 	// non-empty value. This may be used to include null fields in Patch
 	// requests.
@@ -2359,12 +2537,13 @@ type Role struct {
 	// when bound in an IAM policy.
 	IncludedPermissions []string `json:"includedPermissions,omitempty"`
 
-	// Name: The name of the role. When Role is used in CreateRole, the role
-	// name must not be set. When Role is used in output and other input
-	// such as UpdateRole, the role name is the complete path, e.g.,
-	// roles/logging.viewer for predefined roles and
-	// organizations/{ORGANIZATION_ID}/roles/logging.viewer for custom
-	// roles.
+	// Name: The name of the role. When `Role` is used in `CreateRole`, the
+	// role name must not be set. When `Role` is used in output and other
+	// input such as `UpdateRole`, the role name is the complete path. For
+	// example, `roles/logging.viewer` for predefined roles,
+	// `organizations/{ORGANIZATION_ID}/roles/my-role` for
+	// organization-level custom roles, and
+	// `projects/{PROJECT_ID}/roles/my-role` for project-level custom roles.
 	Name string `json:"name,omitempty"`
 
 	// Stage: The current launch stage of the role. If the `ALPHA` launch
@@ -3375,6 +3554,25 @@ type WorkloadIdentityPool struct {
 	// DisplayName: A display name for the pool. Cannot exceed 32
 	// characters.
 	DisplayName string `json:"displayName,omitempty"`
+
+	// IdentityMode: Immutable. The identity mode of the pool.
+	//
+	// Possible values:
+	//   "IDENTITY_MODE_UNSPECIFIED" - Existing pools will be in this mode.
+	// For existing worklod identity pools created through the public API,
+	// they will act as if they are set to FEDERATION_ONLY.
+	//   "FEDERATION_ONLY" - With FEDERATION_ONLY mode, providers can be
+	// created at the root level within the pool. Attribute mappings must
+	// specify a "google.subject" claim that specifies the identity of the
+	// federation workload. Namespace or any sub-namespace resources is not
+	// allowed with this mode.
+	//   "TRUST_DOMAIN" - With TRUST_DOMAIN mode, providers can be created
+	// at the root level within the pool. Attribute mappings must specify
+	// the "google.namespace" and "google.workload_identifier" claims that,
+	// respectively, specify the namespace and individual sub-namespace
+	// identifier for the workload. Namespaces and sub-Namespace resources
+	// are allowed.
+	IdentityMode string `json:"identityMode,omitempty"`
 
 	// Name: Output only. The resource name of the pool.
 	Name string `json:"name,omitempty"`
@@ -10123,6 +10321,598 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Do(opts ...googleap
 	//   "request": {
 	//     "$ref": "UndeleteWorkloadIdentityPoolRequest"
 	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets the latest state of a long-running operation. Clients can
+// use this method to poll the operation result at intervals as
+// recommended by the API service.
+//
+// - name: The name of the operation resource.
+func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/operations/{operationsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The name of the operation resource.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets the latest state of a long-running operation. Clients can
+// use this method to poll the operation result at intervals as
+// recommended by the API service.
+//
+// - name: The name of the operation resource.
+func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/workloadSources/{workloadSourcesId}/operations/{operationsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The name of the operation resource.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/workloadSources/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.namespaces.operations.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets the latest state of a long-running operation. Clients can
+// use this method to poll the operation result at intervals as
+// recommended by the API service.
+//
+// - name: The name of the operation resource.
+func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.operations.get" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/operations/{operationsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.operations.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The name of the operation resource.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.namespaces.workloadSources.operations.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets the latest state of a long-running operation. Clients can
+// use this method to poll the operation result at intervals as
+// recommended by the API service.
+//
+// - name: The name of the operation resource.
+func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.workloadSources.operations.get" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesWorkloadSourcesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/workloadSources/{workloadSourcesId}/operations/{operationsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.workloadSources.operations.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The name of the operation resource.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/workloadSources/[^/]+/operations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
 	//   "response": {
 	//     "$ref": "Operation"
 	//   },

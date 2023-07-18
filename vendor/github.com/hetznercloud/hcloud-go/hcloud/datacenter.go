@@ -76,7 +76,7 @@ type DatacenterListOpts struct {
 }
 
 func (l DatacenterListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

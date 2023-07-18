@@ -331,11 +331,15 @@ func (s *AcceleratorConfig) MarshalJSON() ([]byte, error) {
 // configuration for additional pod secondary ranges supporting the
 // ClusterUpdate message.
 type AdditionalPodRangesConfig struct {
+	// PodRangeInfo: Output only. [Output only] Information for additional
+	// pod range.
+	PodRangeInfo []*RangeInfo `json:"podRangeInfo,omitempty"`
+
 	// PodRangeNames: Name for pod secondary ipv4 range which has the actual
 	// range defined ahead.
 	PodRangeNames []string `json:"podRangeNames,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "PodRangeNames") to
+	// ForceSendFields is a list of field names (e.g. "PodRangeInfo") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -343,7 +347,7 @@ type AdditionalPodRangesConfig struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "PodRangeNames") to include
+	// NullFields is a list of field names (e.g. "PodRangeInfo") to include
 	// in API requests with the JSON null value. By default, fields with
 	// empty values are omitted from API requests. However, any field with
 	// an empty value appearing in NullFields will be sent to the server as
@@ -381,6 +385,10 @@ type AddonsConfig struct {
 	// GcpFilestoreCsiDriverConfig: Configuration for the GCP Filestore CSI
 	// driver.
 	GcpFilestoreCsiDriverConfig *GcpFilestoreCsiDriverConfig `json:"gcpFilestoreCsiDriverConfig,omitempty"`
+
+	// GcsFuseCsiDriverConfig: Configuration for the Cloud Storage Fuse CSI
+	// driver.
+	GcsFuseCsiDriverConfig *GcsFuseCsiDriverConfig `json:"gcsFuseCsiDriverConfig,omitempty"`
 
 	// GkeBackupAgentConfig: Configuration for the Backup for GKE agent
 	// addon.
@@ -429,6 +437,45 @@ type AddonsConfig struct {
 
 func (s *AddonsConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AddonsConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// AdvancedDatapathObservabilityConfig:
+// AdvancedDatapathObservabilityConfig specifies configuration of
+// observability features of advanced datapath.
+type AdvancedDatapathObservabilityConfig struct {
+	// EnableMetrics: Expose flow metrics on nodes
+	EnableMetrics bool `json:"enableMetrics,omitempty"`
+
+	// RelayMode: Method used to make Relay available
+	//
+	// Possible values:
+	//   "RELAY_MODE_UNSPECIFIED" - Default value. This shouldn't be used.
+	//   "DISABLED" - disabled
+	//   "INTERNAL_VPC_LB" - exposed via internal load balancer
+	//   "EXTERNAL_LB" - exposed via external load balancer
+	RelayMode string `json:"relayMode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EnableMetrics") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EnableMetrics") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AdvancedDatapathObservabilityConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod AdvancedDatapathObservabilityConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -652,6 +699,10 @@ type AutoprovisioningNodePoolDefaults struct {
 	// https://cloud.google.com/kubernetes-engine/docs/concepts/node-images
 	// for available image types.
 	ImageType string `json:"imageType,omitempty"`
+
+	// InsecureKubeletReadonlyPortEnabled: Enable or disable Kubelet read
+	// only port.
+	InsecureKubeletReadonlyPortEnabled bool `json:"insecureKubeletReadonlyPortEnabled,omitempty"`
 
 	// Management: Specifies the node management options for NAP created
 	// node-pools.
@@ -1531,6 +1582,42 @@ func (s *ClusterAutoscaling) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ClusterNetworkPerformanceConfig: Configuration of network bandwidth
+// tiers
+type ClusterNetworkPerformanceConfig struct {
+	// TotalEgressBandwidthTier: Specifies the total network bandwidth tier
+	// for NodePools in the cluster.
+	//
+	// Possible values:
+	//   "TIER_UNSPECIFIED" - Default value
+	//   "TIER_1" - Higher bandwidth, actual values based on VM size.
+	TotalEgressBandwidthTier string `json:"totalEgressBandwidthTier,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "TotalEgressBandwidthTier") to unconditionally include in API
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TotalEgressBandwidthTier")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ClusterNetworkPerformanceConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod ClusterNetworkPerformanceConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ClusterUpdate: ClusterUpdate describes an update to the cluster.
 // Exactly one update can be applied to a cluster with each request, so
 // at most one field can be provided.
@@ -1676,6 +1763,10 @@ type ClusterUpdate struct {
 	// be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier
 	// versions.
 	DesiredMonitoringService string `json:"desiredMonitoringService,omitempty"`
+
+	// DesiredNetworkPerformanceConfig: The desired network performance
+	// config.
+	DesiredNetworkPerformanceConfig *ClusterNetworkPerformanceConfig `json:"desiredNetworkPerformanceConfig,omitempty"`
 
 	// DesiredNodePoolAutoConfigNetworkTags: The desired network tags that
 	// apply to all auto-provisioned node pools in autopilot clusters and
@@ -2083,6 +2174,7 @@ type DNSConfig struct {
 	//   "PLATFORM_DEFAULT" - Use GKE default DNS provider(kube-dns) for DNS
 	// resolution.
 	//   "CLOUD_DNS" - Use CloudDNS for DNS resolution.
+	//   "KUBE_DNS" - Use KubeDNS for DNS resolution.
 	ClusterDns string `json:"clusterDns,omitempty"`
 
 	// ClusterDnsDomain: cluster_dns_domain is the suffix used for all
@@ -2614,6 +2706,36 @@ func (s *GcpFilestoreCsiDriverConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GcsFuseCsiDriverConfig: Configuration for the Cloud Storage Fuse CSI
+// driver.
+type GcsFuseCsiDriverConfig struct {
+	// Enabled: Whether the Cloud Storage Fuse CSI driver is enabled for
+	// this cluster.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GcsFuseCsiDriverConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod GcsFuseCsiDriverConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GetJSONWebKeysResponse: GetJSONWebKeysResponse is a valid JSON Web
 // Key Set as specififed in rfc 7517
 type GetJSONWebKeysResponse struct {
@@ -2904,6 +3026,12 @@ type IPAllocationPolicy struct {
 	// `use_ip_aliases` is true.
 	CreateSubnetwork bool `json:"createSubnetwork,omitempty"`
 
+	// DefaultPodIpv4RangeUtilization: Output only. [Output only] The
+	// utilization of the cluster default IPv4 range for the pod. The ratio
+	// is Usage/[Total number of IPs in the secondary range],
+	// Usage=numNodes*numZones*podIPsPerNode.
+	DefaultPodIpv4RangeUtilization float64 `json:"defaultPodIpv4RangeUtilization,omitempty"`
+
 	// Ipv6AccessType: The ipv6 access type (internal or external) when
 	// create_subnetwork is true
 	//
@@ -3033,6 +3161,20 @@ func (s *IPAllocationPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod IPAllocationPolicy
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *IPAllocationPolicy) UnmarshalJSON(data []byte) error {
+	type NoMethod IPAllocationPolicy
+	var s1 struct {
+		DefaultPodIpv4RangeUtilization gensupport.JSONFloat64 `json:"defaultPodIpv4RangeUtilization"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.DefaultPodIpv4RangeUtilization = float64(s1.DefaultPodIpv4RangeUtilization)
+	return nil
 }
 
 // IdentityServiceConfig: IdentityServiceConfig is configuration for
@@ -3979,6 +4121,10 @@ func (s *MonitoringComponentConfig) MarshalJSON() ([]byte, error) {
 // MonitoringConfig: MonitoringConfig is cluster monitoring
 // configuration.
 type MonitoringConfig struct {
+	// AdvancedDatapathObservabilityConfig: Configuration of Advanced
+	// Datapath Observability features.
+	AdvancedDatapathObservabilityConfig *AdvancedDatapathObservabilityConfig `json:"advancedDatapathObservabilityConfig,omitempty"`
+
 	// ComponentConfig: Monitoring components configuration
 	ComponentConfig *MonitoringComponentConfig `json:"componentConfig,omitempty"`
 
@@ -3986,21 +4132,22 @@ type MonitoringConfig struct {
 	// Prometheus in the cluster.
 	ManagedPrometheusConfig *ManagedPrometheusConfig `json:"managedPrometheusConfig,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ComponentConfig") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "AdvancedDatapathObservabilityConfig") to unconditionally include in
+	// API requests. By default, fields with empty or default values are
+	// omitted from API requests. However, any non-pointer, non-interface
+	// field appearing in ForceSendFields will be sent to the server
+	// regardless of whether the field is empty or not. This may be used to
+	// include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ComponentConfig") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g.
+	// "AdvancedDatapathObservabilityConfig") to include in API requests
+	// with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. However, any field with an empty value
+	// appearing in NullFields will be sent to the server as null. It is an
+	// error if a field in this list has a non-empty value. This may be used
+	// to include null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -4058,6 +4205,9 @@ type NetworkConfig struct {
 	// etworks) to which the cluster is connected. Example:
 	// projects/my-project/global/networks/my-network
 	Network string `json:"network,omitempty"`
+
+	// NetworkPerformanceConfig: Network bandwidth tier configuration.
+	NetworkPerformanceConfig *ClusterNetworkPerformanceConfig `json:"networkPerformanceConfig,omitempty"`
 
 	// PrivateIpv6GoogleAccess: The desired state of IPv6 connectivity to
 	// Google Services. By default, no private IPv6 access to or from Google
@@ -4553,6 +4703,10 @@ type NodeKubeletConfig struct {
 	// unspecified.
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty"`
 
+	// InsecureKubeletReadonlyPortEnabled: Enable or disable Kubelet read
+	// only port.
+	InsecureKubeletReadonlyPortEnabled bool `json:"insecureKubeletReadonlyPortEnabled,omitempty"`
+
 	// PodPidsLimit: Set the Pod PID limits. See
 	// https://kubernetes.io/docs/concepts/policy/pid-limiting/#pod-pid-limits
 	// Controls the maximum number of processes allowed to run in a pod. The
@@ -4692,6 +4846,11 @@ type NodeNetworkConfig struct {
 	// field cannot be changed after the node pool has been created.
 	PodIpv4CidrBlock string `json:"podIpv4CidrBlock,omitempty"`
 
+	// PodIpv4RangeUtilization: Output only. [Output only] The utilization
+	// of the IPv4 range for the pod. The ratio is Usage/[Total number of
+	// IPs in the secondary range], Usage=numNodes*numZones*podIPsPerNode.
+	PodIpv4RangeUtilization float64 `json:"podIpv4RangeUtilization,omitempty"`
+
 	// PodRange: The ID of the secondary range for pod IPs. If
 	// `create_pod_range` is true, this ID is used for the new range. If
 	// `create_pod_range` is false, uses an existing secondary range with
@@ -4722,6 +4881,20 @@ func (s *NodeNetworkConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod NodeNetworkConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *NodeNetworkConfig) UnmarshalJSON(data []byte) error {
+	type NoMethod NodeNetworkConfig
+	var s1 struct {
+		PodIpv4RangeUtilization gensupport.JSONFloat64 `json:"podIpv4RangeUtilization"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.PodIpv4RangeUtilization = float64(s1.PodIpv4RangeUtilization)
+	return nil
 }
 
 // NodePool: NodePool contains the name and configuration for a
@@ -5553,6 +5726,52 @@ func (s *PubSub) MarshalJSON() ([]byte, error) {
 	type NoMethod PubSub
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RangeInfo: RangeInfo contains the range name and the range
+// utilization by this cluster.
+type RangeInfo struct {
+	// RangeName: Output only. [Output only] Name of a range.
+	RangeName string `json:"rangeName,omitempty"`
+
+	// Utilization: Output only. [Output only] The utilization of the range.
+	Utilization float64 `json:"utilization,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "RangeName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "RangeName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RangeInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod RangeInfo
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *RangeInfo) UnmarshalJSON(data []byte) error {
+	type NoMethod RangeInfo
+	var s1 struct {
+		Utilization gensupport.JSONFloat64 `json:"utilization"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Utilization = float64(s1.Utilization)
+	return nil
 }
 
 // RecurringTimeWindow: Represents an arbitrary window of time that

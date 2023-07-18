@@ -155,7 +155,7 @@ func (s Set[E]) Difference(s2 Set[E]) Set[E] {
 // Equal returns true if and only if s1 is equal (as a set) to s2.
 // Two sets are equal if their membership is identical.
 func (s Set[E]) Equal(s2 Set[E]) bool {
-	return s.Len() == s.Len() && s.IsSuperset(s2)
+	return s.Len() == s2.Len() && s.IsSuperset(s2)
 }
 
 type sortableSlice[E ordered] []E
