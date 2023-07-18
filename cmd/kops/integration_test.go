@@ -81,6 +81,7 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 		version:        "v1alpha2",
 		zones:          1,
 		expectPolicies: true,
+		nth:            true,
 		sshKey:         true,
 	}
 }
@@ -145,8 +146,8 @@ func (i *integrationTest) withDedicatedAPIServer() *integrationTest {
 	return i
 }
 
-func (i *integrationTest) withNTH() *integrationTest {
-	i.nth = true
+func (i *integrationTest) withoutNTH() *integrationTest {
+	i.nth = false
 	return i
 }
 
@@ -338,6 +339,7 @@ func TestMinimalGossipIRSA(t *testing.T) {
 		withOIDCDiscovery().
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
@@ -752,6 +754,7 @@ func TestPrivateDns2(t *testing.T) {
 func TestDiscoveryFeatureGate(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
 		withDefaultServiceAccountRoles24().
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withDefaultAddons24().
 		withOIDCDiscovery().
 		runTestTerraformAWS(t)
@@ -775,6 +778,7 @@ func TestAWSLBController(t *testing.T) {
 		withServiceAccountRole("dns-controller.kube-system", true).
 		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
 		withAddons("aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
 			"certmanager.io-k8s-1.16",
@@ -798,7 +802,6 @@ func TestManyAddons(t *testing.T) {
 			dnsControllerAddon,
 			awsCCMAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -808,9 +811,9 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 		withServiceAccountRole("dns-controller.kube-system", true).
 		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("cluster-autoscaler.kube-system", true).
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withAddons(
 			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
 			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
@@ -822,7 +825,6 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -847,7 +849,6 @@ func TestManyAddonsCCMIRSA23(t *testing.T) {
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -872,7 +873,6 @@ func TestManyAddonsCCMIRSA24(t *testing.T) {
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -897,7 +897,6 @@ func TestManyAddonsCCMIRSA25(t *testing.T) {
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -923,7 +922,6 @@ func TestManyAddonsCCMIRSA26(t *testing.T) {
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
-		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -954,7 +952,6 @@ func TestCCM(t *testing.T) {
 			dnsControllerAddon,
 			metricsServerAddon,
 		).
-		withNTH().
 		withNTHRebalance().
 		runTestTerraformAWS(t)
 }
@@ -978,6 +975,7 @@ func TestExternalDNSIRSA(t *testing.T) {
 			"external-dns.addons.k8s.io-k8s-1.19",
 		).
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
 		withServiceAccountRole("external-dns.kube-system", true).
 		runTestTerraformAWS(t)
@@ -988,6 +986,7 @@ func TestKarpenter(t *testing.T) {
 		withOIDCDiscovery().
 		withDefaults24().
 		withAddons("karpenter.sh-k8s-1.19").
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("karpenter.kube-system", true)
 	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
 		"aws_launch_template_karpenter-nodes-single-machinetype.minimal.example.com_user_data",
@@ -1164,6 +1163,7 @@ func TestNTHIMDSProcessor(t *testing.T) {
 			awsCCMAddon,
 			"node-termination-handler.aws-k8s-1.11",
 		).
+		withoutNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -1181,6 +1181,7 @@ func TestNTHIMDSProcessorIRSA(t *testing.T) {
 			awsCCMAddon,
 			"node-termination-handler.aws-k8s-1.11",
 		).
+		withoutNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -1620,19 +1621,19 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 					"aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
 		}
-		if i.nth {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
-				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
-				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
-				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
-				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
-				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
-			}...)
-		}
-		if i.nthRebalance {
-			expectedFilenames = append(expectedFilenames, "aws_cloudwatch_event_rule_"+awsup.GetClusterName40(i.clusterName)+"-RebalanceRecommendation_event_pattern")
-		}
+	}
+	if i.nth {
+		expectedFilenames = append(expectedFilenames, []string{
+			"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
+			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
+			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
+			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
+			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
+			"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
+		}...)
+	}
+	if i.nthRebalance {
+		expectedFilenames = append(expectedFilenames, "aws_cloudwatch_event_rule_"+awsup.GetClusterName40(i.clusterName)+"-RebalanceRecommendation_event_pattern")
 	}
 	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
 

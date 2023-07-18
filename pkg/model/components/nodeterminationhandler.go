@@ -32,8 +32,11 @@ var _ loader.OptionsBuilder = &NodeTerminationHandlerOptionsBuilder{}
 
 func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
-	if clusterSpec.CloudProvider.AWS == nil || clusterSpec.CloudProvider.AWS.NodeTerminationHandler == nil {
+	if clusterSpec.CloudProvider.AWS == nil {
 		return nil
+	}
+	if clusterSpec.CloudProvider.AWS.NodeTerminationHandler == nil {
+		clusterSpec.CloudProvider.AWS.NodeTerminationHandler = &kops.NodeTerminationHandlerSpec{}
 	}
 	nth := clusterSpec.CloudProvider.AWS.NodeTerminationHandler
 	if nth.Enabled == nil {
