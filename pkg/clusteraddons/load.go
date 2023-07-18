@@ -31,7 +31,7 @@ type ClusterAddon struct {
 }
 
 // LoadClusterAddon loads a set of objects from the specified VFS location
-func LoadClusterAddon(location string) (*ClusterAddon, error) {
+func LoadClusterAddon(vfsContext *vfs.VFSContext, location string) (*ClusterAddon, error) {
 	u, err := url.Parse(location)
 	if err != nil {
 		return nil, fmt.Errorf("invalid addon location: %q", location)
@@ -41,7 +41,7 @@ func LoadClusterAddon(location string) (*ClusterAddon, error) {
 
 	resolved := u.String()
 	klog.V(2).Infof("Loading addon from %q", resolved)
-	addonBytes, err := vfs.Context.ReadFile(resolved)
+	addonBytes, err := vfsContext.ReadFile(resolved)
 	if err != nil {
 		return nil, fmt.Errorf("error reading addon %q: %v", resolved, err)
 	}

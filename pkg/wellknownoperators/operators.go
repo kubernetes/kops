@@ -37,7 +37,8 @@ type Package struct {
 }
 
 type Builder struct {
-	Cluster *kops.Cluster
+	VFSContext *vfs.VFSContext
+	Cluster    *kops.Cluster
 }
 
 func (b *Builder) Build(objects kubemanifest.ObjectList) ([]*Package, kubemanifest.ObjectList, error) {
@@ -94,7 +95,7 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 
 	locationURL := channelURL.ResolveReference(&url.URL{Path: location}).String()
 
-	manifestBytes, err := vfs.Context.ReadFile(locationURL)
+	manifestBytes, err := b.VFSContext.ReadFile(locationURL)
 	if err != nil {
 		return nil, fmt.Errorf("error reading operator manifest %q: %v", locationURL, err)
 	}
