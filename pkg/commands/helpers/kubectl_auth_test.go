@@ -25,6 +25,7 @@ func Test_cacheFilePath(t *testing.T) {
 	inputs := []struct {
 		kopsStateStore string
 		clusterName    string
+		wantFilename   string
 	}{
 		{
 			kopsStateStore: "s3://abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk",
@@ -32,13 +33,21 @@ func Test_cacheFilePath(t *testing.T) {
 				"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk." +
 				"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk." +
 				"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.com",
+			wantFilename: "abcdefghijklmnopqrstuvwxyzabcdef_2gdSmQxAE3nMLFrXXuEuCBoVaajWndsK8OMnUV",
 		},
 	}
 
-	output1 := cacheFilePath(inputs[0].kopsStateStore, inputs[0].clusterName)
-	_, file := path.Split(output1)
+	for _, input := range inputs {
+		output := cacheFilePath(input.kopsStateStore, input.clusterName)
+		_, file := path.Split(output)
 
-	if len(file) > 71 {
-		t.Errorf("cacheFilePath() got %v, too long(%v)", output1, len(file))
+		// Explicitly guard against overly long filenames - this is why we do truncation
+		if len(file) > 71 {
+			t.Errorf("cacheFilePath() got %v, too long(%v)", output, len(file))
+		}
+
+		if file != input.wantFilename {
+			t.Errorf("cacheFilePath(%q, %q) got %v, want %v", input.kopsStateStore, input.clusterName, file, input.wantFilename)
+		}
 	}
 }
