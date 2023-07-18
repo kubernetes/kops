@@ -22,6 +22,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func buildSchedulerConfigMapCluster(version string) *api.Cluster {
@@ -47,7 +48,7 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 
 		c := buildCluster()
 		c.Spec.KubernetesVersion = v
-		b := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		version, err := util.ParseKubernetesVersion(v)
 		if err != nil {
@@ -75,7 +76,7 @@ func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
 	for _, v := range versions {
 
 		c := buildSchedulerConfigMapCluster(v)
-		b := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		version, err := util.ParseKubernetesVersion(v)
 		if err != nil {

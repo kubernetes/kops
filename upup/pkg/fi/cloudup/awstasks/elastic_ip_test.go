@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/util/pkg/vfs"
 
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -127,7 +128,7 @@ func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks 
 			KubernetesVersion: "v1.9.0",
 		},
 	}
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {

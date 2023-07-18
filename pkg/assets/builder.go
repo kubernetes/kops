@@ -42,6 +42,7 @@ import (
 
 // AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
+	vfsContext     *vfs.VFSContext
 	ImageAssets    []*ImageAsset
 	FileAssets     []*FileAsset
 	AssetsLocation *kops.AssetsSpec
@@ -101,8 +102,9 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(assets *kops.AssetsSpec, kubernetesVersion string, getAssets bool) *AssetBuilder {
+func NewAssetBuilder(vfsContext *vfs.VFSContext, assets *kops.AssetsSpec, kubernetesVersion string, getAssets bool) *AssetBuilder {
 	a := &AssetBuilder{
+		vfsContext:     vfsContext,
 		AssetsLocation: assets,
 		GetAssets:      getAssets,
 	}
@@ -336,7 +338,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 			for _, mirror := range mirrors.FindUrlMirrors(u.String()) {
 				hashURL := mirror + ext
 				klog.V(3).Infof("Trying to read hash fie: %q", hashURL)
-				b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
+				b, err := a.vfsContext.ReadFile(hashURL, vfs.WithBackoff(backoff))
 				if err != nil {
 					// Try to log without being too alarming - issue #7550
 					klog.V(2).Infof("Unable to read hash file %q: %v", hashURL, err)

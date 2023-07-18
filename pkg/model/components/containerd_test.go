@@ -22,6 +22,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func buildContainerdCluster(version string) *kopsapi.Cluster {
@@ -45,7 +46,7 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 
 		c := buildContainerdCluster(v)
 		c.Spec.ContainerRuntime = "containerd"
-		b := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		version, err := util.ParseKubernetesVersion(v)
 		if err != nil {
@@ -80,7 +81,7 @@ func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
 		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
-		b := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		ob := &ContainerdOptionsBuilder{
 			&OptionsContext{
@@ -109,7 +110,7 @@ func Test_Build_Containerd_Needed_Runtime(t *testing.T) {
 		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
-		b := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		ob := &ContainerdOptionsBuilder{
 			&OptionsContext{
