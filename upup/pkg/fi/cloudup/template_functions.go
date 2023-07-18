@@ -737,7 +737,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.Scaleway = &scaleway.ScalewayVerifierOptions{}
 
 		case kops.CloudProviderAzure:
-			config.Server.Provider.Azure = &azure.AzureVerifierOptions{}
+			config.Server.Provider.Azure = &azure.AzureVerifierOptions{
+				ClusterName: tf.ClusterName(),
+			}
 
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())

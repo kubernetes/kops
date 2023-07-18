@@ -28,15 +28,16 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"k8s.io/kops/pkg/bootstrap"
-	"k8s.io/kops/pkg/nodeidentity/azure"
 	"k8s.io/kops/pkg/wellknownports"
 )
 
 type AzureVerifierOptions struct {
+	ClusterName string `json:"clusterName,omitempty"`
 }
 
 type azureVerifier struct {
-	client *client
+	client      *client
+	clusterName string
 }
 
 var _ bootstrap.Verifier = &azureVerifier{}
@@ -47,8 +48,13 @@ func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap
 		return nil, err
 	}
 
+	if opt == nil || opt.ClusterName == "" {
+		return nil, fmt.Errorf("determining cluster name")
+	}
+
 	return &azureVerifier{
-		client: azureClient,
+		client:      azureClient,
+		clusterName: opt.ClusterName,
 	}, nil
 }
 
@@ -65,6 +71,11 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	vmssName := v[1]
 	vmssIndex := v[2]
 
+	if !strings.HasSuffix(vmssName, "."+a.clusterName) {
+		return nil, fmt.Errorf("matching cluster name %q to VMSS %q", a.clusterName, vmssName)
+	}
+	igName := strings.TrimSuffix(vmssName, "."+a.clusterName)
+
 	vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, "")
 	if err != nil {
 		return nil, fmt.Errorf("getting info for VMSS virtual machine %q #%s: %w", vmssName, vmssIndex, err)
@@ -73,11 +84,12 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		return nil, fmt.Errorf("determining VMID for VMSS %q virtual machine #%s", vmssName, vmssIndex)
 	}
 	if vmId != *vm.VMID {
-		return nil, fmt.Errorf("matching VMID %q for VMSS %q virtual machine #%s", vmId, vmssName, vmssIndex)
+		return nil, fmt.Errorf("matching VMID %q to VMSS %q virtual machine #%s", vmId, vmssName, vmssIndex)
 	}
-	if vm.OsProfile == nil || *vm.OsProfile.ComputerName == "" {
+	if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil || *vm.OsProfile.ComputerName == "" {
 		return nil, fmt.Errorf("determining ComputerName for VMSS %q virtual machine #%s", vmssName, vmssIndex)
 	}
+	nodeName := *vm.OsProfile.ComputerName
 
 	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName+"-netconfig", "")
 	if err != nil {
@@ -100,15 +112,10 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          *vm.OsProfile.ComputerName,
+		NodeName:          nodeName,
+		InstanceGroupName: igName,
 		CertificateNames:  addrs,
 		ChallengeEndpoint: challengeEndpoints[0],
-	}
-
-	for key, value := range vm.Tags {
-		if key == azure.InstanceGroupNameTag && value != nil {
-			result.InstanceGroupName = *value
-		}
 	}
 
 	return result, nil
