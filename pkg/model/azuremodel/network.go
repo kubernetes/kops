@@ -167,6 +167,17 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			})
 		}
 	}
+	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+		Name:                     fi.PtrTo("AllowNodeupChallenge"),
+		Priority:                 fi.PtrTo[int32](220),
+		Access:                   network.SecurityRuleAccessAllow,
+		Direction:                network.SecurityRuleDirectionInbound,
+		Protocol:                 network.SecurityRuleProtocolTCP,
+		SourceAddressPrefix:      fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
+		SourcePortRange:          fi.PtrTo("*"),
+		DestinationAddressPrefix: fi.PtrTo("*"),
+		DestinationPortRange:     fi.PtrTo(strconv.Itoa(wellknownports.NodeupChallenge)),
+	})
 	var nodePortAccessIPv4, nodePortAccessIPv6 []string
 	for _, cidr := range b.Cluster.Spec.NodePortAccess {
 		switch net.IPFamilyOfCIDRString(cidr) {
