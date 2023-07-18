@@ -39,6 +39,57 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
+  - id: k8s-1.11
+    manifest: node-termination-handler.aws/k8s-1.11.yaml
+    manifestHash: e24ab33742d589a0af522ac0f8242a089a599e8437d8de24ecdfa96b8aef00f5
+    name: node-termination-handler.aws
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+    selector:
+      k8s-addon: node-termination-handler.aws
+    version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
     manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200

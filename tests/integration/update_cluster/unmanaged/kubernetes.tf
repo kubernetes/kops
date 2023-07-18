@@ -148,6 +148,11 @@ resource "aws_autoscaling_group" "bastion-unmanaged-example-com" {
     value               = "bastion.unmanaged.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -188,6 +193,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.unmanaged.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -250,6 +260,11 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
     value               = "nodes.unmanaged.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -270,6 +285,90 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-unmanaged-example-com.id, aws_subnet.us-test-1b-unmanaged-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "bastion-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.bastion-unmanaged-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "bastion-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-unmanaged-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-unmanaged-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "unmanaged-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_unmanaged.example.com-ASGLifecycle_event_pattern")
+  name          = "unmanaged.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "unmanaged.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "unmanaged-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_unmanaged.example.com-InstanceScheduledChange_event_pattern")
+  name          = "unmanaged.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "unmanaged.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "unmanaged-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_unmanaged.example.com-InstanceStateChange_event_pattern")
+  name          = "unmanaged.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "unmanaged.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "unmanaged-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_unmanaged.example.com-SpotInterruption_event_pattern")
+  name          = "unmanaged.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "unmanaged.example.com-SpotInterruption"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "unmanaged-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.unmanaged-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.unmanaged-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "unmanaged-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.unmanaged-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.unmanaged-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "unmanaged-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.unmanaged-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.unmanaged-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "unmanaged-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.unmanaged-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.unmanaged-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-unmanaged-example-com" {
@@ -464,6 +563,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
     tags = {
       "KubernetesCluster"                           = "unmanaged.example.com"
       "Name"                                        = "bastion.unmanaged.example.com"
+      "aws-node-termination-handler/managed"        = ""
       "k8s.io/role/bastion"                         = "1"
       "kops.k8s.io/instancegroup"                   = "bastion"
       "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -474,6 +574,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
     tags = {
       "KubernetesCluster"                           = "unmanaged.example.com"
       "Name"                                        = "bastion.unmanaged.example.com"
+      "aws-node-termination-handler/managed"        = ""
       "k8s.io/role/bastion"                         = "1"
       "kops.k8s.io/instancegroup"                   = "bastion"
       "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -482,6 +583,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
   tags = {
     "KubernetesCluster"                           = "unmanaged.example.com"
     "Name"                                        = "bastion.unmanaged.example.com"
+    "aws-node-termination-handler/managed"        = ""
     "k8s.io/role/bastion"                         = "1"
     "kops.k8s.io/instancegroup"                   = "bastion"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -534,6 +636,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
     tags = {
       "KubernetesCluster"                                                                                     = "unmanaged.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -548,6 +651,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
     tags = {
       "KubernetesCluster"                                                                                     = "unmanaged.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -560,6 +664,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   tags = {
     "KubernetesCluster"                                                                                     = "unmanaged.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -613,6 +718,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "unmanaged.example.com"
       "Name"                                                                       = "nodes.unmanaged.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -624,6 +730,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "unmanaged.example.com"
       "Name"                                                                       = "nodes.unmanaged.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -633,6 +740,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "unmanaged.example.com"
     "Name"                                                                       = "nodes.unmanaged.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -843,6 +951,14 @@ resource "aws_s3_object" "unmanaged-example-com-addons-limit-range-addons-k8s-io
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_unmanaged.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/unmanaged.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "unmanaged-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_unmanaged.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/unmanaged.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1131,6 +1247,17 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-8-0--22" {
   security_group_id = aws_security_group.bastion-unmanaged-example-com.id
   to_port           = 4
   type              = "ingress"
+}
+
+resource "aws_sqs_queue" "unmanaged-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "unmanaged-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_unmanaged-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "unmanaged-example-com-nth"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-unmanaged-example-com" {

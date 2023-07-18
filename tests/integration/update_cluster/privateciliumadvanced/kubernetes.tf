@@ -148,6 +148,11 @@ resource "aws_autoscaling_group" "bastion-privateciliumadvanced-example-com" {
     value               = "bastion.privateciliumadvanced.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -188,6 +193,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateciliumadvance
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -250,6 +260,11 @@ resource "aws_autoscaling_group" "nodes-privateciliumadvanced-example-com" {
     value               = "nodes.privateciliumadvanced.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -270,6 +285,90 @@ resource "aws_autoscaling_group" "nodes-privateciliumadvanced-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-privateciliumadvanced-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "bastion-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.bastion-privateciliumadvanced-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "bastion-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-privateciliumadvanced-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-privateciliumadvanced-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "privateciliumadvanced-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privateciliumadvanced.example.com-ASGLifecycle_event_pattern")
+  name          = "privateciliumadvanced.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privateciliumadvanced-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privateciliumadvanced.example.com-InstanceScheduledChange_event_pattern")
+  name          = "privateciliumadvanced.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privateciliumadvanced-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privateciliumadvanced.example.com-InstanceStateChange_event_pattern")
+  name          = "privateciliumadvanced.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privateciliumadvanced-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privateciliumadvanced.example.com-SpotInterruption_event_pattern")
+  name          = "privateciliumadvanced.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced.example.com-SpotInterruption"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "privateciliumadvanced-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.privateciliumadvanced-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privateciliumadvanced-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "privateciliumadvanced-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.privateciliumadvanced-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privateciliumadvanced-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "privateciliumadvanced-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.privateciliumadvanced-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privateciliumadvanced-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "privateciliumadvanced-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.privateciliumadvanced-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privateciliumadvanced-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-cilium-privateciliumadvanced-example-com" {
@@ -499,6 +598,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
     tags = {
       "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
       "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                    = ""
       "k8s.io/role/bastion"                                     = "1"
       "kops.k8s.io/instancegroup"                               = "bastion"
       "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
@@ -509,6 +609,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
     tags = {
       "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
       "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                    = ""
       "k8s.io/role/bastion"                                     = "1"
       "kops.k8s.io/instancegroup"                               = "bastion"
       "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
@@ -517,6 +618,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
   tags = {
     "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
     "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+    "aws-node-termination-handler/managed"                    = ""
     "k8s.io/role/bastion"                                     = "1"
     "kops.k8s.io/instancegroup"                               = "bastion"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
@@ -569,6 +671,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
     tags = {
       "KubernetesCluster"                                                                                     = "privateciliumadvanced.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -583,6 +686,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
     tags = {
       "KubernetesCluster"                                                                                     = "privateciliumadvanced.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -595,6 +699,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
   tags = {
     "KubernetesCluster"                                                                                     = "privateciliumadvanced.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -648,6 +753,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
       "Name"                                                                       = "nodes.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -659,6 +765,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
       "Name"                                                                       = "nodes.privateciliumadvanced.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -668,6 +775,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "privateciliumadvanced.example.com"
     "Name"                                                                       = "nodes.privateciliumadvanced.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -961,6 +1069,14 @@ resource "aws_s3_object" "privateciliumadvanced-example-com-addons-networking-ci
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "privateciliumadvanced-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privateciliumadvanced.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/privateciliumadvanced.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "privateciliumadvanced-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privateciliumadvanced.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
@@ -1227,6 +1343,17 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
   security_group_id = aws_security_group.bastion-privateciliumadvanced-example-com.id
   to_port           = 4
   type              = "ingress"
+}
+
+resource "aws_sqs_queue" "privateciliumadvanced-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "privateciliumadvanced-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_privateciliumadvanced-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced-example-com-nth"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-privateciliumadvanced-example-com" {

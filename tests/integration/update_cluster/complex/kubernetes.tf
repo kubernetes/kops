@@ -141,6 +141,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     value               = "John Doe"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
@@ -214,6 +219,11 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
     value               = "John Doe"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
@@ -239,6 +249,90 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-complex-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "complex-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_complex.example.com-ASGLifecycle_event_pattern")
+  name          = "complex.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "complex.example.com-ASGLifecycle"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "complex-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_complex.example.com-InstanceScheduledChange_event_pattern")
+  name          = "complex.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "complex.example.com-InstanceScheduledChange"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "complex-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_complex.example.com-InstanceStateChange_event_pattern")
+  name          = "complex.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "complex.example.com-InstanceStateChange"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "complex-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_complex.example.com-SpotInterruption_event_pattern")
+  name          = "complex.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "complex.example.com-SpotInterruption"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "complex-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.complex-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.complex-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "complex-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.complex-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.complex-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "complex-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.complex-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.complex-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "complex-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.complex-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.complex-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "a-etcd-events-complex-example-com" {
@@ -399,6 +493,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "KubernetesCluster"                                                                                     = "complex.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
       "Owner"                                                                                                 = "John Doe"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -415,6 +510,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "KubernetesCluster"                                                                                     = "complex.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
       "Owner"                                                                                                 = "John Doe"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -429,6 +525,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     "KubernetesCluster"                                                                                     = "complex.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
     "Owner"                                                                                                 = "John Doe"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "foo/bar"                                                                                               = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -496,6 +593,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "KubernetesCluster"                                                          = "complex.example.com"
       "Name"                                                                       = "nodes.complex.example.com"
       "Owner"                                                                      = "John Doe"
+      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -509,6 +607,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "KubernetesCluster"                                                          = "complex.example.com"
       "Name"                                                                       = "nodes.complex.example.com"
       "Owner"                                                                      = "John Doe"
+      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -520,6 +619,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     "KubernetesCluster"                                                          = "complex.example.com"
     "Name"                                                                       = "nodes.complex.example.com"
     "Owner"                                                                      = "John Doe"
+    "aws-node-termination-handler/managed"                                       = ""
     "foo/bar"                                                                    = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
@@ -786,6 +886,14 @@ resource "aws_s3_object" "complex-example-com-addons-limit-range-addons-k8s-io" 
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/complex.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "complex-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/complex.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1142,6 +1250,19 @@ resource "aws_security_group_rule" "tcp-api-pl-44444444" {
   security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 8443
   type              = "ingress"
+}
+
+resource "aws_sqs_queue" "complex-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "complex-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_complex-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "complex-example-com-nth"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-east-1a-private-complex-example-com" {

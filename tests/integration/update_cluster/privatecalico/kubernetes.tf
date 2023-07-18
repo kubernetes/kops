@@ -148,6 +148,11 @@ resource "aws_autoscaling_group" "bastion-privatecalico-example-com" {
     value               = "bastion.privatecalico.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -188,6 +193,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecalico-exampl
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.privatecalico.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -250,6 +260,11 @@ resource "aws_autoscaling_group" "nodes-privatecalico-example-com" {
     value               = "nodes.privatecalico.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -270,6 +285,90 @@ resource "aws_autoscaling_group" "nodes-privatecalico-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-privatecalico-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "bastion-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.bastion-privatecalico-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "bastion-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-privatecalico-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-privatecalico-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "privatecalico-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privatecalico.example.com-ASGLifecycle_event_pattern")
+  name          = "privatecalico.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privatecalico-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privatecalico.example.com-InstanceScheduledChange_event_pattern")
+  name          = "privatecalico.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privatecalico-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privatecalico.example.com-InstanceStateChange_event_pattern")
+  name          = "privatecalico.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "privatecalico-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_privatecalico.example.com-SpotInterruption_event_pattern")
+  name          = "privatecalico.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico.example.com-SpotInterruption"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "privatecalico-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.privatecalico-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privatecalico-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "privatecalico-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.privatecalico-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privatecalico-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "privatecalico-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.privatecalico-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privatecalico-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "privatecalico-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.privatecalico-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.privatecalico-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecalico-example-com" {
@@ -482,6 +581,7 @@ resource "aws_launch_template" "bastion-privatecalico-example-com" {
     tags = {
       "KubernetesCluster"                               = "privatecalico.example.com"
       "Name"                                            = "bastion.privatecalico.example.com"
+      "aws-node-termination-handler/managed"            = ""
       "k8s.io/role/bastion"                             = "1"
       "kops.k8s.io/instancegroup"                       = "bastion"
       "kubernetes.io/cluster/privatecalico.example.com" = "owned"
@@ -492,6 +592,7 @@ resource "aws_launch_template" "bastion-privatecalico-example-com" {
     tags = {
       "KubernetesCluster"                               = "privatecalico.example.com"
       "Name"                                            = "bastion.privatecalico.example.com"
+      "aws-node-termination-handler/managed"            = ""
       "k8s.io/role/bastion"                             = "1"
       "kops.k8s.io/instancegroup"                       = "bastion"
       "kubernetes.io/cluster/privatecalico.example.com" = "owned"
@@ -500,6 +601,7 @@ resource "aws_launch_template" "bastion-privatecalico-example-com" {
   tags = {
     "KubernetesCluster"                               = "privatecalico.example.com"
     "Name"                                            = "bastion.privatecalico.example.com"
+    "aws-node-termination-handler/managed"            = ""
     "k8s.io/role/bastion"                             = "1"
     "kops.k8s.io/instancegroup"                       = "bastion"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
@@ -548,6 +650,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecalico-example-
     tags = {
       "KubernetesCluster"                                                                                     = "privatecalico.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privatecalico.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -562,6 +665,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecalico-example-
     tags = {
       "KubernetesCluster"                                                                                     = "privatecalico.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privatecalico.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -574,6 +678,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecalico-example-
   tags = {
     "KubernetesCluster"                                                                                     = "privatecalico.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.privatecalico.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -627,6 +732,7 @@ resource "aws_launch_template" "nodes-privatecalico-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatecalico.example.com"
       "Name"                                                                       = "nodes.privatecalico.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -638,6 +744,7 @@ resource "aws_launch_template" "nodes-privatecalico-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatecalico.example.com"
       "Name"                                                                       = "nodes.privatecalico.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -647,6 +754,7 @@ resource "aws_launch_template" "nodes-privatecalico-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "privatecalico.example.com"
     "Name"                                                                       = "nodes.privatecalico.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -928,6 +1036,14 @@ resource "aws_s3_object" "privatecalico-example-com-addons-networking-projectcal
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-networking.projectcalico.org-k8s-1.25_content")
   key                    = "clusters.example.com/privatecalico.example.com/addons/networking.projectcalico.org/k8s-1.25.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "privatecalico-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/privatecalico.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1243,6 +1359,17 @@ resource "aws_security_group_rule" "icmpv6-pmtu-ssh-nlb-__--0" {
   security_group_id = aws_security_group.bastion-privatecalico-example-com.id
   to_port           = -1
   type              = "ingress"
+}
+
+resource "aws_sqs_queue" "privatecalico-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "privatecalico-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_privatecalico-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico-example-com-nth"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-privatecalico-example-com" {
