@@ -41,9 +41,9 @@ type ClusterVFS struct {
 	commonVFS
 }
 
-func newClusterVFS(basePath vfs.Path) *ClusterVFS {
+func newClusterVFS(vfsContext *vfs.VFSContext, basePath vfs.Path) *ClusterVFS {
 	c := &ClusterVFS{}
-	c.init("Cluster", basePath, StoreVersion)
+	c.init("Cluster", vfsContext, basePath, StoreVersion)
 	return c
 }
 
@@ -103,7 +103,7 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	ctx := context.TODO()
 
-	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
+	if errs := validation.ValidateCluster(c, false, r.vfsContext); len(errs) != 0 {
 		return nil, errs.ToAggregate()
 	}
 
@@ -143,7 +143,7 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, clusterName)
 	}
 
-	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
+	if err := validation.ValidateClusterUpdate(c, status, old, r.vfsContext).ToAggregate(); err != nil {
 		return nil, err
 	}
 

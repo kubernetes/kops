@@ -194,7 +194,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	if opt.Channel == "" {
 		opt.Channel = api.DefaultChannel
 	}
-	channel, err := api.LoadChannel(opt.Channel)
+	channel, err := api.LoadChannel(clientset.VFSContext(), opt.Channel)
 	if err != nil {
 		return nil, err
 	}

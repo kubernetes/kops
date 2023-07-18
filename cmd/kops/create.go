@@ -141,7 +141,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.
-				err = cloudup.PerformAssignments(v, cloud)
+				err = cloudup.PerformAssignments(v, vfsContext, cloud)
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}

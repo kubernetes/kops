@@ -53,7 +53,7 @@ func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *
 	inCluster.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPrivate
 	inCluster.Spec.Networking.Topology.Nodes = kopsapi.TopologyPrivate
 
-	err := cloudup.PerformAssignments(inCluster, mockcloud)
+	err := cloudup.PerformAssignments(inCluster, vfs.Context, mockcloud)
 	if err != nil {
 		t.Fatalf("Failed to perform assignments: %v", err)
 	}

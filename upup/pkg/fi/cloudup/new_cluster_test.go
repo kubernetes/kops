@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/kops/util/pkg/vfs"
 	"sigs.k8s.io/yaml"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -464,7 +465,7 @@ func TestDefaultImage(t *testing.T) {
 		},
 	}
 
-	channel, err := api.LoadChannel("file://tests/channels/channel.yaml")
+	channel, err := api.LoadChannel(vfs.NewTestingVFSContext(), "file://tests/channels/channel.yaml")
 	if err != nil {
 		t.Fatalf("unable to load test channel: %v", err)
 	}

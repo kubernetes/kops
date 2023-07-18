@@ -40,7 +40,7 @@ import (
 // PerformAssignments is called on create, as well as an update. In fact
 // any time Run() is called in apply_cluster.go we will reach this function.
 // Please do all after-market logic here.
-func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
+func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cloud) error {
 	ctx := context.TODO()
 
 	for i := range c.Spec.EtcdClusters {
@@ -133,15 +133,15 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 	c.Spec.Networking.EgressProxy = proxy
 
-	return ensureKubernetesVersion(c)
+	return ensureKubernetesVersion(vfsContext, c)
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
 // It will be populated with the latest stable kubernetes version, or the version from the channel
-func ensureKubernetesVersion(c *kops.Cluster) error {
+func ensureKubernetesVersion(vfsContext *vfs.VFSContext, c *kops.Cluster) error {
 	if c.Spec.KubernetesVersion == "" {
 		if c.Spec.Channel != "" {
-			channel, err := kops.LoadChannel(c.Spec.Channel)
+			channel, err := kops.LoadChannel(vfsContext, c.Spec.Channel)
 			if err != nil {
 				return err
 			}

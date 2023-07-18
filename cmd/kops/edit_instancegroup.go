@@ -127,14 +127,14 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 		return err
 	}
 
-	channel, err := cloudup.ChannelForCluster(cluster)
-	if err != nil {
-		klog.Warningf("%v", err)
-	}
-
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
+	}
+
+	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), cluster)
+	if err != nil {
+		klog.Warningf("%v", err)
 	}
 
 	oldGroup, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
@@ -290,7 +290,7 @@ func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channe
 
 	// We need the full cluster spec to perform deep validation
 	// Note that we don't write it back though
-	err = cloudup.PerformAssignments(cluster, cloud)
+	err = cloudup.PerformAssignments(cluster, clientset.VFSContext(), cloud)
 	if err != nil {
 		return "", fmt.Errorf("error populating configuration: %v", err)
 	}

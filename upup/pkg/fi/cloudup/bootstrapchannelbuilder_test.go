@@ -101,7 +101,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from BuildCloud: %v", err)
 	}
 
-	if err := PerformAssignments(cluster, cloud); err != nil {
+	if err := PerformAssignments(cluster, vfs.Context, cloud); err != nil {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 

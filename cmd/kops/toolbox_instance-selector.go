@@ -384,7 +384,7 @@ func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterNam
 		return nil, nil, nil, err
 	}
 
-	channel, err := cloudup.ChannelForCluster(cluster)
+	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), cluster)
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -81,7 +81,7 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 	if err != nil {
 		return nil, err
 	}
-	if err := validation.ValidateClusterUpdate(cluster, status, old).ToAggregate(); err != nil {
+	if err := validation.ValidateClusterUpdate(cluster, status, old, c.VFSContext()).ToAggregate(); err != nil {
 		return nil, err
 	}
 
@@ -126,7 +126,7 @@ func (c *RESTClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredent
 }
 
 func (c *RESTClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
-	configBase, err := registry.ConfigBase(cluster)
+	configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 	if err != nil {
 		return err
 	}
