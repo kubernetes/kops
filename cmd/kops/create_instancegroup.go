@@ -159,7 +159,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		return err
 	}
 
-	channel, err := cloudup.ChannelForCluster(cluster)
+	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
 	}

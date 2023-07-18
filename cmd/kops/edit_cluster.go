@@ -255,7 +255,7 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 		return "", err
 	}
 
-	err = cloudup.PerformAssignments(newCluster, cloud)
+	err = cloudup.PerformAssignments(newCluster, clientset.VFSContext(), cloud)
 	if err != nil {
 		return "", fmt.Errorf("error populating configuration: %v", err)
 	}

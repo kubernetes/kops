@@ -76,7 +76,7 @@ func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		return err
 	}
 
-	if err := cloudup.PerformAssignments(cluster, cloud); err != nil {
+	if err := cloudup.PerformAssignments(cluster, vfsContext, cloud); err != nil {
 		return err
 	}
 

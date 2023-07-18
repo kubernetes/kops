@@ -208,7 +208,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	channel, err := ChannelForCluster(c.Cluster)
+	channel, err := ChannelForCluster(c.Clientset.VFSContext(), c.Cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
 	}
@@ -1136,12 +1136,12 @@ func buildPermalink(key, anchor string) string {
 	return url
 }
 
-func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
+func ChannelForCluster(vfsContext *vfs.VFSContext, c *kops.Cluster) (*kops.Channel, error) {
 	channelLocation := c.Spec.Channel
 	if channelLocation == "" {
 		channelLocation = kops.DefaultChannel
 	}
-	return kops.LoadChannel(channelLocation)
+	return kops.LoadChannel(vfsContext, channelLocation)
 }
 
 // needsMounterAsset checks if we need the mounter program

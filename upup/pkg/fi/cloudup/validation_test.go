@@ -26,6 +26,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const testAWSRegion = "us-test-1"
@@ -34,7 +35,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}

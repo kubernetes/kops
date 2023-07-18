@@ -128,7 +128,7 @@ func ResolveChannel(location string) (*url.URL, error) {
 }
 
 // LoadChannel loads a Channel object from the specified VFS location
-func LoadChannel(location string) (*Channel, error) {
+func LoadChannel(vfsContext *vfs.VFSContext, location string) (*Channel, error) {
 	resolvedURL, err := ResolveChannel(location)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func LoadChannel(location string) (*Channel, error) {
 	resolved := resolvedURL.String()
 
 	klog.V(2).Infof("Loading channel from %q", resolved)
-	channelBytes, err := vfs.Context.ReadFile(resolved)
+	channelBytes, err := vfsContext.ReadFile(resolved)
 	if err != nil {
 		return nil, fmt.Errorf("error reading channel %q: %v", resolved, err)
 	}

@@ -96,7 +96,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		return err
 	}
 
-	err = PerformAssignments(cluster, cloud)
+	err = PerformAssignments(cluster, clientset.VFSContext(), cloud)
 	if err != nil {
 		return err
 	}

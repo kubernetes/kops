@@ -46,7 +46,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -95,7 +95,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 				Enabled: fi.PtrTo(true),
 			}
 
-			err := PerformAssignments(c, cloud)
+			err := PerformAssignments(c, vfs.Context, cloud)
 			require.NoError(t, err, "PerformAssignments")
 
 			full, err := mockedPopulateClusterSpec(ctx, c, cloud)
@@ -131,7 +131,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		LogOpt:             []string{"env=FOO"},
 	}
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -166,7 +166,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -211,7 +211,7 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
 	}
 
-	err = PerformAssignments(c, cloud)
+	err = PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
 	}
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -253,7 +253,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.IsolateControlPlane = fi.PtrTo(true)
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	// default: c.Spec.IsolateControlPlane = fi.PtrTo(false)
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -386,7 +386,7 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.20.0"
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -437,7 +437,7 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "v1.9.0"
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}

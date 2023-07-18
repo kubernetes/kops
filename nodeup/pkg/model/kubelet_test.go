@@ -249,7 +249,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
 	}
 
-	err = cloudup.PerformAssignments(model.Cluster, cloud)
+	err = cloudup.PerformAssignments(model.Cluster, vfs.Context, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
