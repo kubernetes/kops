@@ -87,7 +87,7 @@ func (c *VFSClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
 
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
 	if cluster.Spec.SecretStore == "" {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +120,7 @@ func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredenti
 
 func (c *VFSClientset) pkiPath(cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.KeyStore == "" {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +232,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		}
 	}
 
-	configBase, err := registry.ConfigBase(cluster)
+	configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 	if err != nil {
 		return err
 	}

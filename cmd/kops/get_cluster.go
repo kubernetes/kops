@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -157,7 +158,7 @@ func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 	if options.FullSpec {
 		var err error
-		clusters, err = fullClusterSpecs(ctx, clusters)
+		clusters, err = fullClusterSpecs(ctx, client.VFSContext(), clusters)
 		if err != nil {
 			return err
 		}
@@ -278,10 +279,10 @@ func fullOutputYAML(out io.Writer, args ...runtime.Object) error {
 	return nil
 }
 
-func fullClusterSpecs(ctx context.Context, clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
+func fullClusterSpecs(ctx context.Context, vfsContext *vfs.VFSContext, clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
 	var fullSpecs []*kopsapi.Cluster
 	for _, cluster := range clusters {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(vfsContext, cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
