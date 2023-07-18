@@ -767,7 +767,7 @@ github.com/russross/blackfriday/v2
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17
+# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.19
 ## explicit; go 1.17
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
 github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1
