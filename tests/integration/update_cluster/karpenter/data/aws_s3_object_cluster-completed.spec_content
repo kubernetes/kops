@@ -61,6 +61,9 @@ spec:
     useServiceAccountExternalPermissions: true
   karpenter:
     enabled: true
+    image: public.ecr.aws/karpenter/controller:v0.28.1
+    logEncoding: console
+    logLevel: debug
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
