@@ -38,6 +38,7 @@ type CopyFile struct {
 	SourceFile string
 	TargetFile string
 	SHA        string
+	VFSContext *vfs.VFSContext
 	Cluster    *kops.Cluster
 }
 
@@ -66,7 +67,7 @@ func (e *CopyFile) Run() error {
 
 	targetSHAFile := e.TargetFile + shaExtension
 
-	targetSHABytes, err := vfs.Context.ReadFile(targetSHAFile)
+	targetSHABytes, err := e.VFSContext.ReadFile(targetSHAFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			klog.V(4).Infof("unable to download: %q, assuming target file is not present, and if not present may not be an error: %v",
@@ -91,7 +92,7 @@ func (e *CopyFile) Run() error {
 
 	klog.V(2).Infof("copying bits from %q to %q", source, target)
 
-	if err := transferFile(ctx, e.Cluster, source, target, sourceSha); err != nil {
+	if err := transferFile(ctx, e.VFSContext, e.Cluster, source, target, sourceSha); err != nil {
 		return fmt.Errorf("unable to transfer %q to %q: %v", source, target, err)
 	}
 
@@ -100,11 +101,11 @@ func (e *CopyFile) Run() error {
 
 // transferFile downloads a file from the source location, validates the file matches the SHA,
 // and uploads the file to the target location.
-func transferFile(ctx context.Context, cluster *kops.Cluster, source string, target string, sha string) error {
+func transferFile(ctx context.Context, vfsContext *vfs.VFSContext, cluster *kops.Cluster, source string, target string, sha string) error {
 	// TODO drop file to disk, as vfs reads file into memory.  We load kubelet into memory for instance.
 	// TODO in s3 can we do a copy file ... would need to test
 
-	data, err := vfs.Context.ReadFile(source)
+	data, err := vfsContext.ReadFile(source)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("file not found %q: %v", source, err)
@@ -118,7 +119,7 @@ func transferFile(ctx context.Context, cluster *kops.Cluster, source string, tar
 		return err
 	}
 
-	uploadVFS, err := vfs.Context.BuildVfsPath(objectStore)
+	uploadVFS, err := vfsContext.BuildVfsPath(objectStore)
 	if err != nil {
 		return fmt.Errorf("error building path %q: %v", objectStore, err)
 	}
@@ -129,7 +130,7 @@ func transferFile(ctx context.Context, cluster *kops.Cluster, source string, tar
 	}
 
 	shaTarget := objectStore + shaExtension
-	shaVFS, err := vfs.Context.BuildVfsPath(shaTarget)
+	shaVFS, err := vfsContext.BuildVfsPath(shaTarget)
 	if err != nil {
 		return fmt.Errorf("error building path %q: %v", shaTarget, err)
 	}
