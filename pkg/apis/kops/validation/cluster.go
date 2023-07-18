@@ -23,10 +23,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
-func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster) field.ErrorList {
-	allErrs := ValidateCluster(obj, false)
+func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster, vfsContext *vfs.VFSContext) field.ErrorList {
+	allErrs := ValidateCluster(obj, false, vfsContext)
 
 	// Validate etcd cluster changes
 	{

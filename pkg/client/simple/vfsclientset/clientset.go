@@ -45,7 +45,7 @@ func (c *VFSClientset) VFSContext() *vfs.VFSContext {
 }
 
 func (c *VFSClientset) clusters() *ClusterVFS {
-	return newClusterVFS(c.basePath)
+	return newClusterVFS(c.VFSContext(), c.basePath)
 }
 
 // GetCluster implements the GetCluster method of simple.Clientset for a VFS-backed state store

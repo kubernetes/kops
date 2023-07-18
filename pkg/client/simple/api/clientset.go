@@ -81,7 +81,7 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 	if err != nil {
 		return nil, err
 	}
-	if err := validation.ValidateClusterUpdate(cluster, status, old).ToAggregate(); err != nil {
+	if err := validation.ValidateClusterUpdate(cluster, status, old, c.VFSContext()).ToAggregate(); err != nil {
 		return nil, err
 	}
 

@@ -52,7 +52,7 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 		cluster:     cluster,
 		clusterName: clusterName,
 	}
-	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
+	r.init(kind, c.VFSContext(), c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	r.validate = func(o runtime.Object) error {
 		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil, false).ToAggregate()
 	}

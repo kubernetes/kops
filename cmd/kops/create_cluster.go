@@ -651,7 +651,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	strict := false
-	err = validation.DeepValidate(cluster, instanceGroups, strict, nil)
+	err = validation.DeepValidate(cluster, instanceGroups, strict, clientset.VFSContext(), nil)
 	if err != nil {
 		return err
 	}
@@ -691,7 +691,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 		}
 
-		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
+		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, clientset.VFSContext(), nil)
 		if err != nil {
 			return fmt.Errorf("validation of the full cluster and instance group specs failed: %w", err)
 		}

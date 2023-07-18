@@ -75,7 +75,7 @@ func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluste
 // struct is falling through..
 // @kris-nova
 func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientset) error {
-	if errs := validation.ValidateCluster(c.InputCluster, false); len(errs) != 0 {
+	if errs := validation.ValidateCluster(c.InputCluster, false, clientset.VFSContext()); len(errs) != 0 {
 		return errs.ToAggregate()
 	}
 
@@ -314,7 +314,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 	*fullCluster = *cluster
 	fullCluster.Spec = *completed
 
-	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
+	if errs := validation.ValidateCluster(fullCluster, true, clientset.VFSContext()); len(errs) != 0 {
 		return fmt.Errorf("completed cluster failed validation: %v", errs.ToAggregate())
 	}
 

@@ -266,7 +266,7 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}
 
-	err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
+	err = validation.DeepValidate(fullCluster, instanceGroups, true, clientset.VFSContext(), cloud)
 	if err != nil {
 		return fmt.Sprintf("validation failed: %s", err), nil
 	}

@@ -297,7 +297,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cloud := c.Cloud
 
-	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, cloud)
+	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, c.Clientset.VFSContext(), cloud)
 	if err != nil {
 		return err
 	}

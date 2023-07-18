@@ -41,13 +41,14 @@ var StoreVersion = v1alpha2.SchemeGroupVersion
 type ValidationFunction func(o runtime.Object) error
 
 type commonVFS struct {
-	kind     string
-	basePath vfs.Path
-	encoder  runtime.Encoder
-	validate ValidationFunction
+	kind       string
+	vfsContext *vfs.VFSContext
+	basePath   vfs.Path
+	encoder    runtime.Encoder
+	validate   ValidationFunction
 }
 
-func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
+func (c *commonVFS) init(kind string, vfsContext *vfs.VFSContext, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
 	codecs := kopscodecs.Codecs
 	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
@@ -56,6 +57,7 @@ func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.Gr
 	c.encoder = codecs.EncoderForVersion(yaml.Serializer, storeVersion)
 
 	c.kind = kind
+	c.vfsContext = vfsContext
 	c.basePath = basePath
 }
 
