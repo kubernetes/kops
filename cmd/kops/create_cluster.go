@@ -656,7 +656,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
@@ -673,7 +673,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	for _, p := range c.AddonPaths {
-		addon, err := clusteraddons.LoadClusterAddon(p)
+		addon, err := clusteraddons.LoadClusterAddon(clientset.VFSContext(), p)
 		if err != nil {
 			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
 		}

@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
-
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -47,6 +46,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // BootstrapChannelBuilder is responsible for handling the addons in channels
@@ -162,7 +162,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 
 	if featureflag.UseAddonOperators.Enabled() {
 		ob := &wellknownoperators.Builder{
-			Cluster: b.Cluster,
+			VFSContext: vfs.Context,
+			Cluster:    b.Cluster,
 		}
 
 		addonPackages, clusterAddons, err := ob.Build(b.ClusterAddons)

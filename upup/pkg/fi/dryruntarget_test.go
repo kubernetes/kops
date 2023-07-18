@@ -23,6 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func Test_tryResourceAsString(t *testing.T) {
@@ -66,7 +67,7 @@ func (*testTask) Run(_ *CloudupContext) error {
 }
 
 func Test_DryrunTarget_PrintReport(t *testing.T) {
-	builder := assets.NewAssetBuilder(nil, "1.17.3", false)
+	builder := assets.NewAssetBuilder(vfs.Context, nil, "1.17.3", false)
 	var stdout bytes.Buffer
 	target := newDryRunTarget[CloudupSubContext](builder, &stdout)
 	tasks := map[string]CloudupTask{}
