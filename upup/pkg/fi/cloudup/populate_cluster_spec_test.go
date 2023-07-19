@@ -324,37 +324,6 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, cloud, "cloudProvider")
 }
 
-func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = ""
-	c.Spec.Networking.Topology.Nodes = ""
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
-}
-
-func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = "123"
-	c.Spec.Networking.Topology.Nodes = "abc"
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
-}
-
-//func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
-//	// We can't have a bastion with public masters / nodes
-//	c := buildMinimalCluster()
-//	c.Spec.Topology.ControlPlane = api.TopologyPublic
-//	c.Spec.Topology.Nodes = api.TopologyPrivate
-//	expectErrorFromPopulateCluster(t, c, "Topology")
-//}
-
-func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
-	// We can't have a bastion with public masters / nodes
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPublic
-	c.Spec.Networking.Topology.Nodes = kopsapi.TopologyPublic
-	c.Spec.Networking.Topology.Bastion = &kopsapi.BastionSpec{}
-	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
-}
-
 func expectErrorFromPopulateCluster(t *testing.T, c *kopsapi.Cluster, cloud fi.Cloud, message string) {
 	ctx := context.TODO()
 	_, err := mockedPopulateClusterSpec(ctx, c, cloud)

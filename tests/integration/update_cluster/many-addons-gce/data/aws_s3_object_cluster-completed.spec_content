@@ -222,5 +222,3 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public

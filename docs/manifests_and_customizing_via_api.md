@@ -128,8 +128,6 @@ spec:
       bastionPublicName: bastion.k8s.example.com
     dns:
       type: Public
-    masters: private
-    nodes: private
 
 ---
 

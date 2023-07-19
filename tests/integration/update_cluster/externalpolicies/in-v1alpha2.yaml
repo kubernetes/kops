@@ -44,9 +44,6 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
-  topology:
-    masters: public
-    nodes: public
   externalPolicies:
     node:
       - arn:aws-test:iam::123456789000:policy/test-policy

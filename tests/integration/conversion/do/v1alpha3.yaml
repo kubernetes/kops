@@ -43,9 +43,7 @@ spec:
       zone: us-test-1a
     tagSubnets: false
     topology:
-      controlPlane: public
       dns: None
-      nodes: private
   sshAccess:
   - 0.0.0.0/0
 

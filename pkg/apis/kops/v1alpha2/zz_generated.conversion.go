@@ -7161,8 +7161,8 @@ func Convert_kops_TerraformSpec_To_v1alpha2_TerraformSpec(in *kops.TerraformSpec
 }
 
 func autoConvert_v1alpha2_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *kops.TopologySpec, s conversion.Scope) error {
-	out.ControlPlane = in.ControlPlane
-	out.Nodes = in.Nodes
+	// INFO: in.ControlPlane opted out of conversion generation
+	// INFO: in.Nodes opted out of conversion generation
 	if in.Bastion != nil {
 		in, out := &in.Bastion, &out.Bastion
 		*out = new(kops.BastionSpec)
@@ -7178,8 +7178,6 @@ func autoConvert_v1alpha2_TopologySpec_To_kops_TopologySpec(in *TopologySpec, ou
 }
 
 func autoConvert_kops_TopologySpec_To_v1alpha2_TopologySpec(in *kops.TopologySpec, out *TopologySpec, s conversion.Scope) error {
-	out.ControlPlane = in.ControlPlane
-	out.Nodes = in.Nodes
 	if in.Bastion != nil {
 		in, out := &in.Bastion, &out.Bastion
 		*out = new(BastionSpec)

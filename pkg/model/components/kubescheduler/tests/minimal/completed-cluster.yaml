@@ -9,6 +9,4 @@ spec:
   kubernetesVersion: v1.26.0
   networking:
     topology:
-      controlPlane: public
       dns: Public
-      nodes: public

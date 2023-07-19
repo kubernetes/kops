@@ -56,7 +56,7 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Networking.Topology == nil {
-		c.Spec.Networking.Topology = &kops.TopologySpec{ControlPlane: kops.TopologyPublic, Nodes: kops.TopologyPublic}
+		c.Spec.Networking.Topology = &kops.TopologySpec{}
 	}
 
 	if cloud == nil {

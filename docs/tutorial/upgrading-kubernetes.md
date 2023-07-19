@@ -59,8 +59,6 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public
 ```
 
 Edit `kubernetesVersion`, changing it to `1.17.7` for example.

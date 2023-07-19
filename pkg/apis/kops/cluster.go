@@ -813,7 +813,7 @@ func (t *TerraformSpec) IsEmpty() bool {
 func (c *Cluster) FillDefaults() error {
 	// Topology support
 	if c.Spec.Networking.Topology == nil {
-		c.Spec.Networking.Topology = &TopologySpec{ControlPlane: TopologyPublic, Nodes: TopologyPublic, DNS: DNSTypePublic}
+		c.Spec.Networking.Topology = &TopologySpec{DNS: DNSTypePublic}
 	}
 
 	if c.Spec.Channel == "" {
