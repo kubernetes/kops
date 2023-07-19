@@ -26,7 +26,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
+	"k8s.io/kops/pkg/nodelabels"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 const (
@@ -100,22 +103,39 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	labels := map[string]string{}
-	// TODO(kenji): Populate labels
+	for k, v := range vmss.Tags {
+		if k == azure.TagClusterName && v != nil {
+			labels[kops.LabelClusterName] = *v
+		}
+		if k == InstanceGroupNameTag && v != nil {
+			labels[kops.NodeLabelInstanceGroup] = *v
+		}
+		if strings.HasPrefix(k, azure.TagNameRolePrefix) {
+			role := strings.TrimPrefix(k, azure.TagNameRolePrefix)
+			switch role {
+			case kops.InstanceGroupRoleControlPlane.ToLowerString():
+				labels[nodelabels.RoleLabelControlPlane20] = ""
+			case "master":
+				labels[nodelabels.RoleLabelControlPlane20] = ""
+			case kops.InstanceGroupRoleNode.ToLowerString():
+				labels[nodelabels.RoleLabelNode16] = ""
+			default:
+				klog.Warningf("Unknown or unsupported node role tag %q for VMSS %q", k, vmssName)
+			}
+		}
+		if strings.HasPrefix(k, ClusterNodeTemplateLabel) && v != nil {
+			l := strings.SplitN(*v, "=", 2)
+			if len(l) <= 1 {
+				klog.Warningf("Malformed cloud label tag %q=%q for VMSS %q", k, *v, vmssName)
+			} else {
+				labels[l[0]] = l[1]
+			}
+		}
+	}
 
 	info := &nodeidentity.Info{
 		InstanceID: vmssName,
 		Labels:     labels,
-	}
-
-	for k, v := range vmss.Tags {
-		if !strings.HasPrefix(k, ClusterNodeTemplateLabel) {
-			continue
-		}
-		l := strings.SplitN(*v, "=", 2)
-		if len(l) <= 1 {
-			return nil, fmt.Errorf("malformed tag value %s", *v)
-		}
-		labels[l[0]] = l[1]
 	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.
