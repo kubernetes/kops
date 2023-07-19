@@ -79,17 +79,21 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 	}
 	for _, rule := range *found.SecurityRules {
 		nsr := &NetworkSecurityRule{
-			Name:                       rule.Name,
-			Priority:                   rule.Priority,
-			Access:                     rule.Access,
-			Direction:                  rule.Direction,
-			Protocol:                   rule.Protocol,
-			SourceAddressPrefix:        rule.SourceAddressPrefix,
-			SourceAddressPrefixes:      rule.SourceAddressPrefixes,
-			SourcePortRange:            rule.SourcePortRange,
-			DestinationAddressPrefix:   rule.DestinationAddressPrefix,
-			DestinationAddressPrefixes: rule.DestinationAddressPrefixes,
-			DestinationPortRange:       rule.DestinationPortRange,
+			Name:                     rule.Name,
+			Priority:                 rule.Priority,
+			Access:                   rule.Access,
+			Direction:                rule.Direction,
+			Protocol:                 rule.Protocol,
+			SourceAddressPrefix:      rule.SourceAddressPrefix,
+			SourcePortRange:          rule.SourcePortRange,
+			DestinationAddressPrefix: rule.DestinationAddressPrefix,
+			DestinationPortRange:     rule.DestinationPortRange,
+		}
+		if rule.SourceAddressPrefixes != nil && len(*rule.SourceAddressPrefixes) > 0 {
+			nsr.SourceAddressPrefixes = rule.SourceAddressPrefixes
+		}
+		if rule.DestinationAddressPrefixes != nil && len(*rule.DestinationAddressPrefixes) > 0 {
+			nsr.DestinationAddressPrefixes = rule.DestinationAddressPrefixes
 		}
 		actual.SecurityRules = append(actual.SecurityRules, nsr)
 	}
