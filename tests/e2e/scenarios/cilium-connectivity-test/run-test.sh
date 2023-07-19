@@ -41,6 +41,6 @@ ${KUBETEST2} \
 
 kubectl port-forward -n kube-system deployment/hubble-relay 4245:4245 &
 
-wget -qO- https://github.com/cilium/cilium-cli/releases/download/v0.7/cilium-linux-amd64.tar.gz | tar xz -C "${WORKSPACE}"
+wget -qO- https://github.com/cilium/cilium-cli/releases/download/v0.14.8/cilium-linux-amd64.tar.gz | tar xz -C "${WORKSPACE}"
 
 cilium connectivity test --all-flows
