@@ -32,8 +32,7 @@ spec:
                 operator: Exists
       containers:
       - args:
-        - --allocate-node-cidrs=true
-        - --cluster-cidr=::/0
+        - --allocate-node-cidrs=false
         - --cluster-name=minimal-ipv6.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
