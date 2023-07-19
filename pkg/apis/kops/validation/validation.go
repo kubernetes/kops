@@ -293,23 +293,21 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 }
 
 type cloudProviderConstraints struct {
-	requiresSubnets                                 bool
-	requiresNetworkCIDR                             bool
-	prohibitsNetworkCIDR                            bool
-	prohibitsMultipleNetworkCIDRs                   bool
-	requiresNonMasqueradeCIDR                       bool
-	requiresServiceClusterSubnetOfNonMasqueradeCIDR bool
-	requiresSubnetCIDR                              bool
+	requiresSubnets               bool
+	requiresNetworkCIDR           bool
+	prohibitsNetworkCIDR          bool
+	prohibitsMultipleNetworkCIDRs bool
+	requiresNonMasqueradeCIDR     bool
+	requiresSubnetCIDR            bool
 }
 
 func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fieldSpec *field.Path) (allErrs field.ErrorList, constraints *cloudProviderConstraints) {
 	constraints = &cloudProviderConstraints{
-		requiresSubnets:                                 true,
-		requiresNetworkCIDR:                             true,
-		prohibitsMultipleNetworkCIDRs:                   true,
-		requiresNonMasqueradeCIDR:                       true,
-		requiresServiceClusterSubnetOfNonMasqueradeCIDR: true,
-		requiresSubnetCIDR:                              true,
+		requiresSubnets:               true,
+		requiresNetworkCIDR:           true,
+		prohibitsMultipleNetworkCIDRs: true,
+		requiresNonMasqueradeCIDR:     true,
+		requiresSubnetCIDR:            true,
 	}
 
 	optionTaken := false
@@ -342,7 +340,6 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		constraints.requiresSubnetCIDR = false
 		constraints.prohibitsNetworkCIDR = true
 		constraints.requiresNonMasqueradeCIDR = false
-		constraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR = false
 	}
 	if c.Spec.CloudProvider.Hetzner != nil {
 		if optionTaken {
@@ -476,7 +473,7 @@ func parseCIDR(fieldPath *field.Path, cidr string) (*net.IPNet, field.ErrorList)
 // We recognize the normal CIDR syntax - e.g. `2001:db8::/32`
 // We also recognize values like /64#0, meaning "the first available /64 subnet", for dynamic allocations.
 // See utils.ParseCIDRNotation for details.
-func validateIPv6CIDR(fieldPath *field.Path, cidr string) field.ErrorList {
+func validateIPv6CIDR(fieldPath *field.Path, cidr string, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if strings.HasPrefix(cidr, "/") {
@@ -489,10 +486,14 @@ func validateIPv6CIDR(fieldPath *field.Path, cidr string) field.ErrorList {
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "IPv6 CIDR subnet size must be a value between 0 and 128"))
 		}
 	} else {
-		allErrs = append(allErrs, validateCIDR(fieldPath, cidr)...)
+		subnetCIDR, errs := parseCIDR(fieldPath, cidr)
+		allErrs = append(allErrs, errs...)
 
 		if !utils.IsIPv6CIDR(cidr) {
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
+		}
+		if subnet.Overlap(subnetCIDR, serviceClusterIPRange) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, fmt.Sprintf("ipv6CIDR %q must not overlap serviceClusterIPRange %q", cidr, serviceClusterIPRange)))
 		}
 	}
 
@@ -527,7 +528,7 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	return allErrs
 }
 
-func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet) field.ErrorList {
+func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet, podCIDR, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if providerConstraints.requiresSubnets && len(subnets) == 0 {
@@ -537,7 +538,7 @@ func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fiel
 
 	// Each subnet must be valid
 	for i := range subnets {
-		allErrs = append(allErrs, validateSubnet(&subnets[i], c, fieldPath.Index(i), strict, providerConstraints, networkCIDRs)...)
+		allErrs = append(allErrs, validateSubnet(&subnets[i], c, fieldPath.Index(i), strict, providerConstraints, networkCIDRs, podCIDR, serviceClusterIPRange)...)
 	}
 
 	// cannot duplicate subnet name
@@ -573,71 +574,89 @@ func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fiel
 	return allErrs
 }
 
-func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet) field.ErrorList {
+func validateSubnet(subnetSpec *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet, podCIDR, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// name is required
-	if subnet.Name == "" {
+	if subnetSpec.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 
 	// CIDR
-	if subnet.CIDR == "" {
+	if subnetSpec.CIDR == "" {
 		if providerConstraints.requiresSubnetCIDR && strict {
-			if !strings.Contains(c.Networking.NonMasqueradeCIDR, ":") || subnet.IPv6CIDR == "" {
+			if !strings.Contains(c.Networking.NonMasqueradeCIDR, ":") || subnetSpec.IPv6CIDR == "" {
 				allErrs = append(allErrs, field.Required(fieldPath.Child("cidr"), "subnet does not have a cidr set"))
 			}
 		}
 	} else {
-		subnetCIDR, errs := parseCIDR(fieldPath.Child("cidr"), subnet.CIDR)
+		subnetCIDR, errs := parseCIDR(fieldPath.Child("cidr"), subnetSpec.CIDR)
 		allErrs = append(allErrs, errs...)
-		if len(networkCIDRs) > 0 && subnetCIDR != nil && !validateSubnetCIDR(networkCIDRs, subnetCIDR) {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", subnet.Name, subnet.CIDR, c.Networking.NetworkCIDR)))
+		if len(networkCIDRs) > 0 && subnetCIDR != nil {
+			found := false
+			for _, networkCIDR := range networkCIDRs {
+				if subnet.BelongsTo(networkCIDR, subnetCIDR) {
+					found = true
+				}
+			}
+			if !found {
+				extraMsg := ""
+				if len(networkCIDRs) > 1 {
+					extraMsg = " or an additionalNetworkCIDR"
+				}
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q is not a subnet of the networkCIDR %q%s", subnetSpec.Name, subnetSpec.CIDR, c.Networking.NetworkCIDR, extraMsg)))
+			}
+		}
+		if subnet.Overlap(subnetCIDR, podCIDR) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q must not overlap podCIDR %q", subnetSpec.Name, subnetSpec.CIDR, podCIDR)))
+		}
+		if subnet.Overlap(subnetCIDR, serviceClusterIPRange) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q must not overlap serviceClusterIPRange %q", subnetSpec.Name, subnetSpec.CIDR, serviceClusterIPRange)))
 		}
 	}
 
 	// IPv6CIDR
-	if subnet.IPv6CIDR != "" {
-		allErrs = append(allErrs, validateIPv6CIDR(fieldPath.Child("ipv6CIDR"), subnet.IPv6CIDR)...)
+	if subnetSpec.IPv6CIDR != "" {
+		allErrs = append(allErrs, validateIPv6CIDR(fieldPath.Child("ipv6CIDR"), subnetSpec.IPv6CIDR, serviceClusterIPRange)...)
 	}
 
-	if subnet.Egress != "" {
-		egressType := strings.Split(subnet.Egress, "-")[0]
+	if subnetSpec.Egress != "" {
+		egressType := strings.Split(subnetSpec.Egress, "-")[0]
 		if egressType != kops.EgressNatGateway && egressType != kops.EgressElasticIP && egressType != kops.EgressNatInstance && egressType != kops.EgressExternal && egressType != kops.EgressTransitGateway {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress,
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnetSpec.Egress,
 				"egress must be of type NAT Gateway, NAT Gateway with existing ElasticIP, NAT EC2 Instance, Transit Gateway, or External"))
 		}
-		if subnet.Egress != kops.EgressExternal && subnet.Type != "DualStack" && subnet.Type != "Private" && (subnet.IPv6CIDR == "" || subnet.Type != "Public") {
+		if subnetSpec.Egress != kops.EgressExternal && subnetSpec.Type != "DualStack" && subnetSpec.Type != "Private" && (subnetSpec.IPv6CIDR == "" || subnetSpec.Type != "Public") {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private or IPv6-capable public subnets"))
 		}
 	}
 
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &subnet.Type, []kops.SubnetType{
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &subnetSpec.Type, []kops.SubnetType{
 		kops.SubnetTypePublic,
 		kops.SubnetTypePrivate,
 		kops.SubnetTypeDualStack,
 		kops.SubnetTypeUtility,
 	})...)
 
-	if subnet.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
+	if subnetSpec.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type DualStack may only be used in IPv6 clusters"))
 	}
 
 	if c.CloudProvider.Openstack != nil {
 		if c.CloudProvider.Openstack.Router == nil || c.CloudProvider.Openstack.Router.ExternalNetwork == nil {
-			if subnet.Type == kops.SubnetTypePublic {
+			if subnetSpec.Type == kops.SubnetTypePublic {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type Public requires an external network"))
 			}
 		}
 	}
 
-	if c.CloudProvider.AWS != nil && subnet.AdditionalRoutes != nil {
-		if len(subnet.ID) > 0 {
+	if c.CloudProvider.AWS != nil && subnetSpec.AdditionalRoutes != nil {
+		if len(subnetSpec.ID) > 0 {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes cannot be added if the subnet is shared"))
-		} else if subnet.Type != kops.SubnetTypePrivate {
+		} else if subnetSpec.Type != kops.SubnetTypePrivate {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes can only be added on private subnets"))
 		}
-		allErrs = append(allErrs, awsValidateAdditionalRoutes(fieldPath.Child("additionalRoutes"), subnet.AdditionalRoutes, networkCIDRs)...)
+		allErrs = append(allErrs, awsValidateAdditionalRoutes(fieldPath.Child("additionalRoutes"), subnetSpec.AdditionalRoutes, networkCIDRs)...)
 	}
 
 	return allErrs
@@ -991,22 +1010,43 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 	}
 
+	var podCIDR *net.IPNet
+	{
+		if v.PodCIDR == "" {
+			if strict && !cluster.Spec.IsKopsControllerIPAM() {
+				allErrs = append(allErrs, field.Required(fldPath.Child("podCIDR"), "Cluster did not have podCIDR set"))
+			}
+		} else {
+			var errs field.ErrorList
+			podCIDR, errs = parseCIDR(fldPath.Child("podCIDR"), v.PodCIDR)
+			allErrs = append(allErrs, errs...)
+
+			if podCIDR != nil {
+				if len(nonMasqueradeCIDRs) > 0 && !subnet.BelongsTo(nonMasqueradeCIDRs[0], podCIDR) {
+					allErrs = append(allErrs, field.Forbidden(fldPath.Child("podCIDR"), fmt.Sprintf("podCIDR %q must be a subnet of nonMasqueradeCIDR %q", podCIDR, nonMasqueradeCIDRs[0])))
+				}
+			}
+		}
+	}
+
+	var serviceClusterIPRange *net.IPNet
 	{
 		if v.ServiceClusterIPRange == "" {
 			if strict {
 				allErrs = append(allErrs, field.Required(fldPath.Child("serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
 			}
 		} else {
-			serviceClusterIPRange, errs := parseCIDR(fldPath.Child("serviceClusterIPRange"), v.ServiceClusterIPRange)
+			var errs field.ErrorList
+			serviceClusterIPRange, errs = parseCIDR(fldPath.Child("serviceClusterIPRange"), v.ServiceClusterIPRange)
 			allErrs = append(allErrs, errs...)
 
-			if serviceClusterIPRange != nil && len(nonMasqueradeCIDRs) > 0 && providerConstraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDRs[0], serviceClusterIPRange) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", v.ServiceClusterIPRange, v.NonMasqueradeCIDR)))
+			if subnet.Overlap(podCIDR, serviceClusterIPRange) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must not overlap podCIDR %q", serviceClusterIPRange, podCIDR)))
 			}
 		}
 	}
 
-	allErrs = append(allErrs, validateSubnets(&cluster.Spec, v.Subnets, fldPath.Child("subnets"), strict, providerConstraints, networkCIDRs)...)
+	allErrs = append(allErrs, validateSubnets(&cluster.Spec, v.Subnets, fldPath.Child("subnets"), strict, providerConstraints, networkCIDRs, podCIDR, serviceClusterIPRange)...)
 
 	if v.Topology != nil {
 		allErrs = append(allErrs, validateTopology(cluster, v.Topology, fldPath.Child("topology"))...)
