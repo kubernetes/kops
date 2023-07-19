@@ -22,12 +22,6 @@ const (
 )
 
 type TopologySpec struct {
-	// ControlPlane is not used.
-	ControlPlane string `json:"controlPlane,omitempty"`
-
-	// Nodes is not used.
-	Nodes string `json:"nodes,omitempty"`
-
 	// Bastion provide an external facing point of entry into a network
 	// containing private network instances. This host can provide a single
 	// point of fortification or audit and can be started and stopped to enable

@@ -23,9 +23,11 @@ const (
 
 type TopologySpec struct {
 	// ControlPlane is not used.
+	// +k8s:conversion-gen=false
 	ControlPlane string `json:"masters,omitempty"`
 
 	// Nodes is not used.
+	// +k8s:conversion-gen=false
 	Nodes string `json:"nodes,omitempty"`
 
 	// Bastion provide an external facing point of entry into a network
