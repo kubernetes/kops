@@ -84,7 +84,7 @@ ${KUBETEST2} \
     --up \
     --kops-binary-path="${KOPS_A}" \
     --kubernetes-version="${K8S_VERSION_A}" \
-    --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
+    --control-plane-count="${KOPS_CONTROL_PLANE_SIZE:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
     --create-args="--networking calico"
 
