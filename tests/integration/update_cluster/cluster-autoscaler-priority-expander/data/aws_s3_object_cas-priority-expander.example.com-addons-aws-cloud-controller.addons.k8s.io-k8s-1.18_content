@@ -34,7 +34,7 @@ spec:
       - args:
         - --allocate-node-cidrs=true
         - --cloud-provider=aws
-        - --cluster-cidr=100.64.0.0/10
+        - --cluster-cidr=100.96.0.0/11
         - --cluster-name=cas-priority-expander.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
