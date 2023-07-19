@@ -2,8 +2,7 @@ metadata:
   creationTimestamp: null
   name: minimal.example.com
 spec:
-  api:
-    dns: {}
+  api: {}
   authorization:
     alwaysAllow: {}
   cloudProvider: {}

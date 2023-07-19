@@ -68,7 +68,7 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 	// Additional cloud-specific validation rules
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
-		allErrs = append(allErrs, awsValidateCluster(cluster)...)
+		allErrs = append(allErrs, awsValidateCluster(cluster, strict)...)
 	case kops.CloudProviderGCE:
 		allErrs = append(allErrs, gceValidateCluster(cluster)...)
 	}

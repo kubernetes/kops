@@ -44,6 +44,9 @@ type populateClusterSpec struct {
 	// We build it up into a complete config, but we write the values as input
 	InputCluster *kopsapi.Cluster
 
+	// InputInstanceGroups are the instance groups in the cluster
+	InputInstanceGroups []*kopsapi.InstanceGroup
+
 	// fullCluster holds the built completed cluster spec
 	fullCluster *kopsapi.Cluster
 
@@ -53,11 +56,12 @@ type populateClusterSpec struct {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
+func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluster *kopsapi.Cluster, instanceGroups []*kopsapi.InstanceGroup, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
 	c := &populateClusterSpec{
-		cloud:        cloud,
-		InputCluster: cluster,
-		assetBuilder: assetBuilder,
+		cloud:               cloud,
+		InputCluster:        cluster,
+		InputInstanceGroups: instanceGroups,
+		assetBuilder:        assetBuilder,
 	}
 	err := c.run(ctx, clientset)
 	if err != nil {
@@ -217,6 +221,47 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
+
+	if cluster.Spec.CloudProvider.Openstack == nil {
+		if cluster.Spec.API.DNS == nil && cluster.Spec.API.LoadBalancer == nil {
+			subnetTypesByName := map[string]kopsapi.SubnetType{}
+			for _, subnet := range cluster.Spec.Networking.Subnets {
+				subnetTypesByName[subnet.Name] = subnet.Type
+			}
+
+			haveAPIServerNodes := false
+			for _, ig := range c.InputInstanceGroups {
+				if ig.Spec.Role == kopsapi.InstanceGroupRoleAPIServer {
+					haveAPIServerNodes = true
+				}
+			}
+			for _, ig := range c.InputInstanceGroups {
+				if ig.Spec.Role == kopsapi.InstanceGroupRoleAPIServer || (!haveAPIServerNodes && ig.Spec.Role == kopsapi.InstanceGroupRoleControlPlane) {
+					for _, subnet := range ig.Spec.Subnets {
+						switch subnetTypesByName[subnet] {
+						case kopsapi.SubnetTypePrivate:
+							cluster.Spec.API.LoadBalancer = &kopsapi.LoadBalancerAccessSpec{}
+						case kopsapi.SubnetTypePublic:
+							cluster.Spec.API.DNS = &kopsapi.DNSAccessSpec{}
+						}
+					}
+				}
+			}
+			// If both public and private, go with the load balancer.
+			if cluster.Spec.API.LoadBalancer != nil {
+				cluster.Spec.API.DNS = nil
+			}
+		}
+
+		if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+			cluster.Spec.API.LoadBalancer.Type = kopsapi.LoadBalancerTypePublic
+		}
+	}
+
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.Spec.CloudProvider.AWS != nil {
+		cluster.Spec.API.LoadBalancer.Class = kopsapi.LoadBalancerClassClassic
+	}
+
 	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
 		dns, err := cloud.DNS()
 		if err != nil {

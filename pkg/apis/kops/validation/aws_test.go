@@ -600,7 +600,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			})
 		}
 		cluster.Spec.API.LoadBalancer.Subnets = test.lbSubnets
-		errs := awsValidateCluster(&cluster)
+		errs := awsValidateCluster(&cluster, true)
 		testErrors(t, test, errs, test.expected)
 	}
 }
@@ -670,7 +670,7 @@ func TestAWSAuthentication(t *testing.T) {
 				},
 			},
 		}
-		errs := awsValidateCluster(&cluster)
+		errs := awsValidateCluster(&cluster, true)
 		testErrors(t, test, errs, test.expected)
 	}
 }
