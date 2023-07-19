@@ -35,7 +35,7 @@ fi
 
 ${KUBETEST2} \
     --up \
-    --kubernetes-version="1.21.0" \
+    --kubernetes-version="1.27.0" \
     --kops-binary-path="${KOPS}" \
     --create-args="--networking cilium $ARGS"
 
