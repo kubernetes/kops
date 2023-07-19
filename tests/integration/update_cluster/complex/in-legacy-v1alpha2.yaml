@@ -76,9 +76,6 @@ spec:
         max_retries: "10"
       filesProviderExtraConfig:
         profile: "foo"
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

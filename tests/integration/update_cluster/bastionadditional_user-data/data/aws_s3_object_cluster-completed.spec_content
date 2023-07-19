@@ -215,5 +215,3 @@ spec:
       loadBalancer: {}
     dns:
       type: Public
-    masters: private
-    nodes: private

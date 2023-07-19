@@ -1163,12 +1163,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 	}
 
+	cluster.Spec.Networking.Topology = &api.TopologySpec{}
 	switch opt.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Networking.Topology = &api.TopologySpec{
-			ControlPlane: api.TopologyPublic,
-			Nodes:        api.TopologyPublic,
-		}
 
 		if opt.Bastion {
 			return nil, fmt.Errorf("bastion supports --topology='private' only")
@@ -1181,10 +1178,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	case api.TopologyPrivate:
 		if cluster.Spec.Networking.Kubenet != nil {
 			return nil, fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", opt.Networking)
-		}
-		cluster.Spec.Networking.Topology = &api.TopologySpec{
-			ControlPlane: api.TopologyPrivate,
-			Nodes:        api.TopologyPrivate,
 		}
 
 		for i := range cluster.Spec.Networking.Subnets {
@@ -1348,7 +1341,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
-		switch cluster.Spec.Networking.Topology.ControlPlane {
+		switch opt.Topology {
 		case api.TopologyPublic:
 			if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
@@ -1361,7 +1354,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
-			return fmt.Errorf("unknown control-plane topology type: %q", cluster.Spec.Networking.Topology.ControlPlane)
+			return fmt.Errorf("unknown topology type: %q", opt.Topology)
 		}
 	}
 

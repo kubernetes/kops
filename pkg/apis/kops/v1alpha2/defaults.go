@@ -37,10 +37,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology = &TopologySpec{}
 	}
 
-	rebindIfEmpty(&obj.Topology.ControlPlane, TopologyPublic)
-
-	rebindIfEmpty(&obj.Topology.Nodes, TopologyPublic)
-
 	if obj.Topology.LegacyDNS == nil {
 		obj.Topology.LegacyDNS = &DNSSpec{}
 	}

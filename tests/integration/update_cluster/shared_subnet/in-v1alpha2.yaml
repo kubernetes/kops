@@ -36,9 +36,6 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  topology:
-    masters: public
-    nodes: public
 
 ---
 

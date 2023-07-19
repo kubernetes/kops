@@ -503,24 +503,6 @@ func validateIPv6CIDR(fieldPath *field.Path, cidr string, serviceClusterIPRange 
 func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if topology.ControlPlane == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("controlPlane"), ""))
-	} else {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("controlPlane"), &topology.ControlPlane, kops.SupportedTopologies)...)
-	}
-
-	if topology.Nodes == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("nodes"), ""))
-	} else {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
-	}
-
-	if topology.Bastion != nil {
-		if topology.ControlPlane == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires control plane and nodes to have private topology"))
-		}
-	}
-
 	if topology.DNS != "" {
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &topology.DNS, kops.SupportedDnsTypes)...)
 	}

@@ -94,8 +94,6 @@ spec:
   topology:
     dns:
       type: None
-    masters: public
-    nodes: private
   warmPool:
     enableLifecycleHook: true
 

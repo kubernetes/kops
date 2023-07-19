@@ -37,10 +37,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Networking.Topology = &TopologySpec{}
 	}
 
-	rebindIfEmpty(&obj.Networking.Topology.ControlPlane, TopologyPublic)
-
-	rebindIfEmpty(&obj.Networking.Topology.Nodes, TopologyPublic)
-
 	if obj.Networking.Topology.DNS == "" {
 		obj.Networking.Topology.DNS = DNSTypePublic
 	}

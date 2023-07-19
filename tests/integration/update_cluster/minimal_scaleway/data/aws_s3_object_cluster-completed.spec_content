@@ -216,5 +216,3 @@ spec:
   topology:
     dns:
       type: Private
-    masters: public
-    nodes: public

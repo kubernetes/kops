@@ -102,8 +102,6 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public
 ```
 
 Similarly, you can also see your InstanceGroups using:

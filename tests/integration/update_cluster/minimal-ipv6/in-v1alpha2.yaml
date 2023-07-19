@@ -68,9 +68,6 @@ spec:
     name: utility-us-test-1b
     type: Utility
     zone: us-test-1b
-  topology:
-    masters: private
-    nodes: private
 
 ---
 

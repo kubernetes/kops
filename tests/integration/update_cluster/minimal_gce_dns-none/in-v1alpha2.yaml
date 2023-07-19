@@ -51,8 +51,6 @@ spec:
   topology:
     dns:
       type: None
-    masters: private
-    nodes: private
 
 ---
 

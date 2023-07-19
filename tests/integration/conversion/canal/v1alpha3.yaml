@@ -45,9 +45,7 @@ spec:
       type: Public
       zone: us-test-1a
     topology:
-      controlPlane: public
       dns: None
-      nodes: private
   sshAccess:
   - 0.0.0.0/0
 

@@ -49,8 +49,6 @@ spec:
   topology:
     dns:
       type: Private
-    masters: private
-    nodes: private
 
 ---
 
