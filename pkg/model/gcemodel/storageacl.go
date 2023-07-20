@@ -179,9 +179,9 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return err
 		}
 		if len(readablePaths) != 0 {
-			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore)
+			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigBase)
 			if err != nil {
-				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigStore, err)
+				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigBase, err)
 			}
 
 			gcsPath, ok := p.(*vfs.GSPath)

@@ -167,9 +167,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 	if err != nil {
 		return fmt.Errorf("error parsing ConfigBase %q: %v", cluster.Spec.ConfigBase, err)
 	}
-	if vfs.IsClusterReadable(configBase) {
-		cluster.Spec.ConfigStore = configBase.Path()
-	} else {
+	if !vfs.IsClusterReadable(configBase) {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
 	}

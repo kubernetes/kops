@@ -174,7 +174,7 @@ func TestPolicyGeneration(t *testing.T) {
 		b := &PolicyBuilder{
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					ConfigStore: "s3://kops-tests/iam-builder-test.k8s.local",
+					ConfigBase: "s3://kops-tests/iam-builder-test.k8s.local",
 					IAM: &kops.IAMSpec{
 						AllowContainerRegistry: x.AllowContainerRegistry,
 					},
