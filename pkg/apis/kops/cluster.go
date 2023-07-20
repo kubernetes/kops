@@ -72,8 +72,6 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is unused.
-	ConfigStore string `json:"configStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
