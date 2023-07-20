@@ -49,7 +49,6 @@ spec:
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/cas-priority-expander-custom.example.com
-  configStore: memfs://clusters.example.com/cas-priority-expander-custom.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

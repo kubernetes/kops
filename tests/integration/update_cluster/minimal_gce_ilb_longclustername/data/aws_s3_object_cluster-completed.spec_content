@@ -30,7 +30,6 @@ spec:
   cloudProvider: gce
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
-  configStore: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

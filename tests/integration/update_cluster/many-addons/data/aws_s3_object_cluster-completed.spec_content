@@ -46,7 +46,6 @@ spec:
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal.example.com
-  configStore: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

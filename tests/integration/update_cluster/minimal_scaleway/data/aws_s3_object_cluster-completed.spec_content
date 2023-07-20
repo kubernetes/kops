@@ -15,7 +15,6 @@ spec:
   cloudProvider: scaleway
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/scw-minimal.k8s.local
-  configStore: memfs://tests/scw-minimal.k8s.local
   containerRuntime: containerd
   containerd:
     logLevel: info

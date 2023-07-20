@@ -25,7 +25,6 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/existing-iam.example.com
-  configStore: memfs://tests/existing-iam.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

@@ -17,7 +17,6 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/docker.example.com
-  configStore: memfs://clusters.example.com/docker.example.com
   containerRuntime: docker
   containerd:
     configOverride: |
