@@ -2883,7 +2883,7 @@
       }
     }
   },
-  "revision": "20230622",
+  "revision": "20230710",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AdminAuditData": {
@@ -3244,13 +3244,13 @@
           ],
           "enumDescriptions": [
             "No assertion claims behavior specified.",
-            "Merge the UserInfo Endpoint Claims with ID Token Claims, preferring UserInfo Claim Values for the same Claim Name. Only possible for flows granting an Access Token, which comprise only the Authorization Code Flow at the moment.",
+            "Merge the UserInfo Endpoint Claims with ID Token Claims, preferring UserInfo Claim Values for the same Claim Name. This option is available only for the Authorization Code Flow.",
             "Only include ID Token Claims."
           ],
           "type": "string"
         },
         "responseType": {
-          "description": "Required. The Response Type to request for in the OIDC Authorization Request for web sign-in.",
+          "description": "Required. The Response Type to request for in the OIDC Authorization Request for web sign-in. The `CODE` Response Type is recommended to avoid the Implicit Flow, for security reasons.",
           "enum": [
             "RESPONSE_TYPE_UNSPECIFIED",
             "CODE",
@@ -3675,6 +3675,7 @@
           "type": "string"
         },
         "onlyInPredefinedRoles": {
+          "deprecated": true,
           "type": "boolean"
         },
         "primaryPermission": {
@@ -3971,6 +3972,7 @@
           "type": "string"
         },
         "etag": {
+          "deprecated": true,
           "description": "Deprecated. Do not use.",
           "format": "byte",
           "type": "string"
@@ -4109,6 +4111,7 @@
       "id": "SignBlobRequest",
       "properties": {
         "bytesToSign": {
+          "deprecated": true,
           "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The bytes to sign.",
           "format": "byte",
           "type": "string"
@@ -4121,10 +4124,12 @@
       "id": "SignBlobResponse",
       "properties": {
         "keyId": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The id of the key used to sign the blob.",
           "type": "string"
         },
         "signature": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The signed blob.",
           "format": "byte",
           "type": "string"
@@ -4137,6 +4142,7 @@
       "id": "SignJwtRequest",
       "properties": {
         "payload": {
+          "deprecated": true,
           "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The JWT payload to sign. Must be a serialized JSON object that contains a JWT Claims Set. For example: `{\"sub\": \"user@example.com\", \"iat\": 313435}` If the JWT Claims Set contains an expiration time (`exp`) claim, it must be an integer timestamp that is not in the past and no more than 12 hours in the future. If the JWT Claims Set does not contain an expiration time (`exp`) claim, this claim is added automatically, with a timestamp that is 1 hour in the future.",
           "type": "string"
         }
@@ -4148,10 +4154,12 @@
       "id": "SignJwtResponse",
       "properties": {
         "keyId": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The id of the key used to sign the JWT.",
           "type": "string"
         },
         "signedJwt": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The signed JWT.",
           "type": "string"
         }
@@ -4311,6 +4319,12 @@
           "description": "A user-specified display name of the pool in Google Cloud Console. Cannot exceed 32 characters.",
           "type": "string"
         },
+        "expireTime": {
+          "description": "Output only. Time after which the workforce pool will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
         "name": {
           "description": "Output only. The resource name of the pool. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
           "readOnly": true,
@@ -4368,6 +4382,12 @@
         },
         "displayName": {
           "description": "A user-specified display name for the provider. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the workload pool provider will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
           "type": "string"
         },
         "name": {
@@ -4466,18 +4486,10 @@
           "description": "A display name for the pool. Cannot exceed 32 characters.",
           "type": "string"
         },
-        "identityMode": {
-          "description": "Immutable. The identity mode of the pool.",
-          "enum": [
-            "IDENTITY_MODE_UNSPECIFIED",
-            "FEDERATION_ONLY",
-            "TRUST_DOMAIN"
-          ],
-          "enumDescriptions": [
-            "Existing pools will be in this mode. For existing worklod identity pools created through the public API, they will act as if they are set to FEDERATION_ONLY.",
-            "With FEDERATION_ONLY mode, providers can be created at the root level within the pool. Attribute mappings must specify a \"google.subject\" claim that specifies the identity of the federation workload. Namespace or any sub-namespace resources is not allowed with this mode.",
-            "With TRUST_DOMAIN mode, providers can be created at the root level within the pool. Attribute mappings must specify the \"google.namespace\" and \"google.workload_identifier\" claims that, respectively, specify the namespace and individual sub-namespace identifier for the workload. Namespaces and sub-Namespace resources are allowed."
-          ],
+        "expireTime": {
+          "description": "Output only. Time after which the workload identity pool will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
           "type": "string"
         },
         "name": {
@@ -4538,6 +4550,12 @@
         },
         "displayName": {
           "description": "A display name for the provider. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the workload identity pool provider will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
           "type": "string"
         },
         "name": {

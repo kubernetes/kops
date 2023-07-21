@@ -18070,6 +18070,9 @@ var awsPartition = partition{
 					Region: "ap-southeast-2",
 				}: endpoint{},
 				endpointKey{
+					Region: "ca-central-1",
+				}: endpoint{},
+				endpointKey{
 					Region: "eu-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -18117,6 +18120,9 @@ var awsPartition = partition{
 				}: endpoint{},
 				endpointKey{
 					Region: "ap-southeast-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-central-1",
@@ -34274,6 +34280,15 @@ var awsusgovPartition = partition{
 		"codepipeline": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
+					Region: "fips-us-gov-east-1",
+				}: endpoint{
+					Hostname: "codepipeline-fips.us-gov-east-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "us-gov-east-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
 					Region: "fips-us-gov-west-1",
 				}: endpoint{
 					Hostname: "codepipeline-fips.us-gov-west-1.amazonaws.com",
@@ -34285,6 +34300,12 @@ var awsusgovPartition = partition{
 				endpointKey{
 					Region: "us-gov-east-1",
 				}: endpoint{},
+				endpointKey{
+					Region:  "us-gov-east-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "codepipeline-fips.us-gov-east-1.amazonaws.com",
+				},
 				endpointKey{
 					Region: "us-gov-west-1",
 				}: endpoint{},
@@ -37825,20 +37846,6 @@ var awsusgovPartition = partition{
 					Region:  "us-gov-west-1",
 					Variant: fipsVariant,
 				}: endpoint{},
-			},
-		},
-		"savingsplans": service{
-			PartitionEndpoint: "aws-us-gov-global",
-			IsRegionalized:    boxedFalse,
-			Endpoints: serviceEndpoints{
-				endpointKey{
-					Region: "aws-us-gov-global",
-				}: endpoint{
-					Hostname: "savingsplans.amazonaws.com",
-					CredentialScope: credentialScope{
-						Region: "us-gov-west-1",
-					},
-				},
 			},
 		},
 		"secretsmanager": service{
