@@ -12,16 +12,17 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-      --backup-store=memfs://tests/ha-gce.example.com/backups/etcd/main --client-urls=https://__name__:4001
-      --cluster-name=etcd --containerized=true --dns-suffix=.internal.ha-gce.example.com
-      --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
-      --v=6 --volume-name-tag=k8s-io-etcd-main --volume-provider=gce --volume-tag=k8s-io-cluster-name=ha-gce-example-com
-      --volume-tag=k8s-io-etcd-main --volume-tag=k8s-io-role-master=master > /tmp/pipe
+      --backup-store=memfs://clusters.example.com/privateweave.example.com/backups/etcd/main
+      --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
+      --dns-suffix=.internal.privateweave.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
+      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
+      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
+      --volume-tag=kubernetes.io/cluster/privateweave.example.com=owned > /tmp/pipe
       2>&1
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230630
+    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230516
     name: etcd-manager
     resources:
       requests:
@@ -44,20 +45,60 @@ spec:
   hostPID: true
   initContainers:
   - args:
-    - --target-dir=/opt/kops-utils/
-    - --src=/ko-app/kops-utils-cp
+    - -t
+    - /opt/kops-utils/
+    - /ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
+    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2
     name: kops-utils-cp
     resources: {}
     volumeMounts:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.4.13
-    - --src=/usr/local/bin/etcd
-    - --src=/usr/local/bin/etcdctl
+    - -s
+    - /opt/kops-utils/kops-utils-cp
+    - /opt/kops-utils/ln
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2
+    name: kops-utils-symlinks
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - -t
+    - /opt/etcd-v3.2.24
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:3.2.24-1
+    name: init-etcd-3-2-24
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - -t
+    - /opt/etcd-v3.3.17
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:3.3.17-0
+    name: init-etcd-3-3-17
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - -t
+    - /opt/etcd-v3.4.13
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.4.13-0
@@ -67,44 +108,26 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.5.9
-    - --src=/usr/local/bin/etcd
-    - --src=/usr/local/bin/etcdctl
+    - -s
+    - /opt/etcd-v3.5.9
+    - /opt/etcd-v3.5.7
+    command:
+    - /opt/kops-utils/ln
+    image: registry.k8s.io/kops/kops-utils-cp:1.27.0-alpha.2
+    name: init-etcd-3-5-7
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - -t
+    - /opt/etcd-v3.5.9
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/etcd:3.5.9-0
     name: init-etcd-3-5-9
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: opt
-  - args:
-    - --symlink
-    - --target-dir=/opt/etcd-v3.4.3
-    - --src=/opt/etcd-v3.4.13/etcd
-    - --src=/opt/etcd-v3.4.13/etcdctl
-    command:
-    - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
-    name: init-etcd-symlinks-3-4-13
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: opt
-  - args:
-    - --symlink
-    - --target-dir=/opt/etcd-v3.5.0
-    - --target-dir=/opt/etcd-v3.5.1
-    - --target-dir=/opt/etcd-v3.5.3
-    - --target-dir=/opt/etcd-v3.5.4
-    - --target-dir=/opt/etcd-v3.5.6
-    - --target-dir=/opt/etcd-v3.5.7
-    - --src=/opt/etcd-v3.5.9/etcd
-    - --src=/opt/etcd-v3.5.9/etcdctl
-    command:
-    - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
-    name: init-etcd-symlinks-3-5-9
     resources: {}
     volumeMounts:
     - mountPath: /opt
