@@ -57,7 +57,7 @@ type deployer struct {
 	createBucket   bool     `flag:"-"`
 
 	// ControlPlaneCount specifies the number of VMs in the control-plane.
-	ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control plane instances"`
+	ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control-plane instances"`
 
 	ControlPlaneIGOverrides []string `flag:"control-plane-instance-group-overrides" desc:"overrides for the control plane instance groups"`
 	NodeIGOverrides         []string `flag:"node-instance-group-overrides" desc:"overrides for the node instance groups"`
