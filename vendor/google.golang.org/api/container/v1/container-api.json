@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20230626",
+  "revision": "20230629",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2567,6 +2567,40 @@
         "gpuSharingConfig": {
           "$ref": "GPUSharingConfig",
           "description": "The configuration for GPU sharing options."
+        }
+      },
+      "type": "object"
+    },
+    "AdditionalNodeNetworkConfig": {
+      "description": "AdditionalNodeNetworkConfig is the configuration for additional node networks within the NodeNetworkConfig message",
+      "id": "AdditionalNodeNetworkConfig",
+      "properties": {
+        "network": {
+          "description": "Name of the VPC where the additional interface belongs",
+          "type": "string"
+        },
+        "subnetwork": {
+          "description": "Name of the subnetwork where the additional interface belongs",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "AdditionalPodNetworkConfig": {
+      "description": "AdditionalPodNetworkConfig is the configuration for additional pod networks within the NodeNetworkConfig message",
+      "id": "AdditionalPodNetworkConfig",
+      "properties": {
+        "maxPodsPerNode": {
+          "$ref": "MaxPodsConstraint",
+          "description": "The maximum number of pods per node which use this pod network"
+        },
+        "secondaryPodRange": {
+          "description": "The name of the secondary range on the subnet which provides IP address for this pod range",
+          "type": "string"
+        },
+        "subnetwork": {
+          "description": "Name of the subnetwork where the additional pod network belongs",
+          "type": "string"
         }
       },
       "type": "object"
@@ -4845,6 +4879,10 @@
           "description": "Whether L4ILB Subsetting is enabled for this cluster.",
           "type": "boolean"
         },
+        "enableMultiNetworking": {
+          "description": "Whether multi-networking is enabled for this cluster.",
+          "type": "boolean"
+        },
         "gatewayApiConfig": {
           "$ref": "GatewayAPIConfig",
           "description": "GatewayAPIConfig contains the desired config of Gateway API on this cluster."
@@ -5229,6 +5267,20 @@
       "description": "Parameters for node pool-level network config.",
       "id": "NodeNetworkConfig",
       "properties": {
+        "additionalNodeNetworkConfigs": {
+          "description": "We specify the additional node networks for this node pool using this list. Each node network corresponds to an additional interface",
+          "items": {
+            "$ref": "AdditionalNodeNetworkConfig"
+          },
+          "type": "array"
+        },
+        "additionalPodNetworkConfigs": {
+          "description": "We specify the additional pod networks for this node pool using this list. Each pod network corresponds to an additional alias IP range for the node",
+          "items": {
+            "$ref": "AdditionalPodNetworkConfig"
+          },
+          "type": "array"
+        },
         "createPodRange": {
           "description": "Input only. Whether to create a new range for pod IPs in this node pool. Defaults are provided for `pod_range` and `pod_ipv4_cidr_block` if they are not specified. If neither `create_pod_range` or `pod_range` are specified, the cluster-level default (`ip_allocation_policy.cluster_ipv4_cidr_block`) is used. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
           "type": "boolean"
@@ -5693,6 +5745,10 @@
       "description": "PlacementPolicy defines the placement policy used by the node pool.",
       "id": "PlacementPolicy",
       "properties": {
+        "policyName": {
+          "description": "If set, refers to the name of a custom resource policy supplied by the user. The resource policy must be in the same project and region as the node pool. If not found, InvalidArgument error is returned.",
+          "type": "string"
+        },
         "type": {
           "description": "The type of placement.",
           "enum": [

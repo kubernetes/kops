@@ -1277,14 +1277,14 @@ type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
 	// behavior specified.
 	//   "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS" - Merge the UserInfo
 	// Endpoint Claims with ID Token Claims, preferring UserInfo Claim
-	// Values for the same Claim Name. Only possible for flows granting an
-	// Access Token, which comprise only the Authorization Code Flow at the
-	// moment.
+	// Values for the same Claim Name. This option is available only for the
+	// Authorization Code Flow.
 	//   "ONLY_ID_TOKEN_CLAIMS" - Only include ID Token Claims.
 	AssertionClaimsBehavior string `json:"assertionClaimsBehavior,omitempty"`
 
 	// ResponseType: Required. The Response Type to request for in the OIDC
-	// Authorization Request for web sign-in.
+	// Authorization Request for web sign-in. The `CODE` Response Type is
+	// recommended to avoid the Implicit Flow, for security reasons.
 	//
 	// Possible values:
 	//   "RESPONSE_TYPE_UNSPECIFIED" - No Response Type specified.
@@ -3287,6 +3287,10 @@ type WorkforcePool struct {
 	// Cloud Console. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
 
+	// ExpireTime: Output only. Time after which the workforce pool will be
+	// permanently purged and cannot be recovered.
+	ExpireTime string `json:"expireTime,omitempty"`
+
 	// Name: Output only. The resource name of the pool. Format:
 	// `locations/{location}/workforcePools/{workforce_pool_id}`
 	Name string `json:"name,omitempty"`
@@ -3428,6 +3432,10 @@ type WorkforcePoolProvider struct {
 	// exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
 
+	// ExpireTime: Output only. Time after which the workload pool provider
+	// will be permanently purged and cannot be recovered.
+	ExpireTime string `json:"expireTime,omitempty"`
+
 	// Name: Output only. The resource name of the provider. Format:
 	// `locations/{location}/workforcePools/{workforce_pool_id}/providers/{pr
 	// ovider_id}`
@@ -3555,24 +3563,9 @@ type WorkloadIdentityPool struct {
 	// characters.
 	DisplayName string `json:"displayName,omitempty"`
 
-	// IdentityMode: Immutable. The identity mode of the pool.
-	//
-	// Possible values:
-	//   "IDENTITY_MODE_UNSPECIFIED" - Existing pools will be in this mode.
-	// For existing worklod identity pools created through the public API,
-	// they will act as if they are set to FEDERATION_ONLY.
-	//   "FEDERATION_ONLY" - With FEDERATION_ONLY mode, providers can be
-	// created at the root level within the pool. Attribute mappings must
-	// specify a "google.subject" claim that specifies the identity of the
-	// federation workload. Namespace or any sub-namespace resources is not
-	// allowed with this mode.
-	//   "TRUST_DOMAIN" - With TRUST_DOMAIN mode, providers can be created
-	// at the root level within the pool. Attribute mappings must specify
-	// the "google.namespace" and "google.workload_identifier" claims that,
-	// respectively, specify the namespace and individual sub-namespace
-	// identifier for the workload. Namespaces and sub-Namespace resources
-	// are allowed.
-	IdentityMode string `json:"identityMode,omitempty"`
+	// ExpireTime: Output only. Time after which the workload identity pool
+	// will be permanently purged and cannot be recovered.
+	ExpireTime string `json:"expireTime,omitempty"`
 
 	// Name: Output only. The resource name of the pool.
 	Name string `json:"name,omitempty"`
@@ -3705,6 +3698,10 @@ type WorkloadIdentityPoolProvider struct {
 	// DisplayName: A display name for the provider. Cannot exceed 32
 	// characters.
 	DisplayName string `json:"displayName,omitempty"`
+
+	// ExpireTime: Output only. Time after which the workload identity pool
+	// provider will be permanently purged and cannot be recovered.
+	ExpireTime string `json:"expireTime,omitempty"`
 
 	// Name: Output only. The resource name of the provider.
 	Name string `json:"name,omitempty"`

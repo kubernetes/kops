@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.100.0] - 2023-07-20
+
+- #618 - @asaha - load balancers: introduce new type field
+- #620 - @andrewsomething - account: add name field.
+
 ## [v1.99.0] - 2023-04-24
 
 - #616 - @bentranter - Bump CI version for Go 1.20
