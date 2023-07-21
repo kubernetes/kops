@@ -710,9 +710,10 @@ type EtcdMemberSpec struct {
 type SubnetType string
 
 const (
-	SubnetTypePublic  SubnetType = "Public"
-	SubnetTypePrivate SubnetType = "Private"
-	SubnetTypeUtility SubnetType = "Utility"
+	SubnetTypePublic    SubnetType = "Public"
+	SubnetTypePrivate   SubnetType = "Private"
+	SubnetTypeDualStack SubnetType = "DualStack"
+	SubnetTypeUtility   SubnetType = "Utility"
 )
 
 type ClusterSubnetSpec struct {

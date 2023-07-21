@@ -19,8 +19,8 @@ package tester
 import (
 	"regexp"
 
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -125,8 +125,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
 	}
 
-	if cluster.Spec.Topology != nil && cluster.Spec.Topology.Nodes == kops.TopologyPrivate {
-		skipRegex += "|SSH.should.SSH.to.all.nodes.and.run.commands"
+	for _, subnet := range cluster.Spec.Subnets {
+		if subnet.Type == v1alpha2.SubnetTypePrivate || subnet.Type == v1alpha2.SubnetTypeDualStack {
+			skipRegex += "|SSH.should.SSH.to.all.nodes.and.run.commands"
+			break
+		}
 	}
 
 	// Ensure it is valid regex
