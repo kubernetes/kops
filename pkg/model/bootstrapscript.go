@@ -133,7 +133,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 	}
 
 	if os.Getenv("S3_ENDPOINT") != "" {
-		if b.ig.IsControlPlane() {
+		if b.ig.IsControlPlane() || cluster.UsesLegacyGossip() {
 			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
 			env["S3_REGION"] = os.Getenv("S3_REGION")
 			env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
