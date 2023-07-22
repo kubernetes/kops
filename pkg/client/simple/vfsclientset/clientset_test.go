@@ -60,9 +60,9 @@ func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			ConfigStore: kops.ConfigStoreSpec{
-				Base: configBase,
+				Base:     configBase,
+				Keypairs: keyPath,
 			},
-			KeyStore: keyPath,
 		},
 	}
 

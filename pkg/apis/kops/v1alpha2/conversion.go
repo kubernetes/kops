@@ -98,6 +98,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		}
 		out.ExternalPolicies = policies
 	}
+	out.ConfigStore.Secrets = in.SecretStore
+	out.ConfigStore.Keypairs = in.KeyStore
 	if in.KubeAPIServer != nil {
 		kube := in.KubeAPIServer
 		if kube.OIDCClientID != nil ||
@@ -386,6 +388,8 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		kube.OIDCUsernamePrefix = oidc.UsernamePrefix
 	}
 	out.ConfigBase = in.ConfigStore.Base
+	out.KeyStore = in.ConfigStore.Keypairs
+	out.SecretStore = in.ConfigStore.Secrets
 	if in.ExternalPolicies != nil {
 		out.ExternalPolicies = make(map[string][]string, len(in.ExternalPolicies))
 		for k, v := range in.ExternalPolicies {

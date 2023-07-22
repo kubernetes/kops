@@ -43,6 +43,8 @@ spec:
         enableLifecycleHook: true
   configStore:
     base: memfs://clusters.example.com/minimal.example.com
+    keypairs: memfs://clusters.example.com/keypairs.example.com
+    secrets: memfs://clusters.example.com/secrets.example.com
   controlPlaneKubelet:
     cpuCFSQuota: true
   etcdClusters:

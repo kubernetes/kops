@@ -1616,6 +1616,7 @@ the removal of fields no longer in use.
 | externalDns.disable: true                              | externalDNS.provider: none                                     |
 | hooks[\*].disabled                                     | hooks[\*].enabled (value inverted)                             |
 | isolateMasters                                         | networking.isolateControlPlane                                 |
+| keyStore                                               | configStore.keypairs                                           |
 | kubeAPIServer.authorizationRbacSuperUser               | kubeAPIServer.authorizationRBACSuperUser                       |
 | kubeAPIServer.authorizationWebhookCacheAuthorizedTtl   | kubeAPIServer.authorizationWebhookCacheAuthorizedTTL           |
 | kubeAPIServer.authorizationWebhookCacheUnauthorizedTtl | kubeAPIServer.authorizationWebhookCacheUnauthorizedTTL         |
@@ -1653,6 +1654,7 @@ the removal of fields no longer in use.
 | podCIDR                                                | networking.podCIDR                                             |
 | podIdentityWebhook                                     | cloudProvider.aws.podIdentityWebhook                           |
 | project                                                | cloudProvider.gce.project                                      |
+| secretStore                                            | configStore.secrets                                            |
 | serviceClusterIPRange                                  | networking.serviceClusterIPRange                               |
 | subnets                                                | networking.subnets                                             |
 | tagSubnets                                             | networking.tagSubnets                                          |

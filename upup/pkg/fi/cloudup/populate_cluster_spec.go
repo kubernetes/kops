@@ -177,15 +177,15 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		return err
 	}
 
-	if cluster.Spec.KeyStore == "" {
+	if cluster.Spec.ConfigStore.Keypairs == "" {
 		hasVFSPath, ok := keyStore.(fi.HasVFSPath)
 		if !ok {
 			// We will mirror to ConfigBase
 			basedir := configBase.Join("pki")
-			cluster.Spec.KeyStore = basedir.Path()
+			cluster.Spec.ConfigStore.Keypairs = basedir.Path()
 		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
 			vfsPath := hasVFSPath.VFSPath()
-			cluster.Spec.KeyStore = vfsPath.Path()
+			cluster.Spec.ConfigStore.Keypairs = vfsPath.Path()
 		} else {
 			// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 			return fmt.Errorf("keyStore path is not cluster readable: %v", hasVFSPath.VFSPath())
@@ -197,15 +197,15 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		return err
 	}
 
-	if cluster.Spec.SecretStore == "" {
+	if cluster.Spec.ConfigStore.Secrets == "" {
 		hasVFSPath, ok := secretStore.(fi.HasVFSPath)
 		if !ok {
 			// We will mirror to ConfigBase
 			basedir := configBase.Join("secrets")
-			cluster.Spec.SecretStore = basedir.Path()
+			cluster.Spec.ConfigStore.Secrets = basedir.Path()
 		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
 			vfsPath := hasVFSPath.VFSPath()
-			cluster.Spec.SecretStore = vfsPath.Path()
+			cluster.Spec.ConfigStore.Secrets = vfsPath.Path()
 		} else {
 			// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 			return fmt.Errorf("secrets path is not cluster readable: %v", hasVFSPath.VFSPath())

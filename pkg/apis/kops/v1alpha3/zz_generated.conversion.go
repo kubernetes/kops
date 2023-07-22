@@ -2603,8 +2603,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	}
 	out.ContainerRuntime = in.ContainerRuntime
 	out.KubernetesVersion = in.KubernetesVersion
-	out.SecretStore = in.SecretStore
-	out.KeyStore = in.KeyStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -2938,8 +2936,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	}
 	out.ContainerRuntime = in.ContainerRuntime
 	out.KubernetesVersion = in.KubernetesVersion
-	out.SecretStore = in.SecretStore
-	out.KeyStore = in.KeyStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -3303,6 +3299,8 @@ func Convert_kops_ClusterSubnetSpec_To_v1alpha3_ClusterSubnetSpec(in *kops.Clust
 
 func autoConvert_v1alpha3_ConfigStoreSpec_To_kops_ConfigStoreSpec(in *ConfigStoreSpec, out *kops.ConfigStoreSpec, s conversion.Scope) error {
 	out.Base = in.Base
+	out.Keypairs = in.Keypairs
+	out.Secrets = in.Secrets
 	return nil
 }
 
@@ -3313,6 +3311,8 @@ func Convert_v1alpha3_ConfigStoreSpec_To_kops_ConfigStoreSpec(in *ConfigStoreSpe
 
 func autoConvert_kops_ConfigStoreSpec_To_v1alpha3_ConfigStoreSpec(in *kops.ConfigStoreSpec, out *ConfigStoreSpec, s conversion.Scope) error {
 	out.Base = in.Base
+	out.Keypairs = in.Keypairs
+	out.Secrets = in.Secrets
 	return nil
 }
 

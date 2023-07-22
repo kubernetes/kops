@@ -98,8 +98,10 @@ type ClusterSpec struct {
 	// +k8s:conversion-gen=false
 	Topology *TopologySpec `json:"topology,omitempty"`
 	// SecretStore is the VFS path to where secrets are stored
+	// +k8s:conversion-gen=false
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
+	// +k8s:conversion-gen=false
 	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is unused.
 	// +k8s:conversion-gen=false

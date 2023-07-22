@@ -65,10 +65,6 @@ type ClusterSpec struct {
 	ContainerRuntime string `json:"containerRuntime,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
-	// SecretStore is the VFS path to where secrets are stored
-	SecretStore string `json:"secretStore,omitempty"`
-	// KeyStore is the VFS path to where SSL keys and certificates are stored
-	KeyStore string `json:"keyStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
@@ -172,6 +168,10 @@ type ConfigStoreSpec struct {
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3).
 	Base string `json:"base,omitempty"`
+	// Keypairs is the VFS path to where certificates and corresponding private keys are stored.
+	Keypairs string `json:"keypairs,omitempty"`
+	// Secrets is the VFS path to where secrets are stored.
+	Secrets string `json:"secrets,omitempty"`
 }
 
 // PodIdentityWebhookSpec configures an EKS Pod Identity Webhook.

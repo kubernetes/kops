@@ -2363,8 +2363,8 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// INFO: in.AdditionalNetworkCIDRs opted out of conversion generation
 	// INFO: in.NetworkID opted out of conversion generation
 	// INFO: in.Topology opted out of conversion generation
-	out.SecretStore = in.SecretStore
-	out.KeyStore = in.KeyStore
+	// INFO: in.SecretStore opted out of conversion generation
+	// INFO: in.KeyStore opted out of conversion generation
 	// INFO: in.LegacyConfigStore opted out of conversion generation
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
@@ -2712,8 +2712,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	}
 	out.ContainerRuntime = in.ContainerRuntime
 	out.KubernetesVersion = in.KubernetesVersion
-	out.SecretStore = in.SecretStore
-	out.KeyStore = in.KeyStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
