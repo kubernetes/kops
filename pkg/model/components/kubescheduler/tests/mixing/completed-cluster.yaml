@@ -6,6 +6,7 @@ spec:
   authorization:
     alwaysAllow: {}
   cloudProvider: {}
+  configStore: {}
   kubeScheduler:
     maxPersistentVolumes: 20
   kubernetesVersion: v1.24.0

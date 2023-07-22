@@ -70,8 +70,8 @@ func (c *VFSClientset) ListClusters(ctx context.Context, options metav1.ListOpti
 
 // ConfigBaseFor implements the ConfigBaseFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
-	if cluster.Spec.ConfigBase != "" {
-		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
+	if cluster.Spec.ConfigStore.Base != "" {
+		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	}
 	return c.clusters().configBase(cluster.Name)
 }

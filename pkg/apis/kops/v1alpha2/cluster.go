@@ -49,11 +49,13 @@ type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
 	// Additional addons that should be installed on the cluster
-	Addons []AddonSpec `json:"addons,omitempty"`
+	Addons      []AddonSpec          `json:"addons,omitempty"`
+	ConfigStore kops.ConfigStoreSpec `json:"-"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3)
+	// +k8s:conversion-gen=false
 	ConfigBase    string                 `json:"configBase,omitempty"`
 	CloudProvider kops.CloudProviderSpec `json:"-"`
 	// The CloudProvider to use (aws or gce)
@@ -101,7 +103,7 @@ type ClusterSpec struct {
 	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is unused.
 	// +k8s:conversion-gen=false
-	ConfigStore string `json:"configStore,omitempty"`
+	LegacyConfigStore string `json:"configStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.

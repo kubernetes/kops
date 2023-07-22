@@ -208,12 +208,12 @@ func (r *ClusterVFS) find(ctx context.Context, clusterName string) (*api.Cluster
 	}
 
 	// TODO: Split this out into real version updates / schema changes
-	if c.Spec.ConfigBase == "" {
+	if c.Spec.ConfigStore.Base == "" {
 		configBase, err := r.configBase(clusterName)
 		if err != nil {
-			return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
+			return nil, fmt.Errorf("error building ConfigStore.Base for cluster: %v", err)
 		}
-		c.Spec.ConfigBase = configBase.Path()
+		c.Spec.ConfigStore.Base = configBase.Path()
 	}
 
 	return c, nil

@@ -31,7 +31,8 @@ spec:
         - test-az-hints
       router:
         externalNetwork: test-external-network
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore:
+    base: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:

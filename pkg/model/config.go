@@ -38,7 +38,7 @@ func (b *ConfigBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Name:      fi.PtrTo(registry.PathKopsVersionUpdated),
 		Lifecycle: b.Lifecycle,
-		Base:      fi.PtrTo(b.Cluster.Spec.ConfigBase),
+		Base:      fi.PtrTo(b.Cluster.Spec.ConfigStore.Base),
 		Location:  fi.PtrTo(registry.PathKopsVersionUpdated),
 		Contents:  fi.NewStringResource(kopsbase.Version),
 	})
@@ -50,7 +50,7 @@ func (b *ConfigBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Name:      fi.PtrTo(registry.PathClusterCompleted),
 		Lifecycle: b.Lifecycle,
-		Base:      fi.PtrTo(b.Cluster.Spec.ConfigBase),
+		Base:      fi.PtrTo(b.Cluster.Spec.ConfigStore.Base),
 		Location:  fi.PtrTo(registry.PathClusterCompleted),
 		Contents:  fi.NewBytesResource(versionedYaml),
 	})

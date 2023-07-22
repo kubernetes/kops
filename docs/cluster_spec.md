@@ -1607,6 +1607,7 @@ the removal of fields no longer in use.
 | cloudConfig.spotinstOrientation                        | cloudProvider.aws.spotinstOrientation                          |
 | cloudConfig.spotinstProduct                            | cloudProvider.aws.spotinstProduct                              |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
+| configBase                                             | configStore.base                                               |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
 | egressProxy                                            | networking.egressProxy                                         |
 | etcdClusters[\*].etcdMembers[\*].kmsKeyId              | etcdClusters[\*].etcdMembers[\*].kmsKeyID                      |

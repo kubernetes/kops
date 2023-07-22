@@ -62,9 +62,9 @@ func (s *s3PublicAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *k
 		return nil, nil
 	}
 
-	config, err := url.Parse(cluster.Spec.ConfigBase)
+	config, err := url.Parse(cluster.Spec.ConfigStore.Base)
 	if err != nil {
-		return "", fmt.Errorf("unable to parse: %q", cluster.Spec.ConfigBase)
+		return "", fmt.Errorf("unable to parse: %q", cluster.Spec.ConfigStore.Base)
 	}
 
 	// We are checking that the path defined is not the state store, if it is

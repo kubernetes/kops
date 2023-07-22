@@ -115,7 +115,7 @@ func serverVersion(f *util.Factory, options *VersionOptions) string {
 	if err != nil {
 		return "could not fetch cluster"
 	}
-	configBase, err := f.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := f.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return "could not talk to vfs"
 	}

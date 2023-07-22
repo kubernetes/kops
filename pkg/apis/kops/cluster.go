@@ -55,11 +55,8 @@ type ClusterSpec struct {
 	Channel string `json:"channel,omitempty"`
 	// Additional addons that should be installed on the cluster
 	Addons []AddonSpec `json:"addons,omitempty"`
-	// ConfigBase is the path where we store configuration for the cluster
-	// This might be different than the location where the cluster spec itself is stored,
-	// both because this must be accessible to the cluster,
-	// and because it might be on a different cloud or storage system (etcd vs S3)
-	ConfigBase string `json:"configBase,omitempty"`
+	// ConfigStore configures the stores that nodes use to get their configuration.
+	ConfigStore ConfigStoreSpec `json:"configStore"`
 	// CloudProvider configures the cloud provider to use.
 	CloudProvider CloudProviderSpec `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
@@ -166,6 +163,15 @@ type ClusterSpec struct {
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
 	// Karpenter defines the Karpenter configuration.
 	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
+}
+
+// ConfigStoreSpec configures the stores that nodes use to get their configuration.
+type ConfigStoreSpec struct {
+	// Base is the VFS path where we store configuration for the cluster
+	// This might be different than the location where the cluster spec itself is stored,
+	// both because this must be accessible to the cluster,
+	// and because it might be on a different cloud or storage system (etcd vs S3).
+	Base string `json:"base,omitempty"`
 }
 
 // PodIdentityWebhookSpec configures an EKS Pod Identity Webhook.

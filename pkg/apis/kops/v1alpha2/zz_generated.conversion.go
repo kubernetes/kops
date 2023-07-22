@@ -2340,7 +2340,8 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Addons = nil
 	}
-	out.ConfigBase = in.ConfigBase
+	out.ConfigStore = in.ConfigStore
+	// INFO: in.ConfigBase opted out of conversion generation
 	out.CloudProvider = in.CloudProvider
 	// INFO: in.LegacyCloudProvider opted out of conversion generation
 	if in.GossipConfig != nil {
@@ -2364,7 +2365,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// INFO: in.Topology opted out of conversion generation
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
-	// INFO: in.ConfigStore opted out of conversion generation
+	// INFO: in.LegacyConfigStore opted out of conversion generation
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -2698,7 +2699,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Addons = nil
 	}
-	out.ConfigBase = in.ConfigBase
+	out.ConfigStore = in.ConfigStore
 	out.CloudProvider = in.CloudProvider
 	if in.GossipConfig != nil {
 		in, out := &in.GossipConfig, &out.GossipConfig

@@ -41,7 +41,8 @@ spec:
       spotinstProduct: spot-product
       warmPool:
         enableLifecycleHook: true
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore:
+    base: memfs://clusters.example.com/minimal.example.com
   controlPlaneKubelet:
     cpuCFSQuota: true
   etcdClusters:

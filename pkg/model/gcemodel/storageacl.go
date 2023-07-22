@@ -55,7 +55,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("error fetching default ServiceAccount: %w", err)
 		}
 
-		clusterPath := b.Cluster.Spec.ConfigBase
+		clusterPath := b.Cluster.Spec.ConfigStore.Base
 		p, err := vfs.Context.BuildVfsPath(clusterPath)
 		if err != nil {
 			return fmt.Errorf("cannot parse cluster path %q: %w", clusterPath, err)
@@ -179,9 +179,9 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return err
 		}
 		if len(readablePaths) != 0 {
-			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigBase)
+			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore.Base)
 			if err != nil {
-				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigBase, err)
+				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigStore.Base, err)
 			}
 
 			gcsPath, ok := p.(*vfs.GSPath)

@@ -87,6 +87,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			out.AdditionalPolicies[k] = v
 		}
 	}
+	out.ConfigStore.Base = in.ConfigBase
 	if in.ExternalPolicies != nil {
 		policies := make(map[string][]string, len(in.ExternalPolicies))
 		for k, v := range in.ExternalPolicies {
@@ -384,6 +385,7 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		kube.OIDCUsernameClaim = oidc.UsernameClaim
 		kube.OIDCUsernamePrefix = oidc.UsernamePrefix
 	}
+	out.ConfigBase = in.ConfigStore.Base
 	if in.ExternalPolicies != nil {
 		out.ExternalPolicies = make(map[string][]string, len(in.ExternalPolicies))
 		for k, v := range in.ExternalPolicies {

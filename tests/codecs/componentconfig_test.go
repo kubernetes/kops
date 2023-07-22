@@ -41,6 +41,7 @@ metadata:
 spec:
   api: {}
   cloudProvider: {}
+  configStore: {}
   kubeControllerManager: {}
   kubelet: {}
   networking: {}
