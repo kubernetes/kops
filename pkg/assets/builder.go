@@ -229,7 +229,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	digest, err := crane.Digest(image, crane.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
-		klog.Warningf("failed to digest image %q", image)
+		klog.Warningf("failed to digest image %q: %s", image, err)
 		return image, nil
 	}
 
