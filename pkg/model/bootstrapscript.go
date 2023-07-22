@@ -135,7 +135,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 
 	if os.Getenv("S3_ENDPOINT") != "" {
 		passEnvs := false
-		if b.ig.IsControlPlane() || !b.builder.UseKopsControllerForNodeBootstrap() {
+		if b.ig.IsControlPlane() || cluster.UsesLegacyGossip() {
 			passEnvs = true
 		}
 
