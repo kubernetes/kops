@@ -2364,7 +2364,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// INFO: in.Topology opted out of conversion generation
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
-	out.ConfigStore = in.ConfigStore
+	// INFO: in.ConfigStore opted out of conversion generation
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -2713,7 +2713,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.KubernetesVersion = in.KubernetesVersion
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
-	out.ConfigStore = in.ConfigStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -7161,7 +7160,7 @@ func Convert_kops_TerraformSpec_To_v1alpha2_TerraformSpec(in *kops.TerraformSpec
 }
 
 func autoConvert_v1alpha2_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *kops.TopologySpec, s conversion.Scope) error {
-	// INFO: in.ControlPlane opted out of conversion generation
+	// INFO: in.Masters opted out of conversion generation
 	// INFO: in.Nodes opted out of conversion generation
 	if in.Bastion != nil {
 		in, out := &in.Bastion, &out.Bastion

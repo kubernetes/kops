@@ -33,7 +33,6 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/externalpolicies.example.com
-  configStore: memfs://clusters.example.com/externalpolicies.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

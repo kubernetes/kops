@@ -26,7 +26,6 @@ spec:
   cloudProvider: gce
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal-gce-private.example.com
-  configStore: memfs://tests/minimal-gce-private.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info

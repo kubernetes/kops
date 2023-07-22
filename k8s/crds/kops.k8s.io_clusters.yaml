@@ -802,8 +802,7 @@ spec:
                   system (etcd vs S3)
                 type: string
               configStore:
-                description: ConfigStore is the VFS path to where the configuration
-                  (Cluster, InstanceGroups etc) is stored
+                description: ConfigStore is unused.
                 type: string
               containerRuntime:
                 description: Container runtime to use for Kubernetes
@@ -5721,7 +5720,7 @@ spec:
                         type: string
                     type: object
                   masters:
-                    description: ControlPlane is not used.
+                    description: Masters is not used.
                     type: string
                   nodes:
                     description: Nodes is not used.

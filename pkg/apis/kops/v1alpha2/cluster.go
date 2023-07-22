@@ -99,7 +99,8 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
+	// ConfigStore is unused.
+	// +k8s:conversion-gen=false
 	ConfigStore string `json:"configStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have

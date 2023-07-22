@@ -27,7 +27,6 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/privatecalico.example.com
-  configStore: memfs://clusters.example.com/privatecalico.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
