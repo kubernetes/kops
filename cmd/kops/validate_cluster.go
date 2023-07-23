@@ -264,7 +264,7 @@ func validateClusterOutputTable(result *validation.ValidationCluster, cluster *k
 	fmt.Fprintln(out, "INSTANCE GROUPS")
 	err := t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot render instance groups for %q: %w", cluster.Name, err)
 	}
 
 	{
