@@ -66,7 +66,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: control-plane-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230302
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230715
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -86,7 +86,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: nodes-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230302
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230715
   machineType: e2-medium
   maxSize: 1
   minSize: 1
