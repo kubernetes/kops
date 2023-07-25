@@ -70,8 +70,8 @@ func (c *VFSClientset) ListClusters(ctx context.Context, options metav1.ListOpti
 
 // ConfigBaseFor implements the ConfigBaseFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
-	if cluster.Spec.ConfigBase != "" {
-		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
+	if cluster.Spec.ConfigStore.Base != "" {
+		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	}
 	return c.clusters().configBase(cluster.Name)
 }
@@ -86,7 +86,7 @@ func (c *VFSClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
 }
 
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
-	if cluster.Spec.SecretStore == "" {
+	if cluster.Spec.ConfigStore.Secrets == "" {
 		configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 		if err != nil {
 			return nil, err
@@ -94,7 +94,7 @@ func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error
 		basedir := configBase.Join("secrets")
 		return secrets.NewVFSSecretStore(cluster, basedir), nil
 	} else {
-		storePath, err := c.VFSContext().BuildVfsPath(cluster.Spec.SecretStore)
+		storePath, err := c.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Secrets)
 		return secrets.NewVFSSecretStore(cluster, storePath), err
 	}
 }
@@ -119,14 +119,14 @@ func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredenti
 }
 
 func (c *VFSClientset) pkiPath(cluster *kops.Cluster) (vfs.Path, error) {
-	if cluster.Spec.KeyStore == "" {
+	if cluster.Spec.ConfigStore.Keypairs == "" {
 		configBase, err := registry.ConfigBase(c.VFSContext(), cluster)
 		if err != nil {
 			return nil, err
 		}
 		return configBase.Join("pki"), nil
 	} else {
-		storePath, err := c.VFSContext().BuildVfsPath(cluster.Spec.KeyStore)
+		storePath, err := c.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Keypairs)
 		return storePath, err
 	}
 }
@@ -208,7 +208,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		}
 	}
 
-	secretStore := cluster.Spec.SecretStore
+	secretStore := cluster.Spec.ConfigStore.Secrets
 	if secretStore != "" {
 		path, err := c.VFSContext().BuildVfsPath(secretStore)
 		if err != nil {
@@ -220,7 +220,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		}
 	}
 
-	keyStore := cluster.Spec.KeyStore
+	keyStore := cluster.Spec.ConfigStore.Keypairs
 	if keyStore != "" && keyStore != secretStore {
 		path, err := c.VFSContext().BuildVfsPath(keyStore)
 		if err != nil {

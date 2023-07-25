@@ -35,7 +35,8 @@ spec:
       routeTableName: route-table-name
       subscriptionID: subs-id
       tenantID: tenant-id
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore:
+    base: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:

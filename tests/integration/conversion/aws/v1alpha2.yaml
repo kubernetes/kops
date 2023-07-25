@@ -67,6 +67,7 @@ spec:
   iam:
     legacy: false
   isolateMasters: true
+  keyStore: memfs://clusters.example.com/keypairs.example.com
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.21.0
@@ -83,6 +84,7 @@ spec:
   podCIDR: 100.64.0.0/16
   podIdentityWebhook:
     replicas: 14
+  secretStore: memfs://clusters.example.com/secrets.example.com
   serviceClusterIPRange: 100.65.0.0/16
   sshAccess:
   - 0.0.0.0/0

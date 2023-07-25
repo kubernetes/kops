@@ -215,12 +215,14 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.KubernetesVersion = opt.KubernetesVersion
 	}
 
-	cluster.Spec.ConfigBase = opt.ConfigBase
+	cluster.Spec.ConfigStore = api.ConfigStoreSpec{
+		Base: opt.ConfigBase,
+	}
 	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
-	cluster.Spec.ConfigBase = configBase.Path()
+	cluster.Spec.ConfigStore.Base = configBase.Path()
 
 	cluster.Spec.Authorization = &api.AuthorizationSpec{}
 	if strings.EqualFold(opt.Authorization, AuthorizationFlagAlwaysAllow) {
@@ -288,11 +290,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.ControlPlaneZones...)
 
 	if opt.CloudProvider == "" {
-		cloud, err := clouds.GuessCloudForPath(cluster.Spec.ConfigBase)
+		cloud, err := clouds.GuessCloudForPath(cluster.Spec.ConfigStore.Base)
 		if err != nil {
 			return nil, fmt.Errorf("pass in the cloud provider explicitly using --cloud: %w", err)
 		}
-		klog.V(2).Infof("Inferred %q cloud provider from state store %q", cloud, cluster.Spec.ConfigBase)
+		klog.V(2).Infof("Inferred %q cloud provider from state store %q", cloud, cluster.Spec.ConfigStore.Base)
 		opt.CloudProvider = string(cloud)
 	}
 

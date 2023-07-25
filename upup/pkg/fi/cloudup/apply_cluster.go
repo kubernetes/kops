@@ -266,9 +266,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cluster := c.Cluster
 
-	configBase, err := c.Clientset.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := c.Clientset.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
-		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+		return fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
 	}
 
 	if !c.AllowKopsDowngrade {
@@ -1175,9 +1175,9 @@ type nodeUpConfigBuilder struct {
 }
 
 func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
 	}
 
 	channels := []string{

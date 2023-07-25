@@ -55,7 +55,9 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c.Spec.Networking.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider.AWS = &kops.AWSSpec{}
 
-	c.Spec.ConfigBase = "memfs://unittest-bucket/" + clusterName
+	c.Spec.ConfigStore = kops.ConfigStoreSpec{
+		Base: "memfs://unittest-bucket/" + clusterName,
+	}
 
 	c.Spec.DNSZone = "test.com"
 

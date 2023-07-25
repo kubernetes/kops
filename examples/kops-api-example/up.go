@@ -40,7 +40,9 @@ func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		CloudProvider: api.CloudProviderSpec{
 			AWS: &api.AWSSpec{},
 		},
-		ConfigBase: registryBase.Join(cluster.ObjectMeta.Name).Path(),
+		ConfigStore: api.ConfigStoreSpec{
+			Base: registryBase.Join(cluster.ObjectMeta.Name).Path(),
+		},
 	}
 
 	for _, z := range nodeZones {

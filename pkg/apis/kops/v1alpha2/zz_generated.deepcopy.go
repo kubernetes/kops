@@ -1033,6 +1033,7 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = make([]AddonSpec, len(*in))
 		copy(*out, *in)
 	}
+	out.ConfigStore = in.ConfigStore
 	in.CloudProvider.DeepCopyInto(&out.CloudProvider)
 	if in.GossipConfig != nil {
 		in, out := &in.GossipConfig, &out.GossipConfig

@@ -69,7 +69,7 @@ func (b *PKIModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	{
-		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.SecretStore)
+		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore.Secrets)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func (b *PKIModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	{
-		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.KeyStore)
+		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore.Keypairs)
 		if err != nil {
 			return err
 		}

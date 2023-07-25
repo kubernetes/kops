@@ -34,12 +34,12 @@ const (
 )
 
 func ConfigBase(vfsContext *vfs.VFSContext, c *api.Cluster) (vfs.Path, error) {
-	if c.Spec.ConfigBase == "" {
-		return nil, field.Required(field.NewPath("spec", "configBase"), "")
+	if c.Spec.ConfigStore.Base == "" {
+		return nil, field.Required(field.NewPath("spec", "configStore", "base"), "")
 	}
-	configBase, err := vfsContext.BuildVfsPath(c.Spec.ConfigBase)
+	configBase, err := vfsContext.BuildVfsPath(c.Spec.ConfigStore.Base)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing ConfigBase %q: %v", c.Spec.ConfigBase, err)
+		return nil, fmt.Errorf("error parsing ConfigStore.Base %q: %v", c.Spec.ConfigStore.Base, err)
 	}
 	return configBase, nil
 }

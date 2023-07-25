@@ -504,9 +504,9 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		var locations []string
 
 		for _, p := range []string{
-			b.Cluster.Spec.KeyStore,
-			b.Cluster.Spec.SecretStore,
-			b.Cluster.Spec.ConfigBase,
+			b.Cluster.Spec.ConfigStore.Keypairs,
+			b.Cluster.Spec.ConfigStore.Secrets,
+			b.Cluster.Spec.ConfigStore.Base,
 		} {
 			if p == "" {
 				continue

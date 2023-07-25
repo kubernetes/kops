@@ -46,7 +46,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 			etcdCluster.Backups = &kops.EtcdBackupSpec{}
 		}
 		if etcdCluster.Backups.BackupStore == "" {
-			base := clusterSpec.ConfigBase
+			base := clusterSpec.ConfigStore.Base
 			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
 		}
 

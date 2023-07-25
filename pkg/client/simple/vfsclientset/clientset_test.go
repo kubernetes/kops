@@ -31,7 +31,9 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 	configBase := "memfs://some/config/base"
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			ConfigBase: configBase,
+			ConfigStore: kops.ConfigStoreSpec{
+				Base: configBase,
+			},
 		},
 	}
 
@@ -57,8 +59,10 @@ func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
 	keyPath := "memfs://keys/some/config/base/pki"
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			ConfigBase: configBase,
-			KeyStore:   keyPath,
+			ConfigStore: kops.ConfigStoreSpec{
+				Base:     configBase,
+				Keypairs: keyPath,
+			},
 		},
 	}
 

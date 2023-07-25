@@ -646,8 +646,8 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	config := &kopscontrollerconfig.Options{
 		ClusterName: cluster.Name,
 		Cloud:       string(cluster.Spec.GetCloudProvider()),
-		ConfigBase:  cluster.Spec.ConfigBase,
-		SecretStore: cluster.Spec.SecretStore,
+		ConfigBase:  cluster.Spec.ConfigStore.Base,
+		SecretStore: cluster.Spec.ConfigStore.Secrets,
 	}
 
 	if featureflag.CacheNodeidentityInfo.Enabled() {

@@ -91,8 +91,8 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
-	if cluster.Spec.ConfigBase != "" {
-		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
+	if cluster.Spec.ConfigStore.Base != "" {
+		return c.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	}
 	// URL for clusters looks like https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
