@@ -160,7 +160,7 @@ kubeAPIServer:
   - /events#https://127.0.0.1:4002
   featureGates:
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.27.0-alpha.3
+  image: registry.k8s.io/kube-apiserver:v1.27.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -188,7 +188,7 @@ kubeControllerManager:
   configureCloudRoutes: false
   featureGates:
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.27.0-alpha.3
+  image: registry.k8s.io/kube-controller-manager:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -196,7 +196,7 @@ kubeControllerManager:
 kubeScheduler:
   featureGates:
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.27.0-alpha.3
+  image: registry.k8s.io/kube-scheduler:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -245,7 +245,7 @@ ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Fpnr65NWckLM46Jjfpf5NOia6oLMjoIrxg6dv04NTFU=
+NodeupConfigHash: V+EuXVtggmE1qLa60D3ZBub89RptJFHHX/jHk1n6aQY=
 
 __EOF_KUBE_ENV
 
