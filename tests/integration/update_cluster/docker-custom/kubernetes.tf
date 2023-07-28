@@ -118,6 +118,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-docker-example-com" 
     value               = "master-us-test-1a.masters.docker.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
     propagate_at_launch = true
     value               = ""
@@ -188,6 +193,11 @@ resource "aws_autoscaling_group" "nodes-docker-example-com" {
     value               = "nodes.docker.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
     propagate_at_launch = true
     value               = "node"
@@ -213,6 +223,82 @@ resource "aws_autoscaling_group" "nodes-docker-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-docker-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-docker-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-docker-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "docker-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_docker.example.com-ASGLifecycle_event_pattern")
+  name          = "docker.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                        = "docker.example.com"
+    "Name"                                     = "docker.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/docker.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "docker-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_docker.example.com-InstanceScheduledChange_event_pattern")
+  name          = "docker.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                        = "docker.example.com"
+    "Name"                                     = "docker.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/docker.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "docker-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_docker.example.com-InstanceStateChange_event_pattern")
+  name          = "docker.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                        = "docker.example.com"
+    "Name"                                     = "docker.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/docker.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "docker-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_docker.example.com-SpotInterruption_event_pattern")
+  name          = "docker.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                        = "docker.example.com"
+    "Name"                                     = "docker.example.com-SpotInterruption"
+    "kubernetes.io/cluster/docker.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "docker-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.docker-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.docker-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "docker-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.docker-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.docker-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "docker-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.docker-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.docker-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "docker-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.docker-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.docker-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-docker-example-com" {
@@ -366,6 +452,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-docker-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "docker.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.docker.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -382,6 +469,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-docker-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "docker.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.docker.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -396,6 +484,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-docker-example-com" {
   tags = {
     "KubernetesCluster"                                                                                     = "docker.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.docker.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -451,6 +540,7 @@ resource "aws_launch_template" "nodes-docker-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "docker.example.com"
       "Name"                                                                       = "nodes.docker.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -463,6 +553,7 @@ resource "aws_launch_template" "nodes-docker-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "docker.example.com"
       "Name"                                                                       = "nodes.docker.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -473,6 +564,7 @@ resource "aws_launch_template" "nodes-docker-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "docker.example.com"
     "Name"                                                                       = "nodes.docker.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
@@ -577,6 +669,14 @@ resource "aws_s3_object" "docker-example-com-addons-limit-range-addons-k8s-io" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_docker.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/docker.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "docker-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_docker.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/docker.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -799,6 +899,17 @@ resource "aws_security_group_rule" "from-nodes-docker-example-com-ingress-udp-1t
   source_security_group_id = aws_security_group.nodes-docker-example-com.id
   to_port                  = 65535
   type                     = "ingress"
+}
+
+resource "aws_sqs_queue" "docker-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "docker-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_docker-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                        = "docker.example.com"
+    "Name"                                     = "docker-example-com-nth"
+    "kubernetes.io/cluster/docker.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-docker-example-com" {

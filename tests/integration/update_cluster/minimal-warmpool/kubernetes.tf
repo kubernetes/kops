@@ -118,6 +118,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-warmpool-exa
     value               = "master-us-test-1a.masters.minimal-warmpool.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
     propagate_at_launch = true
     value               = ""
@@ -178,6 +183,11 @@ resource "aws_autoscaling_group" "nodes-minimal-warmpool-example-com" {
     value               = "nodes.minimal-warmpool.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -210,6 +220,82 @@ resource "aws_autoscaling_lifecycle_hook" "kops-warmpool-nodes" {
   heartbeat_timeout      = 600
   lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
   name                   = "kops-warmpool"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-minimal-warmpool-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-minimal-warmpool-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-warmpool-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-warmpool.example.com-ASGLifecycle_event_pattern")
+  name          = "minimal-warmpool.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                                  = "minimal-warmpool.example.com"
+    "Name"                                               = "minimal-warmpool.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-warmpool-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-warmpool.example.com-InstanceScheduledChange_event_pattern")
+  name          = "minimal-warmpool.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                                  = "minimal-warmpool.example.com"
+    "Name"                                               = "minimal-warmpool.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-warmpool-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-warmpool.example.com-InstanceStateChange_event_pattern")
+  name          = "minimal-warmpool.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                                  = "minimal-warmpool.example.com"
+    "Name"                                               = "minimal-warmpool.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-warmpool-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-warmpool.example.com-SpotInterruption_event_pattern")
+  name          = "minimal-warmpool.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                                  = "minimal-warmpool.example.com"
+    "Name"                                               = "minimal-warmpool.example.com-SpotInterruption"
+    "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "minimal-warmpool-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.minimal-warmpool-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-warmpool-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-warmpool-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.minimal-warmpool-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-warmpool-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-warmpool-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.minimal-warmpool-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-warmpool-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-warmpool-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.minimal-warmpool-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-warmpool-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-warmpool-example-com" {
@@ -363,6 +449,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-warmpool.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-warmpool.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -377,6 +464,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-warmpool.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-warmpool.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -389,6 +477,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
   tags = {
     "KubernetesCluster"                                                                                     = "minimal-warmpool.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal-warmpool.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -442,6 +531,7 @@ resource "aws_launch_template" "nodes-minimal-warmpool-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-warmpool.example.com"
       "Name"                                                                       = "nodes.minimal-warmpool.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -453,6 +543,7 @@ resource "aws_launch_template" "nodes-minimal-warmpool-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-warmpool.example.com"
       "Name"                                                                       = "nodes.minimal-warmpool.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -462,6 +553,7 @@ resource "aws_launch_template" "nodes-minimal-warmpool-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "minimal-warmpool.example.com"
     "Name"                                                                       = "nodes.minimal-warmpool.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -621,6 +713,14 @@ resource "aws_s3_object" "minimal-warmpool-example-com-addons-networking-cilium-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-warmpool.example.com-addons-networking.cilium.io-k8s-1.16_content")
   key                    = "clusters.example.com/minimal-warmpool.example.com/addons/networking.cilium.io/k8s-1.16-v1.12.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "minimal-warmpool-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-warmpool.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/minimal-warmpool.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -795,6 +895,17 @@ resource "aws_security_group_rule" "from-nodes-minimal-warmpool-example-com-ingr
   source_security_group_id = aws_security_group.nodes-minimal-warmpool-example-com.id
   to_port                  = 65535
   type                     = "ingress"
+}
+
+resource "aws_sqs_queue" "minimal-warmpool-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "minimal-warmpool-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_minimal-warmpool-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                                  = "minimal-warmpool.example.com"
+    "Name"                                               = "minimal-warmpool-example-com-nth"
+    "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-minimal-warmpool-example-com" {
