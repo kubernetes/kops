@@ -2510,8 +2510,9 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 	//
 	// Possible values:
 	//   "none"
-	//   "regionalL4ilb"
-	//   "regionalL7ilb"
+	//   "regionalL4ilb" - Regional internal passthrough Network Load
+	// Balancer
+	//   "regionalL7ilb" - Regional internal Application Load Balancer
 	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 
 	// NetworkUrl: The fully qualified url of the network on which the ILB

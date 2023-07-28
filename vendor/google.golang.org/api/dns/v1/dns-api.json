@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20230712",
+  "revision": "20230721",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -3138,8 +3138,8 @@
           ],
           "enumDescriptions": [
             "",
-            "",
-            ""
+            "Regional internal passthrough Network Load Balancer",
+            "Regional internal Application Load Balancer"
           ],
           "type": "string"
         },

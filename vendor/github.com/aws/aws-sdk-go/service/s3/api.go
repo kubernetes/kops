@@ -10709,6 +10709,7 @@ func (c *S3) SelectObjectContentWithContext(ctx aws.Context, input *SelectObject
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // SelectObjectContentEventStream provides the event stream handling for the SelectObjectContent.
 //

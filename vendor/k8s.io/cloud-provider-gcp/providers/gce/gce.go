@@ -726,6 +726,16 @@ func (g *Cloud) Region() string {
 	return g.region
 }
 
+// Regional returns true if the cluster is regional.
+func (g *Cloud) Regional() bool {
+	return g.regional
+}
+
+// LocalZone returns the localZone.
+func (g *Cloud) LocalZone() string {
+	return g.localZone
+}
+
 // OnXPN returns true if the cluster is running on a cross project network (XPN)
 func (g *Cloud) OnXPN() bool {
 	return g.onXPN

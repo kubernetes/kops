@@ -2916,6 +2916,9 @@ type EC2API interface {
 	WaitUntilSpotInstanceRequestFulfilled(*ec2.DescribeSpotInstanceRequestsInput) error
 	WaitUntilSpotInstanceRequestFulfilledWithContext(aws.Context, *ec2.DescribeSpotInstanceRequestsInput, ...request.WaiterOption) error
 
+	WaitUntilStoreImageTaskComplete(*ec2.DescribeStoreImageTasksInput) error
+	WaitUntilStoreImageTaskCompleteWithContext(aws.Context, *ec2.DescribeStoreImageTasksInput, ...request.WaiterOption) error
+
 	WaitUntilSubnetAvailable(*ec2.DescribeSubnetsInput) error
 	WaitUntilSubnetAvailableWithContext(aws.Context, *ec2.DescribeSubnetsInput, ...request.WaiterOption) error
 

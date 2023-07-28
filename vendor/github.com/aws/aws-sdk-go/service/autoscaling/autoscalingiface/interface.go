@@ -247,6 +247,9 @@ type AutoScalingAPI interface {
 	DescribeWarmPoolWithContext(aws.Context, *autoscaling.DescribeWarmPoolInput, ...request.Option) (*autoscaling.DescribeWarmPoolOutput, error)
 	DescribeWarmPoolRequest(*autoscaling.DescribeWarmPoolInput) (*request.Request, *autoscaling.DescribeWarmPoolOutput)
 
+	DescribeWarmPoolPages(*autoscaling.DescribeWarmPoolInput, func(*autoscaling.DescribeWarmPoolOutput, bool) bool) error
+	DescribeWarmPoolPagesWithContext(aws.Context, *autoscaling.DescribeWarmPoolInput, func(*autoscaling.DescribeWarmPoolOutput, bool) bool, ...request.Option) error
+
 	DetachInstances(*autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error)
 	DetachInstancesWithContext(aws.Context, *autoscaling.DetachInstancesInput, ...request.Option) (*autoscaling.DetachInstancesOutput, error)
 	DetachInstancesRequest(*autoscaling.DetachInstancesInput) (*request.Request, *autoscaling.DetachInstancesOutput)
