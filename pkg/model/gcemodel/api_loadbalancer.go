@@ -77,6 +77,10 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		TargetPool: targetPool,
 		IPAddress:  ipAddress,
 		IPProtocol: "TCP",
+		Labels: map[string]string{
+			gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+			"name":                            "api",
+		},
 	})
 	if b.Cluster.UsesNoneDNS() {
 		c.AddTask(&gcetasks.ForwardingRule{
@@ -86,6 +90,10 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			TargetPool: targetPool,
 			IPAddress:  ipAddress,
 			IPProtocol: "TCP",
+			Labels: map[string]string{
+				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+				"name":                            "kops-controller",
+			},
 		})
 	}
 
@@ -204,6 +212,10 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			LoadBalancingScheme: s("INTERNAL"),
 			Network:             network,
 			Subnetwork:          subnet,
+			Labels: map[string]string{
+				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+				"name":                            "api-" + sn.Name,
+			},
 		})
 		if b.Cluster.UsesNoneDNS() {
 			c.AddTask(&gcetasks.ForwardingRule{
@@ -216,6 +228,10 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				LoadBalancingScheme: s("INTERNAL"),
 				Network:             network,
 				Subnetwork:          subnet,
+				Labels: map[string]string{
+					gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+					"name":                            "kops-controller-" + sn.Name,
+				},
 			})
 		}
 	}
