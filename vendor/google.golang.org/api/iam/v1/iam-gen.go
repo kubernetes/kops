@@ -2647,7 +2647,7 @@ func (s *Saml) MarshalJSON() ([]byte, error) {
 // you create a service account, you specify the project ID that owns
 // the service account, as well as a name that must be unique within the
 // project. IAM uses these values to create an email address that
-// identifies the service //
+// identifies the service account. //
 type ServiceAccount struct {
 	// Description: Optional. A user-specified, human-readable description
 	// of the service account. The maximum length is 256 UTF-8 bytes.

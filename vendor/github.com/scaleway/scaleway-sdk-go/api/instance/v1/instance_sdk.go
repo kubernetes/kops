@@ -1999,6 +1999,8 @@ type ListServersRequest struct {
 	// Order: define the order of the returned servers.
 	// Default value: creation_date_desc
 	Order ListServersRequestOrder `json:"-"`
+	// PrivateNetworks: list Instances from the given Private Networks (use commas to separate them).
+	PrivateNetworks []string `json:"-"`
 }
 
 // ListServers: list all Instances.
@@ -2031,6 +2033,9 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	}
 	parameter.AddToQuery(query, "private_network", req.PrivateNetwork)
 	parameter.AddToQuery(query, "order", req.Order)
+	if len(req.PrivateNetworks) != 0 {
+		parameter.AddToQuery(query, "private_networks", strings.Join(req.PrivateNetworks, ","))
+	}
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")

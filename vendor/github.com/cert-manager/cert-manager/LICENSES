@@ -9,7 +9,7 @@ github.com/Azure/go-autorest/logger,https://github.com/Azure/go-autorest/blob/lo
 github.com/Azure/go-autorest/tracing,https://github.com/Azure/go-autorest/blob/tracing/v0.6.0/tracing/LICENSE,Apache-2.0
 github.com/Azure/go-ntlmssp,https://github.com/Azure/go-ntlmssp/blob/cb9428e4ac1e/LICENSE,MIT
 github.com/NYTimes/gziphandler,https://github.com/NYTimes/gziphandler/blob/v1.1.1/LICENSE,Apache-2.0
-github.com/Venafi/vcert/v4,https://github.com/jetstack/vcert/blob/3aa3dfd6613d/LICENSE,Apache-2.0
+github.com/Venafi/vcert/v4,https://github.com/Venafi/vcert/blob/69f417ae176d/LICENSE,Apache-2.0
 github.com/akamai/AkamaiOPEN-edgegrid-golang,https://github.com/akamai/AkamaiOPEN-edgegrid-golang/blob/v1.2.2/LICENSE,Apache-2.0
 github.com/antlr/antlr4/runtime/Go/antlr,https://github.com/antlr/antlr4/blob/runtime/Go/antlr/v1.4.10/runtime/Go/antlr/LICENSE,BSD-3-Clause
 github.com/asaskevich/govalidator,https://github.com/asaskevich/govalidator/blob/21a406dcc535/LICENSE,MIT

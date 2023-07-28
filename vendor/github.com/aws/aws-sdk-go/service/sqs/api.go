@@ -161,14 +161,22 @@ func (c *SQS) CancelMessageMoveTaskRequest(input *CancelMessageMoveTaskInput) (r
 
 // CancelMessageMoveTask API operation for Amazon Simple Queue Service.
 //
-// Cancels a specified message movement task.
+// Cancels a specified message movement task. A message movement can only be
+// cancelled when the current status is RUNNING. Cancelling a message movement
+// task does not revert the messages that have already been moved. It can only
+// stop the messages that have not been moved yet.
 //
-//   - A message movement can only be cancelled when the current status is
-//     RUNNING.
+//   - This action is currently limited to supporting message redrive from
+//     dead-letter queues (DLQs) (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
+//     only. In this context, the source queue is the dead-letter queue (DLQ),
+//     while the destination queue can be the original source queue (from which
+//     the messages were driven to the dead-letter-queue), or a custom destination
+//     queue.
 //
-//   - Cancelling a message movement task does not revert the messages that
-//     have already been moved. It can only stop the messages that have not been
-//     moved yet.
+//   - Currently, only standard queues are supported.
+//
+//   - Only one active message movement task is supported per queue at any
+//     given time.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1206,6 +1214,18 @@ func (c *SQS) ListMessageMoveTasksRequest(input *ListMessageMoveTasksInput) (req
 // Gets the most recent message movement tasks (up to 10) under a specific source
 // queue.
 //
+//   - This action is currently limited to supporting message redrive from
+//     dead-letter queues (DLQs) (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
+//     only. In this context, the source queue is the dead-letter queue (DLQ),
+//     while the destination queue can be the original source queue (from which
+//     the messages were driven to the dead-letter-queue), or a custom destination
+//     queue.
+//
+//   - Currently, only standard queues are supported.
+//
+//   - Only one active message movement task is supported per queue at any
+//     given time.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1510,7 +1530,8 @@ func (c *SQS) PurgeQueueRequest(input *PurgeQueueInput) (req *request.Request, o
 
 // PurgeQueue API operation for Amazon Simple Queue Service.
 //
-// Deletes the messages in a queue specified by the QueueURL parameter.
+// Deletes available messages in a queue (including in-flight messages) specified
+// by the QueueURL parameter.
 //
 // When you use the PurgeQueue action, you can't retrieve any messages deleted
 // from a queue.
@@ -2126,12 +2147,17 @@ func (c *SQS) StartMessageMoveTaskRequest(input *StartMessageMoveTaskInput) (req
 // to a specified destination queue.
 //
 //   - This action is currently limited to supporting message redrive from
-//     dead-letter queues (DLQs) only. In this context, the source queue is the
-//     dead-letter queue (DLQ), while the destination queue can be the original
+//     queues that are configured as dead-letter queues (DLQs) (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
+//     of other Amazon SQS queues only. Non-SQS queue sources of dead-letter
+//     queues, such as Lambda or Amazon SNS topics, are currently not supported.
+//
+//   - In dead-letter queues redrive context, the StartMessageMoveTask the
+//     source queue is the DLQ, while the destination queue can be the original
 //     source queue (from which the messages were driven to the dead-letter-queue),
 //     or a custom destination queue.
 //
-//   - Currently, only standard queues are supported.
+//   - Currently, only standard queues support redrive. FIFO queues don't support
+//     redrive.
 //
 //   - Only one active message movement task is supported per queue at any
 //     given time.
@@ -6086,7 +6112,9 @@ type StartMessageMoveTaskInput struct {
 	MaxNumberOfMessagesPerSecond *int64 `type:"integer"`
 
 	// The ARN of the queue that contains the messages to be moved to another queue.
-	// Currently, only dead-letter queue (DLQ) ARNs are accepted.
+	// Currently, only ARNs of dead-letter queues (DLQs) whose sources are other
+	// Amazon SQS queues are accepted. DLQs whose sources are non-SQS queues, such
+	// as Lambda or Amazon SNS topics, are not currently supported.
 	//
 	// SourceArn is a required field
 	SourceArn *string `type:"string" required:"true"`

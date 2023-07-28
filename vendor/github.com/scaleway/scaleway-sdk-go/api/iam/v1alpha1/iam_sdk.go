@@ -1156,6 +1156,43 @@ func (s *API) DeleteUser(req *DeleteUserRequest, opts ...scw.RequestOption) erro
 	return nil
 }
 
+type CreateUserRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"organization_id"`
+	// Email: email of the user.
+	Email string `json:"email"`
+}
+
+// CreateUser: create a new user.
+// Create a new user. You must define the `organization_id` and the `email` in your request.
+func (s *API) CreateUser(req *CreateUserRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/iam/v1alpha1/users",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 type ListApplicationsRequest struct {
 	// OrderBy: criteria for sorting results.
 	// Default value: created_at_asc

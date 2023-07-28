@@ -18,7 +18,8 @@ const (
 	// ErrCodeNoSuchDNSZone for service response error code
 	//
 	// The specified dns zone does not exist.
-	ErrCodeNoSuchDNSZone = "NoSuchDNSZone"
+	ErrCodeNoSuchDNSZone   = "NoSuchDNSZone"
+	ErrCodeNoSuchDNSRecord = "NoSuchDNSRecord"
 )
 
 // WaitForDNSZoneRequest is used by WaitForDNSZone method.
@@ -78,4 +79,58 @@ func (s *API) WaitForDNSZone(
 	}
 
 	return dns.(*DNSZone), nil
+}
+
+// WaitForDNSRecordExistRequest is used by WaitForDNSRecordExist method.
+type WaitForDNSRecordExistRequest struct {
+	DNSZone       string
+	RecordName    string
+	RecordType    RecordType
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+func (s *API) WaitForDNSRecordExist(
+	req *WaitForDNSRecordExistRequest,
+	opts ...scw.RequestOption,
+) (*Record, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
+	dns, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (interface{}, bool, error) {
+			// listing dns zone records and take the first one
+			DNSRecords, err := s.ListDNSZoneRecords(&ListDNSZoneRecordsRequest{
+				Name:    req.RecordName,
+				Type:    req.RecordType,
+				DNSZone: req.DNSZone,
+			}, opts...)
+
+			if err != nil {
+				return nil, false, err
+			}
+
+			if DNSRecords.TotalCount == 0 {
+				return nil, false, fmt.Errorf(ErrCodeNoSuchDNSRecord)
+			}
+
+			record := DNSRecords.Records[0]
+
+			return record, true, nil
+		},
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "check for DNS Record exist failed")
+	}
+
+	return dns.(*Record), nil
 }
