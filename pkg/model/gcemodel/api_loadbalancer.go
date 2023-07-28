@@ -70,6 +70,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	}
 	c.AddTask(ipAddress)
 
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	c.AddTask(&gcetasks.ForwardingRule{
 		Name:       s(b.NameForForwardingRule("api")),
 		Lifecycle:  b.Lifecycle,
@@ -78,8 +80,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		IPAddress:  ipAddress,
 		IPProtocol: "TCP",
 		Labels: map[string]string{
-			gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
-			"name":                            "api",
+			clusterLabel.Key: clusterLabel.Value,
+			"name":           "api",
 		},
 	})
 	if b.Cluster.UsesNoneDNS() {
@@ -91,8 +93,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			IPAddress:  ipAddress,
 			IPProtocol: "TCP",
 			Labels: map[string]string{
-				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
-				"name":                            "kops-controller",
+				clusterLabel.Key: clusterLabel.Value,
+				"name":           "kops-controller",
 			},
 		})
 	}
@@ -145,6 +147,8 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
 func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
 		Port:      wellknownports.KubeAPIServer,
@@ -213,8 +217,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			Network:             network,
 			Subnetwork:          subnet,
 			Labels: map[string]string{
-				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
-				"name":                            "api-" + sn.Name,
+				clusterLabel.Key: clusterLabel.Value,
+				"name":           "api-" + sn.Name,
 			},
 		})
 		if b.Cluster.UsesNoneDNS() {
@@ -229,8 +233,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				Network:             network,
 				Subnetwork:          subnet,
 				Labels: map[string]string{
-					gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
-					"name":                            "kops-controller-" + sn.Name,
+					clusterLabel.Key: clusterLabel.Value,
+					"name":           "kops-controller-" + sn.Name,
 				},
 			})
 		}
