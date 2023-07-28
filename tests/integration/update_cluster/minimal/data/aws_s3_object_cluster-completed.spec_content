@@ -81,7 +81,7 @@ spec:
     - /events#https://127.0.0.1:4002
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.27.0-alpha.3
+    image: registry.k8s.io/kube-apiserver:v1.27.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -109,7 +109,7 @@ spec:
     configureCloudRoutes: false
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.27.0-alpha.3
+    image: registry.k8s.io/kube-controller-manager:v1.27.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -131,12 +131,12 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.27.0-alpha.3
+    image: registry.k8s.io/kube-proxy:v1.27.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.27.0-alpha.3
+    image: registry.k8s.io/kube-scheduler:v1.27.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -160,7 +160,7 @@ spec:
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.27.0-alpha.3
+  kubernetesVersion: 1.27.0
   masterKubelet:
     cgroupDriver: systemd
     cgroupRoot: /
