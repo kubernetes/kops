@@ -73,12 +73,13 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
 
 	c.AddTask(&gcetasks.ForwardingRule{
-		Name:       s(b.NameForForwardingRule("api")),
-		Lifecycle:  b.Lifecycle,
-		PortRange:  s(strconv.Itoa(wellknownports.KubeAPIServer) + "-" + strconv.Itoa(wellknownports.KubeAPIServer)),
-		TargetPool: targetPool,
-		IPAddress:  ipAddress,
-		IPProtocol: "TCP",
+		Name:                s(b.NameForForwardingRule("api")),
+		Lifecycle:           b.Lifecycle,
+		PortRange:           s(strconv.Itoa(wellknownports.KubeAPIServer) + "-" + strconv.Itoa(wellknownports.KubeAPIServer)),
+		TargetPool:          targetPool,
+		IPAddress:           ipAddress,
+		IPProtocol:          "TCP",
+		LoadBalancingScheme: s("EXTERNAL"),
 		Labels: map[string]string{
 			clusterLabel.Key: clusterLabel.Value,
 			"name":           "api",
@@ -86,12 +87,13 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	})
 	if b.Cluster.UsesNoneDNS() {
 		c.AddTask(&gcetasks.ForwardingRule{
-			Name:       s(b.NameForForwardingRule("kops-controller")),
-			Lifecycle:  b.Lifecycle,
-			PortRange:  s(strconv.Itoa(wellknownports.KopsControllerPort) + "-" + strconv.Itoa(wellknownports.KopsControllerPort)),
-			TargetPool: targetPool,
-			IPAddress:  ipAddress,
-			IPProtocol: "TCP",
+			Name:                s(b.NameForForwardingRule("kops-controller")),
+			Lifecycle:           b.Lifecycle,
+			PortRange:           s(strconv.Itoa(wellknownports.KopsControllerPort) + "-" + strconv.Itoa(wellknownports.KopsControllerPort)),
+			TargetPool:          targetPool,
+			IPAddress:           ipAddress,
+			IPProtocol:          "TCP",
+			LoadBalancingScheme: s("EXTERNAL"),
 			Labels: map[string]string{
 				clusterLabel.Key: clusterLabel.Value,
 				"name":           "kops-controller",
