@@ -19,7 +19,7 @@ spec:
     clusterCIDR: 100.64.0.0/10
     clusterName: externallb.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.0
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.6
     leaderElection:
       leaderElect: true
   cloudProvider: aws

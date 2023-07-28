@@ -194,7 +194,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 86d34a0bcf10900b080784156e938fdd1ec705fc42a9aa78e384d2c187beaa00
+    manifestHash: 183876b69b0ddc29689309659e7084c22c565d72699541ee4521d16ae2e63488
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io

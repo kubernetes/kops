@@ -49,8 +49,6 @@ spec:
 {{- end }}
         env:
         - name: KUBERNETES_SERVICE_HOST
-          value: "127.0.0.1"
-        resources:
           requests:
             cpu: {{ or .ExternalCloudControllerManager.CPURequest "200m" }}
         volumeMounts:
