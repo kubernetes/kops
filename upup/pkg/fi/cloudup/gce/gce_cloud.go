@@ -328,8 +328,14 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 		}
 	}
 
+	names := map[string]bool{}
+	names[gcenames.NameForForwardingRule(cluster.Name, "api")] = true
+	for _, sn := range cluster.Spec.Networking.Subnets {
+		names[gcenames.NameForForwardingRule(cluster.Name, "api-"+sn.Name)] = true
+	}
+
 	for _, forwardingRule := range forwardingRules {
-		if !strings.HasPrefix(forwardingRule.Name, "api-") {
+		if !names[forwardingRule.Name] {
 			continue
 		}
 		if forwardingRule.IPAddress == "" {
