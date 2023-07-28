@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/mutexes"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"

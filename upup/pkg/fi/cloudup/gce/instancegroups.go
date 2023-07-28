@@ -18,16 +18,14 @@ package gce
 
 import (
 	"context"
-	"encoding/base32"
 	"fmt"
-	"hash/fnv"
-	"strings"
 
 	compute "google.golang.org/api/compute/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 )
 
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
@@ -200,50 +198,12 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 	return groups, nil
 }
 
-// NameForInstanceGroupManager builds a name for an InstanceGroupManager in the specified zone
-func NameForInstanceGroupManager(c *kops.Cluster, ig *kops.InstanceGroup, zone string) string {
-	shortZone := zone
-	lastDash := strings.LastIndex(shortZone, "-")
-	if lastDash != -1 {
-		shortZone = shortZone[lastDash+1:]
-	}
-	name := SafeObjectName(shortZone+"."+ig.ObjectMeta.Name, c.ObjectMeta.Name)
-	name = LimitedLengthName(name, 63)
-	return name
-}
-
-// LimitedLengthName returns a string subject to a maximum length
-func LimitedLengthName(s string, n int) string {
-	// We only use the hash if we need to
-	if len(s) <= n {
-		return s
-	}
-
-	h := fnv.New32a()
-	if _, err := h.Write([]byte(s)); err != nil {
-		klog.Fatalf("error hashing values: %v", err)
-	}
-	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
-	hashString = strings.ToLower(hashString)
-	if len(hashString) > 6 {
-		hashString = hashString[:6]
-	}
-
-	maxBaseLength := n - len(hashString) - 1
-	if len(s) > maxBaseLength {
-		s = s[:maxBaseLength]
-	}
-	s = s + "-" + hashString
-
-	return s
-}
-
 // matchInstanceGroup filters a list of instancegroups for recognized cloud groups
 func matchInstanceGroup(mig *compute.InstanceGroupManager, c *kops.Cluster, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
 	migName := LastComponent(mig.Name)
 	var matches []*kops.InstanceGroup
 	for _, ig := range instancegroups {
-		name := NameForInstanceGroupManager(c, ig, LastComponent(mig.Zone))
+		name := gcenames.NameForInstanceGroupManager(c, ig, LastComponent(mig.Zone))
 		if name == migName {
 			matches = append(matches, ig)
 		}

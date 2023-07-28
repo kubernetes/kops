@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -477,7 +478,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			config.VolumeProvider = "gce"
 
 			config.VolumeTag = []string{
-				gce.GceLabelNameKubernetesCluster + "=" + gce.SafeClusterName(b.Cluster.Name),
+				gce.GceLabelNameKubernetesCluster + "=" + gcenames.SafeClusterName(b.Cluster.Name),
 				gce.GceLabelNameEtcdClusterPrefix + etcdCluster.Name,
 				gce.GceLabelNameRolePrefix + "master=master",
 			}

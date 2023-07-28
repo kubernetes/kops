@@ -18,8 +18,8 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -51,7 +51,7 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
 
 	// CCM interacts directly with the GCP API, use the name safe for GCP
-	ccmConfig.ClusterName = gce.SafeClusterName(b.ClusterName)
+	ccmConfig.ClusterName = gcenames.SafeClusterName(b.ClusterName)
 	ccmConfig.AllocateNodeCIDRs = fi.PtrTo(true)
 	ccmConfig.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 	if ccmConfig.ClusterCIDR == "" {

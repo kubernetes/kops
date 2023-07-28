@@ -21,9 +21,9 @@ import (
 	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/utils/strings/slices"
 )
@@ -155,7 +155,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			return fmt.Errorf("instance group %q must specify exactly one zone", ig.GetName())
 		}
 		zone := ig.Spec.Zones[0]
-		igms = append(igms, &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster, ig, zone)), Zone: s(zone)})
+		igms = append(igms, &gcetasks.InstanceGroupManager{Name: s(gcenames.NameForInstanceGroupManager(b.Cluster, ig, zone)), Zone: s(zone)})
 	}
 	bs := &gcetasks.BackendService{
 		Name:                  s(b.NameForBackendService("api")),

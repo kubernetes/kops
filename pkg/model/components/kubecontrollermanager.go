@@ -24,8 +24,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -85,7 +85,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 		case kops.CloudProviderGCE:
 			kcm.CloudProvider = "gce"
-			kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
+			kcm.ClusterName = gcenames.SafeClusterName(b.ClusterName)
 
 		case kops.CloudProviderDO:
 			kcm.CloudProvider = "external"

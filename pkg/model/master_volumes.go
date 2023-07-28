@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -274,7 +275,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
-	tags[gce.GceLabelNameKubernetesCluster] = gce.SafeClusterName(b.ClusterName())
+	tags[gce.GceLabelNameKubernetesCluster] = gcenames.SafeClusterName(b.ClusterName())
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
@@ -283,7 +284,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	if strings.IndexByte("0123456789-", prefix[0]) != -1 {
 		prefix = "d" + prefix
 	}
-	name := gce.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
+	name := gcenames.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
 
 	t := &gcetasks.Disk{
 		Name:      fi.PtrTo(name),

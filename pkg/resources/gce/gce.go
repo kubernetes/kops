@@ -26,6 +26,7 @@ import (
 	"google.golang.org/api/iam/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
@@ -299,7 +300,7 @@ func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupMan
 func (d *clusterDiscoveryGCE) findGCEDisks() ([]*compute.Disk, error) {
 	c := d.gceCloud
 
-	clusterTag := gce.SafeClusterName(d.clusterName)
+	clusterTag := gcenames.SafeClusterName(d.clusterName)
 
 	var matches []*compute.Disk
 
@@ -543,8 +544,8 @@ nextFirewallRule:
 		// TODO: Check network?  (or other fields?)  No label support currently.
 
 		// We consider only firewall rules that target our cluster tags, which include the cluster name or hash
-		tagPrefix := gce.SafeClusterName(d.clusterName) + "-"
-		clusterNameHash := truncate.HashString(gce.SafeClusterName(d.clusterName), 6)
+		tagPrefix := gcenames.SafeClusterName(d.clusterName) + "-"
+		clusterNameHash := truncate.HashString(gcenames.SafeClusterName(d.clusterName), 6)
 		if len(firewallRule.TargetTags) != 0 {
 			tagMatchCount := 0
 			for _, target := range firewallRule.TargetTags {
@@ -1016,7 +1017,7 @@ func (d *clusterDiscoveryGCE) listServiceAccounts() ([]*resources.Resource, erro
 		accountID := tokens[0]
 		names := []string{gce.ControlPlane, gce.Bastion, gce.Node}
 		for _, name := range names {
-			generatedName := gce.ServiceAccountName(name, d.clusterName)
+			generatedName := gcenames.ServiceAccountName(name, d.clusterName)
 			if generatedName == accountID {
 				resourceTracker := &resources.Resource{
 					Name:    gce.LastComponent(sa.Name),
@@ -1241,8 +1242,8 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 			continue
 		}
 
-		safeName := gce.SafeObjectName(id, d.clusterName)
-		clusterNameHash := truncate.HashString(gce.SafeClusterName(d.clusterName), 6)
+		safeName := gcenames.SafeObjectName(id, d.clusterName)
+		clusterNameHash := truncate.HashString(gcenames.SafeClusterName(d.clusterName), 6)
 
 		if name == safeName || strings.Contains(name, clusterNameHash) {
 			return true
@@ -1263,9 +1264,9 @@ func (d *clusterDiscoveryGCE) matchesClusterNameWithUUID(name string, maxLength 
 	}
 	withoutUUID := name[:len(name)-uuidLength]
 
-	clusterPrefix := gce.SafeClusterName(d.clusterName) + "-"
+	clusterPrefix := gcenames.SafeClusterName(d.clusterName) + "-"
 	if len(clusterPrefix) > maxLength-uuidLength {
-		clusterPrefix = gce.SafeClusterName(d.clusterName)[:maxLength-uuidLength-1] + "-"
+		clusterPrefix = gcenames.SafeClusterName(d.clusterName)[:maxLength-uuidLength-1] + "-"
 	}
 
 	return clusterPrefix == withoutUUID

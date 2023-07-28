@@ -70,35 +70,6 @@ func ClusterPrefixedName(objectName string, clusterName string, maxLength int) s
 	return prefix + suffix
 }
 
-// ClusterSuffixedName returns a cluster-suffixed name, with a maxLength
-func ClusterSuffixedName(objectName string, clusterName string, maxLength int) string {
-	prefix := objectName + "-"
-	suffixLength := maxLength - len(prefix)
-	if suffixLength < 10 {
-		klog.Fatalf("cannot construct a reasonable object name of length %d with a prefix of length %d (%q)", maxLength, len(prefix), prefix)
-	}
-
-	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
-
-	opt := truncate.TruncateStringOptions{
-		MaxLength:     suffixLength,
-		AlwaysAddHash: false,
-		HashLength:    6,
-	}
-	suffix := truncate.TruncateString(safeClusterName, opt)
-
-	return prefix + suffix
-}
-
-// SafeClusterName returns a safe cluster name
-// deprecated: prefer ClusterSuffixedName
-func SafeClusterName(clusterName string) string {
-	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
-	return safeClusterName
-}
-
 // SafeTruncatedClusterName returns a safe and truncated cluster name
 func SafeTruncatedClusterName(clusterName string, maxLength int) string {
 	// GCE does not support . in tags / names
@@ -112,19 +83,6 @@ func SafeTruncatedClusterName(clusterName string, maxLength int) string {
 	truncatedClusterName := truncate.TruncateString(safeClusterName, opt)
 
 	return truncatedClusterName
-}
-
-// SafeObjectName returns the object name and cluster name escaped for GCE
-func SafeObjectName(name string, clusterName string) string {
-	gceName := name + "-" + clusterName
-
-	// TODO: If the cluster name > some max size (32?) we should curtail it
-	return SafeClusterName(gceName)
-}
-
-// ServiceAccountName returns the cluster-suffixed service-account name
-func ServiceAccountName(name string, clusterName string) string {
-	return ClusterSuffixedName(name, clusterName, 30)
 }
 
 // LastComponent returns the last component of a URL, i.e. anything after the last slash

@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/model/iam"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/upup/pkg/fi"
@@ -78,7 +79,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				volumeType = DefaultVolumeType
 			}
 
-			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+			namePrefix := gcenames.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
 			network, err := b.LinkToNetwork()
 			if err != nil {
 				return nil, err
@@ -177,7 +178,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
-				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+				gce.GceLabelNameKubernetesCluster: gcenames.SafeClusterName(b.ClusterName()),
 				roleLabel:                         "",
 				gce.GceLabelNameInstanceGroup:     ig.ObjectMeta.Name,
 			}
@@ -296,7 +297,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 		}
 
 		for zone, targetSize := range instanceCountByZone {
-			name := gce.NameForInstanceGroupManager(b.Cluster, ig, zone)
+			name := gcenames.NameForInstanceGroupManager(b.Cluster, ig, zone)
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),

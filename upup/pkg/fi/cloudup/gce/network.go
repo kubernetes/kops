@@ -25,6 +25,7 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -72,7 +73,7 @@ func ParseNameAndProjectFromNetworkID(networkID string) (string, string, error) 
 func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet.CIDRMap, error) {
 	networkName := c.Spec.Networking.NetworkID
 	if networkName == "" {
-		networkName = SafeClusterName(c.Name)
+		networkName = gcenames.SafeClusterName(c.Name)
 	}
 
 	cloud := cloudObj.(GCECloud)

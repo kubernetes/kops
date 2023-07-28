@@ -57,6 +57,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
@@ -941,7 +942,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 			if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
 				cloud := tf.cloud.(gce.GCECloud)
 				format := "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroups/%s"
-				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gce.NameForInstanceGroupManager(cluster, ig, ig.Spec.Zones[0]))
+				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gcenames.NameForInstanceGroupManager(cluster, ig, ig.Spec.Zones[0]))
 			} else {
 				group.Other = ig.Name + "." + cluster.Name
 			}

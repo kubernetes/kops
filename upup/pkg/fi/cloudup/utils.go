@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -57,7 +58,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, fmt.Errorf("project is required for GCE - try gcloud config get-value project")
 			}
 
-			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}
+			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gcenames.SafeClusterName(cluster.ObjectMeta.Name)}
 
 			gceCloud, err := gce.NewGCECloud(region, project, labels)
 			if err != nil {

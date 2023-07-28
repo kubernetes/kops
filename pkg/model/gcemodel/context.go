@@ -20,6 +20,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/gcemodel/gcenames"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -50,18 +51,14 @@ func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
 
 // NameForIPAliasRange returns the name for the secondary IP range attached to a subnet
 func (c *GCEModelContext) NameForIPAliasRange(key string) string {
-	// We include the cluster name so we could share a subnet...
-	// but there's a 5 IP alias range limit per subnet anwyay, so
-	// this is rather pointless and in practice we just use a
-	// separate subnet per cluster
-	return c.SafeObjectName(key)
+	return gcenames.NameForIPAliasRange(key, c.Cluster.ObjectMeta.Name)
 }
 
 // LinkToSubnet returns a link to the GCE subnet object
 func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
 	name := subnet.ID
 	if name == "" {
-		name = gce.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
+		name = gcenames.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
 	}
 
 	return &gcetasks.Subnet{Name: s(name)}
@@ -69,17 +66,7 @@ func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks
 
 // SafeObjectName returns the object name and cluster name escaped for GCE
 func (c *GCEModelContext) SafeObjectName(name string) string {
-	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
-}
-
-// SafeSuffixedObjectName returns the object name and cluster name escaped for GCE, limited to 63 chars
-func (c *GCEModelContext) SafeSuffixedObjectName(name string) string {
-	return gce.ClusterSuffixedName(name, c.Cluster.ObjectMeta.Name, 63)
-}
-
-// SafeClusterName returns the cluster name escaped for use as a GCE resource name
-func (c *GCEModelContext) SafeClusterName() string {
-	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
+	return gcenames.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
 }
 
 // SafeClusterName returns the cluster name escaped and truncated for use as a GCE resource name
@@ -97,39 +84,39 @@ func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
 }
 
 func (c *GCEModelContext) NameForTargetPool(id string) string {
-	return c.SafeSuffixedObjectName(id)
+	return gcenames.NameForTargetPool(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForHealthCheck(id string) string {
-	return c.SafeObjectName(id)
+	return gcenames.NameForHealthCheck(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForBackendService(id string) string {
-	return c.SafeObjectName(id)
+	return gcenames.NameForBackendService(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForForwardingRule(id string) string {
-	return c.SafeSuffixedObjectName(id)
+	return gcenames.NameForForwardingRule(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForIPAddress(id string) string {
-	return c.SafeSuffixedObjectName(id)
+	return gcenames.NameForIPAddress(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForPoolHealthcheck(id string) string {
-	return c.SafeObjectName(id)
+	return gcenames.NameForPoolHealthcheck(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForHealthcheck(id string) string {
-	return c.SafeSuffixedObjectName(id)
+	return gcenames.NameForHealthcheck(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForRouter(id string) string {
-	return c.SafeSuffixedObjectName(id)
+	return gcenames.NameForRouter(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
-	return gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
+	return gcenames.NameForFirewallRule(id, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
@@ -169,7 +156,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		klog.Fatalf("unknown role %q", role)
 	}
 
-	accountID := gce.ServiceAccountName(name, c.ClusterName())
+	accountID := gcenames.ServiceAccountName(name, c.ClusterName())
 	projectID := c.ProjectID
 
 	email := accountID + "@" + projectID + ".iam.gserviceaccount.com"
