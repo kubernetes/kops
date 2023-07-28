@@ -327,10 +327,17 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 		}
 	}
 
+	clusterLabel := LabelForCluster(cluster.Name)
+
 	for _, forwardingRule := range forwardingRules {
 		if !strings.HasPrefix(forwardingRule.Name, "api-") {
 			continue
 		}
+
+		if clusterLabel.Value != forwardingRule.Labels[clusterLabel.Key] {
+			continue
+		}
+
 		if forwardingRule.IPAddress == "" {
 			return nil, fmt.Errorf("found forward rule %q, but it did not have an IPAddress", forwardingRule.Name)
 		}
