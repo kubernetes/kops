@@ -68,7 +68,7 @@ func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error listing FirewallRules: %v", err)
+		return nil, fmt.Errorf("getting FirewallRule %q: %w", *e.Name, err)
 	}
 
 	actual := &FirewallRule{}
