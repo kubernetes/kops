@@ -422,9 +422,13 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-plb-example
 resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
   ip_address  = google_compute_address.api-minimal-gce-plb-example-com.address
   ip_protocol = "TCP"
-  name        = "api-minimal-gce-plb-example-com"
-  port_range  = "443-443"
-  target      = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
+    "name"                = "api"
+  }
+  name       = "api-minimal-gce-plb-example-com"
+  port_range = "443-443"
+  target     = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
 }
 
 resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {

@@ -433,9 +433,13 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
 }
 
 resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
-  backend_service       = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
-  ip_address            = google_compute_address.api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi.address
-  ip_protocol           = "TCP"
+  backend_service = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
+  ip_address      = google_compute_address.api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi.address
+  ip_protocol     = "TCP"
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+    "name"                = "api-us-test1"
+  }
   load_balancing_scheme = "INTERNAL"
   name                  = "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi"
   network               = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
