@@ -138,28 +138,6 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-cloudConfig: null
-encryptionConfig: null
-etcdClusters:
-  events:
-    image: gcr.io/etcd-development/etcd:v3.1.11
-    version: 3.1.11
-  main:
-    version: 3.1.11
-kubeAPIServer:
-  image: CoreOS
-kubeControllerManager:
-  cloudProvider: aws
-kubeScheduler:
-  image: SomeImage
-kubelet:
-  kubeconfigPath: /etc/kubernetes/config.txt
-masterKubelet:
-  kubeconfigPath: /etc/kubernetes/config.cfg
-
-__EOF_CLUSTER_SPEC
-
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 InstanceGroupName: testIG
