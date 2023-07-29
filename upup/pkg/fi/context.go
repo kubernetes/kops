@@ -273,7 +273,8 @@ func (e *ExistsAndWarnIfChangesError) Error() string { return e.msg }
 
 // TryAgainLaterError is the custom used when a task needs to fail validation with a message and try again later
 type TryAgainLaterError struct {
-	msg string
+	msg   string
+	inner error
 }
 
 // NewTryAgainLaterError is a builder for TryAgainLaterError.
@@ -283,5 +284,17 @@ func NewTryAgainLaterError(message string) *TryAgainLaterError {
 	}
 }
 
+func (e *TryAgainLaterError) WithError(err error) *TryAgainLaterError {
+	e.inner = err
+	return e
+}
+
 // TryAgainLaterError implementation of the error interface.
-func (e *TryAgainLaterError) Error() string { return e.msg }
+func (e *TryAgainLaterError) Error() string {
+	if e.inner != nil {
+		return fmt.Sprintf("%v: %v", e.msg, e.inner)
+	}
+	return e.msg
+}
+
+func (e *TryAgainLaterError) Unwrap() error { return e.inner }
