@@ -1315,7 +1315,7 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
 		switch cluster.Spec.GetCloudProvider() {
-		case api.CloudProviderHetzner, api.CloudProviderDO, api.CloudProviderAzure:
+		case api.CloudProviderHetzner, api.CloudProviderDO, api.CloudProviderAzure, api.CloudProviderGCE:
 			// Use dns=none if not specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		default:
