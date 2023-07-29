@@ -426,9 +426,10 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
     "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
     "name"                = "api"
   }
-  name       = "api-minimal-gce-plb-example-com"
-  port_range = "443-443"
-  target     = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
+  load_balancing_scheme = "EXTERNAL"
+  name                  = "api-minimal-gce-plb-example-com"
+  port_range            = "443-443"
+  target                = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
 }
 
 resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {
