@@ -315,6 +315,9 @@ ServiceNodePortRange: 28000-32767
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/externalpolicies.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/externalpolicies.example.com/pki
+  secrets: memfs://clusters.example.com/externalpolicies.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

@@ -187,6 +187,9 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
+configStore:
+  keypairs: memfs://clusters.example.com/minimal.example.com/pki
+  secrets: memfs://clusters.example.com/minimal.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

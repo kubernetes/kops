@@ -382,6 +382,9 @@ UpdatePolicy: automatic
 UseCiliumEtcd: true
 channels:
 - memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/privateciliumadvanced.example.com/pki
+  secrets: memfs://clusters.example.com/privateciliumadvanced.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

@@ -252,7 +252,7 @@ ClusterName: privatecalico.example.com
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 7rmpi22hF+BvPeDw3ifOCtDq4j1bHY6WK1r9ZH3GIWc=
+NodeupConfigHash: i5LvRmdedjC6hjvB/Y+JamovpEhfyqfIsSMeyjRQIuU=
 
 __EOF_KUBE_ENV
 

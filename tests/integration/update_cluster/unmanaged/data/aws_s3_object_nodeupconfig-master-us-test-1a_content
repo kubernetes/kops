@@ -312,6 +312,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/unmanaged.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/unmanaged.example.com/pki
+  secrets: memfs://clusters.example.com/unmanaged.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

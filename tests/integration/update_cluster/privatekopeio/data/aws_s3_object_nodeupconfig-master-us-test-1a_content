@@ -313,6 +313,9 @@ UpdatePolicy: automatic
 UsesKubenet: true
 channels:
 - memfs://clusters.example.com/privatekopeio.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/privatekopeio.example.com/pki
+  secrets: memfs://clusters.example.com/privatekopeio.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

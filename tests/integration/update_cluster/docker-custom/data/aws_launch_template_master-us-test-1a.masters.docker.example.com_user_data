@@ -255,7 +255,7 @@ ClusterName: docker.example.com
 ConfigBase: memfs://clusters.example.com/docker.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: +AVLSHynK44OHApbndwNn7ClWxmX7f6fffsddV7e+Gw=
+NodeupConfigHash: M1Y0KtSwckjouE1UszDfQBFrWH2GSvjJTetF4iMA0WA=
 
 __EOF_KUBE_ENV
 

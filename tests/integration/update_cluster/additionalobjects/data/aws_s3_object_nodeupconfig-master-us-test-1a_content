@@ -320,6 +320,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://tests/additionalobjects.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://tests/additionalobjects.example.com/pki
+  secrets: memfs://tests/additionalobjects.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

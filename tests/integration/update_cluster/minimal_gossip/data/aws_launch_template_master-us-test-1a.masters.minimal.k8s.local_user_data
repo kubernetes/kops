@@ -252,7 +252,7 @@ ClusterName: minimal.k8s.local
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: bD+C0J4vSbG37sIfLD2JGglS8/e+FSMK2VDnBJb62OA=
+NodeupConfigHash: Uza0LQ83Y6+vdrzmUTIMB2mL0DiSu/sJBDVggxqHE8g=
 
 __EOF_KUBE_ENV
 
