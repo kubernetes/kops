@@ -66,7 +66,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
-	kubeScheduler := *b.Cluster.Spec.KubeScheduler
+	kubeScheduler := b.NodeupConfig.ControlPlaneConfig.KubeScheduler
 
 	if err := b.writeServerCertificate(c, &kubeScheduler); err != nil {
 		return err

@@ -6,6 +6,11 @@ APIServerConfig:
   ServiceAccountPublicKeys: ""
 CAs: {}
 ContainerRuntime: docker
+ControlPlaneConfig:
+  KubeControllerManager:
+    cloudProvider: aws
+  KubeScheduler:
+    image: SomeImage
 FileAssets:
 - content: blah blah
   name: iptables-restore

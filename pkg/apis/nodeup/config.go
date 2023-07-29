@@ -94,6 +94,12 @@ type Config struct {
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
+	// ControlPlaneConfig is additional configuration for control-plane nodes.
+	ControlPlaneConfig *ControlPlaneConfig `json:",omitempty"`
+	// GossipConfig is configuration for gossip DNS.
+	GossipConfig *kops.GossipConfig `json:",omitempty"`
+	// DNSZone is the DNS zone we should use when configuring DNS.
+	DNSZone string `json:",omitempty"`
 	// NvidiaGPU contains the configuration for nvidia
 	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
 
@@ -184,6 +190,14 @@ type APIServerConfig struct {
 	EncryptionConfigSecretHash string `json:",omitempty"`
 	// ServiceAccountPublicKeys are the service-account public keys to trust.
 	ServiceAccountPublicKeys string
+}
+
+// ControlPlaneConfig is additional configuration for control-plane nodes.
+type ControlPlaneConfig struct {
+	// KubeControllerManager is the configuration for the kube-controller-manager.
+	KubeControllerManager kops.KubeControllerManagerConfig
+	// KubeScheduler is the configuration for the kube-scheduler.
+	KubeScheduler kops.KubeSchedulerConfig
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {
@@ -327,6 +341,21 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
+	}
+
+	if instanceGroup.IsControlPlane() || cluster.UsesLegacyGossip() {
+		config.DNSZone = cluster.Spec.DNSZone
+	}
+
+	if cluster.UsesLegacyGossip() {
+		config.GossipConfig = cluster.Spec.GossipConfig
+	}
+
+	if instanceGroup.IsControlPlane() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeControllerManager: *cluster.Spec.KubeControllerManager,
+			KubeScheduler:         *cluster.Spec.KubeScheduler,
+		}
 	}
 
 	if len(instanceGroup.Spec.SysctlParameters) > 0 {

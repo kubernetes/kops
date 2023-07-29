@@ -242,7 +242,7 @@ ClusterName: minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: fzZyUo8aYF3WyPMHF9dZEWhaVTIcbh6ouHab4UBwB2M=
+NodeupConfigHash: JttSelEWUR8QseKHHJgXMUZI33H9uGI1XKOMBkotxvg=
 
 __EOF_KUBE_ENV
 

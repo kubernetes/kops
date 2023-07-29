@@ -52,7 +52,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.NodeupModelBuilderContext) er
 
 	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
-	kcm := *b.Cluster.Spec.KubeControllerManager
+	kcm := b.NodeupConfig.ControlPlaneConfig.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
 	// Include the CA Key

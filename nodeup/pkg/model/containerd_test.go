@@ -182,20 +182,8 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 }
 
 func TestContainerdConfig(t *testing.T) {
-	cluster := &kops.Cluster{
-		Spec: kops.ClusterSpec{
-			ContainerRuntime:  "containerd",
-			Containerd:        &kops.ContainerdConfig{},
-			KubernetesVersion: "1.21.0",
-			Networking: kops.NetworkingSpec{
-				Kubenet: &kops.KubenetNetworkingSpec{},
-			},
-		},
-	}
-
 	b := &ContainerdBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			Cluster: cluster,
 			NodeupConfig: &nodeup.Config{
 				ContainerRuntime: "containerd",
 				ContainerdConfig: &kops.ContainerdConfig{},
