@@ -161,14 +161,6 @@ echo "== nodeup node config starting =="
 ensure-install-dir
 
 {{ if CompressUserData -}}
-echo "{{ GzipBase64 ClusterSpec }}" | base64 -d | gzip -d > conf/cluster_spec.yaml
-{{- else -}}
-cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-{{ ClusterSpec }}
-__EOF_CLUSTER_SPEC
-{{- end }}
-
-{{ if CompressUserData -}}
 echo "{{ GzipBase64 KubeEnv }}" | base64 -d | gzip -d > conf/kube_env.yaml
 {{- else -}}
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
@@ -189,7 +181,6 @@ type NodeUpScript struct {
 	CloudProvider        string
 	ProxyEnv             func() (string, error)
 	EnvironmentVariables func() (string, error)
-	ClusterSpec          func() (string, error)
 }
 
 func funcEmptyString() (string, error) {
@@ -202,9 +193,6 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 	}
 	if b.EnvironmentVariables == nil {
 		b.EnvironmentVariables = funcEmptyString
-	}
-	if b.ClusterSpec == nil {
-		b.ClusterSpec = funcEmptyString
 	}
 
 	functions := template.FuncMap{
@@ -260,7 +248,6 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
-		"ClusterSpec":          b.ClusterSpec,
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
