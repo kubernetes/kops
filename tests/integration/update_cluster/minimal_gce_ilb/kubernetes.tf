@@ -433,9 +433,13 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-ilb-example
 }
 
 resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-ilb-example-com" {
-  backend_service       = google_compute_backend_service.api-minimal-gce-ilb-example-com.id
-  ip_address            = google_compute_address.api-us-test1-minimal-gce-ilb-example-com.address
-  ip_protocol           = "TCP"
+  backend_service = google_compute_backend_service.api-minimal-gce-ilb-example-com.id
+  ip_address      = google_compute_address.api-us-test1-minimal-gce-ilb-example-com.address
+  ip_protocol     = "TCP"
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-ilb-example-com"
+    "name"                = "api-us-test1"
+  }
   load_balancing_scheme = "INTERNAL"
   name                  = "api-us-test1-minimal-gce-ilb-example-com"
   network               = google_compute_network.minimal-gce-ilb-example-com.name

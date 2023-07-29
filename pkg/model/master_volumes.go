@@ -272,9 +272,11 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	// This is the configuration of the etcd cluster
 	clusterSpec := m.Name + "/" + strings.Join(allMembers, ",")
 
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
-	tags[gce.GceLabelNameKubernetesCluster] = gce.SafeClusterName(b.ClusterName())
+	tags[clusterLabel.Key] = clusterLabel.Value
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 

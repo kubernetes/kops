@@ -71,6 +71,26 @@ func (c *forwardingRuleClient) Insert(project, region string, fr *compute.Forwar
 	return doneOperation(), nil
 }
 
+func (c *forwardingRuleClient) SetLabels(ctx context.Context, project, region, name string, req *compute.RegionSetLabelsRequest) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	regions, ok := c.forwardingRules[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	frs, ok := regions[region]
+	if !ok {
+		return nil, notFoundError()
+	}
+	fr, ok := frs[name]
+	if !ok {
+		return nil, notFoundError()
+	}
+
+	fr.Labels = req.Labels
+	return doneOperation(), nil
+}
+
 func (c *forwardingRuleClient) Delete(project, region, name string) (*compute.Operation, error) {
 	c.Lock()
 	defer c.Unlock()
