@@ -89,11 +89,13 @@ if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
   KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
 fi
 
+# Note that we use --control-plane-size, even though it is deprecated, because we have to support old versions
+# in the upgrade test.
 ${KUBETEST2} \
     --up \
     --kops-binary-path="${KOPS_A}" \
     --kubernetes-version="${K8S_VERSION_A}" \
-    --control-plane-count="${KOPS_CONTROL_PLANE_COUNT:-1}" \
+    --control-plane-size="${KOPS_CONTROL_PLANE_COUNT:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
     --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-} ${create_args}"
 
