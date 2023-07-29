@@ -252,6 +252,8 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	switch cloudProvider {
 	case "aws":
 		suffix = "test-cncf-aws.k8s.io"
+	case "gce":
+		suffix = "test-cncf-gce.k8s.io"
 	default:
 		suffix = "k8s.local"
 	}
