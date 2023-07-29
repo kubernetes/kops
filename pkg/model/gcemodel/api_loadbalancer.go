@@ -112,7 +112,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
-			SourceRanges: b.Cluster.Spec.API.Access,
+			SourceRanges: []string{"0.0.0.0/0"},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
 			Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
 		})
@@ -133,7 +133,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 			b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
-				SourceRanges: b.Cluster.Spec.API.Access,
+				SourceRanges: []string{"0.0.0.0/0"},
 				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
 				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KopsControllerPort)},
 			})
