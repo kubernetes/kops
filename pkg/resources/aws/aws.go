@@ -44,6 +44,7 @@ const (
 	TypeAutoscalingLaunchConfig = "autoscaling-config"
 	TypeNatGateway              = "nat-gateway"
 	TypeElasticIp               = "elastic-ip"
+	TypeEventBridgeRule         = "eventbridge-rule"
 	TypeLoadBalancer            = "load-balancer"
 	TypeTargetGroup             = "target-group"
 )
