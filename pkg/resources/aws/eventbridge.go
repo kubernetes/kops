@@ -105,7 +105,7 @@ func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 		resourceTracker := &resources.Resource{
 			Name:    *rule.Name,
 			ID:      *rule.Name,
-			Type:    "eventbridge",
+			Type:    TypeEventBridgeRule,
 			Deleter: EventBridgeRuleDeleter,
 			Dumper:  DumpEventBridgeRule,
 			Obj:     rule,
