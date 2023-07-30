@@ -134,7 +134,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, createArgs...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
-	args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneSize))
+	args = appendIfUnset(args, "--control-plane-count", fmt.Sprintf("%d", d.ControlPlaneCount))
 	args = appendIfUnset(args, "--master-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
@@ -284,7 +284,7 @@ func (d *deployer) verifyUpFlags() error {
 func (d *deployer) zones() ([]string, error) {
 	switch d.CloudProvider {
 	case "aws":
-		return aws.RandomZones(d.ControlPlaneSize)
+		return aws.RandomZones(d.ControlPlaneCount)
 	case "gce":
 		return gce.RandomZones(1)
 	case "digitalocean":

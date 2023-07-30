@@ -80,11 +80,17 @@ fi
 
 
 
+# TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
+if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
+  echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
+  KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
+fi
+
 ${KUBETEST2} \
     --up \
     --kops-binary-path="${KOPS_A}" \
     --kubernetes-version="${K8S_VERSION_A}" \
-    --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
+    --control-plane-count="${KOPS_CONTROL_PLANE_COUNT:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
     --create-args="--networking calico"
 

@@ -48,14 +48,16 @@ type deployer struct {
 	KopsBaseURL          string `flag:"-"`
 	PublishVersionMarker string `flag:"publish-version-marker" desc:"The GCS path to which the --kops-version-marker is uploaded if the tests pass"`
 
-	ClusterName      string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
-	ControlPlaneSize int      `flag:"control-plane-size" desc:"Number of control plane instances"`
-	CloudProvider    string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
-	GCPProject       string   `flag:"gcp-project" desc:"Which GCP Project to use when --cloud-provider=gce"`
-	Env              []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
-	CreateArgs       string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
-	KopsBinaryPath   string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
-	createBucket     bool     `flag:"-"`
+	ClusterName    string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
+	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
+	GCPProject     string   `flag:"gcp-project" desc:"Which GCP Project to use when --cloud-provider=gce"`
+	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
+	CreateArgs     string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
+	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
+	createBucket   bool     `flag:"-"`
+
+	// ControlPlaneCount specifies the number of VMs in the control-plane.
+	ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control-plane instances"`
 
 	ControlPlaneIGOverrides []string `flag:"control-plane-instance-group-overrides" desc:"overrides for the control plane instance groups"`
 	NodeIGOverrides         []string `flag:"node-instance-group-overrides" desc:"overrides for the node instance groups"`
@@ -123,6 +125,17 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	// register flags for klog
 	klog.InitFlags(nil)
 	fs.AddGoFlagSet(flag.CommandLine)
+
+	// Map deprecated flag names to their new names
+	fs.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		switch name {
+		case "control-plane-size":
+			klog.Warningf("deprecated --control-plane-size specified; please use --control-plane-count instead")
+			name = "control-plane-count"
+		}
+		return pflag.NormalizedName(name)
+	})
+
 	return d, fs
 }
 
