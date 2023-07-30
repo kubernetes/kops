@@ -92,8 +92,34 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 		if rule.SourceAddressPrefixes != nil && len(*rule.SourceAddressPrefixes) > 0 {
 			nsr.SourceAddressPrefixes = rule.SourceAddressPrefixes
 		}
+		if rule.SourceApplicationSecurityGroups != nil && len(*rule.SourceApplicationSecurityGroups) > 0 {
+			var sasgs []string
+			for _, sasg := range *rule.SourceApplicationSecurityGroups {
+				asg, err := azure.ParseApplicationSecurityGroupID(*sasg.ID)
+				if err != nil {
+					if err != nil {
+						return nil, err
+					}
+				}
+				sasgs = append(sasgs, asg.ApplicationSecurityGroupName)
+			}
+			nsr.SourceApplicationSecurityGroupNames = &sasgs
+		}
 		if rule.DestinationAddressPrefixes != nil && len(*rule.DestinationAddressPrefixes) > 0 {
 			nsr.DestinationAddressPrefixes = rule.DestinationAddressPrefixes
+		}
+		if rule.DestinationApplicationSecurityGroups != nil && len(*rule.DestinationApplicationSecurityGroups) > 0 {
+			var dasgs []string
+			for _, dasg := range *rule.DestinationApplicationSecurityGroups {
+				asg, err := azure.ParseApplicationSecurityGroupID(*dasg.ID)
+				if err != nil {
+					if err != nil {
+						return nil, err
+					}
+				}
+				dasgs = append(dasgs, asg.ApplicationSecurityGroupName)
+			}
+			nsr.DestinationApplicationSecurityGroupNames = &dasgs
 		}
 		actual.SecurityRules = append(actual.SecurityRules, nsr)
 	}
@@ -162,6 +188,32 @@ func (*NetworkSecurityGroup) RenderAzure(t *azure.AzureAPITarget, a, e, changes 
 				DestinationPortRange:       nsr.DestinationPortRange,
 			},
 		}
+		if nsr.SourceApplicationSecurityGroupNames != nil {
+			var sasgs []network.ApplicationSecurityGroup
+			for _, name := range *nsr.SourceApplicationSecurityGroupNames {
+				id := azure.ApplicationSecurityGroupID{
+					SubscriptionID:               t.Cloud.SubscriptionID(),
+					ResourceGroupName:            *e.ResourceGroup.Name,
+					ApplicationSecurityGroupName: name,
+				}
+				idStr := id.String()
+				sasgs = append(sasgs, network.ApplicationSecurityGroup{ID: &idStr})
+			}
+			securityRule.SourceApplicationSecurityGroups = &sasgs
+		}
+		if nsr.DestinationApplicationSecurityGroupNames != nil {
+			var dasgs []network.ApplicationSecurityGroup
+			for _, name := range *nsr.DestinationApplicationSecurityGroupNames {
+				id := azure.ApplicationSecurityGroupID{
+					SubscriptionID:               t.Cloud.SubscriptionID(),
+					ResourceGroupName:            *e.ResourceGroup.Name,
+					ApplicationSecurityGroupName: name,
+				}
+				idStr := id.String()
+				dasgs = append(dasgs, network.ApplicationSecurityGroup{ID: &idStr})
+			}
+			securityRule.DestinationApplicationSecurityGroups = &dasgs
+		}
 		*p.SecurityRules = append(*p.SecurityRules, securityRule)
 	}
 
@@ -181,17 +233,19 @@ func (*NetworkSecurityGroup) RenderAzure(t *azure.AzureAPITarget, a, e, changes 
 
 // NetworkSecurityRule represents a NetworkSecurityGroup rule.
 type NetworkSecurityRule struct {
-	Name                       *string
-	Priority                   *int32
-	Access                     network.SecurityRuleAccess
-	Direction                  network.SecurityRuleDirection
-	Protocol                   network.SecurityRuleProtocol
-	SourceAddressPrefix        *string
-	SourceAddressPrefixes      *[]string
-	SourcePortRange            *string
-	DestinationAddressPrefixes *[]string
-	DestinationAddressPrefix   *string
-	DestinationPortRange       *string
+	Name                                     *string
+	Priority                                 *int32
+	Access                                   network.SecurityRuleAccess
+	Direction                                network.SecurityRuleDirection
+	Protocol                                 network.SecurityRuleProtocol
+	SourceAddressPrefix                      *string
+	SourceAddressPrefixes                    *[]string
+	SourceApplicationSecurityGroupNames      *[]string
+	SourcePortRange                          *string
+	DestinationAddressPrefixes               *[]string
+	DestinationAddressPrefix                 *string
+	DestinationApplicationSecurityGroupNames *[]string
+	DestinationPortRange                     *string
 }
 
 var _ fi.CloudupHasDependencies = &NetworkSecurityRule{}

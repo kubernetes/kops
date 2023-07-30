@@ -77,6 +77,26 @@ func (c *AzureModelContext) NameForLoadBalancer() string {
 	return "api-" + c.ClusterName()
 }
 
+// NameForApplicationSecurityGroupControlPlane returns the name of the Application Security Group object for the ControlPlane role.
+func (c *AzureModelContext) NameForApplicationSecurityGroupControlPlane() string {
+	return kops.InstanceGroupRoleControlPlane.ToLowerString() + "." + c.ClusterName()
+}
+
+// NameForApplicationSecurityGroupNodes returns the name of the Application Security Group object for the Node role.
+func (c *AzureModelContext) NameForApplicationSecurityGroupNodes() string {
+	return kops.InstanceGroupRoleNode.ToLowerString() + "s." + c.ClusterName()
+}
+
+// LinkToApplicationSecurityGroupControlPlane returns the Application Security Group object for the ControlPlane role.
+func (c *AzureModelContext) LinkToApplicationSecurityGroupControlPlane() *azuretasks.ApplicationSecurityGroup {
+	return &azuretasks.ApplicationSecurityGroup{Name: fi.PtrTo(c.NameForApplicationSecurityGroupControlPlane())}
+}
+
+// LinkToApplicationSecurityGroupNodes returns the Application Security Group object for the Node role.
+func (c *AzureModelContext) LinkToApplicationSecurityGroupNodes() *azuretasks.ApplicationSecurityGroup {
+	return &azuretasks.ApplicationSecurityGroup{Name: fi.PtrTo(c.NameForApplicationSecurityGroupNodes())}
+}
+
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
 // Mostly copied from pkg/model/context.go, but "/" in tag keys are replaced with "_" as Azure
 // doesn't allow "/" in tag keys.

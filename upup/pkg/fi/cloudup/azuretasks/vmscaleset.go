@@ -35,10 +35,11 @@ type VMScaleSet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ResourceGroup  *ResourceGroup
-	VirtualNetwork *VirtualNetwork
-	Subnet         *Subnet
-	StorageProfile *VMScaleSetStorageProfile
+	ResourceGroup             *ResourceGroup
+	VirtualNetwork            *VirtualNetwork
+	Subnet                    *Subnet
+	ApplicationSecurityGroups []*ApplicationSecurityGroup
+	StorageProfile            *VMScaleSetStorageProfile
 	// RequirePublicIP is set to true when VMs require public IPs.
 	RequirePublicIP *bool
 	// LoadBalancer is the Load Balancer object the VMs will use.
@@ -167,6 +168,13 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 		Tags:               found.Tags,
 		PrincipalID:        found.Identity.PrincipalID,
 	}
+	if ipConfig.ApplicationSecurityGroups != nil {
+		for _, asg := range *ipConfig.ApplicationSecurityGroups {
+			vmss.ApplicationSecurityGroups = append(vmss.ApplicationSecurityGroups, &ApplicationSecurityGroup{
+				ID: asg.ID,
+			})
+		}
+	}
 	if loadBalancerID != nil {
 		vmss.LoadBalancer = &LoadBalancer{
 			Name: to.StringPtr(loadBalancerID.LoadBalancerName),
@@ -247,12 +255,19 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		VirtualNetworkName: *e.VirtualNetwork.Name,
 		SubnetName:         *e.Subnet.Name,
 	}
+	var asgs []compute.SubResource
+	for _, asg := range e.ApplicationSecurityGroups {
+		asgs = append(asgs, compute.SubResource{
+			ID: asg.ID,
+		})
+	}
 	ipConfigProperties := &compute.VirtualMachineScaleSetIPConfigurationProperties{
 		Subnet: &compute.APIEntityReference{
 			ID: to.StringPtr(subnetID.String()),
 		},
-		Primary:                 to.BoolPtr(true),
-		PrivateIPAddressVersion: compute.IPv4,
+		Primary:                   to.BoolPtr(true),
+		PrivateIPAddressVersion:   compute.IPv4,
+		ApplicationSecurityGroups: &asgs,
 	}
 	if *e.RequirePublicIP {
 		ipConfigProperties.PublicIPAddressConfiguration = &compute.VirtualMachineScaleSetPublicIPAddressConfiguration{
