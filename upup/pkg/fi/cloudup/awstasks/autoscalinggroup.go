@@ -110,6 +110,31 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 	return e.Name
 }
 
+// Track dependencies here to explicitly ignore WarmPool
+// because the WarmPool should be created after the ASG, not the other way around.
+// The WarmPool struct field is only used for RenderTerraform.
+func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+
+	for _, lb := range e.LoadBalancers {
+		deps = append(deps, lb)
+	}
+
+	for _, tg := range e.TargetGroups {
+		deps = append(deps, tg)
+	}
+
+	for _, subnet := range e.Subnets {
+		deps = append(deps, subnet)
+	}
+
+	if e.LaunchTemplate != nil {
+		deps = append(deps, e.LaunchTemplate)
+	}
+
+	return deps
+}
+
 // Find is used to discover the ASG in the cloud provider
 func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
