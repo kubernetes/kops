@@ -97,21 +97,19 @@ func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, erro
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
-	if l.LBID == nil {
-		return nil, nil
-	}
-
-	loadBalancer, err := lbService.GetLB(&lb.ZonedAPIGetLBRequest{
+	loadBalancers, err := lbService.ListLBs(&lb.ZonedAPIListLBsRequest{
 		Zone: scw.Zone(cloud.Zone()),
-		LBID: fi.ValueOf(l.LBID),
+		Name: l.Name,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	addresses := []string(nil)
-	for _, address := range loadBalancer.IP {
-		addresses = append(addresses, address.IPAddress)
+	for _, loadBalancer := range loadBalancers.LBs {
+		for _, address := range loadBalancer.IP {
+			addresses = append(addresses, address.IPAddress)
+		}
 	}
 
 	return addresses, nil
