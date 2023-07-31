@@ -369,7 +369,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 		// attach etcd volumes outside of Terraform
 		if scaleway.InstanceRoleFromTags(expected.Tags) == scaleway.TagRoleControlPlane {
 			tfInstance.Lifecycle = &terraform.Lifecycle{
-				IgnoreChanges: []*terraformWriter.Literal{&terraformWriter.Literal{String: "additional_volume_ids"}},
+				IgnoreChanges: []*terraformWriter.Literal{{String: "additional_volume_ids"}},
 			}
 		}
 
