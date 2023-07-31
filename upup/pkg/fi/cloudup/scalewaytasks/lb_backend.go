@@ -19,6 +19,7 @@ package scalewaytasks
 import (
 	"fmt"
 
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
@@ -130,11 +131,17 @@ func (_ *LBBackend) CheckChanges(actual, expected, changes *LBBackend) error {
 
 func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *LBBackend) error {
 	lbService := t.Cloud.LBService()
+	zone := scw.Zone(fi.ValueOf(expected.Zone))
+
+	controlPlanesIPs, err := getControlPlanesIPs(t.Cloud, expected.LoadBalancer, zone)
+	if err != nil {
+		return err
+	}
 
 	if actual != nil {
 
 		_, err := lbService.UpdateBackend(&lb.ZonedAPIUpdateBackendRequest{
-			Zone:                 scw.Zone(fi.ValueOf(actual.Zone)),
+			Zone:                 zone,
 			BackendID:            fi.ValueOf(actual.ID),
 			Name:                 fi.ValueOf(actual.Name),
 			ForwardProtocol:      lb.Protocol(fi.ValueOf(expected.ForwardProtocol)),
@@ -147,10 +154,19 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 			return fmt.Errorf("updating back-end for load-balancer %s: %w", fi.ValueOf(actual.LoadBalancer.Name), err)
 		}
 
+		_, err = lbService.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
+			Zone:      zone,
+			BackendID: fi.ValueOf(actual.ID),
+			ServerIP:  controlPlanesIPs,
+		})
+		if err != nil {
+			return fmt.Errorf("updating back-end server IPs for load-balancer %s: %w", fi.ValueOf(actual.LoadBalancer.Name), err)
+		}
+
 	} else {
 
 		backendCreated, err := lbService.CreateBackend(&lb.ZonedAPICreateBackendRequest{
-			Zone:                 scw.Zone(fi.ValueOf(expected.Zone)),
+			Zone:                 zone,
 			LBID:                 fi.ValueOf(expected.LoadBalancer.LBID),
 			Name:                 fi.ValueOf(expected.Name),
 			ForwardProtocol:      lb.Protocol(fi.ValueOf(expected.ForwardProtocol)),
@@ -164,6 +180,7 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 				CheckTimeout:    scw.TimeDurationPtr(3000),
 				CheckDelay:      scw.TimeDurationPtr(1001),
 			},
+			ServerIP:      controlPlanesIPs,
 			ProxyProtocol: lb.ProxyProtocol(fi.ValueOf(expected.ProxyProtocol)),
 		})
 		if err != nil {
@@ -174,9 +191,9 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 
 	}
 
-	_, err := lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+	_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		LBID: fi.ValueOf(expected.LoadBalancer.LBID),
-		Zone: scw.Zone(fi.ValueOf(expected.Zone)),
+		Zone: zone,
 	})
 	if err != nil {
 		return fmt.Errorf("waiting for load-balancer %s: %w", fi.ValueOf(expected.LoadBalancer.Name), err)
@@ -186,22 +203,63 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 }
 
 type terraformLBBackend struct {
-	LBID            *terraformWriter.Literal `cty:"lb_id"`
-	Name            *string                  `cty:"name"`
-	ForwardProtocol *string                  `cty:"forward_protocol"`
-	ForwardPort     *int32                   `cty:"forward_port"`
+	LBID            *terraformWriter.Literal   `cty:"lb_id"`
+	Name            *string                    `cty:"name"`
+	ForwardProtocol *string                    `cty:"forward_protocol"`
+	ForwardPort     *int32                     `cty:"forward_port"`
+	ServerIPs       []*terraformWriter.Literal `cty:"server_ips"`
 }
 
 func (l *LBBackend) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *LBBackend) error {
+	var serverIPs []*terraformWriter.Literal
+	resources, err := t.GetResourcesByType()
+	if err != nil {
+		return err
+	}
+	servers := resources["scaleway_instance_server"]
+	for _, server := range servers {
+		tfInstance := server.(terraformInstance)
+		if role := scaleway.InstanceRoleFromTags(tfInstance.Tags); role == scaleway.TagRoleControlPlane {
+			serverIPs = append(serverIPs, terraformWriter.LiteralProperty("scaleway_instance_server", fi.ValueOf(tfInstance.Name), "private_ip"))
+		}
+	}
+
 	tf := terraformLBBackend{
 		LBID:            expected.LoadBalancer.TerraformLink(),
 		Name:            expected.Name,
 		ForwardProtocol: expected.ForwardProtocol,
 		ForwardPort:     expected.ForwardPort,
+		ServerIPs:       serverIPs,
 	}
 	return t.RenderResource("scaleway_lb_backend", fi.ValueOf(expected.Name), tf)
 }
 
 func (l *LBBackend) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("scaleway_lb_backend", fi.ValueOf(l.Name), "id")
+}
+
+func getControlPlanesIPs(scwCloud scaleway.ScwCloud, lb *LoadBalancer, zone scw.Zone) ([]string, error) {
+	var controlPlanePrivateIPs []string
+	instanceService := scwCloud.InstanceService()
+
+	servers, err := scwCloud.GetClusterServers(scwCloud.ClusterName(lb.Tags), nil)
+	if err != nil {
+		return nil, fmt.Errorf("getting cluster servers for load-balancer's back-end: %w", err)
+	}
+
+	for _, server := range servers {
+		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleControlPlane {
+			// We update the server's infos (to get its IP)
+			srv, err := instanceService.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: server.ID,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("getting server %s for load-balancer's back-end: %w", srv.Server.ID, err)
+			}
+			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *srv.Server.PrivateIP)
+		}
+	}
+
+	return controlPlanePrivateIPs, nil
 }
