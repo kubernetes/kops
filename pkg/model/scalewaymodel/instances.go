@@ -18,6 +18,7 @@ package scalewaymodel
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/model"
@@ -25,6 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scalewaytasks"
 )
+
+var commercialTypesWithBlockStorageOnly = []string{"PRO", "PLAY", "ENT"}
 
 // InstanceModelBuilder configures instances for the cluster
 type InstanceModelBuilder struct {
@@ -73,6 +76,15 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			instance.Role = fi.PtrTo(scaleway.TagRoleControlPlane)
 		} else {
 			instance.Role = fi.PtrTo(scaleway.TagRoleWorker)
+		}
+
+		// If the instance's commercial type is one that has no local storage, we have to specify for the
+		// block storage volume a big enough size (default size is 10GB)
+		for _, commercialType := range commercialTypesWithBlockStorageOnly {
+			if strings.HasPrefix(ig.Spec.MachineType, commercialType) {
+				instance.VolumeSize = fi.PtrTo(50)
+				break
+			}
 		}
 
 		c.AddTask(&instance)
