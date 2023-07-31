@@ -738,6 +738,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return err
 		}
 
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			scwCloud := cloud.(scaleway.ScwCloud)
+			err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwCloud.Zone()))
+			if err != nil {
+				return err
+			}
+		}
+
 		if project != "" {
 			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
 				return err
