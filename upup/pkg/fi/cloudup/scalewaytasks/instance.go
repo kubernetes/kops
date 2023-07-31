@@ -59,6 +59,18 @@ func (s *Instance) CompareWithID() *string {
 	return s.Name
 }
 
+var _ fi.CloudupHasDependencies = &Instance{}
+
+func (s *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*Volume); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	cloud := c.T.Cloud.(scaleway.ScwCloud)
 

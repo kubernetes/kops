@@ -46,6 +46,21 @@ type LBBackend struct {
 var _ fi.CloudupTask = &LBBackend{}
 var _ fi.CompareWithID = &LBBackend{}
 
+var _ fi.CloudupHasDependencies = &LBBackend{}
+
+func (l *LBBackend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*LoadBalancer); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Instance); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 func (l *LBBackend) CompareWithID() *string {
 	return l.ID
 }

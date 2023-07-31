@@ -43,6 +43,24 @@ type LBFrontend struct {
 var _ fi.CloudupTask = &LBFrontend{}
 var _ fi.CompareWithID = &LBFrontend{}
 
+var _ fi.CloudupHasDependencies = &LBFrontend{}
+
+func (l *LBFrontend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*LoadBalancer); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Instance); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*LBBackend); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 func (l *LBFrontend) CompareWithID() *string {
 	return l.ID
 }
