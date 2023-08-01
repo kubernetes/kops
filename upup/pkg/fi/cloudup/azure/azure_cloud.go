@@ -58,6 +58,7 @@ type AzureCloud interface {
 	NetworkInterface() NetworkInterfacesClient
 	LoadBalancer() LoadBalancersClient
 	PublicIPAddress() PublicIPAddressesClient
+	NatGateway() NatGatewaysClient
 }
 
 type azureCloudImplementation struct {
@@ -77,6 +78,7 @@ type azureCloudImplementation struct {
 	networkInterfacesClient         NetworkInterfacesClient
 	loadBalancersClient             LoadBalancersClient
 	publicIPAddressesClient         PublicIPAddressesClient
+	natGatewaysClient               NatGatewaysClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -105,6 +107,7 @@ func NewAzureCloud(subscriptionID, location string, tags map[string]string) (Azu
 		networkInterfacesClient:         newNetworkInterfacesClientImpl(subscriptionID, authorizer),
 		loadBalancersClient:             newLoadBalancersClientImpl(subscriptionID, authorizer),
 		publicIPAddressesClient:         newPublicIPAddressesClientImpl(subscriptionID, authorizer),
+		natGatewaysClient:               newNatGatewaysClientImpl(subscriptionID, authorizer),
 	}, nil
 }
 
@@ -326,4 +329,8 @@ func (c *azureCloudImplementation) LoadBalancer() LoadBalancersClient {
 
 func (c *azureCloudImplementation) PublicIPAddress() PublicIPAddressesClient {
 	return c.publicIPAddressesClient
+}
+
+func (c *azureCloudImplementation) NatGateway() NatGatewaysClient {
+	return c.natGatewaysClient
 }

@@ -29,8 +29,10 @@ import (
 // PublicIPAddress is an Azure Cloud Public IP Address
 // +kops:fitask
 type PublicIPAddress struct {
-	Name          *string
-	Lifecycle     fi.Lifecycle
+	Name      *string
+	Lifecycle fi.Lifecycle
+
+	ID            *string
 	ResourceGroup *ResourceGroup
 
 	Tags map[string]*string
@@ -44,7 +46,7 @@ var (
 
 // CompareWithID returns the Name of the Public IP Address
 func (p *PublicIPAddress) CompareWithID() *string {
-	return p.Name
+	return p.ID
 }
 
 // Find discovers the Public IP Address in the cloud provider
@@ -65,13 +67,15 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 		return nil, nil
 	}
 
+	p.ID = found.ID
+
 	return &PublicIPAddress{
 		Name:      p.Name,
 		Lifecycle: p.Lifecycle,
 		ResourceGroup: &ResourceGroup{
 			Name: p.ResourceGroup.Name,
 		},
-
+		ID:   found.ID,
 		Tags: found.Tags,
 	}, nil
 }
@@ -124,9 +128,17 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 		Tags: e.Tags,
 	}
 
-	return t.Cloud.PublicIPAddress().CreateOrUpdate(
+	pip, err := t.Cloud.PublicIPAddress().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		*e.Name,
 		p)
+	if err != nil {
+		return err
+	}
+
+	e.ID = pip.ID
+
+	return nil
+
 }

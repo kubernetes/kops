@@ -90,7 +90,7 @@ func TestSubnetFind(t *testing.T) {
 			AddressPrefix: to.StringPtr(cidr),
 		},
 	}
-	if err := cloud.Subnet().CreateOrUpdate(context.Background(), *rg.Name, *vnet.Name, *subnet.Name, subnetParameters); err != nil {
+	if _, err := cloud.Subnet().CreateOrUpdate(context.Background(), *rg.Name, *vnet.Name, *subnet.Name, subnetParameters); err != nil {
 		t.Fatalf("failed to create: %s", err)
 	}
 	// Find again.

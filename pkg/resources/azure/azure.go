@@ -42,6 +42,7 @@ const (
 	typeRoleAssignment           = "RoleAssignment"
 	typeLoadBalancer             = "LoadBalancer"
 	typePublicIPAddress          = "PublicIPAddress"
+	typeNatGateway               = "NatGateway"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -94,6 +95,7 @@ func (g *resourceGetter) listAll() ([]*resources.Resource, error) {
 		g.listDisks,
 		g.listLoadBalancers,
 		g.listPublicIPAddresses,
+		g.listNatGateways,
 	}
 
 	var resources []*resources.Resource
@@ -216,6 +218,14 @@ func (g *resourceGetter) listSubnets(ctx context.Context, vnetName string) ([]*r
 }
 
 func (g *resourceGetter) toSubnetResource(subnet *network.Subnet, vnetName string) *resources.Resource {
+	var blocks []string
+	blocks = append(blocks, toKey(typeVirtualNetwork, vnetName))
+	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
+
+	if subnet.NatGateway != nil {
+		blocks = append(blocks, toKey(typeNatGateway, *subnet.NatGateway.ID))
+	}
+
 	return &resources.Resource{
 		Obj:  subnet,
 		Type: typeSubnet,
@@ -224,10 +234,7 @@ func (g *resourceGetter) toSubnetResource(subnet *network.Subnet, vnetName strin
 		Deleter: func(_ fi.Cloud, r *resources.Resource) error {
 			return g.deleteSubnet(vnetName, r)
 		},
-		Blocks: []string{
-			toKey(typeVirtualNetwork, vnetName),
-			toKey(typeResourceGroup, g.resourceGroupName()),
-		},
+		Blocks: blocks,
 		Shared: g.clusterInfo.AzureNetworkShared,
 	}
 }
@@ -635,6 +642,59 @@ func (g *resourceGetter) toPublicIPAddressResource(publicIPAddress *network.Publ
 
 func (g *resourceGetter) deletePublicIPAddress(_ fi.Cloud, r *resources.Resource) error {
 	return g.cloud.PublicIPAddress().Delete(context.TODO(), g.resourceGroupName(), r.Name)
+}
+
+func (g *resourceGetter) listNatGateways(ctx context.Context) ([]*resources.Resource, error) {
+	natGateways, err := g.cloud.NatGateway().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for i := range natGateways {
+		p := &natGateways[i]
+		if !g.isOwnedByCluster(p.Tags) {
+			continue
+		}
+		r, err := g.toNatGatewayResource(p)
+		if err != nil {
+			return nil, err
+		}
+		rs = append(rs, r)
+	}
+	return rs, nil
+}
+
+func (g *resourceGetter) toNatGatewayResource(natGateway *network.NatGateway) (*resources.Resource, error) {
+	var blocks []string
+	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupName()))
+
+	pips := set.New[string]()
+	if natGateway.PublicIPAddresses != nil {
+		for _, pip := range *natGateway.PublicIPAddresses {
+			pipID, err := azure.ParsePublicIPAddressID(*pip.ID)
+			if err != nil {
+				return nil, fmt.Errorf("parsing public IP address ID: %s", err)
+			}
+			pips.Insert(pipID.PublicIPAddressName)
+		}
+	}
+	for pip := range pips {
+		blocks = append(blocks, toKey(typePublicIPAddress, pip))
+	}
+
+	return &resources.Resource{
+		Obj:     natGateway,
+		Type:    typeNatGateway,
+		ID:      *natGateway.ID,
+		Name:    *natGateway.Name,
+		Deleter: g.deleteNatGateway,
+		Blocks:  blocks,
+	}, nil
+}
+
+func (g *resourceGetter) deleteNatGateway(_ fi.Cloud, r *resources.Resource) error {
+	return g.cloud.NatGateway().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
 // isOwnedByCluster returns true if the resource is owned by the cluster.

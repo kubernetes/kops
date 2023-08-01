@@ -153,7 +153,7 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 			Name: to.StringPtr(subnetID.VirtualNetworkName),
 		},
 		Subnet: &Subnet{
-			Name: to.StringPtr(subnetID.SubnetName),
+			ID: ipConfig.Subnet.ID,
 		},
 		StorageProfile: &VMScaleSetStorageProfile{
 			VirtualMachineScaleSetStorageProfile: profile.StorageProfile,
