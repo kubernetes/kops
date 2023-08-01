@@ -122,19 +122,12 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	// register flags
 	fs := bindFlags(d)
 
+	fs.IntVar(&d.ControlPlaneCount, "control-plane-size", d.ControlPlaneCount, "Number of control-plane instances")
+	fs.MarkDeprecated("control-plane-size", "use --control-plane-count instead")
+
 	// register flags for klog
 	klog.InitFlags(nil)
 	fs.AddGoFlagSet(flag.CommandLine)
-
-	// Map deprecated flag names to their new names
-	fs.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
-		switch name {
-		case "control-plane-size":
-			klog.Warningf("deprecated --control-plane-size specified; please use --control-plane-count instead")
-			name = "control-plane-count"
-		}
-		return pflag.NormalizedName(name)
-	})
 
 	return d, fs
 }
