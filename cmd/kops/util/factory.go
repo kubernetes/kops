@@ -32,7 +32,6 @@ import (
 	"k8s.io/klog/v2"
 	channelscmd "k8s.io/kops/channels/pkg/cmd"
 	gceacls "k8s.io/kops/pkg/acls/gce"
-	s3acls "k8s.io/kops/pkg/acls/s3"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/api"
@@ -60,7 +59,6 @@ type Factory struct {
 
 func NewFactory(options *FactoryOptions) *Factory {
 	gceacls.Register()
-	s3acls.Register()
 
 	return &Factory{
 		options: options,

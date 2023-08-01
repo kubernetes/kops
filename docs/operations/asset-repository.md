@@ -41,6 +41,10 @@ spec:
     fileRepository: https://example.com/files
 ```
 
+The repository must allow nodes to perform unauthenticated reads. The repository can
+be public or it can allow read access through network connectivity, such as access
+through a particular AWS Endpoint.
+
 ## Copying assets into repositories
 
 {{ kops_feature_table(kops_added_default='1.22') }}
