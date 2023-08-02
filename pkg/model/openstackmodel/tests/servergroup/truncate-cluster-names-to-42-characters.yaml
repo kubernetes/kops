@@ -95,9 +95,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: tom-software-dev-playground-real33-k8s-local
   ID: null
-  IGName: master
+  IGMap:
+    master: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: tom-software-dev-playground-real33-k8s-local-master
   Policies:
   - anti-affinity
@@ -175,9 +175,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: tom-software-dev-playground-real33-k8s-local
   ID: null
-  IGName: node
+  IGMap:
+    node: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: tom-software-dev-playground-real33-k8s-local-node
   Policies:
   - anti-affinity
@@ -387,18 +387,18 @@ Tags:
 ---
 ClusterName: tom-software-dev-playground-real33-k8s-local
 ID: null
-IGName: master
+IGMap:
+  master: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: tom-software-dev-playground-real33-k8s-local-master
 Policies:
 - anti-affinity
 ---
 ClusterName: tom-software-dev-playground-real33-k8s-local
 ID: null
-IGName: node
+IGMap:
+  node: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: tom-software-dev-playground-real33-k8s-local-node
 Policies:
 - anti-affinity

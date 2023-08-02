@@ -64,9 +64,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node
+  IGMap:
+    node: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node
   Policies:
   - anti-affinity
@@ -227,9 +227,9 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: node
+IGMap:
+  node: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node
 Policies:
 - anti-affinity

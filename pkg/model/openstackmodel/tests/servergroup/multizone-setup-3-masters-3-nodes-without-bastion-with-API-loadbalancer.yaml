@@ -103,9 +103,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-a
+  IGMap:
+    master-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-a
   Policies:
   - anti-affinity
@@ -180,9 +180,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-b
+  IGMap:
+    master-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-b
   Policies:
   - anti-affinity
@@ -257,9 +257,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-c
+  IGMap:
+    master-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-c
   Policies:
   - anti-affinity
@@ -331,9 +331,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-a
+  IGMap:
+    node-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-a
   Policies:
   - anti-affinity
@@ -405,9 +405,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-b
+  IGMap:
+    node-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-b
   Policies:
   - anti-affinity
@@ -479,9 +479,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-c
+  IGMap:
+    node-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-c
   Policies:
   - anti-affinity
@@ -719,6 +719,7 @@ Location: igconfig/node/node-c/nodeupconfig.yaml
 Name: nodeupconfig-node-c
 PublicACL: null
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -744,17 +745,10 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-a
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-a
-  Policies:
-  - anti-affinity
+ServerPrefix: master-a
 Weight: 1
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -780,17 +774,10 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-b
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-b
-  Policies:
-  - anti-affinity
+ServerPrefix: master-b
 Weight: 1
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -816,15 +803,7 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-c
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-c
-  Policies:
-  - anti-affinity
+ServerPrefix: master-c
 Weight: 1
 ---
 ID: null
@@ -1051,54 +1030,54 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: master-a
+IGMap:
+  master-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-b
+IGMap:
+  master-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-c
+IGMap:
+  master-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-c
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-a
+IGMap:
+  node-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-b
+IGMap:
+  node-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-c
+IGMap:
+  node-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-c
 Policies:
 - anti-affinity

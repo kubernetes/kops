@@ -135,9 +135,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-a
+  IGMap:
+    master-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-a
   Policies:
   - anti-affinity
@@ -224,9 +224,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-b
+  IGMap:
+    master-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-b
   Policies:
   - anti-affinity
@@ -313,9 +313,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-c
+  IGMap:
+    master-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-c
   Policies:
   - anti-affinity
@@ -393,9 +393,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-a
+  IGMap:
+    node-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-a
   Policies:
   - anti-affinity
@@ -473,9 +473,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-b
+  IGMap:
+    node-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-b
   Policies:
   - anti-affinity
@@ -553,9 +553,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-c
+  IGMap:
+    node-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-c
   Policies:
   - anti-affinity
@@ -949,54 +949,54 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: master-a
+IGMap:
+  master-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-b
+IGMap:
+  master-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-c
+IGMap:
+  master-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-c
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-a
+IGMap:
+  node-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-b
+IGMap:
+  node-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-c
+IGMap:
+  node-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-c
 Policies:
 - anti-affinity
