@@ -40,7 +40,7 @@ kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--up --down \
 		--env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
 		--env JOB_NAME=pull-kops-e2e-kubernetes-do-kubetest2 \
-		--create-args "--networking=cilium --api-loadbalancer-type=public --node-count=2 --master-count=3" \
+		--create-args "--networking=cilium --api-loadbalancer-type=public --node-count=2 --control-plane-count=3" \
 		--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
 		--kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
 		--test=kops \

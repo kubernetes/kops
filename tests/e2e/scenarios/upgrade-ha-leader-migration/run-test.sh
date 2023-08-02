@@ -35,7 +35,7 @@ else
 	KUBETEST2="${KUBETEST2} --build"
 fi
 
-OVERRIDES=("--channel=alpha" "--node-count=1" "--master-count=3")
+OVERRIDES=("--channel=alpha" "--node-count=1" "--control-plane-count=3")
 
 case "${CLOUD_PROVIDER}" in
 gce)
