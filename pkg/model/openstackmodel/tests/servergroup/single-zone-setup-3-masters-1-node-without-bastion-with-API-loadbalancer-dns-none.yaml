@@ -1,0 +1,815 @@
+Lifecycle: ""
+Name: master-a
+---
+Lifecycle: ""
+Name: master-b
+---
+Lifecycle: ""
+Name: master-c
+---
+Lifecycle: ""
+Name: node-a
+---
+ForAPIServer: true
+ID: null
+IP: null
+LB:
+  FlavorID: null
+  ID: null
+  Lifecycle: Sync
+  Name: api.cluster
+  PortID: null
+  Provider: null
+  SecurityGroup:
+    Description: null
+    ID: null
+    Lifecycle: ""
+    Name: api.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnet: subnet-1.cluster
+  VipSubnet: null
+Lifecycle: Sync
+Name: fip-api.cluster
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+GroupName: master-a
+ID: null
+Image: image
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: master-a
+  KopsName: master-a-1-cluster
+  KopsNetwork: cluster
+  KopsRole: ControlPlane
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
+  k8s.io_role_master: "1"
+  kops.k8s.io_instancegroup: master-a
+Name: master-a-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
+  ForAPIServer: true
+  ID: null
+  InstanceGroupName: master-a
+  Lifecycle: Sync
+  Name: port-master-a-1-cluster
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: masters.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet-1.cluster
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=master-a
+  - KopsName=port-master-a-1
+  - KubernetesCluster=cluster
+Region: ""
+Role: ControlPlane
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGMap:
+    master-a: 1
+    master-b: 1
+    master-c: 1
+  Lifecycle: Sync
+  Name: cluster-control-plane
+  Policies:
+  - anti-affinity
+Status: null
+UserData:
+  task:
+    Lifecycle: ""
+    Name: master-a
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+GroupName: master-b
+ID: null
+Image: image
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: master-b
+  KopsName: master-b-1-cluster
+  KopsNetwork: cluster
+  KopsRole: ControlPlane
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
+  k8s.io_role_master: "1"
+  kops.k8s.io_instancegroup: master-b
+Name: master-b-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
+  ForAPIServer: true
+  ID: null
+  InstanceGroupName: master-b
+  Lifecycle: Sync
+  Name: port-master-b-1-cluster
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: masters.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet-1.cluster
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=master-b
+  - KopsName=port-master-b-1
+  - KubernetesCluster=cluster
+Region: ""
+Role: ControlPlane
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGMap:
+    master-a: 1
+    master-b: 1
+    master-c: 1
+  Lifecycle: Sync
+  Name: cluster-control-plane
+  Policies:
+  - anti-affinity
+Status: null
+UserData:
+  task:
+    Lifecycle: ""
+    Name: master-b
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+GroupName: master-c
+ID: null
+Image: image
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: master-c
+  KopsName: master-c-1-cluster
+  KopsNetwork: cluster
+  KopsRole: ControlPlane
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
+  k8s.io_role_master: "1"
+  kops.k8s.io_instancegroup: master-c
+Name: master-c-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
+  ForAPIServer: true
+  ID: null
+  InstanceGroupName: master-c
+  Lifecycle: Sync
+  Name: port-master-c-1-cluster
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: masters.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet-1.cluster
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=master-c
+  - KopsName=port-master-c-1
+  - KubernetesCluster=cluster
+Region: ""
+Role: ControlPlane
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGMap:
+    master-a: 1
+    master-b: 1
+    master-c: 1
+  Lifecycle: Sync
+  Name: cluster-control-plane
+  Policies:
+  - anti-affinity
+Status: null
+UserData:
+  task:
+    Lifecycle: ""
+    Name: master-c
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+GroupName: node-a
+ID: null
+Image: image
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: node-a
+  KopsName: node-a-1-cluster
+  KopsNetwork: cluster
+  KopsRole: Node
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
+  k8s.io_role_node: "1"
+  kops.k8s.io_instancegroup: node-a
+Name: node-a-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
+  ForAPIServer: false
+  ID: null
+  InstanceGroupName: node-a
+  Lifecycle: Sync
+  Name: port-node-a-1-cluster
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: nodes.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet-1.cluster
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=node-a
+  - KopsName=port-node-a-1
+  - KubernetesCluster=cluster
+Region: ""
+Role: Node
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGMap:
+    node-a: 1
+  Lifecycle: Sync
+  Name: cluster-node-a
+  Policies:
+  - anti-affinity
+Status: null
+UserData:
+  task:
+    Lifecycle: ""
+    Name: node-a
+---
+Lifecycle: ""
+Name: apiserver-aggregator-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=apiserver-aggregator-ca
+type: ca
+---
+Lifecycle: ""
+Name: etcd-clients-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-clients-ca
+type: ca
+---
+Lifecycle: ""
+Name: etcd-manager-ca-events
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-manager-ca-events
+type: ca
+---
+Lifecycle: ""
+Name: etcd-manager-ca-main
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-manager-ca-main
+type: ca
+---
+Lifecycle: ""
+Name: etcd-peers-ca-events
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-peers-ca-events
+type: ca
+---
+Lifecycle: ""
+Name: etcd-peers-ca-main
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-peers-ca-main
+type: ca
+---
+Lifecycle: ""
+Name: kube-proxy
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  issuer: ""
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kube-proxy
+type: client
+---
+Lifecycle: ""
+Name: kubelet
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  issuer: ""
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kubelet
+type: client
+---
+Lifecycle: ""
+Name: kubernetes-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kubernetes
+type: ca
+---
+Lifecycle: ""
+Name: service-account
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=service-account
+type: ca
+---
+FlavorID: null
+ID: null
+Lifecycle: Sync
+Name: api.cluster
+PortID: null
+Provider: null
+SecurityGroup:
+  Description: null
+  ID: null
+  Lifecycle: ""
+  Name: api.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnet: subnet-1.cluster
+VipSubnet: null
+---
+AllowedCIDRs: null
+ID: null
+Lifecycle: Sync
+Name: api.cluster
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    FlavorID: null
+    ID: null
+    Lifecycle: Sync
+    Name: api.cluster
+    PortID: null
+    Provider: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: api.cluster
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-1.cluster
+    VipSubnet: null
+  Name: api.cluster-https
+Port: 443
+---
+ID: null
+Lifecycle: Sync
+Loadbalancer:
+  FlavorID: null
+  ID: null
+  Lifecycle: Sync
+  Name: api.cluster
+  PortID: null
+  Provider: null
+  SecurityGroup:
+    Description: null
+    ID: null
+    Lifecycle: ""
+    Name: api.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnet: subnet-1.cluster
+  VipSubnet: null
+Name: api.cluster-https
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: master-a
+Lifecycle: ""
+Location: igconfig/control-plane/master-a/nodeupconfig.yaml
+Name: nodeupconfig-master-a
+PublicACL: null
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: master-b
+Lifecycle: ""
+Location: igconfig/control-plane/master-b/nodeupconfig.yaml
+Name: nodeupconfig-master-b
+PublicACL: null
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: master-c
+Lifecycle: ""
+Location: igconfig/control-plane/master-c/nodeupconfig.yaml
+Name: nodeupconfig-master-c
+PublicACL: null
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: node-a
+Lifecycle: ""
+Location: igconfig/node/node-a/nodeupconfig.yaml
+Name: nodeupconfig-node-a
+PublicACL: null
+---
+ClusterName: cluster
+ID: null
+InterfaceName: cluster
+Lifecycle: Sync
+Name: cluster-master-a
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    FlavorID: null
+    ID: null
+    Lifecycle: Sync
+    Name: api.cluster
+    PortID: null
+    Provider: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: api.cluster
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-1.cluster
+    VipSubnet: null
+  Name: api.cluster-https
+ProtocolPort: 443
+ServerPrefix: master-a
+Weight: 1
+---
+ClusterName: cluster
+ID: null
+InterfaceName: cluster
+Lifecycle: Sync
+Name: cluster-master-b
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    FlavorID: null
+    ID: null
+    Lifecycle: Sync
+    Name: api.cluster
+    PortID: null
+    Provider: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: api.cluster
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-1.cluster
+    VipSubnet: null
+  Name: api.cluster-https
+ProtocolPort: 443
+ServerPrefix: master-b
+Weight: 1
+---
+ClusterName: cluster
+ID: null
+InterfaceName: cluster
+Lifecycle: Sync
+Name: cluster-master-c
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    FlavorID: null
+    ID: null
+    Lifecycle: Sync
+    Name: api.cluster
+    PortID: null
+    Provider: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: api.cluster
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-1.cluster
+    VipSubnet: null
+  Name: api.cluster-https
+ProtocolPort: 443
+ServerPrefix: master-c
+Weight: 1
+---
+ID: null
+Lifecycle: Sync
+Name: api.cluster
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    FlavorID: null
+    ID: null
+    Lifecycle: Sync
+    Name: api.cluster
+    PortID: null
+    Provider: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: api.cluster
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-1.cluster
+    VipSubnet: null
+  Name: api.cluster-https
+---
+AdditionalSecurityGroups: null
+AllowedAddressPairs: null
+ForAPIServer: true
+ID: null
+InstanceGroupName: master-a
+Lifecycle: Sync
+Name: port-master-a-1-cluster
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: masters.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet-1.cluster
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=master-a
+- KopsName=port-master-a-1
+- KubernetesCluster=cluster
+---
+AdditionalSecurityGroups: null
+AllowedAddressPairs: null
+ForAPIServer: true
+ID: null
+InstanceGroupName: master-b
+Lifecycle: Sync
+Name: port-master-b-1-cluster
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: masters.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet-1.cluster
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=master-b
+- KopsName=port-master-b-1
+- KubernetesCluster=cluster
+---
+AdditionalSecurityGroups: null
+AllowedAddressPairs: null
+ForAPIServer: true
+ID: null
+InstanceGroupName: master-c
+Lifecycle: Sync
+Name: port-master-c-1-cluster
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: masters.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet-1.cluster
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=master-c
+- KopsName=port-master-c-1
+- KubernetesCluster=cluster
+---
+AdditionalSecurityGroups: null
+AllowedAddressPairs: null
+ForAPIServer: false
+ID: null
+InstanceGroupName: node-a
+Lifecycle: Sync
+Name: port-node-a-1-cluster
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: nodes.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet-1.cluster
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=node-a
+- KopsName=port-node-a-1
+- KubernetesCluster=cluster
+---
+ClusterName: cluster
+ID: null
+IGMap:
+  master-a: 1
+  master-b: 1
+  master-c: 1
+Lifecycle: Sync
+Name: cluster-control-plane
+Policies:
+- anti-affinity
+---
+ClusterName: cluster
+ID: null
+IGMap:
+  node-a: 1
+Lifecycle: Sync
+Name: cluster-node-a
+Policies:
+- anti-affinity
