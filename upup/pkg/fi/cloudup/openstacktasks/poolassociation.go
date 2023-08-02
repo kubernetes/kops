@@ -155,15 +155,11 @@ func GetServerFixedIP(client *gophercloud.ServiceClient, server *servers.Server,
 
 func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *PoolAssociation) error {
 	if a == nil {
-		serverPage, err := servers.List(t.Cloud.ComputeClient(), servers.ListOpts{
+		serverList, err := t.Cloud.ListInstances(servers.ListOpts{
 			Name: fmt.Sprintf("^%s", fi.ValueOf(e.ServerPrefix)),
-		}).AllPages()
+		})
 		if err != nil {
 			return fmt.Errorf("error listing servers: %v", err)
-		}
-		serverList, err := servers.ExtractServers(serverPage)
-		if err != nil {
-			return fmt.Errorf("error extracting server page: %v", err)
 		}
 
 		for _, server := range serverList {
