@@ -32,9 +32,9 @@ import (
 type PoolAssociation struct {
 	ID            *string
 	Name          *string
+	ServerPrefix  *string
 	Lifecycle     fi.Lifecycle
 	Pool          *LBPool
-	ServerGroup   *ServerGroup
 	InterfaceName *string
 	ProtocolPort  *int
 	Weight        *int
@@ -108,7 +108,7 @@ func (p *PoolAssociation) Find(context *fi.CloudupContext) (*PoolAssociation, er
 		ID:            fi.PtrTo(found.ID),
 		Name:          fi.PtrTo(found.Name),
 		Pool:          pool,
-		ServerGroup:   p.ServerGroup,
+		ServerPrefix:  p.ServerPrefix,
 		InterfaceName: p.InterfaceName,
 		ProtocolPort:  p.ProtocolPort,
 		Lifecycle:     p.Lifecycle,
@@ -138,13 +138,8 @@ func (_ *PoolAssociation) CheckChanges(a, e, changes *PoolAssociation) error {
 	return nil
 }
 
-func GetServerFixedIP(client *gophercloud.ServiceClient, serverID string, interfaceName string) (server *servers.Server, memberAddress string, err error) {
+func GetServerFixedIP(client *gophercloud.ServiceClient, server *servers.Server, interfaceName string) (memberAddress string, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		server, err = servers.Get(client, serverID).Extract()
-		if err != nil {
-			return true, fmt.Errorf("Failed to find server with id `%s`: %v", serverID, err)
-		}
-
 		memberAddress, err = openstack.GetServerFixedIP(server, interfaceName)
 		if err != nil {
 			// sometimes provisioning interfaces is slow, that is why we need retry the interface from the server
@@ -153,21 +148,31 @@ func GetServerFixedIP(client *gophercloud.ServiceClient, serverID string, interf
 		return true, nil
 	})
 	if done {
-		return server, memberAddress, nil
+		return memberAddress, nil
 	}
-	return server, memberAddress, err
+	return memberAddress, err
 }
 
 func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *PoolAssociation) error {
 	if a == nil {
+		serverPage, err := servers.List(t.Cloud.ComputeClient(), servers.ListOpts{
+			Name: fmt.Sprintf("^%s", fi.ValueOf(e.ServerPrefix)),
+		}).AllPages()
+		if err != nil {
+			return fmt.Errorf("error listing servers: %v", err)
+		}
+		serverList, err := servers.ExtractServers(serverPage)
+		if err != nil {
+			return fmt.Errorf("error extracting server page: %v", err)
+		}
 
-		for _, serverID := range e.ServerGroup.GetMembers() {
-			server, memberAddress, err := GetServerFixedIP(t.Cloud.ComputeClient(), serverID, fi.ValueOf(e.InterfaceName))
+		for _, server := range serverList {
+			memberAddress, err := GetServerFixedIP(t.Cloud.ComputeClient(), &server, fi.ValueOf(e.InterfaceName))
 			if err != nil {
 				return err
 			}
 
-			member, err := t.Cloud.AssociateToPool(server, fi.ValueOf(e.Pool.ID), v2pools.CreateMemberOpts{
+			member, err := t.Cloud.AssociateToPool(&server, fi.ValueOf(e.Pool.ID), v2pools.CreateMemberOpts{
 				Name:         fi.ValueOf(e.Name),
 				ProtocolPort: fi.ValueOf(e.ProtocolPort),
 				SubnetID:     fi.ValueOf(e.Pool.Loadbalancer.VipSubnet),

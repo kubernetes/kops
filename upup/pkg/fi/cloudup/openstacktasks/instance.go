@@ -386,7 +386,6 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 			return fmt.Errorf("Error creating instance: %v", err)
 		}
 		e.ID = fi.PtrTo(v.ID)
-		e.ServerGroup.AddNewMember(fi.ValueOf(e.ID))
 
 		if e.FloatingIP != nil {
 			err = associateFloatingIP(t, e)

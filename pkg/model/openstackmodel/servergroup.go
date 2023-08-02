@@ -259,7 +259,7 @@ func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.
 func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
-	var masters []*openstacktasks.ServerGroup
+	sgs := make(map[string]*openstacktasks.ServerGroup)
 	for _, ig := range b.InstanceGroups {
 		klog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
 		affinityPolicies := []string{}
@@ -268,24 +268,36 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		} else {
 			affinityPolicies = append(affinityPolicies, "anti-affinity")
 		}
-		sgTask := &openstacktasks.ServerGroup{
-			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
-			ClusterName: s(clusterName),
-			IGName:      s(ig.Name),
-			Policies:    affinityPolicies,
-			Lifecycle:   b.Lifecycle,
-			MaxSize:     ig.Spec.MaxSize,
+
+		sgName := fmt.Sprintf("%s-%s", clusterName, ig.Name)
+		if name, ok := ig.ObjectMeta.Annotations[openstack.OS_ANNOTATION+openstack.SERVER_GROUP_NAME]; ok {
+			sgName = fmt.Sprintf("%s-%s", clusterName, name)
 		}
-		c.AddTask(sgTask)
+
+		sgTask, ok := sgs[sgName]
+		if !ok {
+			igMap := make(map[string]*int32)
+			igMap[ig.Name] = ig.Spec.MaxSize
+			sgTask = &openstacktasks.ServerGroup{
+				Name:        s(sgName),
+				ClusterName: s(clusterName),
+				IGMap:       igMap,
+				Policies:    affinityPolicies,
+				Lifecycle:   b.Lifecycle,
+			}
+			sgs[sgName] = sgTask
+		} else {
+			sgTask.IGMap[ig.Name] = ig.Spec.MaxSize
+		}
 
 		err := b.buildInstances(c, sgTask, ig)
 		if err != nil {
 			return err
 		}
+	}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-			masters = append(masters, sgTask)
-		}
+	for _, s := range sgs {
+		c.AddTask(s)
 	}
 
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
@@ -370,19 +382,20 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if err != nil {
 			return err
 		}
-		for _, mastersg := range masters {
-			associateTask := &openstacktasks.PoolAssociation{
-				Name:          mastersg.Name,
-				Pool:          poolTask,
-				ServerGroup:   mastersg,
-				InterfaceName: fi.PtrTo(ifName),
-				ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),
-				Lifecycle:     b.Lifecycle,
-				Weight:        fi.PtrTo(1),
+
+		for _, ig := range b.InstanceGroups {
+			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+				associateTask := &openstacktasks.PoolAssociation{
+					Name:          fi.PtrTo(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
+					ServerPrefix:  fi.PtrTo(ig.Name),
+					Pool:          poolTask,
+					InterfaceName: fi.PtrTo(ifName),
+					ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),
+					Lifecycle:     b.Lifecycle,
+					Weight:        fi.PtrTo(1),
+				}
+				c.AddTask(associateTask)
 			}
-
-			c.AddTask(associateTask)
-
 		}
 
 	}
