@@ -388,6 +388,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 				associateTask := &openstacktasks.PoolAssociation{
 					Name:          fi.PtrTo(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
 					ServerPrefix:  fi.PtrTo(ig.Name),
+					ClusterName:   s(clusterName),
 					Pool:          poolTask,
 					InterfaceName: fi.PtrTo(ifName),
 					ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),

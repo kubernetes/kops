@@ -32,6 +32,7 @@ import (
 type PoolAssociation struct {
 	ID            *string
 	Name          *string
+	ClusterName   *string
 	ServerPrefix  *string
 	Lifecycle     fi.Lifecycle
 	Pool          *LBPool
@@ -109,6 +110,7 @@ func (p *PoolAssociation) Find(context *fi.CloudupContext) (*PoolAssociation, er
 		Name:          fi.PtrTo(found.Name),
 		Pool:          pool,
 		ServerPrefix:  p.ServerPrefix,
+		ClusterName:   p.ClusterName,
 		InterfaceName: p.InterfaceName,
 		ProtocolPort:  p.ProtocolPort,
 		Lifecycle:     p.Lifecycle,
@@ -163,6 +165,11 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		}
 
 		for _, server := range serverList {
+			val, ok := server.Metadata["k8s"]
+			if !ok || val != fi.ValueOf(e.ClusterName) {
+				continue
+			}
+
 			memberAddress, err := GetServerFixedIP(t.Cloud.ComputeClient(), &server, fi.ValueOf(e.InterfaceName))
 			if err != nil {
 				return err
