@@ -87,6 +87,9 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 #create_args="--networking cilium"
 create_args=()
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
+if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
+create_args+=("--set spec.networking.amazonvpc.env.ENABLE_PREFIX_DELEGATION=true")
+fi
 # INSTANCE_IMAGE configures the image used for control plane and kube nodes
 create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id}")
 create_args+=("--etcd-clusters=main")
