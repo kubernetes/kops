@@ -152,16 +152,12 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		return nil, nil
 	}
 	cloud := c.T.Cloud.(openstack.OpenstackCloud)
-	computeClient := cloud.ComputeClient()
-	serverPage, err := servers.List(computeClient, servers.ListOpts{
+
+	serverList, err := cloud.ListInstances(servers.ListOpts{
 		Name: fmt.Sprintf("^%s", fi.ValueOf(e.GroupName)),
-	}).AllPages()
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing servers: %v", err)
-	}
-	serverList, err := servers.ExtractServers(serverPage)
-	if err != nil {
-		return nil, fmt.Errorf("error extracting server page: %v", err)
 	}
 
 	var filteredList []servers.Server
@@ -386,7 +382,6 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 			return fmt.Errorf("Error creating instance: %v", err)
 		}
 		e.ID = fi.PtrTo(v.ID)
-		e.ServerGroup.AddNewMember(fi.ValueOf(e.ID))
 
 		if e.FloatingIP != nil {
 			err = associateFloatingIP(t, e)

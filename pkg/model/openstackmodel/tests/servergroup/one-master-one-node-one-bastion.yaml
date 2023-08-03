@@ -80,9 +80,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: bastion
+  IGMap:
+    bastion: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-bastion
   Policies:
   - anti-affinity
@@ -163,9 +163,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master
+  IGMap:
+    master: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master
   Policies:
   - anti-affinity
@@ -237,9 +237,9 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node
+  IGMap:
+    node: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node
   Policies:
   - anti-affinity
@@ -492,27 +492,27 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: bastion
+IGMap:
+  bastion: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-bastion
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master
+IGMap:
+  master: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node
+IGMap:
+  node: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node
 Policies:
 - anti-affinity

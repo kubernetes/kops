@@ -123,29 +123,6 @@ kops update cluster my-cluster.k8s.local --state ${KOPS_STATE_STORE} --yes
 
 kOps should create instances to all three zones, but provision volumes from the same zone.
 
-## Using external cloud controller manager
-
-If you want to use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
-
-Create cluster without `--yes` flag (or modify existing cluster):
-
-```bash
-kops edit cluster <cluster>
-```
-
-Add the following to clusterspec:
-
-```yaml
-spec:
-  cloudControllerManager: {}
-```
-
-Finally, update the cluster:
-
-```bash
-kops update cluster --name <cluster> --yes
-```
-
 ## Using CCM created Loadbalancers
 
 With the default configuration, the loadbalancers created using the [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack) cloud controller provider do not have access to the exposed NodePorts.
@@ -301,6 +278,20 @@ metadata:
 ```
 
 Please refer to the [OpenStack Compute API documentation](https://docs.openstack.org/api-ref/compute/?expanded=create-server-group-detail#create-server-group) for supported policies.
+
+### Using a custom server group name
+
+By default kOps provisions the server groups in OpenStack with `anti-affinity`.
+However, if you have only one AZ and you want to run multiple control-planes you might want to have anti-affinity between control planes.
+
+To override this add the following annotation to all control-plane Instance Groups configuration where kOps should provision a server group with another policy:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/serverGroupName: control-plane
+```
 
 ## Next steps
 
