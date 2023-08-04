@@ -60,6 +60,7 @@ type MockAzureCloud struct {
 	NetworkInterfacesClient         *MockNetworkInterfacesClient
 	LoadBalancersClient             *MockLoadBalancersClient
 	PublicIPAddressesClient         *MockPublicIPAddressesClient
+	NatGatewaysClient               *MockNatGatewaysClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -106,6 +107,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		PublicIPAddressesClient: &MockPublicIPAddressesClient{
 			PubIPs: map[string]network.PublicIPAddress{},
+		},
+		NatGatewaysClient: &MockNatGatewaysClient{
+			NGWs: map[string]network.NatGateway{},
 		},
 	}
 }
@@ -248,6 +252,11 @@ func (c *MockAzureCloud) PublicIPAddress() azure.PublicIPAddressesClient {
 	return c.PublicIPAddressesClient
 }
 
+// NatGateway returns the nat gateway client.
+func (c *MockAzureCloud) NatGateway() azure.NatGatewaysClient {
+	return c.NatGatewaysClient
+}
+
 // MockResourceGroupsClient is a mock implementation of resource group client.
 type MockResourceGroupsClient struct {
 	RGs map[string]resources.Group
@@ -327,14 +336,14 @@ type MockSubnetsClient struct {
 var _ azure.SubnetsClient = &MockSubnetsClient{}
 
 // CreateOrUpdate creates or updates a subnet.
-func (c *MockSubnetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) error {
+func (c *MockSubnetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) (*network.Subnet, error) {
 	// Ignore resourceGroupName and virtualNetworkName for simplicity.
 	if _, ok := c.Subnets[subnetName]; ok {
-		return fmt.Errorf("update not supported")
+		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &subnetName
 	c.Subnets[subnetName] = parameters
-	return nil
+	return &parameters, nil
 }
 
 // List returns a slice of subnets.
@@ -613,13 +622,13 @@ type MockPublicIPAddressesClient struct {
 var _ azure.PublicIPAddressesClient = &MockPublicIPAddressesClient{}
 
 // CreateOrUpdate creates a new public ip address.
-func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) error {
+func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error) {
 	if _, ok := c.PubIPs[publicIPAddressName]; ok {
-		return nil
+		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &publicIPAddressName
 	c.PubIPs[publicIPAddressName] = parameters
-	return nil
+	return &parameters, nil
 }
 
 // List returns a slice of public ip address.
@@ -730,5 +739,51 @@ func (c *MockApplicationSecurityGroupsClient) Delete(ctx context.Context, resour
 		return fmt.Errorf("%s does not exist", asgName)
 	}
 	delete(c.ASGs, asgName)
+	return nil
+}
+
+// MockNatGatewaysClient is a mock implementation of Nat Gateway client.
+type MockNatGatewaysClient struct {
+	NGWs map[string]network.NatGateway
+}
+
+var _ azure.NatGatewaysClient = &MockNatGatewaysClient{}
+
+// CreateOrUpdate creates or updates a Nat Gateway.
+func (c *MockNatGatewaysClient) CreateOrUpdate(ctx context.Context, resourceGroupName, ngwName string, parameters network.NatGateway) (*network.NatGateway, error) {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.NGWs[ngwName]; ok {
+		return nil, fmt.Errorf("update not supported")
+	}
+	parameters.Name = &ngwName
+	c.NGWs[ngwName] = parameters
+	return &parameters, nil
+}
+
+// List returns a slice of Nat Gateways.
+func (c *MockNatGatewaysClient) List(ctx context.Context, resourceGroupName string) ([]network.NatGateway, error) {
+	var l []network.NatGateway
+	for _, ngw := range c.NGWs {
+		l = append(l, ngw)
+	}
+	return l, nil
+}
+
+// Get Returns a specified Nat Gateway.
+func (c *MockNatGatewaysClient) Get(ctx context.Context, resourceGroupName string, ngwName string) (*network.NatGateway, error) {
+	ngw, ok := c.NGWs[ngwName]
+	if !ok {
+		return nil, nil
+	}
+	return &ngw, nil
+}
+
+// Delete deletes a specified Nat Gateway.
+func (c *MockNatGatewaysClient) Delete(ctx context.Context, resourceGroupName, ngwName string) error {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.NGWs[ngwName]; !ok {
+		return fmt.Errorf("%s does not exist", ngwName)
+	}
+	delete(c.NGWs, ngwName)
 	return nil
 }

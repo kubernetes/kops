@@ -31,8 +31,10 @@ type Subnet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
+	ID                   *string
 	ResourceGroup        *ResourceGroup
 	VirtualNetwork       *VirtualNetwork
+	NatGateway           *NatGateway
 	NetworkSecurityGroup *NetworkSecurityGroup
 
 	CIDR   *string
@@ -46,7 +48,7 @@ var (
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (s *Subnet) CompareWithID() *string {
-	return s.Name
+	return s.ID
 }
 
 // Find discovers the Subnet in the cloud provider.
@@ -67,6 +69,8 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		return nil, nil
 	}
 
+	s.ID = found.ID
+
 	fs := &Subnet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
@@ -77,7 +81,13 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		VirtualNetwork: &VirtualNetwork{
 			Name: s.VirtualNetwork.Name,
 		},
+		ID:   found.ID,
 		CIDR: found.AddressPrefix,
+	}
+	if found.NatGateway != nil {
+		fs.NatGateway = &NatGateway{
+			ID: found.NatGateway.ID,
+		}
 	}
 	if found.NetworkSecurityGroup != nil {
 		fs.NetworkSecurityGroup = &NetworkSecurityGroup{
@@ -123,16 +133,28 @@ func (*Subnet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Subnet) error
 			AddressPrefix: e.CIDR,
 		},
 	}
+	if e.NatGateway != nil {
+		subnet.NatGateway = &network.SubResource{
+			ID: e.NatGateway.ID,
+		}
+	}
 	if e.NetworkSecurityGroup != nil {
 		subnet.NetworkSecurityGroup = &network.SecurityGroup{
 			ID: e.NetworkSecurityGroup.ID,
 		}
 	}
 
-	return t.Cloud.Subnet().CreateOrUpdate(
+	sn, err := t.Cloud.Subnet().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		*e.VirtualNetwork.Name,
 		*e.Name,
 		subnet)
+	if err != nil {
+		return err
+	}
+
+	e.ID = sn.ID
+
+	return nil
 }

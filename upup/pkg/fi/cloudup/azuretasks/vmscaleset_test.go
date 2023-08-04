@@ -280,7 +280,7 @@ func TestVMScaleSetFind(t *testing.T) {
 	if a, e := *actual.VirtualNetwork.Name, subnetID.VirtualNetworkName; a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.Subnet.Name, subnetID.SubnetName; a != e {
+	if a, e := *actual.Subnet.ID, subnetID.String(); a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
 	if a, e := *actual.LoadBalancer.Name, loadBalancerID.LoadBalancerName; a != e {

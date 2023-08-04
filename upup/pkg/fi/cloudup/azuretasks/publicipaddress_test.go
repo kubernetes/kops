@@ -94,7 +94,7 @@ func TestPublicIPAddressFind(t *testing.T) {
 			PublicIPAllocationMethod: network.Dynamic,
 		},
 	}
-	if err := cloud.PublicIPAddress().CreateOrUpdate(context.Background(), *rg.Name, *publicIPAddress.Name, publicIPAddressParameters); err != nil {
+	if _, err := cloud.PublicIPAddress().CreateOrUpdate(context.Background(), *rg.Name, *publicIPAddress.Name, publicIPAddressParameters); err != nil {
 		t.Fatalf("failed to create: %s", err)
 	}
 	// Find again.

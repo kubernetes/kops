@@ -73,7 +73,8 @@ func TestListResourcesAzure(t *testing.T) {
 
 	subnets := cloud.SubnetsClient.Subnets
 	subnets[rgName] = network.Subnet{
-		Name: to.StringPtr(subnetName),
+		Name:                   to.StringPtr(subnetName),
+		SubnetPropertiesFormat: &network.SubnetPropertiesFormat{},
 	}
 	vnets[irrelevantName] = network.VirtualNetwork{
 		Name: to.StringPtr(irrelevantName),
