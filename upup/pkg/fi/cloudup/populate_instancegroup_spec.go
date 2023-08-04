@@ -372,9 +372,15 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 	case kops.CloudProviderScaleway:
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleControlPlane:
+			if ig.Spec.Subnets[0] == "fr-par-3" {
+				return "PRO2-XS", nil
+			}
 			return defaultMasterMachineTypeScaleway, nil
 
 		case kops.InstanceGroupRoleNode:
+			if ig.Spec.Subnets[0] == "fr-par-3" {
+				return "PRO2-S", nil
+			}
 			return defaultNodeMachineTypeScaleway, nil
 		}
 	}

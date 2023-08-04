@@ -19,6 +19,7 @@ package scalewaytasks
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -253,6 +255,9 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		// We create the instance and wait for it to be ready
 		srv, err := instanceService.CreateServer(&createServerRequest)
 		if err != nil {
+			if errors.Is(err, &scw.InvalidArgumentsError{}) {
+				klog.Exitf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
+			}
 			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{

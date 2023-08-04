@@ -103,6 +103,9 @@ func listGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	c := cloud.(scaleway.ScwCloud)
 	gws, err := c.GetClusterGateways(clusterName)
 	if err != nil {
+		if strings.Contains(err.Error(), "501 Not Implemented") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -131,6 +134,9 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 	c := cloud.(scaleway.ScwCloud)
 	lbs, err := c.GetClusterLoadBalancers(clusterName)
 	if err != nil {
+		if strings.Contains(err.Error(), "501 Not Implemented") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -262,6 +268,9 @@ func listVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error)
 	c := cloud.(scaleway.ScwCloud)
 	vpcs, err := c.GetClusterVPCs(clusterName)
 	if err != nil {
+		if strings.Contains(err.Error(), "501 Not Implemented") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
