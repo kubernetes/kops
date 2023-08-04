@@ -67,12 +67,15 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
-		// These may be fixed in Cilium 1.13 but skipping for now
-		skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-		skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
-		// https://github.com/cilium/cilium/issues/18241
-		skipRegex += "|Services.should.create.endpoints.for.unready.pods"
-		skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
+		if k8sVersion.Minor <= 27 {
+			// This is fixed in Cilium 1.13 but skipping for older k8s versions
+			// because kops <= 1.27 still use Cilium 1.12 but the upgrade tests use the latest master of kubetest2-kops
+			// so we skip the tests on any k8s version supported by the older kops versions
+			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
+			// https://github.com/cilium/cilium/issues/18241
+			skipRegex += "|Services.should.create.endpoints.for.unready.pods"
+			skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
+		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"
