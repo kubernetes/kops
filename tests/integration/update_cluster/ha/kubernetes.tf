@@ -1348,14 +1348,12 @@ resource "aws_subnet" "us-test-1a-ha-example-com" {
   enable_resource_name_dns_a_record_on_launch = true
   private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
-    "KubernetesCluster"                            = "ha.example.com"
-    "Name"                                         = "us-test-1a.ha.example.com"
-    "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1a" = "true"
-    "kops.k8s.io/instance-group/nodes"             = "true"
-    "kubernetes.io/cluster/ha.example.com"         = "owned"
-    "kubernetes.io/role/elb"                       = "1"
-    "kubernetes.io/role/internal-elb"              = "1"
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "us-test-1a.ha.example.com"
+    "SubnetType"                           = "Public"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+    "kubernetes.io/role/elb"               = "1"
+    "kubernetes.io/role/internal-elb"      = "1"
   }
   vpc_id = aws_vpc.ha-example-com.id
 }
@@ -1366,14 +1364,12 @@ resource "aws_subnet" "us-test-1b-ha-example-com" {
   enable_resource_name_dns_a_record_on_launch = true
   private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
-    "KubernetesCluster"                            = "ha.example.com"
-    "Name"                                         = "us-test-1b.ha.example.com"
-    "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1b" = "true"
-    "kops.k8s.io/instance-group/nodes"             = "true"
-    "kubernetes.io/cluster/ha.example.com"         = "owned"
-    "kubernetes.io/role/elb"                       = "1"
-    "kubernetes.io/role/internal-elb"              = "1"
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "us-test-1b.ha.example.com"
+    "SubnetType"                           = "Public"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+    "kubernetes.io/role/elb"               = "1"
+    "kubernetes.io/role/internal-elb"      = "1"
   }
   vpc_id = aws_vpc.ha-example-com.id
 }
@@ -1384,14 +1380,12 @@ resource "aws_subnet" "us-test-1c-ha-example-com" {
   enable_resource_name_dns_a_record_on_launch = true
   private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
-    "KubernetesCluster"                            = "ha.example.com"
-    "Name"                                         = "us-test-1c.ha.example.com"
-    "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1c" = "true"
-    "kops.k8s.io/instance-group/nodes"             = "true"
-    "kubernetes.io/cluster/ha.example.com"         = "owned"
-    "kubernetes.io/role/elb"                       = "1"
-    "kubernetes.io/role/internal-elb"              = "1"
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "us-test-1c.ha.example.com"
+    "SubnetType"                           = "Public"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+    "kubernetes.io/role/elb"               = "1"
+    "kubernetes.io/role/internal-elb"      = "1"
   }
   vpc_id = aws_vpc.ha-example-com.id
 }

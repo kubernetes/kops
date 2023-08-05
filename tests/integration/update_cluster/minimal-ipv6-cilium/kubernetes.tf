@@ -1216,7 +1216,6 @@ resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "dualstack-us-test-1a.minimal-ipv6.example.com"
     "SubnetType"                                     = "DualStack"
-    "kops.k8s.io/instance-group/master-us-test-1a"   = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                = "1"
   }
@@ -1253,7 +1252,6 @@ resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
     "SubnetType"                                     = "Private"
-    "kops.k8s.io/instance-group/nodes"               = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
@@ -1271,7 +1269,6 @@ resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1b.minimal-ipv6.example.com"
     "SubnetType"                                     = "Private"
-    "kops.k8s.io/instance-group/nodes"               = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
