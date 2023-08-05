@@ -30,7 +30,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -238,6 +237,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.RegisterFlagCompletionFunc("zones", completeZone(options, &rootCommand))
+	cmd.Flags().StringSliceVar(&options.ControlPlaneZones, "master-zones", options.ControlPlaneZones, "Zones in which to run control-plane nodes. (must be an odd number)")
+	cmd.Flags().MarkDeprecated("master-zones", "use --control-plane-zones instead")
 	cmd.Flags().StringSliceVar(&options.ControlPlaneZones, "control-plane-zones", options.ControlPlaneZones, "Zones in which to run control-plane nodes. (must be an odd number)")
 	cmd.RegisterFlagCompletionFunc("control-plane-zones", completeZone(options, &rootCommand))
 
@@ -262,6 +263,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
 	})
 
+	cmd.Flags().Int32Var(&options.ControlPlaneCount, "master-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
+	cmd.Flags().MarkDeprecated("master-count", "use --control-plane-count instead")
 	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
 
@@ -269,6 +272,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("image", completeInstanceImage)
 	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Machine image for worker nodes. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("node-image", completeInstanceImage)
+	cmd.Flags().StringVar(&options.ControlPlaneImage, "master-image", options.ControlPlaneImage, "Machine image for control-plane nodes. Takes precedence over --image")
+	cmd.Flags().MarkDeprecated("master-image", "use --control-plane-image instead")
 	cmd.Flags().StringVar(&options.ControlPlaneImage, "control-plane-image", options.ControlPlaneImage, "Machine image for control-plane nodes. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("control-plane-image", completeInstanceImage)
 	cmd.Flags().StringVar(&options.BastionImage, "bastion-image", options.BastionImage, "Machine image for bastions. Takes precedence over --image")
@@ -276,9 +281,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Machine type for worker nodes")
 	cmd.RegisterFlagCompletionFunc("node-size", completeMachineType)
+	cmd.Flags().StringVar(&options.ControlPlaneSize, "master-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
+	cmd.Flags().MarkDeprecated("master-size", "use --control-plane-size instead")
 	cmd.Flags().StringVar(&options.ControlPlaneSize, "control-plane-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
 	cmd.RegisterFlagCompletionFunc("control-plane-size", completeMachineType)
 
+	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "master-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")
+	cmd.Flags().MarkDeprecated("master-volume-size", "use --control-plane-volume-size instead")
 	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "control-plane-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Instance volume size (in GB) for worker nodes")
 
@@ -329,6 +338,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Additional pre-created security groups to add to worker nodes.")
 	cmd.RegisterFlagCompletionFunc("node-security-groups", completeSecurityGroup)
+	cmd.Flags().StringSliceVar(&options.ControlPlaneSecurityGroups, "master-security-groups", options.ControlPlaneSecurityGroups, "Additional pre-created security groups to add to control-plane nodes.")
+	cmd.Flags().MarkDeprecated("master-security-groups", "use --control-plane-security-groups instead")
 	cmd.Flags().StringSliceVar(&options.ControlPlaneSecurityGroups, "control-plane-security-groups", options.ControlPlaneSecurityGroups, "Additional pre-created security groups to add to control-plane nodes.")
 	cmd.RegisterFlagCompletionFunc("control-plane-security-groups", completeSecurityGroup)
 
@@ -364,6 +375,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// Control Plane and Worker Node Tenancy
+	cmd.Flags().StringVar(&options.ControlPlaneTenancy, "master-tenancy", options.ControlPlaneTenancy, "Tenancy of the control-plane group (AWS only): default or dedicated")
+	cmd.Flags().MarkDeprecated("master-tenancy", "use --control-plane-tenancy instead")
 	cmd.Flags().StringVar(&options.ControlPlaneTenancy, "control-plane-tenancy", options.ControlPlaneTenancy, "Tenancy of the control-plane group (AWS only): default or dedicated")
 	cmd.RegisterFlagCompletionFunc("control-plane-tenancy", completeTenancy)
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "Tenancy of the node group (AWS only): default or dedicated")
@@ -382,6 +395,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("api-ssl-certificate", completeSSLCertificate)
 
 	// Allow custom public Kuberneters API name.
+	cmd.Flags().StringVar(&options.APIPublicName, "master-public-name", options.APIPublicName, "Domain name of the public Kubernetes API")
+	cmd.Flags().MarkDeprecated("master-public-name", "use --api-public-name instead")
 	cmd.Flags().StringVar(&options.APIPublicName, "api-public-name", options.APIPublicName, "Domain name of the public Kubernetes API")
 	cmd.RegisterFlagCompletionFunc("api-public-name", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
@@ -394,6 +409,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 	})
 
+	cmd.Flags().StringSliceVar(&options.Sets, "override", options.Sets, "Directly set values in the spec")
+	cmd.Flags().MarkDeprecated("override", "use --set instead")
 	cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
 	cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
@@ -449,30 +466,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("os-dns-servers", completeOpenstackDNSServers)
 	cmd.Flags().StringVar(&options.OpenstackNetworkID, "os-network", options.OpenstackNetworkID, "ID of the existing OpenStack network to use")
 	cmd.RegisterFlagCompletionFunc("os-network", completeOpenstackNetworkID)
-
-	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
-		switch name {
-		case "override":
-			name = "set"
-		case "master-count":
-			name = "control-plane-count"
-		case "master-image":
-			name = "control-plane-image"
-		case "master-public-name":
-			name = "api-public-name"
-		case "master-security-groups":
-			name = "control-plane-security-groups"
-		case "master-size":
-			name = "control-plane-size"
-		case "master-tenancy":
-			name = "control-plane-tenancy"
-		case "master-volume-size":
-			name = "control-plane-volume-size"
-		case "master-zones":
-			name = "control-plane-zones"
-		}
-		return pflag.NormalizedName(name)
-	})
 
 	cmd.Flags().StringVar(&options.InstanceManager, "instance-manager", options.InstanceManager, "Instance manager to use (cloudgroups or karpenter. Default: cloudgroups)")
 	cmd.RegisterFlagCompletionFunc("instance-manager", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
