@@ -1248,8 +1248,6 @@ resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "us-test-1a.privatekopeio.example.com"
     "SubnetType"                                      = "Private"
-    "kops.k8s.io/instance-group/master-us-test-1a"    = "true"
-    "kops.k8s.io/instance-group/nodes"                = "true"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                 = "1"
   }
@@ -1265,7 +1263,6 @@ resource "aws_subnet" "us-test-1b-privatekopeio-example-com" {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "us-test-1b.privatekopeio.example.com"
     "SubnetType"                                      = "Private"
-    "kops.k8s.io/instance-group/nodes"                = "true"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                 = "1"
   }
@@ -1281,7 +1278,6 @@ resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "utility-us-test-1a.privatekopeio.example.com"
     "SubnetType"                                      = "Utility"
-    "kops.k8s.io/instance-group/bastion"              = "true"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     "kubernetes.io/role/elb"                          = "1"
   }
