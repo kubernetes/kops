@@ -897,8 +897,6 @@ resource "aws_subnet" "us-test-1a-minimal-etcd-example-com" {
     "KubernetesCluster"                              = "minimal-etcd.example.com"
     "Name"                                           = "us-test-1a.minimal-etcd.example.com"
     "SubnetType"                                     = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1a"   = "true"
-    "kops.k8s.io/instance-group/nodes"               = "true"
     "kubernetes.io/cluster/minimal-etcd.example.com" = "owned"
     "kubernetes.io/role/elb"                         = "1"
     "kubernetes.io/role/internal-elb"                = "1"
