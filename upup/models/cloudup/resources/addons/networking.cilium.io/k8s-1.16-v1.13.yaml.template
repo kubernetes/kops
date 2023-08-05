@@ -193,6 +193,11 @@ data:
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: "{{ .ClusterName }}"
+  # ID of the cluster. Only relevant when building a mesh of clusters.
+  # Must be a number between 1 and 255.
+  {{ if .ClusterID }}
+  cluster-id: "{{ .ClusterID }}"
+  {{ end }}
 
   # DNS response code for rejecting DNS requests,
   # available options are "nameError" and "refused"

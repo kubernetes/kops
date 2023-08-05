@@ -51,6 +51,7 @@ data:
   bpf-neigh-global-max: "524288"
   bpf-policy-map-max: "16384"
   cgroup-root: /run/cilium/cgroupv2
+  cluster-id: "253"
   cluster-name: default
   debug: "false"
   disable-cnp-status-updates: "true"

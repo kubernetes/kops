@@ -4830,6 +4830,11 @@ spec:
                           to provide L3/L4 network visibility, policy enforcement
                           and other advanced features. Default: none'
                         type: string
+                      clusterID:
+                        description: ClusterID is the ID of the cluster. It is only
+                          relevant when building a mesh of clusters. Must be a number
+                          between 1 and 255.
+                        type: integer
                       clusterName:
                         description: ClusterName is the name of the cluster. It is
                           only relevant when building a mesh of clusters.
