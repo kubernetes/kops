@@ -134,7 +134,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, createArgs...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
-	args = appendIfUnset(args, "--control-plane-count", fmt.Sprintf("%d", d.ControlPlaneCount))
+	args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneCount))
 	args = appendIfUnset(args, "--master-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
