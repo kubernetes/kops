@@ -9788,6 +9788,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
         image: quay.io/jetstack/cert-manager-cainjector:v1.12.2
         imagePullPolicy: IfNotPresent
         name: cert-manager-cainjector
@@ -9870,6 +9872,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
         image: quay.io/jetstack/cert-manager-controller:v1.12.2
         imagePullPolicy: IfNotPresent
         name: cert-manager-controller
@@ -9956,6 +9960,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
         image: quay.io/jetstack/cert-manager-webhook:v1.12.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
