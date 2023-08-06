@@ -897,6 +897,11 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
+				ClusterID: 253,
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
 				Masquerade: fi.PtrTo(true),
 				IPAM:       "eni",
 			},

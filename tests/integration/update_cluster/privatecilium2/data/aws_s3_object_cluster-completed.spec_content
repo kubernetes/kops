@@ -206,6 +206,7 @@ spec:
       bpfNATGlobalMax: 524288
       bpfNeighGlobalMax: 524288
       bpfPolicyMapMax: 16384
+      clusterID: 253
       clusterName: default
       cpuRequest: 25m
       disableCNPStatusUpdates: true

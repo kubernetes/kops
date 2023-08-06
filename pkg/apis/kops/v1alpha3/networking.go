@@ -401,6 +401,9 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage,omitempty"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName,omitempty"`
+	// ClusterID is the ID of the cluster. It is only relevant when building a mesh of clusters.
+	// Must be a number between 1 and 255.
+	ClusterID uint8 `json:"clusterID,omitempty"`
 	// ToFQDNsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
 	// Possible values are "nameError" or "refused".
 	// Default: refused
