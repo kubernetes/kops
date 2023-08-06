@@ -53,3 +53,5 @@ kOps maintainers set aside one hour every other week for **public** office hours
 We do maintain an [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) and stick to it as much as possible. If you want to hold the floor, put your item in this doc. Bullet/note form is fine. Even if your topic gets in late, we do our best to cover it.
 
 For more information about the office hours and how to join, see [Office Hours](https://kops.sigs.k8s.io/welcome/office_hours/)
+
+
