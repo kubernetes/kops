@@ -47,9 +47,18 @@ type AutoscalingLifecycleHook struct {
 }
 
 var _ fi.CompareWithID = &AutoscalingLifecycleHook{}
+var _ fi.CloudupHasDependencies = &AutoscalingLifecycleHook{}
 
 func (h *AutoscalingLifecycleHook) CompareWithID() *string {
 	return h.Name
+}
+
+func (e *AutoscalingLifecycleHook) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+
+	deps = append(deps, e.AutoscalingGroup)
+
+	return deps
 }
 
 func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifecycleHook, error) {

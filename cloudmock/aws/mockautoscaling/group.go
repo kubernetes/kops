@@ -102,7 +102,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return &autoscaling.CreateAutoScalingGroupOutput{}, nil
 }
 
-func (m *MockAutoscaling) WaitUntilGroupExists(request *autoscaling.DescribeAutoScalingGroupsInput) error {
+func (m *MockAutoscaling) WaitUntilGroupInService(request *autoscaling.DescribeAutoScalingGroupsInput) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	klog.V(2).Infof("Mock WaitUntilGroupExists %v", request)

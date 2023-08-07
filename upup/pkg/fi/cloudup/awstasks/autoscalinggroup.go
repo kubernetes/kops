@@ -455,7 +455,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			return fmt.Errorf("creating AutoScalingGroup: %w", err)
 		}
 
-		if err := t.Cloud.Autoscaling().WaitUntilGroupExists(&autoscaling.DescribeAutoScalingGroupsInput{
+		if err := t.Cloud.Autoscaling().WaitUntilGroupInService(&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []*string{e.Name},
 		}); err != nil {
 			return fmt.Errorf("waiting for AutoScalingGroup: %w", err)
