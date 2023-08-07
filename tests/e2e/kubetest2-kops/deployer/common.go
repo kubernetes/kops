@@ -157,8 +157,8 @@ func (d *deployer) verifyKopsFlags() error {
 		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 	}
 
-	if d.ControlPlaneSize == 0 {
-		d.ControlPlaneSize = 1
+	if d.ControlPlaneCount == 0 {
+		d.ControlPlaneCount = 1
 	}
 
 	switch d.CloudProvider {
@@ -227,6 +227,10 @@ func (d *deployer) featureFlags() string {
 		if e[0] == "KOPS_FEATURE_FLAGS" && len(e) > 1 {
 			return e[1]
 		}
+	}
+	// if not set by the env flag, but set in the environment, use that.
+	if e := os.Getenv("KOPS_FEATURE_FLAGS"); e != "" {
+		return e
 	}
 	return ""
 }

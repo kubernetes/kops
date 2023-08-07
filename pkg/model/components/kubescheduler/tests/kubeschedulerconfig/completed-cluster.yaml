@@ -2,14 +2,12 @@ metadata:
   creationTimestamp: null
   name: minimal.example.com
 spec:
-  api:
-    dns: {}
+  api: {}
   authorization:
     alwaysAllow: {}
   cloudProvider: {}
+  configStore: {}
   kubernetesVersion: v1.24.0
   networking:
     topology:
-      controlPlane: public
       dns: Public
-      nodes: public

@@ -17,8 +17,11 @@ limitations under the License.
 package gcemodel
 
 import (
+	"strconv"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -48,6 +51,31 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to control-plane / worker node instances")
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
+		b.AddFirewallRulesTasks(c, "ssh-external-to-bastion", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Allowed:      []string{"tcp:22"},
+			SourceRanges: b.Cluster.Spec.SSHAccess,
+			Network:      network,
+		})
+		b.AddFirewallRulesTasks(c, "bastion-to-master-ssh", &gcetasks.FirewallRule{
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
+			Allowed:    []string{"tcp:22"},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Network:    network,
+		})
+		b.AddFirewallRulesTasks(c, "bastion-to-node-ssh", &gcetasks.FirewallRule{
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed:    []string{"tcp:22"},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			Network:    network,
+		})
 	} else {
 		network, err := b.LinkToNetwork()
 		if err != nil {
@@ -112,6 +140,18 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			SourceRanges: b.Cluster.Spec.API.Access,
 			Network:      network,
 		})
+
+		if b.NetworkingIsIPAlias() {
+			c.AddTask(&gcetasks.FirewallRule{
+				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				Family:       gcetasks.AddressFamilyIPv4, // ip alias is always ipv4
+				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+			})
+		}
 	}
 
 	return nil

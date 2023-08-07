@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
@@ -35,9 +36,13 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 		AzureModelContext: newTestAzureModelContext(),
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle: fi.LifecycleSync,
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					Networking: kops.NetworkingSpec{},
+			KopsModelContext: &model.KopsModelContext{
+				IAMModelContext: iam.IAMModelContext{
+					Cluster: &kops.Cluster{
+						Spec: kops.ClusterSpec{
+							Networking: kops.NetworkingSpec{},
+						},
+					},
 				},
 			},
 		},
@@ -149,6 +154,7 @@ func TestGetStorageProfile(t *testing.T) {
 				},
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
+				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
 					Publisher: to.StringPtr("Canonical"),
 					Offer:     to.StringPtr("UbuntuServer"),
@@ -172,6 +178,7 @@ func TestGetStorageProfile(t *testing.T) {
 				Role:  kops.InstanceGroupRoleControlPlane,
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
+				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
 					Publisher: to.StringPtr("Canonical"),
 					Offer:     to.StringPtr("UbuntuServer"),

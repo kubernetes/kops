@@ -94,7 +94,7 @@ type PricingGetResponse struct {
 	Pricing Pricing `json:"pricing"`
 }
 
-// PricingPrimaryIPTypePrice defines the schema of pricing information for a primary IP
+// PricingPrimaryIPTypePrice defines the schema of pricing information for a primary IP.
 // type at a datacenter.
 type PricingPrimaryIPTypePrice struct {
 	Datacenter   string `json:"datacenter"` // Deprecated: the API does not return pricing for the individual DCs anymore
@@ -103,7 +103,7 @@ type PricingPrimaryIPTypePrice struct {
 	PriceMonthly Price  `json:"price_monthly"`
 }
 
-// PricingPrimaryIP define the schema of pricing information for a primary IP at a datacenter
+// PricingPrimaryIP define the schema of pricing information for a primary IP at a datacenter.
 type PricingPrimaryIP struct {
 	Type   string                      `json:"type"`
 	Prices []PricingPrimaryIPTypePrice `json:"prices"`

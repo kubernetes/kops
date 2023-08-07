@@ -25,7 +25,9 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	_ "k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // Droplet represents a group of droplets. In the future it
@@ -218,4 +220,45 @@ func (_ *Droplet) CheckChanges(a, e, changes *Droplet) error {
 		}
 	}
 	return nil
+}
+
+type terraformDropletOptions struct {
+	Image    *string                  `cty:"image"`
+	Size     *string                  `cty:"size"`
+	Region   *string                  `cty:"region"`
+	Name     *string                  `cty:"name"`
+	Tags     []string                 `cty:"tags"`
+	SSHKey   []string                 `cty:"ssh_keys"`
+	UserData *terraformWriter.Literal `cty:"user_data"`
+	VPCUUID  *string                  `cty:"vpc_uuid"`
+}
+
+func (_ *Droplet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Droplet) error {
+	tf := &terraformDropletOptions{
+		Image:   e.Image,
+		Size:    e.Size,
+		Region:  e.Region,
+		Name:    e.Name,
+		Tags:    e.Tags,
+		VPCUUID: e.VPCUUID,
+	}
+
+	if e.SSHKey != nil {
+		tf.SSHKey = []string{fi.ValueOf(e.SSHKey.KeyFingerprint)}
+	}
+
+	if e.UserData != nil {
+		d, err := fi.ResourceAsBytes(e.UserData)
+		if err != nil {
+			return fmt.Errorf("Error retrieving droplet from resource bytes: %w", err)
+		}
+		if d != nil {
+			tf.UserData, err = t.AddFileBytes("digitalocean_droplet", fi.ValueOf(e.Name), "user_data", d, false)
+			if err != nil {
+				return fmt.Errorf("Error adding user data bytes to terraform resource: %w", err)
+			}
+		}
+	}
+
+	return t.RenderResource("digitalocean_droplet", *e.Name, tf)
 }

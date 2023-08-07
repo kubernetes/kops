@@ -26,7 +26,7 @@ import (
 
 // PublicIPAddressesClient is a client for public ip addresses.
 type PublicIPAddressesClient interface {
-	CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) error
+	CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error)
 	List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error)
 	Delete(ctx context.Context, resourceGroupName, publicIPAddressName string) error
 }
@@ -37,9 +37,19 @@ type publicIPAddressesClientImpl struct {
 
 var _ PublicIPAddressesClient = &publicIPAddressesClientImpl{}
 
-func (c *publicIPAddressesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) error {
-	_, err := c.c.CreateOrUpdate(ctx, resourceGroupName, publicIPAddressName, parameters)
-	return err
+func (c *publicIPAddressesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error) {
+	future, err := c.c.CreateOrUpdate(ctx, resourceGroupName, publicIPAddressName, parameters)
+	if err != nil {
+		return nil, fmt.Errorf("creating/updating public ip address: %w", err)
+	}
+	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
+		return nil, fmt.Errorf("waiting for public ip address create/update completion: %w", err)
+	}
+	pip, err := future.Result(*c.c)
+	if err != nil {
+		return nil, fmt.Errorf("obtaining result for public ip address create/update: %w", err)
+	}
+	return &pip, err
 }
 
 func (c *publicIPAddressesClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error) {

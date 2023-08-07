@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 5f38b52d076d19605f06136d4be404798fe08d6a7821b614c56d4e15efff666e
+    manifestHash: 37365345ce36eb8e80b5594a343ce220352079d3fe9692447040c362e4d0b508
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 285eafc6fde8bfaec8a9fbec97dd539083e453cffd1da4c81b172231b848c667
+    manifestHash: 264a628e688f29334cbc9f3d125da5bd0f6f07ee71ac80fb16fd6b66290ff092
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -34,14 +34,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 14f10f92425bf9940ee94b45263f617527eedc9bf377f7d7bc09109a94d20bf6
+    manifestHash: 7b6c7ac8c92ecdbe8bbc7d33f97ab6d1e92489ad2f2545232ba801e8799aeaf8
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 0030f0d28daca7e802e7c77d817b67a007afbf5781850feb31c8c06bfa8c1719
+    manifestHash: cee609f9fd7083943bc7b4647419a4fb0d9801bef2a6d3f049ef1e31ffdeb31d
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -56,7 +56,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: de4c732f90a781776f16d85a82fc695202a68f20c33af4692a7621db1cb68eb5
+    manifestHash: 1d9ddc6d025438aa22182e434f9534e983ddefa857913ef0a456d9cf9cea360b
     name: certmanager.io
     prune:
       kinds:
@@ -178,7 +178,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
-    manifestHash: 547e1a901abac73eddc6e58028feb822e3048585357ec73fa64dd9f71f457cce
+    manifestHash: 535b2db589b002882557a247f5fefbfdec6b0015032a0e70f2b0de834da4a150
     name: networking.amazon-vpc-routed-eni
     needsRollingUpdate: all
     selector:
@@ -186,7 +186,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: f28c7d101368e1eecc53207bc317c0c391ed525002be29aee950e9d11573e16d
+    manifestHash: 7fdd9a9031a4d1918cf34eb784504fa60e4929db4c6627b06685d72875f8f3ff
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
@@ -200,7 +200,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: 0ee38c110ae8012a720b23bf9f4f99a977ff813643739f67cc7d9c99d5a66fef
+    manifestHash: 06a1cffd153dc7f8cf75853da3683d3a68b55411883d84b9bebf049fc746b980
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:

@@ -25,7 +25,7 @@ locals {
   vpc_cidr_block                                     = aws_vpc.nthimdsprocessor-longclustername-example-com.cidr_block
   vpc_id                                             = aws_vpc.nthimdsprocessor-longclustername-example-com.id
   vpc_ipv6_cidr_block                                = aws_vpc.nthimdsprocessor-longclustername-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length                               = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  vpc_ipv6_cidr_length                               = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -133,7 +133,7 @@ output "vpc_ipv6_cidr_block" {
 }
 
 output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  value = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
@@ -943,8 +943,6 @@ resource "aws_subnet" "us-test-1a-nthimdsprocessor-longclustername-example-com" 
     "KubernetesCluster"                                                  = "nthimdsprocessor.longclustername.example.com"
     "Name"                                                               = "us-test-1a.nthimdsprocessor.longclustername.example.com"
     "SubnetType"                                                         = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1a"                       = "true"
-    "kops.k8s.io/instance-group/nodes"                                   = "true"
     "kubernetes.io/cluster/nthimdsprocessor.longclustername.example.com" = "owned"
     "kubernetes.io/role/elb"                                             = "1"
     "kubernetes.io/role/internal-elb"                                    = "1"

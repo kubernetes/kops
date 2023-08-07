@@ -297,11 +297,16 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 	cmd.Flags().BoolVar(&options.DisableSubnetTags, "disable-subnet-tags", options.DisableSubnetTags, "Disable automatic subnet tagging")
 
+	cmd.Flags().StringSliceVar(&options.EtcdClusters, "etcd-clusters", options.EtcdClusters, "Names of the etcd clusters: main, events")
+	cmd.RegisterFlagCompletionFunc("etcd-clusters", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"main", "events"}, cobra.ShellCompDirectiveNoFileComp
+	})
+
 	cmd.Flags().BoolVar(&encryptEtcdStorage, "encrypt-etcd-storage", false, "Generate key in AWS KMS and use it for encrypt etcd volumes")
 	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etcd members")
 	cmd.RegisterFlagCompletionFunc("etcd-storage-type", completeStorageType)
 
-	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni.")
+	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode.  kubenet, external, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni.")
 	cmd.RegisterFlagCompletionFunc("networking", completeNetworking(options))
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone (defaults to longest matching zone)")
@@ -469,12 +474,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return pflag.NormalizedName(name)
 	})
 
-	if featureflag.Karpenter.Enabled() {
-		cmd.Flags().StringVar(&options.InstanceManager, "instance-manager", options.InstanceManager, "Instance manager to use (cloudgroups or karpenter. Default: cloudgroups)")
-		cmd.RegisterFlagCompletionFunc("instance-manager", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"cloudgroups", "karpenter"}, cobra.ShellCompDirectiveNoFileComp
-		})
-	}
+	cmd.Flags().StringVar(&options.InstanceManager, "instance-manager", options.InstanceManager, "Instance manager to use (cloudgroups or karpenter. Default: cloudgroups)")
+	cmd.RegisterFlagCompletionFunc("instance-manager", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"cloudgroups", "karpenter"}, cobra.ShellCompDirectiveNoFileComp
+	})
 	return cmd
 }
 
@@ -642,19 +645,19 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	err = cloudup.PerformAssignments(cluster, cloud)
+	err = cloudup.PerformAssignments(cluster, clientset.VFSContext(), cloud)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
 	strict := false
-	err = validation.DeepValidate(cluster, instanceGroups, strict, nil)
+	err = validation.DeepValidate(cluster, instanceGroups, strict, clientset.VFSContext(), nil)
 	if err != nil {
 		return err
 	}
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
+	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, instanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -670,7 +673,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	for _, p := range c.AddonPaths {
-		addon, err := clusteraddons.LoadClusterAddon(p)
+		addon, err := clusteraddons.LoadClusterAddon(clientset.VFSContext(), p)
 		if err != nil {
 			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
 		}
@@ -688,7 +691,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 		}
 
-		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
+		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, clientset.VFSContext(), nil)
 		if err != nil {
 			return fmt.Errorf("validation of the full cluster and instance group specs failed: %w", err)
 		}
@@ -990,7 +993,6 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			completions = append(completions,
 				"kubenet",
 				"kopeio",
-				"weave",
 				"flannel",
 				"canal",
 				"kube-router",
@@ -1001,7 +1003,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			}
 
 			if options.CloudProvider == "gce" || options.CloudProvider == "" {
-				completions = append(completions, "gce")
+				completions = append(completions, "gcp")
 			}
 		}
 

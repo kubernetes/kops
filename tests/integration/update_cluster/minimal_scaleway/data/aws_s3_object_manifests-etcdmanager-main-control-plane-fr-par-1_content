@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    k8s-app: etcd-manager-main
+  name: etcd-manager-main
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+      --backup-store=memfs://tests/scw-minimal.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
+      --cluster-name=etcd --containerized=true --dns-suffix=.internal.scw-minimal.k8s.local
+      --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
+      --v=6 --volume-name-tag=noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1
+      --volume-provider=scaleway --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local
+      --volume-tag=noprefix=kops.k8s.io/etcd=main --volume-tag=noprefix=kops.k8s.io/role=ControlPlane
+      > /tmp/pipe 2>&1
+    env:
+    - name: SCW_ACCESS_KEY
+    - name: SCW_DEFAULT_PROJECT_ID
+    - name: SCW_SECRET_KEY
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 90d
+    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230630
+    name: etcd-manager
+    resources:
+      requests:
+        cpu: 200m
+        memory: 100Mi
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /rootfs
+      name: rootfs
+    - mountPath: /run
+      name: run
+    - mountPath: /etc/kubernetes/pki/etcd-manager
+      name: pki
+    - mountPath: /opt
+      name: opt
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
+  hostNetwork: true
+  hostPID: true
+  initContainers:
+  - args:
+    - --target-dir=/opt/kops-utils/
+    - --src=/ko-app/kops-utils-cp
+    command:
+    - /ko-app/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
+    name: kops-utils-cp
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --target-dir=/opt/etcd-v3.4.13
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:3.4.13-0
+    name: init-etcd-3-4-13
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --target-dir=/opt/etcd-v3.5.9
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:3.5.9-0
+    name: init-etcd-3-5-9
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --symlink
+    - --target-dir=/opt/etcd-v3.4.3
+    - --src=/opt/etcd-v3.4.13/etcd
+    - --src=/opt/etcd-v3.4.13/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
+    name: init-etcd-symlinks-3-4-13
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --symlink
+    - --target-dir=/opt/etcd-v3.5.0
+    - --target-dir=/opt/etcd-v3.5.1
+    - --target-dir=/opt/etcd-v3.5.3
+    - --target-dir=/opt/etcd-v3.5.4
+    - --target-dir=/opt/etcd-v3.5.6
+    - --target-dir=/opt/etcd-v3.5.7
+    - --src=/opt/etcd-v3.5.9/etcd
+    - --src=/opt/etcd-v3.5.9/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1
+    name: init-etcd-symlinks-3-5-9
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  priorityClassName: system-cluster-critical
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /
+      type: Directory
+    name: rootfs
+  - hostPath:
+      path: /run
+      type: DirectoryOrCreate
+    name: run
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd-manager-main
+      type: DirectoryOrCreate
+    name: pki
+  - emptyDir: {}
+    name: opt
+  - hostPath:
+      path: /var/log/etcd.log
+      type: FileOrCreate
+    name: varlogetcd
+status: {}

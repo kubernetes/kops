@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: certificaterequests.cert-manager.io
 spec:
   group: cert-manager.io
@@ -267,7 +267,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: certificates.cert-manager.io
 spec:
   group: cert-manager.io
@@ -425,10 +425,11 @@ spec:
                           Certificate. If true, a file named `keystore.jks` will be
                           created in the target Secret resource, encrypted using the
                           password stored in `passwordSecretRef`. The keystore file
-                          will only be updated upon re-issuance. A file named `truststore.jks`
-                          will also be created in the target Secret resource, encrypted
-                          using the password stored in `passwordSecretRef` containing
-                          the issuing Certificate Authority
+                          will be updated immediately. If the issuer provided a CA
+                          certificate, a file named `truststore.jks` will also be
+                          created in the target Secret resource, encrypted using the
+                          password stored in `passwordSecretRef` containing the issuing
+                          Certificate Authority
                         type: boolean
                       passwordSecretRef:
                         description: PasswordSecretRef is a reference to a key in
@@ -460,10 +461,11 @@ spec:
                           Certificate. If true, a file named `keystore.p12` will be
                           created in the target Secret resource, encrypted using the
                           password stored in `passwordSecretRef`. The keystore file
-                          will only be updated upon re-issuance. A file named `truststore.p12`
-                          will also be created in the target Secret resource, encrypted
-                          using the password stored in `passwordSecretRef` containing
-                          the issuing Certificate Authority
+                          will be updated immediately. If the issuer provided a CA
+                          certificate, a file named `truststore.p12` will also be
+                          created in the target Secret resource, encrypted using the
+                          password stored in `passwordSecretRef` containing the issuing
+                          Certificate Authority
                         type: boolean
                       passwordSecretRef:
                         description: PasswordSecretRef is a reference to a key in
@@ -742,10 +744,11 @@ spec:
                   using formula time.Hour * 2 ^ (failedIssuanceAttempts - 1).
                 type: integer
               lastFailureTime:
-                description: LastFailureTime is the time as recorded by the Certificate
-                  controller of the most recent failure to complete a CertificateRequest
-                  for this Certificate resource. If set, cert-manager will not re-request
-                  another Certificate until 1 hour has elapsed from this time.
+                description: LastFailureTime is set only if the lastest issuance for
+                  this Certificate failed and contains the time of the failure. If
+                  an issuance has failed, the delay till the next issuance will be
+                  calculated using formula time.Hour * 2 ^ (failedIssuanceAttempts
+                  - 1). If the latest issuance has succeeded this field will be unset.
                 format: date-time
                 type: string
               nextPrivateKeySecretName:
@@ -803,7 +806,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: challenges.acme.cert-manager.io
 spec:
   group: acme.cert-manager.io
@@ -1323,7 +1326,7 @@ spec:
                             description: 'When solving an HTTP-01 challenge, cert-manager
                               creates an HTTPRoute. cert-manager needs to know which
                               parentRefs should be used when creating the HTTPRoute.
-                              Usually, the parentRef references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
+                              Usually, the parentRef references a Gateway. See: https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways'
                             items:
                               description: "ParentReference identifies an API object
                                 (usually a Gateway) that can be considered a parent
@@ -1338,14 +1341,19 @@ spec:
                                 group:
                                   default: gateway.networking.k8s.io
                                   description: "Group is the group of the referent.
-                                    \n Support: Core"
+                                    When unspecified, \"gateway.networking.k8s.io\"
+                                    is inferred. To set the core API group (such as
+                                    for a \"Service\" kind referent), Group must be
+                                    explicitly set to \"\" (empty string). \n Support:
+                                    Core"
                                   maxLength: 253
                                   pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                   type: string
                                 kind:
                                   default: Gateway
                                   description: "Kind is kind of the referent. \n Support:
-                                    Core (Gateway) \n Support: Custom (Other Resources)"
+                                    Core (Gateway) \n Support: Implementation-specific
+                                    (Other Resources)"
                                   maxLength: 63
                                   minLength: 1
                                   pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
@@ -1358,8 +1366,15 @@ spec:
                                   type: string
                                 namespace:
                                   description: "Namespace is the namespace of the
-                                    referent. When unspecified (or empty string),
-                                    this refers to the local namespace of the Route.
+                                    referent. When unspecified, this refers to the
+                                    local namespace of the Route. \n Note that there
+                                    are specific rules for ParentRefs which cross
+                                    namespace boundaries. Cross-namespace references
+                                    are only valid if they are explicitly allowed
+                                    by something in the namespace they are referring
+                                    to. For example: Gateway has the AllowedRoutes
+                                    field, and ReferenceGrant provides a generic way
+                                    to enable any other kind of cross-namespace reference.
                                     \n Support: Core"
                                   maxLength: 63
                                   minLength: 1
@@ -1440,9 +1455,18 @@ spec:
                           for each Challenge to be completed.
                         properties:
                           class:
-                            description: The ingress class to use when creating Ingress
-                              resources to solve ACME challenges that use this challenge
-                              solver. Only one of 'class' or 'name' may be specified.
+                            description: This field configures the annotation `kubernetes.io/ingress.class`
+                              when creating Ingress resources to solve ACME challenges
+                              that use this challenge solver. Only one of `class`,
+                              `name` or `ingressClassName` may be specified.
+                            type: string
+                          ingressClassName:
+                            description: This field configures the field `ingressClassName`
+                              on the created Ingress resources used to solve ACME
+                              challenges that use this challenge solver. This is the
+                              recommended way of configuring the ingress class. Only
+                              one of `class`, `name` or `ingressClassName` may be
+                              specified.
                             type: string
                           ingressTemplate:
                             description: Optional ingress template used to configure
@@ -1475,7 +1499,8 @@ spec:
                               in order to solve HTTP01 challenges. This is typically
                               used in conjunction with ingress controllers like ingress-gce,
                               which maintains a 1:1 mapping between external IPs and
-                              ingress resources.
+                              ingress resources. Only one of `class`, `name` or `ingressClassName`
+                              may be specified.
                             type: string
                           podTemplate:
                             description: Optional pod template used to configure the
@@ -1503,10 +1528,9 @@ spec:
                                 type: object
                               spec:
                                 description: PodSpec defines overrides for the HTTP01
-                                  challenge solver pod. Only the 'priorityClassName',
-                                  'nodeSelector', 'affinity', 'serviceAccountName'
-                                  and 'tolerations' fields are supported currently.
-                                  All other fields will be ignored.
+                                  challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec
+                                  to find out currently supported fields. All other
+                                  fields will be ignored.
                                 properties:
                                   affinity:
                                     description: If specified, the pod's scheduling
@@ -2634,6 +2658,22 @@ spec:
                                             type: array
                                         type: object
                                     type: object
+                                  imagePullSecrets:
+                                    description: If specified, the pod's imagePullSecrets
+                                    items:
+                                      description: LocalObjectReference contains enough
+                                        information to let you locate the referenced
+                                        object inside the same namespace.
+                                      properties:
+                                        name:
+                                          description: 'Name of the referent. More
+                                            info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                            TODO: Add other useful fields. apiVersion,
+                                            kind, uid?'
+                                          type: string
+                                      type: object
+                                      x-kubernetes-map-type: atomic
+                                    type: array
                                   nodeSelector:
                                     additionalProperties:
                                       type: string
@@ -2829,7 +2869,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: clusterissuers.cert-manager.io
 spec:
   group: cert-manager.io
@@ -2884,6 +2924,15 @@ spec:
                 description: ACME configures this issuer to communicate with a RFC8555
                   (ACME) server to obtain signed x509 certificates.
                 properties:
+                  caBundle:
+                    description: Base64-encoded bundle of PEM CAs which can be used
+                      to validate the certificate chain presented by the ACME server.
+                      Mutually exclusive with SkipTLSVerify; prefer using CABundle
+                      to prevent various kinds of security vulnerabilities. If CABundle
+                      and SkipTLSVerify are unset, the system certificate bundle inside
+                      the container is used to validate the TLS connection.
+                    format: byte
+                    type: string
                   disableAccountKeyGeneration:
                     description: Enables or disables generating a new ACME account
                       key. If true, the Issuer resource will *not* request a new account
@@ -2987,13 +3036,14 @@ spec:
                       Only ACME v2 endpoints (i.e. RFC 8555) are supported.'
                     type: string
                   skipTLSVerify:
-                    description: Enables or disables validation of the ACME server
-                      TLS certificate. If true, requests to the ACME server will not
-                      have their TLS certificate validated (i.e. insecure connections
-                      will be allowed). Only enable this option in development environments.
-                      The cert-manager system installed roots will be used to verify
-                      connections to the ACME server if this is false. Defaults to
-                      false.
+                    description: 'INSECURE: Enables or disables validation of the
+                      ACME server TLS certificate. If true, requests to the ACME server
+                      will not have the TLS certificate chain validated. Mutually
+                      exclusive with CABundle; prefer using CABundle to prevent various
+                      kinds of security vulnerabilities. Only enable this option in
+                      development environments. If CABundle and SkipTLSVerify are
+                      unset, the system certificate bundle inside the container is
+                      used to validate the TLS connection. Defaults to false.'
                     type: boolean
                   solvers:
                     description: 'Solvers is a list of challenge solvers that will
@@ -3458,7 +3508,7 @@ spec:
                                     cert-manager creates an HTTPRoute. cert-manager
                                     needs to know which parentRefs should be used
                                     when creating the HTTPRoute. Usually, the parentRef
-                                    references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
+                                    references a Gateway. See: https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways'
                                   items:
                                     description: "ParentReference identifies an API
                                       object (usually a Gateway) that can be considered
@@ -3474,6 +3524,10 @@ spec:
                                       group:
                                         default: gateway.networking.k8s.io
                                         description: "Group is the group of the referent.
+                                          When unspecified, \"gateway.networking.k8s.io\"
+                                          is inferred. To set the core API group (such
+                                          as for a \"Service\" kind referent), Group
+                                          must be explicitly set to \"\" (empty string).
                                           \n Support: Core"
                                         maxLength: 253
                                         pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
@@ -3481,7 +3535,7 @@ spec:
                                       kind:
                                         default: Gateway
                                         description: "Kind is kind of the referent.
-                                          \n Support: Core (Gateway) \n Support: Custom
+                                          \n Support: Core (Gateway) \n Support: Implementation-specific
                                           (Other Resources)"
                                         maxLength: 63
                                         minLength: 1
@@ -3495,9 +3549,17 @@ spec:
                                         type: string
                                       namespace:
                                         description: "Namespace is the namespace of
-                                          the referent. When unspecified (or empty
-                                          string), this refers to the local namespace
-                                          of the Route. \n Support: Core"
+                                          the referent. When unspecified, this refers
+                                          to the local namespace of the Route. \n
+                                          Note that there are specific rules for ParentRefs
+                                          which cross namespace boundaries. Cross-namespace
+                                          references are only valid if they are explicitly
+                                          allowed by something in the namespace they
+                                          are referring to. For example: Gateway has
+                                          the AllowedRoutes field, and ReferenceGrant
+                                          provides a generic way to enable any other
+                                          kind of cross-namespace reference. \n Support:
+                                          Core"
                                         maxLength: 63
                                         minLength: 1
                                         pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -3585,10 +3647,19 @@ spec:
                                 cert-manager for each Challenge to be completed.
                               properties:
                                 class:
-                                  description: The ingress class to use when creating
-                                    Ingress resources to solve ACME challenges that
-                                    use this challenge solver. Only one of 'class'
-                                    or 'name' may be specified.
+                                  description: This field configures the annotation
+                                    `kubernetes.io/ingress.class` when creating Ingress
+                                    resources to solve ACME challenges that use this
+                                    challenge solver. Only one of `class`, `name`
+                                    or `ingressClassName` may be specified.
+                                  type: string
+                                ingressClassName:
+                                  description: This field configures the field `ingressClassName`
+                                    on the created Ingress resources used to solve
+                                    ACME challenges that use this challenge solver.
+                                    This is the recommended way of configuring the
+                                    ingress class. Only one of `class`, `name` or
+                                    `ingressClassName` may be specified.
                                   type: string
                                 ingressTemplate:
                                   description: Optional ingress template used to configure
@@ -3625,7 +3696,8 @@ spec:
                                     is typically used in conjunction with ingress
                                     controllers like ingress-gce, which maintains
                                     a 1:1 mapping between external IPs and ingress
-                                    resources.
+                                    resources. Only one of `class`, `name` or `ingressClassName`
+                                    may be specified.
                                   type: string
                                 podTemplate:
                                   description: Optional pod template used to configure
@@ -3656,10 +3728,9 @@ spec:
                                       type: object
                                     spec:
                                       description: PodSpec defines overrides for the
-                                        HTTP01 challenge solver pod. Only the 'priorityClassName',
-                                        'nodeSelector', 'affinity', 'serviceAccountName'
-                                        and 'tolerations' fields are supported currently.
-                                        All other fields will be ignored.
+                                        HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec
+                                        to find out currently supported fields. All
+                                        other fields will be ignored.
                                       properties:
                                         affinity:
                                           description: If specified, the pod's scheduling
@@ -4981,6 +5052,23 @@ spec:
                                                   type: array
                                               type: object
                                           type: object
+                                        imagePullSecrets:
+                                          description: If specified, the pod's imagePullSecrets
+                                          items:
+                                            description: LocalObjectReference contains
+                                              enough information to let you locate
+                                              the referenced object inside the same
+                                              namespace.
+                                            properties:
+                                              name:
+                                                description: 'Name of the referent.
+                                                  More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                                  TODO: Add other useful fields. apiVersion,
+                                                  kind, uid?'
+                                                type: string
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                          type: array
                                         nodeSelector:
                                           additionalProperties:
                                             type: string
@@ -5230,9 +5318,23 @@ spec:
                             required:
                             - name
                             type: object
+                          serviceAccountRef:
+                            description: A reference to a service account that will
+                              be used to request a bound token (also known as "projected
+                              token"). Compared to using "secretRef", using this field
+                              means that you don't rely on statically bound tokens.
+                              To use this field, you must configure an RBAC rule to
+                              let cert-manager request a token.
+                            properties:
+                              name:
+                                description: Name of the ServiceAccount used to request
+                                  a token.
+                                type: string
+                            required:
+                            - name
+                            type: object
                         required:
                         - role
-                        - secretRef
                         type: object
                       tokenSecretRef:
                         description: TokenSecretRef authenticates with Vault by presenting
@@ -5252,23 +5354,22 @@ spec:
                         type: object
                     type: object
                   caBundle:
-                    description: PEM-encoded CA bundle (base64-encoded) used to validate
-                      Vault server certificate. Only used if the Server URL is using
-                      HTTPS protocol. This parameter is ignored for plain HTTP protocol
-                      connection. If not set the system root certificates are used
-                      to validate the TLS connection. Mutually exclusive with CABundleSecretRef.
-                      If neither CABundle nor CABundleSecretRef are defined, the cert-manager
-                      controller system root certificates are used to validate the
+                    description: Base64-encoded bundle of PEM CAs which will be used
+                      to validate the certificate chain presented by Vault. Only used
+                      if using HTTPS to connect to Vault and ignored for HTTP connections.
+                      Mutually exclusive with CABundleSecretRef. If neither CABundle
+                      nor CABundleSecretRef are defined, the certificate bundle in
+                      the cert-manager controller container is used to validate the
                       TLS connection.
                     format: byte
                     type: string
                   caBundleSecretRef:
-                    description: CABundleSecretRef is a reference to a Secret which
-                      contains the CABundle which will be used when connecting to
+                    description: Reference to a Secret containing a bundle of PEM-encoded
+                      CAs to use when verifying the certificate chain presented by
                       Vault when using HTTPS. Mutually exclusive with CABundle. If
-                      neither CABundleSecretRef nor CABundle are defined, the cert-manager
-                      controller system root certificates are used to validate the
-                      TLS connection. If no key for the Secret is specified, cert-manager
+                      neither CABundle nor CABundleSecretRef are defined, the certificate
+                      bundle in the cert-manager controller container is used to validate
+                      the TLS connection. If no key for the Secret is specified, cert-manager
                       will default to 'ca.crt'.
                     properties:
                       key:
@@ -5338,12 +5439,11 @@ spec:
                       settings. Only one of TPP or Cloud may be specified.
                     properties:
                       caBundle:
-                        description: CABundle is a PEM encoded TLS certificate to
-                          use to verify connections to the TPP instance. If specified,
-                          system roots will not be used and the issuing CA for the
-                          TPP instance must be verifiable using the provided root.
-                          If not specified, the connection will be verified using
-                          the cert-manager system root certificates.
+                        description: Base64-encoded bundle of PEM CAs which will be
+                          used to validate the certificate chain presented by the
+                          TPP server. Only used if using HTTPS; ignored for HTTP.
+                          If undefined, the certificate bundle in the cert-manager
+                          controller container is used to validate the chain.
                         format: byte
                         type: string
                       credentialsRef:
@@ -5383,6 +5483,11 @@ spec:
                   be set if the Issuer is configured to use an ACME server to issue
                   certificates.
                 properties:
+                  lastPrivateKeyHash:
+                    description: LastPrivateKeyHash is a hash of the private key associated
+                      with the latest registered ACME account, in order to track changes
+                      made to registered account associated with the Issuer
+                    type: string
                   lastRegisteredEmail:
                     description: LastRegisteredEmail is the email associated with
                       the latest registered ACME account, in order to track changes
@@ -5461,7 +5566,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: issuers.cert-manager.io
 spec:
   group: cert-manager.io
@@ -5515,6 +5620,15 @@ spec:
                 description: ACME configures this issuer to communicate with a RFC8555
                   (ACME) server to obtain signed x509 certificates.
                 properties:
+                  caBundle:
+                    description: Base64-encoded bundle of PEM CAs which can be used
+                      to validate the certificate chain presented by the ACME server.
+                      Mutually exclusive with SkipTLSVerify; prefer using CABundle
+                      to prevent various kinds of security vulnerabilities. If CABundle
+                      and SkipTLSVerify are unset, the system certificate bundle inside
+                      the container is used to validate the TLS connection.
+                    format: byte
+                    type: string
                   disableAccountKeyGeneration:
                     description: Enables or disables generating a new ACME account
                       key. If true, the Issuer resource will *not* request a new account
@@ -5618,13 +5732,14 @@ spec:
                       Only ACME v2 endpoints (i.e. RFC 8555) are supported.'
                     type: string
                   skipTLSVerify:
-                    description: Enables or disables validation of the ACME server
-                      TLS certificate. If true, requests to the ACME server will not
-                      have their TLS certificate validated (i.e. insecure connections
-                      will be allowed). Only enable this option in development environments.
-                      The cert-manager system installed roots will be used to verify
-                      connections to the ACME server if this is false. Defaults to
-                      false.
+                    description: 'INSECURE: Enables or disables validation of the
+                      ACME server TLS certificate. If true, requests to the ACME server
+                      will not have the TLS certificate chain validated. Mutually
+                      exclusive with CABundle; prefer using CABundle to prevent various
+                      kinds of security vulnerabilities. Only enable this option in
+                      development environments. If CABundle and SkipTLSVerify are
+                      unset, the system certificate bundle inside the container is
+                      used to validate the TLS connection. Defaults to false.'
                     type: boolean
                   solvers:
                     description: 'Solvers is a list of challenge solvers that will
@@ -6089,7 +6204,7 @@ spec:
                                     cert-manager creates an HTTPRoute. cert-manager
                                     needs to know which parentRefs should be used
                                     when creating the HTTPRoute. Usually, the parentRef
-                                    references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
+                                    references a Gateway. See: https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways'
                                   items:
                                     description: "ParentReference identifies an API
                                       object (usually a Gateway) that can be considered
@@ -6105,6 +6220,10 @@ spec:
                                       group:
                                         default: gateway.networking.k8s.io
                                         description: "Group is the group of the referent.
+                                          When unspecified, \"gateway.networking.k8s.io\"
+                                          is inferred. To set the core API group (such
+                                          as for a \"Service\" kind referent), Group
+                                          must be explicitly set to \"\" (empty string).
                                           \n Support: Core"
                                         maxLength: 253
                                         pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
@@ -6112,7 +6231,7 @@ spec:
                                       kind:
                                         default: Gateway
                                         description: "Kind is kind of the referent.
-                                          \n Support: Core (Gateway) \n Support: Custom
+                                          \n Support: Core (Gateway) \n Support: Implementation-specific
                                           (Other Resources)"
                                         maxLength: 63
                                         minLength: 1
@@ -6126,9 +6245,17 @@ spec:
                                         type: string
                                       namespace:
                                         description: "Namespace is the namespace of
-                                          the referent. When unspecified (or empty
-                                          string), this refers to the local namespace
-                                          of the Route. \n Support: Core"
+                                          the referent. When unspecified, this refers
+                                          to the local namespace of the Route. \n
+                                          Note that there are specific rules for ParentRefs
+                                          which cross namespace boundaries. Cross-namespace
+                                          references are only valid if they are explicitly
+                                          allowed by something in the namespace they
+                                          are referring to. For example: Gateway has
+                                          the AllowedRoutes field, and ReferenceGrant
+                                          provides a generic way to enable any other
+                                          kind of cross-namespace reference. \n Support:
+                                          Core"
                                         maxLength: 63
                                         minLength: 1
                                         pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -6216,10 +6343,19 @@ spec:
                                 cert-manager for each Challenge to be completed.
                               properties:
                                 class:
-                                  description: The ingress class to use when creating
-                                    Ingress resources to solve ACME challenges that
-                                    use this challenge solver. Only one of 'class'
-                                    or 'name' may be specified.
+                                  description: This field configures the annotation
+                                    `kubernetes.io/ingress.class` when creating Ingress
+                                    resources to solve ACME challenges that use this
+                                    challenge solver. Only one of `class`, `name`
+                                    or `ingressClassName` may be specified.
+                                  type: string
+                                ingressClassName:
+                                  description: This field configures the field `ingressClassName`
+                                    on the created Ingress resources used to solve
+                                    ACME challenges that use this challenge solver.
+                                    This is the recommended way of configuring the
+                                    ingress class. Only one of `class`, `name` or
+                                    `ingressClassName` may be specified.
                                   type: string
                                 ingressTemplate:
                                   description: Optional ingress template used to configure
@@ -6256,7 +6392,8 @@ spec:
                                     is typically used in conjunction with ingress
                                     controllers like ingress-gce, which maintains
                                     a 1:1 mapping between external IPs and ingress
-                                    resources.
+                                    resources. Only one of `class`, `name` or `ingressClassName`
+                                    may be specified.
                                   type: string
                                 podTemplate:
                                   description: Optional pod template used to configure
@@ -6287,10 +6424,9 @@ spec:
                                       type: object
                                     spec:
                                       description: PodSpec defines overrides for the
-                                        HTTP01 challenge solver pod. Only the 'priorityClassName',
-                                        'nodeSelector', 'affinity', 'serviceAccountName'
-                                        and 'tolerations' fields are supported currently.
-                                        All other fields will be ignored.
+                                        HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec
+                                        to find out currently supported fields. All
+                                        other fields will be ignored.
                                       properties:
                                         affinity:
                                           description: If specified, the pod's scheduling
@@ -7612,6 +7748,23 @@ spec:
                                                   type: array
                                               type: object
                                           type: object
+                                        imagePullSecrets:
+                                          description: If specified, the pod's imagePullSecrets
+                                          items:
+                                            description: LocalObjectReference contains
+                                              enough information to let you locate
+                                              the referenced object inside the same
+                                              namespace.
+                                            properties:
+                                              name:
+                                                description: 'Name of the referent.
+                                                  More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                                  TODO: Add other useful fields. apiVersion,
+                                                  kind, uid?'
+                                                type: string
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                          type: array
                                         nodeSelector:
                                           additionalProperties:
                                             type: string
@@ -7861,9 +8014,23 @@ spec:
                             required:
                             - name
                             type: object
+                          serviceAccountRef:
+                            description: A reference to a service account that will
+                              be used to request a bound token (also known as "projected
+                              token"). Compared to using "secretRef", using this field
+                              means that you don't rely on statically bound tokens.
+                              To use this field, you must configure an RBAC rule to
+                              let cert-manager request a token.
+                            properties:
+                              name:
+                                description: Name of the ServiceAccount used to request
+                                  a token.
+                                type: string
+                            required:
+                            - name
+                            type: object
                         required:
                         - role
-                        - secretRef
                         type: object
                       tokenSecretRef:
                         description: TokenSecretRef authenticates with Vault by presenting
@@ -7883,23 +8050,22 @@ spec:
                         type: object
                     type: object
                   caBundle:
-                    description: PEM-encoded CA bundle (base64-encoded) used to validate
-                      Vault server certificate. Only used if the Server URL is using
-                      HTTPS protocol. This parameter is ignored for plain HTTP protocol
-                      connection. If not set the system root certificates are used
-                      to validate the TLS connection. Mutually exclusive with CABundleSecretRef.
-                      If neither CABundle nor CABundleSecretRef are defined, the cert-manager
-                      controller system root certificates are used to validate the
+                    description: Base64-encoded bundle of PEM CAs which will be used
+                      to validate the certificate chain presented by Vault. Only used
+                      if using HTTPS to connect to Vault and ignored for HTTP connections.
+                      Mutually exclusive with CABundleSecretRef. If neither CABundle
+                      nor CABundleSecretRef are defined, the certificate bundle in
+                      the cert-manager controller container is used to validate the
                       TLS connection.
                     format: byte
                     type: string
                   caBundleSecretRef:
-                    description: CABundleSecretRef is a reference to a Secret which
-                      contains the CABundle which will be used when connecting to
+                    description: Reference to a Secret containing a bundle of PEM-encoded
+                      CAs to use when verifying the certificate chain presented by
                       Vault when using HTTPS. Mutually exclusive with CABundle. If
-                      neither CABundleSecretRef nor CABundle are defined, the cert-manager
-                      controller system root certificates are used to validate the
-                      TLS connection. If no key for the Secret is specified, cert-manager
+                      neither CABundle nor CABundleSecretRef are defined, the certificate
+                      bundle in the cert-manager controller container is used to validate
+                      the TLS connection. If no key for the Secret is specified, cert-manager
                       will default to 'ca.crt'.
                     properties:
                       key:
@@ -7969,12 +8135,11 @@ spec:
                       settings. Only one of TPP or Cloud may be specified.
                     properties:
                       caBundle:
-                        description: CABundle is a PEM encoded TLS certificate to
-                          use to verify connections to the TPP instance. If specified,
-                          system roots will not be used and the issuing CA for the
-                          TPP instance must be verifiable using the provided root.
-                          If not specified, the connection will be verified using
-                          the cert-manager system root certificates.
+                        description: Base64-encoded bundle of PEM CAs which will be
+                          used to validate the certificate chain presented by the
+                          TPP server. Only used if using HTTPS; ignored for HTTP.
+                          If undefined, the certificate bundle in the cert-manager
+                          controller container is used to validate the chain.
                         format: byte
                         type: string
                       credentialsRef:
@@ -8014,6 +8179,11 @@ spec:
                   be set if the Issuer is configured to use an ACME server to issue
                   certificates.
                 properties:
+                  lastPrivateKeyHash:
+                    description: LastPrivateKeyHash is a hash of the private key associated
+                      with the latest registered ACME account, in order to track changes
+                      made to registered account associated with the Issuer
+                    type: string
                   lastRegisteredEmail:
                     description: LastRegisteredEmail is the email associated with
                       the latest registered ACME account, in order to track changes
@@ -8092,7 +8262,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: orders.acme.cert-manager.io
 spec:
   group: acme.cert-manager.io
@@ -8341,7 +8511,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector
   namespace: kube-system
 
@@ -8359,7 +8529,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager
   namespace: kube-system
 
@@ -8377,7 +8547,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
   namespace: kube-system
 
@@ -8395,6 +8565,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
   namespace: kube-system
 
@@ -8411,7 +8582,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector
 rules:
 - apiGroups:
@@ -8449,6 +8620,7 @@ rules:
   - list
   - watch
   - update
+  - patch
 - apiGroups:
   - apiregistration.k8s.io
   resources:
@@ -8458,6 +8630,7 @@ rules:
   - list
   - watch
   - update
+  - patch
 - apiGroups:
   - apiextensions.k8s.io
   resources:
@@ -8467,6 +8640,7 @@ rules:
   - list
   - watch
   - update
+  - patch
 
 ---
 
@@ -8481,7 +8655,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-issuers
 rules:
 - apiGroups:
@@ -8532,7 +8706,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-clusterissuers
 rules:
 - apiGroups:
@@ -8583,7 +8757,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-certificates
 rules:
 - apiGroups:
@@ -8657,7 +8831,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-orders
 rules:
 - apiGroups:
@@ -8728,7 +8902,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-challenges
 rules:
 - apiGroups:
@@ -8838,7 +9012,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-ingress-shim
 rules:
 - apiGroups:
@@ -8912,7 +9086,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-view: "true"
@@ -8951,7 +9125,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
   name: cert-manager-edit
@@ -8999,7 +9173,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-approve:cert-manager-io
 rules:
 - apiGroups:
@@ -9025,7 +9199,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-certificatesigningrequests
 rules:
 - apiGroups:
@@ -9073,7 +9247,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook:subjectaccessreviews
 rules:
 - apiGroups:
@@ -9096,7 +9270,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9120,7 +9294,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-issuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9144,7 +9318,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-clusterissuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9168,7 +9342,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-certificates
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9192,7 +9366,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-orders
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9216,7 +9390,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-challenges
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9240,7 +9414,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-ingress-shim
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9264,7 +9438,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-approve:cert-manager-io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9288,7 +9462,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-controller-certificatesigningrequests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9312,7 +9486,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook:subjectaccessreviews
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9337,7 +9511,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 rules:
@@ -9372,7 +9546,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager:leaderelection
   namespace: kube-system
 rules:
@@ -9406,7 +9580,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 rules:
@@ -9441,7 +9615,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 roleRef:
@@ -9466,7 +9640,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager:leaderelection
   namespace: kube-system
 roleRef:
@@ -9492,7 +9666,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 roleRef:
@@ -9518,7 +9692,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager
   namespace: kube-system
 spec:
@@ -9546,7 +9720,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -9574,7 +9748,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-cainjector
   namespace: kube-system
 spec:
@@ -9592,7 +9766,7 @@ spec:
         app.kubernetes.io/component: cainjector
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cainjector
-        app.kubernetes.io/version: v1.10.2
+        app.kubernetes.io/version: v1.12.2
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9614,7 +9788,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-cainjector:v1.10.2
+        image: quay.io/jetstack/cert-manager-cainjector:v1.12.2
         imagePullPolicy: IfNotPresent
         name: cert-manager-cainjector
         securityContext:
@@ -9648,7 +9822,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager
   namespace: kube-system
 spec:
@@ -9670,7 +9844,7 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cert-manager
-        app.kubernetes.io/version: v1.10.2
+        app.kubernetes.io/version: v1.12.2
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9688,18 +9862,23 @@ spec:
         - --v=2
         - --cluster-resource-namespace=$(POD_NAMESPACE)
         - --leader-election-namespace=kube-system
+        - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.2
+        - --max-concurrent-challenges=60
         - --enable-certificate-owner-ref=true
         env:
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-controller:v1.10.2
+        image: quay.io/jetstack/cert-manager-controller:v1.12.2
         imagePullPolicy: IfNotPresent
         name: cert-manager-controller
         ports:
         - containerPort: 9402
           name: http-metrics
+          protocol: TCP
+        - containerPort: 9403
+          name: http-healthz
           protocol: TCP
         securityContext:
           allowPrivilegeEscalation: false
@@ -9732,7 +9911,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -9750,7 +9929,7 @@ spec:
         app.kubernetes.io/component: webhook
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: webhook
-        app.kubernetes.io/version: v1.10.2
+        app.kubernetes.io/version: v1.12.2
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9777,7 +9956,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-webhook:v1.10.2
+        image: quay.io/jetstack/cert-manager-webhook:v1.12.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -9840,7 +10019,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
@@ -9882,7 +10061,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.10.2
+    app.kubernetes.io/version: v1.12.2
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:

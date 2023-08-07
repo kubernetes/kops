@@ -19,6 +19,7 @@ package awsup
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,6 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -234,10 +236,53 @@ func (c *awsCloudImplementation) Region() string {
 	return c.region
 }
 
-var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
+type awsCloudInstancesRegionMap struct {
+	mutex     sync.Mutex
+	regionMap map[string]AWSCloud
+}
+
+func newAwsCloudInstancesRegionMap() *awsCloudInstancesRegionMap {
+	return &awsCloudInstancesRegionMap{
+		regionMap: make(map[string]AWSCloud),
+	}
+}
+
+var awsCloudInstances *awsCloudInstancesRegionMap = newAwsCloudInstancesRegionMap()
+
+func ResetAWSCloudInstances() {
+	awsCloudInstances.mutex.Lock()
+	awsCloudInstances.regionMap = make(map[string]AWSCloud)
+	awsCloudInstances.mutex.Unlock()
+}
+
+func setConfig(config *aws.Config) *aws.Config {
+	// This avoids a confusing error message when we fail to get credentials
+	// e.g. https://github.com/kubernetes/kops/issues/605
+	config = config.WithCredentialsChainVerboseErrors(true)
+	return request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+}
+
+func updateAwsCloudInstances(region string, cloud AWSCloud) {
+	awsCloudInstances.mutex.Lock()
+	awsCloudInstances.regionMap[region] = cloud
+	awsCloudInstances.mutex.Unlock()
+}
+
+func getCloudInstancesFromRegion(region string) AWSCloud {
+	awsCloudInstances.mutex.Lock()
+	defer awsCloudInstances.mutex.Unlock()
+
+	cloud, ok := awsCloudInstances.regionMap[region]
+	if !ok {
+		return nil
+	}
+
+	return cloud
+}
 
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
-	raw := awsCloudInstances[region]
+	raw := getCloudInstancesFromRegion(region)
+
 	if raw == nil {
 		c := &awsCloudImplementation{
 			region: region,
@@ -250,11 +295,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		}
 
 		config := aws.NewConfig().WithRegion(region)
-
-		// This avoids a confusing error message when we fail to get credentials
-		// e.g. https://github.com/kubernetes/kops/issues/605
-		config = config.WithCredentialsChainVerboseErrors(true)
-		config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+		config = setConfig(config)
 
 		requestLogger := newRequestLogger(2)
 
@@ -265,6 +306,15 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		if err != nil {
 			return c, err
 		}
+
+		// assumes the role before executing commands
+		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
+		if roleARN != "" {
+			creds := stscreds.NewCredentials(sess, roleARN)
+			config = &aws.Config{Credentials: creds}
+			config = setConfig(config).WithRegion(region)
+		}
+
 		c.ec2 = ec2.New(sess, config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ec2.Handlers)
@@ -375,7 +425,8 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.ssm.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ssm.Handlers)
 
-		awsCloudInstances[region] = c
+		updateAwsCloudInstances(region, c)
+
 		raw = c
 	}
 
@@ -2317,13 +2368,16 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	igZonesSet := sets.NewString(igZones...)
 
 	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
+	var reasons []string
 	for _, instanceType := range candidates {
 		if strings.HasPrefix(instanceType, "t4g") {
 			if imageArch != "arm64" {
+				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
 		} else {
 			if imageArch == "arm64" {
+				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
 		}
@@ -2335,10 +2389,16 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 		if zones.IsSuperset(igZonesSet) {
 			return instanceType, nil
 		} else {
+			reasons = append(reasons, fmt.Sprintf("instance type %q is not available in all zones (available in zones %v, need %v)", instanceType, zones, igZones))
 			klog.V(2).Infof("can't use instance type %q, available in zones %v but need %v", instanceType, zones, igZones)
 		}
 	}
 
+	// Log the detailed reasons why we can't find an instance type
+	klog.Warning("cannot find suitable instance type")
+	for _, reason := range reasons {
+		klog.Warning("  *  " + reason)
+	}
 	return "", fmt.Errorf("could not find a suitable supported instance type for the instance group %q (type %q) in region %q", ig.Name, ig.Spec.Role, c.region)
 }
 

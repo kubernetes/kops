@@ -139,7 +139,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -150,10 +150,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: minimal.k8s.local
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: fj7TmUbZ96cxflV77Pa1RweYDcNoEAWurL7GjTOxYXU=
+NodeupConfigHash: IuHgNVVgHVIxYm9CZevCcgAcOs781mWev0vWD+NhSYM=
 
 __EOF_KUBE_ENV
 

@@ -167,9 +167,10 @@ func (c *IAM) AddRoleToInstanceProfileRequest(input *AddRoleToInstanceProfileInp
 // The caller of this operation must be granted the PassRole permission on the
 // IAM role by a permissions policy.
 //
-// For more information about roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For more information about instance profiles, see
+// Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -194,7 +195,8 @@ func (c *IAM) AddRoleToInstanceProfileRequest(input *AddRoleToInstanceProfileInp
 //     the limit exceeded.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -362,7 +364,7 @@ func (c *IAM) AttachGroupPolicyRequest(input *AttachGroupPolicyInput) (req *requ
 // Attaches the specified managed policy to the specified IAM group.
 //
 // You use this operation to attach a managed policy to a group. To embed an
-// inline policy in a group, use PutGroupPolicy.
+// inline policy in a group, use PutGroupPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutGroupPolicy.html).
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
 // Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
@@ -473,12 +475,13 @@ func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *reques
 // role's permission (access) policy.
 //
 // You cannot use a managed policy as the role's trust policy. The role's trust
-// policy is created at the same time as the role, using CreateRole. You can
-// update a role's trust policy using UpdateAssumeRolePolicy.
+// policy is created at the same time as the role, using CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html).
+// You can update a role's trust policy using UpdateAssumerolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
 //
 // Use this operation to attach a managed policy to a role. To embed an inline
-// policy in a role, use PutRolePolicy. For more information about policies,
-// see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy in a role, use PutRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutRolePolicy.html).
+// For more information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
@@ -508,7 +511,8 @@ func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *reques
 //     for an input parameter.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -590,7 +594,7 @@ func (c *IAM) AttachUserPolicyRequest(input *AttachUserPolicyInput) (req *reques
 // Attaches the specified managed policy to the specified user.
 //
 // You use this operation to attach a managed policy to a user. To embed an
-// inline policy in a user, use PutUserPolicy.
+// inline policy in a user, use PutUserPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutUserPolicy.html).
 //
 // As a best practice, you can validate your IAM policies. To learn more, see
 // Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
@@ -918,9 +922,9 @@ func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *re
 // CreateAccountAlias API operation for AWS Identity and Access Management.
 //
 // Creates an alias for your Amazon Web Services account. For information about
-// using an Amazon Web Services account alias, see Using an alias for your Amazon
-// Web Services account ID (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html)
-// in the IAM User Guide.
+// using an Amazon Web Services account alias, see Creating, deleting, and listing
+// an Amazon Web Services account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -930,6 +934,11 @@ func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *re
 // API operation CreateAccountAlias for usage and error information.
 //
 // Returned Error Codes:
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 //   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
 //     The request was rejected because it attempted to create a resource that already
@@ -1340,6 +1349,8 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 //   - A list of client IDs (also known as audiences) that identify the application
 //     or applications allowed to authenticate using the OIDC provider
 //
+//   - A list of tags that are attached to the specified IAM OIDC provider
+//
 //   - A list of thumbprints of one or more server certificates that the IdP
 //     uses
 //
@@ -1347,11 +1358,12 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 // Amazon Web Services.
 //
 // Amazon Web Services secures communication with some OIDC identity providers
-// (IdPs) through our library of trusted certificate authorities (CAs) instead
-// of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Google, Auth0, and those that use an Amazon S3 bucket
-// to host a JSON Web Key Set (JWKS) endpoint. In these cases, your legacy thumbprint
-// remains in your configuration, but is no longer used for validation.
+// (IdPs) through our library of trusted root certificate authorities (CAs)
+// instead of using a certificate thumbprint to verify your IdP server certificate.
+// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
+// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
+// legacy thumbprint remains in your configuration, but is no longer used for
+// validation.
 //
 // The trust for the OIDC provider is derived from the IAM provider that this
 // operation creates. Therefore, it is best to limit access to the CreateOpenIDConnectProvider
@@ -1676,10 +1688,11 @@ func (c *IAM) CreateRoleRequest(input *CreateRoleInput) (req *request.Request, o
 
 // CreateRole API operation for AWS Identity and Access Management.
 //
-// Creates a new role for your Amazon Web Services account. For more information
-// about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For information about quotas for role names and the number of roles you can
-// create, see IAM and STS quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
+// Creates a new role for your Amazon Web Services account.
+//
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For information about quotas for role names and the
+// number of roles you can create, see IAM and STS quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
 // in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2361,6 +2374,11 @@ func (c *IAM) DeactivateMFADeviceRequest(input *DeactivateMFADeviceInput) (req *
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeactivateMFADevice
 func (c *IAM) DeactivateMFADevice(input *DeactivateMFADeviceInput) (*DeactivateMFADeviceOutput, error) {
 	req, out := c.DeactivateMFADeviceRequest(input)
@@ -2524,9 +2542,9 @@ func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *re
 // DeleteAccountAlias API operation for AWS Identity and Access Management.
 //
 // Deletes the specified Amazon Web Services account alias. For information
-// about using an Amazon Web Services account alias, see Using an alias for
-// your Amazon Web Services account ID (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html)
-// in the IAM User Guide.
+// about using an Amazon Web Services account alias, see Creating, deleting,
+// and listing an Amazon Web Services account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2536,6 +2554,11 @@ func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *re
 // API operation DeleteAccountAlias for usage and error information.
 //
 // Returned Error Codes:
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 //   - ErrCodeNoSuchEntityException "NoSuchEntity"
 //     The request was rejected because it referenced a resource entity that does
@@ -2906,8 +2929,9 @@ func (c *IAM) DeleteInstanceProfileRequest(input *DeleteInstanceProfileInput) (r
 // that is associated with a running instance will break any applications running
 // on the instance.
 //
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about instance profiles, see Using instance profiles
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3474,7 +3498,8 @@ func (c *IAM) DeleteRoleRequest(input *DeleteRoleInput) (req *request.Request, o
 //     the limit exceeded.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -3556,6 +3581,8 @@ func (c *IAM) DeleteRolePermissionsBoundaryRequest(input *DeleteRolePermissionsB
 //
 // Deletes the permissions boundary for the specified IAM role.
 //
+// You cannot set the boundary for a service-linked role.
+//
 // Deleting the permissions boundary for a role might increase its permissions.
 // For example, it might allow anyone who assumes the role to perform all the
 // actions granted in its permissions policies.
@@ -3574,7 +3601,8 @@ func (c *IAM) DeleteRolePermissionsBoundaryRequest(input *DeleteRolePermissionsB
 //     not exist. The error message describes the resource.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -3676,7 +3704,8 @@ func (c *IAM) DeleteRolePolicyRequest(input *DeleteRolePolicyInput) (req *reques
 //     the limit exceeded.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -4262,6 +4291,11 @@ func (c *IAM) DeleteSigningCertificateRequest(input *DeleteSigningCertificateInp
 //     the current Amazon Web Services account limits. The error message describes
 //     the limit exceeded.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
@@ -4669,6 +4703,11 @@ func (c *IAM) DeleteVirtualMFADeviceRequest(input *DeleteVirtualMFADeviceInput) 
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteVirtualMFADevice
 func (c *IAM) DeleteVirtualMFADevice(input *DeleteVirtualMFADeviceInput) (*DeleteVirtualMFADeviceOutput, error) {
 	req, out := c.DeleteVirtualMFADeviceRequest(input)
@@ -4864,7 +4903,8 @@ func (c *IAM) DetachRolePolicyRequest(input *DetachRolePolicyInput) (req *reques
 //     for an input parameter.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -5077,6 +5117,11 @@ func (c *IAM) EnableMFADeviceRequest(input *EnableMFADeviceInput) (req *request.
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/EnableMFADevice
 func (c *IAM) EnableMFADevice(input *EnableMFADeviceInput) (*EnableMFADeviceOutput, error) {
@@ -6490,7 +6535,7 @@ func (c *IAM) GetInstanceProfileRequest(input *GetInstanceProfileInput) (req *re
 //
 // Retrieves information about the specified instance profile, including the
 // instance profile's path, GUID, ARN, and role. For more information about
-// instance profiles, see About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html)
+// instance profiles, see Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 // in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6623,6 +6668,90 @@ func (c *IAM) GetLoginProfile(input *GetLoginProfileInput) (*GetLoginProfileOutp
 // for more information on using Contexts.
 func (c *IAM) GetLoginProfileWithContext(ctx aws.Context, input *GetLoginProfileInput, opts ...request.Option) (*GetLoginProfileOutput, error) {
 	req, out := c.GetLoginProfileRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetMFADevice = "GetMFADevice"
+
+// GetMFADeviceRequest generates a "aws/request.Request" representing the
+// client's request for the GetMFADevice operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetMFADevice for more information on using the GetMFADevice
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetMFADeviceRequest method.
+//	req, resp := client.GetMFADeviceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetMFADevice
+func (c *IAM) GetMFADeviceRequest(input *GetMFADeviceInput) (req *request.Request, output *GetMFADeviceOutput) {
+	op := &request.Operation{
+		Name:       opGetMFADevice,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetMFADeviceInput{}
+	}
+
+	output = &GetMFADeviceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetMFADevice API operation for AWS Identity and Access Management.
+//
+// Retrieves information about an MFA device for a specified user.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Identity and Access Management's
+// API operation GetMFADevice for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetMFADevice
+func (c *IAM) GetMFADevice(input *GetMFADeviceInput) (*GetMFADeviceOutput, error) {
+	req, out := c.GetMFADeviceRequest(input)
+	return out, req.Send()
+}
+
+// GetMFADeviceWithContext is the same as GetMFADevice with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetMFADevice for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) GetMFADeviceWithContext(ctx aws.Context, input *GetMFADeviceInput, opts ...request.Option) (*GetMFADeviceOutput, error) {
+	req, out := c.GetMFADeviceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -6773,7 +6902,7 @@ func (c *IAM) GetOrganizationsAccessReportRequest(input *GetOrganizationsAccessR
 // permissions using service last accessed data (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html)
 // in the IAM User Guide.
 //
-// For each service that principals in an account (root users, IAM users, or
+// For each service that principals in an account (root user, IAM users, or
 // IAM roles) could access using SCPs, the operation returns details about the
 // most recent access attempt. If there was no attempt, the service is listed
 // without details about the most recent attempt to access the service. If the
@@ -7070,7 +7199,8 @@ func (c *IAM) GetRoleRequest(input *GetRoleInput) (req *request.Request, output 
 //
 // Retrieves information about the specified role, including the role's path,
 // GUID, ARN, and the role's trust policy that grants permission to assume the
-// role. For more information about roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
+// role. For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // Policies returned by this operation are URL-encoded compliant with RFC 3986
 // (https://tools.ietf.org/html/rfc3986). You can use a URL decoding method
@@ -7178,8 +7308,8 @@ func (c *IAM) GetRolePolicyRequest(input *GetRolePolicyInput) (req *request.Requ
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
-// For more information about roles, see Using roles to delegate permissions
-// and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8214,9 +8344,9 @@ func (c *IAM) ListAccountAliasesRequest(input *ListAccountAliasesInput) (req *re
 //
 // Lists the account alias associated with the Amazon Web Services account (Note:
 // you can have only one). For information about using an Amazon Web Services
-// account alias, see Using an alias for your Amazon Web Services account ID
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AccountAlias.html) in the
-// IAM User Guide.
+// account alias, see Creating, deleting, and listing an Amazon Web Services
+// account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
+// in the Amazon Web Services Sign-In User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9387,6 +9517,12 @@ func (c *IAM) ListInstanceProfileTagsRequest(input *ListInstanceProfileTagsInput
 		Name:       opListInstanceProfileTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -9444,6 +9580,57 @@ func (c *IAM) ListInstanceProfileTagsWithContext(ctx aws.Context, input *ListIns
 	return out, req.Send()
 }
 
+// ListInstanceProfileTagsPages iterates over the pages of a ListInstanceProfileTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListInstanceProfileTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListInstanceProfileTags operation.
+//	pageNum := 0
+//	err := client.ListInstanceProfileTagsPages(params,
+//	    func(page *iam.ListInstanceProfileTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListInstanceProfileTagsPages(input *ListInstanceProfileTagsInput, fn func(*ListInstanceProfileTagsOutput, bool) bool) error {
+	return c.ListInstanceProfileTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListInstanceProfileTagsPagesWithContext same as ListInstanceProfileTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListInstanceProfileTagsPagesWithContext(ctx aws.Context, input *ListInstanceProfileTagsInput, fn func(*ListInstanceProfileTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListInstanceProfileTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListInstanceProfileTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListInstanceProfileTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListInstanceProfiles = "ListInstanceProfiles"
 
 // ListInstanceProfilesRequest generates a "aws/request.Request" representing the
@@ -9495,7 +9682,8 @@ func (c *IAM) ListInstanceProfilesRequest(input *ListInstanceProfilesInput) (req
 //
 // Lists the instance profiles that have the specified path prefix. If there
 // are none, the operation returns an empty list. For more information about
-// instance profiles, see About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// instance profiles, see Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // IAM resource-listing operations return a subset of the available attributes
 // for the resource. For example, this operation does not return tags, even
@@ -9640,7 +9828,8 @@ func (c *IAM) ListInstanceProfilesForRoleRequest(input *ListInstanceProfilesForR
 //
 // Lists the instance profiles that have the specified associated IAM role.
 // If there are none, the operation returns an empty list. For more information
-// about instance profiles, go to About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// about instance profiles, go to Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -9764,6 +9953,12 @@ func (c *IAM) ListMFADeviceTagsRequest(input *ListMFADeviceTagsInput) (req *requ
 		Name:       opListMFADeviceTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -9823,6 +10018,57 @@ func (c *IAM) ListMFADeviceTagsWithContext(ctx aws.Context, input *ListMFADevice
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListMFADeviceTagsPages iterates over the pages of a ListMFADeviceTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListMFADeviceTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListMFADeviceTags operation.
+//	pageNum := 0
+//	err := client.ListMFADeviceTagsPages(params,
+//	    func(page *iam.ListMFADeviceTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListMFADeviceTagsPages(input *ListMFADeviceTagsInput, fn func(*ListMFADeviceTagsOutput, bool) bool) error {
+	return c.ListMFADeviceTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListMFADeviceTagsPagesWithContext same as ListMFADeviceTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListMFADeviceTagsPagesWithContext(ctx aws.Context, input *ListMFADeviceTagsInput, fn func(*ListMFADeviceTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListMFADeviceTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListMFADeviceTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListMFADeviceTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListMFADevices = "ListMFADevices"
@@ -10002,6 +10248,12 @@ func (c *IAM) ListOpenIDConnectProviderTagsRequest(input *ListOpenIDConnectProvi
 		Name:       opListOpenIDConnectProviderTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10063,6 +10315,57 @@ func (c *IAM) ListOpenIDConnectProviderTagsWithContext(ctx aws.Context, input *L
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListOpenIDConnectProviderTagsPages iterates over the pages of a ListOpenIDConnectProviderTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListOpenIDConnectProviderTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListOpenIDConnectProviderTags operation.
+//	pageNum := 0
+//	err := client.ListOpenIDConnectProviderTagsPages(params,
+//	    func(page *iam.ListOpenIDConnectProviderTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListOpenIDConnectProviderTagsPages(input *ListOpenIDConnectProviderTagsInput, fn func(*ListOpenIDConnectProviderTagsOutput, bool) bool) error {
+	return c.ListOpenIDConnectProviderTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListOpenIDConnectProviderTagsPagesWithContext same as ListOpenIDConnectProviderTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListOpenIDConnectProviderTagsPagesWithContext(ctx aws.Context, input *ListOpenIDConnectProviderTagsInput, fn func(*ListOpenIDConnectProviderTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListOpenIDConnectProviderTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListOpenIDConnectProviderTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListOpenIDConnectProviderTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListOpenIDConnectProviders = "ListOpenIDConnectProviders"
@@ -10451,6 +10754,12 @@ func (c *IAM) ListPolicyTagsRequest(input *ListPolicyTagsInput) (req *request.Re
 		Name:       opListPolicyTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10510,6 +10819,57 @@ func (c *IAM) ListPolicyTagsWithContext(ctx aws.Context, input *ListPolicyTagsIn
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListPolicyTagsPages iterates over the pages of a ListPolicyTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPolicyTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPolicyTags operation.
+//	pageNum := 0
+//	err := client.ListPolicyTagsPages(params,
+//	    func(page *iam.ListPolicyTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListPolicyTagsPages(input *ListPolicyTagsInput, fn func(*ListPolicyTagsOutput, bool) bool) error {
+	return c.ListPolicyTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPolicyTagsPagesWithContext same as ListPolicyTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListPolicyTagsPagesWithContext(ctx aws.Context, input *ListPolicyTagsInput, fn func(*ListPolicyTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPolicyTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPolicyTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPolicyTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListPolicyVersions = "ListPolicyVersions"
@@ -10843,6 +11203,12 @@ func (c *IAM) ListRoleTagsRequest(input *ListRoleTagsInput) (req *request.Reques
 		Name:       opListRoleTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -10900,6 +11266,57 @@ func (c *IAM) ListRoleTagsWithContext(ctx aws.Context, input *ListRoleTagsInput,
 	return out, req.Send()
 }
 
+// ListRoleTagsPages iterates over the pages of a ListRoleTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRoleTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRoleTags operation.
+//	pageNum := 0
+//	err := client.ListRoleTagsPages(params,
+//	    func(page *iam.ListRoleTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListRoleTagsPages(input *ListRoleTagsInput, fn func(*ListRoleTagsOutput, bool) bool) error {
+	return c.ListRoleTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRoleTagsPagesWithContext same as ListRoleTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListRoleTagsPagesWithContext(ctx aws.Context, input *ListRoleTagsInput, fn func(*ListRoleTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRoleTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRoleTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRoleTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListRoles = "ListRoles"
 
 // ListRolesRequest generates a "aws/request.Request" representing the
@@ -10951,12 +11368,20 @@ func (c *IAM) ListRolesRequest(input *ListRolesInput) (req *request.Request, out
 //
 // Lists the IAM roles that have the specified path prefix. If there are none,
 // the operation returns an empty list. For more information about roles, see
-// Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
+// IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide.
 //
 // IAM resource-listing operations return a subset of the available attributes
-// for the resource. For example, this operation does not return tags, even
-// though they are an attribute of the returned object. To view all of the information
-// for a role, see GetRole.
+// for the resource. This operation does not return the following attributes,
+// even though they are an attribute of the returned object:
+//
+//   - PermissionsBoundary
+//
+//   - RoleLastUsed
+//
+//   - Tags
+//
+// To view all of the information for a role, see GetRole.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -11075,6 +11500,12 @@ func (c *IAM) ListSAMLProviderTagsRequest(input *ListSAMLProviderTagsInput) (req
 		Name:       opListSAMLProviderTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -11136,6 +11567,57 @@ func (c *IAM) ListSAMLProviderTagsWithContext(ctx aws.Context, input *ListSAMLPr
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListSAMLProviderTagsPages iterates over the pages of a ListSAMLProviderTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListSAMLProviderTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListSAMLProviderTags operation.
+//	pageNum := 0
+//	err := client.ListSAMLProviderTagsPages(params,
+//	    func(page *iam.ListSAMLProviderTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListSAMLProviderTagsPages(input *ListSAMLProviderTagsInput, fn func(*ListSAMLProviderTagsOutput, bool) bool) error {
+	return c.ListSAMLProviderTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListSAMLProviderTagsPagesWithContext same as ListSAMLProviderTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListSAMLProviderTagsPagesWithContext(ctx aws.Context, input *ListSAMLProviderTagsInput, fn func(*ListSAMLProviderTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListSAMLProviderTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListSAMLProviderTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListSAMLProviderTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListSAMLProviders = "ListSAMLProviders"
@@ -11399,6 +11881,12 @@ func (c *IAM) ListServerCertificateTagsRequest(input *ListServerCertificateTagsI
 		Name:       opListServerCertificateTags,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxItems",
+			TruncationToken: "IsTruncated",
+		},
 	}
 
 	if input == nil {
@@ -11460,6 +11948,57 @@ func (c *IAM) ListServerCertificateTagsWithContext(ctx aws.Context, input *ListS
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListServerCertificateTagsPages iterates over the pages of a ListServerCertificateTags operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListServerCertificateTags method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListServerCertificateTags operation.
+//	pageNum := 0
+//	err := client.ListServerCertificateTagsPages(params,
+//	    func(page *iam.ListServerCertificateTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *IAM) ListServerCertificateTagsPages(input *ListServerCertificateTagsInput, fn func(*ListServerCertificateTagsOutput, bool) bool) error {
+	return c.ListServerCertificateTagsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListServerCertificateTagsPagesWithContext same as ListServerCertificateTagsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IAM) ListServerCertificateTagsPagesWithContext(ctx aws.Context, input *ListServerCertificateTagsInput, fn func(*ListServerCertificateTagsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListServerCertificateTagsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListServerCertificateTagsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListServerCertificateTagsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListServerCertificates = "ListServerCertificates"
@@ -12200,9 +12739,14 @@ func (c *IAM) ListUsersRequest(input *ListUsersInput) (req *request.Request, out
 // account. If there are none, the operation returns an empty list.
 //
 // IAM resource-listing operations return a subset of the available attributes
-// for the resource. For example, this operation does not return tags, even
-// though they are an attribute of the returned object. To view all of the information
-// for a user, see GetUser.
+// for the resource. This operation does not return the following attributes,
+// even though they are an attribute of the returned object:
+//
+//   - PermissionsBoundary
+//
+//   - Tags
+//
+// To view all of the information for a user, see GetUser.
 //
 // You can paginate the results using the MaxItems and Marker parameters.
 //
@@ -12479,9 +13023,10 @@ func (c *IAM) PutGroupPolicyRequest(input *PutGroupPolicyInput) (req *request.Re
 // IAM group.
 //
 // A user can also have managed policies attached to it. To attach a managed
-// policy to a group, use AttachGroupPolicy. To create a new managed policy,
-// use CreatePolicy. For information about policies, see Managed policies and
-// inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a group, use AttachGroupPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachGroupPolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -12617,7 +13162,8 @@ func (c *IAM) PutRolePermissionsBoundaryRequest(input *PutRolePermissionsBoundar
 //     for an input parameter.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -12701,14 +13247,16 @@ func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Requ
 //
 // When you embed an inline policy in a role, the inline policy is used as part
 // of the role's access (permissions) policy. The role's trust policy is created
-// at the same time as the role, using CreateRole. You can update a role's trust
-// policy using UpdateAssumeRolePolicy. For more information about IAM roles,
-// see Using roles to delegate permissions and federate identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html).
+// at the same time as the role, using CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html).
+// You can update a role's trust policy using UpdateAssumeRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-toplevel.html)
+// in the IAM User Guide.
 //
 // A role can also have a managed policy attached to it. To attach a managed
-// policy to a role, use AttachRolePolicy. To create a new managed policy, use
-// CreatePolicy. For information about policies, see Managed policies and inline
-// policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a role, use AttachRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachRolePolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -12743,7 +13291,8 @@ func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Requ
 //     not exist. The error message describes the resource.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -12925,9 +13474,10 @@ func (c *IAM) PutUserPolicyRequest(input *PutUserPolicyInput) (req *request.Requ
 // IAM user.
 //
 // An IAM user can also have a managed policy attached to it. To attach a managed
-// policy to a user, use AttachUserPolicy. To create a new managed policy, use
-// CreatePolicy. For information about policies, see Managed policies and inline
-// policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
+// policy to a user, use AttachUserPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_AttachUserPolicy.html).
+// To create a new managed policy, use CreatePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html).
+// For information about policies, see Managed policies and inline policies
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
 // For information about the maximum number of inline policies that you can
@@ -13132,9 +13682,10 @@ func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstance
 // an instance profile that is associated with a running instance might break
 // any applications running on the instance.
 //
-// For more information about IAM roles, see Working with roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/WorkingWithRoles.html).
-// For more information about instance profiles, see About instance profiles
-// (https://docs.aws.amazon.com/IAM/latest/UserGuide/AboutInstanceProfiles.html).
+// For more information about roles, see IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+// in the IAM User Guide. For more information about instance profiles, see
+// Using instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13155,7 +13706,8 @@ func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstance
 //     the limit exceeded.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -13434,6 +13986,11 @@ func (c *IAM) ResyncMFADeviceRequest(input *ResyncMFADeviceInput) (req *request.
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
+//
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResyncMFADevice
 func (c *IAM) ResyncMFADevice(input *ResyncMFADeviceInput) (*ResyncMFADeviceOutput, error) {
@@ -14323,10 +14880,10 @@ func (c *IAM) TagOpenIDConnectProviderRequest(input *TagOpenIDConnectProviderInp
 //     Or search for all resources with the key name Cost Center and the value
 //     41200.
 //
-//   - Access control - Include tags in IAM user-based and resource-based policies.
-//     You can use tags to restrict access to only an OIDC provider that has
-//     a specified tag attached. For examples of policies that show how to use
-//     tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//   - Access control - Include tags in IAM identity-based and resource-based
+//     policies. You can use tags to restrict access to only an OIDC provider
+//     that has a specified tag attached. For examples of policies that show
+//     how to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
 //     in the IAM User Guide.
 //
 //   - If any one of the tags is invalid or if you exceed the allowed maximum
@@ -14968,13 +15525,13 @@ func (c *IAM) TagUserRequest(input *TagUserInput) (req *request.Request, output 
 //     Or search for all resources with the key name Cost Center and the value
 //     41200.
 //
-//   - Access control - Include tags in IAM user-based and resource-based policies.
-//     You can use tags to restrict access to only an IAM requesting user that
-//     has a specified tag attached. You can also restrict access to only those
-//     resources that have a certain tag attached. For examples of policies that
-//     show how to use tags to control access, see Control access using IAM tags
-//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html) in
-//     the IAM User Guide.
+//   - Access control - Include tags in IAM identity-based and resource-based
+//     policies. You can use tags to restrict access to only an IAM requesting
+//     user that has a specified tag attached. You can also restrict access to
+//     only those resources that have a certain tag attached. For examples of
+//     policies that show how to use tags to control access, see Control access
+//     using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
 //   - Cost allocation - Use tags to help track which individuals and teams
 //     are using which Amazon Web Services resources.
@@ -16096,7 +16653,8 @@ func (c *IAM) UpdateAssumeRolePolicyRequest(input *UpdateAssumeRolePolicyInput) 
 //     the limit exceeded.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -16395,11 +16953,12 @@ func (c *IAM) UpdateOpenIDConnectProviderThumbprintRequest(input *UpdateOpenIDCo
 // as a principal fails until the certificate thumbprint is updated.
 //
 // Amazon Web Services secures communication with some OIDC identity providers
-// (IdPs) through our library of trusted certificate authorities (CAs) instead
-// of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Google, Auth0, and those that use an Amazon S3 bucket
-// to host a JSON Web Key Set (JWKS) endpoint. In these cases, your legacy thumbprint
-// remains in your configuration, but is no longer used for validation.
+// (IdPs) through our library of trusted root certificate authorities (CAs)
+// instead of using a certificate thumbprint to verify your IdP server certificate.
+// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
+// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
+// legacy thumbprint remains in your configuration, but is no longer used for
+// validation.
 //
 // Trust for the OIDC provider is derived from the provider certificate and
 // is validated by the thumbprint. Therefore, it is best to limit access to
@@ -16505,7 +17064,8 @@ func (c *IAM) UpdateRoleRequest(input *UpdateRoleInput) (req *request.Request, o
 // Returned Error Codes:
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -16602,7 +17162,8 @@ func (c *IAM) UpdateRoleDescriptionRequest(input *UpdateRoleDescriptionInput) (r
 //     not exist. The error message describes the resource.
 //
 //   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//     The request was rejected because only the service that depends on the service-linked
+//     The request was rejected because service-linked roles are protected Amazon
+//     Web Services resources. Only the service that depends on the service-linked
 //     role can modify or delete the role on your behalf. The error message includes
 //     the name of the service that depends on this service-linked role. You must
 //     request the change through that service.
@@ -17564,6 +18125,11 @@ func (c *IAM) UploadSigningCertificateRequest(input *UploadSigningCertificateInp
 //     The request was rejected because it referenced a resource entity that does
 //     not exist. The error message describes the resource.
 //
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
 //   - ErrCodeServiceFailureException "ServiceFailure"
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
@@ -17604,7 +18170,7 @@ type AccessDetail struct {
 	// from which an authenticated principal last attempted to access the service.
 	// Amazon Web Services does not report unauthenticated requests.
 	//
-	// This field is null if no principals (IAM users, IAM roles, or root users)
+	// This field is null if no principals (IAM users, IAM roles, or root user)
 	// in the reported Organizations entity attempted to access the service within
 	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	EntityPath *string `min:"19" type:"string"`
@@ -17641,7 +18207,7 @@ type AccessDetail struct {
 	// ServiceNamespace is a required field
 	ServiceNamespace *string `min:"1" type:"string" required:"true"`
 
-	// The number of accounts with authenticated principals (root users, IAM users,
+	// The number of accounts with authenticated principals (root user, IAM users,
 	// and IAM roles) that attempted to access the service in the tracking period.
 	TotalAuthenticatedEntities *int64 `type:"integer"`
 }
@@ -19368,7 +19934,7 @@ type CreateOpenIDConnectProviderInput struct {
 	//
 	// For more information about obtaining the OIDC provider thumbprint, see Obtaining
 	// the thumbprint for an OpenID Connect provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/identity-providers-oidc-obtain-thumbprint.html)
-	// in the IAM User Guide.
+	// in the IAM user Guide.
 	//
 	// ThumbprintList is a required field
 	ThumbprintList []*string `type:"list" required:"true"`
@@ -19923,6 +20489,10 @@ type CreateRoleInput struct {
 	// IAM user, group, role, and policy names must be unique within the account.
 	// Names are not distinguished by case. For example, you cannot create resources
 	// named both "MyResource" and "myresource".
+	//
+	// This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex))
+	// a string of characters consisting of upper and lowercase alphanumeric characters
+	// with no spaces. You can also include any of the following characters: _+=,.@-
 	//
 	// RoleName is a required field
 	RoleName *string `min:"1" type:"string" required:"true"`
@@ -20626,8 +21196,8 @@ type CreateVirtualMFADeviceInput struct {
 	// of tags, then the entire request fails and the resource is not created.
 	Tags []*Tag `type:"list"`
 
-	// The name of the virtual MFA device. Use with path to uniquely identify a
-	// virtual MFA device.
+	// The name of the virtual MFA device, which must be unique. Use with path to
+	// uniquely identify a virtual MFA device.
 	//
 	// This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex))
 	// a string of characters consisting of upper and lowercase alphanumeric characters
@@ -24839,6 +25409,131 @@ func (s GetLoginProfileOutput) GoString() string {
 // SetLoginProfile sets the LoginProfile field's value.
 func (s *GetLoginProfileOutput) SetLoginProfile(v *LoginProfile) *GetLoginProfileOutput {
 	s.LoginProfile = v
+	return s
+}
+
+type GetMFADeviceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Serial number that uniquely identifies the MFA device. For this API, we only
+	// accept FIDO security key ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html).
+	//
+	// SerialNumber is a required field
+	SerialNumber *string `min:"9" type:"string" required:"true"`
+
+	// The friendly name identifying the user.
+	UserName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetMFADeviceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetMFADeviceInput"}
+	if s.SerialNumber == nil {
+		invalidParams.Add(request.NewErrParamRequired("SerialNumber"))
+	}
+	if s.SerialNumber != nil && len(*s.SerialNumber) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("SerialNumber", 9))
+	}
+	if s.UserName != nil && len(*s.UserName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSerialNumber sets the SerialNumber field's value.
+func (s *GetMFADeviceInput) SetSerialNumber(v string) *GetMFADeviceInput {
+	s.SerialNumber = &v
+	return s
+}
+
+// SetUserName sets the UserName field's value.
+func (s *GetMFADeviceInput) SetUserName(v string) *GetMFADeviceInput {
+	s.UserName = &v
+	return s
+}
+
+type GetMFADeviceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The certifications of a specified user's MFA device. We currently provide
+	// FIPS-140-2, FIPS-140-3, and FIDO certification levels obtained from FIDO
+	// Alliance Metadata Service (MDS) (https://fidoalliance.org/metadata/).
+	Certifications map[string]*string `type:"map"`
+
+	// The date that a specified user's MFA device was first enabled.
+	EnableDate *time.Time `type:"timestamp"`
+
+	// Serial number that uniquely identifies the MFA device. For this API, we only
+	// accept FIDO security key ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html).
+	//
+	// SerialNumber is a required field
+	SerialNumber *string `min:"9" type:"string" required:"true"`
+
+	// The friendly name identifying the user.
+	UserName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMFADeviceOutput) GoString() string {
+	return s.String()
+}
+
+// SetCertifications sets the Certifications field's value.
+func (s *GetMFADeviceOutput) SetCertifications(v map[string]*string) *GetMFADeviceOutput {
+	s.Certifications = v
+	return s
+}
+
+// SetEnableDate sets the EnableDate field's value.
+func (s *GetMFADeviceOutput) SetEnableDate(v time.Time) *GetMFADeviceOutput {
+	s.EnableDate = &v
+	return s
+}
+
+// SetSerialNumber sets the SerialNumber field's value.
+func (s *GetMFADeviceOutput) SetSerialNumber(v string) *GetMFADeviceOutput {
+	s.SerialNumber = &v
+	return s
+}
+
+// SetUserName sets the UserName field's value.
+func (s *GetMFADeviceOutput) SetUserName(v string) *GetMFADeviceOutput {
+	s.UserName = &v
 	return s
 }
 
@@ -33015,7 +33710,7 @@ type PutGroupPolicyInput struct {
 	// You must provide policies in JSON format in IAM. However, for CloudFormation
 	// templates formatted in YAML, you can provide the policy in JSON or YAML format.
 	// CloudFormation always converts a YAML policy to JSON format before submitting
-	// it to = IAM.
+	// it to IAM.
 	//
 	// The regex pattern (http://wikipedia.org/wiki/regex) used to validate this
 	// parameter is a string of characters consisting of the following:
@@ -34270,7 +34965,7 @@ type Role struct {
 	// if your Region began supporting these features within the last year. The
 	// role might have been used more than 400 days ago. For more information, see
 	// Regions where data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
-	// in the IAM User Guide.
+	// in the IAM user Guide.
 	RoleLastUsed *RoleLastUsed `type:"structure"`
 
 	// The friendly name that identifies the role.
@@ -34531,7 +35226,7 @@ func (s *RoleDetail) SetTags(v []*Tag) *RoleDetail {
 // if your Region began supporting these features within the last year. The
 // role might have been used more than 400 days ago. For more information, see
 // Regions where data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
-// in the IAM User Guide.
+// in the IAM user Guide.
 //
 // This data type is returned as a response element in the GetRole and GetAccountAuthorizationDetails
 // operations.
@@ -40361,7 +41056,7 @@ type VirtualMFADevice struct {
 	_ struct{} `type:"structure"`
 
 	// The base32 seed defined as specified in RFC3548 (https://tools.ietf.org/html/rfc3548.txt).
-	// The Base32StringSeed is base64-encoded.
+	// The Base32StringSeed is base32-encoded.
 	//
 	// Base32StringSeed is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by VirtualMFADevice's

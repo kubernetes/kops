@@ -61,18 +61,19 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
 		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
-		c.AddTask(&nodetasks.Package{Name: "libcgroup"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp"})
 		c.AddTask(&nodetasks.Package{Name: "libtool-ltdl"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Handle some packages differently for each distro
-		switch b.Distribution {
-		case distributions.DistributionAmazonLinux2:
-			// Amazon Linux 2 doesn't have SELinux enabled by default
-		default:
+		// Amazon Linux 2 doesn't have SELinux enabled by default
+		if b.Distribution != distributions.DistributionAmazonLinux2 {
 			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
 			c.AddTask(&nodetasks.Package{Name: "pigz"})
+		}
+		// RHEL9 does not have libcgroup
+		if b.Distribution != distributions.DistributionRhel9 {
+			c.AddTask(&nodetasks.Package{Name: "libcgroup"})
 		}
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {

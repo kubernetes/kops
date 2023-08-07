@@ -428,6 +428,10 @@ spec:
                         properties:
                           bs-version:
                             type: string
+                          clusterName:
+                            description: ClusterName sets the --cluster flag for the
+                              cinder-csi-plugin to the provided name
+                            type: string
                           createStorageClass:
                             description: CreateStorageClass provisions a default class
                               for the Cinder plugin
@@ -440,6 +444,8 @@ spec:
                             type: boolean
                           ignore-volume-microversion:
                             type: boolean
+                          metricsEnabled:
+                            type: boolean
                           override-volume-az:
                             type: string
                         type: object
@@ -451,6 +457,8 @@ spec:
                         properties:
                           enableIngressHostname:
                             type: boolean
+                          flavorID:
+                            type: string
                           floatingNetwork:
                             type: string
                           floatingNetworkID:
@@ -494,6 +502,8 @@ spec:
                       network:
                         description: OpenstackNetwork defines the config for a network
                         properties:
+                          addressSortOrder:
+                            type: string
                           availabilityZoneHints:
                             items:
                               type: string
@@ -652,6 +662,10 @@ spec:
                   master:
                     description: Master is the url for the kube api master.
                     type: string
+                  nodeStatusUpdateFrequency:
+                    description: 'NodeStatusUpdateFrequency is the duration between
+                      node status updates. (default: 5m)'
+                    type: string
                   useServiceAccountCredentials:
                     description: UseServiceAccountCredentials controls whether we
                       use individual service account credentials for each controller.
@@ -670,12 +684,12 @@ spec:
                 description: ClusterAutoscaler defines the cluaster autoscaler configuration.
                 properties:
                   awsUseStaticInstanceList:
-                    description: 'AWSUseStaticInstanceList makes cluster autoscaler
+                    description: 'AWSUseStaticInstanceList makes the cluster autoscaler
                       to use statically defined set of AWS EC2 Instance List. Default:
                       false'
                     type: boolean
                   balanceSimilarNodeGroups:
-                    description: 'BalanceSimilarNodeGroups makes cluster autoscaler
+                    description: 'BalanceSimilarNodeGroups makes the cluster autoscaler
                       treat similar node groups as one. Default: false'
                     type: boolean
                   cordonNodeBeforeTerminating:
@@ -716,6 +730,11 @@ spec:
                       ConfigMap based on the `autoscale` and `autoscalePriority` fields
                       in the InstanceGroup specs. Default: least-waste'
                     type: string
+                  ignoreDaemonSetsUtilization:
+                    description: 'IgnoreDaemonSetsUtilization causes the cluster autoscaler
+                      to ignore DaemonSet-managed pods when calculating resource utilization
+                      for scaling down. Default: false'
+                    type: boolean
                   image:
                     description: 'Image is the docker container used. Default: the
                       latest supported image for the specified kubernetes version.'
@@ -733,15 +752,15 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   newPodScaleUpDelay:
-                    description: 'NewPodScaleUpDelay causes cluster autoscaler to
-                      ignore unschedulable pods until they are a certain "age", regardless
-                      of the scan-interval Default: 0s'
+                    description: 'NewPodScaleUpDelay causes the cluster autoscaler
+                      to ignore unschedulable pods until they are a certain "age",
+                      regardless of the scan-interval Default: 0s'
                     type: string
                   podAnnotations:
                     additionalProperties:
                       type: string
                     description: 'PodAnnotations are the annotations added to cluster
-                      autoscaler pod when they are created. Default: none'
+                      autoscaler pods when they are created. Default: none'
                     type: object
                   scaleDownDelayAfterAdd:
                     description: 'ScaleDownDelayAfterAdd determines the time after
@@ -762,11 +781,11 @@ spec:
                       threshold for node scale-down. Default: 0.5'
                     type: string
                   skipNodesWithLocalStorage:
-                    description: 'SkipNodesWithLocalStorage makes cluster autoscaler
+                    description: 'SkipNodesWithLocalStorage makes the cluster autoscaler
                       skip scale-down of nodes with local storage. Default: true'
                     type: boolean
                   skipNodesWithSystemPods:
-                    description: 'SkipNodesWithSystemPods makes cluster autoscaler
+                    description: 'SkipNodesWithSystemPods makes the cluster autoscaler
                       skip scale-down of nodes with non-DaemonSet pods in the kube-system
                       namespace. Default: true'
                     type: boolean
@@ -783,8 +802,7 @@ spec:
                   system (etcd vs S3)
                 type: string
               configStore:
-                description: ConfigStore is the VFS path to where the configuration
-                  (Cluster, InstanceGroups etc) is stored
+                description: ConfigStore is unused.
                 type: string
               containerRuntime:
                 description: Container runtime to use for Kubernetes
@@ -877,6 +895,9 @@ spec:
                         description: Version used to pick the runc package.
                         type: string
                     type: object
+                  selinuxEnabled:
+                    description: SelinuxEnabled enables SELinux support
+                    type: boolean
                   skipInstall:
                     description: SkipInstall prevents kOps from installing and modifying
                       containerd in any way (default "false").
@@ -1243,6 +1264,13 @@ spec:
                         image:
                           description: Image is the etcd manager image to use.
                           type: string
+                        listenMetricsURLs:
+                          description: ListenMetricsURLs is the list of URLs to listen
+                            on that will respond to both the /metrics and /health
+                            endpoints
+                          items:
+                            type: string
+                          type: array
                         logLevel:
                           description: LogLevel allows the klog library verbose log
                             level to be set for etcd-manager. The default is 6. https://github.com/google/glog#verbose-logging
@@ -1479,6 +1507,12 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  image:
+                    type: string
+                  logEncoding:
+                    type: string
+                  logLevel:
+                    type: string
                 type: object
               keyStore:
                 description: KeyStore is the VFS path to where SSL keys and certificates
@@ -3205,6 +3239,11 @@ spec:
                     description: NodeLocalDNS specifies the configuration for the
                       node-local-dns addon
                     properties:
+                      additionalConfig:
+                        description: AdditionalConfig is used to provide additional
+                          config for node local dns by the user - it will include
+                          the original CoreFile made by kOps.
+                        type: string
                       cpuRequest:
                         anyOf:
                         - type: integer
@@ -3216,6 +3255,11 @@ spec:
                       enabled:
                         description: Enabled activates the node-local-dns addon.
                         type: boolean
+                      externalCoreFile:
+                        description: ExternalCoreFile is used to provide a complete
+                          NodeLocalDNS CoreFile by the user - ignores other provided
+                          flags which modify the CoreFile.
+                        type: string
                       forwardToKubeDNS:
                         description: If enabled, nodelocal dns will use kubedns as
                           a default upstream
@@ -3769,6 +3813,10 @@ spec:
                       Kubelet.
                     format: int32
                     type: integer
+                  memorySwapBehavior:
+                    description: 'MemorySwapBehavior defines how swap is used by container
+                      workloads. Supported values: LimitedSwap, "UnlimitedSwap.'
+                    type: string
                   networkPluginMTU:
                     description: NetworkPluginMTU is the MTU to be passed to the network
                       plugin, and overrides the default MTU for cases where it cannot
@@ -4198,6 +4246,10 @@ spec:
                       Kubelet.
                     format: int32
                     type: integer
+                  memorySwapBehavior:
+                    description: 'MemorySwapBehavior defines how swap is used by container
+                      workloads. Supported values: LimitedSwap, "UnlimitedSwap.'
+                    type: string
                   networkPluginMTU:
                     description: NetworkPluginMTU is the MTU to be passed to the network
                       plugin, and overrides the default MTU for cases where it cannot
@@ -4778,6 +4830,11 @@ spec:
                           to provide L3/L4 network visibility, policy enforcement
                           and other advanced features. Default: none'
                         type: string
+                      clusterID:
+                        description: ClusterID is the ID of the cluster. It is only
+                          relevant when building a mesh of clusters. Must be a number
+                          between 1 and 255.
+                        type: integer
                       clusterName:
                         description: ClusterName is the name of the cluster. It is
                           only relevant when building a mesh of clusters.
@@ -5038,6 +5095,12 @@ spec:
                       nodeInitBootstrapFile:
                         description: NodeInitBootstrapFile is unused.
                         type: string
+                      operatorPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: 'OperatorPodAnnotations makes possible to add
+                          additional annotations to cilium operator. Default: none'
+                        type: object
                       pprof:
                         description: Pprof is unused.
                         type: boolean
@@ -5136,8 +5199,8 @@ spec:
                         type: integer
                     type: object
                   gce:
-                    description: GCENetworkingSpec is the specification of GCE's native
-                      networking mode, using IP aliases
+                    description: GCPNetworkingSpec is the specification of GCP's native
+                      networking mode, using IP aliases.
                     type: object
                   kopeio:
                     description: KopeioNetworkingSpec declares that we want Kopeio
@@ -5666,12 +5729,10 @@ spec:
                         type: string
                     type: object
                   masters:
-                    description: The environment to launch the Kubernetes masters
-                      in public|private
+                    description: Masters is not used.
                     type: string
                   nodes:
-                    description: The environment to launch the Kubernetes nodes in
-                      public|private
+                    description: Nodes is not used.
                     type: string
                 type: object
               updatePolicy:

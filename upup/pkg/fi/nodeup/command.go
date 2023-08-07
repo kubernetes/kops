@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
@@ -50,12 +51,16 @@ import (
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -155,6 +160,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
 		}
 	}
+	// Hack to force usage of NodeupConfig
 	c.cluster.Name = "use NodeupConfig.ClusterName instead"
 
 	var nodeupConfig nodeup.Config
@@ -234,9 +240,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
-	} else if c.cluster.Spec.SecretStore != "" {
-		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
+	} else if c.cluster.Spec.ConfigStore.Secrets != "" {
+		klog.Infof("Building SecretStore at %q", c.cluster.Spec.ConfigStore.Secrets)
+		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.ConfigStore.Secrets)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -249,9 +255,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if nodeConfig != nil {
 		modelContext.KeyStore = configserver.NewKeyStore()
-	} else if c.cluster.Spec.KeyStore != "" {
-		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
+	} else if c.cluster.Spec.ConfigStore.Keypairs != "" {
+		klog.Infof("Building KeyStore at %q", c.cluster.Spec.ConfigStore.Keypairs)
+		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.ConfigStore.Keypairs)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
 		}
@@ -370,7 +376,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Cloud:    cloud,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(c.cluster.Spec.Assets, c.cluster.Spec.KubernetesVersion, false)
+		assetBuilder := assets.NewAssetBuilder(vfs.Context, c.cluster.Spec.Assets, c.cluster.Spec.KubernetesVersion, false)
 		target = fi.NewNodeupDryRunTarget(assetBuilder, out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
@@ -759,8 +765,43 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			return nil, err
 		}
 		authenticator = a
+	case api.CloudProviderDO:
+		a, err := do.NewAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	case api.CloudProviderScaleway:
+		a, err := scaleway.NewScalewayAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	case api.CloudProviderAzure:
+		a, err := azure.NewAzureAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
+	}
+
+	var challengeListener *bootstrap.ChallengeListener
+
+	if kopsmodel.UseChallengeCallback(bootConfig.CloudProvider) {
+		challengeServer, err := bootstrap.NewChallengeServer(bootConfig.ClusterName, []byte(bootConfig.ConfigServer.CACertificates))
+		if err != nil {
+			return nil, err
+		}
+		listen := ":" + strconv.Itoa(wellknownports.NodeupChallenge)
+
+		l, err := challengeServer.NewListener(ctx, listen)
+		if err != nil {
+			return nil, fmt.Errorf("error starting challenge listener: %w", err)
+		}
+		challengeListener = l
+		defer challengeListener.Stop()
 	}
 
 	client := &kopscontrollerclient.Client{
@@ -782,6 +823,11 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			APIVersion:        nodeup.BootstrapAPIVersion,
 			IncludeNodeConfig: true,
 		}
+
+		if challengeListener != nil {
+			request.Challenge = challengeListener.CreateChallenge()
+		}
+
 		var resp nodeup.BootstrapResponse
 		err = client.Query(ctx, &request, &resp)
 		if err != nil {

@@ -48,12 +48,16 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Scaleway
 func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	scwClient, err := scw.NewClient(
-		scw.WithUserAgent("kubernetes-kops/"+kopsv.Version),
-		scw.WithEnv(),
-	)
+	profile, err := scaleway.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
+	}
+	scwClient, err := scw.NewClient(
+		scw.WithProfile(profile),
+		scw.WithUserAgent(scaleway.KopsUserAgentPrefix+kopsv.Version),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating client for Scaleway NodeIdentifier: %w", err)
 	}
 
 	return &nodeIdentifier{
@@ -96,20 +100,16 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	labels := map[string]string{}
-	for _, tag := range server.Tags {
-		if strings.HasPrefix(tag, scaleway.TagNameRolePrefix) {
-			role := strings.TrimPrefix(tag, scaleway.TagNameRolePrefix+"=")
-			switch kops.InstanceGroupRole(role) {
-			case kops.InstanceGroupRoleControlPlane:
-				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode:
-				labels[nodelabels.RoleLabelNode16] = ""
-			case kops.InstanceGroupRoleAPIServer:
-				labels[nodelabels.RoleLabelAPIServer16] = ""
-			default:
-				klog.Warningf("Unknown node role %q for server %s(%d)", role, server.Name, server.ID)
-			}
-		}
+	role := scaleway.InstanceRoleFromTags(server.Tags)
+	switch kops.InstanceGroupRole(role) {
+	case kops.InstanceGroupRoleControlPlane:
+		labels[nodelabels.RoleLabelControlPlane20] = ""
+	case kops.InstanceGroupRoleNode:
+		labels[nodelabels.RoleLabelNode16] = ""
+	case kops.InstanceGroupRoleAPIServer:
+		labels[nodelabels.RoleLabelAPIServer16] = ""
+	default:
+		klog.Warningf("Unknown node role %q for server %s(%d)", role, server.Name, server.ID)
 	}
 
 	info := &nodeidentity.Info{
@@ -137,17 +137,13 @@ func stringKeyFunc(obj interface{}) (string, error) {
 // getServer queries Scaleway for the server with the specified ID, returning an error if not found
 func (i *nodeIdentifier) getServer(ctx context.Context, id string) (*instance.Server, error) {
 	api := instance.NewAPI(i.client)
-	zone, exists := i.client.GetDefaultZone()
-	if !exists {
-		return nil, fmt.Errorf("client default zone is empty")
-	}
 	uuid := strings.Split(id, "/")
 	if len(uuid) != 3 {
 		return nil, fmt.Errorf("unexpected format for server id %s", id)
 	}
 	server, err := api.GetServer(&instance.GetServerRequest{
 		ServerID: uuid[2],
-		Zone:     scw.Zone(zone),
+		Zone:     scw.Zone(uuid[1]),
 	}, scw.WithContext(ctx))
 	if err != nil || server == nil {
 		return nil, fmt.Errorf("failed to get server %s: %w", id, err)

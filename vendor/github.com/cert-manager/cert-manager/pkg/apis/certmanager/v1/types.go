@@ -19,8 +19,14 @@ package v1
 const (
 
 	// Common label keys added to resources
-
-	// Label key that indicates that a resource is of interest to cert-manager controller
+	// Label key that indicates that a resource is of interest to
+	// cert-manager controller By default this is set on
+	// certificate.spec.secretName secret as well as on the temporary
+	// private key Secret. If using SecretsFilteredCaching feature, you
+	// might want to set this (with a value of 'true') to any other Secrets
+	// that cert-manager controller needs to read, such as issuer
+	// credentials Secrets.
+	// See https://github.com/cert-manager/cert-manager/blob/master/design/20221205-memory-management.md#risks-and-mitigations
 	PartOfCertManagerControllerLabelKey = "controller.cert-manager.io/fao"
 
 	// Common annotation keys added to resources
@@ -42,6 +48,33 @@ const (
 
 	// Annotation key for certificate renewBefore.
 	RenewBeforeAnnotationKey = "cert-manager.io/renew-before"
+
+	// Annotation key for emails subjectAltNames.
+	EmailsAnnotationKey = "cert-manager.io/email-sans"
+
+	// Annotation key for subject organization.
+	SubjectOrganizationsAnnotationKey = "cert-manager.io/subject-organizations"
+
+	// Annotation key for subject organizational units.
+	SubjectOrganizationalUnitsAnnotationKey = "cert-manager.io/subject-organizationalunits"
+
+	// Annotation key for subject organizational units.
+	SubjectCountriesAnnotationKey = "cert-manager.io/subject-countries"
+
+	// Annotation key for subject provinces.
+	SubjectProvincesAnnotationKey = "cert-manager.io/subject-provinces"
+
+	// Annotation key for subject localities.
+	SubjectLocalitiesAnnotationKey = "cert-manager.io/subject-localities"
+
+	// Annotation key for subject provinces.
+	SubjectStreetAddressesAnnotationKey = "cert-manager.io/subject-streetaddresses"
+
+	// Annotation key for subject postal codes.
+	SubjectPostalCodesAnnotationKey = "cert-manager.io/subject-postalcodes"
+
+	// Annotation key for subject serial number.
+	SubjectSerialNumberAnnotationKey = "cert-manager.io/subject-serialnumber"
 
 	// Annotation key for certificate key usages.
 	UsagesAnnotationKey = "cert-manager.io/usages"

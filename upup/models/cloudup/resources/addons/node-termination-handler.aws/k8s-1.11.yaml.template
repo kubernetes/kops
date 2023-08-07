@@ -317,6 +317,11 @@ spec:
             readOnlyRootFilesystem: true
             runAsGroup: 1000
             runAsNonRoot: true
+{{ if ContainerdSELinuxEnabled }}
+            seLinuxOptions:
+              type: spc_t
+              level: s0
+{{ end }}
           image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
           imagePullPolicy: IfNotPresent
           env:

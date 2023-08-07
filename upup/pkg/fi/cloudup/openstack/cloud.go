@@ -252,6 +252,8 @@ type OpenstackCloud interface {
 
 	// ListDNSRecordsets will list the DNS recordsets for the given zone id
 	ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error)
+	DeleteDNSRecordset(zoneID string, rrsetID string) error
+
 	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
 	GetLBStats(loadbalancerID string) (*loadbalancers.Stats, error)
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
@@ -365,7 +367,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 	}
 
 	if cluster != nil {
-		hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()
+		hasDNS := cluster.PublishesDNSRecords()
 		tags := map[string]string{
 			TagClusterName: cluster.Name,
 		}
@@ -412,13 +414,10 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 
 	var dnsClient *gophercloud.ServiceClient
 	if hasDNS {
-		// TODO: This should be replaced with the environment variable methods as done above
-		endpointOpt, err := config.GetServiceConfig("Designate")
-		if err != nil {
-			return nil, fmt.Errorf("failed to get service config: %w", err)
-		}
-
-		dnsClient, err = openstack.NewDNSV2(provider, endpointOpt)
+		dnsClient, err = openstack.NewDNSV2(provider, gophercloud.EndpointOpts{
+			Type:   "dns",
+			Region: region,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error building dns client: %w", err)
 		}
@@ -435,6 +434,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 		useOctavia:    false,
 	}
 
+	setFloatingIPSupport(c, spec)
 	err = buildLoadBalancerClient(c, spec, provider, region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build load balancer client: %w", err)
@@ -445,23 +445,29 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 
 }
 
-func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provider *gophercloud.ProviderClient, region string) error {
+func setFloatingIPSupport(c *openstackCloud, spec *kops.OpenstackSpec) {
+	if spec == nil || spec.Router == nil {
+		c.floatingEnabled = false
+		klog.V(2).Infof("Floating IP support for OpenStack disabled")
+		return
+	}
 
+	c.floatingEnabled = true
+	c.extNetworkName = spec.Router.ExternalNetwork
+
+	if spec.Router.ExternalSubnet != nil {
+		c.extSubnetName = spec.Router.ExternalSubnet
+	}
+}
+
+func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provider *gophercloud.ProviderClient, region string) error {
 	if spec == nil || spec.Loadbalancer == nil {
-		klog.V(2).Infof("Openstack disabled loadbalancer support")
+		klog.V(2).Infof("Loadbalancer support for OpenStack disabled")
 		return nil
 	}
 
 	octavia := false
-	floatingEnabled := false
 	if spec.Router != nil {
-
-		floatingEnabled = true
-		c.extNetworkName = spec.Router.ExternalNetwork
-
-		if spec.Router.ExternalSubnet != nil {
-			c.extSubnetName = spec.Router.ExternalSubnet
-		}
 		if spec.Loadbalancer.FloatingNetworkID == nil &&
 			spec.Loadbalancer.FloatingNetwork != nil {
 			// This field is derived
@@ -483,7 +489,6 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 	} else if fi.ValueOf(spec.Loadbalancer.UseOctavia) {
 		return fmt.Errorf("cluster configured to use octavia, but router was not configured")
 	}
-	c.floatingEnabled = floatingEnabled
 	c.useOctavia = octavia
 
 	var lbClient *gophercloud.ServiceClient
@@ -905,6 +910,9 @@ func MakeCloudConfig(spec kops.ClusterSpec) []string {
 		}
 		for _, name := range networking.InternalNetworkNames {
 			networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.ValueOf(name)))
+		}
+		if networking.AddressSortOrder != nil {
+			networkingLines = append(networkingLines, fmt.Sprintf("address-sort-order=%s", fi.ValueOf(networking.AddressSortOrder)))
 		}
 
 		if len(networkingLines) > 0 {

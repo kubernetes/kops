@@ -32,7 +32,7 @@ type FloatingIP struct {
 }
 
 // DNSPtrForIP returns the reverse DNS pointer of the IP address.
-// Deprecated: Use GetDNSPtrForIP instead
+// Deprecated: Use GetDNSPtrForIP instead.
 func (f *FloatingIP) DNSPtrForIP(ip net.IP) string {
 	return f.DNSPtr[ip.String()]
 }
@@ -42,7 +42,7 @@ type FloatingIPProtection struct {
 	Delete bool
 }
 
-// FloatingIPType represents the type of a Floating IP.
+// FloatingIPType represents the type of Floating IP.
 type FloatingIPType string
 
 // Floating IP types.
@@ -51,7 +51,7 @@ const (
 	FloatingIPTypeIPv6 FloatingIPType = "ipv6"
 )
 
-// changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
+// changeDNSPtr changes or resets the reverse DNS pointer for an IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
 func (f *FloatingIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	reqBody := schema.FloatingIPActionChangeDNSPtrRequest{
@@ -128,7 +128,7 @@ func (c *FloatingIPClient) GetByName(ctx context.Context, name string) (*Floatin
 // retrieves a Floating IP by its name. If the Floating IP does not exist, nil is returned.
 func (c *FloatingIPClient) Get(ctx context.Context, idOrName string) (*FloatingIP, *Response, error) {
 	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -141,7 +141,7 @@ type FloatingIPListOpts struct {
 }
 
 func (l FloatingIPListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -181,7 +181,7 @@ func (c *FloatingIPClient) All(ctx context.Context) ([]*FloatingIP, error) {
 
 // AllWithOpts returns all Floating IPs for the given options.
 func (c *FloatingIPClient) AllWithOpts(ctx context.Context, opts FloatingIPListOpts) ([]*FloatingIP, error) {
-	allFloatingIPs := []*FloatingIP{}
+	var allFloatingIPs []*FloatingIP
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

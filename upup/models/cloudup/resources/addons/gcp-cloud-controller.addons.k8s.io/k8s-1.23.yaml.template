@@ -39,6 +39,12 @@ spec:
         effect: NoSchedule
       - key: node-role.kubernetes.io/control-plane
         effect: NoSchedule
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       serviceAccountName: cloud-controller-manager
       containers:
       - name: cloud-controller-manager

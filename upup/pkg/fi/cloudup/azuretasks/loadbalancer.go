@@ -19,10 +19,12 @@ package azuretasks
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -58,6 +60,29 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 	return lb.ForAPIServer
 }
 
+func (lb *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
+	cloud := c.T.Cloud.(azure.AzureCloud)
+	loadbalancer, err := cloud.LoadBalancer().Get(context.TODO(), *lb.ResourceGroup.Name, *lb.Name)
+	if err != nil && !strings.Contains(err.Error(), "NotFound") {
+		return nil, err
+	}
+
+	if loadbalancer != nil && loadbalancer.FrontendIPConfigurations != nil && len(*loadbalancer.FrontendIPConfigurations) > 0 {
+		var addresses []string
+		for _, fipc := range *loadbalancer.FrontendIPConfigurations {
+			if fipc.PrivateIPAddress != nil {
+				addresses = append(addresses, *fipc.PrivateIPAddress)
+			}
+			if fipc.PublicIPAddress != nil && fipc.PublicIPAddress.IPAddress != nil {
+				addresses = append(addresses, *fipc.PublicIPAddress.IPAddress)
+			}
+		}
+		return addresses, nil
+	}
+
+	return nil, nil
+}
+
 // Find discovers the LoadBalancer in the cloud provider
 func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	cloud := c.T.Cloud.(azure.AzureCloud)
@@ -85,18 +110,23 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	feConfig := feConfigs[0]
 	subnet := feConfig.FrontendIPConfigurationPropertiesFormat.Subnet
 
-	return &LoadBalancer{
-		Name:      lb.Name,
-		Lifecycle: lb.Lifecycle,
+	actual := &LoadBalancer{
+		Name:         lb.Name,
+		Lifecycle:    lb.Lifecycle,
+		ForAPIServer: lb.ForAPIServer,
 		ResourceGroup: &ResourceGroup{
 			Name: lb.ResourceGroup.Name,
 		},
-		Subnet: &Subnet{
-			Name: subnet.Name,
-		},
 		External: to.BoolPtr(feConfig.FrontendIPConfigurationPropertiesFormat.PublicIPAddress != nil),
 		Tags:     found.Tags,
-	}, nil
+	}
+	if subnet != nil {
+		actual.Subnet = &Subnet{
+			Name: subnet.Name,
+		}
+	}
+
+	return actual, nil
 }
 
 func (lb *LoadBalancer) Normalize(c *fi.CloudupContext) error {
@@ -146,6 +176,7 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 			ID: to.StringPtr(fmt.Sprintf("/%s/virtualNetworks/%s/subnets/%s", idPrefix, *e.Subnet.VirtualNetwork.Name, *e.Subnet.Name)),
 		}
 	}
+	// TODO: Move hardcoded values to the model
 	lb := network.LoadBalancer{
 		Location: to.StringPtr(t.Cloud.Region()),
 		Sku: &network.LoadBalancerSku{
@@ -168,7 +199,16 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 					Name: to.StringPtr("Health-TCP-443"),
 					ProbePropertiesFormat: &network.ProbePropertiesFormat{
 						Protocol:          network.ProbeProtocolTCP,
-						Port:              to.Int32Ptr(443),
+						Port:              to.Int32Ptr(wellknownports.KubeAPIServer),
+						IntervalInSeconds: to.Int32Ptr(15),
+						NumberOfProbes:    to.Int32Ptr(4),
+					},
+				},
+				{
+					Name: to.StringPtr("Health-TCP-3988"),
+					ProbePropertiesFormat: &network.ProbePropertiesFormat{
+						Protocol:          network.ProbeProtocolTCP,
+						Port:              to.Int32Ptr(wellknownports.KopsControllerPort),
 						IntervalInSeconds: to.Int32Ptr(15),
 						NumberOfProbes:    to.Int32Ptr(4),
 					},
@@ -179,8 +219,8 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 					Name: to.StringPtr("TCP-443"),
 					LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
 						Protocol:             network.TransportProtocolTCP,
-						FrontendPort:         to.Int32Ptr(443),
-						BackendPort:          to.Int32Ptr(443),
+						FrontendPort:         to.Int32Ptr(wellknownports.KubeAPIServer),
+						BackendPort:          to.Int32Ptr(wellknownports.KubeAPIServer),
 						IdleTimeoutInMinutes: to.Int32Ptr(4),
 						EnableFloatingIP:     to.BoolPtr(false),
 						LoadDistribution:     network.LoadDistributionDefault,
@@ -192,6 +232,26 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 						},
 						Probe: &network.SubResource{
 							ID: to.StringPtr(fmt.Sprintf("/%s/loadbalancers/%s/probes/%s", idPrefix, *e.Name, *to.StringPtr("Health-TCP-443"))),
+						},
+					},
+				},
+				{
+					Name: to.StringPtr("TCP-3988"),
+					LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
+						Protocol:             network.TransportProtocolTCP,
+						FrontendPort:         to.Int32Ptr(wellknownports.KopsControllerPort),
+						BackendPort:          to.Int32Ptr(wellknownports.KopsControllerPort),
+						IdleTimeoutInMinutes: to.Int32Ptr(4),
+						EnableFloatingIP:     to.BoolPtr(false),
+						LoadDistribution:     network.LoadDistributionDefault,
+						FrontendIPConfiguration: &network.SubResource{
+							ID: to.StringPtr(fmt.Sprintf("/%s/loadbalancers/%s/frontendIPConfigurations/%s", idPrefix, *e.Name, *to.StringPtr("LoadBalancerFrontEnd"))),
+						},
+						BackendAddressPool: &network.SubResource{
+							ID: to.StringPtr(fmt.Sprintf("/%s/loadbalancers/%s/backendAddressPools/%s", idPrefix, *e.Name, *to.StringPtr("LoadBalancerBackEnd"))),
+						},
+						Probe: &network.SubResource{
+							ID: to.StringPtr(fmt.Sprintf("/%s/loadbalancers/%s/probes/%s", idPrefix, *e.Name, *to.StringPtr("Health-TCP-3988"))),
 						},
 					},
 				},

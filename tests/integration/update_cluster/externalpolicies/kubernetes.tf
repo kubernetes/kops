@@ -15,7 +15,7 @@ locals {
   vpc_cidr_block               = aws_vpc.externalpolicies-example-com.cidr_block
   vpc_id                       = aws_vpc.externalpolicies-example-com.id
   vpc_ipv6_cidr_block          = aws_vpc.externalpolicies-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length         = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  vpc_ipv6_cidr_length         = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -83,7 +83,7 @@ output "vpc_ipv6_cidr_block" {
 }
 
 output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  value = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
@@ -122,6 +122,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externalpolicies-exa
     key                 = "Owner"
     propagate_at_launch = true
     value               = "John Doe"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "foo/bar"
@@ -195,6 +200,11 @@ resource "aws_autoscaling_group" "nodes-externalpolicies-example-com" {
     value               = "John Doe"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
@@ -220,6 +230,90 @@ resource "aws_autoscaling_group" "nodes-externalpolicies-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-externalpolicies-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-externalpolicies-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-externalpolicies-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "externalpolicies-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_externalpolicies.example.com-ASGLifecycle_event_pattern")
+  name          = "externalpolicies.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies.example.com-ASGLifecycle"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "externalpolicies-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_externalpolicies.example.com-InstanceScheduledChange_event_pattern")
+  name          = "externalpolicies.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies.example.com-InstanceScheduledChange"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "externalpolicies-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_externalpolicies.example.com-InstanceStateChange_event_pattern")
+  name          = "externalpolicies.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies.example.com-InstanceStateChange"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "externalpolicies-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_externalpolicies.example.com-SpotInterruption_event_pattern")
+  name          = "externalpolicies.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies.example.com-SpotInterruption"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "externalpolicies-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.externalpolicies-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.externalpolicies-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "externalpolicies-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.externalpolicies-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.externalpolicies-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "externalpolicies-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.externalpolicies-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.externalpolicies-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "externalpolicies-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.externalpolicies-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.externalpolicies-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-externalpolicies-example-com" {
@@ -430,6 +524,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
       "KubernetesCluster"                                                                                     = "externalpolicies.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.externalpolicies.example.com"
       "Owner"                                                                                                 = "John Doe"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -446,6 +541,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
       "KubernetesCluster"                                                                                     = "externalpolicies.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.externalpolicies.example.com"
       "Owner"                                                                                                 = "John Doe"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -460,6 +556,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
     "KubernetesCluster"                                                                                     = "externalpolicies.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.externalpolicies.example.com"
     "Owner"                                                                                                 = "John Doe"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "foo/bar"                                                                                               = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -515,6 +612,7 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
       "KubernetesCluster"                                                          = "externalpolicies.example.com"
       "Name"                                                                       = "nodes.externalpolicies.example.com"
       "Owner"                                                                      = "John Doe"
+      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -528,6 +626,7 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
       "KubernetesCluster"                                                          = "externalpolicies.example.com"
       "Name"                                                                       = "nodes.externalpolicies.example.com"
       "Owner"                                                                      = "John Doe"
+      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -539,6 +638,7 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
     "KubernetesCluster"                                                          = "externalpolicies.example.com"
     "Name"                                                                       = "nodes.externalpolicies.example.com"
     "Owner"                                                                      = "John Doe"
+    "aws-node-termination-handler/managed"                                       = ""
     "foo/bar"                                                                    = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
@@ -568,6 +668,17 @@ resource "aws_route53_record" "api-externalpolicies-example-com" {
   }
   name    = "api.externalpolicies.example.com"
   type    = "A"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
+resource "aws_route53_record" "api-externalpolicies-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-externalpolicies-example-com.dns_name
+    zone_id                = aws_elb.api-externalpolicies-example-com.zone_id
+  }
+  name    = "api.externalpolicies.example.com"
+  type    = "AAAA"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
@@ -672,6 +783,14 @@ resource "aws_s3_object" "externalpolicies-example-com-addons-limit-range-addons
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_externalpolicies.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/externalpolicies.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "externalpolicies-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_externalpolicies.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/externalpolicies.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -969,6 +1088,19 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
   type              = "ingress"
 }
 
+resource "aws_sqs_queue" "externalpolicies-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "externalpolicies-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_externalpolicies-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies-example-com-nth"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+}
+
 resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
   availability_zone                           = "us-test-1a"
   cidr_block                                  = "172.20.32.0/19"
@@ -980,8 +1112,6 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
     "Owner"                                              = "John Doe"
     "SubnetType"                                         = "Public"
     "foo/bar"                                            = "fib+baz"
-    "kops.k8s.io/instance-group/master-us-test-1a"       = "true"
-    "kops.k8s.io/instance-group/nodes"                   = "true"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     "kubernetes.io/role/elb"                             = "1"
     "kubernetes.io/role/internal-elb"                    = "1"

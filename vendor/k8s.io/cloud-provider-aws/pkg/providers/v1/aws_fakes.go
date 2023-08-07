@@ -91,6 +91,12 @@ func (s *FakeAWSServices) WithAz(az string) *FakeAWSServices {
 	return s
 }
 
+// WithRegion sets the AWS region
+func (s *FakeAWSServices) WithRegion(region string) *FakeAWSServices {
+	s.region = region
+	return s
+}
+
 // Compute returns a fake EC2 client
 func (s *FakeAWSServices) Compute(region string) (EC2, error) {
 	return s.ec2, nil
@@ -264,6 +270,28 @@ func (ec2i *FakeEC2Impl) RemoveSubnets() {
 	ec2i.Subnets = ec2i.Subnets[:0]
 }
 
+// DescribeAvailabilityZones returns fake availability zones
+// For every input returns a hardcoded list of fake availability zones for the moment
+func (ec2i *FakeEC2Impl) DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error) {
+	var azs []*ec2.AvailabilityZone
+
+	fakeZones := [5]string{"az-local", "az-wavelength", "us-west-2a", "us-west-2b", "us-west-2c"}
+	for _, name := range fakeZones {
+		var zoneType *string
+		switch name {
+		case "az-local":
+			zoneType = aws.String(localZoneType)
+		case "az-wavelength":
+			zoneType = aws.String(wavelengthZoneType)
+		default:
+			zoneType = aws.String(regularAvailabilityZoneType)
+		}
+		zone := &ec2.AvailabilityZone{ZoneName: aws.String(name), ZoneType: zoneType, ZoneId: aws.String(name)}
+		azs = append(azs, zone)
+	}
+	return azs, nil
+}
+
 // CreateTags is a mock for CreateTags from EC2
 func (ec2i *FakeEC2Impl) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
 	for _, id := range input.Resources {
@@ -402,6 +430,11 @@ func (m *FakeMetadata) GetMetadata(key string) (string, error) {
 	}
 
 	return "", nil
+}
+
+// Region returns AWS region
+func (m *FakeMetadata) Region() (string, error) {
+	return m.aws.region, nil
 }
 
 // FakeELB is a fake ELB client used for testing
@@ -725,8 +758,16 @@ func (ec2i *FakeEC2Impl) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInt
 			return &ec2.DescribeNetworkInterfacesOutput{}, nil
 		}
 
-		if *filter.Values[0] == "return.private.dns.name" {
+		if strings.Contains(*filter.Values[0], "return.private.dns.name") {
 			networkInterface[0].PrivateDnsName = aws.String("ip-1-2-3-4.compute.amazon.com")
+		}
+
+		if *filter.Values[0] == "return.private.dns.name.ipv6" {
+			networkInterface[0].Ipv6Addresses = []*ec2.NetworkInterfaceIpv6Address{
+				{
+					Ipv6Address: aws.String("2001:db8:3333:4444:5555:6666:7777:8888"),
+				},
+			}
 		}
 	}
 

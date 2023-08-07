@@ -130,17 +130,11 @@ etcdClusters:
   events:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
   main:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -165,9 +159,8 @@ kubeAPIServer:
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.26.0
+  image: registry.k8s.io/kube-apiserver:v1.27.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -194,18 +187,16 @@ kubeControllerManager:
   clusterName: minimal.example.com
   configureCloudRoutes: false
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.26.0
+  image: registry.k8s.io/kube-controller-manager:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
 kubeScheduler:
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.26.0
+  image: registry.k8s.io/kube-scheduler:v1.27.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -218,11 +209,10 @@ kubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -237,11 +227,10 @@ masterKubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -252,10 +241,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: n4BXfsO32qeFxzflZXqGdVpVUfCiBBNYpONH5mSuUMs=
+NodeupConfigHash: jxPz9tJGTE0ZPcoMCVb8OK1DNcNNwiJ2R5IR8XLj6ak=
 
 __EOF_KUBE_ENV
 

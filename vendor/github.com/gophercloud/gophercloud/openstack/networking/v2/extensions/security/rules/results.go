@@ -80,6 +80,10 @@ func (r SecGroupRulePage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a SecGroupRulePage struct is empty.
 func (r SecGroupRulePage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractRules(r)
 	return len(is) == 0, err
 }

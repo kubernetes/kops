@@ -44,7 +44,9 @@ type Config struct {
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
-	// Manifests for running etcd
+	// EtcdClusterNames are the names of the etcd clusters.
+	EtcdClusterNames []string `json:",omitempty"`
+	// EtcdManifests are the manifests for running etcd.
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
 
 	// CAs are the CA certificates to trust.
@@ -70,9 +72,9 @@ type Config struct {
 	UsesKubenet bool `json:",omitempty"`
 	// NTPUnmanaged is true when NTP is not managed by kOps.
 	NTPUnmanaged bool `json:",omitempty"`
-	// SysctlParameters will configure kernel parameters using sysctl(8). When
-	// specified, each parameter must follow the form variable=value, the way
-	// it would appear in sysctl.conf.
+	// ServiceNodePortRange is the service NodePort range.
+	ServiceNodePortRange string `json:",omitempty"`
+	// SysctlParameters will configure kernel parameters using sysctl(8).
 	SysctlParameters []string `json:",omitempty"`
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	UpdatePolicy string
@@ -92,6 +94,12 @@ type Config struct {
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
+	// ControlPlaneConfig is additional configuration for control-plane nodes.
+	ControlPlaneConfig *ControlPlaneConfig `json:",omitempty"`
+	// GossipConfig is configuration for gossip DNS.
+	GossipConfig *kops.GossipConfig `json:",omitempty"`
+	// DNSZone is the DNS zone we should use when configuring DNS.
+	DNSZone string `json:",omitempty"`
 	// NvidiaGPU contains the configuration for nvidia
 	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
 
@@ -114,6 +122,10 @@ type Config struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+
+	// Discovery methods
+	UsesLegacyGossip bool `json:"usesLegacyGossip"`
+	UsesNoneDNS      bool `json:"usesNoneDNS"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
@@ -127,6 +139,8 @@ type BootConfig struct {
 	// APIServerIPs is the API server IP addresses.
 	// This field is used for adding an alias for api.internal. in /etc/hosts, when Topology.DNS.Type == DNSTypeNone.
 	APIServerIPs []string `json:",omitempty"`
+	// ClusterName is the name of the cluster.
+	ClusterName string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group.
 	InstanceGroupName string `json:",omitempty"`
 	// InstanceGroupRole is the instance group role.
@@ -162,8 +176,12 @@ type StaticManifest struct {
 
 // APIServerConfig is additional configuration for nodes running an APIServer.
 type APIServerConfig struct {
+	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local).
+	ClusterDNSDomain string
 	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
 	KubeAPIServer *kops.KubeAPIServerConfig
+	// API controls how the Kubernetes API is exposed.
+	API kops.APISpec
 	// Authentication is a copy of the AuthenticationSpec from the cluster spec.
 	Authentication *kops.AuthenticationSpec `json:",omitempty"`
 	// EncryptionConfigSecretHash is a hash of the encryptionconfig secret.
@@ -172,6 +190,14 @@ type APIServerConfig struct {
 	EncryptionConfigSecretHash string `json:",omitempty"`
 	// ServiceAccountPublicKeys are the service-account public keys to trust.
 	ServiceAccountPublicKeys string
+}
+
+// ControlPlaneConfig is additional configuration for control-plane nodes.
+type ControlPlaneConfig struct {
+	// KubeControllerManager is the configuration for the kube-controller-manager.
+	KubeControllerManager kops.KubeControllerManagerConfig
+	// KubeScheduler is the configuration for the kube-scheduler.
+	KubeScheduler kops.KubeSchedulerConfig
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {
@@ -189,17 +215,20 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			NonMasqueradeCIDR:     cluster.Spec.Networking.NonMasqueradeCIDR,
 			ServiceClusterIPRange: cluster.Spec.Networking.ServiceClusterIPRange,
 		},
-		UsesKubenet:      cluster.Spec.Networking.UsesKubenet(),
-		SysctlParameters: instanceGroup.Spec.SysctlParameters,
-		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
-		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
-		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
-		ContainerRuntime: cluster.Spec.ContainerRuntime,
-		Docker:           cluster.Spec.Docker,
+		UsesKubenet:          cluster.Spec.Networking.UsesKubenet(),
+		ServiceNodePortRange: cluster.Spec.KubeAPIServer.ServiceNodePortRange,
+		VolumeMounts:         instanceGroup.Spec.VolumeMounts,
+		FileAssets:           append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:                [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime:     cluster.Spec.ContainerRuntime,
+		Docker:               cluster.Spec.Docker,
+		UsesLegacyGossip:     cluster.UsesLegacyGossip(),
+		UsesNoneDNS:          cluster.UsesNoneDNS(),
 	}
 
 	bootConfig := BootConfig{
 		CloudProvider:     cluster.Spec.GetCloudProvider(),
+		ClusterName:       cluster.ObjectMeta.Name,
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,
 	}
@@ -288,7 +317,12 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if instanceGroup.HasAPIServer() {
 		config.APIServerConfig = &APIServerConfig{
-			KubeAPIServer: cluster.Spec.KubeAPIServer,
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+			KubeAPIServer:    cluster.Spec.KubeAPIServer,
+			API: kops.APISpec{
+				PublicName:     cluster.Spec.API.PublicName,
+				AdditionalSANs: cluster.Spec.API.AdditionalSANs,
+			},
 		}
 		if cluster.Spec.Authentication != nil {
 			config.APIServerConfig.Authentication = cluster.Spec.Authentication
@@ -297,10 +331,45 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 				config.APIServerConfig.Authentication.AWS = &kops.AWSAuthenticationSpec{}
 			}
 		}
+		if cluster.Spec.API.DNS != nil {
+			config.APIServerConfig.API.DNS = &kops.DNSAccessSpec{}
+		}
+		if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.UseForInternalAPI {
+			config.APIServerConfig.API.LoadBalancer = &kops.LoadBalancerAccessSpec{UseForInternalAPI: true}
+		}
 	}
 
-	if instanceGroup.HasAPIServer() || cluster.IsGossip() {
+	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
+	}
+
+	if instanceGroup.IsControlPlane() || cluster.UsesLegacyGossip() {
+		config.DNSZone = cluster.Spec.DNSZone
+	}
+
+	if cluster.UsesLegacyGossip() {
+		config.GossipConfig = cluster.Spec.GossipConfig
+	}
+
+	if instanceGroup.IsControlPlane() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeControllerManager: *cluster.Spec.KubeControllerManager,
+			KubeScheduler:         *cluster.Spec.KubeScheduler,
+		}
+	}
+
+	if len(instanceGroup.Spec.SysctlParameters) > 0 {
+		config.SysctlParameters = append(config.SysctlParameters,
+			"# Custom sysctl parameters from instance group spec",
+			"")
+		config.SysctlParameters = append(config.SysctlParameters, instanceGroup.Spec.SysctlParameters...)
+	}
+
+	if len(cluster.Spec.SysctlParameters) > 0 {
+		config.SysctlParameters = append(config.SysctlParameters,
+			"# Custom sysctl parameters from cluster spec",
+			"")
+		config.SysctlParameters = append(config.SysctlParameters, cluster.Spec.SysctlParameters...)
 	}
 
 	return &config, &bootConfig

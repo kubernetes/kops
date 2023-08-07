@@ -244,7 +244,7 @@ etcdClusters:
 ### etcd backups retention
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-As of kOps 1.27, the default etcd backup retention duration is 90 days.  
+As of kOps 1.27, the default etcd backup retention duration is 90 days.
 You can adjust the retention duration using the `backupRetentionDays` parameter:
 
 ```yaml
@@ -847,12 +847,13 @@ This block contains configurations for [CoreDNS](https://coredns.io/).
 
 For Kubernetes version >= 1.20, `CoreDNS` will be installed as the default DNS server.
 
- ```yaml
+```yaml
  spec:
    kubeDNS:
      provider: CoreDNS
 ```
 OR
+
 ```yaml
 spec:
    kubeDNS:
@@ -860,7 +861,7 @@ spec:
 
 Specifying KubeDNS will install kube-dns as the default service discovery instead of [CoreDNS](https://coredns.io/).
 
- ```yaml
+```yaml
  spec:
    kubeDNS:
      provider: KubeDNS
@@ -902,7 +903,7 @@ spec:
         }
 ```
 
-**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
+**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually. You can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point, and then remove both deployments. The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster.
 
 For larger clusters you may need to set custom resource requests and limits. For the CoreDNS provider you can set
 
@@ -1606,6 +1607,7 @@ the removal of fields no longer in use.
 | cloudConfig.spotinstOrientation                        | cloudProvider.aws.spotinstOrientation                          |
 | cloudConfig.spotinstProduct                            | cloudProvider.aws.spotinstProduct                              |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
+| configBase                                             | configStore.base                                               |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
 | egressProxy                                            | networking.egressProxy                                         |
 | etcdClusters[\*].etcdMembers[\*].kmsKeyId              | etcdClusters[\*].etcdMembers[\*].kmsKeyID                      |
@@ -1614,6 +1616,7 @@ the removal of fields no longer in use.
 | externalDns.disable: true                              | externalDNS.provider: none                                     |
 | hooks[\*].disabled                                     | hooks[\*].enabled (value inverted)                             |
 | isolateMasters                                         | networking.isolateControlPlane                                 |
+| keyStore                                               | configStore.keypairs                                           |
 | kubeAPIServer.authorizationRbacSuperUser               | kubeAPIServer.authorizationRBACSuperUser                       |
 | kubeAPIServer.authorizationWebhookCacheAuthorizedTtl   | kubeAPIServer.authorizationWebhookCacheAuthorizedTTL           |
 | kubeAPIServer.authorizationWebhookCacheUnauthorizedTtl | kubeAPIServer.authorizationWebhookCacheUnauthorizedTTL         |
@@ -1644,12 +1647,14 @@ the removal of fields no longer in use.
 | networking.cilium.IPTablesRulesNoinstall               | networking.cilium.installIptablesRules (value inverted)        |
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
 | networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
+| networking.gce                                         | networking.gcp                                                 |
 | networking.kuberouter                                  | networking.kubeRouter                                          |
 | nodeTerminationHandler                                 | cloudProvider.aws.nodeTerminationHandler                       |
 | nonMasqueradeCIDR                                      | networking.nonMasqueradeCIDR                                   |
 | podCIDR                                                | networking.podCIDR                                             |
 | podIdentityWebhook                                     | cloudProvider.aws.podIdentityWebhook                           |
 | project                                                | cloudProvider.gce.project                                      |
+| secretStore                                            | configStore.secrets                                            |
 | serviceClusterIPRange                                  | networking.serviceClusterIPRange                               |
 | subnets                                                | networking.subnets                                             |
 | tagSubnets                                             | networking.tagSubnets                                          |

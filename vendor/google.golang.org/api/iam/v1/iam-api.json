@@ -148,6 +148,283 @@
     "locations": {
       "resources": {
         "workforcePools": {
+          "methods": {
+            "create": {
+              "description": "Creates a new WorkforcePool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools",
+              "httpMethod": "POST",
+              "id": "iam.locations.workforcePools.create",
+              "parameterOrder": [
+                "location"
+              ],
+              "parameters": {
+                "location": {
+                  "description": "The location of the pool to create. Format: `locations/{location}`.",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                },
+                "workforcePoolId": {
+                  "description": "The ID to use for the pool, which becomes the final component of the resource name. The IDs must be a globally unique string of 6 to 63 lowercase letters, digits, or hyphens. It must start with a letter, and cannot have a trailing hyphen. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+location}/workforcePools",
+              "request": {
+                "$ref": "WorkforcePool"
+              },
+              "response": {
+                "$ref": "Operation"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "delete": {
+              "description": "Deletes a WorkforcePool. You cannot use a deleted WorkforcePool to exchange external credentials for Google Cloud credentials. However, deletion does not revoke credentials that have already been issued. Credentials issued for a deleted pool do not grant access to resources. If the pool is undeleted, and the credentials are not expired, they grant access again. You can undelete a pool for 30 days. After 30 days, deletion is permanent. You cannot update deleted pools. However, you can view and list them.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
+              "httpMethod": "DELETE",
+              "id": "iam.locations.workforcePools.delete",
+              "parameterOrder": [
+                "name"
+              ],
+              "parameters": {
+                "name": {
+                  "description": "Required. The name of the pool to delete. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+name}",
+              "response": {
+                "$ref": "Operation"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "get": {
+              "description": "Gets an individual WorkforcePool.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
+              "httpMethod": "GET",
+              "id": "iam.locations.workforcePools.get",
+              "parameterOrder": [
+                "name"
+              ],
+              "parameters": {
+                "name": {
+                  "description": "Required. The name of the pool to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+name}",
+              "response": {
+                "$ref": "WorkforcePool"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "getIamPolicy": {
+              "description": "Gets IAM policies on a WorkforcePool.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:getIamPolicy",
+              "httpMethod": "POST",
+              "id": "iam.locations.workforcePools.getIamPolicy",
+              "parameterOrder": [
+                "resource"
+              ],
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+resource}:getIamPolicy",
+              "request": {
+                "$ref": "GetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "list": {
+              "description": "Lists all non-deleted WorkforcePools under the specified parent. If `show_deleted` is set to `true`, then deleted pools are also listed.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools",
+              "httpMethod": "GET",
+              "id": "iam.locations.workforcePools.list",
+              "parameterOrder": [
+                "location"
+              ],
+              "parameters": {
+                "location": {
+                  "description": "The location of the pool. Format: `locations/{location}`.",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "The maximum number of pools to return. If unspecified, at most 50 pools will be returned. The maximum value is 1000; values above 1000 are truncated to 1000.",
+                  "format": "int32",
+                  "location": "query",
+                  "type": "integer"
+                },
+                "pageToken": {
+                  "description": "A page token, received from a previous `ListWorkforcePools` call. Provide this to retrieve the subsequent page.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "Required. The parent resource to list pools for. Format: `organizations/{org-id}`.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "showDeleted": {
+                  "description": "Whether to return soft-deleted pools.",
+                  "location": "query",
+                  "type": "boolean"
+                }
+              },
+              "path": "v1/{+location}/workforcePools",
+              "response": {
+                "$ref": "ListWorkforcePoolsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "patch": {
+              "description": "Updates an existing WorkforcePool.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
+              "httpMethod": "PATCH",
+              "id": "iam.locations.workforcePools.patch",
+              "parameterOrder": [
+                "name"
+              ],
+              "parameters": {
+                "name": {
+                  "description": "Output only. The resource name of the pool. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                },
+                "updateMask": {
+                  "description": "Required. The list of fields to update.",
+                  "format": "google-fieldmask",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+name}",
+              "request": {
+                "$ref": "WorkforcePool"
+              },
+              "response": {
+                "$ref": "Operation"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "setIamPolicy": {
+              "description": "Sets IAM policies on a WorkforcePool.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:setIamPolicy",
+              "httpMethod": "POST",
+              "id": "iam.locations.workforcePools.setIamPolicy",
+              "parameterOrder": [
+                "resource"
+              ],
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+resource}:setIamPolicy",
+              "request": {
+                "$ref": "SetIamPolicyRequest"
+              },
+              "response": {
+                "$ref": "Policy"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "testIamPermissions": {
+              "description": "Returns the caller's permissions on the WorkforcePool. If the pool does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:testIamPermissions",
+              "httpMethod": "POST",
+              "id": "iam.locations.workforcePools.testIamPermissions",
+              "parameterOrder": [
+                "resource"
+              ],
+              "parameters": {
+                "resource": {
+                  "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+resource}:testIamPermissions",
+              "request": {
+                "$ref": "TestIamPermissionsRequest"
+              },
+              "response": {
+                "$ref": "TestIamPermissionsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            },
+            "undelete": {
+              "description": "Undeletes a WorkforcePool, as long as it was deleted fewer than 30 days ago.",
+              "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:undelete",
+              "httpMethod": "POST",
+              "id": "iam.locations.workforcePools.undelete",
+              "parameterOrder": [
+                "name"
+              ],
+              "parameters": {
+                "name": {
+                  "description": "Required. The name of the pool to undelete. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                  "location": "path",
+                  "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "path": "v1/{+name}:undelete",
+              "request": {
+                "$ref": "UndeleteWorkforcePoolRequest"
+              },
+              "response": {
+                "$ref": "Operation"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          },
           "resources": {
             "operations": {
               "methods": {
@@ -179,8 +456,350 @@
               }
             },
             "providers": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new WorkforcePoolProvider in a WorkforcePool. You cannot reuse the name of a deleted provider until 30 days after deletion.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers",
+                  "httpMethod": "POST",
+                  "id": "iam.locations.workforcePools.providers.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "parent": {
+                      "description": "Required. The pool to create this provider in. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "workforcePoolProviderId": {
+                      "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+parent}/providers",
+                  "request": {
+                    "$ref": "WorkforcePoolProvider"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been\\ issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
+                  "httpMethod": "DELETE",
+                  "id": "iam.locations.workforcePools.providers.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the provider to delete. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets an individual WorkforcePoolProvider.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
+                  "httpMethod": "GET",
+                  "id": "iam.locations.workforcePools.providers.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the provider to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "WorkforcePoolProvider"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists all non-deleted WorkforcePoolProviders in a WorkforcePool. If `show_deleted` is set to `true`, then deleted providers are also listed.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers",
+                  "httpMethod": "GET",
+                  "id": "iam.locations.workforcePools.providers.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "pageSize": {
+                      "description": "The maximum number of providers to return. If unspecified, at most 50 providers are returned. The maximum value is 100; values above 100 are truncated to 100.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "A page token, received from a previous `ListWorkforcePoolProviders` call. Provide this to retrieve the subsequent page.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The pool to list providers for. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "showDeleted": {
+                      "description": "Whether to return soft-deleted providers.",
+                      "location": "query",
+                      "type": "boolean"
+                    }
+                  },
+                  "path": "v1/{+parent}/providers",
+                  "response": {
+                    "$ref": "ListWorkforcePoolProvidersResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates an existing WorkforcePoolProvider.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
+                  "httpMethod": "PATCH",
+                  "id": "iam.locations.workforcePools.providers.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Output only. The resource name of the provider. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Required. The list of fields to update.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "request": {
+                    "$ref": "WorkforcePoolProvider"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "undelete": {
+                  "description": "Undeletes a WorkforcePoolProvider, as long as it was deleted fewer than 30 days ago.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}:undelete",
+                  "httpMethod": "POST",
+                  "id": "iam.locations.workforcePools.providers.undelete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the provider to undelete. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:undelete",
+                  "request": {
+                    "$ref": "UndeleteWorkforcePoolProviderRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              },
               "resources": {
                 "keys": {
+                  "methods": {
+                    "create": {
+                      "description": "Creates a new WorkforcePoolProviderKey in a WorkforcePoolProvider.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
+                      "httpMethod": "POST",
+                      "id": "iam.locations.workforcePools.providers.keys.create",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "parent": {
+                          "description": "Required. The provider to create this key in.",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "workforcePoolProviderKeyId": {
+                          "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-].",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/keys",
+                      "request": {
+                        "$ref": "WorkforcePoolProviderKey"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "delete": {
+                      "description": "Deletes a WorkforcePoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
+                      "httpMethod": "DELETE",
+                      "id": "iam.locations.workforcePools.providers.keys.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the key to delete.",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets a WorkforcePoolProviderKey.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
+                      "httpMethod": "GET",
+                      "id": "iam.locations.workforcePools.providers.keys.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the key to retrieve.",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "WorkforcePoolProviderKey"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "list": {
+                      "description": "Lists all non-deleted WorkforcePoolProviderKeys in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted keys are also listed.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
+                      "httpMethod": "GET",
+                      "id": "iam.locations.workforcePools.providers.keys.list",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "pageSize": {
+                          "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
+                          "format": "int32",
+                          "location": "query",
+                          "type": "integer"
+                        },
+                        "pageToken": {
+                          "description": "A page token, received from a previous `ListWorkforcePoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+                          "location": "query",
+                          "type": "string"
+                        },
+                        "parent": {
+                          "description": "Required. The provider resource to list encryption keys for. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "showDeleted": {
+                          "description": "Whether to return soft-deleted keys.",
+                          "location": "query",
+                          "type": "boolean"
+                        }
+                      },
+                      "path": "v1/{+parent}/keys",
+                      "response": {
+                        "$ref": "ListWorkforcePoolProviderKeysResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "undelete": {
+                      "description": "Undeletes a WorkforcePoolProviderKey, as long as it was deleted fewer than 30 days ago.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}:undelete",
+                      "httpMethod": "POST",
+                      "id": "iam.locations.workforcePools.providers.keys.undelete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the key to undelete.",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:undelete",
+                      "request": {
+                        "$ref": "UndeleteWorkforcePoolProviderKeyRequest"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  },
                   "resources": {
                     "operations": {
                       "methods": {
@@ -245,6 +864,61 @@
               }
             },
             "subjects": {
+              "methods": {
+                "delete": {
+                  "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential with a mapped `google.subject` attribute. There is no path to manually create WorkforcePoolSubjects. Once deleted, the WorkforcePoolSubject may not be used for 30 days. After 30 days, the WorkforcePoolSubject will be deleted forever and can be reused in token exchanges with Google Cloud STS. This will automatically create a new WorkforcePoolSubject that is independent of the previously deleted WorkforcePoolSubject with the same google.subject value.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}",
+                  "httpMethod": "DELETE",
+                  "id": "iam.locations.workforcePools.subjects.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "undelete": {
+                  "description": "Undeletes a WorkforcePoolSubject, as long as it was deleted fewer than 30 days ago.",
+                  "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}:undelete",
+                  "httpMethod": "POST",
+                  "id": "iam.locations.workforcePools.subjects.undelete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+                      "location": "path",
+                      "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:undelete",
+                  "request": {
+                    "$ref": "UndeleteWorkforcePoolSubjectRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              },
               "resources": {
                 "operations": {
                   "methods": {
@@ -705,6 +1379,138 @@
                 }
               },
               "resources": {
+                "namespaces": {
+                  "resources": {
+                    "managedIdentities": {
+                      "resources": {
+                        "operations": {
+                          "methods": {
+                            "get": {
+                              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+                              "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/operations/{operationsId}",
+                              "httpMethod": "GET",
+                              "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get",
+                              "parameterOrder": [
+                                "name"
+                              ],
+                              "parameters": {
+                                "name": {
+                                  "description": "The name of the operation resource.",
+                                  "location": "path",
+                                  "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/operations/[^/]+$",
+                                  "required": true,
+                                  "type": "string"
+                                }
+                              },
+                              "path": "v1/{+name}",
+                              "response": {
+                                "$ref": "Operation"
+                              },
+                              "scopes": [
+                                "https://www.googleapis.com/auth/cloud-platform"
+                              ]
+                            }
+                          }
+                        },
+                        "workloadSources": {
+                          "resources": {
+                            "operations": {
+                              "methods": {
+                                "get": {
+                                  "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+                                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/workloadSources/{workloadSourcesId}/operations/{operationsId}",
+                                  "httpMethod": "GET",
+                                  "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get",
+                                  "parameterOrder": [
+                                    "name"
+                                  ],
+                                  "parameters": {
+                                    "name": {
+                                      "description": "The name of the operation resource.",
+                                      "location": "path",
+                                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/workloadSources/[^/]+/operations/[^/]+$",
+                                      "required": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "path": "v1/{+name}",
+                                  "response": {
+                                    "$ref": "Operation"
+                                  },
+                                  "scopes": [
+                                    "https://www.googleapis.com/auth/cloud-platform"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "operations": {
+                      "methods": {
+                        "get": {
+                          "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/operations/{operationsId}",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.operations.get",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "The name of the operation resource.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/operations/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        }
+                      }
+                    },
+                    "workloadSources": {
+                      "resources": {
+                        "operations": {
+                          "methods": {
+                            "get": {
+                              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+                              "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/workloadSources/{workloadSourcesId}/operations/{operationsId}",
+                              "httpMethod": "GET",
+                              "id": "iam.projects.locations.workloadIdentityPools.namespaces.workloadSources.operations.get",
+                              "parameterOrder": [
+                                "name"
+                              ],
+                              "parameters": {
+                                "name": {
+                                  "description": "The name of the operation resource.",
+                                  "location": "path",
+                                  "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/workloadSources/[^/]+/operations/[^/]+$",
+                                  "required": true,
+                                  "type": "string"
+                                }
+                              },
+                              "path": "v1/{+name}",
+                              "response": {
+                                "$ref": "Operation"
+                              },
+                              "scopes": [
+                                "https://www.googleapis.com/auth/cloud-platform"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "operations": {
                   "methods": {
                     "get": {
@@ -925,6 +1731,160 @@
                   },
                   "resources": {
                     "keys": {
+                      "methods": {
+                        "create": {
+                          "description": "Create a new WorkloadIdentityPoolProviderKey in a WorkloadIdentityPoolProvider.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.providers.keys.create",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "parent": {
+                              "description": "Required. The parent provider resource to create the key in.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "workloadIdentityPoolProviderKeyId": {
+                              "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].",
+                              "location": "query",
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+parent}/keys",
+                          "request": {
+                            "$ref": "WorkloadIdentityPoolProviderKey"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "delete": {
+                          "description": "Deletes an WorkloadIdentityPoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
+                          "httpMethod": "DELETE",
+                          "id": "iam.projects.locations.workloadIdentityPools.providers.keys.delete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the encryption key to delete.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "get": {
+                          "description": "Gets an individual WorkloadIdentityPoolProviderKey.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.providers.keys.get",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the key to retrieve.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "WorkloadIdentityPoolProviderKey"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "list": {
+                          "description": "Lists all non-deleted WorkloadIdentityPoolProviderKeys in a project. If show_deleted is set to `true`, then deleted pools are also listed.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.providers.keys.list",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "pageSize": {
+                              "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
+                              "format": "int32",
+                              "location": "query",
+                              "type": "integer"
+                            },
+                            "pageToken": {
+                              "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+                              "location": "query",
+                              "type": "string"
+                            },
+                            "parent": {
+                              "description": "Required. The parent provider resource to list encryption keys for.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "showDeleted": {
+                              "description": "Whether to return soft deleted resources as well.",
+                              "location": "query",
+                              "type": "boolean"
+                            }
+                          },
+                          "path": "v1/{+parent}/keys",
+                          "response": {
+                            "$ref": "ListWorkloadIdentityPoolProviderKeysResponse"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "undelete": {
+                          "description": "Undeletes an WorkloadIdentityPoolProviderKey, as long as it was deleted fewer than 30 days ago.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}:undelete",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.providers.keys.undelete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the encryption key to undelete.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}:undelete",
+                          "request": {
+                            "$ref": "UndeleteWorkloadIdentityPoolProviderKeyRequest"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        }
+                      },
                       "resources": {
                         "operations": {
                           "methods": {
@@ -1456,6 +2416,7 @@
               ]
             },
             "signBlob": {
+              "deprecated": true,
               "description": "**Note:** This method is deprecated. Use the [`signBlob`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signBlob) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a blob using the system-managed private key for a ServiceAccount.",
               "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signBlob",
               "httpMethod": "POST",
@@ -1484,6 +2445,7 @@
               ]
             },
             "signJwt": {
+              "deprecated": true,
               "description": "**Note:** This method is deprecated. Use the [`signJwt`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signJwt) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a JSON Web Token (JWT) using the system-managed private key for a ServiceAccount.",
               "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signJwt",
               "httpMethod": "POST",
@@ -1921,7 +2883,7 @@
       }
     }
   },
-  "revision": "20230105",
+  "revision": "20230713",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AdminAuditData": {
@@ -2025,7 +2987,7 @@
           "description": "The condition that is associated with this binding. If the condition evaluates to `true`, then this binding applies to the current request. If the condition evaluates to `false`, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies)."
         },
         "members": {
-          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. Does not include identities that come from external identity providers (IdPs) through identity federation. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
+          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. Does not include identities that come from external identity providers (IdPs) through identity federation. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding.",
           "items": {
             "type": "string"
           },
@@ -2189,6 +3151,185 @@
       },
       "type": "object"
     },
+    "GetIamPolicyRequest": {
+      "description": "Request message for `GetIamPolicy` method.",
+      "id": "GetIamPolicyRequest",
+      "properties": {
+        "options": {
+          "$ref": "GetPolicyOptions",
+          "description": "OPTIONAL: A `GetPolicyOptions` object for specifying options to `GetIamPolicy`."
+        }
+      },
+      "type": "object"
+    },
+    "GetPolicyOptions": {
+      "description": "Encapsulates settings provided to GetIamPolicy.",
+      "id": "GetPolicyOptions",
+      "properties": {
+        "requestedPolicyVersion": {
+          "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderOidc": {
+      "description": "Represents an OpenId Connect 1.0 identity provider.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderOidc",
+      "properties": {
+        "clientId": {
+          "description": "Required. The client ID. Must match the audience claim of the JWT issued by the identity provider.",
+          "type": "string"
+        },
+        "clientSecret": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret",
+          "description": "The optional client secret. Required to enable Authorization Code flow for web sign-in."
+        },
+        "issuerUri": {
+          "description": "Required. The OIDC issuer URI. Must be a valid URI using the 'https' scheme.",
+          "type": "string"
+        },
+        "webSsoConfig": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig",
+          "description": "Required. Configuration for web single sign-on for the OIDC provider. Here, web sign-in refers to console sign-in and gcloud sign-in through the browser."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret": {
+      "description": "Representation of a client secret configured for the OIDC provider.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret",
+      "properties": {
+        "value": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue",
+          "description": "The value of the client secret."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue": {
+      "description": "Representation of the value of the client secret.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue",
+      "properties": {
+        "plainText": {
+          "description": "Input only. The plain text of the client secret value. For security reasons, this field is only used for input and will never be populated in any response.",
+          "type": "string"
+        },
+        "thumbprint": {
+          "description": "Output only. A thumbprint to represent the current client secret value.",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig": {
+      "description": "Configuration for web single sign-on for the OIDC provider.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig",
+      "properties": {
+        "additionalScopes": {
+          "description": "Additional scopes to request for in the OIDC authentication request on top of scopes requested by default. By default, the `openid`, `profile` and `email` scopes that are supported by the identity provider are requested. Each additional scope may be at most 256 characters. A maximum of 10 additional scopes may be configured.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "assertionClaimsBehavior": {
+          "description": "Required. The behavior for how OIDC Claims are included in the `assertion` object used for attribute mapping and attribute condition.",
+          "enum": [
+            "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED",
+            "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS",
+            "ONLY_ID_TOKEN_CLAIMS"
+          ],
+          "enumDescriptions": [
+            "No assertion claims behavior specified.",
+            "Merge the UserInfo Endpoint Claims with ID Token Claims, preferring UserInfo Claim Values for the same Claim Name. This option is available only for the Authorization Code Flow.",
+            "Only include ID Token Claims."
+          ],
+          "type": "string"
+        },
+        "responseType": {
+          "description": "Required. The Response Type to request for in the OIDC Authorization Request for web sign-in. The `CODE` Response Type is recommended to avoid the Implicit Flow, for security reasons.",
+          "enum": [
+            "RESPONSE_TYPE_UNSPECIFIED",
+            "CODE",
+            "ID_TOKEN"
+          ],
+          "enumDescriptions": [
+            "No Response Type specified.",
+            "The `response_type=code` selection uses the Authorization Code Flow for web sign-in. Requires a configured client secret.",
+            "The `response_type=id_token` selection uses the Implicit Flow for web sign-in."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderSaml": {
+      "description": "Represents a SAML identity provider.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderSaml",
+      "properties": {
+        "idpMetadataXml": {
+          "description": "Required. SAML Identity provider configuration metadata xml doc. The xml document should comply with [SAML 2.0 specification](https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf). The max size of the acceptable xml document will be bounded to 128k characters. The metadata xml document should satisfy the following constraints: 1) Must contain an Identity Provider Entity ID. 2) Must contain at least one non-expired signing key certificate. 3) For each signing key: a) Valid from should be no more than 7 days from now. b) Valid to should be no more than 14 years in the future. 4) Up to 3 IdP signing keys are allowed in the metadata xml. When updating the provider's metadata xml, at least one non-expired signing key must overlap with the existing metadata. This requirement is skipped if there are no non-expired signing keys present in the existing metadata.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "KeyData": {
+      "description": "Represents a public key data along with its format.",
+      "id": "KeyData",
+      "properties": {
+        "format": {
+          "description": "Output only. The format of the key.",
+          "enum": [
+            "KEY_FORMAT_UNSPECIFIED",
+            "RSA_X509_PEM"
+          ],
+          "enumDescriptions": [
+            "No format has been specified. This is an invalid format and must not be used.",
+            "A RSA public key wrapped in an X.509v3 certificate ([RFC5280] ( https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64, and wrapped in [public certificate label](https://datatracker.ietf.org/doc/html/rfc7468#section-5.1)."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "key": {
+          "description": "Output only. The key data. The format of the key is represented by the format field.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "keySpec": {
+          "description": "Required. The specifications for the key.",
+          "enum": [
+            "KEY_SPEC_UNSPECIFIED",
+            "RSA_2048",
+            "RSA_3072",
+            "RSA_4096"
+          ],
+          "enumDescriptions": [
+            "No key specification specified.",
+            "A 2048 bit RSA key.",
+            "A 3072 bit RSA key.",
+            "A 4096 bit RSA key."
+          ],
+          "type": "string"
+        },
+        "notAfterTime": {
+          "description": "Output only. Latest timestamp when this key is valid. Attempts to use this key after this time will fail. Only present if the key data represents a X.509 certificate.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "notBeforeTime": {
+          "description": "Output only. Earliest timestamp when this key is valid. Attempts to use this key before this time will fail. Only present if the key data represents a X.509 certificate.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "LintPolicyRequest": {
       "description": "The request to lint a Cloud IAM policy object.",
       "id": "LintPolicyRequest",
@@ -2324,6 +3465,78 @@
       },
       "type": "object"
     },
+    "ListWorkforcePoolProviderKeysResponse": {
+      "description": "Response message for ListWorkforcePoolProviderKeys.",
+      "id": "ListWorkforcePoolProviderKeysResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workforcePoolProviderKeys": {
+          "description": "A list of WorkforcePoolProviderKeys.",
+          "items": {
+            "$ref": "WorkforcePoolProviderKey"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkforcePoolProvidersResponse": {
+      "description": "Response message for ListWorkforcePoolProviders.",
+      "id": "ListWorkforcePoolProvidersResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workforcePoolProviders": {
+          "description": "A list of providers.",
+          "items": {
+            "$ref": "WorkforcePoolProvider"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkforcePoolsResponse": {
+      "description": "Response message for ListWorkforcePools.",
+      "id": "ListWorkforcePoolsResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workforcePools": {
+          "description": "A list of pools.",
+          "items": {
+            "$ref": "WorkforcePool"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkloadIdentityPoolProviderKeysResponse": {
+      "description": "Response message for ListWorkloadIdentityPoolProviderKeys.",
+      "id": "ListWorkloadIdentityPoolProviderKeysResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workloadIdentityPoolProviderKeys": {
+          "description": "A list of WorkloadIdentityPoolProviderKey",
+          "items": {
+            "$ref": "WorkloadIdentityPoolProviderKey"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "ListWorkloadIdentityPoolProvidersResponse": {
       "description": "Response message for ListWorkloadIdentityPoolProviders.",
       "id": "ListWorkloadIdentityPoolProvidersResponse",
@@ -2373,6 +3586,10 @@
         },
         "issuerUri": {
           "description": "Required. The OIDC issuer URL. Must be an HTTPS endpoint.",
+          "type": "string"
+        },
+        "jwksJson": {
+          "description": "Optional. OIDC JWKs in JSON String format. For details on the definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not set, the `jwks_uri` from the discovery document(fetched from the .well-known path of the `issuer_uri`) will be used. Currently, RSA and EC asymmetric keys are supported. The JWK must use following format and include only the following fields: { \"keys\": [ { \"kty\": \"RSA/EC\", \"alg\": \"\", \"use\": \"sig\", \"kid\": \"\", \"n\": \"\", \"e\": \"\", \"x\": \"\", \"y\": \"\", \"crv\": \"\" } ] }",
           "type": "string"
         }
       },
@@ -2458,6 +3675,7 @@
           "type": "string"
         },
         "onlyInPredefinedRoles": {
+          "deprecated": true,
           "type": "boolean"
         },
         "primaryPermission": {
@@ -2690,7 +3908,7 @@
           "type": "array"
         },
         "name": {
-          "description": "The name of the role. When Role is used in CreateRole, the role name must not be set. When Role is used in output and other input such as UpdateRole, the role name is the complete path, e.g., roles/logging.viewer for predefined roles and organizations/{ORGANIZATION_ID}/roles/logging.viewer for custom roles.",
+          "description": "The name of the role. When `Role` is used in `CreateRole`, the role name must not be set. When `Role` is used in output and other input such as `UpdateRole`, the role name is the complete path. For example, `roles/logging.viewer` for predefined roles, `organizations/{ORGANIZATION_ID}/roles/my-role` for organization-level custom roles, and `projects/{PROJECT_ID}/roles/my-role` for project-level custom roles.",
           "type": "string"
         },
         "stage": {
@@ -2732,7 +3950,7 @@
       "type": "object"
     },
     "ServiceAccount": {
-      "description": "An IAM service account. A service account is an account for an application or a virtual machine (VM) instance, not a person. You can use a service account to call Google APIs. To learn more, read the [overview of service accounts](https://cloud.google.com/iam/help/service-accounts/overview). When you create a service account, you specify the project ID that owns the service account, as well as a name that must be unique within the project. IAM uses these values to create an email address that identifies the service //",
+      "description": "An IAM service account. A service account is an account for an application or a virtual machine (VM) instance, not a person. You can use a service account to call Google APIs. To learn more, read the [overview of service accounts](https://cloud.google.com/iam/help/service-accounts/overview). When you create a service account, you specify the project ID that owns the service account, as well as a name that must be unique within the project. IAM uses these values to create an email address that identifies the service account. //",
       "id": "ServiceAccount",
       "properties": {
         "description": {
@@ -2754,6 +3972,7 @@
           "type": "string"
         },
         "etag": {
+          "deprecated": true,
           "description": "Deprecated. Do not use.",
           "format": "byte",
           "type": "string"
@@ -2892,6 +4111,7 @@
       "id": "SignBlobRequest",
       "properties": {
         "bytesToSign": {
+          "deprecated": true,
           "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The bytes to sign.",
           "format": "byte",
           "type": "string"
@@ -2904,10 +4124,12 @@
       "id": "SignBlobResponse",
       "properties": {
         "keyId": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The id of the key used to sign the blob.",
           "type": "string"
         },
         "signature": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The signed blob.",
           "format": "byte",
           "type": "string"
@@ -2920,6 +4142,7 @@
       "id": "SignJwtRequest",
       "properties": {
         "payload": {
+          "deprecated": true,
           "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The JWT payload to sign. Must be a serialized JSON object that contains a JWT Claims Set. For example: `{\"sub\": \"user@example.com\", \"iat\": 313435}` If the JWT Claims Set contains an expiration time (`exp`) claim, it must be an integer timestamp that is not in the past and no more than 12 hours in the future. If the JWT Claims Set does not contain an expiration time (`exp`) claim, this claim is added automatically, with a timestamp that is 1 hour in the future.",
           "type": "string"
         }
@@ -2931,10 +4154,12 @@
       "id": "SignJwtResponse",
       "properties": {
         "keyId": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The id of the key used to sign the JWT.",
           "type": "string"
         },
         "signedJwt": {
+          "deprecated": true,
           "description": "Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The signed JWT.",
           "type": "string"
         }
@@ -3024,6 +4249,36 @@
       },
       "type": "object"
     },
+    "UndeleteWorkforcePoolProviderKeyRequest": {
+      "description": "Request message for UndeleteWorkforcePoolProviderKey.",
+      "id": "UndeleteWorkforcePoolProviderKeyRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkforcePoolProviderRequest": {
+      "description": "Request message for UndeleteWorkforcePoolProvider.",
+      "id": "UndeleteWorkforcePoolProviderRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkforcePoolRequest": {
+      "description": "Request message for UndeleteWorkforcePool.",
+      "id": "UndeleteWorkforcePoolRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkforcePoolSubjectRequest": {
+      "description": "Request message for UndeleteWorkforcePoolSubject.",
+      "id": "UndeleteWorkforcePoolSubjectRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkloadIdentityPoolProviderKeyRequest": {
+      "description": "Request message for UndeleteWorkloadIdentityPoolProviderKey.",
+      "id": "UndeleteWorkloadIdentityPoolProviderKeyRequest",
+      "properties": {},
+      "type": "object"
+    },
     "UndeleteWorkloadIdentityPoolProviderRequest": {
       "description": "Request message for UndeleteWorkloadIdentityPoolProvider.",
       "id": "UndeleteWorkloadIdentityPoolProviderRequest",
@@ -3048,6 +4303,173 @@
       },
       "type": "object"
     },
+    "WorkforcePool": {
+      "description": "Represents a collection of external workforces. Provides namespaces for federated users that can be referenced in IAM policies.",
+      "id": "WorkforcePool",
+      "properties": {
+        "description": {
+          "description": "A user-specified description of the pool. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disables the workforce pool. You cannot use a disabled pool to exchange tokens, or use existing tokens to access resources. If the pool is re-enabled, existing tokens grant access again.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "A user-specified display name of the pool in Google Cloud Console. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the workforce pool will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the pool. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
+          "readOnly": true,
+          "type": "string"
+        },
+        "parent": {
+          "description": "Immutable. The resource name of the parent. Format: `organizations/{org-id}`.",
+          "type": "string"
+        },
+        "sessionDuration": {
+          "description": "Duration that the Google Cloud access tokens, console sign-in sessions, and `gcloud` sign-in sessions from this pool are valid. Must be greater than 15 minutes (900s) and less than 12 hours (43200s). If `session_duration` is not configured, minted credentials have a default duration of one hour (3600s). For SAML providers, the lifetime of the token is the minimum of the `session_duration` and the `SessionNotOnOrAfter` claim in the SAML assertion.",
+          "format": "google-duration",
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the pool.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The pool is active and may be used in Google Cloud policies.",
+            "The pool is soft-deleted. Soft-deleted pools are permanently deleted after approximately 30 days. You can restore a soft-deleted pool using UndeleteWorkforcePool. You cannot reuse the ID of a soft-deleted pool until it is permanently deleted. While a pool is deleted, you cannot use it to exchange tokens, or use existing tokens to access resources. If the pool is undeleted, existing tokens grant access again."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkforcePoolProvider": {
+      "description": "A configuration for an external identity provider.",
+      "id": "WorkforcePoolProvider",
+      "properties": {
+        "attributeCondition": {
+          "description": "A [Common Expression Language](https://opensource.google/projects/cel) expression, in plain text, to restrict what otherwise valid authentication credentials issued by the provider should not be accepted. The expression must output a boolean representing whether to allow the federation. The following keywords may be referenced in the expressions: * `assertion`: JSON representing the authentication credential issued by the provider. * `google`: The Google attributes mapped from the assertion in the `attribute_mappings`. `google.profile_photo` and `google.display_name` are not supported. * `attribute`: The custom attributes mapped from the assertion in the `attribute_mappings`. The maximum length of the attribute condition expression is 4096 characters. If unspecified, all valid authentication credentials will be accepted. The following example shows how to only allow credentials with a mapped `google.groups` value of `admins`: ``` \"'admins' in google.groups\" ```",
+          "type": "string"
+        },
+        "attributeMapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Required. Maps attributes from the authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. * `google.display_name`: The name of the authenticated user. This is an optional field and the mapped display name cannot exceed 100 bytes. If not set, `google.subject` will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.profile_photo`: The URL that specifies the authenticated user's thumbnail photo. This is an optional field. When set, the image will be visible as the user's profile picture. If not set, a generic user icon will be displayed instead. This attribute cannot be referenced in IAM bindings. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where {custom_attribute} is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters [a-z0-9_]. You can reference these attributes in IAM policies to define fine-grained access for a workforce pool to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 4KB. For OIDC providers, you must supply a custom mapping that includes the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
+          "type": "object"
+        },
+        "description": {
+          "description": "A user-specified description of the provider. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disables the workforce pool provider. You cannot use a disabled provider to exchange tokens. However, existing tokens still grant access.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "A user-specified display name for the provider. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the workload pool provider will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the provider. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
+          "readOnly": true,
+          "type": "string"
+        },
+        "oidc": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidc",
+          "description": "An OpenId Connect 1.0 identity provider configuration."
+        },
+        "saml": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderSaml",
+          "description": "A SAML identity provider configuration."
+        },
+        "state": {
+          "description": "Output only. The state of the provider.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The provider is active and may be used to validate authentication credentials.",
+            "The provider is soft-deleted. Soft-deleted providers are permanently deleted after approximately 30 days. You can restore a soft-deleted provider using UndeleteWorkforcePoolProvider."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkforcePoolProviderKey": {
+      "description": "Represents a public key configuration for a Workforce Pool Provider. The key can be configured in your identity provider to encrypt SAML assertions. Google holds the corresponding private key, which it uses to decrypt encrypted tokens.",
+      "id": "WorkforcePoolProviderKey",
+      "properties": {
+        "expireTime": {
+          "description": "Output only. The time after which the key will be permanently deleted and cannot be recovered. Note that the key may get purged before this time if the total limit of keys per provider is exceeded.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "keyData": {
+          "$ref": "KeyData",
+          "description": "Immutable. Public half of the asymmetric key."
+        },
+        "name": {
+          "description": "Output only. The resource name of the key.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the key.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The key is active.",
+            "The key is soft-deleted. Soft-deleted keys are permanently deleted after approximately 30 days. You can restore a soft-deleted key using UndeleteWorkforcePoolProviderKey."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "use": {
+          "description": "Required. The purpose of the key.",
+          "enum": [
+            "KEY_USE_UNSPECIFIED",
+            "ENCRYPTION"
+          ],
+          "enumDescriptions": [
+            "KeyUse unspecified.",
+            "The key is used for encryption."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "WorkloadIdentityPool": {
       "description": "Represents a collection of external workload identities. You can define IAM policies to grant these identities access to Google Cloud resources.",
       "id": "WorkloadIdentityPool",
@@ -3062,6 +4484,12 @@
         },
         "displayName": {
           "description": "A display name for the pool. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the workload identity pool will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
           "type": "string"
         },
         "name": {
@@ -3124,6 +4552,12 @@
           "description": "A display name for the provider. Cannot exceed 32 characters.",
           "type": "string"
         },
+        "expireTime": {
+          "description": "Output only. Time after which the workload identity pool provider will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
         "name": {
           "description": "Output only. The resource name of the provider.",
           "readOnly": true,
@@ -3150,6 +4584,55 @@
             "The provider is soft-deleted. Soft-deleted providers are permanently deleted after approximately 30 days. You can restore a soft-deleted provider using UndeleteWorkloadIdentityPoolProvider. You cannot reuse the ID of a soft-deleted provider until it is permanently deleted."
           ],
           "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkloadIdentityPoolProviderKey": {
+      "description": "Represents a public key configuration for your workload identity pool provider. The key can be configured in your identity provider to encrypt the SAML assertions. Google holds the corresponding private key which it uses to decrypt encrypted tokens.",
+      "id": "WorkloadIdentityPoolProviderKey",
+      "properties": {
+        "expireTime": {
+          "description": "Output only. Time after which the key will be permanently purged and cannot be recovered. Note that the key may get purged before this timestamp if the total limit of keys per provider is crossed.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "keyData": {
+          "$ref": "KeyData",
+          "description": "Immutable. Public half of the asymmetric key."
+        },
+        "name": {
+          "description": "Output only. The resource name of the key.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the key.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The key is active.",
+            "The key is soft-deleted. Soft-deleted keys are permanently deleted after approximately 30 days. You can restore a soft-deleted key using UndeleteWorkloadIdentityPoolProviderKey. While a key is deleted, you cannot use it during the federation."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "use": {
+          "description": "Required. The purpose of the key.",
+          "enum": [
+            "KEY_USE_UNSPECIFIED",
+            "ENCRYPTION"
+          ],
+          "enumDescriptions": [
+            "The key use is not known.",
+            "The public key is used for encryption purposes."
+          ],
           "type": "string"
         }
       },

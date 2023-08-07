@@ -255,18 +255,18 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 		return "", err
 	}
 
-	err = cloudup.PerformAssignments(newCluster, cloud)
+	err = cloudup.PerformAssignments(newCluster, clientset.VFSContext(), cloud)
 	if err != nil {
 		return "", fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(newCluster.Spec.Assets, newCluster.Spec.KubernetesVersion, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, cloud, assetBuilder)
+	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), newCluster.Spec.Assets, newCluster.Spec.KubernetesVersion, false)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, instanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}
 
-	err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
+	err = validation.DeepValidate(fullCluster, instanceGroups, true, clientset.VFSContext(), cloud)
 	if err != nil {
 		return fmt.Sprintf("validation failed: %s", err), nil
 	}

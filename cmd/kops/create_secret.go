@@ -36,7 +36,6 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateSecretCiliumPassword(f, out))
 	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
 	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
-	cmd.AddCommand(NewCmdCreateSecretWeavePassword(f, out))
 
 	sshPublicKey := NewCmdCreateSSHPublicKey(f, out)
 	sshPublicKey.Hidden = true

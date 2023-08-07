@@ -16,7 +16,7 @@ type Instrumenter struct {
 	instrumentationRegistry *prometheus.Registry
 }
 
-// New creates a new Instrumenter. The subsystemIdentifier will be used as part of the metric names (e.g. hcloud_<identifier>_requests_total)
+// New creates a new Instrumenter. The subsystemIdentifier will be used as part of the metric names (e.g. hcloud_<identifier>_requests_total).
 func New(subsystemIdentifier string, instrumentationRegistry *prometheus.Registry) *Instrumenter {
 	return &Instrumenter{subsystemIdentifier: subsystemIdentifier, instrumentationRegistry: instrumentationRegistry}
 }
@@ -58,8 +58,10 @@ func (i *Instrumenter) InstrumentedRoundTripper() http.RoundTripper {
 
 // instrumentRoundTripperEndpoint implements a hcloud specific round tripper to count requests per API endpoint
 // numeric IDs are removed from the URI Path.
+//
 // Sample:
-// /volumes/1234/actions/attach --> /volumes/actions/attach
+//
+//	/volumes/1234/actions/attach --> /volumes/actions/attach
 func (i *Instrumenter) instrumentRoundTripperEndpoint(counter *prometheus.CounterVec, next http.RoundTripper) promhttp.RoundTripperFunc {
 	return func(r *http.Request) (*http.Response, error) {
 		resp, err := next.RoundTrip(r)
@@ -67,6 +69,7 @@ func (i *Instrumenter) instrumentRoundTripperEndpoint(counter *prometheus.Counte
 			statusCode := strconv.Itoa(resp.StatusCode)
 			counter.WithLabelValues(statusCode, strings.ToLower(resp.Request.Method), preparePathForLabel(resp.Request.URL.Path)).Inc()
 		}
+
 		return resp, err
 	}
 }

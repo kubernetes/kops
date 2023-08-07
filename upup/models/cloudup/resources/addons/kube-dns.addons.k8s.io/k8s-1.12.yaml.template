@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}registry.k8s.io/cpa/cluster-proportional-autoscaler:1.8.3{{ end }}
+        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.8.8{{ end }}
         resources:
             requests:
                 cpu: "20m"

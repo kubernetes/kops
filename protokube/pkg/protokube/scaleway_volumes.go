@@ -19,7 +19,6 @@ package protokube
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -66,14 +65,18 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	privateIP := metadata.PrivateIP
 	klog.V(4).Infof("Found first private net IP of the running server: %q", privateIP)
 
+	profile, err := scaleway.CreateValidScalewayProfile()
+	if err != nil {
+		return nil, err
+	}
 	scwClient, err := scw.NewClient(
+		scw.WithProfile(profile),
 		scw.WithUserAgent(scaleway.KopsUserAgentPrefix+kopsv.Version),
-		scw.WithEnv(),
-		scw.WithDefaultRegion(region),
 		scw.WithDefaultZone(zone),
+		scw.WithDefaultRegion(region),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating client: %w", err)
+		return nil, fmt.Errorf("error creating client for Protokube: %w", err)
 	}
 
 	instanceAPI := instance.NewAPI(scwClient)
@@ -104,11 +107,8 @@ func (s ScwCloudProvider) InstanceInternalIP() net.IP {
 }
 
 func (s *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
-	for _, tag := range s.server.Tags {
-		if !strings.HasPrefix(tag, scaleway.TagClusterName) {
-			continue
-		}
-		clusterName := strings.TrimPrefix(tag, scaleway.TagClusterName+"=")
+	clusterName := scaleway.ClusterNameFromTags(s.server.Tags)
+	if clusterName != "" {
 		return gossipscw.NewSeedProvider(s.scwClient, clusterName)
 	}
 	return nil, fmt.Errorf("failed to find cluster name label for running server: %v", s.server.Tags)

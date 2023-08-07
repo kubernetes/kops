@@ -4,23 +4,24 @@ import "time"
 
 // Image defines the schema of an image.
 type Image struct {
-	ID          int               `json:"id"`
-	Status      string            `json:"status"`
-	Type        string            `json:"type"`
-	Name        *string           `json:"name"`
-	Description string            `json:"description"`
-	ImageSize   *float32          `json:"image_size"`
-	DiskSize    float32           `json:"disk_size"`
-	Created     time.Time         `json:"created"`
-	CreatedFrom *ImageCreatedFrom `json:"created_from"`
-	BoundTo     *int              `json:"bound_to"`
-	OSFlavor    string            `json:"os_flavor"`
-	OSVersion   *string           `json:"os_version"`
-	RapidDeploy bool              `json:"rapid_deploy"`
-	Protection  ImageProtection   `json:"protection"`
-	Deprecated  time.Time         `json:"deprecated"`
-	Deleted     time.Time         `json:"deleted"`
-	Labels      map[string]string `json:"labels"`
+	ID           int               `json:"id"`
+	Status       string            `json:"status"`
+	Type         string            `json:"type"`
+	Name         *string           `json:"name"`
+	Description  string            `json:"description"`
+	ImageSize    *float32          `json:"image_size"`
+	DiskSize     float32           `json:"disk_size"`
+	Created      time.Time         `json:"created"`
+	CreatedFrom  *ImageCreatedFrom `json:"created_from"`
+	BoundTo      *int              `json:"bound_to"`
+	OSFlavor     string            `json:"os_flavor"`
+	OSVersion    *string           `json:"os_version"`
+	Architecture string            `json:"architecture"`
+	RapidDeploy  bool              `json:"rapid_deploy"`
+	Protection   ImageProtection   `json:"protection"`
+	Deprecated   time.Time         `json:"deprecated"`
+	Deleted      time.Time         `json:"deleted"`
+	Labels       map[string]string `json:"labels"`
 }
 
 // ImageProtection represents the protection level of a image.

@@ -180,10 +180,10 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-proxy.log",
@@ -191,13 +191,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			"/usr/local/bin/kube-proxy",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-proxy"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-proxy.log")
 	}
 	{
 		kubemanifest.AddHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
@@ -205,18 +198,17 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		kubemanifest.AddHostPathMapping(pod, container, "modules", "/lib/modules")
 
 		// Map SSL certs from host: /usr/share/ca-certificates -> /etc/ssl/certs
-		sslCertsHost := kubemanifest.AddHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates")
-		sslCertsHost.VolumeMount.MountPath = "/etc/ssl/certs"
+		kubemanifest.AddHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates", kubemanifest.WithMountPath("/etc/ssl/certs"))
 	}
 
-	if b.IsGossip {
+	if b.UsesLegacyGossip() {
 		// Map /etc/hosts from host, so that we see the updates that are made by protokube
 		kubemanifest.AddHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}
 
 	// Mount the iptables lock file
 	{
-		kubemanifest.AddHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock").WithReadWrite()
+		kubemanifest.AddHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock", kubemanifest.WithReadWrite())
 
 		vol := pod.Spec.Volumes[len(pod.Spec.Volumes)-1]
 		if vol.Name != "iptableslock" {
@@ -239,6 +231,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	// Also set priority so that kube-proxy does not get evicted in clusters where
 	// PodPriority is enabled.
 	kubemanifest.MarkPodAsNodeCritical(pod)
+
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
 
 	return pod, nil
 }

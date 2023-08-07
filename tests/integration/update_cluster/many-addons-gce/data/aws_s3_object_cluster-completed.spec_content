@@ -31,7 +31,8 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
+    ignoreDaemonSetsUtilization: false
+    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
@@ -42,13 +43,12 @@ spec:
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal.example.com
-  configStore: memfs://tests/minimal.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
-      version: 1.1.4
-    version: 1.6.17
+      version: 1.1.5
+    version: 1.6.20
   dnsZone: "1"
   docker:
     skipInstall: true
@@ -61,12 +61,9 @@ spec:
       name: a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -75,12 +72,9 @@ spec:
       name: a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: events
-    version: 3.5.7
+    version: 3.5.9
   externalDns:
     provider: dns-controller
   iam:
@@ -152,7 +146,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.16
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 100.64.0.10
@@ -178,7 +172,7 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -200,7 +194,7 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -227,5 +221,3 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public

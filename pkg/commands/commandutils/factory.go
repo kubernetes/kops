@@ -16,8 +16,12 @@ limitations under the License.
 
 package commandutils
 
-import "k8s.io/kops/pkg/client/simple"
+import (
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/util/pkg/vfs"
+)
 
 type Factory interface {
 	KopsClient() (simple.Clientset, error)
+	VFSContext() *vfs.VFSContext
 }

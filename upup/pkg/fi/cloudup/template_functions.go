@@ -62,6 +62,8 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -89,7 +91,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KubeObjectToApplyYAML"] = kubemanifest.KubeObjectToApplyYAML
 
 	dest["SharedVPC"] = tf.SharedVPC
-	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
@@ -128,7 +129,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["GossipEnabled"] = func() bool {
-		if cluster.IsGossip() {
+		if cluster.UsesLegacyGossip() {
 			return true
 		}
 		return false
@@ -165,12 +166,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	// will return openstack external ccm image location for current kubernetes version
 	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
 	dest["OpenStackCSITag"] = tf.OpenStackCSITag
+	dest["DNSControllerEnvs"] = tf.DNSControllerEnvs
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
-	dest["UseKopsControllerForNodeBootstrap"] = func() bool {
-		return tf.UseKopsControllerForNodeBootstrap()
-	}
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -192,13 +191,25 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["SCW_ACCESS_KEY"] = func() string {
-		return os.Getenv("SCW_ACCESS_KEY")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.AccessKey)
 	}
 	dest["SCW_SECRET_KEY"] = func() string {
-		return os.Getenv("SCW_SECRET_KEY")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.SecretKey)
 	}
 	dest["SCW_DEFAULT_PROJECT_ID"] = func() string {
-		return os.Getenv("SCW_DEFAULT_PROJECT_ID")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.DefaultProjectID)
 	}
 	dest["SCW_DEFAULT_REGION"] = func() string {
 		return tf.cloud.Region()
@@ -310,20 +321,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
 
-	if cluster.Spec.Networking.Weave != nil {
-		weavesecretString := ""
-		weavesecret, _ := secretStore.Secret("weavepassword")
-		if weavesecret != nil {
-			weavesecretString, err = weavesecret.AsString()
-			if err != nil {
-				return err
-			}
-			klog.V(4).Info("Weave secret function successfully registered")
-		}
-
-		dest["WeaveSecret"] = func() string { return weavesecretString }
-	}
-
 	dest["CloudLabels"] = func() string {
 		labels := []string{
 			fmt.Sprintf("KubernetesCluster=%s", cluster.ObjectMeta.Name),
@@ -381,6 +378,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
 	}
 
+	dest["KarpenterEnabled"] = func() bool {
+		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
+	}
 	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
 		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
 	}
@@ -397,6 +397,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
 	dest["KopsVersion"] = func() string { return kopsroot.KOPS_RELEASE_VERSION }
+
+	dest["ContainerdSELinuxEnabled"] = func() bool {
+		if cluster.Spec.Containerd != nil {
+			return cluster.Spec.Containerd.SeLinuxEnabled
+		}
+		return false
+	}
 
 	return nil
 }
@@ -539,7 +546,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		}
 	}
 
-	if cluster.IsGossip() {
+	if cluster.UsesLegacyGossip() {
 		argv = append(argv, "--dns=gossip")
 
 		// Configuration specifically for the DNS controller gossip
@@ -597,6 +604,10 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
 			argv = append(argv, "--dns=digitalocean")
+		case kops.CloudProviderOpenstack:
+			argv = append(argv, "--dns=openstack-designate")
+		case kops.CloudProviderScaleway:
+			argv = append(argv, "--dns=scaleway")
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())
@@ -635,15 +646,15 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	config := &kopscontrollerconfig.Options{
 		ClusterName: cluster.Name,
 		Cloud:       string(cluster.Spec.GetCloudProvider()),
-		ConfigBase:  cluster.Spec.ConfigBase,
-		SecretStore: cluster.Spec.SecretStore,
+		ConfigBase:  cluster.Spec.ConfigStore.Base,
+		SecretStore: cluster.Spec.ConfigStore.Secrets,
 	}
 
 	if featureflag.CacheNodeidentityInfo.Enabled() {
 		config.CacheNodeidentityInfo = true
 	}
 
-	if tf.UseKopsControllerForNodeBootstrap() {
+	{
 		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}
 		if apiModel.UseCiliumEtcd(cluster) {
@@ -719,6 +730,17 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderOpenstack:
 			config.Server.Provider.OpenStack = &openstack.OpenStackVerifierOptions{}
 
+		case kops.CloudProviderDO:
+			config.Server.Provider.DigitalOcean = &do.DigitalOceanVerifierOptions{}
+
+		case kops.CloudProviderScaleway:
+			config.Server.Provider.Scaleway = &scaleway.ScalewayVerifierOptions{}
+
+		case kops.CloudProviderAzure:
+			config.Server.Provider.Azure = &azure.AzureVerifierOptions{
+				ClusterName: tf.ClusterName(),
+			}
+
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())
 		}
@@ -728,7 +750,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.EnableCloudIPAM = true
 	}
 
-	if cluster.IsGossip() {
+	if cluster.UsesLegacyGossip() {
 		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
 			Enabled: true,
 		}
@@ -791,6 +813,20 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	return argv, nil
 }
 
+func (tf *TemplateFunctions) DNSControllerEnvs() map[string]string {
+	if tf.Cluster.Spec.GetCloudProvider() != kops.CloudProviderOpenstack {
+		return nil
+	}
+	envs := env.BuildSystemComponentEnvVars(&tf.Cluster.Spec)
+	out := make(map[string]string)
+	for k, v := range envs {
+		if strings.HasPrefix(k, "OS_") {
+			out[k] = v
+		}
+	}
+	return out
+}
+
 func (tf *TemplateFunctions) ProxyEnv() map[string]string {
 	cluster := tf.Cluster
 
@@ -833,12 +869,14 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 	if err != nil {
 		tag = "latest"
 	} else {
-		if parsed.Minor == 23 {
-			tag = "v1.23.1"
-		} else if parsed.Minor == 24 {
-			tag = "v1.24.5"
+		if parsed.Minor == 24 {
+			tag = "v1.24.6"
 		} else if parsed.Minor == 25 {
-			tag = "v1.25.3"
+			tag = "v1.25.5"
+		} else if parsed.Minor == 26 {
+			tag = "v1.26.2"
+		} else if parsed.Minor == 27 {
+			tag = "v1.27.1"
 		} else {
 			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
@@ -856,9 +894,13 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 		tag = "latest"
 	} else {
 		if parsed.Minor == 24 {
-			tag = "v1.24.5"
+			tag = "v1.24.6"
 		} else if parsed.Minor == 25 {
-			tag = "v1.25.3"
+			tag = "v1.25.5"
+		} else if parsed.Minor == 26 {
+			tag = "v1.26.2"
+		} else if parsed.Minor == 27 {
+			tag = "v1.27.1"
 		} else {
 			// otherwise we use always .0 csi image, if needed that can be overrided using cloud config spec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)

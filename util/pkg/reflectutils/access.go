@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func SetString(target interface{}, targetPath string, newValue string) error {
@@ -43,7 +45,7 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 				return fmt.Errorf("cannot set field %q (marked immutable)", path)
 			}
 
-			if err := setPrimitive(v, newValue); err != nil {
+			if err := setType(v, newValue); err != nil {
 				return fmt.Errorf("cannot set field %q: %v", path, err)
 			}
 
@@ -89,7 +91,7 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 	return nil
 }
 
-func setPrimitive(v reflect.Value, newValue string) error {
+func setType(v reflect.Value, newValue string) error {
 	if !v.CanSet() {
 		return fmt.Errorf("cannot set value")
 	}
@@ -103,7 +105,7 @@ func setPrimitive(v reflect.Value, newValue string) error {
 		valueArray = reflect.AppendSlice(valueArray, v)
 		for _, s := range tokens {
 			valueItem := reflect.New(v.Type().Elem())
-			if err := setPrimitive(valueItem.Elem(), s); err != nil {
+			if err := setType(valueItem.Elem(), s); err != nil {
 				return err
 			}
 			valueArray = reflect.Append(valueArray, valueItem.Elem())
@@ -119,7 +121,7 @@ func setPrimitive(v reflect.Value, newValue string) error {
 
 	if v.Type().Kind() == reflect.Ptr {
 		val := reflect.New(v.Type().Elem())
-		if err := setPrimitive(val.Elem(), newValue); err != nil {
+		if err := setType(val.Elem(), newValue); err != nil {
 			return err
 		}
 		v.Set(val)
@@ -141,7 +143,7 @@ func setPrimitive(v reflect.Value, newValue string) error {
 		}
 		newV = reflect.ValueOf(b)
 
-	case "int64", "int32", "int":
+	case "int64", "int32", "int16", "int":
 		v, err := strconv.Atoi(newValue)
 		if err != nil {
 			return fmt.Errorf("cannot interpret %q value as integer", newValue)
@@ -150,6 +152,9 @@ func setPrimitive(v reflect.Value, newValue string) error {
 		switch t {
 		case "int":
 			newV = reflect.ValueOf(v)
+		case "int16":
+			v16 := int16(v)
+			newV = reflect.ValueOf(v16)
 		case "int32":
 			v32 := int32(v)
 			newV = reflect.ValueOf(v32)
@@ -157,8 +162,31 @@ func setPrimitive(v reflect.Value, newValue string) error {
 			v64 := int64(v)
 			newV = reflect.ValueOf(v64)
 		default:
-			panic("missing case in switch")
+			panic("missing case in int switch")
 		}
+	case "uint64", "uint32", "uint16", "uint":
+		v, err := strconv.Atoi(newValue)
+		if err != nil {
+			return fmt.Errorf("cannot interpret %q value as unsigned integer", newValue)
+		}
+
+		switch t {
+		case "uint":
+			newV = reflect.ValueOf(v)
+		case "uint16":
+			v16 := uint16(v)
+			newV = reflect.ValueOf(v16)
+		case "uint32":
+			v32 := uint32(v)
+			newV = reflect.ValueOf(v32)
+		case "uint64":
+			v64 := uint64(v)
+			newV = reflect.ValueOf(v64)
+		default:
+			panic("missing case in uint switch")
+		}
+	case "intstr.IntOrString":
+		newV = reflect.ValueOf(intstr.Parse(newValue))
 
 	default:
 		// This handles enums and other simple conversions

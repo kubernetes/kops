@@ -1,4 +1,4 @@
-# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.12/config/master/aws-k8s-cni.yaml
+# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.13/config/master/aws-k8s-cni.yaml
 ---
 # Source: crds/customresourcedefinition.yaml
 apiVersion: apiextensions.k8s.io/v1
@@ -33,7 +33,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.12.2"
+    app.kubernetes.io/version: "v1.13.2"
 ---
 # Source: aws-vpc-cni/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -44,7 +44,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.12.2"
+    app.kubernetes.io/version: "v1.13.2"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -88,7 +88,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.12.2"
+    app.kubernetes.io/version: "v1.13.2"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -108,7 +108,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.12.2"
+    app.kubernetes.io/version: "v1.13.2"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -129,7 +129,7 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.12.2" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.13.2" }}"
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
             value: "false"
@@ -137,17 +137,24 @@ spec:
             value: "{{ IsIPv6Only }}"
         securityContext:
             privileged: true
+        resources:
+          requests:
+            cpu: 25m
         volumeMounts:
           - mountPath: /host/opt/cni/bin
             name: cni-bin-dir
       terminationGracePeriodSeconds: 10
       tolerations:
         - operator: Exists
+{{ if ContainerdSELinuxEnabled }}
       securityContext:
-        {}
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.2" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.13.2" }}"
           ports:
             - containerPort: 61678
               name: metrics
@@ -182,8 +189,6 @@ spec:
             #   value: "true"
             # - name: AWS_VPC_ENI_MTU
             #   value: "9001"
-            # - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
-            #   value: "false"
             # - name: AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG
             #   value: "false"
             # - name: AWS_VPC_K8S_CNI_EXTERNALSNAT
@@ -221,7 +226,13 @@ spec:
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
+                  apiVersion: v1
                   fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
             - name: "CLUSTER_NAME"
               value: "{{ ClusterName }}"
           resources:

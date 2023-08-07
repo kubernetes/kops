@@ -26,9 +26,8 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
@@ -52,12 +51,12 @@ type BootstrapScriptBuilder struct {
 	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
-	Cluster             *kops.Cluster
 }
 
 type BootstrapScript struct {
 	Name      string
 	Lifecycle fi.Lifecycle
+	cluster   *kops.Cluster
 	ig        *kops.InstanceGroup
 	builder   *BootstrapScriptBuilder
 	resource  fi.CloudupTaskDependentResource
@@ -124,18 +123,22 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 	return bootConfig, nil
 }
 
-func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
+func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error) {
+	cluster := b.cluster
+
 	env := make(map[string]string)
 
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
 		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	}
 
-	if os.Getenv("S3_ENDPOINT") != "" && (!model.UseKopsControllerForNodeConfig(cluster) || b.ig.HasAPIServer()) {
-		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
-		env["S3_REGION"] = os.Getenv("S3_REGION")
-		env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
-		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	if os.Getenv("S3_ENDPOINT") != "" {
+		if b.ig.IsControlPlane() {
+			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+			env["S3_REGION"] = os.Getenv("S3_REGION")
+			env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+			env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+		}
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
@@ -169,7 +172,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 		// credentials needed always in control-plane and when using gossip also in nodes
 		passEnvs := false
-		if b.ig.IsControlPlane() || cluster.IsGossip() {
+		if b.ig.IsControlPlane() || cluster.UsesLegacyGossip() {
 			passEnvs = true
 		}
 		// Pass in required credentials when using user-defined swift endpoint
@@ -181,13 +184,15 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
-		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
-		if doToken != "" {
-			env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+		if b.ig.IsControlPlane() {
+			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+			if doToken != "" {
+				env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+			}
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.IsGossip()) {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken
@@ -214,31 +219,14 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
-		errList := []error(nil)
-
-		// We make sure that the credentials env vars are defined
-		scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
-		if scwAccessKey == "" {
-			errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return nil, err
 		}
-		scwSecretKey := os.Getenv("SCW_SECRET_KEY")
-		if scwSecretKey == "" {
-			errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
-		}
-		scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-		if scwProjectID == "" {
-			errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
-		}
-
-		// In theory all these variables will have been checked in NewScwCloud already
-		if len(errList) != 0 {
-			return nil, errors.NewAggregate(errList)
-		}
-
-		env["SCW_ACCESS_KEY"] = scwAccessKey
-		env["SCW_SECRET_KEY"] = scwSecretKey
-		env["SCW_DEFAULT_PROJECT_ID"] = scwProjectID
+		env["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+		env["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+		env["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
 	return env, nil
@@ -256,16 +244,8 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 		}
 	}
 
-	if model.UseCiliumEtcd(b.Cluster) && !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
-		keypairs = append(keypairs, "etcd-client-cilium")
-	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
-	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
-		keypairs = append(keypairs, "kubelet", "kube-proxy")
-		if b.Cluster.Spec.Networking.KubeRouter != nil {
-			keypairs = append(keypairs, "kube-router")
-		}
 	}
 
 	if ig.IsBastion() {
@@ -289,6 +269,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 	task := &BootstrapScript{
 		Name:      ig.Name,
 		Lifecycle: b.Lifecycle,
+		cluster:   b.Cluster,
 		ig:        ig,
 		builder:   b,
 		caTasks:   caTasks,
@@ -343,7 +324,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 	{
 		nodeupScript.EnvironmentVariables = func() (string, error) {
-			env, err := b.buildEnvironmentVariables(c.T.Cluster)
+			env, err := b.buildEnvironmentVariables()
 			if err != nil {
 				return "", err
 			}
@@ -372,12 +353,6 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
 			spec["kubelet"] = cs.Kubelet
-
-			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
-				spec["kubeAPIServer"] = map[string]interface{}{
-					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
-				}
-			}
 
 			if b.ig.IsControlPlane() {
 				spec["encryptionConfig"] = cs.EncryptionConfig

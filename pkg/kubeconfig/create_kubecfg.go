@@ -45,34 +45,34 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 		} else {
 			server = "https://api." + clusterName
 		}
-	}
 
-	// If a load balancer exists we use it, except for when an SSL certificate is set.
-	// This should avoid a lot of pain with DNS pre-creation.
-	if cluster.Spec.API.LoadBalancer != nil && (cluster.Spec.API.LoadBalancer.SSLCertificate == "" || admin != 0) {
-		ingresses, err := cloud.GetApiIngressStatus(cluster)
-		if err != nil {
-			return nil, fmt.Errorf("error getting ingress status: %v", err)
-		}
+		// If a load balancer exists we use it, except for when an SSL certificate is set.
+		// This should avoid a lot of pain with DNS pre-creation.
+		if cluster.Spec.API.LoadBalancer != nil && (cluster.Spec.API.LoadBalancer.SSLCertificate == "" || admin != 0) {
+			ingresses, err := cloud.GetApiIngressStatus(cluster)
+			if err != nil {
+				return nil, fmt.Errorf("error getting ingress status: %v", err)
+			}
 
-		var targets []string
-		for _, ingress := range ingresses {
-			if ingress.Hostname != "" {
-				targets = append(targets, ingress.Hostname)
+			var targets []string
+			for _, ingress := range ingresses {
+				if ingress.Hostname != "" {
+					targets = append(targets, ingress.Hostname)
+				}
+				if ingress.IP != "" {
+					targets = append(targets, ingress.IP)
+				}
 			}
-			if ingress.IP != "" {
-				targets = append(targets, ingress.IP)
-			}
-		}
 
-		sort.Strings(targets)
-		if len(targets) == 0 {
-			klog.Warningf("Did not find API endpoint; may not be able to reach cluster")
-		} else {
-			if len(targets) != 1 {
-				klog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
+			sort.Strings(targets)
+			if len(targets) == 0 {
+				klog.Warningf("Did not find API endpoint; may not be able to reach cluster")
+			} else {
+				if len(targets) != 1 {
+					klog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
+				}
+				server = "https://" + targets[0]
 			}
-			server = "https://" + targets[0]
 		}
 	}
 
@@ -85,6 +85,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	b.Context = clusterName
 	b.Server = server
+	b.TLSServerName = cluster.APIInternalName()
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port

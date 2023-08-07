@@ -130,17 +130,11 @@ etcdClusters:
   events:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
   main:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -222,7 +216,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -241,7 +235,7 @@ masterKubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -252,10 +246,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: O2xfbAYUED9b53BhWrZEDEqDNPH8iyLCxEjM229Vk8M=
+NodeupConfigHash: k5YNfaAePd7LDLL8bN5/VuRBTjeuD8VdBWFM4Cal5TE=
 
 __EOF_KUBE_ENV
 

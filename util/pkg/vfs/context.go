@@ -72,6 +72,12 @@ func NewVFSContext() *VFSContext {
 	return v
 }
 
+func NewTestingVFSContext() *VFSContext {
+	vfsContext := NewVFSContext()
+	vfsContext.ResetMemfsContext(true)
+	return vfsContext
+}
+
 func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()
@@ -81,22 +87,6 @@ func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
 	}
 	v2.cachedGCSClient = gcsClient
 	return v2
-}
-
-type contextKeyType int
-
-var contextKey contextKeyType
-
-func FromContext(ctx context.Context) *VFSContext {
-	o := ctx.Value(contextKey)
-	if o != nil {
-		return o.(*VFSContext)
-	}
-	return Context
-}
-
-func WithContext(parent context.Context, vfsContext *VFSContext) context.Context {
-	return context.WithValue(parent, contextKey, vfsContext)
 }
 
 type vfsOptions struct {

@@ -18,7 +18,7 @@ package mockkubeapiserver
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -43,7 +43,7 @@ func (req *patchResource) Run(s *MockKubeAPIServer) error {
 		existing = objects.Objects[id]
 	}
 
-	bodyBytes, err := ioutil.ReadAll(req.r.Body)
+	bodyBytes, err := io.ReadAll(req.r.Body)
 	if err != nil {
 		return err
 	}

@@ -31,10 +31,14 @@ type Subnet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ResourceGroup  *ResourceGroup
-	VirtualNetwork *VirtualNetwork
-	CIDR           *string
-	Shared         *bool
+	ID                   *string
+	ResourceGroup        *ResourceGroup
+	VirtualNetwork       *VirtualNetwork
+	NatGateway           *NatGateway
+	NetworkSecurityGroup *NetworkSecurityGroup
+
+	CIDR   *string
+	Shared *bool
 }
 
 var (
@@ -44,7 +48,7 @@ var (
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (s *Subnet) CompareWithID() *string {
-	return s.Name
+	return s.ID
 }
 
 // Find discovers the Subnet in the cloud provider.
@@ -65,7 +69,9 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		return nil, nil
 	}
 
-	return &Subnet{
+	s.ID = found.ID
+
+	fs := &Subnet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
 		Shared:    s.Shared,
@@ -75,8 +81,21 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		VirtualNetwork: &VirtualNetwork{
 			Name: s.VirtualNetwork.Name,
 		},
+		ID:   found.ID,
 		CIDR: found.AddressPrefix,
-	}, nil
+	}
+	if found.NatGateway != nil {
+		fs.NatGateway = &NatGateway{
+			ID: found.NatGateway.ID,
+		}
+	}
+	if found.NetworkSecurityGroup != nil {
+		fs.NetworkSecurityGroup = &NetworkSecurityGroup{
+			ID: found.NetworkSecurityGroup.ID,
+		}
+	}
+
+	return fs, nil
 }
 
 // Run implements fi.Task.Run.
@@ -109,16 +128,33 @@ func (*Subnet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Subnet) error
 		klog.Infof("Updating a Subnet with name: %s", fi.ValueOf(e.Name))
 	}
 
-	// TODO(kenji): Be able to specify security groups.
 	subnet := network.Subnet{
 		SubnetPropertiesFormat: &network.SubnetPropertiesFormat{
 			AddressPrefix: e.CIDR,
 		},
 	}
-	return t.Cloud.Subnet().CreateOrUpdate(
+	if e.NatGateway != nil {
+		subnet.NatGateway = &network.SubResource{
+			ID: e.NatGateway.ID,
+		}
+	}
+	if e.NetworkSecurityGroup != nil {
+		subnet.NetworkSecurityGroup = &network.SecurityGroup{
+			ID: e.NetworkSecurityGroup.ID,
+		}
+	}
+
+	sn, err := t.Cloud.Subnet().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		*e.VirtualNetwork.Name,
 		*e.Name,
 		subnet)
+	if err != nil {
+		return err
+	}
+
+	e.ID = sn.ID
+
+	return nil
 }

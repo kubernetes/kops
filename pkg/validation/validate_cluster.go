@@ -127,7 +127,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	validation := &ValidationCluster{}
 
 	// Do not use if we are running gossip or without dns
-	if !v.cluster.IsGossip() && !v.cluster.UsesNoneDNS() {
+	if !v.cluster.UsesLegacyGossip() && !v.cluster.UsesNoneDNS() {
 		dnsProvider := kops.ExternalDNSProviderDNSController
 		if v.cluster.Spec.ExternalDNS != nil && v.cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
 			dnsProvider = kops.ExternalDNSProviderExternalDNS

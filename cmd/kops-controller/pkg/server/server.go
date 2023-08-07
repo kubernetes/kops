@@ -30,9 +30,14 @@ import (
 	"runtime/debug"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/pki"
@@ -40,12 +45,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type Server struct {
 	opt         *config.Options
-	certNames   sets.String
+	certNames   sets.Set[string]
 	keypairIDs  map[string]string
 	server      *http.Server
 	verifier    bootstrap.Verifier
@@ -54,37 +60,54 @@ type Server struct {
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
+
+	// uncachedClient is an uncached client for the kube apiserver
+	uncachedClient client.Client
+
+	// challengeClient performs our callback-challenge into the node
+	challengeClient *bootstrap.ChallengeClient
 }
 
 var _ manager.LeaderElectionRunnable = &Server{}
 
-func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
+func NewServer(vfsContext *vfs.VFSContext, opt *config.Options, verifier bootstrap.Verifier, uncachedClient client.Client) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			PreferServerCipherSuites: true,
+			MinVersion: tls.VersionTLS12,
 		},
 	}
 
 	s := &Server{
-		opt:       opt,
-		certNames: sets.NewString(opt.Server.CertNames...),
-		server:    server,
-		verifier:  verifier,
+		opt:            opt,
+		certNames:      sets.New(opt.Server.CertNames...),
+		server:         server,
+		verifier:       verifier,
+		uncachedClient: uncachedClient,
 	}
 
-	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
+	configBase, err := vfsContext.BuildVfsPath(opt.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse ConfigBase %q: %w", opt.ConfigBase, err)
 	}
 	s.configBase = configBase
 
-	p, err := vfs.Context.BuildVfsPath(opt.SecretStore)
+	p, err := vfsContext.BuildVfsPath(opt.SecretStore)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse SecretStore %q: %w", opt.SecretStore, err)
 	}
 	s.secretStore = secrets.NewVFSSecretStore(nil, p)
+
+	s.keystore, s.keypairIDs, err = newKeystore(opt.Server.CABasePath, opt.Server.SigningCAs)
+	if err != nil {
+		return nil, err
+	}
+
+	challengeClient, err := bootstrap.NewChallengeClient(s.keystore)
+	if err != nil {
+		return nil, err
+	}
+	s.challengeClient = challengeClient
 
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
@@ -98,12 +121,6 @@ func (s *Server) NeedLeaderElection() bool {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	var err error
-	s.keystore, s.keypairIDs, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
-	if err != nil {
-		return err
-	}
-
 	go func() {
 		<-ctx.Done()
 
@@ -142,11 +159,39 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	id, err := s.verifier.VerifyToken(ctx, r, r.Header.Get("Authorization"), body, s.opt.Server.UseInstanceIDForNodeName)
 	if err != nil {
+		// means that we should exit nodeup gracefully
+		if err == bootstrap.ErrAlreadyExists {
+			w.WriteHeader(http.StatusConflict)
+			klog.Infof("%s: %v", r.RemoteAddr, err)
+			return
+		}
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)
 		// don't return the error; this allows us to have richer errors without security implications
 		_, _ = w.Write([]byte("failed to verify token"))
 		return
+	}
+
+	// Once the node is registered, we don't allow further registrations, this protects against a pod or escaped workload attempting to impersonate the node.
+	{
+		node := &corev1.Node{}
+		err := s.uncachedClient.Get(ctx, types.NamespacedName{Name: id.NodeName}, node)
+		if err == nil {
+			for _, condition := range node.Status.Conditions {
+				if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
+					klog.Infof("bootstrap %s node %q already exists; denying to avoid node-impersonation attacks", r.RemoteAddr, id.NodeName)
+					w.WriteHeader(http.StatusConflict)
+					_, _ = w.Write([]byte("node already registered"))
+					return
+				}
+			}
+		}
+		if err != nil && !errors.IsNotFound(err) {
+			klog.Infof("bootstrap %s error querying for node %q: %v", r.RemoteAddr, id.NodeName, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("internal error"))
+			return
+		}
 	}
 
 	req := &nodeup.BootstrapRequest{}
@@ -162,6 +207,17 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("unexpected APIVersion"))
 		return
+	}
+
+	if model.UseChallengeCallback(kops.CloudProviderID(s.opt.Cloud)) {
+		if err := s.challengeClient.DoCallbackChallenge(ctx, s.opt.ClusterName, id.ChallengeEndpoint, req); err != nil {
+			klog.Infof("bootstrap %s callback challenge failed: %v", r.RemoteAddr, err)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("callback failed"))
+			return
+		}
+
+		klog.Infof("performed successful callback challenge with %s; identified as %s", id.ChallengeEndpoint, id.NodeName)
 	}
 
 	resp := &nodeup.BootstrapResponse{

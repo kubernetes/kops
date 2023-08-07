@@ -40,7 +40,7 @@ import (
 // PerformAssignments is called on create, as well as an update. In fact
 // any time Run() is called in apply_cluster.go we will reach this function.
 // Please do all after-market logic here.
-func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
+func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cloud) error {
 	ctx := context.TODO()
 
 	for i := range c.Spec.EtcdClusters {
@@ -48,13 +48,15 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		if etcdCluster.Manager == nil {
 			etcdCluster.Manager = &kops.EtcdManagerSpec{}
 		}
-		etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+		if etcdCluster.Manager.BackupRetentionDays == nil {
+			etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+		}
 	}
 
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Networking.Topology == nil {
-		c.Spec.Networking.Topology = &kops.TopologySpec{ControlPlane: kops.TopologyPublic, Nodes: kops.TopologyPublic}
+		c.Spec.Networking.Topology = &kops.TopologySpec{}
 	}
 
 	if cloud == nil {
@@ -107,11 +109,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if c.Spec.Networking.NonMasqueradeCIDR == "" {
-		if c.Spec.Networking.GCE != nil {
-			// Don't set NonMasqueradeCIDR
-		} else {
-			c.Spec.Networking.NonMasqueradeCIDR = "100.64.0.0/10"
-		}
+		c.Spec.Networking.NonMasqueradeCIDR = "100.64.0.0/10"
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change
@@ -135,15 +133,15 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 	c.Spec.Networking.EgressProxy = proxy
 
-	return ensureKubernetesVersion(c)
+	return ensureKubernetesVersion(vfsContext, c)
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
 // It will be populated with the latest stable kubernetes version, or the version from the channel
-func ensureKubernetesVersion(c *kops.Cluster) error {
+func ensureKubernetesVersion(vfsContext *vfs.VFSContext, c *kops.Cluster) error {
 	if c.Spec.KubernetesVersion == "" {
 		if c.Spec.Channel != "" {
-			channel, err := kops.LoadChannel(c.Spec.Channel)
+			channel, err := kops.LoadChannel(vfsContext, c.Spec.Channel)
 			if err != nil {
 				return err
 			}
@@ -171,10 +169,10 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 }
 
 // FindLatestKubernetesVersion returns the latest kubernetes version,
-// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
+// as stored at https://dl.k8s.io/release/stable.txt
 // This shouldn't be used any more; we prefer reading the stable channel
 func FindLatestKubernetesVersion() (string, error) {
-	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+	stableURL := "https://dl.k8s.io/release/stable.txt"
 	klog.Warningf("Loading latest kubernetes version from %q", stableURL)
 	b, err := vfs.Context.ReadFile(stableURL)
 	if err != nil {
@@ -236,6 +234,12 @@ func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
 			}
 		} else {
 			klog.Warningf("No NetworkCIDR defined (yet), not adding to egressProxy.excludes")
+		}
+
+		for _, cidr := range cluster.Spec.Networking.AdditionalNetworkCIDRs {
+			if !strings.Contains(cluster.Spec.Networking.EgressProxy.ProxyExcludes, cidr) {
+				egressSlice = append(egressSlice, cidr)
+			}
 		}
 
 		egressProxy.ProxyExcludes = strings.Join(egressSlice, ",")

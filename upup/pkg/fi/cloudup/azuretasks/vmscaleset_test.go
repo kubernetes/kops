@@ -31,13 +31,13 @@ import (
 )
 
 func TestSubnetIDParse(t *testing.T) {
-	subnetID := &SubnetID{
+	subnetID := &azure.SubnetID{
 		SubscriptionID:     "sid",
 		ResourceGroupName:  "rg",
 		VirtualNetworkName: "vnet",
 		SubnetName:         "sub",
 	}
-	actual, err := ParseSubnetID(subnetID.String())
+	actual, err := azure.ParseSubnetID(subnetID.String())
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}
@@ -47,12 +47,12 @@ func TestSubnetIDParse(t *testing.T) {
 }
 
 func TestLoadBalancerIDParse(t *testing.T) {
-	loadBalancerID := &loadBalancerID{
+	loadBalancerID := &azure.LoadBalancerID{
 		SubscriptionID:    "sid",
 		ResourceGroupName: "rg",
 		LoadBalancerName:  "lb",
 	}
-	actual, err := parseLoadBalancerID(loadBalancerID.String())
+	actual, err := azure.ParseLoadBalancerID(loadBalancerID.String())
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}
@@ -193,13 +193,13 @@ func TestVMScaleSetFind(t *testing.T) {
 			Caching: compute.CachingTypes(compute.HostCachingReadWrite),
 		},
 	}
-	subnetID := SubnetID{
+	subnetID := azure.SubnetID{
 		SubscriptionID:     "subID",
 		ResourceGroupName:  *rg.Name,
 		VirtualNetworkName: "vnet",
 		SubnetName:         "sub",
 	}
-	loadBalancerID := loadBalancerID{
+	loadBalancerID := azure.LoadBalancerID{
 		SubscriptionID:    "subID",
 		ResourceGroupName: *rg.Name,
 		LoadBalancerName:  "api-lb",
@@ -280,7 +280,7 @@ func TestVMScaleSetFind(t *testing.T) {
 	if a, e := *actual.VirtualNetwork.Name, subnetID.VirtualNetworkName; a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.Subnet.Name, subnetID.SubnetName; a != e {
+	if a, e := *actual.Subnet.ID, subnetID.String(); a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
 	if a, e := *actual.LoadBalancer.Name, loadBalancerID.LoadBalancerName; a != e {

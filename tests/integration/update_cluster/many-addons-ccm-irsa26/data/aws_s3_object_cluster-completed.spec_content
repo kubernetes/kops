@@ -24,7 +24,7 @@ spec:
     clusterCIDR: 172.20.0.0/16
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.0
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.6
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -33,7 +33,8 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
+    ignoreDaemonSetsUtilization: false
+    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
@@ -44,13 +45,12 @@ spec:
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal.example.com
-  configStore: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
-      version: 1.1.4
-    version: 1.6.17
+      version: 1.1.5
+    version: 1.6.20
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -62,11 +62,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
     etcdMembers:
@@ -74,11 +71,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: events
-    version: 3.5.7
+    version: 3.5.9
   externalDns:
     provider: dns-controller
   iam:
@@ -154,10 +148,15 @@ spec:
     memoryLimit: 170Mi
     memoryRequest: 70Mi
     nodeLocalDNS:
+      additionalConfig: |
+        googleapis.com:53 {
+            bind 169.254.20.10
+            forward . 10.238.1.130
+        }
       cpuRequest: 25m
       enabled: true
       forwardToKubeDNS: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.16
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       localIP: 169.254.20.10
       memoryRequest: 5Mi
     provider: CoreDNS
@@ -188,7 +187,7 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -211,7 +210,7 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -254,5 +253,3 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public

@@ -18,6 +18,7 @@ package gce
 
 import (
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud"
+	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
 
 	compute "google.golang.org/api/compute/v1"
 )
@@ -27,11 +28,12 @@ func newSubnetworkMetricContext(request, region string) *metricContext {
 }
 
 // GetSubnetwork returns the GCE resource for the compute.Subnetwork if it exists.
-func (g *Cloud) GetSubnetwork(projectName, region, subnetworkName string) (*compute.Subnetwork, error) {
+func (g *Cloud) GetSubnetwork(region, subnetworkName string) (*compute.Subnetwork, error) {
 	ctx, cancel := cloud.ContextWithCallTimeout()
 	defer cancel()
 
 	mc := newSubnetworkMetricContext("get", region)
-	subnetwork, err := g.service.Subnetworks.Get(projectName, region, subnetworkName).Context(ctx).Do()
+	key := meta.RegionalKey(subnetworkName, region)
+	subnetwork, err := g.Compute().Subnetworks().Get(ctx, key)
 	return subnetwork, mc.Observe(err)
 }

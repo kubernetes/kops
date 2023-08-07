@@ -29,7 +29,7 @@ kops create cluster \
 
 {{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
-By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/v1.13/installation/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
 For new clusters you can use the `cilium-etcd` networking provider:
 
@@ -85,7 +85,7 @@ Then enable etcd as kvstore:
 As of kOps 1.19, BPF NodePort is enabled by default for new clusters if the kubernetes version is 1.12 or newer. It can be safely enabled as of kOps 1.18.
 
 In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
-Read more about this in the [Cilium docs - kubeproxy free](https://docs.cilium.io/en/stable/gettingstarted/kubeproxy-free/) and [Cilium docs - NodePort](https://docs.cilium.io/en/stable/gettingstarted/kubeproxy-free/#nodeport-devices)
+Read more about this in the [Cilium docs - kubeproxy free](https://docs.cilium.io/en/v1.13/network/kubernetes/kubeproxy-free/) and [Cilium docs - NodePort](https://docs.cilium.io/en/v1.13/network/kubernetes/kubeproxy-free/#nodeport-devices-port-and-bind-settings)
 
 Be aware that you need to use an AMI with at least Linux 4.19.57 for this feature to work.
 
@@ -112,7 +112,7 @@ kops rolling-update cluster --yes
 
 {{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
-You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.13/network/concepts/ipam/eni/)
 
 Enable this by setting `--networking=cilium-eni` (as of kOps 1.26) or by specifying the following in the cluster spec:
 
@@ -158,7 +158,7 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
 ##### WireGuard
 {{ kops_feature_table(kops_added_default='1.22', k8s_min='1.17') }}
 
-Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/#limitations).
+Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/#limitations).
 
 ```yaml
   networking:
@@ -183,7 +183,7 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
 ## Hubble
 {{ kops_feature_table(kops_added_default='1.20.1', k8s_min='1.20') }}
 
-Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.10/gettingstarted/hubble_setup/) for more information.
+Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.13/gettingstarted/hubble_setup/) for more information.
 
 Hubble can be enabled by adding the following to the spec:
 ```yaml
@@ -203,7 +203,7 @@ Hubble UI brings a dashboard on top of Hubble observability layer. It allows vie
 
 When Cilium is intalled and managed by kOps, Cilium cli should not be used as the configuration it produces conflicts with the configuration managed by kOps (certificates are not managed the same way). For this reason, deploying Hubble UI can be tricky.
 
-Fortunately, recent versions of the Cilium Helm chart allow standalone install of Hubble UI. See `Helm (Standalone install)` tab in [Hubble UI documentation](https://docs.cilium.io/en/stable/gettingstarted/hubble/).
+Fortunately, recent versions of the Cilium Helm chart allow standalone install of Hubble UI. See `Helm (Standalone install)` tab in [Hubble UI documentation](https://docs.cilium.io/en/v1.13/gettingstarted/hubble/).
 
 Basically, it requires to disable all components in the chart (they are already managed by kOps) except Hubble UI, and setting `hubble.ui.standalone.enabled` to `true`.
 

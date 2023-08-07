@@ -173,7 +173,7 @@ func RunToolBoxTemplate(f commandutils.Factory, out io.Writer, options *ToolboxT
 		}
 	}
 
-	channel, err := kopsapi.LoadChannel(options.channel)
+	channel, err := kopsapi.LoadChannel(f.VFSContext(), options.channel)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", options.channel, err)
 	}

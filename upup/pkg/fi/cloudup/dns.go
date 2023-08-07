@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
-	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -93,7 +92,7 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 }
 
 func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
-	if cluster.IsGossip() || cluster.UsesPrivateDNS() || cluster.UsesNoneDNS() {
+	if !cluster.PublishesDNSRecords() || cluster.UsesPrivateDNS() {
 		klog.V(2).Infof("Skipping DNS validation for non-public DNS")
 		return nil
 	}
@@ -137,7 +136,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
 	// Nothing to do for Gossip clusters and clusters without DNS
-	if cluster.IsGossip() || cluster.UsesNoneDNS() {
+	if !cluster.PublishesDNSRecords() {
 		return nil
 	}
 
@@ -222,7 +221,11 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 		}
 		if !foundTXT {
 			if cluster.Spec.ExternalDNS != nil && cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
-				changeset.Add(rrs.New(recordKey.hostname, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))
+				domain := recordKey.hostname
+				if ip == PlaceholderIPv6 {
+					domain = "aaaa-" + domain
+				}
+				changeset.Add(rrs.New(domain, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))
 			}
 		}
 		created = append(created, recordKey)
@@ -272,13 +275,11 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 		})
 	}
 
-	if apimodel.UseKopsControllerForNodeBootstrap(cluster) {
-		name := "kops-controller.internal." + cluster.ObjectMeta.Name
-		recordKeys = append(recordKeys, recordKey{
-			hostname: name,
-			rrsType:  internalType,
-		})
-	}
+	name := "kops-controller.internal." + cluster.ObjectMeta.Name
+	recordKeys = append(recordKeys, recordKey{
+		hostname: name,
+		rrsType:  internalType,
+	})
 
 	return recordKeys
 }

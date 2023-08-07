@@ -127,6 +127,14 @@ const (
 	// InstanceGroupLabelRestrictScaleDown is the metadata label used on the
 	// instance group to specify whether the scale-down activities should be restricted.
 	SpotInstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
+
+	// SpotClusterLabelSpreadNodesBy is the cloud  label used on the
+	// cluster spec to specify how Ocean will spread the nodes across markets by this value
+	SpotClusterLabelSpreadNodesBy = "spotinst.io/strategy-cluster-spread-nodes-by"
+
+	// SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost is the metadata label used on the
+	// instance group to specify how to optimize towards  continuity and/or cost-effective infrastructure
+	SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost = "spotinst.io/strategy-cluster-orientation-availability-vs-cost"
 )
 
 // SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
@@ -324,6 +332,9 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 		group.AutoScalerOpts.Taints = nil
 	}
 
+	// Instance Metadata Options
+	group.InstanceMetadataOptions = b.buildInstanceMetadataOptions(ig)
+
 	klog.V(4).Infof("Adding task: Elastigroup/%s", fi.ValueOf(group.Name))
 	c.AddTask(group)
 
@@ -369,6 +380,15 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 	}
 
 	klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
+
+	for k, v := range b.Cluster.Labels {
+		switch k {
+		case SpotClusterLabelSpreadNodesBy:
+			ocean.SpreadNodesBy = fi.PtrTo(v)
+		case SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost:
+			ocean.AvailabilityVsCost = fi.PtrTo(string(spotinsttasks.NormalizeClusterOrientation(&v)))
+		}
+	}
 
 	// Image.
 	ocean.ImageID = fi.PtrTo(ig.Spec.Image)
@@ -451,6 +471,9 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 		ocean.AutoScalerOpts.Taints = nil
 		ocean.AutoScalerOpts.Headroom = nil
 	}
+
+	// Instance Metadata Options
+	ocean.InstanceMetadataOptions = b.buildInstanceMetadataOptions(ig)
 
 	if !fi.ValueOf(ocean.UseAsTemplateOnly) {
 		// Capacity.
@@ -545,13 +568,13 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 
 	// Capacity.
 	minSize, maxSize := b.buildCapacity(ig)
-	if fi.ValueOf(ocean.UseAsTemplateOnly) {
-		launchSpec.MinSize = minSize
-		launchSpec.MaxSize = maxSize
-	} else {
+	if !fi.ValueOf(ocean.UseAsTemplateOnly) {
 		ocean.MinSize = fi.PtrTo(fi.ValueOf(ocean.MinSize) + fi.ValueOf(minSize))
 		ocean.MaxSize = fi.PtrTo(fi.ValueOf(ocean.MaxSize) + fi.ValueOf(maxSize))
 	}
+
+	launchSpec.MinSize = minSize
+	launchSpec.MaxSize = maxSize
 
 	// User data.
 	if ig.Name == igOcean.Name && !featureflag.SpotinstOceanTemplate.Enabled() {
@@ -620,6 +643,9 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 			launchSpec.AutoScalerOpts = autoScalerOpts
 		}
 	}
+
+	//  Instance Metadata Options
+	launchSpec.InstanceMetadataOptions = b.buildInstanceMetadataOptions(ig)
 
 	klog.V(4).Infof("Adding task: LaunchSpec/%s", fi.ValueOf(launchSpec.Name))
 	c.AddTask(launchSpec)
@@ -1027,6 +1053,16 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 	}
 
 	return opts, nil
+}
+
+func (b *SpotInstanceGroupModelBuilder) buildInstanceMetadataOptions(ig *kops.InstanceGroup) *spotinsttasks.InstanceMetadataOptions {
+	if ig.Spec.InstanceMetadata != nil {
+		opt := new(spotinsttasks.InstanceMetadataOptions)
+		opt.HTTPPutResponseHopLimit = fi.PtrTo(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit))
+		opt.HTTPTokens = fi.PtrTo(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPTokens))
+		return opt
+	}
+	return nil
 }
 
 func parseBool(str string) (*bool, error) {

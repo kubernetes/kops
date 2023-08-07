@@ -140,6 +140,12 @@ spec:
       nodeSelector:
         {{ APIServerNodeRole }}: ""
       priorityClassName: system-node-critical
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
@@ -179,7 +185,6 @@ spec:
             - ALL
           runAsUser: 10000
           runAsGroup: 10000
-
         resources:
           requests:
             memory: {{ or .Authentication.AWS.MemoryRequest "20Mi" }}

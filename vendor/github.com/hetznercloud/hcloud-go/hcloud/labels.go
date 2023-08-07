@@ -6,8 +6,8 @@ import (
 )
 
 var keyRegexp = regexp.MustCompile(
-	`^([a-z0-9A-Z]((?:[\-_.]|[a-z0-9A-Z]){0,253}[a-z0-9A-Z])?/)?[a-z0-9A-Z]((?:[\-_.]|[a-z0-9A-Z]|){0,62}[a-z0-9A-Z])?$`)
-var valueRegexp = regexp.MustCompile(`^(([a-z0-9A-Z](?:[\-_.]|[a-z0-9A-Z]){0,62})?[a-z0-9A-Z]$|$)`)
+	`^([a-z0-9A-Z]((?:[\-_.]|[a-z0-9A-Z]){0,253}[a-z0-9A-Z])?/)?[a-z0-9A-Z]((?:[\-_.]|[a-z0-9A-Z]|){0,61}[a-z0-9A-Z])?$`)
+var valueRegexp = regexp.MustCompile(`^(([a-z0-9A-Z](?:[\-_.]|[a-z0-9A-Z]){0,61})?[a-z0-9A-Z]$|$)`)
 
 func ValidateResourceLabels(labels map[string]interface{}) (bool, error) {
 	for k, v := range labels {

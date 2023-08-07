@@ -108,7 +108,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
-		if b.IsKubernetesGTE("1.23") && (kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce") {
+		if kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce" {
 			kcm.EnableLeaderMigration = fi.PtrTo(true)
 		}
 	} else {
@@ -148,7 +148,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	networking := &clusterSpec.Networking
 	if networking.Kubenet != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
-	} else if networking.GCE != nil {
+	} else if networking.GCP != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 		if kcm.CloudProvider == "external" {
 			// kcm should not allocate node cidrs with the CloudAllocator if we're using the external CCM
@@ -173,11 +173,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	if len(kcm.Controllers) == 0 {
 		var changes []string
-		// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
-		// This is responsible for cleaning up bootstrap tokens which have expired
-		if fi.ValueOf(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
-			changes = append(changes, "tokencleaner")
-		}
 		if clusterSpec.IsKopsControllerIPAM() {
 			changes = append(changes, "-nodeipam")
 		}
@@ -196,7 +191,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 			kcm.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found {
+		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
 			kcm.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}

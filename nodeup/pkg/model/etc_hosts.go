@@ -35,14 +35,14 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Name: "control-plane-address",
 	}
 
-	if b.IsMaster && (b.IsGossip || b.Cluster.UsesNoneDNS()) {
+	if b.IsMaster && !b.PublishesDNSRecords() {
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  b.APIInternalName(),
 			Addresses: []string{"127.0.0.1"},
 		})
-		if b.Cluster.Spec.API.PublicName != "" {
+		if b.NodeupConfig.APIServerConfig.API.PublicName != "" {
 			task.Records = append(task.Records, nodetasks.HostRecord{
-				Hostname:  b.Cluster.Spec.API.PublicName,
+				Hostname:  b.NodeupConfig.APIServerConfig.API.PublicName,
 				Addresses: []string{"127.0.0.1"},
 			})
 		}
@@ -51,12 +51,10 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Hostname:  b.APIInternalName(),
 			Addresses: b.BootConfig.APIServerIPs,
 		})
-		if b.UseKopsControllerForNodeBootstrap() {
-			task.Records = append(task.Records, nodetasks.HostRecord{
-				Hostname:  "kops-controller.internal." + b.NodeupConfig.ClusterName,
-				Addresses: b.BootConfig.APIServerIPs,
-			})
-		}
+		task.Records = append(task.Records, nodetasks.HostRecord{
+			Hostname:  "kops-controller.internal." + b.NodeupConfig.ClusterName,
+			Addresses: b.BootConfig.APIServerIPs,
+		})
 	}
 
 	if len(task.Records) != 0 {

@@ -974,6 +974,9 @@ func (c *KMS) CreateGrantRequest(input *CreateGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/CreateGrant
 func (c *KMS) CreateGrant(input *CreateGrantInput) (*CreateGrantOutput, error) {
 	req, out := c.CreateGrantRequest(input)
@@ -1108,13 +1111,6 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 // use HMAC keys to generate (GenerateMac) and verify (VerifyMac) HMAC codes
 // for messages up to 4096 bytes.
 //
-// HMAC KMS keys are not supported in all Amazon Web Services Regions. If you
-// try to create an HMAC KMS key in an Amazon Web Services Region in which HMAC
-// keys are not supported, the CreateKey operation returns an UnsupportedOperationException.
-// For a list of Regions in which HMAC KMS keys are supported, see HMAC keys
-// in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html)
-// in the Key Management Service Developer Guide.
-//
 // # Multi-Region primary keys
 //
 // # Imported key material
@@ -1140,18 +1136,20 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 // keys, see Multi-Region keys in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
 // in the Key Management Service Developer Guide.
 //
-// To import your own key material into a KMS key, begin by creating a symmetric
-// encryption KMS key with no key material. To do this, use the Origin parameter
-// of CreateKey with a value of EXTERNAL. Next, use GetParametersForImport operation
-// to get a public key and import token, and use the public key to encrypt your
+// To import your own key material into a KMS key, begin by creating a KMS key
+// with no key material. To do this, use the Origin parameter of CreateKey with
+// a value of EXTERNAL. Next, use GetParametersForImport operation to get a
+// public key and import token. Use the wrapping public key to encrypt your
 // key material. Then, use ImportKeyMaterial with your import token to import
 // the key material. For step-by-step instructions, see Importing Key Material
 // (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide .
 //
-// This feature supports only symmetric encryption KMS keys, including multi-Region
-// symmetric encryption KMS keys. You cannot import key material into any other
-// type of KMS key.
+// You can import key material into KMS keys of all supported KMS key types:
+// symmetric encryption KMS keys, HMAC KMS keys, asymmetric encryption KMS keys,
+// and asymmetric signing KMS keys. You can also create multi-Region keys with
+// imported key material. However, you can't import key material into a KMS
+// key in a custom key store.
 //
 // To create a multi-Region primary key with imported key material, use the
 // Origin parameter of CreateKey with a value of EXTERNAL and the MultiRegion
@@ -1449,28 +1447,33 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 // KMS key that you intend.
 //
 // Whenever possible, use key policies to give users permission to call the
-// Decrypt operation on a particular KMS key, instead of using IAM policies.
-// Otherwise, you might create an IAM user policy that gives the user Decrypt
-// permission on all KMS keys. This user could decrypt ciphertext that was encrypted
-// by KMS keys in other accounts if the key policy for the cross-account KMS
-// key permits it. If you must use an IAM policy for Decrypt permissions, limit
+// Decrypt operation on a particular KMS key, instead of using &IAM; policies.
+// Otherwise, you might create an &IAM; policy that gives the user Decrypt permission
+// on all KMS keys. This user could decrypt ciphertext that was encrypted by
+// KMS keys in other accounts if the key policy for the cross-account KMS key
+// permits it. If you must use an IAM policy for Decrypt permissions, limit
 // the user to particular KMS keys or particular trusted accounts. For details,
 // see Best practices for IAM policies (https://docs.aws.amazon.com/kms/latest/developerguide/iam-policies.html#iam-policies-best-practices)
 // in the Key Management Service Developer Guide.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-// in the Key Management Service Developer Guide.
+// Decrypt also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call Decrypt
+// for a Nitro enclave, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. Instead of the plaintext data, the
+// response includes the plaintext data encrypted with the public key from the
+// attestation document (CiphertextForRecipient).For information about the interaction
+// between KMS and Amazon Web Services Nitro Enclaves, see How Amazon Web Services
+// Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 // in the Key Management Service Developer Guide.
 //
-// Cross-account use: Yes. To perform this operation with a KMS key in a different
-// Amazon Web Services account, specify the key ARN or alias ARN in the value
-// of the KeyId parameter.
+// Cross-account use: Yes. If you use the KeyId parameter to identify a KMS
+// key in a different Amazon Web Services account, specify the key ARN or the
+// alias ARN of the KMS key.
 //
 // Required permissions: kms:Decrypt (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
 // (key policy)
@@ -1562,6 +1565,9 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Decrypt
 func (c *KMS) Decrypt(input *DecryptInput) (*DecryptOutput, error) {
@@ -1939,17 +1945,15 @@ func (c *KMS) DeleteImportedKeyMaterialRequest(input *DeleteImportedKeyMaterialI
 
 // DeleteImportedKeyMaterial API operation for AWS Key Management Service.
 //
-// Deletes key material that you previously imported. This operation makes the
-// specified KMS key unusable. For more information about importing key material
-// into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// Deletes key material that was previously imported. This operation makes the
+// specified KMS key temporarily unusable. To restore the usability of the KMS
+// key, reimport the same key material. For more information about importing
+// key material into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
 // When the specified KMS key is in the PendingDeletion state, this operation
 // does not change the KMS key's state. Otherwise, it changes the KMS key's
 // state to PendingImport.
-//
-// After you delete key material, you can use ImportKeyMaterial to reimport
-// the same key material into the KMS key.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -3280,6 +3284,9 @@ func (c *KMS) EncryptRequest(input *EncryptInput) (req *request.Request, output 
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Encrypt
 func (c *KMS) Encrypt(input *EncryptInput) (*EncryptOutput, error) {
 	req, out := c.EncryptRequest(input)
@@ -3360,9 +3367,9 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 // or NumberOfBytes parameters (but not both). For 128-bit and 256-bit data
 // keys, use the KeySpec parameter.
 //
-// To generate an SM4 data key (China Regions only), specify a KeySpec value
-// of AES_128 or NumberOfBytes value of 128. The symmetric encryption key used
-// in China Regions to encrypt your data key is an SM4 encryption key.
+// To generate a 128-bit SM4 data key (China Regions only), specify a KeySpec
+// value of AES_128 or a NumberOfBytes value of 16. The symmetric encryption
+// key used in China Regions to encrypt your data key is an SM4 encryption key.
 //
 // To get only an encrypted copy of the data key, use GenerateDataKeyWithoutPlaintext.
 // To generate an asymmetric data key pair, use the GenerateDataKeyPair or GenerateDataKeyPairWithoutPlaintext
@@ -3375,11 +3382,18 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 // For more information, see Encryption Context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
 // in the Key Management Service Developer Guide.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-// in the Key Management Service Developer Guide.
+// GenerateDataKey also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateDataKey
+// for an Amazon Web Services Nitro enclave, use the Amazon Web Services Nitro
+// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. GenerateDataKey returns a copy of the
+// data key encrypted under the specified KMS key, as usual. But instead of
+// a plaintext copy of the data key, the response includes a copy of the data
+// key encrypted under the public key from the attestation document (CiphertextForRecipient).
+// For information about the interaction between KMS and Amazon Web Services
+// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -3495,6 +3509,9 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKey
 func (c *KMS) GenerateDataKey(input *GenerateDataKeyInput) (*GenerateDataKeyOutput, error) {
 	req, out := c.GenerateDataKeyRequest(input)
@@ -3599,6 +3616,20 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 // The private key is a DER-encoded PKCS8 PrivateKeyInfo, as specified in RFC
 // 5958 (https://tools.ietf.org/html/rfc5958).
 //
+// GenerateDataKeyPair also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateDataKeyPair
+// for an Amazon Web Services Nitro enclave, use the Amazon Web Services Nitro
+// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. GenerateDataKeyPair returns the public
+// data key and a copy of the private data key encrypted under the specified
+// KMS key, as usual. But instead of a plaintext copy of the private data key
+// (PrivateKeyPlaintext), the response includes a copy of the private data key
+// encrypted under the public key from the attestation document (CiphertextForRecipient).
+// For information about the interaction between KMS and Amazon Web Services
+// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide..
+//
 // You can use an optional encryption context to add additional security to
 // the encryption operation. If you specify an EncryptionContext, you must specify
 // the same encryption context (a case-sensitive exact match) when decrypting
@@ -3696,6 +3727,9 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 //   - UnsupportedOperationException
 //     The request was rejected because a specified parameter is not supported or
 //     a specified resource is not valid for this operation.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyPair
 func (c *KMS) GenerateDataKeyPair(input *GenerateDataKeyPairInput) (*GenerateDataKeyPairOutput, error) {
@@ -3888,6 +3922,9 @@ func (c *KMS) GenerateDataKeyPairWithoutPlaintextRequest(input *GenerateDataKeyP
 //     The request was rejected because a specified parameter is not supported or
 //     a specified resource is not valid for this operation.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyPairWithoutPlaintext
 func (c *KMS) GenerateDataKeyPairWithoutPlaintext(input *GenerateDataKeyPairWithoutPlaintextInput) (*GenerateDataKeyPairWithoutPlaintextOutput, error) {
 	req, out := c.GenerateDataKeyPairWithoutPlaintextRequest(input)
@@ -3987,7 +4024,7 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 // keys, use the KeySpec parameter.
 //
 // To generate an SM4 data key (China Regions only), specify a KeySpec value
-// of AES_128 or NumberOfBytes value of 128. The symmetric encryption key used
+// of AES_128 or NumberOfBytes value of 16. The symmetric encryption key used
 // in China Regions to encrypt your data key is an SM4 encryption key.
 //
 // If the operation succeeds, you will find the encrypted copy of the data key
@@ -4086,6 +4123,9 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateDataKeyWithoutPlaintext
 func (c *KMS) GenerateDataKeyWithoutPlaintext(input *GenerateDataKeyWithoutPlaintextInput) (*GenerateDataKeyWithoutPlaintextOutput, error) {
@@ -4246,6 +4286,9 @@ func (c *KMS) GenerateMacRequest(input *GenerateMacInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/GenerateMac
 func (c *KMS) GenerateMac(input *GenerateMacInput) (*GenerateMacOutput, error) {
 	req, out := c.GenerateMacRequest(input)
@@ -4320,10 +4363,15 @@ func (c *KMS) GenerateRandomRequest(input *GenerateRandomInput) (req *request.Re
 // string in the CloudHSM cluster associated with an CloudHSM key store, use
 // the CustomKeyStoreId parameter.
 //
-// Applications in Amazon Web Services Nitro Enclaves can call this operation
-// by using the Amazon Web Services Nitro Enclaves Development Kit (https://github.com/aws/aws-nitro-enclaves-sdk-c).
-// For information about the supporting parameters, see How Amazon Web Services
-// Nitro Enclaves use KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// GenerateRandom also supports Amazon Web Services Nitro Enclaves (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html),
+// which provide an isolated compute environment in Amazon EC2. To call GenerateRandom
+// for a Nitro enclave, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+// or any Amazon Web Services SDK. Use the Recipient parameter to provide the
+// attestation document for the enclave. Instead of plaintext bytes, the response
+// includes the plaintext bytes encrypted under the public key from the attestation
+// document (CiphertextForRecipient).For information about the interaction between
+// KMS and Amazon Web Services Nitro Enclaves, see How Amazon Web Services Nitro
+// Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
 // in the Key Management Service Developer Guide.
 //
 // For more information about entropy and random number generation, see Key
@@ -4738,27 +4786,56 @@ func (c *KMS) GetParametersForImportRequest(input *GetParametersForImportInput) 
 
 // GetParametersForImport API operation for AWS Key Management Service.
 //
-// Returns the items you need to import key material into a symmetric encryption
-// KMS key. For more information about importing key material into KMS, see
-// Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// Returns the public key and an import token you need to import or reimport
+// key material for a KMS key.
+//
+// By default, KMS keys are created with key material that KMS generates. This
+// operation supports Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+// an advanced feature that lets you generate and import the cryptographic key
+// material for a KMS key. For more information about importing key material
+// into KMS, see Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
-// This operation returns a public key and an import token. Use the public key
-// to encrypt the symmetric key material. Store the import token to send with
-// a subsequent ImportKeyMaterial request.
+// Before calling GetParametersForImport, use the CreateKey operation with an
+// Origin value of EXTERNAL to create a KMS key with no key material. You can
+// import key material for a symmetric encryption KMS key, HMAC KMS key, asymmetric
+// encryption KMS key, or asymmetric signing KMS key. You can also import key
+// material into a multi-Region key (kms/latest/developerguide/multi-region-keys-overview.html)
+// of any supported type. However, you can't import key material into a KMS
+// key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html).
+// You can also use GetParametersForImport to get a public key and import token
+// to reimport the original key material (kms/latest/developerguide/importing-keys.html#reimport-key-material)
+// into a KMS key whose key material expired or was deleted.
 //
-// You must specify the key ID of the symmetric encryption KMS key into which
-// you will import key material. The KMS key Origin must be EXTERNAL. You must
-// also specify the wrapping algorithm and type of wrapping key (public key)
-// that you will use to encrypt the key material. You cannot perform this operation
-// on an asymmetric KMS key, an HMAC KMS key, or on any KMS key in a different
-// Amazon Web Services account.
+// GetParametersForImport returns the items that you need to import your key
+// material.
 //
-// To import key material, you must use the public key and import token from
-// the same response. These items are valid for 24 hours. The expiration date
-// and time appear in the GetParametersForImport response. You cannot use an
-// expired token in an ImportKeyMaterial request. If your key and token expire,
-// send another GetParametersForImport request.
+//   - The public key (or "wrapping key") of an RSA key pair that KMS generates.
+//     You will use this public key to encrypt ("wrap") your key material while
+//     it's in transit to KMS.
+//
+//   - A import token that ensures that KMS can decrypt your key material and
+//     associate it with the correct KMS key.
+//
+// The public key and its import token are permanently linked and must be used
+// together. Each public key and import token set is valid for 24 hours. The
+// expiration date and time appear in the ParametersValidTo field in the GetParametersForImport
+// response. You cannot use an expired public key or import token in an ImportKeyMaterial
+// request. If your key and token expire, send another GetParametersForImport
+// request.
+//
+// GetParametersForImport requires the following information:
+//
+//   - The key ID of the KMS key for which you are importing the key material.
+//
+//   - The key spec of the public key ("wrapping key") that you will use to
+//     encrypt your key material during import.
+//
+//   - The wrapping algorithm that you will use with the public key to encrypt
+//     your key material.
+//
+// You can use the same or a different public key spec and wrapping algorithm
+// each time you import or reimport the same key material.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -5078,44 +5155,83 @@ func (c *KMS) ImportKeyMaterialRequest(input *ImportKeyMaterialInput) (req *requ
 
 // ImportKeyMaterial API operation for AWS Key Management Service.
 //
-// Imports key material into an existing symmetric encryption KMS key that was
-// created without key material. After you successfully import key material
-// into a KMS key, you can reimport the same key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material)
-// into that KMS key, but you cannot import different key material.
+// Imports or reimports key material into an existing KMS key that was created
+// without key material. ImportKeyMaterial also sets the expiration model and
+// expiration date of the imported key material.
 //
-// You cannot perform this operation on an asymmetric KMS key, an HMAC KMS key,
-// or on any KMS key in a different Amazon Web Services account. For more information
-// about creating KMS keys with no key material and then importing key material,
-// see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+// By default, KMS keys are created with key material that KMS generates. This
+// operation supports Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+// an advanced feature that lets you generate and import the cryptographic key
+// material for a KMS key. For more information about importing key material
+// into KMS, see Importing key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 // in the Key Management Service Developer Guide.
 //
-// Before using this operation, call GetParametersForImport. Its response includes
-// a public key and an import token. Use the public key to encrypt the key material.
-// Then, submit the import token from the same GetParametersForImport response.
+// After you successfully import key material into a KMS key, you can reimport
+// the same key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material)
+// into that KMS key, but you cannot import different key material. You might
+// reimport key material to replace key material that expired or key material
+// that you deleted. You might also reimport key material to change the expiration
+// model or expiration date of the key material. Before reimporting key material,
+// if necessary, call DeleteImportedKeyMaterial to delete the current imported
+// key material.
 //
-// When calling this operation, you must specify the following values:
+// Each time you import key material into KMS, you can determine whether (ExpirationModel)
+// and when (ValidTo) the key material expires. To change the expiration of
+// your key material, you must import it again, either by calling ImportKeyMaterial
+// or using the import features (kms/latest/developerguide/importing-keys-import-key-material.html#importing-keys-import-key-material-console)
+// of the KMS console.
 //
-//   - The key ID or key ARN of a KMS key with no key material. Its Origin
-//     must be EXTERNAL. To create a KMS key with no key material, call CreateKey
-//     and set the value of its Origin parameter to EXTERNAL. To get the Origin
-//     of a KMS key, call DescribeKey.)
+// Before calling ImportKeyMaterial:
 //
-//   - The encrypted key material. To get the public key to encrypt the key
-//     material, call GetParametersForImport.
+//   - Create or identify a KMS key with no key material. The KMS key must
+//     have an Origin value of EXTERNAL, which indicates that the KMS key is
+//     designed for imported key material. To create an new KMS key for imported
+//     key material, call the CreateKey operation with an Origin value of EXTERNAL.
+//     You can create a symmetric encryption KMS key, HMAC KMS key, asymmetric
+//     encryption KMS key, or asymmetric signing KMS key. You can also import
+//     key material into a multi-Region key (kms/latest/developerguide/multi-region-keys-overview.html)
+//     of any supported type. However, you can't import key material into a KMS
+//     key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html).
+//
+//   - Use the DescribeKey operation to verify that the KeyState of the KMS
+//     key is PendingImport, which indicates that the KMS key has no key material.
+//     If you are reimporting the same key material into an existing KMS key,
+//     you might need to call the DeleteImportedKeyMaterial to delete its existing
+//     key material.
+//
+//   - Call the GetParametersForImport operation to get a public key and import
+//     token set for importing key material.
+//
+//   - Use the public key in the GetParametersForImport response to encrypt
+//     your key material.
+//
+// Then, in an ImportKeyMaterial request, you submit your encrypted key material
+// and import token. When calling this operation, you must specify the following
+// values:
+//
+//   - The key ID or key ARN of the KMS key to associate with the imported
+//     key material. Its Origin must be EXTERNAL and its KeyState must be PendingImport.
+//     You cannot perform this operation on a KMS key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html),
+//     or on a KMS key in a different Amazon Web Services account. To get the
+//     Origin and KeyState of a KMS key, call DescribeKey.
+//
+//   - The encrypted key material.
 //
 //   - The import token that GetParametersForImport returned. You must use
 //     a public key and token from the same GetParametersForImport response.
 //
 //   - Whether the key material expires (ExpirationModel) and, if so, when
-//     (ValidTo). If you set an expiration date, on the specified date, KMS deletes
-//     the key material from the KMS key, making the KMS key unusable. To use
-//     the KMS key in cryptographic operations again, you must reimport the same
-//     key material. The only way to change the expiration model or expiration
-//     date is by reimporting the same key material and specifying a new expiration
-//     date.
+//     (ValidTo). For help with this choice, see Setting an expiration time (https://docs.aws.amazon.com/en_us/kms/latest/developerguide/importing-keys.html#importing-keys-expiration)
+//     in the Key Management Service Developer Guide. If you set an expiration
+//     date, KMS deletes the key material from the KMS key on the specified date,
+//     making the KMS key unusable. To use the KMS key in cryptographic operations
+//     again, you must reimport the same key material. However, you can delete
+//     and reimport the key material at any time, including before the key material
+//     expires. Each time you reimport, you can eliminate or reset the expiration
+//     time.
 //
 // When this operation is successful, the key state of the KMS key changes from
-// PendingImport to Enabled, and you can use the KMS key.
+// PendingImport to Enabled, and you can use the KMS key in cryptographic operations.
 //
 // If this operation fails, use the exception to help determine the problem.
 // If the error is related to the key material, the import token, or wrapping
@@ -6659,6 +6775,9 @@ func (c *KMS) ReEncryptRequest(input *ReEncryptInput) (req *request.Request, out
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/ReEncrypt
 func (c *KMS) ReEncrypt(input *ReEncryptInput) (*ReEncryptOutput, error) {
 	req, out := c.ReEncryptRequest(input)
@@ -7015,6 +7134,9 @@ func (c *KMS) RetireGrantRequest(input *RetireGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RetireGrant
 func (c *KMS) RetireGrant(input *RetireGrantInput) (*RetireGrantOutput, error) {
 	req, out := c.RetireGrantRequest(input)
@@ -7158,6 +7280,9 @@ func (c *KMS) RevokeGrantRequest(input *RevokeGrantInput) (req *request.Request,
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
 //
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RevokeGrant
 func (c *KMS) RevokeGrant(input *RevokeGrantInput) (*RevokeGrantOutput, error) {
 	req, out := c.RevokeGrantRequest(input)
@@ -7235,8 +7360,9 @@ func (c *KMS) ScheduleKeyDeletionRequest(input *ScheduleKeyDeletionInput) (req *
 //
 // Deleting a KMS key is a destructive and potentially dangerous operation.
 // When a KMS key is deleted, all data that was encrypted under the KMS key
-// is unrecoverable. (The only exception is a multi-Region replica key.) To
-// prevent the use of a KMS key without deleting it, use DisableKey.
+// is unrecoverable. (The only exception is a multi-Region replica key (kms/latest/developerguide/multi-region-keys-delete.html),
+// or an asymmetric or HMAC KMS key with imported key material (kms/latest/developerguide/importing-keys-managing.html#import-delete-key).)
+// To prevent the use of a KMS key without deleting it, use DisableKey.
 //
 // You can schedule the deletion of a multi-Region primary key and its replica
 // keys at any time. However, KMS will not delete a multi-Region primary key
@@ -7503,6 +7629,9 @@ func (c *KMS) SignRequest(input *SignInput) (req *request.Request, output *SignO
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Sign
 func (c *KMS) Sign(input *SignInput) (*SignOutput, error) {
@@ -8661,9 +8790,11 @@ func (c *KMS) VerifyRequest(input *VerifyInput) (req *request.Request, output *V
 // (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 // in the Key Management Service Developer Guide.
 //
-// To verify a digital signature, you can use the Verify operation. Specify
-// the same asymmetric KMS key, message, and signing algorithm that were used
-// to produce the signature.
+// To use the Verify operation, specify the same asymmetric KMS key, message,
+// and signing algorithm that were used to produce the signature. The message
+// type does not need to be the same as the one used for signing, but it must
+// indicate whether the value of the Message parameter should be hashed as part
+// of the verification process.
 //
 // You can also verify the digital signature by using the public key of the
 // KMS key outside of KMS. Use the GetPublicKey operation to download the public
@@ -8760,6 +8891,9 @@ func (c *KMS) VerifyRequest(input *VerifyInput) (req *request.Request, output *V
 //     The request was rejected because the signature verification failed. Signature
 //     verification fails when it cannot confirm that signature was produced by
 //     signing the specified message with the specified KMS key and signing algorithm.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/Verify
 func (c *KMS) Verify(input *VerifyInput) (*VerifyOutput, error) {
@@ -8918,6 +9052,9 @@ func (c *KMS) VerifyMacRequest(input *VerifyMacInput) (req *request.Request, out
 //   - For cryptographic operations on KMS keys in custom key stores, this
 //     exception represents a general failure with many possible causes. To identify
 //     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/VerifyMac
 func (c *KMS) VerifyMac(input *VerifyMacInput) (*VerifyMacOutput, error) {
@@ -9618,6 +9755,9 @@ type CreateAliasInput struct {
 	// Specifies the alias name. This value must begin with alias/ followed by a
 	// name, such as alias/ExampleAlias.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// The AliasName value must be string of 1-256 characters. It can contain only
 	// alphanumeric characters, forward slashes (/), underscores (_), and dashes
 	// (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
@@ -9738,6 +9878,9 @@ type CreateCustomKeyStoreInput struct {
 	// Specifies a friendly name for the custom key store. The name must be unique
 	// in your Amazon Web Services account and Region. This parameter is required
 	// for all custom key stores.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// CustomKeyStoreName is a required field
 	CustomKeyStoreName *string `min:"1" type:"string" required:"true"`
@@ -10034,19 +10177,13 @@ type CreateGrantInput struct {
 
 	// Specifies a grant constraint.
 	//
-	// KMS supports the EncryptionContextEquals and EncryptionContextSubset grant
-	// constraints. Each constraint value can include up to 8 encryption context
-	// pairs. The encryption context value in each constraint cannot exceed 384
-	// characters. For information about grant constraints, see Using grant constraints
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/create-grant-overview.html#grant-constraints)
-	// in the Key Management Service Developer Guide. For more information about
-	// encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
-	// in the Key Management Service Developer Guide .
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
-	// The encryption context grant constraints allow the permissions in the grant
-	// only when the encryption context in the request matches (EncryptionContextEquals)
-	// or includes (EncryptionContextSubset) the encryption context specified in
-	// this structure.
+	// KMS supports the EncryptionContextEquals and EncryptionContextSubset grant
+	// constraints, which allow the permissions in the grant only when the encryption
+	// context in the request matches (EncryptionContextEquals) or includes (EncryptionContextSubset)
+	// the encryption context specified in the constraint.
 	//
 	// The encryption context grant constraints are supported only on grant operations
 	// (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
@@ -10058,9 +10195,23 @@ type CreateGrantInput struct {
 	// permission have an equally strict or stricter encryption context constraint.
 	//
 	// You cannot use an encryption context grant constraint for cryptographic operations
-	// with asymmetric KMS keys or HMAC KMS keys. These keys don't support an encryption
-	// context.
+	// with asymmetric KMS keys or HMAC KMS keys. Operations with these keys don't
+	// support an encryption context.
+	//
+	// Each constraint value can include up to 8 encryption context pairs. The encryption
+	// context value in each constraint cannot exceed 384 characters. For information
+	// about grant constraints, see Using grant constraints (https://docs.aws.amazon.com/kms/latest/developerguide/create-grant-overview.html#grant-constraints)
+	// in the Key Management Service Developer Guide. For more information about
+	// encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
+	// in the Key Management Service Developer Guide .
 	Constraints *GrantConstraints `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -10073,13 +10224,11 @@ type CreateGrantInput struct {
 
 	// The identity that gets the permissions specified in the grant.
 	//
-	// To specify the principal, use the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of an Amazon Web Services principal. Valid Amazon Web Services principals
-	// include Amazon Web Services accounts (root), IAM users, IAM roles, federated
-	// users, and assumed role users. For examples of the ARN syntax to use for
-	// specifying a principal, see Amazon Web Services Identity and Access Management
-	// (IAM) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam)
-	// in the Example ARNs section of the Amazon Web Services General Reference.
+	// To specify the grantee principal, use the Amazon Resource Name (ARN) of an
+	// Amazon Web Services principal. Valid principals include Amazon Web Services
+	// accounts, IAM users, IAM roles, federated users, and assumed role users.
+	// For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
+	// in the Identity and Access Management User Guide .
 	//
 	// GranteePrincipal is a required field
 	GranteePrincipal *string `min:"1" type:"string" required:"true"`
@@ -10103,6 +10252,9 @@ type CreateGrantInput struct {
 
 	// A friendly name for the grant. Use this value to prevent the unintended creation
 	// of duplicate grants when retrying this request.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// When this value is absent, all CreateGrant requests result in a new grant
 	// with a unique GrantId even if all the supplied parameters are identical.
@@ -10132,12 +10284,10 @@ type CreateGrantInput struct {
 	// the grant.
 	//
 	// To specify the principal, use the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of an Amazon Web Services principal. Valid Amazon Web Services principals
-	// include Amazon Web Services accounts (root), IAM users, federated users,
-	// and assumed role users. For examples of the ARN syntax to use for specifying
-	// a principal, see Amazon Web Services Identity and Access Management (IAM)
-	// (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam)
-	// in the Example ARNs section of the Amazon Web Services General Reference.
+	// of an Amazon Web Services principal. Valid principals include Amazon Web
+	// Services accounts, IAM users, IAM roles, federated users, and assumed role
+	// users. For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
+	// in the Identity and Access Management User Guide .
 	//
 	// The grant determines the retiring principal. Other principals might have
 	// permission to retire the grant or revoke the grant. For details, see RevokeGrant
@@ -10198,6 +10348,12 @@ func (s *CreateGrantInput) Validate() error {
 // SetConstraints sets the Constraints field's value.
 func (s *CreateGrantInput) SetConstraints(v *GrantConstraints) *CreateGrantInput {
 	s.Constraints = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateGrantInput) SetDryRun(v bool) *CreateGrantInput {
+	s.DryRun = &v
 	return s
 }
 
@@ -10288,19 +10444,18 @@ func (s *CreateGrantOutput) SetGrantToken(v string) *CreateGrantOutput {
 type CreateKeyInput struct {
 	_ struct{} `type:"structure"`
 
-	// A flag to indicate whether to bypass the key policy lockout safety check.
+	// Skips ("bypasses") the key policy lockout safety check. The default value
+	// is false.
 	//
 	// Setting this value to true increases the risk that the KMS key becomes unmanageable.
 	// Do not set this value to true indiscriminately.
 	//
-	// For more information, refer to the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	// section in the Key Management Service Developer Guide .
+	// For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	// in the Key Management Service Developer Guide.
 	//
-	// Use this parameter only when you include a policy in the request and you
-	// intend to prevent the principal that is making the request from making a
-	// subsequent PutKeyPolicy request on the KMS key.
-	//
-	// The default value is false.
+	// Use this parameter only when you intend to prevent the principal that is
+	// making the request from making a subsequent PutKeyPolicy request on the KMS
+	// key.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// Creates the KMS key in the specified custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
@@ -10326,10 +10481,12 @@ type CreateKeyInput struct {
 	// Deprecated: This parameter has been deprecated. Instead, use the KeySpec parameter.
 	CustomerMasterKeySpec *string `deprecated:"true" type:"string" enum:"CustomerMasterKeySpec"`
 
-	// A description of the KMS key.
+	// A description of the KMS key. Use a description that helps you decide whether
+	// the KMS key is appropriate for a task. The default value is an empty string
+	// (no description).
 	//
-	// Use a description that helps you decide whether the KMS key is appropriate
-	// for a task. The default value is an empty string (no description).
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
 	Description *string `type:"string"`
@@ -10442,24 +10599,23 @@ type CreateKeyInput struct {
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//    * If you don't set BypassPolicyLockoutSafetyCheck to true, the key policy
-	//    must allow the principal that is making the CreateKey request to make
-	//    a subsequent PutKeyPolicy request on the KMS key. This reduces the risk
-	//    that the KMS key becomes unmanageable. For more information, refer to
-	//    the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	//    section of the Key Management Service Developer Guide .
+	//    * The key policy must allow the calling principal to make a subsequent
+	//    PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
+	//    key becomes unmanageable. For more information, see Default key policy
+	//    (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	//    in the Key Management Service Developer Guide. (To omit this condition,
+	//    set BypassPolicyLockoutSafetyCheck to true.)
 	//
 	//    * Each statement in the key policy must contain one or more principals.
 	//    The principals in the key policy must exist and be visible to KMS. When
-	//    you create a new Amazon Web Services principal (for example, an IAM user
-	//    or role), you might need to enforce a delay before including the new principal
-	//    in a key policy because the new principal might not be immediately visible
-	//    to KMS. For more information, see Changes that I make are not always immediately
-	//    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//    you create a new Amazon Web Services principal, you might need to enforce
+	//    a delay before including the new principal in a key policy because the
+	//    new principal might not be immediately visible to KMS. For more information,
+	//    see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
 	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// If you do not provide a key policy, KMS attaches a default key policy to
-	// the KMS key. For more information, see Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
+	// the KMS key. For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
 	// in the Key Management Service Developer Guide.
 	//
 	// The key policy size quota is 32 kilobytes (32768 bytes).
@@ -10471,6 +10627,9 @@ type CreateKeyInput struct {
 
 	// Assigns one or more tags to the KMS key. Use this parameter to tag the KMS
 	// key when it is created. To tag an existing KMS key, use the TagResource operation.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// Tagging or untagging a KMS key can allow or deny permission to the KMS key.
 	// For details, see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
@@ -11228,6 +11387,13 @@ type DecryptInput struct {
 	// CiphertextBlob is a required field
 	CiphertextBlob []byte `min:"1" type:"blob" required:"true"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption algorithm that will be used to decrypt the ciphertext.
 	// Specify the same algorithm that was used to encrypt the data. If you specify
 	// a different algorithm, the Decrypt operation fails.
@@ -11292,6 +11458,27 @@ type DecryptInput struct {
 	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	// To get the alias name and alias ARN, use ListAliases.
 	KeyId *string `min:"1" type:"string"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning the plaintext data, KMS
+	// encrypts the plaintext data with the public key in the attestation document,
+	// and returns the resulting ciphertext in the CiphertextForRecipient field
+	// in the response. This ciphertext can be decrypted only with the private key
+	// in the enclave. The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -11324,6 +11511,11 @@ func (s *DecryptInput) Validate() error {
 	if s.KeyId != nil && len(*s.KeyId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -11334,6 +11526,12 @@ func (s *DecryptInput) Validate() error {
 // SetCiphertextBlob sets the CiphertextBlob field's value.
 func (s *DecryptInput) SetCiphertextBlob(v []byte) *DecryptInput {
 	s.CiphertextBlob = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DecryptInput) SetDryRun(v bool) *DecryptInput {
+	s.DryRun = &v
 	return s
 }
 
@@ -11361,8 +11559,25 @@ func (s *DecryptInput) SetKeyId(v string) *DecryptInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *DecryptInput) SetRecipient(v *RecipientInfo) *DecryptInput {
+	s.Recipient = v
+	return s
+}
+
 type DecryptOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The plaintext data encrypted with the public key in the attestation document.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The encryption algorithm that was used to decrypt the ciphertext.
 	EncryptionAlgorithm *string `type:"string" enum:"EncryptionAlgorithmSpec"`
@@ -11373,6 +11588,9 @@ type DecryptOutput struct {
 
 	// Decrypted plaintext data. When you use the HTTP API or the Amazon Web Services
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by DecryptOutput's
@@ -11398,6 +11616,12 @@ func (s DecryptOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DecryptOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *DecryptOutput) SetCiphertextForRecipient(v []byte) *DecryptOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetEncryptionAlgorithm sets the EncryptionAlgorithm field's value.
@@ -12278,6 +12502,70 @@ func (s DisconnectCustomKeyStoreOutput) GoString() string {
 	return s.String()
 }
 
+// The request was rejected because the DryRun parameter was specified.
+type DryRunOperationException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DryRunOperationException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DryRunOperationException) GoString() string {
+	return s.String()
+}
+
+func newErrorDryRunOperationException(v protocol.ResponseMetadata) error {
+	return &DryRunOperationException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *DryRunOperationException) Code() string {
+	return "DryRunOperationException"
+}
+
+// Message returns the exception's message.
+func (s *DryRunOperationException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *DryRunOperationException) OrigErr() error {
+	return nil
+}
+
+func (s *DryRunOperationException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *DryRunOperationException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *DryRunOperationException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type EnableKeyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12450,6 +12738,13 @@ func (s EnableKeyRotationOutput) GoString() string {
 type EncryptInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption algorithm that KMS will use to encrypt the plaintext
 	// message. The algorithm must be compatible with the KMS key that you specify.
 	//
@@ -12464,6 +12759,9 @@ type EncryptInput struct {
 	// encryption context is valid only for cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// with a symmetric encryption KMS key. The standard asymmetric encryption algorithms
 	// and HMAC algorithms that KMS uses do not support an encryption context.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -12561,6 +12859,12 @@ func (s *EncryptInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *EncryptInput) SetDryRun(v bool) *EncryptInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetEncryptionAlgorithm sets the EncryptionAlgorithm field's value.
@@ -12714,8 +13018,18 @@ func (s *ExpiredImportTokenException) RequestID() string {
 type GenerateDataKeyInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -12777,6 +13091,29 @@ type GenerateDataKeyInput struct {
 	// You must specify either the KeySpec or the NumberOfBytes parameter (but not
 	// both) in every GenerateDataKey request.
 	NumberOfBytes *int64 `min:"1" type:"integer"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning the plaintext data key,
+	// KMS encrypts the plaintext data key under the public key in the attestation
+	// document, and returns the resulting ciphertext in the CiphertextForRecipient
+	// field in the response. This ciphertext can be decrypted only with the private
+	// key in the enclave. The CiphertextBlob field in the response contains a copy
+	// of the data key encrypted under the KMS key specified by the KeyId parameter.
+	// The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -12809,11 +13146,22 @@ func (s *GenerateDataKeyInput) Validate() error {
 	if s.NumberOfBytes != nil && *s.NumberOfBytes < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("NumberOfBytes", 1))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyInput) SetDryRun(v bool) *GenerateDataKeyInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetEncryptionContext sets the EncryptionContext field's value.
@@ -12846,6 +13194,12 @@ func (s *GenerateDataKeyInput) SetNumberOfBytes(v int64) *GenerateDataKeyInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateDataKeyInput) SetRecipient(v *RecipientInfo) *GenerateDataKeyInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateDataKeyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -12853,6 +13207,19 @@ type GenerateDataKeyOutput struct {
 	// Web Services CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
 	// CiphertextBlob is automatically base64 encoded/decoded by the SDK.
 	CiphertextBlob []byte `min:"1" type:"blob"`
+
+	// The plaintext data key encrypted with the public key from the Nitro enclave.
+	// This ciphertext can be decrypted only by using a private key in the Nitro
+	// enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the KMS key that encrypted the data key.
@@ -12862,6 +13229,9 @@ type GenerateDataKeyOutput struct {
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded. Use
 	// this data key to encrypt your data outside of KMS. Then, remove it from memory
 	// as soon as possible.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateDataKeyOutput's
@@ -12895,6 +13265,12 @@ func (s *GenerateDataKeyOutput) SetCiphertextBlob(v []byte) *GenerateDataKeyOutp
 	return s
 }
 
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateDataKeyOutput) SetCiphertextForRecipient(v []byte) *GenerateDataKeyOutput {
+	s.CiphertextForRecipient = v
+	return s
+}
+
 // SetKeyId sets the KeyId field's value.
 func (s *GenerateDataKeyOutput) SetKeyId(v string) *GenerateDataKeyOutput {
 	s.KeyId = &v
@@ -12910,8 +13286,18 @@ func (s *GenerateDataKeyOutput) SetPlaintext(v []byte) *GenerateDataKeyOutput {
 type GenerateDataKeyPairInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -12970,6 +13356,30 @@ type GenerateDataKeyPairInput struct {
 	//
 	// KeyPairSpec is a required field
 	KeyPairSpec *string `type:"string" required:"true" enum:"DataKeyPairSpec"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning a plaintext copy of the
+	// private data key, KMS encrypts the plaintext private data key under the public
+	// key in the attestation document, and returns the resulting ciphertext in
+	// the CiphertextForRecipient field in the response. This ciphertext can be
+	// decrypted only with the private key in the enclave. The CiphertextBlob field
+	// in the response contains a copy of the private data key encrypted under the
+	// KMS key specified by the KeyId parameter. The PrivateKeyPlaintext field in
+	// the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -13002,11 +13412,22 @@ func (s *GenerateDataKeyPairInput) Validate() error {
 	if s.KeyPairSpec == nil {
 		invalidParams.Add(request.NewErrParamRequired("KeyPairSpec"))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyPairInput) SetDryRun(v bool) *GenerateDataKeyPairInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetEncryptionContext sets the EncryptionContext field's value.
@@ -13033,8 +13454,27 @@ func (s *GenerateDataKeyPairInput) SetKeyPairSpec(v string) *GenerateDataKeyPair
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateDataKeyPairInput) SetRecipient(v *RecipientInfo) *GenerateDataKeyPairInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateDataKeyPairOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The plaintext private data key encrypted with the public key from the Nitro
+	// enclave. This ciphertext can be decrypted only by using a private key in
+	// the Nitro enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
 
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the KMS key that encrypted the private key.
@@ -13050,6 +13490,9 @@ type GenerateDataKeyPairOutput struct {
 
 	// The plaintext copy of the private key. When you use the HTTP API or the Amazon
 	// Web Services CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the PrivateKeyPlaintext
+	// field is null or empty.
 	//
 	// PrivateKeyPlaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateDataKeyPairOutput's
@@ -13080,6 +13523,12 @@ func (s GenerateDataKeyPairOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GenerateDataKeyPairOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateDataKeyPairOutput) SetCiphertextForRecipient(v []byte) *GenerateDataKeyPairOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetKeyId sets the KeyId field's value.
@@ -13115,8 +13564,18 @@ func (s *GenerateDataKeyPairOutput) SetPublicKey(v []byte) *GenerateDataKeyPairO
 type GenerateDataKeyPairWithoutPlaintextInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the private
 	// key in the data key pair.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -13214,6 +13673,12 @@ func (s *GenerateDataKeyPairWithoutPlaintextInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyPairWithoutPlaintextInput) SetDryRun(v bool) *GenerateDataKeyPairWithoutPlaintextInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetEncryptionContext sets the EncryptionContext field's value.
 func (s *GenerateDataKeyPairWithoutPlaintextInput) SetEncryptionContext(v map[string]*string) *GenerateDataKeyPairWithoutPlaintextInput {
 	s.EncryptionContext = v
@@ -13304,8 +13769,18 @@ func (s *GenerateDataKeyPairWithoutPlaintextOutput) SetPublicKey(v []byte) *Gene
 type GenerateDataKeyWithoutPlaintextInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Specifies the encryption context that will be used when encrypting the data
 	// key.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// An encryption context is a collection of non-secret key-value pairs that
 	// represent additional authenticated data. When you use an encryption context
@@ -13401,6 +13876,12 @@ func (s *GenerateDataKeyWithoutPlaintextInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateDataKeyWithoutPlaintextInput) SetDryRun(v bool) *GenerateDataKeyWithoutPlaintextInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetEncryptionContext sets the EncryptionContext field's value.
 func (s *GenerateDataKeyWithoutPlaintextInput) SetEncryptionContext(v map[string]*string) *GenerateDataKeyWithoutPlaintextInput {
 	s.EncryptionContext = v
@@ -13476,6 +13957,13 @@ func (s *GenerateDataKeyWithoutPlaintextOutput) SetKeyId(v string) *GenerateData
 
 type GenerateMacInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -13561,6 +14049,12 @@ func (s *GenerateMacInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GenerateMacInput) SetDryRun(v bool) *GenerateMacInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetGrantTokens sets the GrantTokens field's value.
@@ -13653,6 +14147,27 @@ type GenerateRandomInput struct {
 
 	// The length of the random byte string. This parameter is required.
 	NumberOfBytes *int64 `min:"1" type:"integer"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
+	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// or any Amazon Web Services SDK.
+	//
+	// When you use this parameter, instead of returning plaintext bytes, KMS encrypts
+	// the plaintext bytes under the public key in the attestation document, and
+	// returns the resulting ciphertext in the CiphertextForRecipient field in the
+	// response. This ciphertext can be decrypted only with the private key in the
+	// enclave. The Plaintext field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
 }
 
 // String returns the string representation.
@@ -13682,6 +14197,11 @@ func (s *GenerateRandomInput) Validate() error {
 	if s.NumberOfBytes != nil && *s.NumberOfBytes < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("NumberOfBytes", 1))
 	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13701,11 +14221,33 @@ func (s *GenerateRandomInput) SetNumberOfBytes(v int64) *GenerateRandomInput {
 	return s
 }
 
+// SetRecipient sets the Recipient field's value.
+func (s *GenerateRandomInput) SetRecipient(v *RecipientInfo) *GenerateRandomInput {
+	s.Recipient = v
+	return s
+}
+
 type GenerateRandomOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The plaintext random bytes encrypted with the public key from the Nitro enclave.
+	// This ciphertext can be decrypted only by using a private key in the Nitro
+	// enclave.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
+
 	// The random byte string. When you use the HTTP API or the Amazon Web Services
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded.
+	//
+	// If the response includes the CiphertextForRecipient field, the Plaintext
+	// field is null or empty.
 	//
 	// Plaintext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by GenerateRandomOutput's
@@ -13731,6 +14273,12 @@ func (s GenerateRandomOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GenerateRandomOutput) GoString() string {
 	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *GenerateRandomOutput) SetCiphertextForRecipient(v []byte) *GenerateRandomOutput {
+	s.CiphertextForRecipient = v
+	return s
 }
 
 // SetPlaintext sets the Plaintext field's value.
@@ -13941,8 +14489,11 @@ func (s *GetKeyRotationStatusOutput) SetKeyRotationEnabled(v bool) *GetKeyRotati
 type GetParametersForImportInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the symmetric encryption KMS key into which you will import
-	// key material. The Origin of the KMS key must be EXTERNAL.
+	// The identifier of the KMS key that will be associated with the imported key
+	// material. The Origin of the KMS key must be EXTERNAL.
+	//
+	// All KMS key types are supported, including multi-Region keys. However, you
+	// cannot import key material into a KMS key in a custom key store.
 	//
 	// Specify the key ID or key ARN of the KMS key.
 	//
@@ -13957,16 +14508,50 @@ type GetParametersForImportInput struct {
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
 
-	// The algorithm you will use to encrypt the key material before importing it
-	// with ImportKeyMaterial. For more information, see Encrypt the Key Material
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-encrypt-key-material.html)
+	// The algorithm you will use with the RSA public key (PublicKey) in the response
+	// to protect your key material during import. For more information, see Select
+	// a wrapping algorithm (kms/latest/developerguide/importing-keys-get-public-key-and-token.html#select-wrapping-algorithm)
 	// in the Key Management Service Developer Guide.
+	//
+	// For RSA_AES wrapping algorithms, you encrypt your key material with an AES
+	// key that you generate, then encrypt your AES key with the RSA public key
+	// from KMS. For RSAES wrapping algorithms, you encrypt your key material directly
+	// with the RSA public key from KMS.
+	//
+	// The wrapping algorithms that you can use depend on the type of key material
+	// that you are importing. To import an RSA private key, you must use an RSA_AES
+	// wrapping algorithm.
+	//
+	//    * RSA_AES_KEY_WRAP_SHA_256 — Supported for wrapping RSA and ECC key
+	//    material.
+	//
+	//    * RSA_AES_KEY_WRAP_SHA_1 — Supported for wrapping RSA and ECC key material.
+	//
+	//    * RSAES_OAEP_SHA_256 — Supported for all types of key material, except
+	//    RSA key material (private key). You cannot use the RSAES_OAEP_SHA_256
+	//    wrapping algorithm with the RSA_2048 wrapping key spec to wrap ECC_NIST_P521
+	//    key material.
+	//
+	//    * RSAES_OAEP_SHA_1 — Supported for all types of key material, except
+	//    RSA key material (private key). You cannot use the RSAES_OAEP_SHA_1 wrapping
+	//    algorithm with the RSA_2048 wrapping key spec to wrap ECC_NIST_P521 key
+	//    material.
+	//
+	//    * RSAES_PKCS1_V1_5 (Deprecated) — Supported only for symmetric encryption
+	//    key material (and only in legacy mode).
 	//
 	// WrappingAlgorithm is a required field
 	WrappingAlgorithm *string `type:"string" required:"true" enum:"AlgorithmSpec"`
 
-	// The type of wrapping key (public key) to return in the response. Only 2048-bit
-	// RSA public keys are supported.
+	// The type of RSA public key to return in the response. You will use this wrapping
+	// key with the specified wrapping algorithm to protect your key material during
+	// import.
+	//
+	// Use the longest RSA wrapping key that is practical.
+	//
+	// You cannot use an RSA_2048 public key to directly wrap an ECC_NIST_P521 private
+	// key. Instead, use an RSA_AES wrapping algorithm or choose a longer RSA public
+	// key.
 	//
 	// WrappingKeySpec is a required field
 	WrappingKeySpec *string `type:"string" required:"true" enum:"WrappingKeySpec"`
@@ -14479,7 +15064,7 @@ type ImportKeyMaterialInput struct {
 	_ struct{} `type:"structure"`
 
 	// The encrypted key material to import. The key material must be encrypted
-	// with the public wrapping key that GetParametersForImport returned, using
+	// under the public wrapping key that GetParametersForImport returned, using
 	// the wrapping algorithm that you specified in the same GetParametersForImport
 	// request.
 	// EncryptedKeyMaterial is automatically base64 encoded/decoded by the SDK.
@@ -14488,14 +15073,16 @@ type ImportKeyMaterialInput struct {
 	EncryptedKeyMaterial []byte `min:"1" type:"blob" required:"true"`
 
 	// Specifies whether the key material expires. The default is KEY_MATERIAL_EXPIRES.
+	// For help with this choice, see Setting an expiration time (https://docs.aws.amazon.com/en_us/kms/latest/developerguide/importing-keys.html#importing-keys-expiration)
+	// in the Key Management Service Developer Guide.
 	//
 	// When the value of ExpirationModel is KEY_MATERIAL_EXPIRES, you must specify
 	// a value for the ValidTo parameter. When value is KEY_MATERIAL_DOES_NOT_EXPIRE,
 	// you must omit the ValidTo parameter.
 	//
 	// You cannot change the ExpirationModel or ValidTo values for the current import
-	// after the request completes. To change either value, you must delete (DeleteImportedKeyMaterial)
-	// and reimport the key material.
+	// after the request completes. To change either value, you must reimport the
+	// key material.
 	ExpirationModel *string `type:"string" enum:"ExpirationModelType"`
 
 	// The import token that you received in the response to a previous GetParametersForImport
@@ -14506,12 +15093,16 @@ type ImportKeyMaterialInput struct {
 	// ImportToken is a required field
 	ImportToken []byte `min:"1" type:"blob" required:"true"`
 
-	// The identifier of the symmetric encryption KMS key that receives the imported
-	// key material. This must be the same KMS key specified in the KeyID parameter
+	// The identifier of the KMS key that will be associated with the imported key
+	// material. This must be the same KMS key specified in the KeyID parameter
 	// of the corresponding GetParametersForImport request. The Origin of the KMS
-	// key must be EXTERNAL. You cannot perform this operation on an asymmetric
-	// KMS key, an HMAC KMS key, a KMS key in a custom key store, or on a KMS key
-	// in a different Amazon Web Services account
+	// key must be EXTERNAL and its KeyState must be PendingImport.
+	//
+	// The KMS key can be a symmetric encryption KMS key, HMAC KMS key, asymmetric
+	// encryption KMS key, or asymmetric signing KMS key, including a multi-Region
+	// key (kms/latest/developerguide/multi-region-keys-overview.html) of any supported
+	// type. You cannot perform this operation on a KMS key in a custom key store,
+	// or on a KMS key in a different Amazon Web Services account.
 	//
 	// Specify the key ID or key ARN of the KMS key.
 	//
@@ -16893,11 +17484,10 @@ type ListRetirableGrantsInput struct {
 	// Amazon Web Services account.
 	//
 	// To specify the retiring principal, use the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of an Amazon Web Services principal. Valid Amazon Web Services principals
-	// include Amazon Web Services accounts (root), IAM users, federated users,
-	// and assumed role users. For examples of the ARN syntax for specifying a principal,
-	// see Amazon Web Services Identity and Access Management (IAM) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam)
-	// in the Example ARNs section of the Amazon Web Services General Reference.
+	// of an Amazon Web Services principal. Valid principals include Amazon Web
+	// Services accounts, IAM users, IAM roles, federated users, and assumed role
+	// users. For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
+	// in the Identity and Access Management User Guide .
 	//
 	// RetiringPrincipal is a required field
 	RetiringPrincipal *string `min:"1" type:"string" required:"true"`
@@ -17191,19 +17781,18 @@ func (s *NotFoundException) RequestID() string {
 type PutKeyPolicyInput struct {
 	_ struct{} `type:"structure"`
 
-	// A flag to indicate whether to bypass the key policy lockout safety check.
+	// Skips ("bypasses") the key policy lockout safety check. The default value
+	// is false.
 	//
 	// Setting this value to true increases the risk that the KMS key becomes unmanageable.
 	// Do not set this value to true indiscriminately.
 	//
-	// For more information, refer to the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	// section in the Key Management Service Developer Guide.
+	// For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
 	// making the request from making a subsequent PutKeyPolicy request on the KMS
 	// key.
-	//
-	// The default value is false.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// Sets the key policy on the specified KMS key.
@@ -17225,20 +17814,19 @@ type PutKeyPolicyInput struct {
 	//
 	// The key policy must meet the following criteria:
 	//
-	//    * If you don't set BypassPolicyLockoutSafetyCheck to true, the key policy
-	//    must allow the principal that is making the PutKeyPolicy request to make
-	//    a subsequent PutKeyPolicy request on the KMS key. This reduces the risk
-	//    that the KMS key becomes unmanageable. For more information, refer to
-	//    the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	//    section of the Key Management Service Developer Guide.
+	//    * The key policy must allow the calling principal to make a subsequent
+	//    PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
+	//    key becomes unmanageable. For more information, see Default key policy
+	//    (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	//    in the Key Management Service Developer Guide. (To omit this condition,
+	//    set BypassPolicyLockoutSafetyCheck to true.)
 	//
 	//    * Each statement in the key policy must contain one or more principals.
 	//    The principals in the key policy must exist and be visible to KMS. When
-	//    you create a new Amazon Web Services principal (for example, an IAM user
-	//    or role), you might need to enforce a delay before including the new principal
-	//    in a key policy because the new principal might not be immediately visible
-	//    to KMS. For more information, see Changes that I make are not always immediately
-	//    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//    you create a new Amazon Web Services principal, you might need to enforce
+	//    a delay before including the new principal in a key policy because the
+	//    new principal might not be immediately visible to KMS. For more information,
+	//    see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
 	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// A key policy document can include only the following characters:
@@ -17377,6 +17965,9 @@ type ReEncryptInput struct {
 
 	// Specifies that encryption context to use when the reencrypting the data.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// A destination encryption context is valid only when the destination KMS key
 	// is a symmetric encryption KMS key. The standard ciphertext format for asymmetric
 	// KMS keys does not include fields for metadata.
@@ -17418,6 +18009,13 @@ type ReEncryptInput struct {
 	//
 	// DestinationKeyId is a required field
 	DestinationKeyId *string `min:"1" type:"string" required:"true"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -17553,6 +18151,12 @@ func (s *ReEncryptInput) SetDestinationKeyId(v string) *ReEncryptInput {
 	return s
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *ReEncryptInput) SetDryRun(v bool) *ReEncryptInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantTokens sets the GrantTokens field's value.
 func (s *ReEncryptInput) SetGrantTokens(v []*string) *ReEncryptInput {
 	s.GrantTokens = v
@@ -17648,25 +18252,92 @@ func (s *ReEncryptOutput) SetSourceKeyId(v string) *ReEncryptOutput {
 	return s
 }
 
+// Contains information about the party that receives the response from the
+// API operation.
+//
+// This data type is designed to support Amazon Web Services Nitro Enclaves,
+// which lets you create an isolated compute environment in Amazon EC2. For
+// information about the interaction between KMS and Amazon Web Services Nitro
+// Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide.
+type RecipientInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The attestation document for an Amazon Web Services Nitro Enclave. This document
+	// includes the enclave's public key.
+	// AttestationDocument is automatically base64 encoded/decoded by the SDK.
+	AttestationDocument []byte `min:"1" type:"blob"`
+
+	// The encryption algorithm that KMS should use with the public key for an Amazon
+	// Web Services Nitro Enclave to encrypt plaintext values for the response.
+	// The only valid value is RSAES_OAEP_SHA_256.
+	KeyEncryptionAlgorithm *string `type:"string" enum:"KeyEncryptionMechanism"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecipientInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecipientInfo) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RecipientInfo) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RecipientInfo"}
+	if s.AttestationDocument != nil && len(s.AttestationDocument) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AttestationDocument", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttestationDocument sets the AttestationDocument field's value.
+func (s *RecipientInfo) SetAttestationDocument(v []byte) *RecipientInfo {
+	s.AttestationDocument = v
+	return s
+}
+
+// SetKeyEncryptionAlgorithm sets the KeyEncryptionAlgorithm field's value.
+func (s *RecipientInfo) SetKeyEncryptionAlgorithm(v string) *RecipientInfo {
+	s.KeyEncryptionAlgorithm = &v
+	return s
+}
+
 type ReplicateKeyInput struct {
 	_ struct{} `type:"structure"`
 
-	// A flag to indicate whether to bypass the key policy lockout safety check.
+	// Skips ("bypasses") the key policy lockout safety check. The default value
+	// is false.
 	//
 	// Setting this value to true increases the risk that the KMS key becomes unmanageable.
 	// Do not set this value to true indiscriminately.
 	//
-	// For more information, refer to the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	// section in the Key Management Service Developer Guide.
+	// For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
 	// making the request from making a subsequent PutKeyPolicy request on the KMS
 	// key.
-	//
-	// The default value is false.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// A description of the KMS key. The default value is an empty string (no description).
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// The description is not a shared property of multi-Region keys. You can specify
 	// the same description or a different description for each key in a set of
@@ -17700,20 +18371,20 @@ type ReplicateKeyInput struct {
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//    * If you don't set BypassPolicyLockoutSafetyCheck to true, the key policy
-	//    must give the caller kms:PutKeyPolicy permission on the replica key. This
-	//    reduces the risk that the KMS key becomes unmanageable. For more information,
-	//    refer to the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	//    section of the Key Management Service Developer Guide .
+	//    * The key policy must allow the calling principal to make a subsequent
+	//    PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
+	//    key becomes unmanageable. For more information, see Default key policy
+	//    (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	//    in the Key Management Service Developer Guide. (To omit this condition,
+	//    set BypassPolicyLockoutSafetyCheck to true.)
 	//
 	//    * Each statement in the key policy must contain one or more principals.
 	//    The principals in the key policy must exist and be visible to KMS. When
-	//    you create a new Amazon Web Services principal (for example, an IAM user
-	//    or role), you might need to enforce a delay before including the new principal
-	//    in a key policy because the new principal might not be immediately visible
-	//    to KMS. For more information, see Changes that I make are not always immediately
-	//    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
-	//    in the Identity and Access Management User Guide .
+	//    you create a new Amazon Web Services principal, you might need to enforce
+	//    a delay before including the new principal in a key policy because the
+	//    new principal might not be immediately visible to KMS. For more information,
+	//    see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// A key policy document can include only the following characters:
 	//
@@ -17763,6 +18434,9 @@ type ReplicateKeyInput struct {
 	// Assigns one or more tags to the replica key. Use this parameter to tag the
 	// KMS key when it is created. To tag an existing KMS key, use the TagResource
 	// operation.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// Tagging or untagging a KMS key can allow or deny permission to the KMS key.
 	// For details, see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
@@ -17935,6 +18609,13 @@ func (s *ReplicateKeyOutput) SetReplicaTags(v []*Tag) *ReplicateKeyOutput {
 type RetireGrantInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// Identifies the grant to retire. To get the grant ID, use CreateGrant, ListGrants,
 	// or ListRetirableGrants.
 	//
@@ -17994,6 +18675,12 @@ func (s *RetireGrantInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *RetireGrantInput) SetDryRun(v bool) *RetireGrantInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantId sets the GrantId field's value.
 func (s *RetireGrantInput) SetGrantId(v string) *RetireGrantInput {
 	s.GrantId = &v
@@ -18036,6 +18723,13 @@ func (s RetireGrantOutput) GoString() string {
 
 type RevokeGrantInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// Identifies the grant to revoke. To get the grant ID, use CreateGrant, ListGrants,
 	// or ListRetirableGrants.
@@ -18101,6 +18795,12 @@ func (s *RevokeGrantInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *RevokeGrantInput) SetDryRun(v bool) *RevokeGrantInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantId sets the GrantId field's value.
 func (s *RevokeGrantInput) SetGrantId(v string) *RevokeGrantInput {
 	s.GrantId = &v
@@ -18161,7 +18861,10 @@ type ScheduleKeyDeletionInput struct {
 	// waiting period begins immediately.
 	//
 	// This value is optional. If you include a value, it must be between 7 and
-	// 30, inclusive. If you do not include a value, it defaults to 30.
+	// 30, inclusive. If you do not include a value, it defaults to 30. You can
+	// use the kms:ScheduleKeyDeletionPendingWindowInDays (https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-schedule-key-deletion-pending-window-in-days)
+	// condition key to further constrain the values that principals can specify
+	// in the PendingWindowInDays parameter.
 	PendingWindowInDays *int64 `min:"1" type:"integer"`
 }
 
@@ -18288,6 +18991,13 @@ func (s *ScheduleKeyDeletionOutput) SetPendingWindowInDays(v int64) *ScheduleKey
 type SignInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// A list of grant tokens.
 	//
 	// Use a grant token when your permission to call this operation comes from
@@ -18323,10 +19033,10 @@ type SignInput struct {
 	KeyId *string `min:"1" type:"string" required:"true"`
 
 	// Specifies the message or message digest to sign. Messages can be 0-4096 bytes.
-	// To sign a larger message, provide the message digest.
+	// To sign a larger message, provide a message digest.
 	//
-	// If you provide a message, KMS generates a hash digest of the message and
-	// then signs it.
+	// If you provide a message digest, use the DIGEST value of MessageType to prevent
+	// the digest from being hashed again while signing.
 	//
 	// Message is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by SignInput's
@@ -18337,15 +19047,44 @@ type SignInput struct {
 	// Message is a required field
 	Message []byte `min:"1" type:"blob" required:"true" sensitive:"true"`
 
-	// Tells KMS whether the value of the Message parameter is a message or message
-	// digest. The default value, RAW, indicates a message. To indicate a message
-	// digest, enter DIGEST.
+	// Tells KMS whether the value of the Message parameter should be hashed as
+	// part of the signing algorithm. Use RAW for unhashed messages; use DIGEST
+	// for message digests, which are already hashed.
+	//
+	// When the value of MessageType is RAW, KMS uses the standard signing algorithm,
+	// which begins with a hash function. When the value is DIGEST, KMS skips the
+	// hashing step in the signing algorithm.
+	//
+	// Use the DIGEST value only when the value of the Message parameter is a message
+	// digest. If you use the DIGEST value with an unhashed message, the security
+	// of the signing operation can be compromised.
+	//
+	// When the value of MessageTypeis DIGEST, the length of the Message value must
+	// match the length of hashed messages for the specified signing algorithm.
+	//
+	// You can submit a message digest and omit the MessageType or specify RAW so
+	// the digest is hashed again while signing. However, this can cause verification
+	// failures when verifying with a system that assumes a single hash.
+	//
+	// The hashing algorithm in that Sign uses is based on the SigningAlgorithm
+	// value.
+	//
+	//    * Signing algorithms that end in SHA_256 use the SHA_256 hashing algorithm.
+	//
+	//    * Signing algorithms that end in SHA_384 use the SHA_384 hashing algorithm.
+	//
+	//    * Signing algorithms that end in SHA_512 use the SHA_512 hashing algorithm.
+	//
+	//    * SM2DSA uses the SM3 hashing algorithm. For details, see Offline verification
+	//    with SM2 key pairs (https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-sm-offline-verification).
 	MessageType *string `type:"string" enum:"MessageType"`
 
 	// Specifies the signing algorithm to use when signing the message.
 	//
 	// Choose an algorithm that is compatible with the type and size of the specified
-	// asymmetric KMS key.
+	// asymmetric KMS key. When signing with RSA key pairs, RSASSA-PSS algorithms
+	// are preferred. We include RSASSA-PKCS1-v1_5 algorithms for compatibility
+	// with existing applications.
 	//
 	// SigningAlgorithm is a required field
 	SigningAlgorithm *string `type:"string" required:"true" enum:"SigningAlgorithmSpec"`
@@ -18394,6 +19133,12 @@ func (s *SignInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *SignInput) SetDryRun(v bool) *SignInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantTokens sets the GrantTokens field's value.
 func (s *SignInput) SetGrantTokens(v []*string) *SignInput {
 	s.GrantTokens = v
@@ -18437,7 +19182,7 @@ type SignOutput struct {
 	//    this value is defined by PKCS #1 in RFC 8017 (https://tools.ietf.org/html/rfc8017).
 	//
 	//    * When used with the ECDSA_SHA_256, ECDSA_SHA_384, or ECDSA_SHA_512 signing
-	//    algorithms, this value is a DER-encoded object as defined by ANS X9.62–2005
+	//    algorithms, this value is a DER-encoded object as defined by ANSI X9.62–2005
 	//    and RFC 3279 Section 2.2.3 (https://tools.ietf.org/html/rfc3279#section-2.2.3).
 	//    This is the most commonly used signature format and is appropriate for
 	//    most uses.
@@ -18489,6 +19234,9 @@ func (s *SignOutput) SetSigningAlgorithm(v string) *SignOutput {
 
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
 // tag values are both required, but tag values can be empty (null) strings.
+//
+// Do not include confidential or sensitive information in this field. This
+// field may be displayed in plaintext in CloudTrail logs and other output.
 //
 // For information about the rules that apply to tag keys and tag values, see
 // User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
@@ -18638,10 +19386,11 @@ type TagResourceInput struct {
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
 
-	// One or more tags.
+	// One or more tags. Each tag consists of a tag key and a tag value. The tag
+	// value can be an empty (null) string.
 	//
-	// Each tag consists of a tag key and a tag value. The tag value can be an empty
-	// (null) string.
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// You cannot have more than one tag on a KMS key with the same tag key. If
 	// you specify an existing tag key with a different tag value, KMS replaces
@@ -18899,6 +19648,9 @@ type UpdateAliasInput struct {
 	// with alias/ followed by the alias name, such as alias/ExampleAlias. You cannot
 	// use UpdateAlias to change the alias name.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// AliasName is a required field
 	AliasName *string `min:"1" type:"string" required:"true"`
 
@@ -19043,6 +19795,9 @@ type UpdateCustomKeyStoreInput struct {
 
 	// Changes the friendly name of the custom key store to the value that you specify.
 	// The custom key store name must be unique in the Amazon Web Services account.
+	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To change this value, an CloudHSM key store must be disconnected. An external
 	// key store can be connected or disconnected.
@@ -19259,6 +20014,9 @@ type UpdateKeyDescriptionInput struct {
 
 	// New description for the KMS key.
 	//
+	// Do not include confidential or sensitive information in this field. This
+	// field may be displayed in plaintext in CloudTrail logs and other output.
+	//
 	// Description is a required field
 	Description *string `type:"string" required:"true"`
 
@@ -19456,6 +20214,13 @@ func (s UpdatePrimaryRegionOutput) GoString() string {
 type VerifyInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
 	// A list of grant tokens.
 	//
 	// Use a grant token when your permission to call this operation comes from
@@ -19507,13 +20272,37 @@ type VerifyInput struct {
 	// Message is a required field
 	Message []byte `min:"1" type:"blob" required:"true" sensitive:"true"`
 
-	// Tells KMS whether the value of the Message parameter is a message or message
-	// digest. The default value, RAW, indicates a message. To indicate a message
-	// digest, enter DIGEST.
+	// Tells KMS whether the value of the Message parameter should be hashed as
+	// part of the signing algorithm. Use RAW for unhashed messages; use DIGEST
+	// for message digests, which are already hashed.
+	//
+	// When the value of MessageType is RAW, KMS uses the standard signing algorithm,
+	// which begins with a hash function. When the value is DIGEST, KMS skips the
+	// hashing step in the signing algorithm.
 	//
 	// Use the DIGEST value only when the value of the Message parameter is a message
-	// digest. If you use the DIGEST value with a raw message, the security of the
-	// verification operation can be compromised.
+	// digest. If you use the DIGEST value with an unhashed message, the security
+	// of the verification operation can be compromised.
+	//
+	// When the value of MessageTypeis DIGEST, the length of the Message value must
+	// match the length of hashed messages for the specified signing algorithm.
+	//
+	// You can submit a message digest and omit the MessageType or specify RAW so
+	// the digest is hashed again while signing. However, if the signed message
+	// is hashed once while signing, but twice while verifying, verification fails,
+	// even when the message hasn't changed.
+	//
+	// The hashing algorithm in that Verify uses is based on the SigningAlgorithm
+	// value.
+	//
+	//    * Signing algorithms that end in SHA_256 use the SHA_256 hashing algorithm.
+	//
+	//    * Signing algorithms that end in SHA_384 use the SHA_384 hashing algorithm.
+	//
+	//    * Signing algorithms that end in SHA_512 use the SHA_512 hashing algorithm.
+	//
+	//    * SM2DSA uses the SM3 hashing algorithm. For details, see Offline verification
+	//    with SM2 key pairs (https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-sm-offline-verification).
 	MessageType *string `type:"string" enum:"MessageType"`
 
 	// The signature that the Sign operation generated.
@@ -19578,6 +20367,12 @@ func (s *VerifyInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *VerifyInput) SetDryRun(v bool) *VerifyInput {
+	s.DryRun = &v
+	return s
+}
+
 // SetGrantTokens sets the GrantTokens field's value.
 func (s *VerifyInput) SetGrantTokens(v []*string) *VerifyInput {
 	s.GrantTokens = v
@@ -19616,6 +20411,13 @@ func (s *VerifyInput) SetSigningAlgorithm(v string) *VerifyInput {
 
 type VerifyMacInput struct {
 	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
 
 	// A list of grant tokens.
 	//
@@ -19713,6 +20515,12 @@ func (s *VerifyMacInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *VerifyMacInput) SetDryRun(v bool) *VerifyMacInput {
+	s.DryRun = &v
+	return s
 }
 
 // SetGrantTokens sets the GrantTokens field's value.
@@ -20884,6 +21692,12 @@ const (
 
 	// AlgorithmSpecRsaesOaepSha256 is a AlgorithmSpec enum value
 	AlgorithmSpecRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
+
+	// AlgorithmSpecRsaAesKeyWrapSha1 is a AlgorithmSpec enum value
+	AlgorithmSpecRsaAesKeyWrapSha1 = "RSA_AES_KEY_WRAP_SHA_1"
+
+	// AlgorithmSpecRsaAesKeyWrapSha256 is a AlgorithmSpec enum value
+	AlgorithmSpecRsaAesKeyWrapSha256 = "RSA_AES_KEY_WRAP_SHA_256"
 )
 
 // AlgorithmSpec_Values returns all elements of the AlgorithmSpec enum
@@ -20892,6 +21706,8 @@ func AlgorithmSpec_Values() []string {
 		AlgorithmSpecRsaesPkcs1V15,
 		AlgorithmSpecRsaesOaepSha1,
 		AlgorithmSpecRsaesOaepSha256,
+		AlgorithmSpecRsaAesKeyWrapSha1,
+		AlgorithmSpecRsaAesKeyWrapSha256,
 	}
 }
 
@@ -21248,6 +22064,18 @@ func GrantOperation_Values() []string {
 }
 
 const (
+	// KeyEncryptionMechanismRsaesOaepSha256 is a KeyEncryptionMechanism enum value
+	KeyEncryptionMechanismRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
+)
+
+// KeyEncryptionMechanism_Values returns all elements of the KeyEncryptionMechanism enum
+func KeyEncryptionMechanism_Values() []string {
+	return []string{
+		KeyEncryptionMechanismRsaesOaepSha256,
+	}
+}
+
+const (
 	// KeyManagerTypeAws is a KeyManagerType enum value
 	KeyManagerTypeAws = "AWS"
 
@@ -21514,12 +22342,20 @@ func SigningAlgorithmSpec_Values() []string {
 const (
 	// WrappingKeySpecRsa2048 is a WrappingKeySpec enum value
 	WrappingKeySpecRsa2048 = "RSA_2048"
+
+	// WrappingKeySpecRsa3072 is a WrappingKeySpec enum value
+	WrappingKeySpecRsa3072 = "RSA_3072"
+
+	// WrappingKeySpecRsa4096 is a WrappingKeySpec enum value
+	WrappingKeySpecRsa4096 = "RSA_4096"
 )
 
 // WrappingKeySpec_Values returns all elements of the WrappingKeySpec enum
 func WrappingKeySpec_Values() []string {
 	return []string{
 		WrappingKeySpecRsa2048,
+		WrappingKeySpecRsa3072,
+		WrappingKeySpecRsa4096,
 	}
 }
 

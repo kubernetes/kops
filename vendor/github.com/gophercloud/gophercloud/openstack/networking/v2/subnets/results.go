@@ -142,6 +142,10 @@ func (r SubnetPage) NextPageURL() (string, error) {
 
 // IsEmpty checks whether a SubnetPage struct is empty.
 func (r SubnetPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	is, err := ExtractSubnets(r)
 	return len(is) == 0, err
 }

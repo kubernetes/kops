@@ -157,7 +157,11 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	}
 
 	// Apply labels for cluster autoscaler node labels
-	for k, v := range nodelabels.BuildNodeLabels(b.Cluster, ig) {
+	nodeLabels, err := nodelabels.BuildNodeLabels(b.Cluster, ig)
+	if err != nil {
+		return nil, fmt.Errorf("error building node labels: %w", err)
+	}
+	for k, v := range nodeLabels {
 		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 	}
 
@@ -245,20 +249,6 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 		}
 	}
 	return tags
-}
-
-// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
-func (b *KopsModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(b.Cluster)
-}
-
-// UseBootstrapTokens checks if bootstrap tokens are enabled
-func (b *KopsModelContext) UseBootstrapTokens() bool {
-	if b.Cluster.Spec.KubeAPIServer == nil || b.UseKopsControllerForNodeBootstrap() {
-		return false
-	}
-
-	return fi.ValueOf(b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
@@ -350,25 +340,6 @@ func (b *KopsModelContext) IsKubernetesLT(version string) bool {
 
 func (b *KopsModelContext) IsIPv6Only() bool {
 	return b.Cluster.Spec.IsIPv6Only()
-}
-
-func (b *KopsModelContext) UseIPv6ForAPI() bool {
-	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleControlPlane && ig.Spec.Role != kops.InstanceGroupRoleAPIServer {
-			break
-		}
-		for _, igSubnetName := range ig.Spec.Subnets {
-			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
-				if igSubnetName != clusterSubnet.Name {
-					continue
-				}
-				if clusterSubnet.IPv6CIDR != "" {
-					return true
-				}
-			}
-		}
-	}
-	return false
 }
 
 // WellKnownServiceIP returns a service ip with the service cidr

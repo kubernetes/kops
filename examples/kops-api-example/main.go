@@ -40,6 +40,8 @@ var masterZones []string
 
 var sshPublicKey = "~/.ssh/id_rsa.pub"
 
+var etcdClusters = []string{"main", "events"}
+
 var (
 	flagRegistryBase = flag.String("registry", os.Getenv("KOPS_STATE_STORE"), "VFS path where files are kept")
 	flagClusterName  = flag.String("name", "", "Name of cluster to create")
@@ -49,7 +51,9 @@ var (
 func main() {
 	flag.Parse()
 
-	err := parseFlags()
+	vfsContext := vfs.NewVFSContext()
+
+	err := parseFlags(vfsContext)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -57,23 +61,23 @@ func main() {
 
 	ctx := context.TODO()
 
-	err = up(ctx)
+	err = up(vfsContext, ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error from up: %v\n", err)
 		os.Exit(1)
 	}
 
-	err = apply(ctx)
+	err = apply(vfsContext, ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error from apply: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func parseFlags() error {
+func parseFlags(vfsContext *vfs.VFSContext) error {
 	var err error
 
-	registryBase, err = vfs.Context.BuildVfsPath(*flagRegistryBase)
+	registryBase, err = vfsContext.BuildVfsPath(*flagRegistryBase)
 	if err != nil {
 		return fmt.Errorf("error parsing registry path %q: %v", *flagRegistryBase, err)
 	}

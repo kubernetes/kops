@@ -233,9 +233,17 @@ type ACMEChallengeSolverHTTP01Ingress struct {
 	// +optional
 	ServiceType corev1.ServiceType `json:"serviceType,omitempty"`
 
-	// The ingress class to use when creating Ingress resources to solve ACME
-	// challenges that use this challenge solver.
-	// Only one of 'class' or 'name' may be specified.
+	// This field configures the field `ingressClassName` on the created Ingress
+	// resources used to solve ACME challenges that use this challenge solver.
+	// This is the recommended way of configuring the ingress class. Only one of
+	// `class`, `name` or `ingressClassName` may be specified.
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// This field configures the annotation `kubernetes.io/ingress.class` when
+	// creating Ingress resources to solve ACME challenges that use this
+	// challenge solver. Only one of `class`, `name` or `ingressClassName` may
+	// be specified.
 	// +optional
 	Class *string `json:"class,omitempty"`
 
@@ -243,7 +251,8 @@ type ACMEChallengeSolverHTTP01Ingress struct {
 	// routes inserted into it in order to solve HTTP01 challenges.
 	// This is typically used in conjunction with ingress controllers like
 	// ingress-gce, which maintains a 1:1 mapping between external IPs and
-	// ingress resources.
+	// ingress resources. Only one of `class`, `name` or `ingressClassName` may
+	// be specified.
 	// +optional
 	Name string `json:"name,omitempty"`
 
@@ -287,8 +296,7 @@ type ACMEChallengeSolverHTTP01IngressPodTemplate struct {
 	ACMEChallengeSolverHTTP01IngressPodObjectMeta `json:"metadata"`
 
 	// PodSpec defines overrides for the HTTP01 challenge solver pod.
-	// Only the 'priorityClassName', 'nodeSelector', 'affinity',
-	// 'serviceAccountName' and 'tolerations' fields are supported currently.
+	// Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
 	// All other fields will be ignored.
 	// +optional
 	Spec ACMEChallengeSolverHTTP01IngressPodSpec `json:"spec"`
@@ -326,6 +334,10 @@ type ACMEChallengeSolverHTTP01IngressPodSpec struct {
 	// If specified, the pod's service account
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+
+	// If specified, the pod's imagePullSecrets
+	// +optional
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 }
 
 type ACMEChallengeSolverHTTP01IngressTemplate struct {
@@ -629,4 +641,10 @@ type ACMEIssuerStatus struct {
 	// associated with the  Issuer
 	// +optional
 	LastRegisteredEmail string `json:"lastRegisteredEmail,omitempty"`
+
+	// LastPrivateKeyHash is a hash of the private key associated with the latest
+	// registered ACME account, in order to track changes made to registered account
+	// associated with the Issuer
+	// +optional
+	LastPrivateKeyHash string `json:"lastPrivateKeyHash,omitempty"`
 }

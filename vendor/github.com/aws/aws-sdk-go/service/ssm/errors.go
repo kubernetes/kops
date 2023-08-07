@@ -122,8 +122,8 @@ const (
 	// ErrCodeDocumentPermissionLimit for service response error code
 	// "DocumentPermissionLimit".
 	//
-	// The document can't be shared with more Amazon Web Services user accounts.
-	// You can specify a maximum of 20 accounts per API operation to share a private
+	// The document can't be shared with more Amazon Web Services accounts. You
+	// can specify a maximum of 20 accounts per API operation to share a private
 	// document.
 	//
 	// By default, you can share a private document with a maximum of 1,000 accounts
@@ -596,8 +596,7 @@ const (
 	// ErrCodeOpsItemLimitExceededException for service response error code
 	// "OpsItemLimitExceededException".
 	//
-	// The request caused OpsItems to exceed one or more quotas. For information
-	// about OpsItem quotas, see What are the resource limits for OpsCenter? (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-learn-more.html#OpsCenter-learn-more-limits).
+	// The request caused OpsItems to exceed one or more quotas.
 	ErrCodeOpsItemLimitExceededException = "OpsItemLimitExceededException"
 
 	// ErrCodeOpsItemNotFoundException for service response error code

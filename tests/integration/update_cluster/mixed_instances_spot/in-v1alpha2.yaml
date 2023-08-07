@@ -37,9 +37,6 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 10.0.1.0/24
     name: us-test-1a

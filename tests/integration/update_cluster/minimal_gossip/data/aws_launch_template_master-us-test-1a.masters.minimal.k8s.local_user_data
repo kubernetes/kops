@@ -130,17 +130,11 @@ etcdClusters:
   events:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
   main:
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
-    version: 3.5.7
+    version: 3.5.9
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -223,7 +217,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -243,7 +237,7 @@ masterKubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -254,10 +248,11 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: minimal.k8s.local
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: ZyWLuFdW64GiOmkKzmDG5Xe66CSdfI3CM7387N6g9D4=
+NodeupConfigHash: bD+C0J4vSbG37sIfLD2JGglS8/e+FSMK2VDnBJb62OA=
 
 __EOF_KUBE_ENV
 

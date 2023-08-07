@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/proxy"
@@ -44,7 +45,7 @@ var _ fi.NodeupModelBuilder = &ProtokubeBuilder{}
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
-	if !t.IsMaster && !t.IsGossip {
+	if !t.IsMaster && !t.UsesLegacyGossip() {
 		klog.V(2).Infof("skipping the provisioning of protokube on the nodes")
 		return nil
 	}
@@ -175,7 +176,7 @@ type ProtokubeFlags struct {
 func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
-		Cloud:         fi.PtrTo(string(t.BootConfig.CloudProvider)),
+		Cloud:         fi.PtrTo(string(t.CloudProvider())),
 		Containerized: fi.PtrTo(false),
 		LogLevel:      fi.PtrTo(int32(4)),
 		Master:        b(t.IsMaster),
@@ -183,7 +184,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 
 	f.ClusterID = fi.PtrTo(t.NodeupConfig.ClusterName)
 
-	zone := t.Cluster.Spec.DNSZone
+	zone := t.NodeupConfig.DNSZone
 	if zone != "" {
 		if strings.Contains(zone, ".") {
 			// match by name
@@ -198,18 +199,18 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 		// argv = append(argv, "--zone=*/*")
 	}
 
-	if t.IsGossip {
-		klog.Warningf("Cluster name %q implies gossip DNS", t.NodeupConfig.ClusterName)
+	if t.UsesLegacyGossip() {
+		klog.Warningf("using (legacy) gossip DNS", t.NodeupConfig.ClusterName)
 		f.Gossip = fi.PtrTo(true)
-		if t.Cluster.Spec.GossipConfig != nil {
-			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
-			f.GossipListen = t.Cluster.Spec.GossipConfig.Listen
-			f.GossipSecret = t.Cluster.Spec.GossipConfig.Secret
+		if t.NodeupConfig.GossipConfig != nil {
+			f.GossipProtocol = t.NodeupConfig.GossipConfig.Protocol
+			f.GossipListen = t.NodeupConfig.GossipConfig.Listen
+			f.GossipSecret = t.NodeupConfig.GossipConfig.Secret
 
-			if t.Cluster.Spec.GossipConfig.Secondary != nil {
-				f.GossipProtocolSecondary = t.Cluster.Spec.GossipConfig.Secondary.Protocol
-				f.GossipListenSecondary = t.Cluster.Spec.GossipConfig.Secondary.Listen
-				f.GossipSecretSecondary = t.Cluster.Spec.GossipConfig.Secondary.Secret
+			if t.NodeupConfig.GossipConfig.Secondary != nil {
+				f.GossipProtocolSecondary = t.NodeupConfig.GossipConfig.Secondary.Protocol
+				f.GossipListenSecondary = t.NodeupConfig.GossipConfig.Secondary.Listen
+				f.GossipSecretSecondary = t.NodeupConfig.GossipConfig.Secondary.Secret
 			}
 		}
 
@@ -272,7 +273,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		}
 	}
 
-	if t.BootConfig.CloudProvider == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+	if t.CloudProvider() == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
 		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
@@ -293,10 +294,16 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if t.BootConfig.CloudProvider == kops.CloudProviderScaleway {
-		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
-		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
-		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
+	if t.CloudProvider() == kops.CloudProviderScaleway {
+		if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
+			profile, err := scaleway.CreateValidScalewayProfile()
+			if err != nil {
+				return nil, err
+			}
+			envVars["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+			envVars["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+			envVars["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
+		}
 	}
 
 	for _, envVar := range proxy.GetProxyEnvVars(t.NodeupConfig.Networking.EgressProxy) {

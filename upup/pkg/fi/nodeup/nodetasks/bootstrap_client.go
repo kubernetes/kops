@@ -17,14 +17,16 @@ limitations under the License.
 package nodetasks
 
 import (
-	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -36,6 +38,12 @@ type BootstrapClientTask struct {
 
 	// Client holds the client wrapper for the kops-bootstrap protocol
 	Client *kopscontrollerclient.Client
+
+	// UseChallengeCallback is true if we should run a challenge responder during the request.
+	UseChallengeCallback bool
+
+	// ClusterName is the name of the cluster
+	ClusterName string
 
 	keys map[string]*pki.PrivateKey
 }
@@ -76,12 +84,30 @@ func (b *BootstrapClientTask) String() string {
 }
 
 func (b *BootstrapClientTask) Run(c *fi.NodeupContext) error {
-	ctx := context.TODO()
+	ctx := c.Context()
 
 	req := nodeup.BootstrapRequest{
 		APIVersion: nodeup.BootstrapAPIVersion,
 		Certs:      map[string]string{},
 		KeypairIDs: b.KeypairIDs,
+	}
+
+	var challengeServer *bootstrap.ChallengeServer
+	if b.UseChallengeCallback {
+		s, err := bootstrap.NewChallengeServer(b.ClusterName, b.Client.CAs)
+		if err != nil {
+			return err
+		}
+		challengeServer = s
+		listen := ":" + strconv.Itoa(wellknownports.NodeupChallenge)
+
+		listener, err := challengeServer.NewListener(ctx, listen)
+		if err != nil {
+			return fmt.Errorf("error starting challenge listener: %w", err)
+		}
+		defer listener.Stop()
+
+		req.Challenge = listener.CreateChallenge()
 	}
 
 	if b.keys == nil {

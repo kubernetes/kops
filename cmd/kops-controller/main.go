@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -41,10 +42,15 @@ import (
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/util/pkg/vfs"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
 	// +kubebuilder:scaffold:imports
@@ -60,6 +66,8 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
@@ -96,7 +104,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	kubeConfig := ctrl.GetConfigOrDie()
+	mgr, err := ctrl.NewManager(kubeConfig, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddress,
 		LeaderElection:     true,
@@ -106,6 +115,8 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+
+	vfsContext := vfs.NewVFSContext()
 
 	if opt.Server != nil {
 		var verifier bootstrap.Verifier
@@ -134,11 +145,38 @@ func main() {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
+		} else if opt.Server.Provider.DigitalOcean != nil {
+			verifier, err = do.NewVerifier(ctx, opt.Server.Provider.DigitalOcean)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.Scaleway != nil {
+			verifier, err = scaleway.NewScalewayVerifier(ctx, opt.Server.Provider.Scaleway)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.Azure != nil {
+			verifier, err = azure.NewAzureVerifier(ctx, opt.Server.Provider.Azure)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
 		} else {
 			klog.Fatalf("server cloud provider config not provided")
 		}
 
-		srv, err := server.NewServer(&opt, verifier)
+		uncachedClient, err := client.New(mgr.GetConfig(), client.Options{
+			Scheme: mgr.GetScheme(),
+			Mapper: mgr.GetRESTMapper(),
+		})
+		if err != nil {
+			setupLog.Error(err, "error creating uncached client")
+			os.Exit(1)
+		}
+
+		srv, err := server.NewServer(vfsContext, &opt, verifier, uncachedClient)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
@@ -147,23 +185,14 @@ func main() {
 	}
 
 	if opt.EnableCloudIPAM {
-		setupLog.Info("enabling IPAM controller")
-		if opt.Cloud != "aws" {
-			klog.Error("IPAM controller only supported by aws")
+		if err := setupCloudIPAM(mgr, &opt); err != nil {
+			setupLog.Error(err, "unable to setup cloud IPAM")
 			os.Exit(1)
-		}
-		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
-		if err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
-			os.Exit(1)
-		}
-		if err := ipamController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
-			os.Exit(1)
+
 		}
 	}
 
-	if err := addNodeController(mgr, &opt); err != nil {
+	if err := addNodeController(mgr, vfsContext, &opt); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeController")
 		os.Exit(1)
 	}
@@ -193,7 +222,7 @@ func buildScheme() error {
 	return nil
 }
 
-func addNodeController(mgr manager.Manager, opt *config.Options) error {
+func addNodeController(mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {
 	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
@@ -263,7 +292,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 			return fmt.Errorf("must specify secretStore")
 		}
 
-		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, legacyIdentifier)
+		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, vfsContext, opt.ConfigBase, legacyIdentifier)
 		if err != nil {
 			return err
 		}
@@ -292,6 +321,38 @@ func addGossipController(mgr manager.Manager, opt *config.Options) error {
 
 	if err := controller.SetupWithManager(mgr); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// Reconciler is the interface for a standard Reconciler.
+type Reconciler interface {
+	SetupWithManager(mgr manager.Manager) error
+}
+
+func setupCloudIPAM(mgr manager.Manager, opt *config.Options) error {
+	setupLog.Info("enabling IPAM controller")
+	var controller Reconciler
+	switch opt.Cloud {
+	case "aws":
+		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
+		if err != nil {
+			return fmt.Errorf("creating aws IPAM controller: %w", err)
+		}
+		controller = ipamController
+	case "gce":
+		ipamController, err := controllers.NewGCEIPAMReconciler(mgr)
+		if err != nil {
+			return fmt.Errorf("creating gce IPAM controller: %w", err)
+		}
+		controller = ipamController
+	default:
+		return fmt.Errorf("kOps IPAM controller is not supported on cloud %q", opt.Cloud)
+	}
+
+	if err := controller.SetupWithManager(mgr); err != nil {
+		return fmt.Errorf("registering IPAM controller: %w", err)
 	}
 
 	return nil

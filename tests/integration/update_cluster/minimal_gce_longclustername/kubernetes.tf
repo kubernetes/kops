@@ -445,18 +445,22 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-with-a-very-very-very-very-very-long-name.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-with-a-very-very-very-very-very-long-name-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-with-a-very-very-very-very-very-long-name-example-com_metadata_user-data")
   }
   name_prefix = "master-us-test1-a-minimal-ivl9ll-"
   network_interface {
     access_config {
     }
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -492,19 +496,23 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-with-a-very-very-very-very-very-long-name.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com_metadata_startup-script")
+    "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com_metadata_user-data")
   }
   name_prefix = "nodes-minimal-gce-with-a--k0ql96-"
   network_interface {
     access_config {
     }
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
+    stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -530,6 +538,7 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-with-a-very-very-very
   name          = "us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   region        = "us-test1"
+  stack_type    = "IPV4_ONLY"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {

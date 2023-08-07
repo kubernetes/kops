@@ -28,6 +28,7 @@ import (
 type LoadBalancersClient interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) error
 	List(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, error)
+	Get(ctx context.Context, resourceGroupName string, loadBalancerName string) (*network.LoadBalancer, error)
 	Delete(ctx context.Context, resourceGroupName, loadBalancerName string) error
 }
 
@@ -51,6 +52,14 @@ func (c *loadBalancersClientImpl) List(ctx context.Context, resourceGroupName st
 		l = append(l, iter.Value())
 	}
 	return l, nil
+}
+
+func (c *loadBalancersClientImpl) Get(ctx context.Context, resourceGroupName string, loadBalancerName string) (*network.LoadBalancer, error) {
+	l, err := c.c.Get(ctx, resourceGroupName, loadBalancerName, "frontendIpConfigurations/publicIpAddress")
+	if err != nil {
+		return nil, err
+	}
+	return &l, nil
 }
 
 func (c *loadBalancersClientImpl) Delete(ctx context.Context, resourceGroupName, loadBalancerName string) error {

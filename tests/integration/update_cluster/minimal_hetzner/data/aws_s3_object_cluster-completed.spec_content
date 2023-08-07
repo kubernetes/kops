@@ -16,21 +16,20 @@ spec:
     allocateNodeCIDRs: true
     allowUntaggedCloud: true
     cloudProvider: hcloud
-    clusterCIDR: 100.64.0.0/10
+    clusterCIDR: 100.96.0.0/11
     configureCloudRoutes: false
-    image: hetznercloud/hcloud-cloud-controller-manager:v1.13.2
+    image: hetznercloud/hcloud-cloud-controller-manager:v1.16.0
     leaderElection:
       leaderElect: false
   cloudProvider: hetzner
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal.example.com
-  configStore: memfs://tests/minimal.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
-      version: 1.1.4
-    version: 1.6.17
+      version: 1.1.5
+    version: 1.6.20
   docker:
     skipInstall: true
   etcdClusters:
@@ -42,12 +41,9 @@ spec:
       name: etcd-1
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -56,12 +52,9 @@ spec:
       name: etcd-1
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     name: events
-    version: 3.5.7
+    version: 3.5.9
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -130,7 +123,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.16
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 100.64.0.10
@@ -155,7 +148,7 @@ spec:
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -176,7 +169,7 @@ spec:
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -199,5 +192,3 @@ spec:
   topology:
     dns:
       type: None
-    masters: public
-    nodes: public

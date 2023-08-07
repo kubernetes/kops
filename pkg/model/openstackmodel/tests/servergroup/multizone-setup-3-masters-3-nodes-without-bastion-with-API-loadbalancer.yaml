@@ -20,6 +20,7 @@ ForAPIServer: false
 ID: null
 IP: null
 LB:
+  FlavorID: null
   ID: null
   Lifecycle: Sync
   Name: master-public-name
@@ -64,6 +65,7 @@ Metadata:
 Name: master-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-a
@@ -101,12 +103,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-a
+  IGMap:
+    master-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-a
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -139,6 +142,7 @@ Metadata:
 Name: master-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-b
@@ -176,12 +180,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-b
+  IGMap:
+    master-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-b
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -214,6 +219,7 @@ Metadata:
 Name: master-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master-c
@@ -251,12 +257,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master-c
+  IGMap:
+    master-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master-c
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -286,6 +293,7 @@ Metadata:
 Name: node-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-a
@@ -323,12 +331,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-a
+  IGMap:
+    node-a: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-a
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -358,6 +367,7 @@ Metadata:
 Name: node-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-b
@@ -395,12 +405,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-b
+  IGMap:
+    node-b: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-b
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -430,6 +441,7 @@ Metadata:
 Name: node-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node-c
@@ -467,12 +479,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node-c
+  IGMap:
+    node-c: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node-c
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -584,6 +597,7 @@ oldFormat: false
 subject: cn=service-account
 type: ca
 ---
+FlavorID: null
 ID: null
 Lifecycle: Sync
 Name: master-public-name
@@ -607,6 +621,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -627,6 +642,7 @@ Port: 443
 ID: null
 Lifecycle: Sync
 Loadbalancer:
+  FlavorID: null
   ID: null
   Lifecycle: Sync
   Name: master-public-name
@@ -703,6 +719,7 @@ Location: igconfig/node/node-c/nodeupconfig.yaml
 Name: nodeupconfig-node-c
 PublicACL: null
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -711,6 +728,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -727,17 +745,10 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-a
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-a
-  Policies:
-  - anti-affinity
+ServerPrefix: master-a
 Weight: 1
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -746,6 +757,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -762,17 +774,10 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-b
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-b
-  Policies:
-  - anti-affinity
+ServerPrefix: master-b
 Weight: 1
 ---
+ClusterName: cluster
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
@@ -781,6 +786,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -797,15 +803,7 @@ Pool:
     VipSubnet: null
   Name: master-public-name-https
 ProtocolPort: 443
-ServerGroup:
-  ClusterName: cluster
-  ID: null
-  IGName: master-c
-  Lifecycle: Sync
-  MaxSize: 1
-  Name: cluster-master-c
-  Policies:
-  - anti-affinity
+ServerPrefix: master-c
 Weight: 1
 ---
 ID: null
@@ -815,6 +813,7 @@ Pool:
   ID: null
   Lifecycle: Sync
   Loadbalancer:
+    FlavorID: null
     ID: null
     Lifecycle: Sync
     Name: master-public-name
@@ -832,6 +831,7 @@ Pool:
   Name: master-public-name-https
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-a
@@ -864,6 +864,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-b
@@ -896,6 +897,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master-c
@@ -928,6 +930,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-a
@@ -960,6 +963,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-b
@@ -992,6 +996,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node-c
@@ -1025,54 +1030,54 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: master-a
+IGMap:
+  master-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-b
+IGMap:
+  master-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: master-c
+IGMap:
+  master-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master-c
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-a
+IGMap:
+  node-a: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-a
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-b
+IGMap:
+  node-b: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-b
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node-c
+IGMap:
+  node-c: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node-c
 Policies:
 - anti-affinity

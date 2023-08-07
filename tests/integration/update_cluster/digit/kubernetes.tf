@@ -21,7 +21,7 @@ locals {
   vpc_cidr_block                        = aws_vpc.prefix_123-example-com.cidr_block
   vpc_id                                = aws_vpc.prefix_123-example-com.id
   vpc_ipv6_cidr_block                   = aws_vpc.prefix_123-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length                  = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  vpc_ipv6_cidr_length                  = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -113,7 +113,7 @@ output "vpc_ipv6_cidr_block" {
 }
 
 output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  value = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
@@ -146,6 +146,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-123-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.123.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -208,6 +213,11 @@ resource "aws_autoscaling_group" "nodes-123-example-com" {
     value               = "nodes.123.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -228,6 +238,82 @@ resource "aws_autoscaling_group" "nodes-123-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-123-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-123-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-123-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "prefix_123-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_123.example.com-ASGLifecycle_event_pattern")
+  name          = "123.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "123.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "prefix_123-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_123.example.com-InstanceScheduledChange_event_pattern")
+  name          = "123.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "123.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "prefix_123-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_123.example.com-InstanceStateChange_event_pattern")
+  name          = "123.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "123.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "prefix_123-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_123.example.com-SpotInterruption_event_pattern")
+  name          = "123.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "123.example.com-SpotInterruption"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "prefix_123-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.prefix_123-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.prefix_123-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "prefix_123-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.prefix_123-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.prefix_123-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "prefix_123-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.prefix_123-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.prefix_123-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "prefix_123-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.prefix_123-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.prefix_123-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-123-example-com" {
@@ -427,6 +513,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-123-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "123.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.123.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -441,6 +528,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-123-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "123.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.123.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -453,6 +541,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-123-example-com" {
   tags = {
     "KubernetesCluster"                                                                                     = "123.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.123.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -506,6 +595,7 @@ resource "aws_launch_template" "nodes-123-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "123.example.com"
       "Name"                                                                       = "nodes.123.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -517,6 +607,7 @@ resource "aws_launch_template" "nodes-123-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "123.example.com"
       "Name"                                                                       = "nodes.123.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -526,6 +617,7 @@ resource "aws_launch_template" "nodes-123-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "123.example.com"
     "Name"                                                                       = "nodes.123.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -713,6 +805,14 @@ resource "aws_s3_object" "prefix_123-example-com-addons-limit-range-addons-k8s-i
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "prefix_123-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_123.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/123.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "prefix_123-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_123.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
@@ -869,20 +969,29 @@ resource "aws_security_group_rule" "from-nodes-123-example-com-ingress-udp-1to65
   type                     = "ingress"
 }
 
+resource "aws_sqs_queue" "prefix_123-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "123-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_123-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "123-example-com-nth"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+  }
+}
+
 resource "aws_subnet" "us-test-1a-123-example-com" {
   availability_zone                           = "us-test-1a"
   cidr_block                                  = "172.20.32.0/19"
   enable_resource_name_dns_a_record_on_launch = true
   private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
-    "KubernetesCluster"                            = "123.example.com"
-    "Name"                                         = "us-test-1a.123.example.com"
-    "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1a" = "true"
-    "kops.k8s.io/instance-group/nodes"             = "true"
-    "kubernetes.io/cluster/123.example.com"        = "owned"
-    "kubernetes.io/role/elb"                       = "1"
-    "kubernetes.io/role/internal-elb"              = "1"
+    "KubernetesCluster"                     = "123.example.com"
+    "Name"                                  = "us-test-1a.123.example.com"
+    "SubnetType"                            = "Public"
+    "kubernetes.io/cluster/123.example.com" = "owned"
+    "kubernetes.io/role/elb"                = "1"
+    "kubernetes.io/role/internal-elb"       = "1"
   }
   vpc_id = aws_vpc.prefix_123-example-com.id
 }

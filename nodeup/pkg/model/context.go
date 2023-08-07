@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -70,8 +69,11 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
-	// IsGossip is true if the cluster runs Gossip DNS.
-	IsGossip bool
+	// usesLegacyGossip is true if the cluster runs (legacy) Gossip DNS.
+	usesLegacyGossip bool
+
+	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
+	usesNoneDNS bool
 
 	kubernetesVersion   semver.Version
 	bootstrapCerts      map[string]*nodetasks.BootstrapCert
@@ -103,9 +105,8 @@ func (c *NodeupModelContext) Init() error {
 		c.HasAPIServer = true
 	}
 
-	if !c.Cluster.UsesNoneDNS() && dns.IsGossipClusterName(c.NodeupConfig.ClusterName) {
-		c.IsGossip = true
-	}
+	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
+	c.usesLegacyGossip = c.NodeupConfig.UsesLegacyGossip
 
 	return nil
 }
@@ -217,17 +218,6 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 	}
 }
 
-// KubeletBootstrapKubeconfig is the path the bootstrap config file
-func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
-	path := c.NodeupConfig.KubeletConfig.BootstrapKubeconfig
-
-	if path != "" {
-		return path
-	}
-
-	return "/var/lib/kubelet/bootstrap-kubeconfig"
-}
-
 // KubeletKubeConfig is the path of the kubelet kubeconfig file
 func (c *NodeupModelContext) KubeletKubeConfig() string {
 	return "/var/lib/kubelet/kubeconfig"
@@ -283,82 +273,27 @@ func (c *NodeupModelContext) GetBootstrapCert(name string, signer string) (cert,
 
 // BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
 func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.NodeupModelBuilderContext) (fi.Resource, error) {
-	if c.UseKopsControllerForNodeBootstrap() {
-		cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
-		if err != nil {
-			return nil, err
-		}
-
-		kubeConfig := &nodetasks.KubeConfig{
-			Name: name,
-			Cert: cert,
-			Key:  key,
-			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
-		}
-		if c.HasAPIServer {
-			// @note: use https even for local connections, so we can turn off the insecure port
-			kubeConfig.ServerURL = "https://127.0.0.1"
-		} else {
-			kubeConfig.ServerURL = "https://" + c.APIInternalName()
-		}
-
-		ctx.EnsureTask(kubeConfig)
-
-		return kubeConfig.GetConfig(), nil
-	} else {
-		keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
-		if err != nil {
-			return nil, fmt.Errorf("error fetching keyset %q from keystore: %w", name, err)
-		}
-		if keyset == nil {
-			return nil, fmt.Errorf("keyset %q not found", name)
-		}
-
-		keypairID := c.NodeupConfig.KeypairIDs[name]
-		if keypairID == "" {
-			return nil, fmt.Errorf("keypairID for %s missing from NodeupConfig", name)
-		}
-		item := keyset.Items[keypairID]
-		if item == nil {
-			return nil, fmt.Errorf("keypairID %s missing from %s keyset", keypairID, name)
-		}
-
-		cert, err := item.Certificate.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-
-		key, err := item.PrivateKey.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-
-		kubeConfig := &nodetasks.KubeConfig{
-			Name: name,
-			Cert: fi.NewBytesResource(cert),
-			Key:  fi.NewBytesResource(key),
-			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
-		}
-		if c.HasAPIServer {
-			// @note: use https even for local connections, so we can turn off the insecure port
-			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
-			kubeConfig.ServerURL = "https://127.0.0.1"
-		} else {
-			kubeConfig.ServerURL = "https://" + c.APIInternalName()
-		}
-
-		err = kubeConfig.Run(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		config, err := fi.ResourceAsBytes(kubeConfig.GetConfig())
-		if err != nil {
-			return nil, err
-		}
-
-		return fi.NewBytesResource(config), nil
+	cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
+	if err != nil {
+		return nil, err
 	}
+
+	kubeConfig := &nodetasks.KubeConfig{
+		Name: name,
+		Cert: cert,
+		Key:  key,
+		CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
+	}
+	if c.HasAPIServer {
+		// @note: use https even for local connections, so we can turn off the insecure port
+		kubeConfig.ServerURL = "https://127.0.0.1"
+	} else {
+		kubeConfig.ServerURL = "https://" + c.APIInternalName()
+	}
+
+	ctx.EnsureTask(kubeConfig)
+
+	return kubeConfig.GetConfig(), nil
 }
 
 // RemapImage applies any needed remapping to an image reference.
@@ -391,9 +326,13 @@ func (c *NodeupModelContext) UseVolumeMounts() bool {
 	return len(c.NodeupConfig.VolumeMounts) > 0
 }
 
-// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
-func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
-	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func (c *NodeupModelContext) UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
+	return model.UseChallengeCallback(cloudProvider)
+}
+
+func (c *NodeupModelContext) UseExternalECRCredentialsProvider() bool {
+	return model.UseExternalECRCredentialsProvider(c.kubernetesVersion, c.CloudProvider())
 }
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
@@ -402,15 +341,6 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 		c.NodeupConfig.Networking.AmazonVPC != nil ||
 		(c.NodeupConfig.Networking.Cilium != nil && c.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
 		c.BootConfig.CloudProvider == kops.CloudProviderHetzner
-}
-
-// UseBootstrapTokens checks if we are using bootstrap tokens
-func (c *NodeupModelContext) UseBootstrapTokens() bool {
-	if c.HasAPIServer {
-		return fi.ValueOf(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
-	}
-
-	return c.NodeupConfig.KubeletConfig.BootstrapKubeconfig != ""
 }
 
 // KubectlPath returns distro based path for kubectl
@@ -584,31 +514,17 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
 }
 
-func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext, assetNames []string) error {
-	for _, assetName := range assetNames {
-		re, err := regexp.Compile(fmt.Sprintf("^%s$", regexp.QuoteMeta(assetName)))
-		if err != nil {
-			return err
-		}
-		if err := b.addCNIBinAsset(c, re); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) error {
+	f := b.Assets.FindMatches(regexp.MustCompile(".*"))
 
-func (b *NodeupModelContext) addCNIBinAsset(c *fi.NodeupModelBuilderContext, assetPath *regexp.Regexp) error {
-	name, res, err := b.Assets.FindMatch(assetPath)
-	if err != nil {
-		return err
+	for name, res := range f {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.CNIBinDir(), name),
+			Contents: res,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.PtrTo("0755"),
+		})
 	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(b.CNIBinDir(), name),
-		Contents: res,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.PtrTo("0755"),
-	})
 
 	return nil
 }
@@ -630,14 +546,19 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
 
+// CloudProvider returns the cloud provider we are running on
+func (c *NodeupModelContext) CloudProvider() kops.CloudProviderID {
+	return c.BootConfig.CloudProvider
+}
+
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
-	return c.BootConfig.CloudProvider == kops.CloudProviderGCE
+	return c.CloudProvider() == kops.CloudProviderGCE
 }
 
 // RunningOnAzure returns true if we are running on Azure
 func (c *NodeupModelContext) RunningOnAzure() bool {
-	return c.BootConfig.CloudProvider == kops.CloudProviderAzure
+	return c.CloudProvider() == kops.CloudProviderAzure
 }
 
 // GetMetadataLocalIP returns the local IP address read from metadata
@@ -711,4 +632,19 @@ func (c *NodeupModelContext) findFileAsset(path string) *kops.FileAssetSpec {
 		}
 	}
 	return nil
+}
+
+func (c *NodeupModelContext) UsesLegacyGossip() bool {
+	return c.usesLegacyGossip
+}
+
+func (c *NodeupModelContext) UsesNoneDNS() bool {
+	return c.usesNoneDNS
+}
+
+func (c *NodeupModelContext) PublishesDNSRecords() bool {
+	if c.UsesLegacyGossip() || c.UsesNoneDNS() {
+		return false
+	}
+	return true
 }

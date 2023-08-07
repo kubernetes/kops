@@ -11,15 +11,19 @@ import (
 
 // ServerType represents a server type in the Hetzner Cloud.
 type ServerType struct {
-	ID          int
-	Name        string
-	Description string
-	Cores       int
-	Memory      float32
-	Disk        int
-	StorageType StorageType
-	CPUType     CPUType
-	Pricings    []ServerTypeLocationPricing
+	ID           int
+	Name         string
+	Description  string
+	Cores        int
+	Memory       float32
+	Disk         int
+	StorageType  StorageType
+	CPUType      CPUType
+	Architecture Architecture
+	// IncludedTraffic is the free traffic per month in bytes
+	IncludedTraffic int64
+	Pricings        []ServerTypeLocationPricing
+	DeprecatableResource
 }
 
 // StorageType specifies the type of storage.
@@ -96,7 +100,7 @@ type ServerTypeListOpts struct {
 }
 
 func (l ServerTypeListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -131,10 +135,12 @@ func (c *ServerTypeClient) List(ctx context.Context, opts ServerTypeListOpts) ([
 
 // All returns all server types.
 func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
-	allServerTypes := []*ServerType{}
+	return c.AllWithOpts(ctx, ServerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+}
 
-	opts := ServerTypeListOpts{}
-	opts.PerPage = 50
+// AllWithOpts returns all server types for the given options.
+func (c *ServerTypeClient) AllWithOpts(ctx context.Context, opts ServerTypeListOpts) ([]*ServerType, error) {
+	var allServerTypes []*ServerType
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

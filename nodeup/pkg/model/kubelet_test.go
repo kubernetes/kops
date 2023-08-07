@@ -54,7 +54,12 @@ func TestTaintsApplied(t *testing.T) {
 	}
 
 	for _, g := range tests {
-		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
+		cluster := &kops.Cluster{Spec: kops.ClusterSpec{
+			KubernetesVersion:     g.version,
+			KubeAPIServer:         &kops.KubeAPIServerConfig{},
+			KubeControllerManager: &kops.KubeControllerManagerConfig{},
+			KubeScheduler:         &kops.KubeSchedulerConfig{},
+		}}
 		input := testutils.BuildMinimalMasterInstanceGroup("eu-central-1a")
 		input.Spec.Taints = g.taints
 
@@ -66,7 +71,6 @@ func TestTaintsApplied(t *testing.T) {
 		config, bootConfig := nodeup.NewConfig(cluster, ig)
 		b := &KubeletBuilder{
 			&NodeupModelContext{
-				Cluster:      cluster,
 				BootConfig:   bootConfig,
 				NodeupConfig: config,
 			},
@@ -246,12 +250,12 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
 	}
 
-	err = cloudup.PerformAssignments(model.Cluster, cloud)
+	err = cloudup.PerformAssignments(model.Cluster, vfs.Context, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
-	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(ctx, model.Cluster, cloud)
+	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(ctx, model.Cluster, model.InstanceGroups, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error from mockedPopulateClusterSpec: %v", err)
 	}
@@ -286,16 +290,16 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	return nodeupModelContext, nil
 }
 
-func mockedPopulateClusterSpec(ctx context.Context, c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
+func mockedPopulateClusterSpec(ctx context.Context, c *kops.Cluster, instanceGroups []*kops.InstanceGroup, cloud fi.Cloud) (*kops.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
-	assetBuilder := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
-	clientset := vfsclientset.NewVFSClientset(basePath)
-	return cloudup.PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
+	return cloudup.PopulateClusterSpec(ctx, clientset, c, instanceGroups, cloud, assetBuilder)
 }
 
 // Fixed cert and key, borrowed from the create_kubecfg_test.go test

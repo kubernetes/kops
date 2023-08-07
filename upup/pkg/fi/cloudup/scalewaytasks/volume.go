@@ -17,11 +17,14 @@ limitations under the License.
 package scalewaytasks
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 // +kops:fitask
@@ -75,8 +78,8 @@ func (v *Volume) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
-func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
-	if a != nil {
+func (_ *Volume) CheckChanges(actual, expected, changes *Volume) error {
+	if actual != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
@@ -87,33 +90,66 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 			return fi.CannotChangeField("Zone")
 		}
 	} else {
-		if e.Name == nil {
+		if expected.Name == nil {
 			return fi.RequiredField("Name")
 		}
-		if e.Size == nil {
+		if expected.Size == nil {
 			return fi.RequiredField("Size")
 		}
-		if e.Zone == nil {
+		if expected.Zone == nil {
 			return fi.RequiredField("Zone")
 		}
 	}
 	return nil
 }
 
-func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
-	if a != nil {
-		klog.Infof("Scaleway does not support changes to volumes for the moment")
-		return nil
+func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *Volume) error {
+	instanceService := t.Cloud.InstanceService()
+	zone := scw.Zone(fi.ValueOf(expected.Zone))
+
+	if actual != nil {
+		_, err := instanceService.UpdateVolume(&instance.UpdateVolumeRequest{
+			Zone:     zone,
+			VolumeID: fi.ValueOf(actual.ID),
+			Name:     expected.Name,
+			Tags:     fi.PtrTo(expected.Tags),
+			Size:     scw.SizePtr(scw.Size(fi.ValueOf(expected.Size))),
+		})
+		if err != nil {
+			return fmt.Errorf("updating volume %s (%s): %w", *actual.Name, *actual.ID, err)
+		}
+
+	} else {
+		_, err := instanceService.CreateVolume(&instance.CreateVolumeRequest{
+			Zone:       zone,
+			Name:       fi.ValueOf(expected.Name),
+			VolumeType: instance.VolumeVolumeType(fi.ValueOf(expected.Type)),
+			Size:       scw.SizePtr(scw.Size(fi.ValueOf(expected.Size))),
+			Tags:       expected.Tags,
+		})
+		if err != nil {
+			return fmt.Errorf("rendering volume: %w", err)
+		}
 	}
 
-	instanceService := t.Cloud.InstanceService()
-	_, err := instanceService.CreateVolume(&instance.CreateVolumeRequest{
-		Zone:       scw.Zone(fi.ValueOf(e.Zone)),
-		Name:       fi.ValueOf(e.Name),
-		VolumeType: instance.VolumeVolumeType(fi.ValueOf(e.Type)),
-		Size:       scw.SizePtr(scw.Size(fi.ValueOf(e.Size))),
-		Tags:       e.Tags,
-	})
+	return nil
+}
 
-	return err
+type terraformVolume struct {
+	Name     *string  `cty:"name"`
+	SizeInGB *int     `cty:"size_in_gb"`
+	Type     *string  `cty:"type"`
+	Tags     []string `cty:"tags"`
+}
+
+func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Volume) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+	tf := &terraformVolume{
+		Name:     expected.Name,
+		SizeInGB: fi.PtrTo(int(fi.ValueOf(expected.Size) / 1e9)),
+		Type:     expected.Type,
+		Tags:     expected.Tags,
+	}
+
+	return t.RenderResource("scaleway_instance_volume", tfName, tf)
 }

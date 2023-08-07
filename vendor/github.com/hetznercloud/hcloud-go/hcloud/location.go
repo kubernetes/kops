@@ -73,7 +73,7 @@ type LocationListOpts struct {
 }
 
 func (l LocationListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -108,10 +108,12 @@ func (c *LocationClient) List(ctx context.Context, opts LocationListOpts) ([]*Lo
 
 // All returns all locations.
 func (c *LocationClient) All(ctx context.Context) ([]*Location, error) {
-	allLocations := []*Location{}
+	return c.AllWithOpts(ctx, LocationListOpts{ListOpts: ListOpts{PerPage: 50}})
+}
 
-	opts := LocationListOpts{}
-	opts.PerPage = 50
+// AllWithOpts returns all locations for the given options.
+func (c *LocationClient) AllWithOpts(ctx context.Context, opts LocationListOpts) ([]*Location, error) {
+	var allLocations []*Location
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

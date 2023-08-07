@@ -118,13 +118,17 @@ func PrimaryIPFromSchema(s schema.PrimaryIP) *PrimaryIP {
 
 // ISOFromSchema converts a schema.ISO to an ISO.
 func ISOFromSchema(s schema.ISO) *ISO {
-	return &ISO{
+	iso := &ISO{
 		ID:          s.ID,
 		Name:        s.Name,
 		Description: s.Description,
 		Type:        ISOType(s.Type),
 		Deprecated:  s.Deprecated,
 	}
+	if s.Architecture != nil {
+		iso.Architecture = Ptr(Architecture(*s.Architecture))
+	}
+	return iso
 }
 
 // LocationFromSchema converts a schema.Location to a Location.
@@ -274,14 +278,19 @@ func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 // ServerTypeFromSchema converts a schema.ServerType to a ServerType.
 func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 	st := &ServerType{
-		ID:          s.ID,
-		Name:        s.Name,
-		Description: s.Description,
-		Cores:       s.Cores,
-		Memory:      s.Memory,
-		Disk:        s.Disk,
-		StorageType: StorageType(s.StorageType),
-		CPUType:     CPUType(s.CPUType),
+		ID:              s.ID,
+		Name:            s.Name,
+		Description:     s.Description,
+		Cores:           s.Cores,
+		Memory:          s.Memory,
+		Disk:            s.Disk,
+		StorageType:     StorageType(s.StorageType),
+		CPUType:         CPUType(s.CPUType),
+		Architecture:    Architecture(s.Architecture),
+		IncludedTraffic: s.IncludedTraffic,
+		DeprecatableResource: DeprecatableResource{
+			DeprecationFromSchema(s.Deprecation),
+		},
 	}
 	for _, price := range s.Prices {
 		st.Pricings = append(st.Pricings, ServerTypeLocationPricing{
@@ -296,6 +305,7 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 			},
 		})
 	}
+
 	return st
 }
 
@@ -318,14 +328,15 @@ func SSHKeyFromSchema(s schema.SSHKey) *SSHKey {
 // ImageFromSchema converts a schema.Image to an Image.
 func ImageFromSchema(s schema.Image) *Image {
 	i := &Image{
-		ID:          s.ID,
-		Type:        ImageType(s.Type),
-		Status:      ImageStatus(s.Status),
-		Description: s.Description,
-		DiskSize:    s.DiskSize,
-		Created:     s.Created,
-		RapidDeploy: s.RapidDeploy,
-		OSFlavor:    s.OSFlavor,
+		ID:           s.ID,
+		Type:         ImageType(s.Type),
+		Status:       ImageStatus(s.Status),
+		Description:  s.Description,
+		DiskSize:     s.DiskSize,
+		Created:      s.Created,
+		RapidDeploy:  s.RapidDeploy,
+		OSFlavor:     s.OSFlavor,
+		Architecture: Architecture(s.Architecture),
 		Protection: ImageProtection{
 			Delete: s.Protection.Delete,
 		},
@@ -392,7 +403,8 @@ func NetworkFromSchema(s schema.Network) *Network {
 		Protection: NetworkProtection{
 			Delete: s.Protection.Delete,
 		},
-		Labels: map[string]string{},
+		Labels:                map[string]string{},
+		ExposeRoutesToVSwitch: s.ExposeRoutesToVSwitch,
 	}
 
 	_, n.IPRange, _ = net.ParseCIDR(s.IPRange)
@@ -1241,4 +1253,16 @@ func loadBalancerMetricsFromSchema(s *schema.LoadBalancerGetMetricsResponse) (*L
 	ms.TimeSeries = timeSeries
 
 	return &ms, nil
+}
+
+// DeprecationFromSchema converts a [schema.DeprecationInfo] to a [DeprecationInfo].
+func DeprecationFromSchema(s *schema.DeprecationInfo) *DeprecationInfo {
+	if s == nil {
+		return nil
+	}
+
+	return &DeprecationInfo{
+		Announced:        s.Announced,
+		UnavailableAfter: s.UnavailableAfter,
+	}
 }

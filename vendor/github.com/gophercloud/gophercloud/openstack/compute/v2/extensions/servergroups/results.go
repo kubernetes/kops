@@ -64,6 +64,10 @@ type ServerGroupPage struct {
 
 // IsEmpty determines whether or not a ServerGroupsPage is empty.
 func (page ServerGroupPage) IsEmpty() (bool, error) {
+	if page.StatusCode == 204 {
+		return true, nil
+	}
+
 	va, err := ExtractServerGroups(page)
 	return len(va) == 0, err
 }

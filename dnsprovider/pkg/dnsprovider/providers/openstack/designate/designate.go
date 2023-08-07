@@ -42,16 +42,15 @@ func init() {
 
 func newDesignate(_ io.Reader) (*Interface, error) {
 	oc := vfs.OpenstackConfig{}
+	region, err := oc.GetRegion()
+	if err != nil {
+		return nil, fmt.Errorf("error finding openstack region: %v", err)
+	}
+
 	ao, err := oc.GetCredential()
 	if err != nil {
 		return nil, err
 	}
-
-	/*
-		pc, err := openstack.AuthenticatedClient(ao)
-		if err != nil {
-			return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
-		}*/
 
 	provider, err := openstack.NewClient(ao.IdentityEndpoint)
 	if err != nil {
@@ -76,11 +75,10 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
-	endpointOpt, err := oc.GetServiceConfig("Designate")
-	if err != nil {
-		return nil, err
-	}
-	sc, err := openstack.NewDNSV2(provider, endpointOpt)
+	sc, err := openstack.NewDNSV2(provider, gophercloud.EndpointOpts{
+		Type:   "dns",
+		Region: region,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating a ServiceClient: %v", err)
 	}

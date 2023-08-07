@@ -17,6 +17,9 @@ limitations under the License.
 package components
 
 import (
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -57,12 +60,19 @@ func (b *OpenStackOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
-		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{
-			// No significant downside to always doing a leader election.
-			// Also, having a replicated (HA) control plane requires leader election.
-			LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
-		}
+		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
 
+	// No significant downside to always doing a leader election.
+	// Also, having a replicated (HA) control plane requires leader election.
+	clusterSpec.ExternalCloudControllerManager.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+
+	// Node status updates are happening unnecessarily often in kOps OpenStack.
+	// Node status updates are useful if we are updating existing node flavor type or node addresses.
+	// However, that will not happen when using kOps.
+	// see more discussion in https://github.com/kubernetes/cloud-provider-openstack/pull/2133
+	clusterSpec.ExternalCloudControllerManager.NodeStatusUpdateFrequency = &metav1.Duration{
+		Duration: time.Minute * 60,
+	}
 	return nil
 }

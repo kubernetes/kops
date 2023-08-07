@@ -43,18 +43,18 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 		v, err := util.ParseKubernetesVersion(clusterSpec.KubernetesVersion)
 		if err == nil {
 			switch v.Minor {
-			case 22:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.22.3"
 			case 23:
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.23.1"
 			case 24:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.24.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.24.3"
 			case 25:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.3"
 			case 26:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4"
+			case 27:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.3"
 			default:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.3"
 			}
 		}
 		cas.Image = fi.PtrTo(image)
@@ -62,6 +62,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cas.Expander == "" {
 		cas.Expander = "random"
+	}
+	if cas.IgnoreDaemonSetsUtilization == nil {
+		cas.IgnoreDaemonSetsUtilization = fi.PtrTo(false)
 	}
 	if cas.ScaleDownUtilizationThreshold == nil {
 		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")

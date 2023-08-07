@@ -44,6 +44,7 @@ const (
 	TypeAutoscalingLaunchConfig = "autoscaling-config"
 	TypeNatGateway              = "nat-gateway"
 	TypeElasticIp               = "elastic-ip"
+	TypeEventBridgeRule         = "eventbridge-rule"
 	TypeLoadBalancer            = "load-balancer"
 	TypeTargetGroup             = "target-group"
 )
@@ -1826,6 +1827,11 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 					continue
 				}
 				prefix := strings.TrimSuffix(name, clusterName)
+
+				// Also trim ownership records for AAAA records
+				if aws.StringValue(rrs.Type) == "TXT" && strings.HasPrefix(prefix, ".aaaa-") {
+					prefix = "." + strings.TrimPrefix(prefix, ".aaaa-")
+				}
 
 				remove := false
 				// TODO: Compute the actual set of names?

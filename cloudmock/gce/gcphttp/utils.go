@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -101,7 +101,7 @@ func buildJSONResponse(statusCode int, obj interface{}) (*http.Response, error) 
 	r.Header = make(http.Header)
 	r.Header.Add("Content-Type", "application/json; charset=UTF-8")
 
-	r.Body = ioutil.NopCloser(bytes.NewReader(b))
+	r.Body = io.NopCloser(bytes.NewReader(b))
 
 	return r, nil
 }

@@ -25,19 +25,17 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.22.0
+  kubernetesVersion: v1.27.0
   masterPublicName: api.privatedns1.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    weave: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
   topology:
     dns:
       type: Private
-    masters: private
-    nodes: private
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

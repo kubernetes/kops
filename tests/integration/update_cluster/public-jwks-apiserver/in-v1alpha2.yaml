@@ -36,9 +36,6 @@ spec:
     enableAWSOIDCProvider: true
   sshAccess:
     - 0.0.0.0/0
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

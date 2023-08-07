@@ -26,6 +26,7 @@ Name: node-1-cluster
 Port:
   AdditionalSecurityGroups:
   - additional-sg
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node
@@ -64,12 +65,13 @@ SecurityGroups:
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node
+  IGMap:
+    node: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -193,6 +195,7 @@ PublicACL: null
 ---
 AdditionalSecurityGroups:
 - additional-sg
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node
@@ -226,9 +229,9 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: node
+IGMap:
+  node: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node
 Policies:
 - anti-affinity

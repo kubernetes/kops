@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func Test_RunKubeApiserverBuilder(t *testing.T) {
@@ -49,7 +50,7 @@ func Test_RunKubeApiserverBuilder(t *testing.T) {
 
 			builder := KubeApiserverBuilder{
 				KopsModelContext: kopsModelContext,
-				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster.Spec.Assets, kopsModelContext.Cluster.Spec.KubernetesVersion, false),
+				AssetBuilder:     assets.NewAssetBuilder(vfs.Context, kopsModelContext.Cluster.Spec.Assets, kopsModelContext.Cluster.Spec.KubernetesVersion, false),
 			}
 
 			if err := builder.Build(context); err != nil {

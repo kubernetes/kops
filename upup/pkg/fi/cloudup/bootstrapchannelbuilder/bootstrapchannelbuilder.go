@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
-
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -47,6 +46,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // BootstrapChannelBuilder is responsible for handling the addons in channels
@@ -162,7 +162,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 
 	if featureflag.UseAddonOperators.Enabled() {
 		ob := &wellknownoperators.Builder{
-			Cluster: b.Cluster,
+			VFSContext: vfs.Context,
+			Cluster:    b.Cluster,
 		}
 
 		addonPackages, clusterAddons, err := ob.Build(b.ClusterAddons)
@@ -405,37 +406,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	// @check if bootstrap tokens are enabled an if so we can forgo applying
-	// this manifest. For clusters whom are upgrading from RBAC to Node,RBAC the clusterrolebinding
-	// will remain and have to be deleted manually once all the nodes have been upgraded.
-	enableRBACAddon := true
-	if b.UseKopsControllerForNodeBootstrap() {
-		enableRBACAddon = false
-	}
-	if b.Cluster.Spec.KubeAPIServer != nil {
-		if b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken != nil && *b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken {
-			enableRBACAddon = false
-		}
-	}
-
-	if enableRBACAddon {
-		{
-			key := "rbac.addons.k8s.io"
-
-			{
-				location := key + "/k8s-1.8.yaml"
-				id := "k8s-1.8"
-
-				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
-					Id:       id,
-				})
-			}
-		}
-	}
-
 	{
 		// Adding the kubelet-api-admin binding: this is required when switching to webhook authorization on the kubelet
 		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles
@@ -455,7 +425,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.IsKubernetesGTE("1.23") && b.IsKubernetesLT("1.26") &&
+	if b.IsKubernetesLT("1.26") &&
 		(b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS ||
 			b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE) {
 		// AWS and GCE KCM-to-CCM leader migration
@@ -502,8 +472,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			}
 
 			// Generate dns-controller ServiceAccount IAM permissions.
-			// Gossip clsuters do not require any cloud permissions.
-			if b.UseServiceAccountExternalPermissions() && !b.Cluster.IsGossip() {
+			// Gossip and dns=none clusters do not require any cloud permissions.
+			if b.UseServiceAccountExternalPermissions() && b.Cluster.PublishesDNSRecords() {
 				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 			}
 		} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
@@ -975,22 +945,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Weave != nil {
-		key := "networking.weave"
-
-		{
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-		}
-	}
-
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
 
@@ -1242,13 +1196,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			})
 		}
 	}
-	if b.Cluster.Spec.Karpenter != nil && fi.ValueOf(&b.Cluster.Spec.Karpenter.Enabled) {
+	if b.Cluster.Spec.Karpenter != nil && b.Cluster.Spec.Karpenter.Enabled {
 		key := "karpenter.sh"
 
 		{
 			id := "k8s-1.19"
 			location := key + "/" + id + ".yaml"
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.PtrTo(key),
 				Manifest: fi.PtrTo(location),
 				Selector: map[string]string{"k8s-addon": key},
@@ -1257,6 +1211,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
 			}
+			addon.BuildPrune = true
 		}
 	}
 

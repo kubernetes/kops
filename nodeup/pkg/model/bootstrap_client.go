@@ -29,10 +29,13 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -42,14 +45,14 @@ type BootstrapClientBuilder struct {
 }
 
 func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.IsMaster || !b.UseKopsControllerForNodeBootstrap() {
+	if b.IsMaster {
 		return nil
 	}
 
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
-	switch b.BootConfig.CloudProvider {
+	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
 		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
 		if err != nil {
@@ -79,9 +82,27 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			return err
 		}
 		authenticator = a
+	case kops.CloudProviderDO:
+		a, err := do.NewAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+	case kops.CloudProviderScaleway:
+		a, err := scaleway.NewScalewayAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+	case kops.CloudProviderAzure:
+		a, err := azure.NewAzureAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
 
 	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider())
 	}
 
 	baseURL := url.URL{
@@ -102,6 +123,8 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Certs:      b.bootstrapCerts,
 		KeypairIDs: b.bootstrapKeypairIDs,
 	}
+	bootstrapClientTask.UseChallengeCallback = b.UseChallengeCallback(b.CloudProvider())
+	bootstrapClientTask.ClusterName = b.NodeupConfig.ClusterName
 
 	for _, cert := range b.bootstrapCerts {
 		cert.Cert.Task = bootstrapClientTask

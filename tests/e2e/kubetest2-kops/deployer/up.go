@@ -134,7 +134,21 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, createArgs...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
-	args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneSize))
+
+	// Dont set --master-count if either --control-plane-count or --master-count
+	// has been provided in --create-args
+	foundCPCount := false
+	for _, existingArg := range args {
+		existingKey := strings.Split(existingArg, "=")
+		if existingKey[0] == "--control-plane-count" || existingKey[0] == "--master-count" {
+			foundCPCount = true
+			break
+		}
+	}
+	if !foundCPCount {
+		args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneCount))
+	}
+
 	args = appendIfUnset(args, "--master-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
@@ -284,7 +298,7 @@ func (d *deployer) verifyUpFlags() error {
 func (d *deployer) zones() ([]string, error) {
 	switch d.CloudProvider {
 	case "aws":
-		return aws.RandomZones(d.ControlPlaneSize)
+		return aws.RandomZones(d.ControlPlaneCount)
 	case "gce":
 		return gce.RandomZones(1)
 	case "digitalocean":

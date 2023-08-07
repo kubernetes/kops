@@ -328,8 +328,26 @@ func Descriptor(d Describable) (*v1.Descriptor, error) {
 	if desc.MediaType, err = d.MediaType(); err != nil {
 		return nil, err
 	}
+	if wat, ok := d.(withArtifactType); ok {
+		if desc.ArtifactType, err = wat.ArtifactType(); err != nil {
+			return nil, err
+		}
+	} else {
+		if wrm, ok := d.(WithRawManifest); ok && desc.MediaType.IsImage() {
+			mf, _ := Manifest(wrm)
+			// Failing to parse as a manifest should just be ignored.
+			// The manifest might not be valid, and that's okay.
+			if mf != nil && !mf.Config.MediaType.IsConfig() {
+				desc.ArtifactType = string(mf.Config.MediaType)
+			}
+		}
+	}
 
 	return &desc, nil
+}
+
+type withArtifactType interface {
+	ArtifactType() (string, error)
 }
 
 type withUncompressedSize interface {
@@ -398,4 +416,21 @@ func unwrap(i any) any {
 		return unwrap(cie.CompressedImageCore)
 	}
 	return i
+}
+
+// ArtifactType returns the artifact type for the given manifest.
+//
+// If the manifest reports its own artifact type, that's returned, otherwise
+// the manifest is parsed and, if successful, its config.mediaType is returned.
+func ArtifactType(w WithManifest) (string, error) {
+	if wat, ok := w.(withArtifactType); ok {
+		return wat.ArtifactType()
+	}
+	mf, _ := w.Manifest()
+	// Failing to parse as a manifest should just be ignored.
+	// The manifest might not be valid, and that's okay.
+	if mf != nil && !mf.Config.MediaType.IsConfig() {
+		return string(mf.Config.MediaType), nil
+	}
+	return "", nil
 }

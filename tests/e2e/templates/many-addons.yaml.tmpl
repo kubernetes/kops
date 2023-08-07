@@ -53,9 +53,6 @@ spec:
     enabled: true
   sshAccess:
     - {{.publicIP}}
-  topology:
-    masters: public
-    nodes: public
   subnets:
   {{ range $index, $zone := .zones }}
   - cidr: 172.20.{{$index}}.0/24

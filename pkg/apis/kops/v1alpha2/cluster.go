@@ -49,11 +49,13 @@ type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
 	// Additional addons that should be installed on the cluster
-	Addons []AddonSpec `json:"addons,omitempty"`
+	Addons      []AddonSpec          `json:"addons,omitempty"`
+	ConfigStore kops.ConfigStoreSpec `json:"-"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3)
+	// +k8s:conversion-gen=false
 	ConfigBase    string                 `json:"configBase,omitempty"`
 	CloudProvider kops.CloudProviderSpec `json:"-"`
 	// The CloudProvider to use (aws or gce)
@@ -96,11 +98,14 @@ type ClusterSpec struct {
 	// +k8s:conversion-gen=false
 	Topology *TopologySpec `json:"topology,omitempty"`
 	// SecretStore is the VFS path to where secrets are stored
+	// +k8s:conversion-gen=false
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
+	// +k8s:conversion-gen=false
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
-	ConfigStore string `json:"configStore,omitempty"`
+	// ConfigStore is unused.
+	// +k8s:conversion-gen=false
+	LegacyConfigStore string `json:"configStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
@@ -255,7 +260,10 @@ type PodIdentityWebhookSpec struct {
 }
 
 type KarpenterConfig struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled     bool   `json:"enabled,omitempty"`
+	LogEncoding string `json:"logEncoding,omitempty"`
+	LogLevel    string `json:"logLevel,omitempty"`
+	Image       string `json:"image,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
@@ -570,6 +578,10 @@ type KubeDNSConfig struct {
 type NodeLocalDNSConfig struct {
 	// Enabled activates the node-local-dns addon.
 	Enabled *bool `json:"enabled,omitempty"`
+	// ExternalCoreFile is used to provide a complete NodeLocalDNS CoreFile by the user - ignores other provided flags which modify the CoreFile.
+	ExternalCoreFile string `json:"externalCoreFile,omitempty"`
+	// AdditionalConfig is used to provide additional config for node local dns by the user - it will include the original CoreFile made by kOps.
+	AdditionalConfig string `json:"additionalConfig,omitempty"`
 	// Image overrides the default docker image used for node-local-dns addon.
 	Image *string `json:"image,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
@@ -672,6 +684,8 @@ type EtcdManagerSpec struct {
 	BackupRetentionDays *uint32 `json:"backupRetentionDays,omitempty"`
 	// DiscoveryPollInterval which is used for discovering other cluster members. The default is 60 seconds.
 	DiscoveryPollInterval *metav1.Duration `json:"discoveryPollInterval,omitempty"`
+	// ListenMetricsURLs is the list of URLs to listen on that will respond to both the /metrics and /health endpoints
+	ListenMetricsURLs []string `json:"listenMetricsURLs,omitempty"`
 	// LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6.
 	// https://github.com/google/glog#verbose-logging
 	LogLevel *int32 `json:"logLevel,omitempty"`
@@ -701,9 +715,10 @@ type EtcdMemberSpec struct {
 type SubnetType string
 
 const (
-	SubnetTypePublic  SubnetType = "Public"
-	SubnetTypePrivate SubnetType = "Private"
-	SubnetTypeUtility SubnetType = "Utility"
+	SubnetTypePublic    SubnetType = "Public"
+	SubnetTypePrivate   SubnetType = "Private"
+	SubnetTypeDualStack SubnetType = "DualStack"
+	SubnetTypeUtility   SubnetType = "Utility"
 )
 
 type ClusterSubnetSpec struct {

@@ -49,6 +49,8 @@ type AzureCloud interface {
 	VirtualNetwork() VirtualNetworksClient
 	Subnet() SubnetsClient
 	RouteTable() RouteTablesClient
+	NetworkSecurityGroup() NetworkSecurityGroupsClient
+	ApplicationSecurityGroup() ApplicationSecurityGroupsClient
 	VMScaleSet() VMScaleSetsClient
 	VMScaleSetVM() VMScaleSetVMsClient
 	Disk() DisksClient
@@ -56,23 +58,27 @@ type AzureCloud interface {
 	NetworkInterface() NetworkInterfacesClient
 	LoadBalancer() LoadBalancersClient
 	PublicIPAddress() PublicIPAddressesClient
+	NatGateway() NatGatewaysClient
 }
 
 type azureCloudImplementation struct {
-	subscriptionID          string
-	location                string
-	tags                    map[string]string
-	resourceGroupsClient    ResourceGroupsClient
-	vnetsClient             VirtualNetworksClient
-	subnetsClient           SubnetsClient
-	routeTablesClient       RouteTablesClient
-	vmscaleSetsClient       VMScaleSetsClient
-	vmscaleSetVMsClient     VMScaleSetVMsClient
-	disksClient             DisksClient
-	roleAssignmentsClient   RoleAssignmentsClient
-	networkInterfacesClient NetworkInterfacesClient
-	loadBalancersClient     LoadBalancersClient
-	publicIPAddressesClient PublicIPAddressesClient
+	subscriptionID                  string
+	location                        string
+	tags                            map[string]string
+	resourceGroupsClient            ResourceGroupsClient
+	networkSecurityGroupsClient     NetworkSecurityGroupsClient
+	applicationSecurityGroupsClient ApplicationSecurityGroupsClient
+	vnetsClient                     VirtualNetworksClient
+	subnetsClient                   SubnetsClient
+	routeTablesClient               RouteTablesClient
+	vmscaleSetsClient               VMScaleSetsClient
+	vmscaleSetVMsClient             VMScaleSetVMsClient
+	disksClient                     DisksClient
+	roleAssignmentsClient           RoleAssignmentsClient
+	networkInterfacesClient         NetworkInterfacesClient
+	loadBalancersClient             LoadBalancersClient
+	publicIPAddressesClient         PublicIPAddressesClient
+	natGatewaysClient               NatGatewaysClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -85,20 +91,23 @@ func NewAzureCloud(subscriptionID, location string, tags map[string]string) (Azu
 	}
 
 	return &azureCloudImplementation{
-		subscriptionID:          subscriptionID,
-		location:                location,
-		tags:                    tags,
-		resourceGroupsClient:    newResourceGroupsClientImpl(subscriptionID, authorizer),
-		vnetsClient:             newVirtualNetworksClientImpl(subscriptionID, authorizer),
-		subnetsClient:           newSubnetsClientImpl(subscriptionID, authorizer),
-		routeTablesClient:       newRouteTablesClientImpl(subscriptionID, authorizer),
-		vmscaleSetsClient:       newVMScaleSetsClientImpl(subscriptionID, authorizer),
-		vmscaleSetVMsClient:     newVMScaleSetVMsClientImpl(subscriptionID, authorizer),
-		disksClient:             newDisksClientImpl(subscriptionID, authorizer),
-		roleAssignmentsClient:   newRoleAssignmentsClientImpl(subscriptionID, authorizer),
-		networkInterfacesClient: newNetworkInterfacesClientImpl(subscriptionID, authorizer),
-		loadBalancersClient:     newLoadBalancersClientImpl(subscriptionID, authorizer),
-		publicIPAddressesClient: newPublicIPAddressesClientImpl(subscriptionID, authorizer),
+		subscriptionID:                  subscriptionID,
+		location:                        location,
+		tags:                            tags,
+		resourceGroupsClient:            newResourceGroupsClientImpl(subscriptionID, authorizer),
+		vnetsClient:                     newVirtualNetworksClientImpl(subscriptionID, authorizer),
+		subnetsClient:                   newSubnetsClientImpl(subscriptionID, authorizer),
+		routeTablesClient:               newRouteTablesClientImpl(subscriptionID, authorizer),
+		networkSecurityGroupsClient:     newNetworkSecurityGroupsClientImpl(subscriptionID, authorizer),
+		applicationSecurityGroupsClient: newApplicationSecurityGroupsClientImpl(subscriptionID, authorizer),
+		vmscaleSetsClient:               newVMScaleSetsClientImpl(subscriptionID, authorizer),
+		vmscaleSetVMsClient:             newVMScaleSetVMsClientImpl(subscriptionID, authorizer),
+		disksClient:                     newDisksClientImpl(subscriptionID, authorizer),
+		roleAssignmentsClient:           newRoleAssignmentsClientImpl(subscriptionID, authorizer),
+		networkInterfacesClient:         newNetworkInterfacesClientImpl(subscriptionID, authorizer),
+		loadBalancersClient:             newLoadBalancersClientImpl(subscriptionID, authorizer),
+		publicIPAddressesClient:         newPublicIPAddressesClientImpl(subscriptionID, authorizer),
+		natGatewaysClient:               newNatGatewaysClientImpl(subscriptionID, authorizer),
 	}, nil
 }
 
@@ -201,13 +210,23 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 					})
 				case kops.LoadBalancerTypePublic:
 					if i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress == nil ||
-						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil ||
-						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress == nil {
+						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID == nil {
 						continue
 					}
-					ingresses = append(ingresses, fi.ApiIngressStatus{
-						IP: *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress,
-					})
+					pips, err := c.publicIPAddressesClient.List(context.TODO(), rg)
+					if err != nil {
+						return nil, fmt.Errorf("error getting PublicIPAddress for API Ingress Status: %w", err)
+					}
+					for _, pip := range pips {
+						if *pip.ID != *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID {
+							continue
+						}
+						if pip.IPAddress != nil {
+							ingresses = append(ingresses, fi.ApiIngressStatus{
+								IP: *pip.IPAddress,
+							})
+						}
+					}
 				default:
 					return nil, fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 				}
@@ -276,6 +295,14 @@ func (c *azureCloudImplementation) RouteTable() RouteTablesClient {
 	return c.routeTablesClient
 }
 
+func (c *azureCloudImplementation) NetworkSecurityGroup() NetworkSecurityGroupsClient {
+	return c.networkSecurityGroupsClient
+}
+
+func (c *azureCloudImplementation) ApplicationSecurityGroup() ApplicationSecurityGroupsClient {
+	return c.applicationSecurityGroupsClient
+}
+
 func (c *azureCloudImplementation) VMScaleSet() VMScaleSetsClient {
 	return c.vmscaleSetsClient
 }
@@ -302,4 +329,8 @@ func (c *azureCloudImplementation) LoadBalancer() LoadBalancersClient {
 
 func (c *azureCloudImplementation) PublicIPAddress() PublicIPAddressesClient {
 	return c.publicIPAddressesClient
+}
+
+func (c *azureCloudImplementation) NatGateway() NatGatewaysClient {
+	return c.natGatewaysClient
 }

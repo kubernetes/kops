@@ -46,6 +46,7 @@ type Instance struct {
 	CanIPForward *bool
 	IPAddress    *Address
 	Subnet       *Subnet
+	StackType    *string
 
 	Scopes []string
 
@@ -79,13 +80,13 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.MachineType = fi.PtrTo(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward
-
 	if r.Scheduling != nil {
 		actual.Preemptible = &r.Scheduling.Preemptible
 	}
 	if len(r.NetworkInterfaces) != 0 {
 		ni := r.NetworkInterfaces[0]
 		actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
+		actual.StackType = &ni.StackType
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
@@ -233,23 +234,29 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	}
 
 	var networkInterfaces []*compute.NetworkInterface
-	if e.IPAddress != nil {
-		addr, err := ipAddressResolver(e.IPAddress)
-		if err != nil {
-			return nil, fmt.Errorf("unable to resolve IP for instance: %v", err)
-		}
-		if addr == nil {
-			return nil, fmt.Errorf("instance IP address has not yet been created")
-		}
+	{
 		networkInterface := &compute.NetworkInterface{
 			AccessConfigs: []*compute.AccessConfig{{
-				NatIP: *addr,
-				Type:  "ONE_TO_ONE_NAT",
+				Type: "ONE_TO_ONE_NAT",
 			}},
 			Network: e.Network.URL(project),
 		}
+
+		if e.IPAddress != nil {
+			addr, err := ipAddressResolver(e.IPAddress)
+			if err != nil {
+				return nil, fmt.Errorf("unable to resolve IP for instance: %v", err)
+			}
+			if addr == nil {
+				return nil, fmt.Errorf("instance IP address has not yet been created")
+			}
+			networkInterface.AccessConfigs[0].NatIP = *addr
+		}
 		if e.Subnet != nil {
 			networkInterface.Subnetwork = *e.Subnet.Name
+		}
+		if e.StackType != nil {
+			networkInterface.StackType = *e.StackType
 		}
 		networkInterfaces = append(networkInterfaces, networkInterface)
 	}
@@ -394,17 +401,16 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 }
 
 type terraformInstance struct {
-	Name                  string                              `cty:"name"`
-	CanIPForward          bool                                `cty:"can_ip_forward"`
-	MachineType           string                              `cty:"machine_type"`
-	ServiceAccounts       []*terraformTemplateServiceAccount  `cty:"service_account"`
-	Scheduling            *terraformScheduling                `cty:"scheduling"`
-	Disks                 []*terraformInstanceAttachedDisk    `cty:"disk"`
-	NetworkInterfaces     []*terraformNetworkInterface        `cty:"network_interface"`
-	Metadata              map[string]*terraformWriter.Literal `cty:"metadata"`
-	MetadataStartupScript *terraformWriter.Literal            `cty:"metadata_startup_script"`
-	Tags                  []string                            `cty:"tags"`
-	Zone                  string                              `cty:"zone"`
+	Name              string                              `cty:"name"`
+	CanIPForward      bool                                `cty:"can_ip_forward"`
+	MachineType       string                              `cty:"machine_type"`
+	ServiceAccounts   []*terraformTemplateServiceAccount  `cty:"service_account"`
+	Scheduling        *terraformScheduling                `cty:"scheduling"`
+	Disks             []*terraformInstanceAttachedDisk    `cty:"disk"`
+	NetworkInterfaces []*terraformNetworkInterface        `cty:"network_interface"`
+	Metadata          map[string]*terraformWriter.Literal `cty:"metadata"`
+	Tags              []string                            `cty:"tags"`
+	Zone              string                              `cty:"zone"`
 }
 
 type terraformInstanceAttachedDisk struct {
@@ -466,22 +472,13 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.Disks = append(tf.Disks, tfd)
 	}
 
-	tf.NetworkInterfaces = addNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
+	tf.NetworkInterfaces = addNetworks(e.StackType, e.Network, e.Subnet, i.NetworkInterfaces)
 
 	metadata, err := addMetadata(t, i.Name, i.Metadata)
 	if err != nil {
 		return err
 	}
 	tf.Metadata = metadata
-
-	// Using metadata_startup_script is now mandatory (?)
-	{
-		startupScript, found := tf.Metadata["startup-script"]
-		if found {
-			delete(tf.Metadata, "startup-script")
-		}
-		tf.MetadataStartupScript = startupScript
-	}
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{

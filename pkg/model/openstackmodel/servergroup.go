@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -52,6 +53,32 @@ var TRUNCATE_OPT = truncate.TruncateStringOptions{
 	MaxLength:     MAX_TAG_LENGTH_OPENSTACK,
 	AlwaysAddHash: false,
 	HashLength:    6,
+}
+
+func (b *ServerGroupModelBuilder) buildAllowedAddressPairs(annotations map[string]string) []ports.AddressPair {
+	keyPrefix := openstack.OS_ANNOTATION + openstack.ALLOWED_ADDRESS_PAIR + "/"
+
+	var allowedAddressPairs []ports.AddressPair
+	for key := range annotations {
+		if strings.HasPrefix(key, keyPrefix) {
+			ipAddress, macAddress, _ := strings.Cut(annotations[key], ",")
+
+			allowedAddressPair := ports.AddressPair{
+				IPAddress: ipAddress,
+			}
+			if macAddress != "" {
+				allowedAddressPair.MACAddress = macAddress
+			}
+
+			allowedAddressPairs = append(allowedAddressPairs, allowedAddressPair)
+		}
+	}
+
+	sort.Slice(allowedAddressPairs, func(i, j int) bool {
+		return allowedAddressPairs[i].IPAddress < allowedAddressPairs[j].IPAddress
+	})
+
+	return allowedAddressPairs
 }
 
 func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
@@ -167,6 +194,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 			SecurityGroups:           securityGroups,
 			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
 			Subnets:                  subnets,
+			AllowedAddressPairs:      b.buildAllowedAddressPairs(ig.ObjectMeta.Annotations),
 			Lifecycle:                b.Lifecycle,
 		}
 		c.AddTask(portTask)
@@ -231,7 +259,7 @@ func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.
 func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
-	var masters []*openstacktasks.ServerGroup
+	sgs := make(map[string]*openstacktasks.ServerGroup)
 	for _, ig := range b.InstanceGroups {
 		klog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
 		affinityPolicies := []string{}
@@ -240,24 +268,36 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		} else {
 			affinityPolicies = append(affinityPolicies, "anti-affinity")
 		}
-		sgTask := &openstacktasks.ServerGroup{
-			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
-			ClusterName: s(clusterName),
-			IGName:      s(ig.Name),
-			Policies:    affinityPolicies,
-			Lifecycle:   b.Lifecycle,
-			MaxSize:     ig.Spec.MaxSize,
+
+		sgName := fmt.Sprintf("%s-%s", clusterName, ig.Name)
+		if name, ok := ig.ObjectMeta.Annotations[openstack.OS_ANNOTATION+openstack.SERVER_GROUP_NAME]; ok {
+			sgName = fmt.Sprintf("%s-%s", clusterName, name)
 		}
-		c.AddTask(sgTask)
+
+		sgTask, ok := sgs[sgName]
+		if !ok {
+			igMap := make(map[string]*int32)
+			igMap[ig.Name] = ig.Spec.MaxSize
+			sgTask = &openstacktasks.ServerGroup{
+				Name:        s(sgName),
+				ClusterName: s(clusterName),
+				IGMap:       igMap,
+				Policies:    affinityPolicies,
+				Lifecycle:   b.Lifecycle,
+			}
+			sgs[sgName] = sgTask
+		} else {
+			sgTask.IGMap[ig.Name] = ig.Spec.MaxSize
+		}
 
 		err := b.buildInstances(c, sgTask, ig)
 		if err != nil {
 			return err
 		}
+	}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-			masters = append(masters, sgTask)
-		}
+	for _, s := range sgs {
+		c.AddTask(s)
 	}
 
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
@@ -275,10 +315,15 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if lbSubnetName == "" {
 			return fmt.Errorf("could not find subnet for Kubernetes API loadbalancer")
 		}
+
 		lbTask := &openstacktasks.LB{
 			Name:      fi.PtrTo(b.APIResourceName()),
 			Subnet:    fi.PtrTo(lbSubnetName),
 			Lifecycle: b.Lifecycle,
+		}
+
+		if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.FlavorID != nil {
+			lbTask.FlavorID = b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.FlavorID
 		}
 
 		useVIPACL := b.UseVIPACL()
@@ -295,7 +340,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 		c.AddTask(lbfipTask)
 
-		if b.Cluster.IsGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
+		if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 			b.associateFIPToKeypair(lbfipTask)
 		}
 
@@ -337,19 +382,21 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if err != nil {
 			return err
 		}
-		for _, mastersg := range masters {
-			associateTask := &openstacktasks.PoolAssociation{
-				Name:          mastersg.Name,
-				Pool:          poolTask,
-				ServerGroup:   mastersg,
-				InterfaceName: fi.PtrTo(ifName),
-				ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),
-				Lifecycle:     b.Lifecycle,
-				Weight:        fi.PtrTo(1),
+
+		for _, ig := range b.InstanceGroups {
+			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+				associateTask := &openstacktasks.PoolAssociation{
+					Name:          fi.PtrTo(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
+					ServerPrefix:  fi.PtrTo(ig.Name),
+					ClusterName:   s(clusterName),
+					Pool:          poolTask,
+					InterfaceName: fi.PtrTo(ifName),
+					ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),
+					Lifecycle:     b.Lifecycle,
+					Weight:        fi.PtrTo(1),
+				}
+				c.AddTask(associateTask)
 			}
-
-			c.AddTask(associateTask)
-
 		}
 
 	}

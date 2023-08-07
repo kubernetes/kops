@@ -38,7 +38,6 @@ import (
 	"k8s.io/kops/pkg/util/subnet"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -69,7 +68,7 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 	// Additional cloud-specific validation rules
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
-		allErrs = append(allErrs, awsValidateCluster(cluster)...)
+		allErrs = append(allErrs, awsValidateCluster(cluster, strict)...)
 	case kops.CloudProviderGCE:
 		allErrs = append(allErrs, gceValidateCluster(cluster)...)
 	}
@@ -87,7 +86,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("sshAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("sshAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -98,7 +97,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -109,7 +108,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("nodePortAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("nodePortAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -211,6 +210,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	for i, sysctlParameter := range spec.SysctlParameters {
+		if !strings.ContainsRune(sysctlParameter, '=') {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("sysctlParameters").Index(i), sysctlParameter, "must contain a \"=\" character"))
+		}
+	}
+
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
@@ -278,9 +283,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
 		}
-		if !featureflag.Karpenter.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fldPath, "karpenter requires the Karpenter feature flag"))
-		}
 	}
 
 	if spec.CertManager != nil && fi.ValueOf(spec.CertManager.Enabled) {
@@ -291,27 +293,28 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 }
 
 type cloudProviderConstraints struct {
-	requiresSubnets                                 bool
-	requiresNetworkCIDR                             bool
-	prohibitsNetworkCIDR                            bool
-	requiresNonMasqueradeCIDR                       bool
-	requiresServiceClusterSubnetOfNonMasqueradeCIDR bool
-	requiresSubnetCIDR                              bool
+	requiresSubnets               bool
+	requiresNetworkCIDR           bool
+	prohibitsNetworkCIDR          bool
+	prohibitsMultipleNetworkCIDRs bool
+	requiresNonMasqueradeCIDR     bool
+	requiresSubnetCIDR            bool
 }
 
 func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fieldSpec *field.Path) (allErrs field.ErrorList, constraints *cloudProviderConstraints) {
 	constraints = &cloudProviderConstraints{
-		requiresSubnets:                                 true,
-		requiresNetworkCIDR:                             true,
-		requiresNonMasqueradeCIDR:                       true,
-		requiresServiceClusterSubnetOfNonMasqueradeCIDR: true,
-		requiresSubnetCIDR:                              true,
+		requiresSubnets:               true,
+		requiresNetworkCIDR:           true,
+		prohibitsMultipleNetworkCIDRs: true,
+		requiresNonMasqueradeCIDR:     true,
+		requiresSubnetCIDR:            true,
 	}
 
 	optionTaken := false
 	if c.Spec.CloudProvider.AWS != nil {
 		optionTaken = true
 		allErrs = append(allErrs, validateAWS(c, provider.AWS, fieldSpec.Child("aws"))...)
+		constraints.prohibitsMultipleNetworkCIDRs = false
 	}
 	if c.Spec.CloudProvider.Azure != nil {
 		if optionTaken {
@@ -336,12 +339,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		constraints.requiresNetworkCIDR = false
 		constraints.requiresSubnetCIDR = false
 		constraints.prohibitsNetworkCIDR = true
-		// TODO move to validateNetworking
-		if c.Spec.Networking.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "networkCIDR"), "networkCIDR should not be set on GCE"))
-		}
 		constraints.requiresNonMasqueradeCIDR = false
-		constraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR = false
 	}
 	if c.Spec.CloudProvider.Hetzner != nil {
 		if optionTaken {
@@ -435,7 +433,17 @@ func validateSAExternalPermissions(externalPermissions []kops.ServiceAccountExte
 	return allErrs
 }
 
-func validateCIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) field.ErrorList {
+// validateCIDR verifies that the cidr string can be parsed as a valid net.IPNet.
+// Behaviour should be consistent with parseCIDR.
+func validateCIDR(fieldPath *field.Path, cidr string) field.ErrorList {
+	_, errs := parseCIDR(fieldPath, cidr)
+	return errs
+}
+
+// parseCIDR is like net.ParseCIDR, but returns an error message that includes the field path.
+// We also try to give some more hints on common errors.
+// Hint: use validateCIDR if we don't need the parsed CIDR value.
+func parseCIDR(fieldPath *field.Path, cidr string) (*net.IPNet, field.ErrorList) {
 	allErrs := field.ErrorList{}
 
 	ip, ipNet, err := net.ParseCIDR(cidr)
@@ -458,14 +466,14 @@ func validateCIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) fiel
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
 
-	if ipNets != nil && ipNet != nil {
-		*ipNets = append(*ipNets, ipNet)
-	}
-
-	return allErrs
+	return ipNet, allErrs
 }
 
-func validateIPv6CIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) field.ErrorList {
+// validateIPv6CIDR verifies that `cidr` specifies a valid IPv6 network range.
+// We recognize the normal CIDR syntax - e.g. `2001:db8::/32`
+// We also recognize values like /64#0, meaning "the first available /64 subnet", for dynamic allocations.
+// See utils.ParseCIDRNotation for details.
+func validateIPv6CIDR(fieldPath *field.Path, cidr string, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if strings.HasPrefix(cidr, "/") {
@@ -478,10 +486,14 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) 
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "IPv6 CIDR subnet size must be a value between 0 and 128"))
 		}
 	} else {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath, ipNets)...)
+		subnetCIDR, errs := parseCIDR(fieldPath, cidr)
+		allErrs = append(allErrs, errs...)
 
 		if !utils.IsIPv6CIDR(cidr) {
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
+		}
+		if subnet.Overlap(subnetCIDR, serviceClusterIPRange) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, fmt.Sprintf("ipv6CIDR %q must not overlap serviceClusterIPRange %q", cidr, serviceClusterIPRange)))
 		}
 	}
 
@@ -491,36 +503,14 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) 
 func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if topology.ControlPlane == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("controlPlane"), ""))
-	} else {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("controlPlane"), &topology.ControlPlane, kops.SupportedTopologies)...)
-	}
-
-	if topology.Nodes == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("nodes"), ""))
-	} else {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
-	}
-
-	if topology.Bastion != nil {
-		if topology.ControlPlane == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires control plane and nodes to have private topology"))
-		}
-	}
-
 	if topology.DNS != "" {
-		cloud := c.Spec.GetCloudProvider()
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &topology.DNS, kops.SupportedDnsTypes)...)
-		if topology.DNS == kops.DNSTypeNone && cloud != kops.CloudProviderOpenstack && cloud != kops.CloudProviderHetzner && cloud != kops.CloudProviderAWS && cloud != kops.CloudProviderGCE {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), topology.DNS, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
-		}
 	}
 
 	return allErrs
 }
 
-func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet) field.ErrorList {
+func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet, podCIDR, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if providerConstraints.requiresSubnets && len(subnets) == 0 {
@@ -530,7 +520,7 @@ func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fiel
 
 	// Each subnet must be valid
 	for i := range subnets {
-		allErrs = append(allErrs, validateSubnet(&subnets[i], c, fieldPath.Index(i), strict, providerConstraints, networkCIDRs)...)
+		allErrs = append(allErrs, validateSubnet(&subnets[i], c, fieldPath.Index(i), strict, providerConstraints, networkCIDRs, podCIDR, serviceClusterIPRange)...)
 	}
 
 	// cannot duplicate subnet name
@@ -566,62 +556,89 @@ func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fiel
 	return allErrs
 }
 
-func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet) field.ErrorList {
+func validateSubnet(subnetSpec *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet, podCIDR, serviceClusterIPRange *net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// name is required
-	if subnet.Name == "" {
+	if subnetSpec.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 
 	// CIDR
-	if subnet.CIDR == "" {
+	if subnetSpec.CIDR == "" {
 		if providerConstraints.requiresSubnetCIDR && strict {
-			if !strings.Contains(c.Networking.NonMasqueradeCIDR, ":") || subnet.IPv6CIDR == "" {
+			if !strings.Contains(c.Networking.NonMasqueradeCIDR, ":") || subnetSpec.IPv6CIDR == "" {
 				allErrs = append(allErrs, field.Required(fieldPath.Child("cidr"), "subnet does not have a cidr set"))
 			}
 		}
 	} else {
-		var subnetCIDRs []*net.IPNet
-		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"), &subnetCIDRs)...)
-		if len(networkCIDRs) > 0 && len(subnetCIDRs) > 0 && !validateSubnetCIDR(networkCIDRs, subnetCIDRs[0]) {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", subnet.Name, subnet.CIDR, c.Networking.NetworkCIDR)))
+		subnetCIDR, errs := parseCIDR(fieldPath.Child("cidr"), subnetSpec.CIDR)
+		allErrs = append(allErrs, errs...)
+		if len(networkCIDRs) > 0 && subnetCIDR != nil {
+			found := false
+			for _, networkCIDR := range networkCIDRs {
+				if subnet.BelongsTo(networkCIDR, subnetCIDR) {
+					found = true
+				}
+			}
+			if !found {
+				extraMsg := ""
+				if len(networkCIDRs) > 1 {
+					extraMsg = " or an additionalNetworkCIDR"
+				}
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q is not a subnet of the networkCIDR %q%s", subnetSpec.Name, subnetSpec.CIDR, c.Networking.NetworkCIDR, extraMsg)))
+			}
+		}
+		if subnet.Overlap(subnetCIDR, podCIDR) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q must not overlap podCIDR %q", subnetSpec.Name, subnetSpec.CIDR, podCIDR)))
+		}
+		if subnet.Overlap(subnetCIDR, serviceClusterIPRange) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q must not overlap serviceClusterIPRange %q", subnetSpec.Name, subnetSpec.CIDR, serviceClusterIPRange)))
 		}
 	}
 
 	// IPv6CIDR
-	if subnet.IPv6CIDR != "" {
-		allErrs = append(allErrs, validateIPv6CIDR(subnet.IPv6CIDR, fieldPath.Child("ipv6CIDR"), nil)...)
+	if subnetSpec.IPv6CIDR != "" {
+		allErrs = append(allErrs, validateIPv6CIDR(fieldPath.Child("ipv6CIDR"), subnetSpec.IPv6CIDR, serviceClusterIPRange)...)
 	}
 
-	if subnet.Egress != "" {
-		egressType := strings.Split(subnet.Egress, "-")[0]
+	if subnetSpec.Egress != "" {
+		egressType := strings.Split(subnetSpec.Egress, "-")[0]
 		if egressType != kops.EgressNatGateway && egressType != kops.EgressElasticIP && egressType != kops.EgressNatInstance && egressType != kops.EgressExternal && egressType != kops.EgressTransitGateway {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress,
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnetSpec.Egress,
 				"egress must be of type NAT Gateway, NAT Gateway with existing ElasticIP, NAT EC2 Instance, Transit Gateway, or External"))
 		}
-		if subnet.Egress != kops.EgressExternal && subnet.Type != "DualStack" && subnet.Type != "Private" && (subnet.IPv6CIDR == "" || subnet.Type != "Public") {
+		if subnetSpec.Egress != kops.EgressExternal && subnetSpec.Type != "DualStack" && subnetSpec.Type != "Private" && (subnetSpec.IPv6CIDR == "" || subnetSpec.Type != "Public") {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private or IPv6-capable public subnets"))
 		}
 	}
 
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &subnet.Type, []kops.SubnetType{
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &subnetSpec.Type, []kops.SubnetType{
 		kops.SubnetTypePublic,
 		kops.SubnetTypePrivate,
 		kops.SubnetTypeDualStack,
 		kops.SubnetTypeUtility,
 	})...)
 
-	if subnet.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
+	if subnetSpec.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type DualStack may only be used in IPv6 clusters"))
 	}
 
 	if c.CloudProvider.Openstack != nil {
 		if c.CloudProvider.Openstack.Router == nil || c.CloudProvider.Openstack.Router.ExternalNetwork == nil {
-			if subnet.Type == kops.SubnetTypePublic {
+			if subnetSpec.Type == kops.SubnetTypePublic {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type Public requires an external network"))
 			}
 		}
+	}
+
+	if c.CloudProvider.AWS != nil && subnetSpec.AdditionalRoutes != nil {
+		if len(subnetSpec.ID) > 0 {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes cannot be added if the subnet is shared"))
+		} else if subnetSpec.Type != kops.SubnetTypePrivate {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes can only be added on private subnets"))
+		}
+		allErrs = append(allErrs, awsValidateAdditionalRoutes(fieldPath.Child("additionalRoutes"), subnetSpec.AdditionalRoutes, networkCIDRs)...)
 	}
 
 	return allErrs
@@ -688,6 +705,10 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 
 func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if fi.ValueOf(v.EnableBootstrapAuthToken) {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableBootstrapTokenAuth"), "bootstrap tokens are not supported"))
+	}
 
 	if len(v.AdmissionControl) > 0 {
 		if len(v.DisableAdmissionPlugins) > 0 {
@@ -847,9 +868,7 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 		if k.BootstrapKubeconfig != "" {
-			if c.Spec.KubeAPIServer == nil {
-				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
-			}
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("bootstrapKubeconfig"), "bootstrap tokens are not supported"))
 		}
 
 		if k.TopologyManagerPolicy != "" {
@@ -892,6 +911,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("shutdownGracePeriodCriticalPods"), k.ShutdownGracePeriodCriticalPods.String(), "shutdownGracePeriodCriticalPods cannot be greater than shutdownGracePeriod"))
 			}
 		}
+
+		if k.MemorySwapBehavior != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("memorySwapBehavior"), &k.MemorySwapBehavior, []string{"LimitedSwap", "UnlimitedSwap"})...)
+		}
 	}
 	return allErrs
 }
@@ -906,11 +929,18 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		if providerConstraints.requiresNetworkCIDR {
 			allErrs = append(allErrs, field.Required(fldPath.Child("networkCIDR"), "Cluster does not have networkCIDR set"))
 		}
+	} else if providerConstraints.prohibitsNetworkCIDR {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("networkCIDR"), fmt.Sprintf("%s doesn't support networkCIDR", c.GetCloudProvider())))
 	} else {
-		allErrs = append(allErrs, validateCIDR(v.NetworkCIDR, fldPath.Child("networkCIDR"), &networkCIDRs)...)
+		networkCIDR, errs := parseCIDR(fldPath.Child("networkCIDR"), v.NetworkCIDR)
+		allErrs = append(allErrs, errs...)
+		if networkCIDR != nil {
+			networkCIDRs = append(networkCIDRs, networkCIDR)
+		}
+
 		if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
 			// verify if the NetworkCIDR is in a private range as per RFC1918
-			if len(networkCIDRs) > 0 && !networkCIDRs[0].IP.IsPrivate() {
+			if networkCIDR != nil && !networkCIDR.IP.IsPrivate() {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("networkCIDR"), v.NetworkCIDR, "networkCIDR must be within a private IP range"))
 			}
 			// verify if networkID is not specified. In case of DO, this is mutually exclusive.
@@ -920,8 +950,16 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 	}
 
-	for i, cidr := range v.AdditionalNetworkCIDRs {
-		allErrs = append(allErrs, validateCIDR(cidr, fldPath.Child("additionalNetworkCIDRs").Index(i), &networkCIDRs)...)
+	if len(v.AdditionalNetworkCIDRs) > 0 && providerConstraints.prohibitsMultipleNetworkCIDRs {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("additionalNetworkCIDRs"), fmt.Sprintf("%s doesn't support additionalNetworkCIDRs", c.GetCloudProvider())))
+	} else {
+		for i, cidr := range v.AdditionalNetworkCIDRs {
+			networkCIDR, errs := parseCIDR(fldPath.Child("additionalNetworkCIDRs").Index(i), cidr)
+			allErrs = append(allErrs, errs...)
+			if networkCIDR != nil {
+				networkCIDRs = append(networkCIDRs, networkCIDR)
+			}
+		}
 	}
 
 	var nonMasqueradeCIDRs []*net.IPNet
@@ -931,13 +969,17 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 				allErrs = append(allErrs, field.Required(fldPath.Child("nonMasqueradeCIDR"), "Cluster does not have nonMasqueradeCIDR set"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(v.NonMasqueradeCIDR, fldPath.Child("nonMasqueradeCIDR"), &nonMasqueradeCIDRs)...)
+			nonMasqueradeCIDR, errs := parseCIDR(fldPath.Child("nonMasqueradeCIDR"), v.NonMasqueradeCIDR)
+			allErrs = append(allErrs, errs...)
+			if nonMasqueradeCIDR != nil {
+				nonMasqueradeCIDRs = append(nonMasqueradeCIDRs, nonMasqueradeCIDR)
+			}
 
 			if strings.Contains(v.NonMasqueradeCIDR, ":") && v.NonMasqueradeCIDR != "::/0" {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
 			}
 
-			if len(networkCIDRs) > 0 && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
+			if len(nonMasqueradeCIDRs) > 0 && len(networkCIDRs) > 0 && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
 				if subnet.Overlap(nonMasqueradeCIDRs[0], networkCIDRs[0]) {
 					allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", v.NonMasqueradeCIDR, v.NetworkCIDR)))
 				}
@@ -950,22 +992,43 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 	}
 
-	var serviceClusterIPRanges []*net.IPNet
+	var podCIDR *net.IPNet
+	{
+		if v.PodCIDR == "" {
+			if strict && !cluster.Spec.IsKopsControllerIPAM() {
+				allErrs = append(allErrs, field.Required(fldPath.Child("podCIDR"), "Cluster did not have podCIDR set"))
+			}
+		} else {
+			var errs field.ErrorList
+			podCIDR, errs = parseCIDR(fldPath.Child("podCIDR"), v.PodCIDR)
+			allErrs = append(allErrs, errs...)
+
+			if podCIDR != nil {
+				if len(nonMasqueradeCIDRs) > 0 && !subnet.BelongsTo(nonMasqueradeCIDRs[0], podCIDR) {
+					allErrs = append(allErrs, field.Forbidden(fldPath.Child("podCIDR"), fmt.Sprintf("podCIDR %q must be a subnet of nonMasqueradeCIDR %q", podCIDR, nonMasqueradeCIDRs[0])))
+				}
+			}
+		}
+	}
+
+	var serviceClusterIPRange *net.IPNet
 	{
 		if v.ServiceClusterIPRange == "" {
 			if strict {
 				allErrs = append(allErrs, field.Required(fldPath.Child("serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(v.ServiceClusterIPRange, fldPath.Child("serviceClusterIPRange"), &serviceClusterIPRanges)...)
+			var errs field.ErrorList
+			serviceClusterIPRange, errs = parseCIDR(fldPath.Child("serviceClusterIPRange"), v.ServiceClusterIPRange)
+			allErrs = append(allErrs, errs...)
 
-			if len(nonMasqueradeCIDRs) > 0 && providerConstraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDRs[0], serviceClusterIPRanges[0]) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", v.ServiceClusterIPRange, v.NonMasqueradeCIDR)))
+			if subnet.Overlap(podCIDR, serviceClusterIPRange) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must not overlap podCIDR %q", serviceClusterIPRange, podCIDR)))
 			}
 		}
 	}
 
-	allErrs = append(allErrs, validateSubnets(&cluster.Spec, v.Subnets, fldPath.Child("subnets"), strict, providerConstraints, networkCIDRs)...)
+	allErrs = append(allErrs, validateSubnets(&cluster.Spec, v.Subnets, fldPath.Child("subnets"), strict, providerConstraints, networkCIDRs, podCIDR, serviceClusterIPRange)...)
 
 	if v.Topology != nil {
 		allErrs = append(allErrs, validateTopology(cluster, v.Topology, fldPath.Child("topology"))...)
@@ -1012,16 +1075,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	if v.Weave != nil {
-		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "only one networking option permitted"))
-		}
-		optionTaken = true
-
-		if cluster.IsKubernetesGTE("1.23") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave is not supported for Kubernetes >= 1.23"))
-		} else if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave does not support IPv6"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave is no longer supported"))
 	}
 
 	if v.Flannel != nil {
@@ -1030,7 +1084,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("flannel"), "Flannel is not supported for Kubernetes >= 1.28"))
+		} else {
+			allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
+		}
 	}
 
 	if v.Calico != nil {
@@ -1048,7 +1106,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("canal"), "Canal is not supported for Kubernetes >= 1.28"))
+		} else {
+			allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
+		}
 	}
 
 	if v.KubeRouter != nil {
@@ -1060,8 +1122,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberRouter"), "kube-router does not support IPv6"))
+		if cluster.IsKubernetesGTE("1.28") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router is not supported for Kubernetes >= 1.28"))
+		} else if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router does not support IPv6"))
 		}
 	}
 
@@ -1098,12 +1162,12 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvp"), "support for LyftVPC has been removed"))
 	}
 
-	if v.GCE != nil {
+	if v.GCP != nil {
 		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gce"), "only one networking option permitted"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gcp"), "only one networking option permitted"))
 		}
 
-		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCE, fldPath.Child("gce"))...)
+		allErrs = append(allErrs, validateNetworkingGCP(c, v.GCP, fldPath.Child("gcp"))...)
 	}
 
 	return allErrs
@@ -1173,8 +1237,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if version.Minor != 12 {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.12 is supported"))
+		if version.Minor != 13 {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.13 is supported"))
 		}
 
 		if v.Hubble != nil && fi.ValueOf(v.Hubble.Enabled) {
@@ -1270,15 +1334,15 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 	return allErrs
 }
 
-func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingGCP(c *kops.ClusterSpec, v *kops.GCPNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if c.GetCloudProvider() != kops.CloudProviderGCE {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking is supported only when on GCP"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking is supported only when on GCP"))
 	}
 
 	if c.IsIPv6Only() {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking does not support IPv6"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking does not support IPv6"))
 	}
 
 	return allErrs
@@ -1381,19 +1445,12 @@ func validateEtcdStorage(specs []kops.EtcdClusterSpec, fieldPath *field.Path) fi
 }
 
 // validateEtcdVersion is responsible for validating the storage version of etcd
-// @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1; could be a problem later down the line
 func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
-	// @check if the storage is specified that it's valid
-
-	if minimalVersion == nil {
-		v := semver.MustParse("0.0.0")
-		minimalVersion = &v
+	if spec.Version == "" {
+		return nil
 	}
 
 	version := spec.Version
-	if spec.Version == "" {
-		version = components.DefaultEtcd3Version_1_20
-	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
@@ -1402,7 +1459,7 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 
 	// we only support v3 for now
 	if sem.Major == 3 {
-		if sem.LT(*minimalVersion) {
+		if minimalVersion != nil && sem.LT(*minimalVersion) {
 			return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, fmt.Sprintf("minimum version required is %s", minimalVersion.String()))}
 		}
 		return nil
@@ -1834,11 +1891,8 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 	}
 
 	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
-		if cluster.IsGossip() || cluster.UsesNoneDNS() {
+		if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns requires public or private DNS topology"))
-		}
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not support IPv6 clusters"))
 		}
 	}
 

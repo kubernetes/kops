@@ -17,12 +17,10 @@ spec:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
-    version: 3.5.6
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
-    version: 3.5.6
     name: events
   iam: {}
   kubernetesVersion: 1.22.0
@@ -38,9 +36,6 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

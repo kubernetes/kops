@@ -46,18 +46,32 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 	if clusterSpec.ContainerRuntime == "containerd" {
 		// Set version based on Kubernetes version
 		if fi.ValueOf(containerd.Version) == "" {
-			if b.IsKubernetesGTE("1.23") {
-				containerd.Version = fi.PtrTo("1.6.17")
+			switch {
+			case b.IsKubernetesLT("1.24.14"):
+				fallthrough
+			case b.IsKubernetesGTE("1.25") && b.IsKubernetesLT("1.25.10"):
+				fallthrough
+			case b.IsKubernetesGTE("1.26") && b.IsKubernetesLT("1.26.5"):
+				fallthrough
+			case b.IsKubernetesGTE("1.27") && b.IsKubernetesLT("1.27.2"):
+				containerd.Version = fi.PtrTo("1.6.20")
 				containerd.Runc = &kops.Runc{
-					Version: fi.PtrTo("1.1.4"),
+					Version: fi.PtrTo("1.1.5"),
 				}
-			} else {
-				containerd.Version = fi.PtrTo("1.4.13")
+			case b.IsKubernetesGTE("1.27.2"):
+				containerd.Version = fi.PtrTo("1.7.2")
+				containerd.Runc = &kops.Runc{
+					Version: fi.PtrTo("1.1.7"),
+				}
+			default:
+				containerd.Version = fi.PtrTo("1.6.21")
+				containerd.Runc = &kops.Runc{
+					Version: fi.PtrTo("1.1.7"),
+				}
 			}
 		}
 		// Set default log level to INFO
 		containerd.LogLevel = fi.PtrTo("info")
-
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available
 		dockerVersion := fi.ValueOf(clusterSpec.Docker.Version)

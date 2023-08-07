@@ -102,7 +102,7 @@ type ActionListOpts struct {
 }
 
 func (l ActionListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	for _, id := range l.ID {
 		vals.Add("id", fmt.Sprintf("%d", id))
 	}
@@ -140,30 +140,12 @@ func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action
 
 // All returns all actions.
 func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
-	allActions := []*Action{}
-
-	opts := ActionListOpts{}
-	opts.PerPage = 50
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		actions, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allActions = append(allActions, actions...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allActions, nil
+	return c.AllWithOpts(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all actions for the given options.
 func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	allActions := []*Action{}
+	var allActions []*Action
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
@@ -181,7 +163,24 @@ func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]
 	return allActions, nil
 }
 
-// WatchOverallProgress watches several actions' progress until they complete with success or error.
+// WatchOverallProgress watches several actions' progress until they complete
+// with success or error. This watching happens in a goroutine and updates are
+// provided through the two returned channels:
+//
+//   - The first channel receives percentage updates of the progress, based on
+//     the number of completed versus total watched actions. The return value
+//     is an int between 0 and 100.
+//   - The second channel returned receives errors for actions that did not
+//     complete successfully, as well as any errors that happened while
+//     querying the API.
+//
+// By default, the method keeps watching until all actions have finished
+// processing. If you want to be able to cancel the method or configure a
+// timeout, use the [context.Context]. Once the method has stopped watching,
+// both returned channels are closed.
+//
+// WatchOverallProgress uses the [WithPollBackoffFunc] of the [Client] to wait
+// until sending the next request.
 func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Action) (<-chan int, <-chan error) {
 	errCh := make(chan error, len(actions))
 	progressCh := make(chan int)
@@ -196,15 +195,15 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 			watchIDs[action.ID] = struct{}{}
 		}
 
-		ticker := time.NewTicker(c.client.pollInterval)
-		defer ticker.Stop()
+		retries := 0
+
 		for {
 			select {
 			case <-ctx.Done():
 				errCh <- ctx.Err()
 				return
-			case <-ticker.C:
-				break
+			case <-time.After(c.client.pollBackoffFunc(retries)):
+				retries++
 			}
 
 			opts := ActionListOpts{}
@@ -224,7 +223,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 					continue
 				case ActionStatusSuccess:
 					delete(watchIDs, a.ID)
-					successIDs := append(successIDs, a.ID)
+					successIDs = append(successIDs, a.ID)
 					sendProgress(progressCh, int(float64(len(actions)-len(successIDs))/float64(len(actions))*100))
 				case ActionStatusError:
 					delete(watchIDs, a.ID)
@@ -241,7 +240,24 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 	return progressCh, errCh
 }
 
-// WatchProgress watches one action's progress until it completes with success or error.
+// WatchProgress watches one action's progress until it completes with success
+// or error. This watching happens in a goroutine and updates are provided
+// through the two returned channels:
+//
+//   - The first channel receives percentage updates of the progress, based on
+//     the progress percentage indicated by the API. The return value is an int
+//     between 0 and 100.
+//   - The second channel receives any errors that happened while querying the
+//     API, as well as the error of the action if it did not complete
+//     successfully, or nil if it did.
+//
+// By default, the method keeps watching until the action has finished
+// processing. If you want to be able to cancel the method or configure a
+// timeout, use the [context.Context]. Once the method has stopped watching,
+// both returned channels are closed.
+//
+// WatchProgress uses the [WithPollBackoffFunc] of the [Client] to wait until
+// sending the next request.
 func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-chan int, <-chan error) {
 	errCh := make(chan error, 1)
 	progressCh := make(chan int)
@@ -250,16 +266,15 @@ func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-cha
 		defer close(errCh)
 		defer close(progressCh)
 
-		ticker := time.NewTicker(c.client.pollInterval)
-		defer ticker.Stop()
+		retries := 0
 
 		for {
 			select {
 			case <-ctx.Done():
 				errCh <- ctx.Err()
 				return
-			case <-ticker.C:
-				break
+			case <-time.After(c.client.pollBackoffFunc(retries)):
+				retries++
 			}
 
 			a, _, err := c.GetByID(ctx, action.ID)

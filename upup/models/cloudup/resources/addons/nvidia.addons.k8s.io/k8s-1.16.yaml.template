@@ -24,6 +24,11 @@ spec:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         volumeMounts:
           - name: device-plugin
             mountPath: /var/lib/kubelet/device-plugins
@@ -252,6 +257,11 @@ spec:
             - SYS_ADMIN
           runAsNonRoot: false
           runAsUser: 0
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.4.6-2.6.10-ubuntu20.04"
         imagePullPolicy: "IfNotPresent"
         args: 

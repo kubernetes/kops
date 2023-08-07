@@ -170,6 +170,11 @@ spec:
           privileged: false
           capabilities:
             add: ["NET_ADMIN", "NET_RAW"]
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         env:
         - name: POD_NAME
           valueFrom:

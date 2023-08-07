@@ -55,7 +55,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("error fetching default ServiceAccount: %w", err)
 		}
 
-		clusterPath := b.Cluster.Spec.ConfigBase
+		clusterPath := b.Cluster.Spec.ConfigStore.Base
 		p, err := vfs.Context.BuildVfsPath(clusterPath)
 		if err != nil {
 			return fmt.Errorf("cannot parse cluster path %q: %w", clusterPath, err)
@@ -162,7 +162,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			nameForTask := strings.ToLower(string(role))
 
-			klog.Warningf("adding bucket level write IAM for role %q to gs://%s to support etcd backup", bucket, role)
+			klog.Warningf("adding bucket level write IAM for role %q to gs://%s to support etcd backup", role, bucket)
 
 			c.AddTask(&gcetasks.StorageBucketIAM{
 				Name:      s("objectadmin-" + bucket + "-serviceaccount-" + nameForTask),
@@ -179,9 +179,9 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return err
 		}
 		if len(readablePaths) != 0 {
-			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore)
+			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore.Base)
 			if err != nil {
-				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigStore, err)
+				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigStore.Base, err)
 			}
 
 			gcsPath, ok := p.(*vfs.GSPath)

@@ -96,7 +96,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility),
+				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion()),
 
 				Scopes: []string{
 					"compute-rw",
@@ -104,11 +104,14 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 					"logging-write",
 				},
 				Metadata: map[string]fi.Resource{
-					"startup-script": startupScript,
-					//"config": resources/config.yaml $nodeset.Name
 					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
 					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
+			}
+
+			// Use "user-data" instead of "startup-script", for compatibility with cloud-init
+			if startupScript != nil {
+				t.Metadata["user-data"] = startupScript
 			}
 
 			if ig.Spec.Role == kops.InstanceGroupRoleNode {
@@ -118,6 +121,20 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				}
 				t.Metadata["kube-env"] = fi.NewStringResource("AUTOSCALER_ENV_VARS: " + autoscalerEnvVars)
 			}
+
+			stackType := "IPV4_ONLY"
+			if b.IsIPv6Only() {
+				// The subnets are dual-mode; IPV6_ONLY is not yet supported.
+				// This means that VMs will get an IPv4 and a /96 IPv6.
+				// However, pods will still be IPv6 only.
+				stackType = "IPV4_IPV6"
+
+				// // Ipv6AccessType must be set when enabling IPv6.
+				// // EXTERNAL is currently the only supported value
+				// ipv6AccessType := "EXTERNAL"
+				// t.Ipv6AccessType = &ipv6AccessType
+			}
+			t.StackType = &stackType
 
 			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
 			if err != nil {
@@ -154,12 +171,16 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+
+			case kops.InstanceGroupRoleBastion:
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
 			}
+			clusterLabel := gce.LabelForCluster(b.ClusterName())
 			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
-				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
-				roleLabel:                         "",
-				gce.GceLabelNameInstanceGroup:     ig.ObjectMeta.Name,
+				clusterLabel.Key:              clusterLabel.Value,
+				roleLabel:                     "",
+				gce.GceLabelNameInstanceGroup: ig.ObjectMeta.Name,
 			}
 			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 				t.Labels[gce.GceLabelNameRolePrefix+"master"] = ""

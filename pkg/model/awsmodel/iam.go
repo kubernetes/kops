@@ -236,7 +236,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		},
 	}
 
-	if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+	if b.Cluster.PublishesDNSRecords() {
 		// This is slightly tricky; we need to know the hosted zone id,
 		// but we might be creating the hosted zone dynamically.
 		// We create a stub-reference which will be combined by the execution engine.
@@ -348,7 +348,11 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 			{
 				additionalPolicy := ""
 				if b.Cluster.Spec.AdditionalPolicies != nil {
-					additionalPolicy = b.Cluster.Spec.AdditionalPolicies[roleKey]
+					key := roleKey
+					if key == "master" {
+						key = "control-plane"
+					}
+					additionalPolicy = b.Cluster.Spec.AdditionalPolicies[key]
 				}
 
 				additionalPolicyName := "additional." + iamName

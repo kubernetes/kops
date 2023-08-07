@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -90,6 +89,8 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 		return err
 	}
 
+	vfsContext := f.VFSContext()
+
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
@@ -98,7 +99,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 				return err
 			}
 		} else {
-			contents, err = vfs.Context.ReadFile(f)
+			contents, err = vfsContext.ReadFile(f)
 			if err != nil {
 				return fmt.Errorf("error reading file %q: %v", f, err)
 			}
@@ -139,7 +140,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 							return fmt.Errorf("cluster %v does not exist (try adding --force flag)", clusterName)
 						}
 
-						err = cloudup.PerformAssignments(v, cloud)
+						err = cloudup.PerformAssignments(v, vfsContext, cloud)
 						if err != nil {
 							return fmt.Errorf("error populating configuration: %w", err)
 						}

@@ -228,7 +228,7 @@ with the cluster's DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records! This is not required if a gossip-based cluster is created.**
 
-## Cluster State storage
+## Cluster State store
 
 In order to store the state of your cluster, and the representation of your
 cluster, we need to create a dedicated S3 bucket for `kops` to use.  This
@@ -254,6 +254,7 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
+## Cluster OIDC store
 In order for ServiceAccounts to use external permissions (aka IAM Roles for ServiceAccounts), you also need a bucket for hosting the OIDC documents.
 While you can reuse the bucket above if you grant it a public ACL, we do recommend a separate bucket for these files.
 
@@ -263,6 +264,12 @@ The ACL must be public so that the AWS STS service can access them.
 aws s3api create-bucket \
     --bucket prefix-example-com-oidc-store \
     --region us-east-1 \
+    --object-ownership BucketOwnerPreferred
+aws s3api put-public-access-block \
+    --bucket prefix-example-com-oidc-store \
+    --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+aws s3api put-bucket-acl \
+    --bucket prefix-example-com-oidc-store \
     --acl public-read
 ```
 

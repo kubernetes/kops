@@ -2,7 +2,7 @@ package schema
 
 import "time"
 
-// PrimaryIP defines a Primary IP
+// PrimaryIP defines a Primary IP.
 type PrimaryIP struct {
 	ID           int                 `json:"id"`
 	IP           string              `json:"ip"`
@@ -52,4 +52,11 @@ type PrimaryIPListResult struct {
 // when updating a Primary IP.
 type PrimaryIPUpdateResult struct {
 	PrimaryIP PrimaryIP `json:"primary_ip"`
+}
+
+// PrimaryIPActionChangeDNSPtrRequest defines the schema for the request to
+// change a Primary IP's reverse DNS pointer.
+type PrimaryIPActionChangeDNSPtrRequest struct {
+	IP     string  `json:"ip"`
+	DNSPtr *string `json:"dns_ptr"`
 }

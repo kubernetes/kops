@@ -56,7 +56,7 @@ const (
 	// "OverLimit".
 	//
 	// The specified action violates a limit. For example, ReceiveMessage returns
-	// this error if the maximum number of inflight messages is reached and AddPermission
+	// this error if the maximum number of in flight messages is reached and AddPermission
 	// returns this error if the maximum number of permissions for the queue is
 	// reached.
 	ErrCodeOverLimit = "OverLimit"
@@ -95,6 +95,12 @@ const (
 	//
 	// The specified receipt handle isn't valid.
 	ErrCodeReceiptHandleIsInvalid = "ReceiptHandleIsInvalid"
+
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// One or more specified resources don't exist.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
 	// ErrCodeTooManyEntriesInBatchRequest for service response error code
 	// "AWS.SimpleQueueService.TooManyEntriesInBatchRequest".

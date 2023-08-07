@@ -20,9 +20,11 @@ import (
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scalewaytasks"
@@ -57,11 +59,14 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	if err != nil {
 		return fmt.Errorf("building load-balancer task: %w", err)
 	}
-	lbTags := []string(nil)
+
+	lbTags := []string{
+		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.ClusterName()),
+		fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
+	}
 	for k, v := range b.CloudTags(b.ClusterName(), false) {
 		lbTags = append(lbTags, fmt.Sprintf("%s=%s", k, v))
 	}
-	lbTags = append(lbTags, fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane))
 
 	loadBalancerName := "api." + b.ClusterName()
 	loadBalancer := &scalewaytasks.LoadBalancer{
@@ -75,36 +80,46 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	c.AddTask(loadBalancer)
 
-	lbBackend := &scalewaytasks.LBBackend{
-		Name:                 fi.PtrTo("lb-backend"),
-		Lifecycle:            b.Lifecycle,
+	lbBackendHttps, lbFrontendHttps := createLbBackendAndFrontend("https", wellknownports.KubeAPIServer, zone, loadBalancer)
+	lbBackendHttps.Lifecycle = b.Lifecycle
+	c.AddTask(lbBackendHttps)
+	lbFrontendHttps.Lifecycle = b.Lifecycle
+	c.AddTask(lbFrontendHttps)
+
+	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
+		// Ensure the LB hostname is included in the TLS certificate,
+		// if we're not going to use an alias for it
+		loadBalancer.ForAPIServer = true
+
+		lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
+		lbBackendKopsController.Lifecycle = b.Lifecycle
+		c.AddTask(lbBackendKopsController)
+		lbFrontendKopsController.Lifecycle = b.Lifecycle
+		c.AddTask(lbFrontendKopsController)
+	}
+
+	return nil
+}
+
+func createLbBackendAndFrontend(name string, port int, zone scw.Zone, loadBalancer *scalewaytasks.LoadBalancer) (*scalewaytasks.LBBackend, *scalewaytasks.LBFrontend) {
+	lbBackendKopsController := &scalewaytasks.LBBackend{
+		Name:                 fi.PtrTo("lb-backend-" + name),
 		Zone:                 fi.PtrTo(string(zone)),
 		ForwardProtocol:      fi.PtrTo(string(lb.ProtocolTCP)),
-		ForwardPort:          fi.PtrTo(int32(443)),
+		ForwardPort:          fi.PtrTo(int32(port)),
 		ForwardPortAlgorithm: fi.PtrTo(string(lb.ForwardPortAlgorithmRoundrobin)),
 		StickySessions:       fi.PtrTo(string(lb.StickySessionsTypeNone)),
 		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolUnknown)),
 		LoadBalancer:         loadBalancer,
 	}
 
-	c.AddTask(lbBackend)
-
-	lbFrontend := &scalewaytasks.LBFrontend{
-		Name:         fi.PtrTo("lb-frontend"),
-		Lifecycle:    b.Lifecycle,
+	lbFrontendKopsController := &scalewaytasks.LBFrontend{
+		Name:         fi.PtrTo("lb-frontend-" + name),
 		Zone:         fi.PtrTo(string(zone)),
-		InboundPort:  fi.PtrTo(int32(443)),
+		InboundPort:  fi.PtrTo(int32(port)),
 		LoadBalancer: loadBalancer,
-		LBBackend:    lbBackend,
+		LBBackend:    lbBackendKopsController,
 	}
 
-	c.AddTask(lbFrontend)
-
-	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		// Ensure the LB hostname is included in the TLS certificate,
-		// if we're not going to use an alias for it
-		loadBalancer.ForAPIServer = true
-	}
-
-	return nil
+	return lbBackendKopsController, lbFrontendKopsController
 }

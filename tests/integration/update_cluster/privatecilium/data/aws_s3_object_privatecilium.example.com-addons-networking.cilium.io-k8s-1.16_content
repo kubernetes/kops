@@ -26,6 +26,7 @@ metadata:
 
 apiVersion: v1
 data:
+  agent-health-port: "9879"
   auto-direct-node-routes: "false"
   bpf-ct-global-any-max: "262144"
   bpf-ct-global-tcp-max: "524288"
@@ -458,7 +459,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.12.5
+        image: quay.io/cilium/cilium:v1.13.5
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -523,8 +524,6 @@ spec:
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
-        - mountPath: /host/opt/cni/bin
-          name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
         - mountPath: /var/lib/cilium/clustermesh
@@ -541,6 +540,24 @@ spec:
       hostNetwork: true
       initContainers:
       - command:
+        - /install-plugin.sh
+        image: quay.io/cilium/cilium:v1.13.5
+        imagePullPolicy: IfNotPresent
+        name: install-cni-binaries
+        resources:
+          requests:
+            cpu: 100m
+            memory: 10Mi
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-path
+      - command:
         - /init-container.sh
         env:
         - name: CILIUM_ALL_STATE
@@ -555,7 +572,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.12.5
+        image: quay.io/cilium/cilium:v1.13.5
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -648,6 +665,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        test1: "true"
+        test2: "123"
+        test3: cilium-operator
       creationTimestamp: null
       labels:
         io.cilium/app: operator
@@ -692,7 +713,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.12.5
+        image: quay.io/cilium/operator:v1.13.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

@@ -47,14 +47,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.ControlPlaneKubelet = &kops.KubeletConfigSpec{}
 	}
 
-	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.EnableBootstrapAuthToken != nil {
-		if *clusterSpec.KubeAPIServer.EnableBootstrapAuthToken {
-			if clusterSpec.Kubelet.BootstrapKubeconfig == "" {
-				clusterSpec.Kubelet.BootstrapKubeconfig = "/var/lib/kubelet/bootstrap-kubeconfig"
-			}
-		}
-	}
-
 	// Standard options
 	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.PtrTo(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
@@ -177,7 +169,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// Prevent image GC from pruning the pause image
 	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2040-kubelet-cri#pinned-images
-	image := "registry.k8s.io/pause:3.6"
+	image := "registry.k8s.io/pause:3.9"
 	var err error
 	if image, err = b.AssetBuilder.RemapImage(image); err != nil {
 		return err
@@ -189,7 +181,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.CloudProvider.AWS != nil && clusterSpec.CloudProvider.AWS.EBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudProvider.AWS.EBSCSIDriver.Enabled) {
-		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
+		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 

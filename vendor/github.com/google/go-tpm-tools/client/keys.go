@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-tpm-tools/internal"
 	pb "github.com/google/go-tpm-tools/proto/tpm"
-	"github.com/google/go-tpm/tpm2"
+	"github.com/google/go-tpm/legacy/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 )
 
@@ -27,7 +27,7 @@ type Key struct {
 	pubArea tpm2.Public
 	pubKey  crypto.PublicKey
 	name    tpm2.Name
-	session session
+	session Session
 	cert    *x509.Certificate
 }
 
@@ -114,6 +114,19 @@ func GceAttestationKeyECC(rw io.ReadWriter) (*Key, error) {
 	return akEcc, nil
 }
 
+// LoadCachedKey loads a key from cachedHandle.
+// If the key is not found, an error is returned.
+// This function will not overwrite an existing key, unlike NewCachedKey.
+func LoadCachedKey(rw io.ReadWriter, cachedHandle tpmutil.Handle, keySession Session) (k *Key, err error) {
+	cachedPub, _, _, err := tpm2.ReadPublic(rw, cachedHandle)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read public area of cached key: %w", err)
+	}
+
+	k = &Key{rw: rw, handle: cachedHandle, pubArea: cachedPub, session: keySession}
+	return k, k.finish()
+}
+
 // KeyFromNvIndex generates and loads a key under the provided parent
 // (possibly a hierarchy root tpm2.Handle{Owner|Endorsement|Platform|Null})
 // using the template stored at the provided nvdata index.
@@ -182,8 +195,7 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *K
 		return nil, fmt.Errorf("unsupported parent handle: %x", parent)
 	}
 
-	handle, pubArea, _, _, _, _, err :=
-		tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
+	handle, pubArea, _, _, _, _, err := tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
 	if err != nil {
 		return nil, err
 	}
@@ -211,11 +223,11 @@ func (k *Key) finish() error {
 	// We determine the right type of session based on the auth policy
 	if k.session == nil {
 		if bytes.Equal(k.pubArea.AuthPolicy, defaultEKAuthPolicy()) {
-			if k.session, err = newEKSession(k.rw); err != nil {
+			if k.session, err = NewEKSession(k.rw); err != nil {
 				return err
 			}
 		} else if len(k.pubArea.AuthPolicy) == 0 {
-			k.session = nullSession{}
+			k.session = NullSession{}
 		} else {
 			return fmt.Errorf("unknown auth policy when creating key")
 		}
@@ -407,7 +419,7 @@ func (k *Key) Unseal(in *pb.SealedBytes, opts UnsealOpts) ([]byte, error) {
 		sel.PCRs = append(sel.PCRs, int(pcr))
 	}
 
-	session, err := newPCRSession(k.rw, sel)
+	session, err := NewPCRSession(k.rw, sel)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}

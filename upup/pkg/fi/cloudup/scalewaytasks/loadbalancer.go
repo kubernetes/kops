@@ -18,10 +18,14 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -85,6 +89,11 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 }
 
 func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+	// Skip if we're running integration tests
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		return nil, nil
+	}
+
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
@@ -139,7 +148,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 
 	if actual != nil {
 
-		klog.Infof("Updating existing load-balancer with name %q", expected.Name)
+		klog.Infof("Updating existing load-balancer with name %q", fi.ValueOf(expected.Name))
 
 		// We update the tags
 		if changes != nil || len(actual.Tags) != len(expected.Tags) {
@@ -161,7 +170,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 
 	} else {
 
-		klog.Infof("Creating new load-balancer with name %q", expected.Name)
+		klog.Infof("Creating new load-balancer with name %q", fi.ValueOf(expected.Name))
 
 		lbCreated, err := lbService.CreateLB(&lb.ZonedAPICreateLBRequest{
 			Zone: scw.Zone(fi.ValueOf(expected.Zone)),
@@ -190,4 +199,35 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 	}
 
 	return nil
+}
+
+type terraformLBIP struct{}
+
+type terraformLoadBalancer struct {
+	Type string                   `cty:"type"`
+	Name *string                  `cty:"name"`
+	Tags []string                 `cty:"tags"`
+	IPID *terraformWriter.Literal `cty:"ip_id"`
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *LoadBalancer) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfLBIP := terraformLBIP{}
+	err := t.RenderResource("scaleway_lb_ip", tfName, tfLBIP)
+	if err != nil {
+		return err
+	}
+
+	tfLB := terraformLoadBalancer{
+		Type: "LB-S",
+		Name: expected.Name,
+		Tags: expected.Tags,
+		IPID: terraformWriter.LiteralProperty("scaleway_lb_ip", tfName, "id"),
+	}
+	return t.RenderResource("scaleway_lb", tfName, tfLB)
+}
+
+func (l *LoadBalancer) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_lb", fi.ValueOf(l.Name), "id")
 }

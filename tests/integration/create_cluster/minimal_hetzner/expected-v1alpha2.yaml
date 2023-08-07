@@ -51,9 +51,7 @@ spec:
     zone: fsn1
   topology:
     dns:
-      type: Private
-    masters: public
-    nodes: public
+      type: None
 
 ---
 

@@ -17,19 +17,21 @@ limitations under the License.
 package model
 
 import (
+	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 )
 
-// UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
-func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
-	switch cluster.Spec.GetCloudProvider() {
-	case kops.CloudProviderAWS:
-		return true
-	case kops.CloudProviderGCE:
-		return true
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
+	switch cloudProvider {
 	case kops.CloudProviderHetzner:
 		return true
-	case kops.CloudProviderOpenstack:
+	case kops.CloudProviderDO:
+		return true
+	case kops.CloudProviderScaleway:
+		return true
+	case kops.CloudProviderAzure:
 		return true
 	default:
 		return false
@@ -38,15 +40,18 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
-	switch cluster.Spec.GetCloudProvider() {
-	case kops.CloudProviderGCE:
-		// We can use cloud-discovery here.
-	default:
-		if cluster.IsGossip() {
+	if cluster.UsesLegacyGossip() {
+		switch cluster.Spec.GetCloudProvider() {
+		case kops.CloudProviderGCE:
+			// We can use cloud-discovery here.
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway:
+			// We don't have a cloud-discovery mechanism implemented in nodeup for hetzner,
+			// but we assume that we're using a load balancer with a fixed IP address
+		default:
 			return false
 		}
 	}
-	return UseKopsControllerForNodeBootstrap(cluster)
+	return true
 }
 
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.
@@ -62,4 +67,8 @@ func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	}
 
 	return false
+}
+
+func UseExternalECRCredentialsProvider(k8sVersion semver.Version, cloudProvider kops.CloudProviderID) bool {
+	return util.IsKubernetesGTE("1.27", k8sVersion) && cloudProvider == kops.CloudProviderAWS
 }

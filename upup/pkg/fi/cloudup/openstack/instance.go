@@ -44,6 +44,12 @@ const (
 	BOOT_FROM_VOLUME          = "osVolumeBoot"
 	BOOT_VOLUME_SIZE          = "osVolumeSize"
 	SERVER_GROUP_AFFINITY     = "serverGroupAffinity"
+	ALLOWED_ADDRESS_PAIR      = "allowedAddressPair"
+	SERVER_GROUP_NAME         = "serverGroupName"
+
+	defaultActiveTimeout = time.Second * 120
+	activeStatus         = "ACTIVE"
+	errorStatus          = "ERROR"
 )
 
 // floatingBackoff is the backoff strategy for listing openstack floatingips
@@ -65,10 +71,38 @@ func IsPortInUse(err error) bool {
 	return false
 }
 
+// waitForStatusActive uses gopherclouds WaitFor() func to determine when the server becomes "ACTIVE".
+//
+// The function will immediately fail if the server transistions into the status "ERROR"
+// and will result in a timeout when not reaching status "ACTIVE" in time.
+func waitForStatusActive(c OpenstackCloud, serverID string, timeout *time.Duration) error {
+	if timeout == nil {
+		timeout = fi.PtrTo(defaultActiveTimeout)
+	}
+
+	return gophercloud.WaitFor(int(timeout.Seconds()), func() (bool, error) {
+		server, err := c.GetInstance(serverID)
+		if err != nil {
+			return false, err
+		}
+
+		if server.Status == errorStatus {
+			return false, fmt.Errorf("unable to create server: %v", server.Fault)
+		}
+
+		if server.Status == activeStatus {
+			return true, nil
+		}
+
+		return false, nil
+	})
+}
+
 func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+
 		v, err := servers.Create(c.ComputeClient(), opt).Extract()
 		if err != nil {
 			if IsPortInUse(err) && portID != "" {
@@ -91,6 +125,12 @@ func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID stri
 			return false, fmt.Errorf("error creating server %v: %v", opt, err)
 		}
 		server = v
+
+		err = waitForStatusActive(c, server.ID, nil)
+		if err != nil {
+			return true, err
+		}
+
 		return true, nil
 	})
 	if err != nil {

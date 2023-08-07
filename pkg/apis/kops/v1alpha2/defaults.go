@@ -18,7 +18,6 @@ package v1alpha2
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/klog/v2"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
@@ -38,10 +37,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology = &TopologySpec{}
 	}
 
-	rebindIfEmpty(&obj.Topology.ControlPlane, TopologyPublic)
-
-	rebindIfEmpty(&obj.Topology.Nodes, TopologyPublic)
-
 	if obj.Topology.LegacyDNS == nil {
 		obj.Topology.LegacyDNS = &DNSSpec{}
 	}
@@ -53,27 +48,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	if obj.LegacyCloudProvider != "openstack" {
 		if obj.LegacyAPI == nil {
 			obj.LegacyAPI = &APISpec{}
-		}
-
-		if obj.LegacyAPI.IsEmpty() {
-			switch obj.Topology.ControlPlane {
-			case TopologyPublic:
-				obj.LegacyAPI.DNS = &DNSAccessSpec{}
-
-			case TopologyPrivate:
-				obj.LegacyAPI.LoadBalancer = &LoadBalancerAccessSpec{}
-
-			default:
-				klog.Infof("unknown master topology type: %q", obj.Topology.ControlPlane)
-			}
-		}
-
-		if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Type == "" {
-			obj.LegacyAPI.LoadBalancer.Type = LoadBalancerTypePublic
-		}
-
-		if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
-			obj.LegacyAPI.LoadBalancer.Class = LoadBalancerClassClassic
 		}
 	}
 

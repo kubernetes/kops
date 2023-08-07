@@ -20,6 +20,9 @@ const (
 	// KubeAPIServer is the port where kube-apiserver listens.
 	KubeAPIServer = 443
 
+	// NodeupChallenge is the port where nodeup listens for challenges.
+	NodeupChallenge = 3987
+
 	// KopsControllerPort is the port where kops-controller listens.
 	KopsControllerPort = 3988
 

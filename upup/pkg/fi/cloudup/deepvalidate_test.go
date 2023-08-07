@@ -24,6 +24,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestDeepValidate_OK(t *testing.T) {
@@ -33,7 +34,7 @@ func TestDeepValidate_OK(t *testing.T) {
 		groups = append(groups, buildMinimalMasterInstanceGroup(subnet.Name))
 		groups = append(groups, buildMinimalNodeInstanceGroup(subnet.Name))
 	}
-	err := validation.DeepValidate(c, groups, true, nil)
+	err := validation.DeepValidate(c, groups, true, vfs.Context, nil)
 	if err != nil {
 		t.Fatalf("Expected no error from DeepValidate, got %v", err)
 	}
@@ -174,7 +175,7 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {
-	err := validation.DeepValidate(c, groups, true, nil)
+	err := validation.DeepValidate(c, groups, true, vfs.Context, nil)
 	if err == nil {
 		t.Fatalf("Expected error %q from DeepValidate (strict=true), not no error raised", message)
 	}

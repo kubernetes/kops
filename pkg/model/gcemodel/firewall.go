@@ -46,6 +46,28 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		allProtocols = append(allProtocols, "ipip")
 	}
 
+	// Allow all TCP traffic from load balancer health checks
+	if b.Cluster.Spec.API.LoadBalancer != nil {
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
+		c.AddTask(&gcetasks.FirewallRule{
+			Name:      s(b.NameForFirewallRule("lb-health-checks")),
+			Lifecycle: b.Lifecycle,
+			Network:   network,
+			Family:    gcetasks.AddressFamilyIPv4,
+			SourceRanges: []string{
+				// IP ranges for load balancer health checks
+				// https://cloud.google.com/load-balancing/docs/health-checks
+				"35.191.0.0/16",
+				"130.211.0.0/22",
+			},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+			Allowed:    []string{"tcp"},
+		})
+	}
+
 	// Allow all traffic from nodes -> nodes
 	{
 		network, err := b.LinkToNetwork()
@@ -115,7 +137,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
 			},
 		}
-		if b.Cluster.IsGossip() {
+		if b.Cluster.UsesLegacyGossip() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
@@ -144,8 +166,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
-		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.NameForFirewallRule("pod-cidrs-to-node")),
+		b.AddFirewallRulesTasks(c, "pod-cidrs-to-node", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
 			SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
@@ -180,22 +201,37 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 
 	ipv4 := *rule
 	ipv4.Name = s(b.NameForFirewallRule(name))
-	ipv4.SourceRanges = ipv4SourceRanges
-	if len(ipv4.SourceRanges) == 0 {
-		// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
-		// but the intent is usually to block everything, which can be achieved with Disabled=true.
-		ipv4.Disabled = true
-		ipv4.SourceRanges = []string{"0.0.0.0/0"}
+	ipv4.Family = gcetasks.AddressFamilyIPv4
+	if len(ipv4.SourceTags) == 0 {
+		ipv4.SourceRanges = ipv4SourceRanges
+		if len(ipv4.SourceRanges) == 0 {
+			// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
+			// but the intent is usually to block everything, which can be achieved with Disabled=true.
+			ipv4.Disabled = true
+			ipv4.SourceRanges = []string{"0.0.0.0/0"}
+		}
 	}
 	c.AddTask(&ipv4)
 
 	ipv6 := *rule
 	ipv6.Name = s(b.NameForFirewallRule(name + "-ipv6"))
-	ipv6.SourceRanges = ipv6SourceRanges
-	if len(ipv6.SourceRanges) == 0 {
-		// We specify explicitly so the rule is in IPv6 mode
-		ipv6.Disabled = true
-		ipv6.SourceRanges = []string{"::/0"}
+	ipv6.Family = gcetasks.AddressFamilyIPv6
+	if len(ipv6.SourceTags) == 0 {
+		ipv6.SourceRanges = ipv6SourceRanges
+		if len(ipv6.SourceRanges) == 0 {
+			// We specify explicitly so the rule is in IPv6 mode
+			ipv6.Disabled = true
+			ipv6.SourceRanges = []string{"::/0"}
+		}
 	}
+	var ipv6Allowed []string
+	for _, allowed := range ipv6.Allowed {
+		// Map icmp to icmpv6; easier than maintaining separate lists
+		if allowed == "icmp" {
+			allowed = "58" // 58 == the IANA protocol number for ICMPv6
+		}
+		ipv6Allowed = append(ipv6Allowed, allowed)
+	}
+	ipv6.Allowed = ipv6Allowed
 	c.AddTask(&ipv6)
 }

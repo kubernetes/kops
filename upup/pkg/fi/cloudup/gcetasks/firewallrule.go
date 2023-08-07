@@ -28,10 +28,16 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
+type AddressFamily string
+
+const AddressFamilyIPv4 AddressFamily = "ipv4"
+const AddressFamilyIPv6 AddressFamily = "ipv6"
+
 // FirewallRule represents a GCE firewall rules
 // +kops:fitask
 type FirewallRule struct {
 	Name      *string
+	Family    AddressFamily
 	Lifecycle fi.Lifecycle
 
 	Network      *Network
@@ -62,7 +68,7 @@ func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error listing FirewallRules: %v", err)
+		return nil, fmt.Errorf("getting FirewallRule %q: %w", *e.Name, err)
 	}
 
 	actual := &FirewallRule{}
@@ -78,6 +84,7 @@ func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
 
 	// Ignore "system" fields
 	actual.Lifecycle = e.Lifecycle
+	actual.Family = e.Family
 
 	return actual, nil
 }
@@ -112,14 +119,21 @@ func (e *FirewallRule) Normalize(c *fi.CloudupContext) error {
 		if err != nil {
 			return fmt.Errorf("sourceRange %q is not valid: %w", sourceRange, err)
 		}
+
+		if e.Family == "" {
+			// This is our own requirement, just for consistency checking.
+			// Previous we used the name, but that was confused when the cluster name was ipv6.example.com
+			return fmt.Errorf("must set Family when using SourceRanges")
+		}
+
 		if cidr.IP.To4() != nil {
 			// IPv4
-			if strings.Contains(name, "-ipv6") {
+			if e.Family != AddressFamilyIPv4 {
 				return fmt.Errorf("ipv4 ranges should not be in a ipv6-named rule (found %s in %s)", sourceRange, name)
 			}
 		} else {
 			// IPv6
-			if !strings.Contains(name, "-ipv6") {
+			if e.Family != AddressFamilyIPv6 {
 				return fmt.Errorf("ipv6 ranges should be in a ipv6-named rule (found %s in %s)", sourceRange, name)
 			}
 		}

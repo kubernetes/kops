@@ -31,6 +31,7 @@ Metadata:
 Name: master-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: master
@@ -74,12 +75,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: master
+  IGMap:
+    master: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-master
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -109,6 +111,7 @@ Metadata:
 Name: node-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node
@@ -146,12 +149,13 @@ SecurityGroups: null
 ServerGroup:
   ClusterName: cluster
   ID: null
-  IGName: node
+  IGMap:
+    node: 1
   Lifecycle: Sync
-  MaxSize: 1
   Name: cluster-node
   Policies:
   - anti-affinity
+Status: null
 UserData:
   task:
     Lifecycle: ""
@@ -284,6 +288,7 @@ Name: nodeupconfig-node
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: master
@@ -322,6 +327,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node
@@ -355,18 +361,18 @@ Tags:
 ---
 ClusterName: cluster
 ID: null
-IGName: master
+IGMap:
+  master: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-master
 Policies:
 - anti-affinity
 ---
 ClusterName: cluster
 ID: null
-IGName: node
+IGMap:
+  node: 1
 Lifecycle: Sync
-MaxSize: 1
 Name: cluster-node
 Policies:
 - anti-affinity

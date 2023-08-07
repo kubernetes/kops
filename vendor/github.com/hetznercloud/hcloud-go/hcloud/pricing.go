@@ -62,7 +62,7 @@ type PrimaryIPTypePricing struct {
 	Monthly    PrimaryIPPrice
 }
 
-// PrimaryIPTypePricing provides pricing information for PrimaryIPs
+// PrimaryIPTypePricing provides pricing information for PrimaryIPs.
 type PrimaryIPPricing struct {
 	Type     string
 	Pricings []PrimaryIPTypePricing

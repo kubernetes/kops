@@ -26,7 +26,7 @@ import (
 
 // SubnetsClient is a client for managing Subnets.
 type SubnetsClient interface {
-	CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) error
+	CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) (*network.Subnet, error)
 	List(ctx context.Context, resourceGroupName, virtualNetworkName string) ([]network.Subnet, error)
 	Delete(ctx context.Context, resourceGroupName, vnetName, subnetName string) error
 }
@@ -37,9 +37,19 @@ type subnetsClientImpl struct {
 
 var _ SubnetsClient = &subnetsClientImpl{}
 
-func (c *subnetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) error {
-	_, err := c.c.CreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, subnetName, parameters)
-	return err
+func (c *subnetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) (*network.Subnet, error) {
+	future, err := c.c.CreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, subnetName, parameters)
+	if err != nil {
+		return nil, fmt.Errorf("creating/updating subnet: %w", err)
+	}
+	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
+		return nil, fmt.Errorf("waiting for subnet create/update completion: %w", err)
+	}
+	sn, err := future.Result(*c.c)
+	if err != nil {
+		return nil, fmt.Errorf("obtaining result for subnet create/update: %w", err)
+	}
+	return &sn, err
 }
 
 func (c *subnetsClientImpl) List(ctx context.Context, resourceGroupName, virtualNetworkName string) ([]network.Subnet, error) {

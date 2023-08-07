@@ -24,7 +24,7 @@ spec:
     clusterCIDR: 172.20.0.0/16
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.23.6
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.23.17
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -33,6 +33,7 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
+    ignoreDaemonSetsUtilization: false
     image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.23.1
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
@@ -44,13 +45,12 @@ spec:
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal.example.com
-  configStore: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
-      version: 1.1.4
-    version: 1.6.17
+      version: 1.1.5
+    version: 1.6.20
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -62,11 +62,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
     etcdMembers:
@@ -74,11 +71,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: events
-    version: 3.5.7
+    version: 3.5.9
   externalDns:
     provider: dns-controller
   iam:
@@ -156,7 +150,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.16
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 172.20.0.10
@@ -187,7 +181,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -211,7 +205,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -254,5 +248,3 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public

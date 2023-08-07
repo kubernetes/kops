@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
-// PrimaryIP defines a Primary IP
+// PrimaryIP defines a Primary IP.
 type PrimaryIP struct {
 	ID           int
 	IP           net.IP
@@ -41,6 +41,32 @@ type PrimaryIPProtection struct {
 type PrimaryIPDNSPTR struct {
 	DNSPtr string
 	IP     string
+}
+
+// changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
+// Pass a nil ptr to reset the reverse DNS pointer to its default value.
+func (p *PrimaryIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
+	reqBody := schema.PrimaryIPActionChangeDNSPtrRequest{
+		IP:     ip.String(),
+		DNSPtr: ptr,
+	}
+	reqBodyData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	path := fmt.Sprintf("/primary_ips/%d/actions/change_dns_ptr", p.ID)
+	req, err := client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var respBody PrimaryIPChangeDNSPtrResult
+	resp, err := client.Do(req, &respBody)
+	if err != nil {
+		return nil, resp, err
+	}
+	return ActionFromSchema(respBody.Action), resp, nil
 }
 
 // GetDNSPtrForIP searches for the dns assigned to the given IP address.
@@ -105,7 +131,7 @@ type PrimaryIPAssignResult struct {
 }
 
 // PrimaryIPChangeDNSPtrOpts defines the request to
-// change a DNS PTR entry from a Primary IP
+// change a DNS PTR entry from a Primary IP.
 type PrimaryIPChangeDNSPtrOpts struct {
 	ID     int
 	DNSPtr string `json:"dns_ptr"`
@@ -119,19 +145,19 @@ type PrimaryIPChangeDNSPtrResult struct {
 }
 
 // PrimaryIPChangeProtectionOpts defines the request to
-// change protection configuration of a Primary IP
+// change protection configuration of a Primary IP.
 type PrimaryIPChangeProtectionOpts struct {
 	ID     int
 	Delete bool `json:"delete"`
 }
 
 // PrimaryIPChangeProtectionResult defines the response
-// when changing a protection of a PrimaryIP
+// when changing a protection of a PrimaryIP.
 type PrimaryIPChangeProtectionResult struct {
 	Action schema.Action `json:"action"`
 }
 
-// PrimaryIPClient is a client for the Primary IP API
+// PrimaryIPClient is a client for the Primary IP API.
 type PrimaryIPClient struct {
 	client *Client
 }
@@ -196,7 +222,7 @@ type PrimaryIPListOpts struct {
 }
 
 func (l PrimaryIPListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -315,7 +341,7 @@ func (c *PrimaryIPClient) Update(ctx context.Context, primaryIP *PrimaryIP, reqB
 	return PrimaryIPFromSchema(respBody.PrimaryIP), resp, nil
 }
 
-// Assign a Primary IP to a resource
+// Assign a Primary IP to a resource.
 func (c *PrimaryIPClient) Assign(ctx context.Context, opts PrimaryIPAssignOpts) (*Action, *Response, error) {
 	reqBodyData, err := json.Marshal(opts)
 	if err != nil {
@@ -336,7 +362,7 @@ func (c *PrimaryIPClient) Assign(ctx context.Context, opts PrimaryIPAssignOpts) 
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
-// Unassign a Primary IP from a resource
+// Unassign a Primary IP from a resource.
 func (c *PrimaryIPClient) Unassign(ctx context.Context, id int) (*Action, *Response, error) {
 	path := fmt.Sprintf("/primary_ips/%d/actions/unassign", id)
 	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader([]byte{}))
@@ -352,7 +378,7 @@ func (c *PrimaryIPClient) Unassign(ctx context.Context, id int) (*Action, *Respo
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
-// ChangeDNSPtr Change the reverse DNS from a Primary IP
+// ChangeDNSPtr Change the reverse DNS from a Primary IP.
 func (c *PrimaryIPClient) ChangeDNSPtr(ctx context.Context, opts PrimaryIPChangeDNSPtrOpts) (*Action, *Response, error) {
 	reqBodyData, err := json.Marshal(opts)
 	if err != nil {

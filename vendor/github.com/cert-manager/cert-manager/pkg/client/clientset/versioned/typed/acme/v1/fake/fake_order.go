@@ -21,10 +21,9 @@ package fake
 import (
 	"context"
 
-	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,25 +35,25 @@ type FakeOrders struct {
 	ns   string
 }
 
-var ordersResource = schema.GroupVersionResource{Group: "acme.cert-manager.io", Version: "v1", Resource: "orders"}
+var ordersResource = v1.SchemeGroupVersion.WithResource("orders")
 
-var ordersKind = schema.GroupVersionKind{Group: "acme.cert-manager.io", Version: "v1", Kind: "Order"}
+var ordersKind = v1.SchemeGroupVersion.WithKind("Order")
 
 // Get takes name of the order, and returns the corresponding order object, and an error if there is any.
-func (c *FakeOrders) Get(ctx context.Context, name string, options v1.GetOptions) (result *acmev1.Order, err error) {
+func (c *FakeOrders) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.Order, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(ordersResource, c.ns, name), &acmev1.Order{})
+		Invokes(testing.NewGetAction(ordersResource, c.ns, name), &v1.Order{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*acmev1.Order), err
+	return obj.(*v1.Order), err
 }
 
 // List takes label and field selectors, and returns the list of Orders that match those selectors.
-func (c *FakeOrders) List(ctx context.Context, opts v1.ListOptions) (result *acmev1.OrderList, err error) {
+func (c *FakeOrders) List(ctx context.Context, opts metav1.ListOptions) (result *v1.OrderList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(ordersResource, ordersKind, c.ns, opts), &acmev1.OrderList{})
+		Invokes(testing.NewListAction(ordersResource, ordersKind, c.ns, opts), &v1.OrderList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +63,8 @@ func (c *FakeOrders) List(ctx context.Context, opts v1.ListOptions) (result *acm
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &acmev1.OrderList{ListMeta: obj.(*acmev1.OrderList).ListMeta}
-	for _, item := range obj.(*acmev1.OrderList).Items {
+	list := &v1.OrderList{ListMeta: obj.(*v1.OrderList).ListMeta}
+	for _, item := range obj.(*v1.OrderList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -74,69 +73,69 @@ func (c *FakeOrders) List(ctx context.Context, opts v1.ListOptions) (result *acm
 }
 
 // Watch returns a watch.Interface that watches the requested orders.
-func (c *FakeOrders) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeOrders) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(ordersResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a order and creates it.  Returns the server's representation of the order, and an error, if there is any.
-func (c *FakeOrders) Create(ctx context.Context, order *acmev1.Order, opts v1.CreateOptions) (result *acmev1.Order, err error) {
+func (c *FakeOrders) Create(ctx context.Context, order *v1.Order, opts metav1.CreateOptions) (result *v1.Order, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(ordersResource, c.ns, order), &acmev1.Order{})
+		Invokes(testing.NewCreateAction(ordersResource, c.ns, order), &v1.Order{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*acmev1.Order), err
+	return obj.(*v1.Order), err
 }
 
 // Update takes the representation of a order and updates it. Returns the server's representation of the order, and an error, if there is any.
-func (c *FakeOrders) Update(ctx context.Context, order *acmev1.Order, opts v1.UpdateOptions) (result *acmev1.Order, err error) {
+func (c *FakeOrders) Update(ctx context.Context, order *v1.Order, opts metav1.UpdateOptions) (result *v1.Order, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(ordersResource, c.ns, order), &acmev1.Order{})
+		Invokes(testing.NewUpdateAction(ordersResource, c.ns, order), &v1.Order{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*acmev1.Order), err
+	return obj.(*v1.Order), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeOrders) UpdateStatus(ctx context.Context, order *acmev1.Order, opts v1.UpdateOptions) (*acmev1.Order, error) {
+func (c *FakeOrders) UpdateStatus(ctx context.Context, order *v1.Order, opts metav1.UpdateOptions) (*v1.Order, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(ordersResource, "status", c.ns, order), &acmev1.Order{})
+		Invokes(testing.NewUpdateSubresourceAction(ordersResource, "status", c.ns, order), &v1.Order{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*acmev1.Order), err
+	return obj.(*v1.Order), err
 }
 
 // Delete takes name of the order and deletes it. Returns an error if one occurs.
-func (c *FakeOrders) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *FakeOrders) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(ordersResource, c.ns, name, opts), &acmev1.Order{})
+		Invokes(testing.NewDeleteActionWithOptions(ordersResource, c.ns, name, opts), &v1.Order{})
 
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeOrders) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+func (c *FakeOrders) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(ordersResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &acmev1.OrderList{})
+	_, err := c.Fake.Invokes(action, &v1.OrderList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched order.
-func (c *FakeOrders) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *acmev1.Order, err error) {
+func (c *FakeOrders) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Order, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(ordersResource, c.ns, name, pt, data, subresources...), &acmev1.Order{})
+		Invokes(testing.NewPatchSubresourceAction(ordersResource, c.ns, name, pt, data, subresources...), &v1.Order{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*acmev1.Order), err
+	return obj.(*v1.Order), err
 }

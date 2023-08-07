@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.2
+    app.kubernetes.io/version: v1.13.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.2
+    app.kubernetes.io/version: v1.13.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.2
+    app.kubernetes.io/version: v1.13.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -142,7 +142,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.2
+    app.kubernetes.io/version: v1.13.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -227,10 +227,16 @@ spec:
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
+              apiVersion: v1
               fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.13.2
         livenessProbe:
           exec:
             command:
@@ -279,15 +285,17 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.12.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.13.2
         name: aws-vpc-cni-init
+        resources:
+          requests:
+            cpu: 25m
         securityContext:
           privileged: true
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
       priorityClassName: system-node-critical
-      securityContext: {}
       serviceAccountName: aws-node
       terminationGracePeriodSeconds: 10
       tolerations:

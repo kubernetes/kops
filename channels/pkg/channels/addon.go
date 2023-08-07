@@ -157,7 +157,7 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(ctx context.Context, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient, existingVersion)
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	var merr error
 
 	if required.NewVersion != nil {
-		err := a.updateAddon(ctx, k8sClient, pruner, applier, required)
+		err := a.updateAddon(ctx, k8sClient, vfsContext, pruner, applier, required)
 		if err != nil {
 			merr = multierr.Append(merr, err)
 		}
@@ -183,7 +183,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	return required, merr
 }
 
-func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *Pruner, applier Applier, required *AddonUpdate) error {
+func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, vfsContext *vfs.VFSContext, pruner *Pruner, applier Applier, required *AddonUpdate) error {
 	manifestURL, err := a.GetManifestFullUrl()
 	if err != nil {
 		return err
@@ -192,17 +192,34 @@ func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface,
 	klog.Infof("Applying update from %q", manifestURL)
 
 	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	data, err := vfs.Context.ReadFile(manifestURL.String())
+	data, err := vfsContext.ReadFile(manifestURL.String())
 	if err != nil {
 		return fmt.Errorf("error reading manifest: %w", err)
 	}
 
-	if err := applier.Apply(ctx, data); err != nil {
-		return fmt.Errorf("error applying update from %q: %w", manifestURL, err)
+	var merr error
+	var applyError, pruneError error
+
+	if applyError = applier.Apply(ctx, data); applyError != nil {
+		merr = multierr.Append(merr, fmt.Errorf("error applying update: %w", applyError))
 	}
 
-	if err := pruner.Prune(ctx, data, a.Spec.Prune); err != nil {
-		return fmt.Errorf("error pruning manifest from %q: %w", manifestURL, err)
+	if pruneError = pruner.Prune(ctx, data, a.Spec.Prune); pruneError != nil {
+		merr = multierr.Append(merr, fmt.Errorf("error pruning manifest: %w", pruneError))
+	}
+
+	if applyError != nil && pruneError == nil {
+		// If we failed to apply, but not prune, we should try to apply again
+		if err := applier.Apply(ctx, data); err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("error applying update after prune: %w", err))
+		} else {
+			// If we succeeded to apply after prune, clear the errors
+			merr = nil
+		}
+	}
+
+	if merr != nil {
+		return fmt.Errorf("error updating addon from %q: %w", manifestURL, merr)
 	}
 
 	if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {

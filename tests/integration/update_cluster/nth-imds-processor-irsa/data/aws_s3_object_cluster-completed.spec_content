@@ -19,19 +19,18 @@ spec:
     clusterCIDR: 100.64.0.0/10
     clusterName: nthimdsprocessor.longclustername.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.0
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.6
     leaderElection:
       leaderElect: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
-  configStore: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
-      version: 1.1.4
-    version: 1.6.17
+      version: 1.1.5
+    version: 1.6.20
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -43,11 +42,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: main
-    version: 3.5.7
+    version: 3.5.9
   - backups:
       backupStore: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com/backups/etcd/events
     etcdMembers:
@@ -55,11 +51,8 @@ spec:
       name: us-test-1a
     manager:
       backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     name: events
-    version: 3.5.7
+    version: 3.5.9
   externalDns:
     provider: dns-controller
   iam:
@@ -136,7 +129,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.16
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 100.64.0.10
@@ -167,7 +160,7 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -190,7 +183,7 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -230,5 +223,3 @@ spec:
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public

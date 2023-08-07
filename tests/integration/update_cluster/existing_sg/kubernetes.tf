@@ -17,7 +17,7 @@ locals {
   vpc_cidr_block               = aws_vpc.existingsg-example-com.cidr_block
   vpc_id                       = aws_vpc.existingsg-example-com.id
   vpc_ipv6_cidr_block          = aws_vpc.existingsg-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length         = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  vpc_ipv6_cidr_length         = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -93,7 +93,7 @@ output "vpc_ipv6_cidr_block" {
 }
 
 output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  value = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
@@ -127,6 +127,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.existingsg.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -190,6 +195,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
     value               = "master-us-test-1b.masters.existingsg.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
     propagate_at_launch = true
     value               = ""
@@ -249,6 +259,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1c.masters.existingsg.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -311,6 +326,11 @@ resource "aws_autoscaling_group" "nodes-existingsg-example-com" {
     value               = "nodes.existingsg.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -331,6 +351,98 @@ resource "aws_autoscaling_group" "nodes-existingsg-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-existingsg-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1b-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1b-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1c-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1c-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-existingsg-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "existingsg-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_existingsg.example.com-ASGLifecycle_event_pattern")
+  name          = "existingsg.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "existingsg-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_existingsg.example.com-InstanceScheduledChange_event_pattern")
+  name          = "existingsg.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "existingsg-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_existingsg.example.com-InstanceStateChange_event_pattern")
+  name          = "existingsg.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "existingsg-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_existingsg.example.com-SpotInterruption_event_pattern")
+  name          = "existingsg.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com-SpotInterruption"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "existingsg-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.existingsg-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.existingsg-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "existingsg-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.existingsg-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.existingsg-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "existingsg-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.existingsg-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.existingsg-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "existingsg-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.existingsg-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.existingsg-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "a-etcd-events-existingsg-example-com" {
@@ -580,6 +692,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -594,6 +707,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -606,6 +720,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
   tags = {
     "KubernetesCluster"                                                                                     = "existingsg.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.existingsg.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -663,6 +778,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1b.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -677,6 +793,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1b.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -689,6 +806,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
   tags = {
     "KubernetesCluster"                                                                                     = "existingsg.example.com"
     "Name"                                                                                                  = "master-us-test-1b.masters.existingsg.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -746,6 +864,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1c.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -760,6 +879,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     tags = {
       "KubernetesCluster"                                                                                     = "existingsg.example.com"
       "Name"                                                                                                  = "master-us-test-1c.masters.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -772,6 +892,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
   tags = {
     "KubernetesCluster"                                                                                     = "existingsg.example.com"
     "Name"                                                                                                  = "master-us-test-1c.masters.existingsg.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -825,6 +946,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "existingsg.example.com"
       "Name"                                                                       = "nodes.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -836,6 +958,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "existingsg.example.com"
       "Name"                                                                       = "nodes.existingsg.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -845,6 +968,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "existingsg.example.com"
     "Name"                                                                       = "nodes.existingsg.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -873,6 +997,17 @@ resource "aws_route53_record" "api-existingsg-example-com" {
   }
   name    = "api.existingsg.example.com"
   type    = "A"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
+resource "aws_route53_record" "api-existingsg-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_elb.api-existingsg-example-com.dns_name
+    zone_id                = aws_elb.api-existingsg-example-com.zone_id
+  }
+  name    = "api.existingsg.example.com"
+  type    = "AAAA"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
@@ -985,6 +1120,14 @@ resource "aws_s3_object" "existingsg-example-com-addons-limit-range-addons-k8s-i
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_existingsg.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/existingsg.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "existingsg-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_existingsg.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/existingsg.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1500,6 +1643,17 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
+resource "aws_sqs_queue" "existingsg-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "existingsg-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_existingsg-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg-example-com-nth"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
 resource "aws_subnet" "us-test-1a-existingsg-example-com" {
   availability_zone                           = "us-test-1a"
   cidr_block                                  = "172.20.32.0/19"
@@ -1509,8 +1663,6 @@ resource "aws_subnet" "us-test-1a-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "us-test-1a.existingsg.example.com"
     "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1a" = "true"
-    "kops.k8s.io/instance-group/nodes"             = "true"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
     "kubernetes.io/role/elb"                       = "1"
     "kubernetes.io/role/internal-elb"              = "1"
@@ -1527,7 +1679,6 @@ resource "aws_subnet" "us-test-1b-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "us-test-1b.existingsg.example.com"
     "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1b" = "true"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
     "kubernetes.io/role/elb"                       = "1"
     "kubernetes.io/role/internal-elb"              = "1"
@@ -1544,7 +1695,6 @@ resource "aws_subnet" "us-test-1c-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "us-test-1c.existingsg.example.com"
     "SubnetType"                                   = "Public"
-    "kops.k8s.io/instance-group/master-us-test-1c" = "true"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
     "kubernetes.io/role/elb"                       = "1"
     "kubernetes.io/role/internal-elb"              = "1"

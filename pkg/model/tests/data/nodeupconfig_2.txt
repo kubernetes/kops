@@ -1,9 +1,16 @@
 APIServerConfig:
+  API: {}
+  ClusterDNSDomain: ""
   KubeAPIServer:
     image: CoreOS
   ServiceAccountPublicKeys: ""
 CAs: {}
 ContainerRuntime: docker
+ControlPlaneConfig:
+  KubeControllerManager:
+    cloudProvider: aws
+  KubeScheduler:
+    image: SomeImage
 FileAssets:
 - content: blah blah
   name: iptables-restore
@@ -54,3 +61,5 @@ containerdConfig:
   logLevel: info
 docker:
   logLevel: INFO
+usesLegacyGossip: false
+usesNoneDNS: false

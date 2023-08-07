@@ -418,10 +418,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
-
-			if b.Cluster.IsKubernetesLT("1.23") {
-				AddLegacyCCMPermissions(p)
-			}
 		}
 
 		if c := b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {
@@ -508,9 +504,9 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		var locations []string
 
 		for _, p := range []string{
-			b.Cluster.Spec.KeyStore,
-			b.Cluster.Spec.SecretStore,
-			b.Cluster.Spec.ConfigStore,
+			b.Cluster.Spec.ConfigStore.Keypairs,
+			b.Cluster.Spec.ConfigStore.Secrets,
+			b.Cluster.Spec.ConfigStore.Base,
 		} {
 			if p == "" {
 				continue
@@ -706,31 +702,6 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 				"/igconfig/node/*",
 			)
 		}
-		if !model.UseKopsControllerForNodeBootstrap(cluster) {
-			paths = append(paths,
-				"/secrets/dockerconfig",
-				"/pki/private/kube-proxy/*",
-			)
-
-			if useBootstrapTokens(cluster) {
-				paths = append(paths, "/pki/private/node-authorizer-client/*")
-			} else {
-				paths = append(paths, "/pki/private/kubelet/*")
-			}
-
-			networkingSpec := &cluster.Spec.Networking
-
-			// @check if kuberoute is enabled and permit access to the private key
-			if networkingSpec.KubeRouter != nil {
-				paths = append(paths, "/pki/private/kube-router/*")
-			}
-
-			// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
-			// As long as the Cilium Etcd cluster exists, we should do this
-			if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) {
-				paths = append(paths, "/pki/private/etcd-client-cilium/*")
-			}
-		}
 	}
 	return paths, nil
 }
@@ -782,16 +753,6 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 		return nil, fmt.Errorf("error building IAM policy: %v", err)
 	}
 	return bytes.NewReader([]byte(j)), nil
-}
-
-// useBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
-// the kops model into the builder rather than duplicating the code. I'll leave for another PR
-func useBootstrapTokens(cluster *kops.Cluster) bool {
-	if cluster.Spec.KubeAPIServer == nil {
-		return false
-	}
-
-	return fi.ValueOf(cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 func addECRPermissions(p *Policy) {

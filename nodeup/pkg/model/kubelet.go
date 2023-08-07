@@ -49,7 +49,8 @@ const (
 	// kubeletService is the name of the kubelet service
 	kubeletService = "kubelet.service"
 
-	kubeletConfigFilePath = "/var/lib/kubelet/kubelet.conf"
+	kubeletConfigFilePath            = "/var/lib/kubelet/kubelet.conf"
+	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf"
 )
 
 // KubeletBuilder installs kubelet
@@ -125,7 +126,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Mode: s("0755"),
 		})
 
-		if b.HasAPIServer || !b.UseBootstrapTokens() {
+		{
 			var kubeconfig fi.Resource
 			if b.HasAPIServer {
 				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
@@ -155,6 +156,12 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	if err := b.addContainerizedMounter(c); err != nil {
 		return err
+	}
+
+	if b.UseExternalECRCredentialsProvider() {
+		if err := b.addECRCP(c); err != nil {
+			return fmt.Errorf("failed to add ECR credential provider: %w", err)
+		}
 	}
 
 	if kubeletConfig.CgroupDriver == "systemd" && b.NodeupConfig.ContainerRuntime == "containerd" {
@@ -213,6 +220,7 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodeta
 	if kubeletConfig.ShutdownGracePeriodCriticalPods != nil {
 		componentConfig.ShutdownGracePeriodCriticalPods = *kubeletConfig.ShutdownGracePeriodCriticalPods
 	}
+	componentConfig.MemorySwap.SwapBehavior = kubeletConfig.MemorySwapBehavior
 
 	s := runtime.NewScheme()
 	if err := kubelet.AddToScheme(s); err != nil {
@@ -241,16 +249,25 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodeta
 	return t, nil
 }
 
-// kubeletPath returns the path of the kubelet based on distro
-func (b *KubeletBuilder) kubeletPath() string {
-	kubeletCommand := "/usr/local/bin/kubelet"
+func (b *KubeletBuilder) binaryPath() string {
+	path := "/usr/local/bin"
 	if b.Distribution == distributions.DistributionFlatcar {
-		kubeletCommand = "/opt/kubernetes/bin/kubelet"
+		path = "/opt/kubernetes/bin"
 	}
 	if b.Distribution == distributions.DistributionContainerOS {
-		kubeletCommand = "/home/kubernetes/bin/kubelet"
+		path = "/home/kubernetes/bin"
 	}
-	return kubeletCommand
+	return path
+}
+
+// kubeletPath returns the path of the kubelet based on distro
+func (b *KubeletBuilder) kubeletPath() string {
+	return b.binaryPath() + "/kubelet"
+}
+
+// ecrcpPath returns the path of the ECR credentials provider based on distro and archiecture
+func (b *KubeletBuilder) ecrcpPath() string {
+	return b.binaryPath() + "/ecr-credential-provider"
 }
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
@@ -268,11 +285,6 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
-	// @step: ensure the masters do not get a bootstrap configuration
-	if b.UseBootstrapTokens() && b.IsMaster {
-		kubeletConfig.BootstrapKubeconfig = ""
-	}
-
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
@@ -319,16 +331,19 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		}
 	}
 
-	if b.UseKopsControllerForNodeBootstrap() {
-		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
-		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
-	}
+	flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
+	flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 
 	if b.IsIPv6Only() {
 		flags += " --node-ip=::"
 	}
 
 	flags += " --config=" + kubeletConfigFilePath
+
+	if b.UseExternalECRCredentialsProvider() {
+		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
+		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly
@@ -360,12 +375,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	}
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
-
-	// @check if we are using bootstrap tokens and file checker
-	if !b.IsMaster && b.UseBootstrapTokens() {
-		manifest.Set("Service", "ExecStartPre",
-			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
-	}
 
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
 	manifest.Set("Service", "Restart", "always")
@@ -413,6 +422,56 @@ func (b *KubeletBuilder) usesContainerizedMounter() bool {
 	}
 }
 
+// addECRCP installs the ECR credential provider
+func (b *KubeletBuilder) addECRCP(c *fi.NodeupModelBuilderContext) error {
+	{
+		assetName := "ecr-credential-provider-linux-" + string(b.Architecture)
+		assetPath := ""
+		asset, err := b.Assets.Find(assetName, assetPath)
+		if err != nil {
+			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+		}
+		if asset == nil {
+			return fmt.Errorf("unable to locate asset %q", assetName)
+		}
+
+		t := &nodetasks.File{
+			Path:     b.ecrcpPath(),
+			Contents: asset,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		}
+		c.AddTask(t)
+	}
+
+	{
+		configContent := `apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - name: ecr-credential-provider
+    matchImages:
+      - "*.dkr.ecr.*.amazonaws.com"
+      - "*.dkr.ecr.*.amazonaws.com.cn"
+      - "*.dkr.ecr-fips.*.amazonaws.com"
+      - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
+      - "*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov"
+    defaultCacheDuration: "12h"
+    apiVersion: credentialprovider.kubelet.k8s.io/v1
+    args:
+      - get-credentials
+`
+
+		t := &nodetasks.File{
+			Path:     credentialProviderConfigFilePath,
+			Contents: fi.NewStringResource(configContent),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+		}
+		c.AddTask(t)
+	}
+	return nil
+}
+
 // addContainerizedMounter downloads and installs the containerized mounter, that we need on ContainerOS
 func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext) error {
 	if !b.usesContainerizedMounter() {
@@ -455,7 +514,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 	// TODO: leverage assets for this tar file (but we want to avoid expansion of the archive)
 	c.AddTask(&nodetasks.Archive{
 		Name:      "containerized_mounter",
-		Source:    "https://storage.googleapis.com/kubernetes-release/gci-mounter/mounter.tar",
+		Source:    "https://dl.k8s.io/gci-mounter/mounter.tar",
 		Hash:      "6a9f5f52e0b066183e6b90a3820b8c2c660d30f6ac7aeafb5064355bf0a5b6dd",
 		TargetDir: path.Join(containerizedMounterHome, "rootfs"),
 	})
@@ -512,16 +571,10 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
-	isMaster := b.IsMaster
-
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-
-	if isMaster {
-		c.BootstrapKubeconfig = ""
-	}
 
 	if b.NodeupConfig.Networking.AmazonVPC != nil {
 		sess := session.Must(session.NewSession())
@@ -616,57 +669,55 @@ func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.NodeupModelBui
 }
 
 func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilderContext) error {
-	if b.UseKopsControllerForNodeBootstrap() {
-		name := "kubelet-server"
-		dir := b.PathSrvKubernetes()
+	name := "kubelet-server"
+	dir := b.PathSrvKubernetes()
 
-		names, err := b.kubeletNames()
+	names, err := b.kubeletNames()
+	if err != nil {
+		return err
+	}
+
+	if !b.HasAPIServer {
+		cert, key, err := b.GetBootstrapCert(name, fi.CertificateIDCA)
 		if err != nil {
 			return err
 		}
 
-		if !b.HasAPIServer {
-			cert, key, err := b.GetBootstrapCert(name, fi.CertificateIDCA)
-			if err != nil {
-				return err
-			}
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".crt"),
+			Contents:       cert,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0644"),
+			BeforeServices: []string{"kubelet.service"},
+		})
 
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".crt"),
-				Contents:       cert,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0644"),
-				BeforeServices: []string{"kubelet.service"},
-			})
+		c.AddTask(&nodetasks.File{
+			Path:           filepath.Join(dir, name+".key"),
+			Contents:       key,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.PtrTo("0400"),
+			BeforeServices: []string{"kubelet.service"},
+		})
 
-			c.AddTask(&nodetasks.File{
-				Path:           filepath.Join(dir, name+".key"),
-				Contents:       key,
-				Type:           nodetasks.FileType_File,
-				Mode:           fi.PtrTo("0400"),
-				BeforeServices: []string{"kubelet.service"},
-			})
-
-		} else {
-			issueCert := &nodetasks.IssueCert{
-				Name:      name,
-				Signer:    fi.CertificateIDCA,
-				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
-				Type:      "server",
-				Subject: nodetasks.PKIXName{
-					CommonName: names[0],
-				},
-				AlternateNames: names,
-			}
-			c.AddTask(issueCert)
-			return issueCert.AddFileTasks(c, dir, name, "", nil)
+	} else {
+		issueCert := &nodetasks.IssueCert{
+			Name:      name,
+			Signer:    fi.CertificateIDCA,
+			KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:      "server",
+			Subject: nodetasks.PKIXName{
+				CommonName: names[0],
+			},
+			AlternateNames: names,
 		}
+		c.AddTask(issueCert)
+		return issueCert.AddFileTasks(c, dir, name, "", nil)
 	}
 	return nil
 }
 
 func (b *KubeletBuilder) kubeletNames() ([]string, error) {
-	if b.BootConfig.CloudProvider != kops.CloudProviderAWS {
+	if b.CloudProvider() != kops.CloudProviderAWS {
 		name, err := os.Hostname()
 		if err != nil {
 			return nil, err

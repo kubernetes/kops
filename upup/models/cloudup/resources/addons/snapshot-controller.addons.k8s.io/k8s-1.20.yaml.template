@@ -1218,6 +1218,7 @@ spec:
         - name: snapshot-validation-webhook-certs
           secret:
             secretName: snapshot-validation-secret
+      serviceAccountName: snapshot-controller
 ---
 apiVersion: v1
 kind: Service

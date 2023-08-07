@@ -26,12 +26,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,7 +38,7 @@ import (
 )
 
 // NewLegacyNodeReconciler is the constructor for a LegacyNodeReconciler
-func NewLegacyNodeReconciler(mgr manager.Manager, configPath string, identifier nodeidentity.LegacyIdentifier) (*LegacyNodeReconciler, error) {
+func NewLegacyNodeReconciler(mgr manager.Manager, vfsContext *vfs.VFSContext, configPath string, identifier nodeidentity.LegacyIdentifier) (*LegacyNodeReconciler, error) {
 	r := &LegacyNodeReconciler{
 		client:     mgr.GetClient(),
 		log:        ctrl.Log.WithName("controllers").WithName("Node"),
@@ -53,7 +52,7 @@ func NewLegacyNodeReconciler(mgr manager.Manager, configPath string, identifier 
 	}
 	r.coreV1Client = coreClient
 
-	configBase, err := vfs.Context.BuildVfsPath(configPath)
+	configBase, err := vfsContext.BuildVfsPath(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse ConfigBase %q: %v", configPath, err)
 	}
@@ -111,7 +110,10 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("unable to load instance group object for node %s: %v", node.Name, err)
 	}
 
-	labels := nodelabels.BuildNodeLabels(cluster, ig)
+	labels, err := nodelabels.BuildNodeLabels(cluster, ig)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error building node labels for node %q: %w", node.Name, err)
+	}
 
 	lifecycle, err := r.getInstanceLifecycle(ctx, node)
 	if err != nil {
@@ -130,12 +132,23 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if len(updateLabels) == 0 {
+	deleteLabels := make(map[string]struct{})
+	for k := range node.Labels {
+		// If it is one of our managed labels, "prune" values we don't want to be there
+		switch k {
+		case nodelabels.RoleLabelMaster16, nodelabels.RoleLabelAPIServer16, nodelabels.RoleLabelNode16, nodelabels.RoleLabelControlPlane20:
+			if _, found := labels[k]; !found {
+				deleteLabels[k] = struct{}{}
+			}
+		}
+	}
+
+	if len(updateLabels) == 0 && len(deleteLabels) == 0 {
 		klog.V(4).Infof("no label changes needed for %s", node.Name)
 		return ctrl.Result{}, nil
 	}
 
-	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels); err != nil {
+	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels, deleteLabels); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}
@@ -149,9 +162,9 @@ func (r *LegacyNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// getClusterForNode returns the kops.Cluster object for the node
+// getClusterForNode returns the api.Cluster object for the node
 // The cluster is actually loaded when we first start
-func (r *LegacyNodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Cluster, error) {
+func (r *LegacyNodeReconciler) getClusterForNode(node *corev1.Node) (*api.Cluster, error) {
 	clusterPath := r.configBase.Join(registry.PathClusterCompleted)
 	cluster, err := r.loadCluster(clusterPath)
 	if err != nil {
@@ -170,8 +183,8 @@ func (r *LegacyNodeReconciler) getInstanceLifecycle(ctx context.Context, node *c
 	return identity.InstanceLifecycle, nil
 }
 
-// getInstanceGroupForNode returns the kops.InstanceGroup object for the node
-func (r *LegacyNodeReconciler) getInstanceGroupForNode(ctx context.Context, node *corev1.Node) (*kops.InstanceGroup, error) {
+// getInstanceGroupForNode returns the api.InstanceGroup object for the node
+func (r *LegacyNodeReconciler) getInstanceGroupForNode(ctx context.Context, node *corev1.Node) (*api.InstanceGroup, error) {
 	// We assume that if the instancegroup label is set, that it is correct
 	// TODO: Should we be paranoid?
 	instanceGroupName := node.Labels["kops.k8s.io/instancegroup"]
@@ -196,8 +209,8 @@ func (r *LegacyNodeReconciler) getInstanceGroupForNode(ctx context.Context, node
 	return r.loadNamedInstanceGroup(instanceGroupName)
 }
 
-// loadCluster loads a kops.Cluster object from a vfs.Path
-func (r *LegacyNodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
+// loadCluster loads a api.Cluster object from a vfs.Path
+func (r *LegacyNodeReconciler) loadCluster(p vfs.Path) (*api.Cluster, error) {
 	ttl := time.Hour
 
 	b, err := r.cache.Read(p, ttl)
@@ -209,14 +222,14 @@ func (r *LegacyNodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing Cluster %q: %v", p, err)
 	}
-	if cluster, ok := o.(*kops.Cluster); ok {
+	if cluster, ok := o.(*api.Cluster); ok {
 		return cluster, nil
 	}
 	return nil, fmt.Errorf("unexpected object type for Cluster %q: %T", p, o)
 }
 
-// loadInstanceGroup loads a kops.InstanceGroup object from the vfs backing store
-func (r *LegacyNodeReconciler) loadNamedInstanceGroup(name string) (*kops.InstanceGroup, error) {
+// loadNamedInstanceGroup loads a api.InstanceGroup object from the vfs backing store
+func (r *LegacyNodeReconciler) loadNamedInstanceGroup(name string) (*api.InstanceGroup, error) {
 	p := r.configBase.Join("instancegroup", name)
 
 	ttl := time.Hour
@@ -225,9 +238,14 @@ func (r *LegacyNodeReconciler) loadNamedInstanceGroup(name string) (*kops.Instan
 		return nil, fmt.Errorf("error loading InstanceGroup %q: %v", p, err)
 	}
 
-	instanceGroup := &kops.InstanceGroup{}
-	if err := utils.YamlUnmarshal(b, instanceGroup); err != nil {
-		return nil, fmt.Errorf("error parsing InstanceGroup %q: %v", p, err)
+	object, _, err := kopscodecs.Decode(b, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing %s: %w", p, err)
+	}
+
+	instanceGroup, ok := object.(*api.InstanceGroup)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type, expected InstanceGroup, got %T", object)
 	}
 
 	return instanceGroup, nil

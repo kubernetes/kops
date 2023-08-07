@@ -17,6 +17,7 @@ limitations under the License.
 package applyset
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -25,7 +26,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager"
 	"sigs.k8s.io/structured-merge-diff/v4/fieldpath"
 )
 
@@ -184,15 +184,10 @@ func mergeManagedFields(managedFields []metav1.ManagedFieldsEntry) (*fieldpath.S
 
 // toFieldPathSet converts an encoded ManagedFieldsEntry to a set of managed fields (a fieldpath.Set)
 func toFieldPathSet(fields *metav1.ManagedFieldsEntry) (*fieldpath.Set, error) {
-	decoded, err := fieldmanager.DecodeManagedFields([]metav1.ManagedFieldsEntry{*fields})
-	if err != nil {
+	// https://github.com/kubernetes/kubernetes/blob/v1.27.1/staging/src/k8s.io/client-go/util/csaupgrade/upgrade.go#L310-L315
+	var fieldSet fieldpath.Set
+	if err := fieldSet.FromJSON(bytes.NewReader(fields.FieldsV1.Raw)); err != nil {
 		return nil, err
 	}
-	if len(decoded.Fields()) != 1 {
-		return nil, fmt.Errorf("expected a single managed fields entry, but got %d", len(decoded.Fields()))
-	}
-	for _, fieldSet := range decoded.Fields() {
-		return fieldSet.Set(), nil
-	}
-	return nil, fmt.Errorf("no fields were decoded")
+	return &fieldSet, nil
 }

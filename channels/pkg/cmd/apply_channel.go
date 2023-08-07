@@ -22,7 +22,6 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/blang/semver/v4"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
@@ -32,10 +31,9 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/channels"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type ApplyChannelOptions struct {
@@ -100,15 +98,15 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	channelLocation := args[0]
 
 	// menu is the expected list of addons in the cluster and their configurations.
-	menu, err := buildMenu(kubernetesVersion, channelLocation)
+	menu, err := buildMenu(f.VFSContext(), kubernetesVersion, channelLocation)
 	if err != nil {
 		return fmt.Errorf("cannot build the addon menu from args: %w", err)
 	}
 
-	return applyMenu(ctx, menu, k8sClient, cmClient, dynamicClient, restMapper, options.Yes)
+	return applyMenu(ctx, menu, f.VFSContext(), k8sClient, cmClient, dynamicClient, restMapper, options.Yes)
 }
 
-func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernetes.Interface, cmClient versioned.Interface, dynamicClient dynamic.Interface, restMapper *restmapper.DeferredDiscoveryRESTMapper, apply bool) error {
+func applyMenu(ctx context.Context, menu *channels.AddonMenu, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient versioned.Interface, dynamicClient dynamic.Interface, restMapper *restmapper.DeferredDiscoveryRESTMapper, apply bool) error {
 	// channelVersions is the list of installed addons in the cluster.
 	// It is keyed by <namespace>:<addon name>.
 	channelVersions, err := getChannelVersions(ctx, k8sClient)
@@ -175,7 +173,7 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 	var merr error
 
 	for _, needUpdate := range needUpdates {
-		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient, pruner, applier, channelVersions[needUpdate.GetNamespace()+":"+needUpdate.Name])
+		update, err := needUpdate.EnsureUpdated(ctx, vfsContext, k8sClient, cmClient, pruner, applier, channelVersions[needUpdate.GetNamespace()+":"+needUpdate.Name])
 		if err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("updating %q: %w", needUpdate.Name, err))
 		} else if update != nil {
@@ -219,7 +217,7 @@ func getChannelVersions(ctx context.Context, k8sClient kubernetes.Interface) (ma
 	return channelVersions, nil
 }
 
-func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*channels.AddonMenu, error) {
+func buildMenu(vfsContext *vfs.VFSContext, kubernetesVersion semver.Version, channelLocation string) (*channels.AddonMenu, error) {
 	menu := channels.NewAddonMenu()
 
 	location, err := url.Parse(channelLocation)
@@ -227,25 +225,12 @@ func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*chann
 		return nil, fmt.Errorf("unable to parse argument %q as url", channelLocation)
 	}
 	if !location.IsAbs() {
-		// We recognize the following "well-known" format:
-		// <name> with no slashes ->
-		if strings.Contains(channelLocation, "/") {
-			return nil, fmt.Errorf("channel format not recognized (did you mean to use `-f` to specify a local file?): %q", channelLocation)
-		}
 		expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + channelLocation + "/addon.yaml"
-		location, err = url.Parse(expanded)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse expanded argument %q as url", expanded)
-		}
 		// Disallow the use of legacy addons from the "well-known" location starting Kubernetes 1.23:
 		// https://raw.githubusercontent.com/kubernetes/kops/master/addons/<name>/addon.yaml
-		if util.IsKubernetesGTE("1.23", kubernetesVersion) {
-			return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-		} else {
-			klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-		}
+		return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
 	}
-	o, err := channels.LoadAddons(channelLocation, location)
+	o, err := channels.LoadAddons(vfsContext, channelLocation, location)
 	if err != nil {
 		return nil, fmt.Errorf("error loading channel %q: %v", location, err)
 	}

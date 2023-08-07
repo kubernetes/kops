@@ -50,12 +50,14 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	switch distro {
 	case "amzn-2":
 		return DistributionAmazonLinux2, nil
+	case "amzn-2023":
+		return DistributionAmazonLinux2023, nil
 	case "debian-10":
 		return DistributionDebian10, nil
 	case "debian-11":
 		return DistributionDebian11, nil
-	case "ubuntu-18.04":
-		return DistributionUbuntu1804, nil
+	case "debian-12":
+		return DistributionDebian12, nil
 	case "ubuntu-20.04":
 		return DistributionUbuntu2004, nil
 	case "ubuntu-20.10":
@@ -77,6 +79,9 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	}
 	if strings.HasPrefix(distro, "rhel-8.") {
 		return DistributionRhel8, nil
+	}
+	if strings.HasPrefix(distro, "rhel-9.") {
+		return DistributionRhel9, nil
 	}
 	if strings.HasPrefix(distro, "rocky-8.") {
 		return DistributionRocky8, nil

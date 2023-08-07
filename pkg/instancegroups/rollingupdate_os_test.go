@@ -50,18 +50,15 @@ func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *
 	inCluster.Spec.CloudProvider.Openstack = &kopsapi.OpenstackSpec{}
 	inCluster.Name = "test.k8s.local"
 
-	inCluster.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPrivate
-	inCluster.Spec.Networking.Topology.Nodes = kopsapi.TopologyPrivate
-
-	err := cloudup.PerformAssignments(inCluster, mockcloud)
+	err := cloudup.PerformAssignments(inCluster, vfs.Context, mockcloud)
 	if err != nil {
 		t.Fatalf("Failed to perform assignments: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(inCluster.Spec.Assets, inCluster.Spec.KubernetesVersion, false)
-	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
-	clientset := vfsclientset.NewVFSClientset(basePath)
-	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, mockcloud, assetBuilder)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, inCluster.Spec.Assets, inCluster.Spec.KubernetesVersion, false)
+	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigStore.Base)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
+	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, nil, mockcloud, assetBuilder)
 	if err != nil {
 		t.Fatalf("Failed to populate cluster spec: %v", err)
 	}

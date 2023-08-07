@@ -22,10 +22,12 @@ const (
 )
 
 type TopologySpec struct {
-	// The environment to launch the Kubernetes masters in public|private
-	ControlPlane string `json:"masters,omitempty"`
+	// Masters is not used.
+	// +k8s:conversion-gen=false
+	Masters string `json:"masters,omitempty"`
 
-	// The environment to launch the Kubernetes nodes in public|private
+	// Nodes is not used.
+	// +k8s:conversion-gen=false
 	Nodes string `json:"nodes,omitempty"`
 
 	// Bastion provide an external facing point of entry into a network

@@ -265,9 +265,11 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 
 			for _, ig := range b.InstanceGroups {
-				for _, igSubnetName := range ig.Spec.Subnets {
-					if subnetSpec.Name == igSubnetName {
-						tags["kops.k8s.io/instance-group/"+ig.GetName()] = "true"
+				if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+					for _, igSubnetName := range ig.Spec.Subnets {
+						if subnetSpec.Name == igSubnetName {
+							tags["kops.k8s.io/instance-group/"+ig.GetName()] = "true"
+						}
 					}
 				}
 			}
@@ -468,7 +470,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Tags:      nil, // We don't need to add tags here
 				}
 
-				c.AddTask(in)
+				c.EnsureTask(in)
 			} else if strings.HasPrefix(egress, "tgw-") {
 				tgwID = &egress
 			} else if egress == "External" {

@@ -325,6 +325,7 @@ spec:
         - --aws-use-static-instance-list=false
         - --expander=random
         - --nodes=2:2:nodes.minimal.example.com
+        - --ignore-daemonsets-utilization=false
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true
@@ -344,7 +345,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/cluster-autoscaler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

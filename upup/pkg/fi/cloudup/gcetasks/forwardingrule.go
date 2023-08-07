@@ -17,7 +17,9 @@ limitations under the License.
 package gcetasks
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
@@ -47,6 +49,13 @@ type ForwardingRule struct {
 	Network             *Network
 	Subnetwork          *Subnet
 	BackendService      *BackendService
+
+	// Labels to set on the resource.
+	Labels map[string]string
+
+	// Fingerprint of the labels, used to avoid race-conditions on updates.
+	// Only set on the actual resource returned by Find.
+	labelFingerprint string
 }
 
 var _ fi.CompareWithID = &ForwardingRule{}
@@ -90,6 +99,27 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 		}
 		actual.IPAddress = address
 	}
+	if r.BackendService != "" {
+		actual.BackendService = &BackendService{
+			Name: fi.PtrTo(lastComponent(r.BackendService)),
+		}
+	}
+	if r.LoadBalancingScheme != "" {
+		actual.LoadBalancingScheme = fi.PtrTo(r.LoadBalancingScheme)
+	}
+	if r.Network != "" {
+		actual.Network = &Network{
+			Name: fi.PtrTo(lastComponent(r.Network)),
+		}
+	}
+	if r.Subnetwork != "" {
+		actual.Subnetwork = &Subnet{
+			Name: fi.PtrTo(lastComponent(r.Subnetwork)),
+		}
+	}
+
+	actual.Labels = r.Labels
+	actual.labelFingerprint = r.LabelFingerprint
 
 	// Ignore "system" fields
 	actual.Lifecycle = e.Lifecycle
@@ -109,6 +139,8 @@ func (_ *ForwardingRule) CheckChanges(a, e, changes *ForwardingRule) error {
 }
 
 func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ForwardingRule) error {
+	ctx := context.TODO()
+
 	name := fi.ValueOf(e.Name)
 
 	o := &compute.ForwardingRule{
@@ -189,8 +221,47 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 			return fmt.Errorf("error creating forwarding rule: %v", err)
 		}
 
+		if e.Labels != nil {
+			// We can't set labels on creation; we have to read the object to get the fingerprint
+			r, err := t.Cloud.Compute().ForwardingRules().Get(t.Cloud.Project(), t.Cloud.Region(), name)
+			if err != nil {
+				return fmt.Errorf("reading created ForwardingRule %q: %v", name, err)
+			}
+
+			req := compute.RegionSetLabelsRequest{
+				LabelFingerprint: r.LabelFingerprint,
+				Labels:           e.Labels,
+			}
+			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), t.Cloud.Region(), o.Name, &req)
+			if err != nil {
+				return fmt.Errorf("setting ForwardingRule labels: %w", err)
+			}
+
+			if err := t.Cloud.WaitForOp(op); err != nil {
+				return fmt.Errorf("setting ForwardRule labels: %w", err)
+			}
+		}
 	} else {
-		return fmt.Errorf("cannot apply changes to ForwardingRule: %v", changes)
+		if changes.Labels != nil {
+			req := compute.RegionSetLabelsRequest{
+				LabelFingerprint: a.labelFingerprint,
+				Labels:           e.Labels,
+			}
+			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), t.Cloud.Region(), o.Name, &req)
+			if err != nil {
+				return fmt.Errorf("setting ForwardingRule labels: %w", err)
+			}
+
+			if err := t.Cloud.WaitForOp(op); err != nil {
+				return fmt.Errorf("setting ForwardRule labels: %w", err)
+			}
+
+			changes.Labels = nil
+		}
+
+		if !reflect.DeepEqual(changes, &ForwardingRule{}) {
+			return fmt.Errorf("cannot apply changes to ForwardingRule: %v", changes)
+		}
 	}
 
 	return nil
@@ -207,6 +278,7 @@ type terraformForwardingRule struct {
 	Network             *terraformWriter.Literal `cty:"network"`
 	Subnetwork          *terraformWriter.Literal `cty:"subnetwork"`
 	BackendService      *terraformWriter.Literal `cty:"backend_service"`
+	Labels              map[string]string        `cty:"labels"`
 }
 
 func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
@@ -218,6 +290,7 @@ func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 		LoadBalancingScheme: e.LoadBalancingScheme,
 		Ports:               e.Ports,
 		PortRange:           e.PortRange,
+		Labels:              e.Labels,
 	}
 
 	if e.TargetPool != nil {

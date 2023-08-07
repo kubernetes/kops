@@ -44,9 +44,9 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"# Kubernetes Settings",
 			"")
 
-		// A higher vm.max_map_count is great for elasticsearch, mongo, or other mmap users
+		// A higher vm.max_map_count is great for elasticsearch, mongo, arangodb or other mmap users
 		// See https://github.com/kubernetes/kops/issues/1340
-		sysctls = append(sysctls, "vm.max_map_count = 262144",
+		sysctls = append(sysctls, "vm.max_map_count = 1048576",
 			"")
 
 		// See https://github.com/kubernetes/kubernetes/pull/38001
@@ -56,7 +56,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"")
 
 		// See https://github.com/kubernetes/kops/issues/6342
-		portRange := b.Cluster.Spec.KubeAPIServer.ServiceNodePortRange
+		portRange := b.NodeupConfig.ServiceNodePortRange
 		if portRange == "" {
 			portRange = "30000-32767" // Default kube-apiserver ServiceNodePortRange
 		}
@@ -125,7 +125,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		)
 	}
 
-	if b.BootConfig.CloudProvider == kops.CloudProviderAWS {
+	if b.CloudProvider() == kops.CloudProviderAWS {
 		sysctls = append(sysctls,
 			"# AWS settings",
 			"",
@@ -186,29 +186,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"")
 	}
 
-	if params := b.NodeupConfig.SysctlParameters; len(params) > 0 {
-		sysctls = append(sysctls,
-			"# Custom sysctl parameters from instance group spec",
-			"")
-		for _, param := range params {
-			if !strings.ContainsRune(param, '=') {
-				return fmt.Errorf("invalid SysctlParameter: expected %q to contain '='", param)
-			}
-			sysctls = append(sysctls, param)
-		}
-	}
-
-	if params := b.Cluster.Spec.SysctlParameters; len(params) > 0 {
-		sysctls = append(sysctls,
-			"# Custom sysctl parameters from cluster spec",
-			"")
-		for _, param := range params {
-			if !strings.ContainsRune(param, '=') {
-				return fmt.Errorf("invalid SysctlParameter: expected %q to contain '='", param)
-			}
-			sysctls = append(sysctls, param)
-		}
-	}
+	sysctls = append(sysctls, b.NodeupConfig.SysctlParameters...)
 
 	c.AddTask(&nodetasks.File{
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",

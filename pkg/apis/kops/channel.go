@@ -128,7 +128,7 @@ func ResolveChannel(location string) (*url.URL, error) {
 }
 
 // LoadChannel loads a Channel object from the specified VFS location
-func LoadChannel(location string) (*Channel, error) {
+func LoadChannel(vfsContext *vfs.VFSContext, location string) (*Channel, error) {
 	resolvedURL, err := ResolveChannel(location)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func LoadChannel(location string) (*Channel, error) {
 	resolved := resolvedURL.String()
 
 	klog.V(2).Infof("Loading channel from %q", resolved)
-	channelBytes, err := vfs.Context.ReadFile(resolved)
+	channelBytes, err := vfsContext.ReadFile(resolved)
 	if err != nil {
 		return nil, fmt.Errorf("error reading channel %q: %v", resolved, err)
 	}
@@ -358,10 +358,13 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 // Returns true if the given image name has the stable or alpha channel images prefix. Otherwise false.
 func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 	return strings.HasPrefix(image, "kope.io/k8s-") ||
+		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-") ||
 		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-") ||
 		strings.HasPrefix(image, "cos-cloud/cos-stable-") ||
 		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-2004-focal-") ||
-		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:")
+		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-2204-jammy-") ||
+		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:") ||
+		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:")
 }
 
 // GetPackageVersion returns the version for the package, or an error if could not be found.

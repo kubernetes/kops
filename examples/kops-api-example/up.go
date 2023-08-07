@@ -27,10 +27,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
-func up(ctx context.Context) error {
-	clientset := vfsclientset.NewVFSClientset(registryBase)
+func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
+	clientset := vfsclientset.NewVFSClientset(vfsContext, registryBase)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
@@ -39,12 +40,8 @@ func up(ctx context.Context) error {
 		CloudProvider: api.CloudProviderSpec{
 			AWS: &api.AWSSpec{},
 		},
-		ConfigBase: registryBase.Join(cluster.ObjectMeta.Name).Path(),
-		Networking: api.NetworkingSpec{
-			Topology: &api.TopologySpec{
-				ControlPlane: api.TopologyPublic,
-				Nodes:        api.TopologyPublic,
-			},
+		ConfigStore: api.ConfigStoreSpec{
+			Base: registryBase.Join(cluster.ObjectMeta.Name).Path(),
 		},
 	}
 
@@ -56,7 +53,7 @@ func up(ctx context.Context) error {
 		})
 	}
 
-	for _, etcdClusterName := range cloudup.EtcdClusters {
+	for _, etcdClusterName := range etcdClusters {
 		etcdCluster := api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
@@ -75,7 +72,7 @@ func up(ctx context.Context) error {
 		return err
 	}
 
-	if err := cloudup.PerformAssignments(cluster, cloud); err != nil {
+	if err := cloudup.PerformAssignments(cluster, vfsContext, cloud); err != nil {
 		return err
 	}
 

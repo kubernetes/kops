@@ -46,7 +46,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -95,7 +95,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 				Enabled: fi.PtrTo(true),
 			}
 
-			err := PerformAssignments(c, cloud)
+			err := PerformAssignments(c, vfs.Context, cloud)
 			require.NoError(t, err, "PerformAssignments")
 
 			full, err := mockedPopulateClusterSpec(ctx, c, cloud)
@@ -110,13 +110,13 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
-	assetBuilder := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
-	clientset := vfsclientset.NewVFSClientset(basePath)
-	return PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
+	return PopulateClusterSpec(ctx, clientset, c, nil, cloud, assetBuilder)
 }
 
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
@@ -131,7 +131,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		LogOpt:             []string{"env=FOO"},
 	}
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -166,7 +166,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -211,7 +211,7 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
 	}
 
-	err = PerformAssignments(c, cloud)
+	err = PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
 	}
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -253,7 +253,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.IsolateControlPlane = fi.PtrTo(true)
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	// default: c.Spec.IsolateControlPlane = fi.PtrTo(false)
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -324,37 +324,6 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, cloud, "cloudProvider")
 }
 
-func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = ""
-	c.Spec.Networking.Topology.Nodes = ""
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
-}
-
-func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = "123"
-	c.Spec.Networking.Topology.Nodes = "abc"
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
-}
-
-//func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
-//	// We can't have a bastion with public masters / nodes
-//	c := buildMinimalCluster()
-//	c.Spec.Topology.ControlPlane = api.TopologyPublic
-//	c.Spec.Topology.Nodes = api.TopologyPrivate
-//	expectErrorFromPopulateCluster(t, c, "Topology")
-//}
-
-func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
-	// We can't have a bastion with public masters / nodes
-	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPublic
-	c.Spec.Networking.Topology.Nodes = kopsapi.TopologyPublic
-	c.Spec.Networking.Topology.Bastion = &kopsapi.BastionSpec{}
-	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
-}
-
 func expectErrorFromPopulateCluster(t *testing.T, c *kopsapi.Cluster, cloud fi.Cloud, message string) {
 	ctx := context.TODO()
 	_, err := mockedPopulateClusterSpec(ctx, c, cloud)
@@ -386,7 +355,7 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.20.0"
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -437,7 +406,7 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "v1.9.0"
 
-	err := PerformAssignments(c, cloud)
+	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}

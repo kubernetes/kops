@@ -332,6 +332,7 @@ spec:
         - --aws-use-static-instance-list=false
         - --expander=random
         - --nodes=2:2:nodes.minimal.example.com
+        - --ignore-daemonsets-utilization=false
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true
@@ -347,7 +348,7 @@ spec:
         env:
         - name: AWS_REGION
           value: us-test-1
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

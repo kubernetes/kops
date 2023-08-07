@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Push the images
-- name: 'docker.io/library/golang:1.19.5-bullseye'
+- name: 'docker.io/library/golang:1.20.6-bullseye'
   id: images
   entrypoint: make
   env:
@@ -16,11 +16,12 @@ steps:
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
   args:
+  - kops-utils-cp-push
   - kops-controller-push
   - dns-controller-push
   - kube-apiserver-healthcheck-push
 # Push the artifacts
-- name: 'docker.io/library/golang:1.19.5-bullseye'
+- name: 'docker.io/library/golang:1.20.6-bullseye'
   id: artifacts
   entrypoint: make
   env:
@@ -35,7 +36,7 @@ steps:
   args:
   - gcs-upload-and-tag
 # Build cloudbuild artifacts (for attestation)
-- name: 'docker.io/library/golang:1.19.5-bullseye'
+- name: 'docker.io/library/golang:1.20.6-bullseye'
   id: cloudbuild-artifacts
   entrypoint: make
   env:

@@ -31,7 +31,8 @@ spec:
         - test-az-hints
       router:
         externalNetwork: test-external-network
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore:
+    base: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -58,9 +59,7 @@ spec:
       zone: us-test-1a
     tagSubnets: false
     topology:
-      controlPlane: public
       dns: None
-      nodes: private
   sshAccess:
   - 0.0.0.0/0
 

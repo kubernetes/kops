@@ -35,7 +35,7 @@ else
 	KUBETEST2="${KUBETEST2} --build"
 fi
 
-OVERRIDES=("--channel=alpha" "--node-count=1" "--master-count=3")
+OVERRIDES=("--channel=alpha" "--node-count=1" "--control-plane-count=3")
 
 case "${CLOUD_PROVIDER}" in
 gce)
@@ -51,9 +51,9 @@ esac
 
 # the migration in this test case is KCM to KCM+CCM, which should happen
 # during the upgrade from 1.23 to 1.24
-K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt)
+K8S_VERSION_A=$(curl -L https://dl.k8s.io/release/stable-1.23.txt)
 export K8S_VERSION_A
-K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/latest-1.24.txt)
+K8S_VERSION_B=$(curl -L https://dl.k8s.io/release/latest-1.24.txt)
 export K8S_VERSION_B
 
 # install kubetest2-test-exec if needed

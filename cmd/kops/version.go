@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -116,7 +115,7 @@ func serverVersion(f *util.Factory, options *VersionOptions) string {
 	if err != nil {
 		return "could not fetch cluster"
 	}
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := f.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return "could not talk to vfs"
 	}

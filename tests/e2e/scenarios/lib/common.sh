@@ -31,11 +31,6 @@ if [[ -z "${WORKSPACE-}" ]]; then
     WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
 fi
 
-if [[ -z "${WORKSPACE-}" ]]; then
-    export WORKSPACE
-    WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
-fi
-
 if [[ -z "${NETWORKING-}" ]]; then
     export NETWORKING="calico"
 fi
@@ -60,7 +55,7 @@ if [[ -z "${AWS_SSH_PUBLIC_KEY_FILE-}" ]]; then
 fi
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-root=${REPO_ROOT}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS:-}"
+KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
 
 if [[ -n "${GCP_PROJECT-}" ]]; then
   KUBETEST2="${KUBETEST2} --gcp-project=${GCP_PROJECT}"
@@ -135,11 +130,17 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
-        K8S_VERSION="$(curl -fs https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+        K8S_VERSION="$(curl -fs -L https://dl.k8s.io/release/stable.txt)"
     fi
 
     if [[ ${KOPS_IRSA-} = true ]]; then
         create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
+    fi
+
+    # TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
+    if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
+      echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
+      KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
     fi
 
     ${KUBETEST2} \
@@ -147,6 +148,6 @@ function kops-up() {
         --kops-binary-path="${KOPS}" \
         --kubernetes-version="${K8S_VERSION}" \
         --create-args="${create_args}" \
-        --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
+        --control-plane-count="${KOPS_CONTROL_PLANE_COUNT:-1}" \
         --template-path="${KOPS_TEMPLATE-}"
 }

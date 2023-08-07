@@ -22,10 +22,11 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
-	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
+	desiredCNIVersion := "https://dl.k8s.io/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
 	t.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
@@ -34,7 +35,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
@@ -56,7 +57,7 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.22.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)

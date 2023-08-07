@@ -11,6 +11,7 @@ spec:
   configBase: memfs://clusters.example.com/containerd.example.com
   containerRuntime: containerd
   containerd:
+    skipInstall: true
     registryMirrors:
       docker.io:
       - https://registry-1.docker.io
@@ -39,9 +40,6 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

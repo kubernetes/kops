@@ -46,12 +46,12 @@ func message(d Device, command uintptr, req *labi.SnpUserGuestRequest) error {
 		// indicates a problem certificate length. We need to
 		// communicate that specifically.
 		if req.FwErr != 0 {
-			return abi.SevFirmwareErr{Status: abi.SevFirmwareStatus(req.FwErr)}
+			return &abi.SevFirmwareErr{Status: abi.SevFirmwareStatus(req.FwErr)}
 		}
 		return err
 	}
 	if result != uintptr(labi.EsOk) {
-		return labi.SevEsErr{Result: labi.EsResult(result)}
+		return &labi.SevEsErr{Result: labi.EsResult(result)}
 	}
 	return nil
 }
@@ -113,7 +113,7 @@ func getExtendedReportIn(d Device, reportData [64]byte, vmpl int, certs []byte) 
 	}
 	// Query the length required for certs.
 	if err := message(d, labi.IocSnpGetExtendedReport, &userGuestReq); err != nil {
-		var fwErr abi.SevFirmwareErr
+		var fwErr *abi.SevFirmwareErr
 		if errors.As(err, &fwErr) && fwErr.Status == abi.GuestRequestInvalidLength {
 			return nil, snpExtReportReq.CertsLength, nil
 		}

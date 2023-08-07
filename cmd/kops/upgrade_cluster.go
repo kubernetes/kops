@@ -138,7 +138,7 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 		})
 	}
 
-	channel, err := kopsapi.LoadChannel(channelLocation)
+	channel, err := kopsapi.LoadChannel(f.VFSContext(), channelLocation)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
 	}

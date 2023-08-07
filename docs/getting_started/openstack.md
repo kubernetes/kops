@@ -1,6 +1,5 @@
 # Getting Started with kOps on OpenStack
 
-
 OpenStack support on kOps is currently **beta**, which means that OpenStack support is in good shape and could be used for production. However, it is not as rigorously tested as the stable cloud providers and there are some features not supported. In particular, kOps tries to support a wide variety of OpenStack setups and not all of them are equally well tested.
 
 ## OpenStack requirements
@@ -21,6 +20,7 @@ In addition, kOps can make use of the following services:
 The OpenStack version should be Ocata or newer.
 
 ## Source your openstack RC
+
 The Cloud Config used by the kubernetes API server and kubelet will be constructed from environment variables in the openstack RC file.
 
 ```bash
@@ -29,7 +29,7 @@ source openstack.rc
 
 We recommend using [Application Credentials](https://docs.openstack.org/keystone/queens/user/application_credentials.html) when authenticating to OpenStack.
 
-**Note** The authentication used locally will be exported to your cluster and used by the kubernetes controller components. You must avoid using personal credentials used for other systems, 
+**Note** The authentication used locally will be exported to your cluster and used by the kubernetes controller components. You must avoid using personal credentials used for other systems,
 
 ## Environment Variables
 
@@ -48,7 +48,7 @@ If your OpenStack does not have Swift you can use any other VFS store, such as S
 # to see your etcd storage type
 openstack volume type list
 
-# coreos (the default) + flannel overlay cluster in Default
+# coreos (the default) + calico overlay cluster in Default
 kops create cluster \
   --cloud openstack \
   --name my-cluster.k8s.local \
@@ -65,7 +65,7 @@ kops create cluster \
   --topology private \
   --bastion \
   --ssh-public-key ~/.ssh/id_rsa.pub \
-  --networking weave \
+  --networking calico \
   --os-ext-net <externalnetworkname>
 
 # to update a cluster
@@ -82,8 +82,8 @@ kops delete cluster my-cluster.k8s.local --yes
 * `--os-dns-servers=8.8.8.8,8.8.4.4` You can define dns servers to be used in your cluster if your openstack setup does not have working dnssetup by default
 * `--os-octavia-provider` You can define the Octavia Loadbalancer provider to use. To get the list of providers available in your environment, run `openstack loadbalancer provider list`. Default: octavia.
 
-
 ## Compute and volume zone names does not match
+
 Some of the openstack users do not have compute zones named exactly the same than volume zones. Good example is that there are several compute zones for instance `zone-1`, `zone-2` and `zone-3`. Then there is only one volumezone which is usually called `nova`. By default this is problem in kOps, because kOps assumes that if you are deploying things to `zone-1` there should be compute and volume zone called `zone-1`.
 
 However, you can still get kOps working in your openstack by doing following:
@@ -96,7 +96,7 @@ kops create cluster \
   ...
 ```
 
-After you have initialized the configuration you need to edit configuration
+After you have initialized the configuration you need to edit configuration:
 
 ```bash
 kops edit cluster my-cluster.k8s.local
@@ -115,7 +115,7 @@ spec:
         override-volume-az: nova
 ```
 
-**Finally execute update cluster**
+Finally execute update cluster:
 
 ```bash
 kops update cluster my-cluster.k8s.local --state ${KOPS_STATE_STORE} --yes
@@ -123,29 +123,31 @@ kops update cluster my-cluster.k8s.local --state ${KOPS_STATE_STORE} --yes
 
 kOps should create instances to all three zones, but provision volumes from the same zone.
 
-# Using external cloud controller manager
-If you want use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
+## Using CCM created Loadbalancers
 
-Create cluster without `--yes` flag (or modify existing cluster):
+With the default configuration, the loadbalancers created using the [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack) cloud controller provider do not have access to the exposed NodePorts.
+
+A fix is to add the clouster network to the authorized nodeIds.
+
+First, you have to edit the cluster:
 
 ```bash
 kops edit cluster <cluster>
 ```
 
-Add following to clusterspec:
-
+Add the following to the clusterspec:
 ```yaml
 spec:
-  cloudControllerManager: {}
+  nodePortAccess:
+    - <Your network CIDR>
 ```
 
-Finally
-
+Finally, update the cluster:
 ```bash
 kops update cluster --name <cluster> --yes
 ```
 
-# Using OpenStack without lbaas
+## Using OpenStack without lbaas
 
 Some OpenStack installations does not include installation of lbaas component. To launch a cluster without a loadbalancer, run:
 
@@ -156,13 +158,13 @@ kops create cluster \
   --api-loadbalancer-type=""
 ```
 
-In clusters without loadbalancer, the address of a single random master will be added to your kube config. 
+In clusters without loadbalancer, the address of a single random master will be added to your kube config.
 
-# Using existing OpenStack network
+## Using existing OpenStack network
 
 You can have kOps reuse existing network components instead of provisioning one per cluster. As OpenStack support is still beta, we recommend you take extra care when deleting clusters and ensure that kOps do not try to remove any resources not belonging to the cluster.
 
-## Let kOps provision new subnets within an existing network
+### Let kOps provision new subnets within an existing network
 
 Use an existing network by using `--network <network id>`.
 
@@ -173,14 +175,13 @@ spec:
   networkID: <network id>
 ```
 
-
-## Use existing networks
+### Use existing subnets
 
 Instead of kOps creating new subnets for the cluster, you can reuse an existing subnet.
 
 When you create a new cluster, you can specify subnets using the `--subnets` and `--utility-subnets` flags.
 
-## Example
+Example:
 
 ```bash
 kops create cluster \
@@ -206,7 +207,7 @@ kops create cluster \
   --os-octavia=true --yes
 ```
 
-# Using with self-signed certificates in OpenStack
+## Using with self-signed certificates in OpenStack
 
 kOps can be configured to use insecure mode towards OpenStack. However, this is not recommended as OpenStack cloudprovider in kubernetes does not support it.
 If you use insecure flag in kOps it might be that the cluster does not work correctly.
@@ -216,6 +217,80 @@ spec:
   cloudConfig:
     openstack:
       insecureSkipVerify: true
+```
+
+## Advanced Instance Group config
+
+### Adding allowed address pairs to ports
+
+It is possible to make kOps provision and update the ports of the servers with allowed address pairs, which can be beneficial when needing to use for example VRRP for a custom loadbalancing solution.
+
+To make use of this annotate an Instance Group configuration like so:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/allowedAddressPair/N: <IPAddress>(,<MACAddress>)
+```
+
+Where `N` can be an arbitrary identifier and the MACAddress is optional, for example:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/allowedAddressPair/0: 192.168.0.0/16
+    openstack.kops.io/allowedAddressPair/1: 10.123.0.10,12:34:56:78:90:AB
+```
+
+For more information about allowed address pairs refer to the [OpenStack Network API documentation](https://docs.openstack.org/api-ref/network/v2/#allowed-address-pairs).
+
+### Using boot from volume
+
+By default kOps provisions servers with "boot from image".
+
+To use "boot from volume" for servers specify the following annotations in the respective Instance Group manifests:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/osVolumeBoot: true
+    openstack.kops.io/osVolumeSize: 10
+```
+
+Setting the size of the volume with `osVolumeSize` is optional and if not specified kOps will use the value of the image's minimum amount of disk space required to boot it. The value of it needs to be an integer and is the mount of GBs the root volume will use.
+
+Please note that when enabling "boot from volume" the servers will use the default volume type and the volumes will be deleted when the servers are terminated.
+
+### Using a custom server group policy
+
+By default kOps provisions the server groups in OpenStack with `anti-affinity`.
+
+To override this add the following annotation to the Instance Group configuration where kOps should provision a server group with another policy:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/serverGroupAffinity: soft-anti-affinity
+```
+
+Please refer to the [OpenStack Compute API documentation](https://docs.openstack.org/api-ref/compute/?expanded=create-server-group-detail#create-server-group) for supported policies.
+
+### Using a custom server group name
+
+By default kOps provisions the server groups in OpenStack with `anti-affinity`.
+However, if you have only one AZ and you want to run multiple control-planes you might want to have anti-affinity between control planes.
+
+To override this add the following annotation to all control-plane Instance Groups configuration where kOps should provision a server group with another policy:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/serverGroupName: control-plane
 ```
 
 ## Next steps

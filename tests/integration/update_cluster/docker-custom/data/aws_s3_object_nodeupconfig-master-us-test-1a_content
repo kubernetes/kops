@@ -1,4 +1,8 @@
 APIServerConfig:
+  API:
+    dns: {}
+    publicName: api.docker.example.com
+  ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -55,15 +59,15 @@ APIServerConfig:
     -----END RSA PUBLIC KEY-----
 Assets:
   amd64:
-  - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubelet
-  - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubectl
+  - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubelet
+  - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - 000000000000000000000000000000000000000000000000000000000000000a@https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
-  - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
+  - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://dl.k8s.io/release/v1.23.0/bin/linux/arm64/kubelet
+  - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://dl.k8s.io/release/v1.23.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
@@ -222,6 +226,35 @@ CAs:
     -----END CERTIFICATE-----
 ClusterName: docker.example.com
 ContainerRuntime: docker
+ControlPlaneConfig:
+  KubeControllerManager:
+    allocateNodeCIDRs: true
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: aws
+    clusterCIDR: 100.96.0.0/11
+    clusterName: docker.example.com
+    configureCloudRoutes: false
+    enableLeaderMigration: true
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-controller-manager:v1.23.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  KubeScheduler:
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-scheduler:v1.23.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+DNSZone: Z1AFAKE1ZON3YO
+EtcdClusterNames:
+- main
+- events
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
@@ -267,7 +300,7 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -309,3 +342,5 @@ etcdManifests:
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
+usesLegacyGossip: false
+usesNoneDNS: false

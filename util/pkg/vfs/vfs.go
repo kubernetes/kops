@@ -57,6 +57,9 @@ type Path interface {
 	// Remove deletes the file
 	Remove() error
 
+	// RemoveAll deletes all files recursively, deletes only files as returned per ReadTree
+	RemoveAll() error
+
 	// RemoveAllVersions completely deletes the file (with all its versions and markers).
 	RemoveAllVersions() error
 

@@ -230,6 +230,9 @@ type KubeletConfigSpec struct {
 	// ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown.
 	// Default: 10s
 	ShutdownGracePeriodCriticalPods *metav1.Duration `json:"shutdownGracePeriodCriticalPods,omitempty"`
+	// MemorySwapBehavior defines how swap is used by container workloads.
+	// Supported values: LimitedSwap, "UnlimitedSwap.
+	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -693,6 +696,8 @@ type CloudControllerManagerConfig struct {
 	// CPURequest of NodeTerminationHandler container.
 	// Default: 200m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// NodeStatusUpdateFrequency is the duration between node status updates. (default: 5m)
+	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
 }
 
 // KubeSchedulerConfig is the configuration for the kube-scheduler
@@ -776,6 +781,7 @@ type OpenstackLoadbalancerConfig struct {
 	ManageSecGroups       *bool   `json:"manageSecurityGroups,omitempty"`
 	EnableIngressHostname *bool   `json:"enableIngressHostname,omitempty"`
 	IngressHostnameSuffix *string `json:"ingressHostnameSuffix,omitempty"`
+	FlavorID              *string `json:"flavorID,omitempty"`
 }
 
 type OpenstackBlockStorageConfig struct {
@@ -783,10 +789,13 @@ type OpenstackBlockStorageConfig struct {
 	IgnoreAZ                 *bool   `json:"ignore-volume-az,omitempty"`
 	OverrideAZ               *string `json:"override-volume-az,omitempty"`
 	IgnoreVolumeMicroVersion *bool   `json:"ignore-volume-microversion,omitempty"`
+	MetricsEnabled           *bool   `json:"metricsEnabled,omitempty"`
 	// CreateStorageClass provisions a default class for the Cinder plugin
 	CreateStorageClass *bool  `json:"createStorageClass,omitempty"`
 	CSIPluginImage     string `json:"csiPluginImage,omitempty"`
 	CSITopologySupport *bool  `json:"csiTopologySupport,omitempty"`
+	// ClusterName sets the --cluster flag for the cinder-csi-plugin to the provided name
+	ClusterName string `json:"clusterName,omitempty"`
 }
 
 // OpenstackMonitor defines the config for a health monitor
@@ -810,6 +819,7 @@ type OpenstackNetwork struct {
 	IPv6SupportDisabled   *bool     `json:"ipv6SupportDisabled,omitempty"`
 	PublicNetworkNames    []*string `json:"publicNetworkNames,omitempty"`
 	InternalNetworkNames  []*string `json:"internalNetworkNames,omitempty"`
+	AddressSortOrder      *string   `json:"addressSortOrder,omitempty"`
 }
 
 // OpenstackMetadata defines config for metadata service related settings
@@ -981,22 +991,25 @@ type ClusterAutoscalerConfig struct {
 	// By default, kOps will generate the priority expander ConfigMap based on the `autoscale` and `autoscalePriority` fields in the InstanceGroup specs.
 	// Default: least-waste
 	Expander string `json:"expander,omitempty"`
-	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
+	// BalanceSimilarNodeGroups makes the cluster autoscaler treat similar node groups as one.
 	// Default: false
 	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
-	// AWSUseStaticInstanceList makes cluster autoscaler to use statically defined set of AWS EC2 Instance List.
+	// AWSUseStaticInstanceList makes the cluster autoscaler to use statically defined set of AWS EC2 Instance List.
 	// Default: false
 	AWSUseStaticInstanceList *bool `json:"awsUseStaticInstanceList,omitempty"`
+	// IgnoreDaemonSetsUtilization causes the cluster autoscaler to ignore DaemonSet-managed pods when calculating resource utilization for scaling down.
+	// Default: false
+	IgnoreDaemonSetsUtilization *bool `json:"ignoreDaemonSetsUtilization,omitempty"`
 	// ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down.
 	// Default: 0.5
 	ScaleDownUtilizationThreshold *string `json:"scaleDownUtilizationThreshold,omitempty"`
-	// SkipNodesWithSystemPods makes cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
+	// SkipNodesWithSystemPods makes the cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
 	// Default: true
 	SkipNodesWithSystemPods *bool `json:"skipNodesWithSystemPods,omitempty"`
-	// SkipNodesWithLocalStorage makes cluster autoscaler skip scale-down of nodes with local storage.
+	// SkipNodesWithLocalStorage makes the cluster autoscaler skip scale-down of nodes with local storage.
 	// Default: true
 	SkipNodesWithLocalStorage *bool `json:"skipNodesWithLocalStorage,omitempty"`
-	// NewPodScaleUpDelay causes cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
+	// NewPodScaleUpDelay causes the cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
 	// Default: 0s
 	NewPodScaleUpDelay *string `json:"newPodScaleUpDelay,omitempty"`
 	// ScaleDownDelayAfterAdd determines the time after scale up that scale down evaluation resumes

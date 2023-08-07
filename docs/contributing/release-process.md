@@ -62,6 +62,12 @@ hack/set-version 1.22.0
 hack/update-expected.sh
 ```
 
+On macOS, some cleanup might be needed:
+
+```
+find . -name "*.bak" -delete
+```
+
 Commit the changes (without pushing yet):
 
 ```
@@ -103,6 +109,8 @@ The following tools are prerequisites:
 * [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
 * [`kpromo`](https://github.com/kubernetes-sigs/promo-tools)
 
+Currently, we send the image and non-image artifact promotion PRs separately.
+
 Create container promotion PR:
 
 ```
@@ -112,18 +120,17 @@ git checkout main
 git pull upstream main
 git checkout -b kops_images_${VERSION}
 
-cd k8s.gcr.io/images/k8s-staging-kops
-echo "" >> images.yaml
-echo "# ${VERSION}" >> images.yaml
-kpromo cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
-```
+echo "" >> registry.k8s.io/images/k8s-staging-kops/images.yaml
+echo "# ${VERSION}" >> registry.k8s.io/images/k8s-staging-kops/images.yaml
+kpromo cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> registry.k8s.io/images/k8s-staging-kops/images.yaml
 
-Currently, we send the image and non-image artifact promotion PRs separately.
-
-```
-cd ${GOPATH}/src/k8s.io/k8s.io
-git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
+git add -p registry.k8s.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
+```
+
+Verify, then send a PR:
+
+```
 gh pr create -f
 ```
 
@@ -141,13 +148,14 @@ mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
 gsutil rsync -r  gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
 
 kpromo manifest files --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+
+git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+git commit -m "Promote kOps $VERSION binary artifacts"
 ```
 
 Verify, then send a PR:
 
 ```
-git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
-git commit -m "Promote kOps $VERSION binary artifacts"
 gh pr create -f
 ```
 

@@ -22,6 +22,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 type OpenStackVerifierOptions struct {
@@ -85,7 +87,7 @@ func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, er
 
 	kubeClient, err := newClientSet()
 	if err != nil {
-		return nil, fmt.Errorf("error building kubernetes client: %v", err)
+		return nil, fmt.Errorf("error building kubernetes client: %w", err)
 	}
 
 	return &openstackVerifier{
@@ -151,18 +153,22 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Req
 		return nil, fmt.Errorf("authentication request address %q does not match server addresses %v", requestAddr, addrs)
 	}
 
+	// We will call back onto this address, now that we have verified it is an instance IP
+	challengeEndpoint := net.JoinHostPort(requestAddr, strconv.Itoa(wellknownports.NodeupChallenge))
+
 	// check from kubernetes API does the instance already exist
 	_, err = o.kubeClient.CoreV1().Nodes().Get(ctx, instance.Name, v1.GetOptions{})
 	if err == nil {
-		return nil, fmt.Errorf("server %q is already joined to kubernetes cluster", instance.Name)
+		return nil, bootstrap.ErrAlreadyExists
 	}
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, fmt.Errorf("got error while querying kubernetes api: %w", err)
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:         instance.Name,
-		CertificateNames: addrs,
+		NodeName:          instance.Name,
+		CertificateNames:  addrs,
+		ChallengeEndpoint: challengeEndpoint,
 	}
 	value, ok := instance.Metadata[TagKopsInstanceGroup]
 	if ok {

@@ -182,6 +182,10 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Obj:     server,
 		}
 
+		for _, firewall := range server.PublicNet.Firewalls {
+			resourceTracker.Blocks = append(resourceTracker.Blocks, fmt.Sprintf("%s:%d", resourceTypeFirewall, firewall.Firewall.ID))
+		}
+
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
@@ -204,6 +208,10 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Type:    resourceTypeVolume,
 			Deleter: deleteVolume,
 			Obj:     volume,
+		}
+
+		if volume.Server != nil {
+			resourceTracker.Blocked = append(resourceTracker.Blocked, fmt.Sprintf("%s:%d", resourceTypeServer, volume.Server.ID))
 		}
 
 		resourceTrackers = append(resourceTrackers, resourceTracker)
@@ -269,14 +277,23 @@ func deleteLoadBalancer(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func deleteServer(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
+
 	klog.Infof("Deleting Server: %s(%s)", r.Name, r.ID)
 
 	c := cloud.(hetzner.HetznerCloud)
-	client := c.ServerClient()
+	serverClient := c.ServerClient()
+	actionClient := c.ActionClient()
+
 	server := r.Obj.(*hcloud.Server)
-	_, err := client.Delete(context.TODO(), server)
+	result, _, err := serverClient.DeleteWithResult(ctx, server)
 	if err != nil {
 		return fmt.Errorf("failed to delete server %s(%s): %w", r.Name, r.ID, err)
+	}
+
+	_, errCh := actionClient.WatchProgress(ctx, result.Action)
+	if err := <-errCh; err != nil {
+		return err
 	}
 
 	return nil

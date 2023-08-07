@@ -300,6 +300,12 @@ const (
 	volumeDetachedStatus = "detached"
 )
 
+const (
+	localZoneType               = "local-zone"
+	wavelengthZoneType          = "wavelength-zone"
+	regularAvailabilityZoneType = "availability-zone"
+)
+
 // awsTagNameMasterRoles is a set of well-known AWS tag names that indicate the instance is a master
 // The major consequence is that it is then not considered for AWS zone discovery for dynamic volume creation.
 var awsTagNameMasterRoles = sets.NewString("kubernetes.io/role/master", "k8s.io/role/master")
@@ -364,6 +370,8 @@ type EC2 interface {
 	RevokeSecurityGroupIngress(*ec2.RevokeSecurityGroupIngressInput) (*ec2.RevokeSecurityGroupIngressOutput, error)
 
 	DescribeSubnets(*ec2.DescribeSubnetsInput) ([]*ec2.Subnet, error)
+
+	DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error)
 
 	CreateTags(*ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error)
 	DeleteTags(input *ec2.DeleteTagsInput) (*ec2.DeleteTagsOutput, error)
@@ -455,6 +463,7 @@ type KMS interface {
 type EC2Metadata interface {
 	// Query the EC2 metadata service (used to discover instance-id etc)
 	GetMetadata(path string) (string, error)
+	Region() (string, error)
 }
 
 // AWS volume types
@@ -603,6 +612,8 @@ type CloudConfig struct {
 		// Maybe if we're not running on AWS, e.g. bootstrap; for now it is not very useful
 		Zone string
 
+		Region string
+
 		// The AWS VPC flag enables the possibility to run the master components
 		// on a different aws account, on a different cloud provider or on-premises.
 		// If the flag is set also the KubernetesClusterTag must be provided
@@ -634,17 +645,6 @@ type CloudConfig struct {
 		//Security group for each ELB this security group will be used instead.
 		ElbSecurityGroup string
 
-		//During the instantiation of an new AWS cloud provider, the detected region
-		//is validated against a known set of regions.
-		//
-		//In a non-standard, AWS like environment (e.g. Eucalyptus), this check may
-		//be undesirable.  Setting this to true will disable the check and provide
-		//a warning that the check was skipped.  Please note that this is an
-		//experimental feature and work-in-progress for the moment.  If you find
-		//yourself in an non-AWS cloud and open an issue, please indicate that in the
-		//issue body.
-		DisableStrictZoneCheck bool
-
 		// NodeIPFamilies determines which IP addresses are added to node objects and their ordering.
 		NodeIPFamilies []string
 	}
@@ -669,6 +669,23 @@ type CloudConfig struct {
 		SigningMethod string
 		SigningName   string
 	}
+}
+
+// GetRegion returns the AWS region from the config, if set, or gets it from the metadata
+// service if unset and sets in config
+func (cfg *CloudConfig) GetRegion(metadata EC2Metadata) (string, error) {
+	if cfg.Global.Region != "" {
+		return cfg.Global.Region, nil
+	}
+
+	klog.Info("Loading region from metadata service")
+	region, err := metadata.Region()
+	if err != nil {
+		return "", err
+	}
+
+	cfg.Global.Region = region
+	return region, nil
 }
 
 func (cfg *CloudConfig) validateOverrides() error {
@@ -1156,6 +1173,15 @@ func (s *awsSdkEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) ([]*ec2.S
 	return response.Subnets, nil
 }
 
+func (s *awsSdkEC2) DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error) {
+	// AZs are not paged
+	response, err := s.ec2.DescribeAvailabilityZones(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing AWS availability zones: %q", err)
+	}
+	return response.AvailabilityZones, err
+}
+
 func (s *awsSdkEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
 	return s.ec2.CreateSecurityGroup(request)
 }
@@ -1245,7 +1271,7 @@ func init() {
 			return nil, fmt.Errorf("error creating AWS metadata client: %q", err)
 		}
 
-		regionName, _, err := getRegionFromMetadata(*cfg, metadata)
+		regionName, err := getRegionFromMetadata(*cfg, metadata)
 		if err != nil {
 			return nil, err
 		}
@@ -1291,28 +1317,6 @@ func readAWSCloudConfig(config io.Reader) (*CloudConfig, error) {
 	return &cfg, nil
 }
 
-func updateConfigZone(cfg *CloudConfig, metadata EC2Metadata) error {
-	if cfg.Global.Zone == "" {
-		if metadata != nil {
-			klog.Info("Zone not specified in configuration file; querying AWS metadata service")
-			var err error
-			cfg.Global.Zone, err = getAvailabilityZone(metadata)
-			if err != nil {
-				return err
-			}
-		}
-		if cfg.Global.Zone == "" {
-			return fmt.Errorf("no zone specified in configuration file")
-		}
-	}
-
-	return nil
-}
-
-func getAvailabilityZone(metadata EC2Metadata) (string, error) {
-	return metadata.GetMetadata("placement/availability-zone")
-}
-
 // Derives the region from a valid az name.
 // Returns an error if the az is known invalid (empty)
 func azToRegion(az string) (string, error) {
@@ -1341,17 +1345,9 @@ func newAWSCloud(cfg CloudConfig, awsServices Services) (*Cloud, error) {
 		return nil, fmt.Errorf("error creating AWS metadata client: %q", err)
 	}
 
-	regionName, zone, err := getRegionFromMetadata(cfg, metadata)
+	regionName, err := getRegionFromMetadata(cfg, metadata)
 	if err != nil {
 		return nil, err
-	}
-
-	if !cfg.Global.DisableStrictZoneCheck {
-		if err := validateRegion(regionName, metadata); err != nil {
-			return nil, fmt.Errorf("not a valid AWS zone (unknown region): %s, %w", zone, err)
-		}
-	} else {
-		klog.Warningf("Strict AWS zone checking is disabled.  Proceeding with zone: %s", zone)
 	}
 
 	ec2, err := awsServices.Compute(regionName)
@@ -1440,48 +1436,6 @@ func newAWSCloud(cfg CloudConfig, awsServices Services) (*Cloud, error) {
 // NewAWSCloud calls and return new aws cloud from newAWSCloud with the supplied configuration
 func NewAWSCloud(cfg CloudConfig, awsServices Services) (*Cloud, error) {
 	return newAWSCloud(cfg, awsServices)
-}
-
-// validateRegion accepts an AWS region name and returns if the region is a
-// valid region known to the AWS SDK. Considers the region returned from the
-// EC2 metadata service to be a valid region as it's only available on a host
-// running in a valid AWS region.
-func validateRegion(region string, metadata EC2Metadata) error {
-	// Does the AWS SDK know about the region? Any region known by the SDK is a
-	// valid one.
-	for _, p := range endpoints.DefaultPartitions() {
-		for r := range p.Regions() {
-			if r == region {
-				return nil
-			}
-		}
-	}
-
-	// ap-northeast-3 is purposely excluded from the SDK because it
-	// requires an access request (for more details see):
-	// https://github.com/aws/aws-sdk-go/issues/1863
-	if region == "ap-northeast-3" {
-		return nil
-	}
-
-	// Fallback to checking if the region matches the instance metadata region
-	// (ignoring any user overrides). This just accounts for running an old
-	// build of Kubernetes in a new region that wasn't compiled into the SDK
-	// when Kubernetes was built.
-	az, err := getAvailabilityZone(metadata)
-	if err != nil {
-		return err
-	}
-	ec2Region, err := azToRegion(az)
-	if err != nil {
-		return err
-	}
-	if region != ec2Region {
-		return fmt.Errorf("region %s is not known, and does not match EC2 instance's region, %s",
-			region, ec2Region)
-	}
-
-	return nil
 }
 
 // Initialize passes a Kubernetes clientBuilder interface to the cloud provider
@@ -1651,7 +1605,26 @@ func (c *Cloud) NodeAddressesByProviderID(ctx context.Context, providerID string
 		if eni == nil || err != nil {
 			return nil, err
 		}
-		return getNodeAddressesForFargateNode(aws.StringValue(eni.PrivateDnsName), aws.StringValue(eni.PrivateIpAddress)), nil
+
+		var addresses []v1.NodeAddress
+
+		// Assign NodeInternalIP based on IP family
+		for _, family := range c.cfg.Global.NodeIPFamilies {
+			switch family {
+			case "ipv4":
+				nodeAddresses := getNodeAddressesForFargateNode(aws.StringValue(eni.PrivateDnsName), aws.StringValue(eni.PrivateIpAddress))
+				addresses = append(addresses, nodeAddresses...)
+			case "ipv6":
+				if eni.Ipv6Addresses == nil || len(eni.Ipv6Addresses) == 0 {
+					klog.Errorf("no Ipv6Addresses associated with the eni")
+					continue
+				}
+				internalIPv6Address := eni.Ipv6Addresses[0].Ipv6Address
+				nodeAddresses := getNodeAddressesForFargateNode(aws.StringValue(eni.PrivateDnsName), aws.StringValue(internalIPv6Address))
+				addresses = append(addresses, nodeAddresses...)
+			}
+		}
+		return addresses, nil
 	}
 
 	instance, err := describeInstance(c.ec2, instanceID)
@@ -3516,6 +3489,35 @@ func (c *Cloud) findSubnets() ([]*ec2.Subnet, error) {
 	return subnets, nil
 }
 
+// Returns a mapping between availability zone names and their types
+// Zone will not be included in the map in case it was not found in AWS by name
+func (c *Cloud) getZoneTypesByName(azNames []string) (map[string]string, error) {
+	if len(azNames) == 0 {
+		// if az names slice is empty, no need to make a request, return early with empty map
+		return map[string]string{}, nil
+	}
+	azFilter := newEc2Filter("zone-name", azNames...)
+	azRequest := &ec2.DescribeAvailabilityZonesInput{}
+	azRequest.Filters = []*ec2.Filter{azFilter}
+
+	azs, err := c.ec2.DescribeAvailabilityZones(azRequest)
+	if err != nil {
+		return nil, fmt.Errorf("error describe availability zones: %q", err)
+	}
+
+	azTypesMapping := make(map[string]string)
+	for _, az := range azs {
+		name := aws.StringValue(az.ZoneName)
+		zoneType := aws.StringValue(az.ZoneType)
+		if name == "" || zoneType == "" {
+			klog.Warningf("Ignoring zone with empty name/type: %v", az)
+			continue
+		}
+		azTypesMapping[name] = zoneType
+	}
+	return azTypesMapping, nil
+}
+
 // Finds the subnets to use for an ELB we are creating.
 // Normal (Internet-facing) ELBs must use public subnets, so we skip private subnets.
 // Internal ELBs can use public or private subnets, but if we have a private subnet we should prefer that.
@@ -3604,8 +3606,20 @@ func (c *Cloud) findELBSubnets(internalELB bool) ([]string, error) {
 
 	sort.Strings(azNames)
 
+	azTypesMapping, err := c.getZoneTypesByName(azNames)
+	if err != nil {
+		return nil, fmt.Errorf("error get availability zone types: %q", err)
+	}
+
 	var subnetIDs []string
 	for _, key := range azNames {
+		azType, found := azTypesMapping[key]
+		if found && azType != regularAvailabilityZoneType {
+			// take subnets only from zones with `availability-zone` type
+			// because another zone types (like local, wavelength and outpost zones)
+			// does not support NLB/CLB for the moment, only ALB.
+			continue
+		}
 		subnetIDs = append(subnetIDs, aws.StringValue(subnetsByAZ[key].SubnetId))
 	}
 
@@ -5110,6 +5124,12 @@ func nodeNameToIPAddress(nodeName string) string {
 
 func (c *Cloud) nodeNameToInstanceID(nodeName types.NodeName) (InstanceID, error) {
 	if strings.HasPrefix(string(nodeName), rbnNamePrefix) {
+		// depending on if you use a RHEL (e.g. AL2) or Debian (e.g. standard Ubuntu) based distribution, the
+		// hostname on the machine may be either i-00000000000000001 or i-00000000000000001.region.compute.internal.
+		// This handles both scenarios by returning anything before the first '.' in the node name if it has an RBN prefix.
+		if idx := strings.IndexByte(string(nodeName), '.'); idx != -1 {
+			return InstanceID(nodeName[0:idx]), nil
+		}
 		return InstanceID(nodeName), nil
 	}
 	if len(nodeName) == 0 {
@@ -5235,22 +5255,16 @@ func (c *Cloud) describeNetworkInterfaces(nodeName string) (*ec2.NetworkInterfac
 	return eni.NetworkInterfaces[0], nil
 }
 
-func getRegionFromMetadata(cfg CloudConfig, metadata EC2Metadata) (string, string, error) {
-	klog.Infof("Get AWS region from metadata client")
-	err := updateConfigZone(&cfg, metadata)
-	if err != nil {
-		return "", "", fmt.Errorf("unable to determine AWS zone from cloud provider config or EC2 instance metadata: %v", err)
+func getRegionFromMetadata(cfg CloudConfig, metadata EC2Metadata) (string, error) {
+	// For backwards compatibility reasons, keeping this check to avoid breaking possible
+	// cases where Zone was set to override the region configuration. Otherwise, fall back
+	// to getting region the standard way.
+	if cfg.Global.Zone != "" {
+		zone := cfg.Global.Zone
+		klog.Infof("Zone %s configured in cloud config. Using that to get region.", zone)
+
+		return azToRegion(zone)
 	}
 
-	zone := cfg.Global.Zone
-	if len(zone) <= 1 {
-		return "", "", fmt.Errorf("invalid AWS zone in config file: %s", zone)
-	}
-
-	regionName, err := azToRegion(zone)
-	if err != nil {
-		return "", "", err
-	}
-
-	return regionName, zone, nil
+	return cfg.GetRegion(metadata)
 }

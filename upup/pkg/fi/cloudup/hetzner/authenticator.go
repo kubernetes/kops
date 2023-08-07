@@ -35,11 +35,10 @@ func NewHetznerAuthenticator() (bootstrap.Authenticator, error) {
 	return &hetznerAuthenticator{}, nil
 }
 
-func (h hetznerAuthenticator) CreateToken(body []byte) (string, error) {
+func (h *hetznerAuthenticator) CreateToken(body []byte) (string, error) {
 	serverID, err := metadata.NewClient().InstanceID()
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve server ID: %w", err)
 	}
-
 	return HetznerAuthenticationTokenPrefix + strconv.Itoa(serverID), nil
 }

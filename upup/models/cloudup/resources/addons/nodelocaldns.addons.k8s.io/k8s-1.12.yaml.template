@@ -41,6 +41,9 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 data:
   Corefile: |
+  {{- if KubeDNS.NodeLocalDNS.ExternalCoreFile }}
+{{ KubeDNS.NodeLocalDNS.ExternalCoreFile | indent 4 }}
+  {{- else }}
     {{ KubeDNS.Domain }}:53 {
         errors
         cache {
@@ -104,6 +107,8 @@ data:
         {{- end }}
     }
     {{- end }}
+{{ KubeDNS.NodeLocalDNS.AdditionalConfig | indent 4 }}
+  {{- end }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -158,6 +163,11 @@ spec:
           capabilities:
             add:
             - NET_ADMIN
+{{ if ContainerdSELinuxEnabled }}
+          seLinuxOptions:
+            type: spc_t
+            level: s0
+{{ end }}
         ports:
         - containerPort: 53
           name: dns

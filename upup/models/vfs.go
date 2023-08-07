@@ -145,6 +145,10 @@ func (p *AssetPath) Remove() error {
 	return ReadOnlyError
 }
 
+func (p *AssetPath) RemoveAll() error {
+	return ReadOnlyError
+}
+
 func (p *AssetPath) RemoveAllVersions() error {
 	return p.Remove()
 }

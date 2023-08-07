@@ -77,15 +77,12 @@ spec:
         max_retries: "10"
       filesProviderExtraConfig:
         profile: "foo"
-  topology:
-    masters: public
-    nodes: public
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  - cidr: 172.20.64.0/19
+  - cidr: 10.1.64.0/19
     name: us-east-1a-private
     type: Private
     zone: us-test-1a

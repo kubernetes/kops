@@ -77,7 +77,7 @@ type NetworkingSpec struct {
 	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonVPC,omitempty"`
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
-	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
+	GCP        *GCPNetworkingSpec        `json:"gcp,omitempty"`
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
@@ -87,8 +87,8 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	}
 	if n.Kubenet != nil {
 		return true
-	} else if n.GCE != nil {
-		// GCE IP Alias networking is based on kubenet
+	} else if n.GCP != nil {
+		// GCP IP Alias networking is based on kubenet
 		return true
 	} else if n.External != nil {
 		// external is based on kubenet
@@ -391,6 +391,9 @@ type CiliumNetworkingSpec struct {
 	// AgentPodAnnotations makes possible to add additional annotations to cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
+	// OperatorPodAnnotations makes possible to add additional annotations to cilium operator.
+	// Default: none
+	OperatorPodAnnotations map[string]string `json:"operatorPodAnnotations,omitempty"`
 	// Tunnel specifies the Cilium tunnelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`
@@ -435,6 +438,9 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage,omitempty"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName,omitempty"`
+	// ClusterID is the ID of the cluster. It is only relevant when building a mesh of clusters.
+	// Must be a number between 1 and 255.
+	ClusterID uint8 `json:"clusterID,omitempty"`
 	// ToFQDNsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
 	// Possible values are "nameError" or "refused".
 	// Default: refused
@@ -502,5 +508,5 @@ type LyftVPCNetworkingSpec struct {
 	SubnetTags map[string]string `json:"subnetTags,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
-type GCENetworkingSpec struct{}
+// GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
+type GCPNetworkingSpec struct{}

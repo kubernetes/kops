@@ -98,6 +98,8 @@ type AutoscalingGroup struct {
 	TargetGroups []*TargetGroup
 	// CapacityRebalance makes ASG proactively replace spot instances when ASG receives a rebalance recommendation
 	CapacityRebalance *bool
+	// WarmPool is the WarmPool config for the ASG
+	WarmPool *WarmPool
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -106,6 +108,31 @@ var _ fi.CloudupTaskNormalize = &AutoscalingGroup{}
 // CompareWithID returns the ID of the ASG
 func (e *AutoscalingGroup) CompareWithID() *string {
 	return e.Name
+}
+
+// Track dependencies here to explicitly ignore WarmPool
+// because the WarmPool should be created after the ASG, not the other way around.
+// The WarmPool struct field is only used for RenderTerraform.
+func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+
+	for _, lb := range e.LoadBalancers {
+		deps = append(deps, lb)
+	}
+
+	for _, tg := range e.TargetGroups {
+		deps = append(deps, tg)
+	}
+
+	for _, subnet := range e.Subnets {
+		deps = append(deps, subnet)
+	}
+
+	if e.LaunchTemplate != nil {
+		deps = append(deps, e.LaunchTemplate)
+	}
+
+	return deps
 }
 
 // Find is used to discover the ASG in the cloud provider
@@ -929,6 +956,11 @@ type terraformMixedInstancesPolicy struct {
 	InstanceDistribution []*terraformAutoscalingInstanceDistribution `cty:"instances_distribution"`
 }
 
+type terraformWarmPool struct {
+	MinSize *int64 `cty:"min_size"`
+	MaxSize *int64 `cty:"max_group_prepared_capacity"`
+}
+
 type terraformAutoscalingGroup struct {
 	Name                    *string                                          `cty:"name"`
 	LaunchConfigurationName *terraformWriter.Literal                         `cty:"launch_configuration"`
@@ -946,6 +978,7 @@ type terraformAutoscalingGroup struct {
 	TargetGroupARNs         []*terraformWriter.Literal                       `cty:"target_group_arns"`
 	MaxInstanceLifetime     *int64                                           `cty:"max_instance_lifetime"`
 	CapacityRebalance       *bool                                            `cty:"capacity_rebalance"`
+	WarmPool                *terraformWarmPool                               `cty:"warm_pool"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -1068,6 +1101,13 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 	}
 	tf.SuspendedProcesses = processes
+
+	if e.WarmPool != nil && *e.WarmPool.Enabled {
+		tf.WarmPool = &terraformWarmPool{
+			MinSize: &e.WarmPool.MinSize,
+			MaxSize: e.WarmPool.MaxSize,
+		}
+	}
 
 	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)
 }

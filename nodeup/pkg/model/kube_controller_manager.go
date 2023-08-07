@@ -52,7 +52,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.NodeupModelBuilderContext) er
 
 	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
-	kcm := *b.Cluster.Spec.KubeControllerManager
+	kcm := b.NodeupConfig.ControlPlaneConfig.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
 	// Include the CA Key
@@ -117,7 +117,7 @@ func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.NodeupModelB
 
 	if kcm.TLSCertFile == nil {
 		alternateNames := []string{
-			"kube-controller-manager.kube-system.svc." + b.Cluster.Spec.ClusterDNSDomain,
+			"kube-controller-manager.kube-system.svc." + b.NodeupConfig.APIServerConfig.ClusterDNSDomain,
 		}
 
 		issueCert := &nodetasks.IssueCert{
@@ -228,10 +228,10 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	}
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-controller-manager.log",
@@ -239,19 +239,6 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 			"/usr/local/bin/kube-controller-manager",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-controller-manager"}
-		if kcm.LogFormat != "" && kcm.LogFormat != "text" {
-			// When logging-format is not text, some flags are not accepted.
-			// https://github.com/kubernetes/kops/issues/14100
-			container.Args = sortedStrings(flags)
-		} else {
-			container.Args = append(
-				sortedStrings(flags),
-				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-				"--alsologtostderr",
-				"--log-file=/var/log/kube-controller-manager.log")
-		}
 	}
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
@@ -266,12 +253,14 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 
 	kubemanifest.AddHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
-	kubemanifest.AddHostPathMapping(pod, container, "volplugins", volumePluginDir).WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "volplugins", volumePluginDir, kubemanifest.WithReadWrite())
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
+
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
 
 	return pod, nil
 }

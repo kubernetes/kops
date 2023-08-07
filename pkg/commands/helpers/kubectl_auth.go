@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -174,7 +175,11 @@ func cacheFilePath(kopsStateStore string, clusterName string) string {
 	b.WriteString(clusterName)
 	b.WriteByte(0)
 
-	hash := fmt.Sprintf("%x", sha256.New().Sum(b.Bytes()))
+	var i big.Int
+	hb := sha256.Sum224(b.Bytes())
+	i.SetBytes(hb[:])
+	hash := i.Text(62)
+
 	sanitizedName := strings.Map(func(r rune) rune {
 		switch {
 		case r >= 'a' && r <= 'z':
@@ -187,6 +192,9 @@ func cacheFilePath(kopsStateStore string, clusterName string) string {
 			return '_'
 		}
 	}, clusterName)
+	if len(sanitizedName) > 32 {
+		sanitizedName = sanitizedName[:32]
+	}
 	return filepath.Join(homedir.HomeDir(), ".kube", "cache", "kops-authentication", sanitizedName+"_"+hash)
 }
 

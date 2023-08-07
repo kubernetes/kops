@@ -67,7 +67,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
 	}
 
-	if b.BootConfig.CloudProvider == kops.CloudProviderHetzner {
+	if b.CloudProvider() == kops.CloudProviderHetzner {
 		localIP, err := b.GetMetadataLocalIP()
 		if err != nil {
 			return err
@@ -394,15 +394,15 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			"kubernetes",
 			"kubernetes.default",
 			"kubernetes.default.svc",
-			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
+			"kubernetes.default.svc." + b.NodeupConfig.APIServerConfig.ClusterDNSDomain,
 		}
 
 		// Names specified in the cluster spec
-		if b.Cluster.Spec.API.PublicName != "" {
-			alternateNames = append(alternateNames, b.Cluster.Spec.API.PublicName)
+		if b.NodeupConfig.APIServerConfig.API.PublicName != "" {
+			alternateNames = append(alternateNames, b.NodeupConfig.APIServerConfig.API.PublicName)
 		}
 		alternateNames = append(alternateNames, b.APIInternalName())
-		alternateNames = append(alternateNames, b.Cluster.Spec.API.AdditionalSANs...)
+		alternateNames = append(alternateNames, b.NodeupConfig.APIServerConfig.API.AdditionalSANs...)
 
 		// Load balancer IPs passed in through NodeupConfig
 		alternateNames = append(alternateNames, b.NodeupConfig.ApiserverAdditionalIPs...)
@@ -419,7 +419,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		// We also want to be able to reference it locally via https://127.0.0.1
 		alternateNames = append(alternateNames, "127.0.0.1")
 
-		if b.BootConfig.CloudProvider == kops.CloudProviderHetzner {
+		if b.CloudProvider() == kops.CloudProviderHetzner {
 			localIP, err := b.GetMetadataLocalIP()
 			if err != nil {
 				return err
@@ -428,7 +428,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 				alternateNames = append(alternateNames, localIP)
 			}
 		}
-		if b.BootConfig.CloudProvider == kops.CloudProviderOpenstack {
+		if b.CloudProvider() == kops.CloudProviderOpenstack {
 			instanceAddress, err := getInstanceAddress()
 			if err != nil {
 				return err
@@ -667,10 +667,10 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	}
 
 	// Log both to docker and to the logfile
-	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").WithReadWrite()
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log", kubemanifest.WithReadWrite())
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
+	{
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-apiserver.log",
@@ -678,19 +678,6 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 			"/usr/local/bin/kube-apiserver",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-apiserver"}
-		if kubeAPIServer.LogFormat != "" && kubeAPIServer.LogFormat != "text" {
-			// When logging-format is not text, some flags are not accepted.
-			// https://github.com/kubernetes/kops/issues/13245
-			container.Args = sortedStrings(flags)
-		} else {
-			container.Args = append(
-				sortedStrings(flags),
-				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-				"--alsologtostderr",
-				"--log-file=/var/log/kube-apiserver.log")
-		}
 	}
 
 	for _, path := range b.SSLHostPaths() {
@@ -718,12 +705,14 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
 		auditLogPathDir := filepath.Dir(auditLogPath)
-		kubemanifest.AddHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).WithReadWrite()
+		kubemanifest.AddHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir, kubemanifest.WithReadWrite())
 	}
 	if kubeAPIServer.AuditPolicyFile != "" {
 		// The audit config dir will be used for both the audit policy and the audit webhook config
 		auditConfigDir := filepath.Dir(kubeAPIServer.AuditPolicyFile)
-		kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
+		if pathSrvKAPI != auditConfigDir {
+			kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
+		}
 	}
 
 	if b.NodeupConfig.APIServerConfig.Authentication != nil {
@@ -736,6 +725,8 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
+
+	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
 
 	if useHealthcheckProxy {
 		if err := b.addHealthcheckSidecar(ctx, pod); err != nil {
@@ -750,16 +741,16 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 	annotations["kubectl.kubernetes.io/default-container"] = "kube-apiserver"
 
-	if b.Cluster.UsesNoneDNS() {
+	if b.NodeupConfig.UsesNoneDNS {
 		return annotations
 	}
 
-	if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
+	if b.NodeupConfig.APIServerConfig.API.LoadBalancer == nil || !b.NodeupConfig.APIServerConfig.API.LoadBalancer.UseForInternalAPI {
 		annotations["dns.alpha.kubernetes.io/internal"] = b.APIInternalName()
 	}
 
-	if b.Cluster.Spec.API.DNS != nil && b.Cluster.Spec.API.PublicName != "" {
-		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.API.PublicName
+	if b.NodeupConfig.APIServerConfig.API.DNS != nil && b.NodeupConfig.APIServerConfig.API.PublicName != "" {
+		annotations["dns.alpha.kubernetes.io/external"] = b.NodeupConfig.APIServerConfig.API.PublicName
 	}
 
 	return annotations

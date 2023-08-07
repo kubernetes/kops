@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -108,6 +109,57 @@ func (p *S3Path) Remove() error {
 		// TODO: Check for not-exists, return os.NotExist
 
 		return fmt.Errorf("error deleting %s: %v", p, err)
+	}
+
+	return nil
+}
+
+func (p *S3Path) RemoveAll() error {
+	ctx := context.TODO()
+
+	client, err := p.client(ctx)
+	if err != nil {
+		return err
+	}
+
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	objects := make([]*s3.ObjectIdentifier, len(tree))
+	for i := range tree {
+		s3Object, isS3Object := tree[i].(*S3Path)
+		if !isS3Object {
+			return fmt.Errorf("invalid path in s3fs tree: %s", tree[i].Path())
+		}
+
+		objects[i] = &s3.ObjectIdentifier{
+			Key: aws.String(s3Object.key),
+		}
+	}
+
+	klog.V(8).Infof("removing all file in %s", p)
+
+	request := &s3.DeleteObjectsInput{
+		Bucket: aws.String(p.bucket),
+		Delete: &s3.Delete{},
+	}
+
+	for len(objects) > 0 {
+		// DeleteObjects can only process 1000 objects per call
+		if len(objects) > 1000 {
+			request.Delete.Objects = objects[:1000]
+			objects = objects[1000:]
+		} else {
+			request.Delete.Objects = objects
+			objects = nil
+		}
+
+		_, err = client.DeleteObjectsWithContext(ctx, request)
+		if err != nil {
+			return fmt.Errorf("error removing %d files: %w", len(request.Delete.Objects), err)
+		}
 	}
 
 	return nil
@@ -579,6 +631,13 @@ type terraformS3File struct {
 	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
+type terraformDOFile struct {
+	Bucket  string                   `json:"bucket" cty:"bucket"`
+	Region  string                   `json:"region" cty:"region"`
+	Key     string                   `json:"key" cty:"key"`
+	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+}
+
 func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
 	ctx := context.TODO()
 
@@ -587,40 +646,66 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	bucketDetails, err := p.getBucketDetails(ctx)
-	if err != nil {
-		return err
+	// render DO's terraform
+	if p.scheme == "do" {
+
+		content, err := w.AddFileBytes("digitalocean_spaces_bucket_object", name, "content", bytes, false)
+		if err != nil {
+			return fmt.Errorf("error rendering DO file: %w", err)
+		}
+
+		// retrieve space region from endpoint
+		endpoint := os.Getenv("S3_ENDPOINT")
+		if endpoint == "" {
+			return errors.New("S3 Endpoint is empty")
+		}
+		region := strings.Split(endpoint, ".")[0]
+
+		tf := &terraformDOFile{
+			Bucket:  p.Bucket(),
+			Region:  region,
+			Key:     p.Key(),
+			Content: content,
+		}
+		return w.RenderResource("digitalocean_spaces_bucket_object", name, tf)
+
+	} else {
+		bucketDetails, err := p.getBucketDetails(ctx)
+		if err != nil {
+			return err
+		}
+
+		tfProviderArguments := map[string]string{
+			"region": bucketDetails.region,
+		}
+		w.EnsureTerraformProvider("aws", tfProviderArguments)
+
+		content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
+		if err != nil {
+			return fmt.Errorf("rendering S3 file: %v", err)
+		}
+
+		sse, _, err := p.getServerSideEncryption(ctx)
+		if err != nil {
+			return err
+		}
+
+		requestACL, err := p.getRequestACL(acl)
+		if err != nil {
+			return err
+		}
+
+		tf := &terraformS3File{
+			Bucket:   p.Bucket(),
+			Key:      p.Key(),
+			Content:  content,
+			SSE:      sse,
+			Acl:      requestACL,
+			Provider: terraformWriter.LiteralTokens("aws", "files"),
+		}
+		return w.RenderResource("aws_s3_object", name, tf)
 	}
 
-	tfProviderArguments := map[string]string{
-		"region": bucketDetails.region,
-	}
-	w.EnsureTerraformProvider("aws", tfProviderArguments)
-
-	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
-	if err != nil {
-		return fmt.Errorf("rendering S3 file: %v", err)
-	}
-
-	sse, _, err := p.getServerSideEncryption(ctx)
-	if err != nil {
-		return err
-	}
-
-	requestACL, err := p.getRequestACL(acl)
-	if err != nil {
-		return err
-	}
-
-	tf := &terraformS3File{
-		Bucket:   p.Bucket(),
-		Key:      p.Key(),
-		Content:  content,
-		SSE:      sse,
-		Acl:      requestACL,
-		Provider: terraformWriter.LiteralTokens("aws", "files"),
-	}
-	return w.RenderResource("aws_s3_object", name, tf)
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""

@@ -81,7 +81,7 @@ type NetworkingSpec struct {
 	AmazonVPC  *AmazonVPCNetworkingSpec    `json:"amazonVPC,omitempty"`
 	Cilium     *CiliumNetworkingSpec       `json:"cilium,omitempty"`
 	LyftVPC    *kops.LyftVPCNetworkingSpec `json:"-"`
-	GCE        *GCENetworkingSpec          `json:"gce,omitempty"`
+	GCP        *GCPNetworkingSpec          `json:"gcp,omitempty"`
 }
 
 // KubenetNetworkingSpec is the specification for kubenet networking, largely integrated but intended to replace classic
@@ -354,6 +354,9 @@ type CiliumNetworkingSpec struct {
 	// AgentPodAnnotations makes possible to add additional annotations to the cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
+	// OperatorPodAnnotations makes possible to add additional annotations to cilium operator.
+	// Default: none
+	OperatorPodAnnotations map[string]string `json:"operatorPodAnnotations,omitempty"`
 	// Tunnel specifies the Cilium tunnelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`
@@ -398,6 +401,9 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage,omitempty"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName,omitempty"`
+	// ClusterID is the ID of the cluster. It is only relevant when building a mesh of clusters.
+	// Must be a number between 1 and 255.
+	ClusterID uint8 `json:"clusterID,omitempty"`
 	// ToFQDNsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
 	// Possible values are "nameError" or "refused".
 	// Default: refused
@@ -459,5 +465,5 @@ type HubbleSpec struct {
 	Metrics []string `json:"metrics,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
-type GCENetworkingSpec struct{}
+// GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
+type GCPNetworkingSpec struct{}

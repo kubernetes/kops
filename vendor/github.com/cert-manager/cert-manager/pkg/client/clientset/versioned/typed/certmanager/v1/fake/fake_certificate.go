@@ -21,10 +21,9 @@ package fake
 import (
 	"context"
 
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,25 +35,25 @@ type FakeCertificates struct {
 	ns   string
 }
 
-var certificatesResource = schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "certificates"}
+var certificatesResource = v1.SchemeGroupVersion.WithResource("certificates")
 
-var certificatesKind = schema.GroupVersionKind{Group: "cert-manager.io", Version: "v1", Kind: "Certificate"}
+var certificatesKind = v1.SchemeGroupVersion.WithKind("Certificate")
 
 // Get takes name of the certificate, and returns the corresponding certificate object, and an error if there is any.
-func (c *FakeCertificates) Get(ctx context.Context, name string, options v1.GetOptions) (result *certmanagerv1.Certificate, err error) {
+func (c *FakeCertificates) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.Certificate, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(certificatesResource, c.ns, name), &certmanagerv1.Certificate{})
+		Invokes(testing.NewGetAction(certificatesResource, c.ns, name), &v1.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*certmanagerv1.Certificate), err
+	return obj.(*v1.Certificate), err
 }
 
 // List takes label and field selectors, and returns the list of Certificates that match those selectors.
-func (c *FakeCertificates) List(ctx context.Context, opts v1.ListOptions) (result *certmanagerv1.CertificateList, err error) {
+func (c *FakeCertificates) List(ctx context.Context, opts metav1.ListOptions) (result *v1.CertificateList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(certificatesResource, certificatesKind, c.ns, opts), &certmanagerv1.CertificateList{})
+		Invokes(testing.NewListAction(certificatesResource, certificatesKind, c.ns, opts), &v1.CertificateList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +63,8 @@ func (c *FakeCertificates) List(ctx context.Context, opts v1.ListOptions) (resul
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &certmanagerv1.CertificateList{ListMeta: obj.(*certmanagerv1.CertificateList).ListMeta}
-	for _, item := range obj.(*certmanagerv1.CertificateList).Items {
+	list := &v1.CertificateList{ListMeta: obj.(*v1.CertificateList).ListMeta}
+	for _, item := range obj.(*v1.CertificateList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -74,69 +73,69 @@ func (c *FakeCertificates) List(ctx context.Context, opts v1.ListOptions) (resul
 }
 
 // Watch returns a watch.Interface that watches the requested certificates.
-func (c *FakeCertificates) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeCertificates) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(certificatesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a certificate and creates it.  Returns the server's representation of the certificate, and an error, if there is any.
-func (c *FakeCertificates) Create(ctx context.Context, certificate *certmanagerv1.Certificate, opts v1.CreateOptions) (result *certmanagerv1.Certificate, err error) {
+func (c *FakeCertificates) Create(ctx context.Context, certificate *v1.Certificate, opts metav1.CreateOptions) (result *v1.Certificate, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(certificatesResource, c.ns, certificate), &certmanagerv1.Certificate{})
+		Invokes(testing.NewCreateAction(certificatesResource, c.ns, certificate), &v1.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*certmanagerv1.Certificate), err
+	return obj.(*v1.Certificate), err
 }
 
 // Update takes the representation of a certificate and updates it. Returns the server's representation of the certificate, and an error, if there is any.
-func (c *FakeCertificates) Update(ctx context.Context, certificate *certmanagerv1.Certificate, opts v1.UpdateOptions) (result *certmanagerv1.Certificate, err error) {
+func (c *FakeCertificates) Update(ctx context.Context, certificate *v1.Certificate, opts metav1.UpdateOptions) (result *v1.Certificate, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(certificatesResource, c.ns, certificate), &certmanagerv1.Certificate{})
+		Invokes(testing.NewUpdateAction(certificatesResource, c.ns, certificate), &v1.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*certmanagerv1.Certificate), err
+	return obj.(*v1.Certificate), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeCertificates) UpdateStatus(ctx context.Context, certificate *certmanagerv1.Certificate, opts v1.UpdateOptions) (*certmanagerv1.Certificate, error) {
+func (c *FakeCertificates) UpdateStatus(ctx context.Context, certificate *v1.Certificate, opts metav1.UpdateOptions) (*v1.Certificate, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(certificatesResource, "status", c.ns, certificate), &certmanagerv1.Certificate{})
+		Invokes(testing.NewUpdateSubresourceAction(certificatesResource, "status", c.ns, certificate), &v1.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*certmanagerv1.Certificate), err
+	return obj.(*v1.Certificate), err
 }
 
 // Delete takes name of the certificate and deletes it. Returns an error if one occurs.
-func (c *FakeCertificates) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *FakeCertificates) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(certificatesResource, c.ns, name, opts), &certmanagerv1.Certificate{})
+		Invokes(testing.NewDeleteActionWithOptions(certificatesResource, c.ns, name, opts), &v1.Certificate{})
 
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeCertificates) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+func (c *FakeCertificates) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(certificatesResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &certmanagerv1.CertificateList{})
+	_, err := c.Fake.Invokes(action, &v1.CertificateList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched certificate.
-func (c *FakeCertificates) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *certmanagerv1.Certificate, err error) {
+func (c *FakeCertificates) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Certificate, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(certificatesResource, c.ns, name, pt, data, subresources...), &certmanagerv1.Certificate{})
+		Invokes(testing.NewPatchSubresourceAction(certificatesResource, c.ns, name, pt, data, subresources...), &v1.Certificate{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*certmanagerv1.Certificate), err
+	return obj.(*v1.Certificate), err
 }

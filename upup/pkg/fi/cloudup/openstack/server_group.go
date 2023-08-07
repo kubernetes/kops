@@ -135,7 +135,7 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		generationName := fmt.Sprintf("%d-%d", cluster.GetGeneration(), ig.Generation)
 
 		status := cloudinstances.CloudInstanceStatusUpToDate
-		if generationName != observedName {
+		if generationName != observedName || server.Status == errorStatus {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
 		cm, err := cg.NewCloudInstance(instanceId, status, nodeMap[instanceId])
@@ -149,7 +149,7 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 
 		ip, err := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
 		if err != nil {
-			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+			klog.Warningf("Unable to find fixed ip for %s: %v", server.Name, err)
 		}
 
 		cm.PrivateIP = ip

@@ -17,7 +17,9 @@ limitations under the License.
 package nodelabels
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
+	"fmt"
+
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -37,13 +39,25 @@ const (
 
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16
-func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) map[string]string {
-	isControlPlane := instanceGroup.Spec.Role == kops.InstanceGroupRoleControlPlane
-
-	isAPIServer := instanceGroup.Spec.Role == kops.InstanceGroupRoleAPIServer
+func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (map[string]string, error) {
+	isControlPlane := false
+	isAPIServer := false
+	isNode := false
+	switch instanceGroup.Spec.Role {
+	case api.InstanceGroupRoleControlPlane:
+		isControlPlane = true
+	case api.InstanceGroupRoleAPIServer:
+		isAPIServer = true
+	case api.InstanceGroupRoleNode:
+		isNode = true
+	case api.InstanceGroupRoleBastion:
+		// no labels to add
+	default:
+		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
+	}
 
 	// Merge KubeletConfig for NodeLabels
-	c := &kops.KubeletConfigSpec{}
+	c := &api.KubeletConfigSpec{}
 	if isControlPlane {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
@@ -70,7 +84,9 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		if cluster.IsKubernetesLT("1.24") {
 			nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
 		}
-	} else {
+	}
+
+	if isNode {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
@@ -100,11 +116,11 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		nodeLabels[k] = v
 	}
 
-	if instanceGroup.Spec.Manager == kops.InstanceManagerKarpenter {
+	if instanceGroup.Spec.Manager == api.InstanceManagerKarpenter {
 		nodeLabels["karpenter.sh/provisioner-name"] = instanceGroup.ObjectMeta.Name
 	}
 
-	return nodeLabels
+	return nodeLabels, nil
 }
 
 // BuildMandatoryControlPlaneLabels returns the list of labels all CP nodes must have

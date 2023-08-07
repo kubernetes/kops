@@ -76,10 +76,9 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	c.AddTask(loadbalancer)
 
-	// Temporarily do not know the role of the following function
-	if b.Cluster.IsGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		// Ensure the LB hostname is included in the TLS certificate,
-		// if we're not going to use an alias for it
+	// Ensure the LB hostname is included in the TLS certificate,
+	// if we're not going to use an alias for it
+	if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 		loadbalancer.ForAPIServer = true
 	}
 

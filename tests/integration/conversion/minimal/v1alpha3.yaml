@@ -18,7 +18,8 @@ spec:
   channel: stable
   cloudProvider:
     aws: {}
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore:
+    base: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -44,9 +45,7 @@ spec:
       type: Public
       zone: us-test-1a
     topology:
-      controlPlane: public
       dns: None
-      nodes: private
   sshAccess:
   - 0.0.0.0/0
 

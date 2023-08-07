@@ -45,7 +45,7 @@ type templateFunctions struct {
 
 // KopsControllerConfig returns the yaml configuration for kops-controller
 func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
-	if !t.Cluster.IsGossip() {
+	if !t.Cluster.UsesLegacyGossip() {
 		return nil, nil
 	}
 

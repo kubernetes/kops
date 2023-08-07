@@ -139,10 +139,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 								Region: "region",
 							},
 						},
-						Topology: &kops.TopologySpec{
-							ControlPlane: "private",
-							Nodes:        "private",
-						},
+						Topology: &kops.TopologySpec{},
 					},
 				},
 			},
@@ -356,10 +353,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 								Region: "region",
 							},
 						},
-						Topology: &kops.TopologySpec{
-							ControlPlane: kops.TopologyPublic,
-							Nodes:        kops.TopologyPublic,
-						},
+						Topology: &kops.TopologySpec{},
 					},
 				},
 			},
@@ -434,10 +428,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 								Type:   kops.SubnetTypePrivate,
 							},
 						},
-						Topology: &kops.TopologySpec{
-							ControlPlane: kops.TopologyPrivate,
-							Nodes:        kops.TopologyPrivate,
-						},
+						Topology: &kops.TopologySpec{},
 					},
 				},
 			},
@@ -594,9 +585,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 						Topology: &kops.TopologySpec{
-							ControlPlane: kops.TopologyPrivate,
-							DNS:          kops.DNSTypeNone,
-							Nodes:        kops.TopologyPrivate,
+							DNS: kops.DNSTypeNone,
 						},
 					},
 				},
@@ -684,6 +673,135 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-3"},
 						Zones:       []string{"zone-3"},
+					},
+				},
+			},
+		},
+		{
+			desc: "single-zone setup 3 masters 1 node without bastion with API loadbalancer dns none",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					API: kops.APISpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{
+							Type: kops.LoadBalancerTypePublic,
+						},
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							BlockStorage: &kops.OpenstackBlockStorageConfig{
+								Version:            fi.PtrTo("v3"),
+								IgnoreAZ:           fi.PtrTo(false),
+								CreateStorageClass: fi.PtrTo(false),
+								CSITopologySupport: fi.PtrTo(true),
+							},
+							Loadbalancer: &kops.OpenstackLoadbalancerConfig{
+								FloatingNetwork: fi.PtrTo("test"),
+								FloatingSubnet:  fi.PtrTo("test-lb-subnet"),
+								Method:          fi.PtrTo("ROUND_ROBIN"),
+								Provider:        fi.PtrTo("amphora"),
+								UseOctavia:      fi.PtrTo(true),
+							},
+							Monitor: &kops.OpenstackMonitor{
+								Delay:      fi.PtrTo("1m"),
+								MaxRetries: fi.PtrTo(3),
+								Timeout:    fi.PtrTo("30s"),
+							},
+							Network: &kops.OpenstackNetwork{
+								AvailabilityZoneHints: []*string{fi.PtrTo("zone-1")},
+							},
+							Router: &kops.OpenstackRouter{
+								DNSServers:            fi.PtrTo("8.8.8.8,8.8.4.4"),
+								ExternalSubnet:        fi.PtrTo("test-router-subnet"),
+								ExternalNetwork:       fi.PtrTo("test"),
+								AvailabilityZoneHints: []*string{fi.PtrTo("zone-1")},
+							},
+							Metadata: &kops.OpenstackMetadata{
+								ConfigDrive: fi.PtrTo(false),
+							},
+						},
+					},
+					KubernetesVersion: "1.25.0",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name: "subnet-1",
+								Zone: "zone-1",
+								Type: kops.SubnetTypePrivate,
+							},
+						},
+						Topology: &kops.TopologySpec{
+							DNS: kops.DNSTypeNone,
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-a",
+						Annotations: map[string]string{
+							"openstack.kops.io/serverGroupName": "control-plane",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-a",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-b",
+						Annotations: map[string]string{
+							"openstack.kops.io/serverGroupName": "control-plane",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-c",
+						Annotations: map[string]string{
+							"openstack.kops.io/serverGroupName": "control-plane",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 			},
@@ -1356,6 +1474,56 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 			},
 		},
+		{
+			desc: "configures allowed address pairs with annotations",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							Metadata: &kops.OpenstackMetadata{
+								ConfigDrive: fi.PtrTo(false),
+							},
+						},
+					},
+					KubernetesVersion: "1.24.0",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
+								Region: "region",
+							},
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+						Annotations: map[string]string{
+							"openstack.kops.io/allowedAddressPair/0": "192.168.0.0/16",
+							"openstack.kops.io/allowedAddressPair/1": "10.123.0.1,12:34:56:78:90:AB",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -1415,7 +1583,6 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 				Hash:      hashing.MustFromString("e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c71"),
 			},
 		},
-		Cluster: testCase.cluster,
 	}
 
 	builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)

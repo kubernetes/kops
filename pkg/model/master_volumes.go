@@ -272,9 +272,11 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	// This is the configuration of the etcd cluster
 	clusterSpec := m.Name + "/" + strings.Join(allMembers, ",")
 
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
-	tags[gce.GceLabelNameKubernetesCluster] = gce.SafeClusterName(b.ClusterName())
+	tags[clusterLabel.Key] = clusterLabel.Value
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
@@ -398,11 +400,14 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 }
 
 func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
-	tags := []string{
+	volumeTags := []string{
 		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.ObjectMeta.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcd.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
 		fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, fi.ValueOf(m.InstanceGroup)),
+	}
+	for k, v := range b.CloudTags(b.ClusterName(), false) {
+		volumeTags = append(volumeTags, fmt.Sprintf("%s=%s", k, v))
 	}
 
 	t := &scalewaytasks.Volume{
@@ -410,7 +415,7 @@ func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext
 		Lifecycle: b.Lifecycle,
 		Size:      fi.PtrTo(int64(volumeSize) * 1e9),
 		Zone:      &zone,
-		Tags:      tags,
+		Tags:      volumeTags,
 		Type:      fi.PtrTo(string(instance.VolumeVolumeTypeBSSD)),
 	}
 	c.AddTask(t)

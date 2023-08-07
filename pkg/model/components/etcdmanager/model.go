@@ -22,9 +22,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -146,16 +146,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Type:      "ca",
 			}
 			c.AddTask(clientsCaCilium)
-
-			if !b.UseKopsControllerForNodeBootstrap() {
-				c.AddTask(&fitasks.Keypair{
-					Name:      fi.PtrTo("etcd-client-cilium"),
-					Lifecycle: b.Lifecycle,
-					Subject:   "cn=cilium",
-					Type:      "client",
-					Signer:    clientsCaCilium,
-				})
-			}
 		}
 	}
 
@@ -181,7 +171,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230201
+    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230630
     resources:
       requests:
         cpu: 100m
@@ -198,7 +188,7 @@ spec:
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
     - mountPath: /opt
-      name: bin
+      name: opt
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   volumes:
@@ -214,9 +204,11 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
     name: pki
-  - name: bin
+  - name: opt
     emptyDir: {}
 `
+
+const kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:1.28.0-alpha.1"
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instanceGroupName string) (*v1.Pod, error) {
@@ -245,38 +237,88 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
-		for _, etcdVersion := range etcdSupportedVersions() {
+		utilMounts := []v1.VolumeMount{
+			{
+				MountPath: "/opt",
+				Name:      "opt",
+			},
+		}
+		{
 			initContainer := v1.Container{
-				Name:    "init-etcd-" + strings.ReplaceAll(etcdVersion, ".", "-"),
-				Image:   etcdSupportedImages[etcdVersion],
-				Command: []string{"/bin/sh"},
+				Name:    "kops-utils-cp",
+				Image:   kopsUtilsImage,
+				Command: []string{"/ko-app/kops-utils-cp"},
 				Args: []string{
-					"-c",
+					"--target-dir=/opt/kops-utils/",
+					"--src=/ko-app/kops-utils-cp",
 				},
-				VolumeMounts: []v1.VolumeMount{
-					{
-						MountPath: "/opt",
-						Name:      "bin",
-					},
-				},
+				VolumeMounts: utilMounts,
 			}
-			// Add the command for copying the etcd binaries
-			var command string
-			if semver.MustParse(etcdVersion).GE(semver.MustParse("3.4.13")) {
-				// Newer images bundle a custom go based `cp` utility that recursively creates the necessary dirs
-				// https://github.com/kubernetes/kubernetes/pull/91171
-				command = "cp /usr/local/bin/etcd /opt/etcd-v" + etcdVersion + "/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/etcdctl"
-			} else {
-				command = "mkdir -p /opt/etcd-v" + etcdVersion + "/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/"
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+
+		symlinkToVersions := sets.NewString()
+		for _, etcdVersion := range etcdSupportedVersions() {
+			if etcdVersion.SymlinkToVersion != "" {
+				symlinkToVersions.Insert(etcdVersion.SymlinkToVersion)
+				continue
 			}
-			initContainer.Args = append(initContainer.Args, command)
-			// Remap image via AssetBuilder
+
+			initContainer := v1.Container{
+				Name:         "init-etcd-" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
+				Image:        etcdVersion.Image,
+				Command:      []string{"/opt/kops-utils/kops-utils-cp"},
+				VolumeMounts: utilMounts,
+			}
+
+			initContainer.Args = []string{
+				"--target-dir=/opt/etcd-v" + etcdVersion.Version,
+				"--src=/usr/local/bin/etcd",
+				"--src=/usr/local/bin/etcdctl",
+			}
+
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+
+		for _, symlinkToVersion := range symlinkToVersions.List() {
+			targetVersions := sets.NewString()
+
+			for _, etcdVersion := range etcdSupportedVersions() {
+				if etcdVersion.SymlinkToVersion == symlinkToVersion {
+					targetVersions.Insert(etcdVersion.Version)
+				}
+			}
+
+			initContainer := v1.Container{
+				Name:         "init-etcd-symlinks-" + strings.ReplaceAll(symlinkToVersion, ".", "-"),
+				Image:        kopsUtilsImage,
+				Command:      []string{"/opt/kops-utils/kops-utils-cp"},
+				VolumeMounts: utilMounts,
+			}
+
+			initContainer.Args = []string{
+				"--symlink",
+			}
+			for _, targetVersion := range targetVersions.List() {
+				initContainer.Args = append(initContainer.Args, "--target-dir=/opt/etcd-v"+targetVersion)
+			}
+			// NOTE: Flags must come before positional arguments
+			initContainer.Args = append(initContainer.Args,
+				"--src=/opt/etcd-v"+symlinkToVersion+"/etcd",
+				"--src=/opt/etcd-v"+symlinkToVersion+"/etcdctl",
+			)
+
+			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
+		}
+
+		// Remap image via AssetBuilder
+		for i := range pod.Spec.InitContainers {
+			initContainer := &pod.Spec.InitContainers[i]
 			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
 			if err != nil {
-				return nil, fmt.Errorf("unable to remap container image %q: %w", initContainer.Image, err)
+				return nil, fmt.Errorf("unable to remap init container image %q: %w", container.Image, err)
 			}
 			initContainer.Image = remapped
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
 		}
 	}
 
@@ -384,13 +426,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		config.BackupInterval = fi.PtrTo(etcdCluster.Manager.BackupInterval.Duration.String())
 	}
 
-	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupRetentionDays != nil {
-		etcdCluster.Manager.Env = append(etcdCluster.Manager.Env, kops.EnvVar{
-			Name:  "ETCD_MANAGER_DAILY_BACKUPS_RETENTION",
-			Value: strconv.FormatUint(uint64(fi.ValueOf(etcdCluster.Manager.BackupRetentionDays)), 10) + "d",
-		})
-	}
-
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
 		config.DiscoveryPollInterval = fi.PtrTo(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
 	}
@@ -441,8 +476,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		case kops.CloudProviderGCE:
 			config.VolumeProvider = "gce"
 
+			clusterLabel := gce.LabelForCluster(b.Cluster.Name)
 			config.VolumeTag = []string{
-				gce.GceLabelNameKubernetesCluster + "=" + gce.SafeClusterName(b.Cluster.Name),
+				clusterLabel.Key + "=" + clusterLabel.Value,
 				gce.GceLabelNameEtcdClusterPrefix + etcdCluster.Name,
 				gce.GceLabelNameRolePrefix + "master=master",
 			}
@@ -478,6 +514,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
+			config.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
 
 		case kops.CloudProviderScaleway:
 			config.VolumeProvider = "scaleway"
@@ -517,10 +554,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			},
 		}
 
-		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log").WithReadWrite().WithType(v1.HostPathFileOrCreate).WithHostPath(logFile)
+		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log",
+			kubemanifest.WithReadWrite(),
+			kubemanifest.WithType(v1.HostPathFileOrCreate),
+			kubemanifest.WithHostPath(logFile))
 
 		if fi.ValueOf(b.Cluster.Spec.UseHostCertificates) {
-			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs").WithType(v1.HostPathDirectoryOrCreate)
+			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs", kubemanifest.WithType(v1.HostPathDirectoryOrCreate))
 		}
 	}
 
@@ -528,7 +568,25 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	container.Env = envMap.ToEnvVars()
 
-	if etcdCluster.Manager != nil && len(etcdCluster.Manager.Env) > 0 {
+	if etcdCluster.Manager != nil {
+		if etcdCluster.Manager.BackupRetentionDays != nil {
+			envVar := v1.EnvVar{
+				Name:  "ETCD_MANAGER_DAILY_BACKUPS_RETENTION",
+				Value: strconv.FormatUint(uint64(fi.ValueOf(etcdCluster.Manager.BackupRetentionDays)), 10) + "d",
+			}
+
+			container.Env = append(container.Env, envVar)
+		}
+
+		if len(etcdCluster.Manager.ListenMetricsURLs) > 0 {
+			envVar := v1.EnvVar{
+				Name:  "ETCD_LISTEN_METRICS_URLS",
+				Value: strings.Join(etcdCluster.Manager.ListenMetricsURLs, ","),
+			}
+
+			container.Env = append(container.Env, envVar)
+		}
+
 		for _, envVar := range etcdCluster.Manager.Env {
 			klog.V(2).Infof("overloading ENV var in manifest %s with %s=%s", bundle, envVar.Name, envVar.Value)
 			configOverwrite := v1.EnvVar{
@@ -589,6 +647,7 @@ type config struct {
 	VolumeTag             []string `flag:"volume-tag,repeat"`
 	VolumeNameTag         string   `flag:"volume-name-tag"`
 	DNSSuffix             string   `flag:"dns-suffix"`
+	NetworkCIDR           *string  `flag:"network-cidr"`
 }
 
 // SelectorForCluster returns the selector that should be used to select our pods (from services)

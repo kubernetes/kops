@@ -36,8 +36,8 @@ Note that you kOps will only be able to successfully provision clusters in regio
 kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
 kops update cluster my-cluster.example.com --yes
 
-# ubuntu + weave overlay cluster in nyc1 using larger droplets
-kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=weave --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb
+# ubuntu + calico overlay cluster in nyc1 using larger droplets
+kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=calico --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb
 kops update cluster my-cluster.example.com --yes
 
 # debian + flannel overlay cluster in ams3 using optimized droplets
@@ -68,7 +68,7 @@ Ensure the master-count is odd-numbered. A load balancer is created dynamically 
 
 ```bash
 # debian (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
-kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
+kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --dns none --ssh-public-key=~/.ssh/id_rsa.pub --yes
 
 # to delete a cluster - this will also delete the load balancer associated with the cluster.
 kops delete cluster dev5.k8s.local --yes

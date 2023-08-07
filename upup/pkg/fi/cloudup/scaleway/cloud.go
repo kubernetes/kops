@@ -21,28 +21,29 @@ import (
 	"os"
 	"strings"
 
+	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	dns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/scaleway"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
-	TagClusterName           = "kops.k8s.io/cluster"
+	TagClusterName           = "noprefix=kops.k8s.io/cluster"
+	TagInstanceGroup         = "noprefix=kops.k8s.io/instance-group"
+	TagNameRolePrefix        = "noprefix=kops.k8s.io/role"
+	TagNameEtcdClusterPrefix = "noprefix=kops.k8s.io/etcd"
+	TagRoleControlPlane      = "ControlPlane"
+	TagRoleWorker            = "Node"
 	KopsUserAgentPrefix      = "kubernetes-kops/"
-	TagInstanceGroup         = "instance-group"
-	TagNameRolePrefix        = "k8s.io/role"
-	TagNameEtcdClusterPrefix = "k8s.io/etcd"
-	TagRoleControlPlane      = "control-plane"
-	TagRoleWorker            = "worker"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
@@ -55,6 +56,7 @@ type ScwCloud interface {
 	Region() string
 	Zone() string
 
+	DomainService() *domain.API
 	IamService() *iam.API
 	InstanceService() *instance.API
 	LBService() *lb.ZonedAPI
@@ -68,11 +70,13 @@ type ScwCloud interface {
 	GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
+	GetClusterDNSRecords(clusterName string) ([]*domain.Record, error)
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
-	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
+	GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
+	DeleteDNSRecord(record *domain.Record, clusterName string) error
 	DeleteLoadBalancer(loadBalancer *lb.LB) error
 	DeleteServer(server *instance.Server) error
 	DeleteSSHKey(sshkey *iam.SSHKey) error
@@ -87,57 +91,55 @@ type scwCloudImplementation struct {
 	client *scw.Client
 	region scw.Region
 	zone   scw.Zone
+	dns    dnsprovider.Interface
 	tags   map[string]string
 
+	domainAPI   *domain.API
 	iamAPI      *iam.API
 	instanceAPI *instance.API
 	lbAPI       *lb.ZonedAPI
 }
 
-// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
+// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_PROFILE or
+// SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
-	errList := []error(nil)
-
 	region, err := scw.ParseRegion(tags["region"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing Scaleway region: %w", err))
+		return nil, err
 	}
 	zone, err := scw.ParseZone(tags["zone"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing Scaleway zone: %w", err))
+		return nil, err
 	}
 
-	// We make sure that the credentials env vars are defined
-	scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
-	if scwAccessKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
-	}
-	scwSecretKey := os.Getenv("SCW_SECRET_KEY")
-	if scwSecretKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
-	}
-	scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-	if scwProjectID == "" {
-		errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
-	}
-
-	if len(errList) != 0 {
-		return nil, errors.NewAggregate(errList)
-	}
-
-	scwClient, err := scw.NewClient(
-		scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
-		scw.WithEnv(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error building client for Scaleway Cloud: %w", err)
+	var scwClient *scw.Client
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		// If the profile is REDACTED, we're running integration tests so no need for authentication
+		scwClient, err = scw.NewClient(scw.WithoutAuth())
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		profile, err := CreateValidScalewayProfile()
+		if err != nil {
+			return nil, err
+		}
+		scwClient, err = scw.NewClient(
+			scw.WithProfile(profile),
+			scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("creating client for Scaleway Cloud: %w", err)
+		}
 	}
 
 	return &scwCloudImplementation{
 		client:      scwClient,
 		region:      region,
 		zone:        zone,
+		dns:         dns.NewProvider(domain.NewAPI(scwClient)),
 		tags:        tags,
+		domainAPI:   domain.NewAPI(scwClient),
 		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
 		lbAPI:       lb.NewZonedAPI(scwClient),
@@ -145,17 +147,15 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 }
 
 func (s *scwCloudImplementation) ClusterName(tags []string) string {
-	for _, tag := range tags {
-		if strings.HasPrefix(tag, TagClusterName) {
-			return strings.TrimPrefix(tag, TagClusterName+"=")
-		}
-	}
-	return ""
+	return ClusterNameFromTags(tags)
 }
 
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	klog.V(8).Infof("Scaleway DNS is not implemented yet")
-	return nil, fmt.Errorf("DNS is not implemented yet for Scaleway")
+	provider, err := dnsprovider.GetDnsProvider(dns.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error building DNS provider: %w", err)
+	}
+	return provider, nil
 }
 
 func (s *scwCloudImplementation) ProviderID() kops.CloudProviderID {
@@ -168,6 +168,10 @@ func (s *scwCloudImplementation) Region() string {
 
 func (s *scwCloudImplementation) Zone() string {
 	return string(s.zone)
+}
+
+func (s *scwCloudImplementation) DomainService() *domain.API {
+	return s.domainAPI
 }
 
 func (s *scwCloudImplementation) IamService() *iam.API {
@@ -336,13 +340,7 @@ func findServerGroups(s *scwCloudImplementation, clusterName string) (map[string
 
 	serverGroups := make(map[string][]*instance.Server)
 	for _, server := range servers {
-		igName := ""
-		for _, tag := range server.Tags {
-			if strings.HasPrefix(tag, TagInstanceGroup) {
-				igName = strings.TrimPrefix(tag, TagInstanceGroup+"=")
-				break
-			}
-		}
+		igName := InstanceGroupNameFromTags(server.Tags)
 		serverGroups[igName] = append(serverGroups[igName], server)
 	}
 
@@ -367,17 +365,34 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 		}
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
-		for _, tag := range server.Tags {
-			if strings.HasPrefix(tag, TagNameRolePrefix) {
-				cloudInstance.Roles = append(cloudInstance.Roles, strings.TrimPrefix(tag, TagNameRolePrefix))
-			}
-		}
+		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
 		if server.PrivateIP != nil {
 			cloudInstance.PrivateIP = *server.PrivateIP
 		}
 	}
 
 	return cloudInstanceGroup, nil
+}
+
+func (s *scwCloudImplementation) GetClusterDNSRecords(clusterName string) ([]*domain.Record, error) {
+	names := strings.SplitN(clusterName, ".", 2)
+	clusterNameShort := names[0]
+	domainName := names[1]
+
+	records, err := s.domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: domainName,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing cluster DNS records: %w", err)
+	}
+
+	clusterDNSRecords := []*domain.Record(nil)
+	for _, record := range records.Records {
+		if strings.HasSuffix(record.Name, clusterNameShort) {
+			clusterDNSRecords = append(clusterDNSRecords, record)
+		}
+	}
+	return clusterDNSRecords, nil
 }
 
 func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
@@ -392,16 +407,20 @@ func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]
 	return lbs.LBs, nil
 }
 
-func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error) {
+func (s *scwCloudImplementation) GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error) {
+	tags := []string{TagClusterName + "=" + clusterName}
+	if instanceGroupName != nil {
+		tags = append(tags, fmt.Sprintf("%s=%s", TagInstanceGroup, *instanceGroupName))
+	}
 	request := &instance.ListServersRequest{
 		Zone: s.zone,
-		Name: serverName,
-		Tags: []string{TagClusterName + "=" + clusterName},
+		Name: instanceGroupName,
+		Tags: tags,
 	}
 	servers, err := s.instanceAPI.ListServers(request, scw.WithAllPages())
 	if err != nil {
-		if serverName != nil {
-			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *serverName, err)
+		if instanceGroupName != nil {
+			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *instanceGroupName, err)
 		}
 		return nil, fmt.Errorf("failed to list cluster servers: %w", err)
 	}
@@ -433,6 +452,29 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 	return volumes.Volumes, nil
 }
 
+func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {
+	domainName := strings.SplitN(clusterName, ".", 2)[1]
+	recordDeleteRequest := &domain.UpdateDNSZoneRecordsRequest{
+		DNSZone: domainName,
+		Changes: []*domain.RecordChange{
+			{
+				Delete: &domain.RecordChangeDelete{
+					ID: scw.StringPtr(record.ID),
+				},
+			},
+		},
+	}
+	_, err := s.domainAPI.UpdateDNSZoneRecords(recordDeleteRequest)
+	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("DNS record %q (%s) was already deleted", record.Name, record.ID)
+			return nil
+		}
+		return fmt.Errorf("failed to delete record %s: %w", record.Name, err)
+	}
+	return nil
+}
+
 func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 	ipsToRelease := loadBalancer.IP
 
@@ -442,6 +484,10 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		Zone: s.zone,
 	})
 	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("Load-balancer %q (%s) was already deleted", loadBalancer.Name, loadBalancer.ID)
+			return nil
+		}
 		return fmt.Errorf("waiting for load-balancer: %w", err)
 	}
 	err = s.lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
@@ -473,62 +519,34 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 }
 
 func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
-	srv, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
+	_, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     s.zone,
 		ServerID: server.ID,
 	})
 	if err != nil {
 		if is404Error(err) {
-			klog.V(4).Infof("delete server %s: instance was already deleted", server.ID)
+			klog.V(4).Infof("delete server %s: instance %q was already deleted", server.ID, server.Name)
 			return nil
 		}
 		return err
 	}
 
-	// If the server is running, we turn it off and wait before deleting it
-	if srv.Server.State == instance.ServerStateRunning {
-		_, err := s.instanceAPI.ServerAction(&instance.ServerActionRequest{
-			Zone:     s.zone,
-			ServerID: server.ID,
-			Action:   instance.ServerActionPoweroff,
-		})
-		if err != nil {
-			return fmt.Errorf("delete server %s: error powering off instance: %w", server.ID, err)
-		}
+	// We terminate the server. This stops and deletes the machine immediately
+	_, err = s.instanceAPI.ServerAction(&instance.ServerActionRequest{
+		Zone:     s.zone,
+		ServerID: server.ID,
+		Action:   instance.ServerActionTerminate,
+	})
+	if err != nil && !is404Error(err) {
+		return fmt.Errorf("delete server %s: error terminating instance: %w", server.ID, err)
 	}
+
 	_, err = s.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		ServerID: server.ID,
 		Zone:     s.zone,
 	})
-	if err != nil {
-		return fmt.Errorf("delete server %s: error waiting for instance after power-off: %w", server.ID, err)
-	}
-
-	// We delete the server and wait before deleting its volumes
-	err = s.instanceAPI.DeleteServer(&instance.DeleteServerRequest{
-		ServerID: server.ID,
-		Zone:     s.zone,
-	})
-	if err != nil {
-		return fmt.Errorf("delete server %s: error deleting instance: %w", server.ID, err)
-	}
-	_, err = s.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
-		ServerID: server.ID,
-		Zone:     s.zone,
-	})
-	if !is404Error(err) {
-		return fmt.Errorf("delete server %s: error waiting for instance after deletion: %w", server.ID, err)
-	}
-
-	// We delete the volumes that were attached to the server (including etcd volumes)
-	for i := range server.Volumes {
-		err = s.instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-			Zone:     s.zone,
-			VolumeID: server.Volumes[i].ID,
-		})
-		if err != nil {
-			return fmt.Errorf("delete server %s: error deleting volume %s: %w", server.ID, server.Volumes[i].Name, err)
-		}
+	if err != nil && !is404Error(err) {
+		return fmt.Errorf("delete server %s: error waiting for instance after termination: %w", server.ID, err)
 	}
 
 	return nil

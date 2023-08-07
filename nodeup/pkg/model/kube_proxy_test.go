@@ -38,18 +38,17 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
 
-	cluster := &kops.Cluster{}
-
-	cluster.Spec.KubeProxy = &kops.KubeProxyConfig{}
-	cluster.Spec.KubeProxy.Image = "kube-proxy:1.2"
-	cluster.Spec.KubeProxy.CPURequest = resource.NewScaledQuantity(20, resource.Milli)
-	cluster.Spec.KubeProxy.CPULimit = resource.NewScaledQuantity(30, resource.Milli)
-
-	nodeupConfig := &nodeup.Config{
-		KubeProxy: cluster.Spec.KubeProxy,
+	kubeProxy := kops.KubeProxyConfig{
+		Image:      "kube-proxy:1.2",
+		CPURequest: resource.NewScaledQuantity(20, resource.Milli),
+		CPULimit:   resource.NewScaledQuantity(30, resource.Milli),
 	}
 
-	flags, _ := flagbuilder.BuildFlagsList(cluster.Spec.KubeProxy)
+	nodeupConfig := &nodeup.Config{
+		KubeProxy: &kubeProxy,
+	}
+
+	flags, _ := flagbuilder.BuildFlagsList(&kubeProxy)
 
 	flags = append(flags, []string{
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
@@ -70,7 +69,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			"Setup KubeProxy for kubernetes version 1.20",
 			fields{
 				&NodeupModelContext{
-					Cluster:           cluster,
 					NodeupConfig:      nodeupConfig,
 					kubernetesVersion: semver.Version{Major: 1, Minor: 20},
 				},

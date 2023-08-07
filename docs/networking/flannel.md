@@ -1,5 +1,7 @@
 # Flannel
 
+&#9888; The Flannel CNI is not supported for Kubernetes 1.28 or later.
+
 ## Installing
 
 To install [flannel](https://github.com/coreos/flannel) - use `--networking flannel-vxlan` (recommended) or `--networking flannel-udp` (legacy).  `--networking flannel` now selects `flannel-vxlan`.

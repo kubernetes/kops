@@ -22,7 +22,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -141,6 +140,22 @@ func (p *GSPath) Remove() error {
 		// Shouldn't happen - we always return a non-nil error with false
 		return wait.ErrWaitTimeout
 	}
+}
+
+func (p *GSPath) RemoveAll() error {
+	tree, err := p.ReadTree()
+	if err != nil {
+		return err
+	}
+
+	for _, objectPath := range tree {
+		err := objectPath.Remove()
+		if err != nil {
+			return fmt.Errorf("error removing file %s: %w", objectPath, err)
+		}
+	}
+
+	return nil
 }
 
 func (p *GSPath) RemoveAllVersions() error {
@@ -420,7 +435,7 @@ type terraformGSObjectAccessControl struct {
 }
 
 func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
-	bytes, err := ioutil.ReadAll(data)
+	bytes, err := io.ReadAll(data)
 	if err != nil {
 		return fmt.Errorf("reading data: %v", err)
 	}

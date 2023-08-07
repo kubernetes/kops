@@ -19,6 +19,7 @@ package hetzner
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 type HetznerVerifierOptions struct {
@@ -71,18 +73,26 @@ func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reque
 	}
 
 	var addrs []string
+	var challengeEndpoints []string
 	if server.PublicNet.IPv4.IP != nil {
+		// Don't challenge over the public network
 		addrs = append(addrs, server.PublicNet.IPv4.IP.String())
 	}
 	for _, network := range server.PrivateNet {
 		if network.IP != nil {
 			addrs = append(addrs, network.IP.String())
+			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(network.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 		}
 	}
 
+	if len(challengeEndpoints) == 0 {
+		return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", serverID)
+	}
+
 	result := &bootstrap.VerifyResult{
-		NodeName:         server.Name,
-		CertificateNames: addrs,
+		NodeName:          server.Name,
+		CertificateNames:  addrs,
+		ChallengeEndpoint: challengeEndpoints[0],
 	}
 
 	for key, value := range server.Labels {

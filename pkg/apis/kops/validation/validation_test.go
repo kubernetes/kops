@@ -67,7 +67,7 @@ func TestValidateCIDR(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateCIDR(g.Input, field.NewPath("CIDR"), nil)
+		errs := validateCIDR(field.NewPath("CIDR"), g.Input)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
@@ -197,7 +197,7 @@ func TestValidateSubnets(t *testing.T) {
 			},
 		}
 		_, ipNet, _ := net.ParseCIDR(cluster.Networking.NetworkCIDR)
-		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet})
+		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet}, nil, nil)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -391,9 +391,11 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 	for _, g := range grid {
 		cluster := &kops.Cluster{
 			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.27.0",
 				Networking: kops.NetworkingSpec{
 					NetworkCIDR:           "10.0.0.0/8",
 					NonMasqueradeCIDR:     "100.64.0.0/10",
+					PodCIDR:               "100.96.0.0/11",
 					ServiceClusterIPRange: "100.64.0.0/13",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
@@ -460,6 +462,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Networking: kops.NetworkingSpec{
 				NetworkCIDR:           "10.10.0.0/16",
 				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.96.0.0/11",
 				ServiceClusterIPRange: "100.64.0.0/13",
 				Subnets: []kops.ClusterSubnetSpec{
 					{
@@ -894,6 +897,11 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
+				ClusterID: 253,
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
 				Masquerade: fi.PtrTo(true),
 				IPAM:       "eni",
 			},
@@ -976,7 +984,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.12.4",
+				Version: "v1.13.5",
 				Hubble: &kops.HubbleSpec{
 					Enabled: fi.PtrTo(true),
 				},

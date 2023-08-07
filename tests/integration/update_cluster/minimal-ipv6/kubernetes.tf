@@ -22,7 +22,7 @@ locals {
   vpc_cidr_block                    = aws_vpc.minimal-ipv6-example-com.cidr_block
   vpc_id                            = aws_vpc.minimal-ipv6-example-com.id
   vpc_ipv6_cidr_block               = aws_vpc.minimal-ipv6-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length              = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  vpc_ipv6_cidr_length              = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -118,7 +118,7 @@ output "vpc_ipv6_cidr_block" {
 }
 
 output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  value = local.vpc_ipv6_cidr_block == "" ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
@@ -151,6 +151,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-ipv6-example
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.minimal-ipv6.example.com"
+  }
+  tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -214,6 +219,11 @@ resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
     value               = "nodes.minimal-ipv6.example.com"
   }
   tag {
+    key                 = "aws-node-termination-handler/managed"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -234,6 +244,82 @@ resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-ipv6-example-com.id, aws_subnet.us-test-1b-minimal-ipv6-example-com.id]
+}
+
+resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-minimal-ipv6-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "master-us-test-1a-NTHLifecycleHook"
+}
+
+resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-minimal-ipv6-example-com.id
+  default_result         = "CONTINUE"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
+  name                   = "nodes-NTHLifecycleHook"
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-ipv6-example-com-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-ipv6.example.com-ASGLifecycle_event_pattern")
+  name          = "minimal-ipv6.example.com-ASGLifecycle"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "minimal-ipv6.example.com-ASGLifecycle"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-ipv6-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-ipv6.example.com-InstanceScheduledChange_event_pattern")
+  name          = "minimal-ipv6.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "minimal-ipv6.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-ipv6-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-ipv6.example.com-InstanceStateChange_event_pattern")
+  name          = "minimal-ipv6.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "minimal-ipv6.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-ipv6-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal-ipv6.example.com-SpotInterruption_event_pattern")
+  name          = "minimal-ipv6.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "minimal-ipv6.example.com-SpotInterruption"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "minimal-ipv6-example-com-ASGLifecycle-Target" {
+  arn  = aws_sqs_queue.minimal-ipv6-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-ipv6-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-ipv6-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.minimal-ipv6-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-ipv6-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-ipv6-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.minimal-ipv6-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-ipv6-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-ipv6-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.minimal-ipv6-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-ipv6-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-ipv6-example-com" {
@@ -414,6 +500,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -428,6 +515,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -440,6 +528,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
   tags = {
     "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -493,6 +582,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
       "Name"                                                                       = "nodes.minimal-ipv6.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -504,6 +594,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
       "Name"                                                                       = "nodes.minimal-ipv6.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -513,6 +604,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
     "Name"                                                                       = "nodes.minimal-ipv6.example.com"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -524,6 +616,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
 resource "aws_lb" "api-minimal-ipv6-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
+  ip_address_type                  = "dualstack"
   load_balancer_type               = "network"
   name                             = "api-minimal-ipv6-example--jhj9te"
   subnet_mapping {
@@ -847,6 +940,14 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-ipv6-example-com-addons-node-termination-handler-aws-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-ipv6-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
@@ -1084,6 +1185,17 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   type              = "ingress"
 }
 
+resource "aws_sqs_queue" "minimal-ipv6-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "minimal-ipv6-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_minimal-ipv6-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "minimal-ipv6-example-com-nth"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
 resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
   assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1a"
@@ -1096,7 +1208,6 @@ resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "dualstack-us-test-1a.minimal-ipv6.example.com"
     "SubnetType"                                     = "DualStack"
-    "kops.k8s.io/instance-group/master-us-test-1a"   = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                = "1"
   }
@@ -1133,7 +1244,6 @@ resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
     "SubnetType"                                     = "Private"
-    "kops.k8s.io/instance-group/nodes"               = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
@@ -1151,7 +1261,6 @@ resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1b.minimal-ipv6.example.com"
     "SubnetType"                                     = "Private"
-    "kops.k8s.io/instance-group/nodes"               = "true"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id

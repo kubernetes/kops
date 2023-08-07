@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/kops/util/pkg/vfs"
 	"sigs.k8s.io/yaml"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -145,18 +146,6 @@ func TestSetupNetworking(t *testing.T) {
 				Spec: api.ClusterSpec{
 					Networking: api.NetworkingSpec{
 						Kopeio: &api.KopeioNetworkingSpec{},
-					},
-				},
-			},
-		},
-		{
-			options: NewClusterOptions{
-				Networking: "weave",
-			},
-			expected: api.Cluster{
-				Spec: api.ClusterSpec{
-					Networking: api.NetworkingSpec{
-						Weave: &api.WeaveNetworkingSpec{},
 					},
 				},
 			},
@@ -308,7 +297,19 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					Networking: api.NetworkingSpec{
-						GCE: &api.GCENetworkingSpec{},
+						GCP: &api.GCPNetworkingSpec{},
+					},
+				},
+			},
+		},
+		{
+			options: NewClusterOptions{
+				Networking: "gcp",
+			},
+			expected: api.Cluster{
+				Spec: api.ClusterSpec{
+					Networking: api.NetworkingSpec{
+						GCP: &api.GCPNetworkingSpec{},
 					},
 				},
 			},
@@ -400,7 +401,19 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultDOImage,
+			expected:     defaultDOImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						DO: &api.DOSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultDOImageJammy,
 		},
 		{
 			cluster: &api.Cluster{
@@ -412,7 +425,19 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultHetznerImage,
+			expected:     defaultHetznerImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						Hetzner: &api.HetznerSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultHetznerImageJammy,
 		},
 		{
 			cluster: &api.Cluster{
@@ -424,11 +449,23 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultScalewayImage,
+			expected:     defaultScalewayImageFocal,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.27.0",
+					CloudProvider: api.CloudProviderSpec{
+						Scaleway: &api.ScalewaySpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultScalewayImageJammy,
 		},
 	}
 
-	channel, err := api.LoadChannel("file://tests/channels/channel.yaml")
+	channel, err := api.LoadChannel(vfs.NewTestingVFSContext(), "file://tests/channels/channel.yaml")
 	if err != nil {
 		t.Fatalf("unable to load test channel: %v", err)
 	}

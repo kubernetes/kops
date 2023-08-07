@@ -19,13 +19,18 @@ package scalewaytasks
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
+
+var commercialTypesWithBlockStorageOnly = []string{"PRO", "PLAY", "ENT"}
 
 // +kops:fitask
 type Instance struct {
@@ -62,6 +67,13 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	}
 	server := servers[0]
 
+	igName := ""
+	for _, tag := range server.Tags {
+		if strings.HasPrefix(tag, scaleway.TagInstanceGroup) {
+			igName = strings.TrimPrefix(tag, scaleway.TagInstanceGroup+"=")
+		}
+	}
+
 	role := scaleway.TagRoleWorker
 	for _, tag := range server.Tags {
 		if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
@@ -70,7 +82,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	}
 
 	return &Instance{
-		Name:           fi.PtrTo(server.Name),
+		Name:           fi.PtrTo(igName),
 		Count:          len(servers),
 		Zone:           fi.PtrTo(server.Zone.String()),
 		Role:           fi.PtrTo(role),
@@ -117,8 +129,8 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 	return nil
 }
 
-func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *Instance) error {
-	cloud := c.T.Cloud.(scaleway.ScwCloud)
+func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *Instance) error {
+	cloud := t.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 	controlPlanePrivateIPs := []string(nil)
@@ -138,20 +150,41 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
+		// We create a unique name for each server
+		actualCount := 0
+		if actual != nil {
+			actualCount = actual.Count
+		}
+		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i+actualCount)
 
-		// We create the instance
-		srv, err := instanceService.CreateServer(&instance.CreateServerRequest{
+		// If the instance's commercial type is one that has no local storage, we have to specify for the
+		// block storage volume a big enough size (default size is 10GB)
+		commercialType := fi.ValueOf(expected.CommercialType)
+		createServerRequest := instance.CreateServerRequest{
 			Zone:           zone,
-			Name:           fi.ValueOf(expected.Name),
-			CommercialType: fi.ValueOf(expected.CommercialType),
+			Name:           uniqueName,
+			CommercialType: commercialType,
 			Image:          fi.ValueOf(expected.Image),
 			Tags:           expected.Tags,
-		})
+		}
+		for _, ct := range commercialTypesWithBlockStorageOnly {
+			if strings.HasPrefix(commercialType, ct) {
+				continue
+			}
+			createServerRequest.Volumes = map[string]*instance.VolumeServerTemplate{
+				"0": {
+					Boot:       fi.PtrTo(true),
+					Size:       fi.PtrTo(scw.GB * 50),
+					VolumeType: instance.VolumeVolumeTypeBSSD,
+				},
+			}
+		}
+
+		// We create the instance and wait for it to be ready
+		srv, err := instanceService.CreateServer(&createServerRequest)
 		if err != nil {
 			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
-
-		// We wait for the instance to be ready
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
 			ServerID: srv.Server.ID,
 			Zone:     zone,
@@ -245,45 +278,84 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			if err != nil {
 				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
 			}
-			if backEnds.TotalCount > 1 {
-				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.Name)
-			} else if backEnds.TotalCount < 1 {
-				return fmt.Errorf("load-balancer %s should have 1 back-end, got 0", loadBalancer.Name)
-			}
-			backEnd := backEnds.Backends[0]
 
-			// If we are adding instances, we also need to add them to the load-balancer's backend
-			if newInstanceCount > 0 {
-				_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
-					Zone:      zone,
-					BackendID: backEnd.ID,
-					ServerIP:  controlPlanePrivateIPs,
+			for _, backEnd := range backEnds.Backends {
+				// If we are adding instances, we also need to add them to the load-balancer's backend
+				if newInstanceCount > 0 {
+					_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
+						Zone:      zone,
+						BackendID: backEnd.ID,
+						ServerIP:  controlPlanePrivateIPs,
+					})
+					if err != nil {
+						return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+					}
+
+				} else {
+					// If we are deleting instances, we also need to delete them from the load-balancer's backend
+					_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+						Zone:      zone,
+						BackendID: backEnd.ID,
+						ServerIP:  controlPlanePrivateIPs,
+					})
+					if err != nil {
+						return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
+					}
+				}
+				_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+					LBID: loadBalancer.ID,
+					Zone: zone,
 				})
 				if err != nil {
-					return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+					return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 				}
-
-			} else {
-				// If we are deleting instances, we also need to delete them from the load-balancer's backend
-				_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
-					Zone:      zone,
-					BackendID: backEnd.ID,
-					ServerIP:  controlPlanePrivateIPs,
-				})
-				if err != nil {
-					return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
-				}
-			}
-
-			_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-				LBID: loadBalancer.ID,
-				Zone: zone,
-			})
-			if err != nil {
-				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 			}
 		}
 	}
 
 	return nil
+}
+
+type terraformInstanceIP struct{}
+
+type terraformInstance struct {
+	Name     *string                             `cty:"name"`
+	IPID     *terraformWriter.Literal            `cty:"ip_id"`
+	Type     *string                             `cty:"type"`
+	Tags     []string                            `cty:"tags"`
+	Image    *string                             `cty:"image"`
+	UserData map[string]*terraformWriter.Literal `cty:"user_data"`
+}
+
+func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Instance) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfInstanceIP := terraformInstanceIP{}
+	err := t.RenderResource("scaleway_instance_ip", tfName, tfInstanceIP)
+	if err != nil {
+		return err
+	}
+
+	tfInstance := terraformInstance{
+		Name:  expected.Name,
+		IPID:  terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
+		Type:  expected.CommercialType,
+		Tags:  expected.Tags,
+		Image: expected.Image,
+	}
+	if expected.UserData != nil {
+		userDataBytes, err := fi.ResourceAsBytes(fi.ValueOf(expected.UserData))
+		if err != nil {
+			return err
+		}
+		if userDataBytes != nil {
+			tfUserData, err := t.AddFileBytes("scaleway_instance_server", tfName, "user_data", userDataBytes, true)
+			if err != nil {
+				return err
+			}
+			tfInstance.UserData = map[string]*terraformWriter.Literal{
+				"cloud-init": tfUserData}
+		}
+	}
+	return t.RenderResource("scaleway_instance_server", tfName, tfInstance)
 }

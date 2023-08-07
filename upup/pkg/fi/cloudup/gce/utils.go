@@ -99,6 +99,17 @@ func SafeClusterName(clusterName string) string {
 	return safeClusterName
 }
 
+type Label struct {
+	Key   string
+	Value string
+}
+
+// LabelForCluster returns the GCE label we use for resources for this cluster.
+func LabelForCluster(clusterName string) Label {
+	v := SafeClusterName(clusterName)
+	return Label{Key: gceLabelNameKubernetesCluster, Value: v}
+}
+
 // SafeTruncatedClusterName returns a safe and truncated cluster name
 func SafeTruncatedClusterName(clusterName string, maxLength int) string {
 	// GCE does not support . in tags / names

@@ -41,7 +41,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -123,6 +122,9 @@ type NewClusterOptions struct {
 	APIServerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
 	EncryptEtcdStorage *bool
+
+	// EtcdClusters contains the names of the etcd clusters.
+	EtcdClusters []string
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
 
@@ -166,6 +168,7 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
 	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
+	o.EtcdClusters = []string{"main", "events"}
 	o.Networking = "cilium"
 	o.InstanceManager = "cloudgroups"
 }
@@ -191,7 +194,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	if opt.Channel == "" {
 		opt.Channel = api.DefaultChannel
 	}
-	channel, err := api.LoadChannel(opt.Channel)
+	channel, err := api.LoadChannel(clientset.VFSContext(), opt.Channel)
 	if err != nil {
 		return nil, err
 	}
@@ -212,12 +215,14 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.KubernetesVersion = opt.KubernetesVersion
 	}
 
-	cluster.Spec.ConfigBase = opt.ConfigBase
+	cluster.Spec.ConfigStore = api.ConfigStoreSpec{
+		Base: opt.ConfigBase,
+	}
 	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
-	cluster.Spec.ConfigBase = configBase.Path()
+	cluster.Spec.ConfigStore.Base = configBase.Path()
 
 	cluster.Spec.Authorization = &api.AuthorizationSpec{}
 	if strings.EqualFold(opt.Authorization, AuthorizationFlagAlwaysAllow) {
@@ -285,11 +290,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.ControlPlaneZones...)
 
 	if opt.CloudProvider == "" {
-		cloud, err := clouds.GuessCloudForPath(cluster.Spec.ConfigBase)
+		cloud, err := clouds.GuessCloudForPath(cluster.Spec.ConfigStore.Base)
 		if err != nil {
 			return nil, fmt.Errorf("pass in the cloud provider explicitly using --cloud: %w", err)
 		}
-		klog.V(2).Infof("Inferred %q cloud provider from state store %q", cloud, cluster.Spec.ConfigBase)
+		klog.V(2).Infof("Inferred %q cloud provider from state store %q", cloud, cluster.Spec.ConfigStore.Base)
 		opt.CloudProvider = string(cloud)
 	}
 
@@ -324,8 +329,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				ExternalNetwork: fi.PtrTo(opt.OpenstackExternalNet),
 			},
 			BlockStorage: &api.OpenstackBlockStorageConfig{
-				Version:  fi.PtrTo("v3"),
-				IgnoreAZ: fi.PtrTo(opt.OpenstackStorageIgnoreAZ),
+				Version:     fi.PtrTo("v3"),
+				IgnoreAZ:    fi.PtrTo(opt.OpenstackStorageIgnoreAZ),
+				ClusterName: opt.ClusterName,
 			},
 			Monitor: &api.OpenstackMonitor{
 				Delay:      fi.PtrTo("15s"),
@@ -347,7 +353,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	if opt.DiscoveryStore != "" {
-		discoveryPath, err := vfs.Context.BuildVfsPath(opt.DiscoveryStore)
+		discoveryPath, err := clientset.VFSContext().BuildVfsPath(opt.DiscoveryStore)
 		if err != nil {
 			return nil, fmt.Errorf("error building DiscoveryStore for cluster: %v", err)
 		}
@@ -914,7 +920,7 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			klog.Warningf("Running with control-plane nodes in the same AZs; redundancy will be reduced")
 		}
 
-		clusters := EtcdClusters
+		clusters := opt.EtcdClusters
 
 		if opt.Networking == "cilium-etcd" {
 			clusters = append(clusters, "cilium")
@@ -1107,15 +1113,6 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
 	case "kopeio-vxlan", "kopeio":
 		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-
-		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
-			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
-			// sets the default to the largest number that leaves enough overhead and is divisible by 4
-			jumboFrameMTUSize := int32(8912)
-			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
-		}
 	case "flannel", "flannel-vxlan":
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "vxlan",
@@ -1146,8 +1143,8 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "cilium-eni":
 		addCiliumNetwork(cluster)
 		cluster.Spec.Networking.Cilium.IPAM = "eni"
-	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
+	case "gcp", "gce":
+		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", opt.Networking)
 	}
@@ -1168,12 +1165,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 	}
 
+	cluster.Spec.Networking.Topology = &api.TopologySpec{}
 	switch opt.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Networking.Topology = &api.TopologySpec{
-			ControlPlane: api.TopologyPublic,
-			Nodes:        api.TopologyPublic,
-		}
 
 		if opt.Bastion {
 			return nil, fmt.Errorf("bastion supports --topology='private' only")
@@ -1186,10 +1180,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	case api.TopologyPrivate:
 		if cluster.Spec.Networking.Kubenet != nil {
 			return nil, fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", opt.Networking)
-		}
-		cluster.Spec.Networking.Topology = &api.TopologySpec{
-			ControlPlane: api.TopologyPrivate,
-			Nodes:        api.TopologyPrivate,
 		}
 
 		for i := range cluster.Spec.Networking.Subnets {
@@ -1270,7 +1260,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup.Spec.MinSize = fi.PtrTo(int32(1))
 			bastions = append(bastions, bastionGroup)
 
-			if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+			if cluster.PublishesDNSRecords() {
 				cluster.Spec.Networking.Topology.Bastion = &api.BastionSpec{
 					PublicName: "bastion." + cluster.Name,
 				}
@@ -1287,9 +1277,11 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 
 			if cluster.IsKubernetesLT("1.27") {
-				bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
+				if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+					bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+						HTTPTokens:              fi.PtrTo("required"),
+					}
 				}
 			}
 
@@ -1322,12 +1314,16 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
-		if cluster.IsGossip() {
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
-		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderHetzner, api.CloudProviderDO, api.CloudProviderAzure:
+			// Use dns=none if not specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
-		} else {
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+		default:
+			if cluster.UsesLegacyGossip() {
+				cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
+			} else {
+				cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+			}
 		}
 	case "public":
 		cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
@@ -1344,18 +1340,12 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
 	klog.Infof("Cloud Provider ID: %q", cluster.Spec.GetCloudProvider())
-	if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
-		// Do nothing to disable the use of loadbalancer for the k8s API server.
-		// TODO(kenji): Remove this condition once we support the loadbalancer
-		// in pkg/model/azuremodel/api_loadbalancer.go.
-		cluster.Spec.API.LoadBalancer = nil
-		return nil
-	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
+	if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
-		switch cluster.Spec.Networking.Topology.ControlPlane {
+		switch opt.Topology {
 		case api.TopologyPublic:
-			if cluster.IsGossip() || cluster.UsesNoneDNS() {
+			if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {
@@ -1366,7 +1356,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
-			return fmt.Errorf("unknown control-plane topology type: %q", cluster.Spec.Networking.Topology.ControlPlane)
+			return fmt.Errorf("unknown topology type: %q", opt.Topology)
 		}
 	}
 
@@ -1521,30 +1511,36 @@ func addCiliumNetwork(cluster *api.Cluster) {
 
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture architectures.Architecture) (string, error) {
+	kubernetesVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse kubernetes version %q", cluster.Spec.KubernetesVersion)
+	}
+
 	if channel != nil {
-		var kubernetesVersion *semver.Version
-		if cluster.Spec.KubernetesVersion != "" {
-			var err error
-			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-			if err != nil {
-				return "", fmt.Errorf("unable to parse kubernetes version %q", cluster.Spec.KubernetesVersion)
-			}
-		}
-		if channel != nil && kubernetesVersion != nil {
-			image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
-			if image != nil {
-				return image.Name, nil
-			}
+		image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
+		if image != nil {
+			return image.Name, nil
 		}
 	}
 
-	switch cluster.Spec.GetCloudProvider() {
-	case api.CloudProviderDO:
-		return defaultDOImage, nil
-	case api.CloudProviderHetzner:
-		return defaultHetznerImage, nil
-	case api.CloudProviderScaleway:
-		return defaultScalewayImage, nil
+	if kubernetesVersion.LT(semver.MustParse("1.27.0")) {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderDO:
+			return defaultDOImageFocal, nil
+		case api.CloudProviderHetzner:
+			return defaultHetznerImageFocal, nil
+		case api.CloudProviderScaleway:
+			return defaultScalewayImageFocal, nil
+		}
+	} else {
+		switch cluster.Spec.GetCloudProvider() {
+		case api.CloudProviderDO:
+			return defaultDOImageJammy, nil
+		case api.CloudProviderHetzner:
+			return defaultHetznerImageJammy, nil
+		case api.CloudProviderScaleway:
+			return defaultScalewayImageJammy, nil
+		}
 	}
 
 	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.Spec.GetCloudProvider(), architecture)

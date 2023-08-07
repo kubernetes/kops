@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
-
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
@@ -27,17 +25,17 @@ fi
 TEST_PACKAGE_VERSION="${K8S_VERSION_B}"
 
 if [[ "$K8S_VERSION_A" == "latest" ]]; then
-  K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
+  K8S_VERSION_A=$(curl -L https://dl.k8s.io/release/latest.txt)
 fi
 if [[ "$K8S_VERSION_B" == "latest" ]]; then
-  K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
+  K8S_VERSION_B=$(curl -L https://dl.k8s.io/release/latest.txt)
   TEST_PACKAGE_MARKER="latest.txt"
 fi
 if [[ "$K8S_VERSION_A" == "stable" ]]; then
-  K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+  K8S_VERSION_A=$(curl -L https://dl.k8s.io/release/stable.txt)
 fi
 if [[ "$K8S_VERSION_B" == "stable" ]]; then
-  K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+  K8S_VERSION_B=$(curl -L https://dl.k8s.io/release/stable.txt)
   TEST_PACKAGE_MARKER="stable.txt"
 fi
 if [[ "$K8S_VERSION_A" == "ci" ]]; then
@@ -80,15 +78,26 @@ else
   KOPS="${KOPS_A}"
 fi
 
+create_args=""
+if [[ ${KOPS_IRSA-} = true ]]; then
+  create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
+fi
 
+# TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
+if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
+  echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
+  KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
+fi
 
+# Note that we use --control-plane-size, even though it is deprecated, because we have to support old versions
+# in the upgrade test.
 ${KUBETEST2} \
     --up \
     --kops-binary-path="${KOPS_A}" \
     --kubernetes-version="${K8S_VERSION_A}" \
-    --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
+    --control-plane-size="${KOPS_CONTROL_PLANE_COUNT:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
-    --create-args="--networking calico"
+    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-} ${create_args}"
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)

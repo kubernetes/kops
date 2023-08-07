@@ -34,7 +34,7 @@ type gceProjectRouter struct {
 // ProjectID returns the project ID to be used for the given operation.
 func (r *gceProjectRouter) ProjectID(ctx context.Context, version meta.Version, service string) string {
 	switch service {
-	case "Firewalls", "Routes":
+	case "Firewalls", "Routes", "Subnetworks":
 		return r.gce.NetworkProjectID()
 	default:
 		return r.gce.projectID
@@ -65,6 +65,9 @@ func (l *gceRateLimiter) Accept(ctx context.Context, key *cloud.RateLimitKey) er
 	}
 	return nil
 }
+
+// Observe is a no-op func to satisfy cloud.RateLimiter
+func (*gceRateLimiter) Observe(context.Context, error, *cloud.RateLimitKey) {}
 
 // CreateGCECloudWithCloud is a helper function to create an instance of Cloud with the
 // given Cloud interface implementation. Typical usage is to use cloud.NewMockGCE to get a
