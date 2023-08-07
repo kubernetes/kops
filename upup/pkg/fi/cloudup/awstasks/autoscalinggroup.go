@@ -330,7 +330,7 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 		return true
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error listing AutoscalingGroups: %v", err)
+		return nil, fmt.Errorf("listing AutoscalingGroups: %w", err)
 	}
 
 	switch len(found) {
@@ -452,7 +452,13 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				klog.V(4).Infof("error creating AutoscalingGroup: %s", message)
 				return fi.NewTryAgainLaterError("waiting for the IAM Instance Profile to be propagated")
 			}
-			return fmt.Errorf("error creating AutoScalingGroup: %s", message)
+			return fmt.Errorf("creating AutoScalingGroup: %w", err)
+		}
+
+		if err := t.Cloud.Autoscaling().WaitUntilGroupExists(&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []*string{e.Name},
+		}); err != nil {
+			return fmt.Errorf("waiting for AutoScalingGroup: %w", err)
 		}
 
 		// @step: attempt to enable the metrics for us
@@ -461,7 +467,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			Granularity:          e.Granularity,
 			Metrics:              aws.StringSlice(e.Metrics),
 		}); err != nil {
-			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+			return fmt.Errorf("enabling metrics collection for AutoscalingGroup: %w", err)
 		}
 
 		if len(*e.SuspendProcesses) > 0 {
@@ -475,7 +481,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			processQuery.ScalingProcesses = toSuspend
 
 			if _, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery); err != nil {
-				return fmt.Errorf("error suspending processes: %v", err)
+				return fmt.Errorf("suspending processes: %w", err)
 			}
 		}
 
@@ -638,7 +644,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 					Metrics:              aws.StringSlice(e.Metrics),
 				})
 				if err != nil {
-					return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+					return fmt.Errorf("enabling metrics collection for AutoscalingGroup: %w", err)
 				}
 				changes.Metrics = nil
 				changes.Granularity = nil
@@ -656,7 +662,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 				_, err := t.Cloud.Autoscaling().SuspendProcesses(suspendProcessQuery)
 				if err != nil {
-					return fmt.Errorf("error suspending processes: %v", err)
+					return fmt.Errorf("suspending processes: %w", err)
 				}
 			}
 			if len(toResume) > 0 {
@@ -666,7 +672,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 				_, err := t.Cloud.Autoscaling().ResumeProcesses(resumeProcessQuery)
 				if err != nil {
-					return fmt.Errorf("error resuming processes: %v", err)
+					return fmt.Errorf("resuming processes: %w", err)
 				}
 			}
 			changes.SuspendProcesses = nil
@@ -690,41 +696,41 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		klog.V(2).Infof("Updating autoscaling group %s", fi.ValueOf(e.Name))
 
 		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
-			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
+			return fmt.Errorf("updating AutoscalingGroup: %w", err)
 		}
 
 		if deleteTagsRequest != nil && len(deleteTagsRequest.Tags) > 0 {
 			if _, err := t.Cloud.Autoscaling().DeleteTags(deleteTagsRequest); err != nil {
-				return fmt.Errorf("error deleting old AutoscalingGroup tags: %v", err)
+				return fmt.Errorf("deleting old AutoscalingGroup tags: %w", err)
 			}
 		}
 		if updateTagsRequest != nil {
 			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
-				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
+				return fmt.Errorf("updating AutoscalingGroup tags: %w", err)
 			}
 		}
 
 		if detachLBRequest != nil {
 			if _, err := t.Cloud.Autoscaling().DetachLoadBalancers(detachLBRequest); err != nil {
-				return fmt.Errorf("error detatching LoadBalancers: %v", err)
+				return fmt.Errorf("detatching LoadBalancers: %w", err)
 			}
 		}
 		if attachLBRequest != nil {
 			if _, err := t.Cloud.Autoscaling().AttachLoadBalancers(attachLBRequest); err != nil {
-				return fmt.Errorf("error attaching LoadBalancers: %v", err)
+				return fmt.Errorf("attaching LoadBalancers: %w", err)
 			}
 		}
 		if len(detachTGRequests) > 0 {
 			for _, detachTGRequest := range detachTGRequests {
 				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
-					return fmt.Errorf("failed to detach target groups: %v", err)
+					return fmt.Errorf("detaching target groups: %w", err)
 				}
 			}
 		}
 		if len(attachTGRequests) > 0 {
 			for _, attachTGRequest := range attachTGRequests {
 				if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
-					return fmt.Errorf("failed to attach target groups: %v", err)
+					return fmt.Errorf("attaching target groups: %w", err)
 				}
 			}
 		}
