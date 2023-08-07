@@ -34,6 +34,12 @@ func (t *Tester) setSkipRegexFlag() error {
 		return nil
 	}
 
+	kopsVersion, err := t.getKopsVersion()
+	if err != nil {
+		return err
+	}
+	isPre28 := kopsVersion < "1.28"
+
 	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return err
@@ -45,12 +51,14 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	skipRegex := skipRegexBase
 
-	// All the loadbalancer tests in the suite fail on IPv6, however,
-	// they were skipped because they were tagged as [Slow]
-	// skip these tests temporary since they fail always on IPv6
-	// TODO: aojea
-	// https://github.com/kubernetes/kubernetes/issues/113964
-	skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
+	if isPre28 {
+		// All the loadbalancer tests in the suite fail on IPv6, however,
+		// they were skipped because they were tagged as [Slow]
+		// skip these tests temporary since they fail always on IPv6
+		// TODO: aojea
+		// https://github.com/kubernetes/kubernetes/issues/113964
+		skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
+	}
 
 	networking := cluster.Spec.LegacyNetworking
 	switch {
@@ -67,12 +75,15 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
-		// These may be fixed in Cilium 1.13 but skipping for now
-		skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-		skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
-		// https://github.com/cilium/cilium/issues/18241
-		skipRegex += "|Services.should.create.endpoints.for.unready.pods"
-		skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
+
+		if isPre28 {
+			// These may be fixed in Cilium 1.13 but skipping for now
+			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
+			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
+			// https://github.com/cilium/cilium/issues/18241
+			skipRegex += "|Services.should.create.endpoints.for.unready.pods"
+			skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
+		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"

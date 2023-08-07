@@ -83,3 +83,20 @@ func GetInstanceGroups(kopsBinary, clusterName string, env []string) ([]*api.Ins
 	}
 	return igs, nil
 }
+
+// GetVersion will retrieve the kOps version.
+func GetVersion(kopsBinary string) (string, error) {
+	args := []string{
+		kopsBinary, "version", "--short",
+	}
+	c := exec.Command(args[0], args[1:]...)
+	var stdout bytes.Buffer
+	c.SetStdout(&stdout)
+	var stderr bytes.Buffer
+	c.SetStderr(&stderr)
+	if err := c.Run(); err != nil {
+		klog.Warningf("failed to run %s; stderr=%s", strings.Join(args, " "), stderr.String())
+		return "", fmt.Errorf("error querying version from %s: %w", strings.Join(args, " "), err)
+	}
+	return stdout.String(), nil
+}
