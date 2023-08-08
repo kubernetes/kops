@@ -1244,8 +1244,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if version.Minor != 13 {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.13 is supported"))
+		if version.Minor != 14 {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.14 is supported"))
 		}
 
 		if v.Hubble != nil && fi.ValueOf(v.Hubble.Enabled) {
@@ -1293,15 +1293,6 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &v.EncryptionType, []kops.CiliumEncryptionType{kops.CiliumEncryptionTypeIPSec, kops.CiliumEncryptionTypeWireguard})...)
-
-		if v.EncryptionType == "wireguard" {
-			// Cilium with Wireguard integration follow-up --> https://github.com/cilium/cilium/issues/15462.
-			// The following rule of validation should be deleted as this combination
-			// will be supported on future releases of Cilium (>= v1.11.0).
-			if fi.ValueOf(v.EnableL7Proxy) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "L7 proxy cannot be enabled if wireguard is enabled."))
-			}
-		}
 	}
 
 	if fi.ValueOf(v.EnableL7Proxy) && v.InstallIptablesRules != nil && !*v.InstallIptablesRules {
