@@ -1237,7 +1237,7 @@ metadata:
   namespace: kube-system
 spec:
   dnsNames:
-  - "*.{{ .ClusterName }}.hubble-grpc.cilium.io"
+  - "*.{{ replace .ClusterName "." "-" }}.hubble-grpc.cilium.io"
   issuerRef:
     kind: Issuer
     name: networking.cilium.io

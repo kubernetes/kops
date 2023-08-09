@@ -52,7 +52,7 @@ data:
   bpf-policy-map-max: "16384"
   cgroup-root: /run/cilium/cgroupv2
   cluster-id: "253"
-  cluster-name: default
+  cluster-name: privatecilium.example.com
   debug: "false"
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
@@ -945,7 +945,7 @@ metadata:
   namespace: kube-system
 spec:
   dnsNames:
-  - '*.default.hubble-grpc.cilium.io'
+  - '*.privatecilium-example-com.hubble-grpc.cilium.io'
   issuerRef:
     kind: Issuer
     name: networking.cilium.io
