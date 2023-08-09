@@ -229,7 +229,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Cloud:        cloud,
 		Architecture: architecture,
 		Assets:       assetStore,
-		Cluster:      c.cluster,
 		ConfigBase:   configBase,
 		Distribution: distribution,
 		BootConfig:   &bootConfig,

@@ -255,7 +255,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
-	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(ctx, model.Cluster, model.InstanceGroups, cloud)
+	cluster, err := mockedPopulateClusterSpec(ctx, model.Cluster, model.InstanceGroups, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error from mockedPopulateClusterSpec: %v", err)
 	}
@@ -263,13 +263,13 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
 		// we then use the cluster kubelet config directly
-		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, &kops.InstanceGroup{})
-		nodeupModelContext.NodeupConfig.KubeletConfig = *nodeupModelContext.Cluster.Spec.Kubelet
+		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(cluster, &kops.InstanceGroup{})
+		nodeupModelContext.NodeupConfig.KubeletConfig = *cluster.Spec.Kubelet
 	} else if len(model.InstanceGroups) == 1 {
 		ig := model.InstanceGroups[0]
-		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, ig)
+		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(cluster, ig)
 		if ig.Spec.Kubelet == nil {
-			nodeupModelContext.NodeupConfig.KubeletConfig = *nodeupModelContext.Cluster.Spec.Kubelet
+			nodeupModelContext.NodeupConfig.KubeletConfig = *cluster.Spec.Kubelet
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))

@@ -299,6 +299,7 @@ type cloudProviderConstraints struct {
 	prohibitsMultipleNetworkCIDRs bool
 	requiresNonMasqueradeCIDR     bool
 	requiresSubnetCIDR            bool
+	requiresSubnetRegion          bool
 }
 
 func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fieldSpec *field.Path) (allErrs field.ErrorList, constraints *cloudProviderConstraints) {
@@ -308,6 +309,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		prohibitsMultipleNetworkCIDRs: true,
 		requiresNonMasqueradeCIDR:     true,
 		requiresSubnetCIDR:            true,
+		requiresSubnetRegion:          false,
 	}
 
 	optionTaken := false
@@ -321,6 +323,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("azure"), "only one cloudProvider option permitted"))
 		}
 		optionTaken = true
+		constraints.requiresSubnetRegion = true
 	}
 	if c.Spec.CloudProvider.DO != nil {
 		if optionTaken {
@@ -329,6 +332,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		optionTaken = true
 		constraints.requiresSubnets = false
 		constraints.requiresSubnetCIDR = false
+		constraints.requiresSubnetRegion = true
 		constraints.requiresNetworkCIDR = false
 	}
 	if c.Spec.CloudProvider.GCE != nil {
@@ -338,6 +342,7 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		optionTaken = true
 		constraints.requiresNetworkCIDR = false
 		constraints.requiresSubnetCIDR = false
+		constraints.requiresSubnetRegion = true
 		constraints.prohibitsNetworkCIDR = true
 		constraints.requiresNonMasqueradeCIDR = false
 	}
@@ -357,6 +362,8 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		optionTaken = true
 		constraints.requiresNetworkCIDR = false
 		constraints.requiresSubnetCIDR = false
+		// TODO Not required on cluster creation, but used in buildInstances?
+		// constraints.requiresSubnetRegion = true
 	}
 	if c.Spec.CloudProvider.Scaleway != nil {
 		if optionTaken {
@@ -541,6 +548,21 @@ func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fiel
 		for i := range subnets {
 			if (subnets[i].ID != "") != hasID {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("id"), "cannot mix subnets with specified ID and unspecified ID"))
+			}
+		}
+	}
+
+	if providerConstraints.requiresSubnetRegion {
+		region := ""
+		for i, subnet := range subnets {
+			if subnet.Region == "" {
+				allErrs = append(allErrs, field.Required(fieldPath.Index(i).Child("region"), "region must be specified"))
+			} else {
+				if region == "" {
+					region = subnet.Region
+				} else if region != subnet.Region {
+					allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("region"), "clusters cannot span regions"))
+				}
 			}
 		}
 	}

@@ -118,41 +118,24 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 			}
 		}
 	case kops.CloudProviderOpenstack:
-		osc := b.Cluster.Spec.CloudProvider.Openstack
-		if osc == nil {
-			break
-		}
-
-		lines = append(lines, openstack.MakeCloudConfig(b.Cluster.Spec)...)
+		lines = append(lines, openstack.MakeCloudConfig(b.NodeupConfig.Openstack)...)
 
 	case kops.CloudProviderAzure:
 		requireGlobal = false
 
-		var region string
-		for _, subnet := range b.Cluster.Spec.Networking.Subnets {
-			if subnet.Region != "" {
-				region = subnet.Region
-				break
-			}
-		}
-		if region == "" {
-			return fmt.Errorf("on Azure, subnets must include Regions")
-		}
-
-		vnetName := b.Cluster.Spec.Networking.NetworkID
+		vnetName := b.NodeupConfig.Networking.NetworkID
 		if vnetName == "" {
 			vnetName = b.NodeupConfig.ClusterName
 		}
 
-		az := b.Cluster.Spec.CloudProvider.Azure
 		c := &azureCloudConfig{
 			CloudConfigType:             "file",
-			SubscriptionID:              az.SubscriptionID,
-			TenantID:                    az.TenantID,
-			Location:                    region,
+			SubscriptionID:              b.NodeupConfig.AzureSubscriptionID,
+			TenantID:                    b.NodeupConfig.AzureTenantID,
+			Location:                    b.NodeupConfig.AzureLocation,
 			VMType:                      "vmss",
-			ResourceGroup:               b.Cluster.AzureResourceGroupName(),
-			RouteTableName:              az.RouteTableName,
+			ResourceGroup:               b.NodeupConfig.AzureResourceGroup,
+			RouteTableName:              b.NodeupConfig.AzureRouteTableName,
 			VnetName:                    vnetName,
 			UseInstanceMetadata:         true,
 			UseManagedIdentityExtension: true,

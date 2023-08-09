@@ -820,13 +820,8 @@ func isNotFound(err error) bool {
 	return false
 }
 
-func MakeCloudConfig(spec kops.ClusterSpec) []string {
+func MakeCloudConfig(osc *kops.OpenstackSpec) []string {
 	var lines []string
-
-	osc := spec.CloudProvider.Openstack
-	if osc == nil {
-		return nil
-	}
 
 	// Support mapping of older keystone API
 	tenantName := os.Getenv("OS_TENANT_NAME")
@@ -846,15 +841,8 @@ func MakeCloudConfig(spec kops.ClusterSpec) []string {
 		fmt.Sprintf("tenant-name=\"%s\"", tenantName),
 		fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
 		fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
-	)
-	if spec.ExternalCloudControllerManager != nil {
-		lines = append(lines,
-			fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
-			fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
-		)
-	}
-
-	lines = append(lines,
+		fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
+		fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
 		"",
 	)
 

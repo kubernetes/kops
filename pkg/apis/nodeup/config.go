@@ -118,10 +118,25 @@ type Config struct {
 	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
 	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
+	// Azure-specific
+	// AzureLocation is the location of the resource group that the cluster is deployed in.
+	AzureLocation string `json:",omitempty"`
+	// AzureSubscriptionID is the ID of the Azure Subscription that the cluster is deployed in.
+	AzureSubscriptionID string `json:",omitempty"`
+	// AzureTenantID is the ID of the tenant that the cluster is deployed in.
+	AzureTenantID string `json:",omitempty"`
+	// AzureResourceGroup is the name of the resource group that the cluster is deployed in.
+	AzureResourceGroup string `json:",omitempty"`
+	// AzureRouteTableName is the name of the route table attached to the subnet that the cluster is deployed in.
+	AzureRouteTableName string `json:",omitempty"`
+
 	// GCE-specific
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+
+	// Openstack-specific
+	Openstack *kops.OpenstackSpec `json:",omitempty"`
 
 	// Discovery methods
 	UsesLegacyGossip bool `json:"usesLegacyGossip"`
@@ -261,12 +276,23 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
+	if cluster.Spec.CloudProvider.Azure != nil {
+		config.AzureLocation = cluster.Spec.Networking.Subnets[0].Region
+		config.AzureSubscriptionID = cluster.Spec.CloudProvider.Azure.SubscriptionID
+		config.AzureTenantID = cluster.Spec.CloudProvider.Azure.TenantID
+		config.AzureResourceGroup = cluster.AzureResourceGroupName()
+		config.AzureRouteTableName = cluster.Spec.CloudProvider.Azure.RouteTableName
+		config.Networking.NetworkID = cluster.Spec.Networking.NetworkID
+	}
+
 	if cluster.Spec.CloudProvider.GCE != nil {
 		gce := cluster.Spec.CloudProvider.GCE
 		config.Multizone = gce.Multizone
 		config.NodeTags = gce.NodeTags
 		config.NodeInstancePrefix = gce.NodeInstancePrefix
 	}
+
+	config.Openstack = cluster.Spec.CloudProvider.Openstack
 
 	if instanceGroup.Spec.UpdatePolicy != nil {
 		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy

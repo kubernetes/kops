@@ -45,6 +45,8 @@ func Test_OpenstackCloud_MakeCloud(t *testing.T) {
 		"tenant-name=\"\"",
 		"domain-name=\"\"",
 		"domain-id=\"\"",
+		"application-credential-id=\"\"",
+		"application-credential-secret=\"\"",
 		"",
 		"[BlockStorage]",
 		"bs-version=",
@@ -94,7 +96,7 @@ func Test_OpenstackCloud_MakeCloud(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			actualCloudConfig := MakeCloudConfig(testCase.cluster.Spec)
+			actualCloudConfig := MakeCloudConfig(testCase.cluster.Spec.CloudProvider.Openstack)
 
 			if !reflect.DeepEqual(actualCloudConfig, testCase.expectedCloudConfig) {
 				t.Errorf("Ingress status differ: expected\n%+#v\n\tgot:\n%+#v\n", testCase.expectedCloudConfig, actualCloudConfig)

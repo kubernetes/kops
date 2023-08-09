@@ -1123,21 +1123,19 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			addon.BuildPrune = true
 		}
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			// cloudprovider specific out-of-tree controller
-			{
-				key := "openstack.addons.k8s.io"
+		// cloudprovider specific out-of-tree controller
+		{
+			key := "openstack.addons.k8s.io"
 
-				location := key + "/k8s-1.13.yaml"
-				id := "k8s-1.13-ccm"
+			location := key + "/k8s-1.13.yaml"
+			id := "k8s-1.13-ccm"
 
-				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
-					Selector: map[string]string{"k8s-addon": key},
-					Id:       id,
-				})
-			}
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Manifest: fi.PtrTo(location),
+				Selector: map[string]string{"k8s-addon": key},
+				Id:       id,
+			})
 		}
 	}
 

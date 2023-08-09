@@ -151,13 +151,8 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 			"OS_REGION_NAME",
 		}
 
-		hasCCM := cluster.Spec.ExternalCloudControllerManager != nil
 		appCreds := os.Getenv("OS_APPLICATION_CREDENTIAL_ID") != "" && os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET") != ""
-		if !hasCCM && appCreds {
-			klog.Warning("application credentials only supported when using external cloud controller manager. Continuing with passwords.")
-		}
-
-		if hasCCM && appCreds {
+		if appCreds {
 			osEnvs = append(osEnvs,
 				"OS_APPLICATION_CREDENTIAL_ID",
 				"OS_APPLICATION_CREDENTIAL_SECRET",
