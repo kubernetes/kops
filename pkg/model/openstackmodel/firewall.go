@@ -149,6 +149,8 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.CloudupModelBuilderContext, sgM
 func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	masterSG := sgMap[masterName]
+	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
+	nodeSG := sgMap[nodeName]
 
 	// ETCD Peer Discovery
 	etcdRule := &openstacktasks.SecurityGroupRule{
@@ -169,6 +171,46 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 	}
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
+
+	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+		etcdCiliumPeerRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(2382),
+			PortRangeMax: i(2382),
+		}
+		etcdCiliumGRPCRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(wellknownports.EtcdCiliumGRPC),
+			PortRangeMax: i(wellknownports.EtcdCiliumGRPC),
+		}
+		etcdCiliumQuarantinedClient := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(wellknownports.EtcdCiliumQuarantinedClientPort),
+			PortRangeMax: i(wellknownports.EtcdCiliumQuarantinedClientPort),
+		}
+		etcdCiliumClientRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(wellknownports.EtcdCiliumClientPort),
+			PortRangeMax: i(wellknownports.EtcdCiliumClientPort),
+		}
+		b.addDirectionalGroupRule(c, masterSG, masterSG, etcdCiliumPeerRule)
+		b.addDirectionalGroupRule(c, masterSG, masterSG, etcdCiliumGRPCRule)
+		b.addDirectionalGroupRule(c, masterSG, masterSG, etcdCiliumClientRule)
+		b.addDirectionalGroupRule(c, masterSG, masterSG, etcdCiliumQuarantinedClient)
+		b.addDirectionalGroupRule(c, nodeSG, masterSG, etcdCiliumClientRule)
+	}
 
 	for _, portRange := range wellknownports.ETCDPortRanges() {
 		etcdMgmrRule := &openstacktasks.SecurityGroupRule{
