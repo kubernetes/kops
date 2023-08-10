@@ -127,7 +127,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		nodesFirewall.Rules = append(nodesFirewall.Rules, &hetznertasks.FirewallRule{
 			Direction: string(hcloud.FirewallRuleDirectionIn),
 			SourceIPs: nodePortAccess,
-			Protocol:  string(hcloud.FirewallRuleProtocolTCP),
+			Protocol:  string(hcloud.FirewallRuleProtocolUDP),
 			Port:      fi.PtrTo(fmt.Sprintf("%d-%d", nodePortRange.Base, nodePortRange.Base+nodePortRange.Size-1)),
 		})
 	}
