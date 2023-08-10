@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 )
@@ -38,18 +37,6 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 
 	// Note: For now, we're assuming there is only a single cluster, and it is ours.
 	// We therefore use the configured base path
-
-	// Today we load the full cluster config from the state store (e.g. S3) every time
-	// TODO: we should generate it on the fly (to allow for cluster reconfiguration)
-	{
-		p := s.configBase.Join(registry.PathClusterCompleted)
-
-		b, err := p.ReadFile(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("error loading cluster config %q: %w", p, err)
-		}
-		nodeConfig.ClusterFullConfig = string(b)
-	}
 
 	{
 		p := s.configBase.Join("igconfig", "node", instanceGroupName, "nodeupconfig.yaml")

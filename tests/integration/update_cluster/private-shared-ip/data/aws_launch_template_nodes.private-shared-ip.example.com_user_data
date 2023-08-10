@@ -122,32 +122,6 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-cloudConfig:
-  manageStorageClasses: true
-kubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: external
-  clusterDNS: 100.64.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.9
-  podManifestPath: /etc/kubernetes/manifests
-  protectKernelDefaults: true
-  registerSchedulable: true
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
-
-__EOF_CLUSTER_SPEC
-
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ClusterName: private-shared-ip.example.com

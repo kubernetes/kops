@@ -295,6 +295,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://tests/scw-minimal.k8s.local/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://tests/scw-minimal.k8s.local/pki
+  secrets: memfs://tests/scw-minimal.k8s.local/secrets
 containerdConfig:
   logLevel: info
   runc:

@@ -304,6 +304,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://tests/ha-gce.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://tests/ha-gce.example.com/pki
+  secrets: memfs://tests/ha-gce.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

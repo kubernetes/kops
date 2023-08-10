@@ -122,138 +122,13 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-cloudConfig:
-  manageStorageClasses: true
-encryptionConfig: null
-etcdClusters:
-  events:
-    manager:
-      backupRetentionDays: 90
-    version: 3.5.9
-  main:
-    manager:
-      backupRetentionDays: 90
-    version: 3.5.9
-kubeAPIServer:
-  allowPrivileged: true
-  anonymousAuth: false
-  apiAudiences:
-  - kubernetes.svc.default
-  apiServerCount: 1
-  authorizationMode: AlwaysAllow
-  bindAddress: 0.0.0.0
-  cloudProvider: external
-  enableAdmissionPlugins:
-  - NamespaceLifecycle
-  - LimitRanger
-  - ServiceAccount
-  - DefaultStorageClass
-  - DefaultTolerationSeconds
-  - MutatingAdmissionWebhook
-  - ValidatingAdmissionWebhook
-  - NodeRestriction
-  - ResourceQuota
-  enableAggregatorRouting: true
-  etcdServers:
-  - https://127.0.0.1:4001
-  etcdServersOverrides:
-  - /events#https://127.0.0.1:4002
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.25.0-rc.1
-  kubeletPreferredAddressTypes:
-  - InternalIP
-  - Hostname
-  - ExternalIP
-  logLevel: 2
-  requestheaderAllowedNames:
-  - aggregator
-  requestheaderExtraHeaderPrefixes:
-  - X-Remote-Extra-
-  requestheaderGroupHeaders:
-  - X-Remote-Group
-  requestheaderUsernameHeaders:
-  - X-Remote-User
-  securePort: 443
-  serviceAccountIssuer: https://discovery.example.com/minimal.example.com
-  serviceAccountJWKSURI: https://discovery.example.com/minimal.example.com/openid/v1/jwks
-  serviceClusterIPRange: 172.20.0.0/19
-  storageBackend: etcd3
-kubeControllerManager:
-  allocateNodeCIDRs: true
-  attachDetachReconcileSyncPeriod: 1m0s
-  cloudProvider: external
-  clusterCIDR: 172.20.128.0/17
-  clusterName: minimal.example.com
-  configureCloudRoutes: false
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.25.0-rc.1
-  leaderElection:
-    leaderElect: true
-  logLevel: 2
-  useServiceAccountCredentials: true
-kubeScheduler:
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.25.0-rc.1
-  leaderElection:
-    leaderElect: true
-  logLevel: 2
-kubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: external
-  clusterDNS: 172.20.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.9
-  podManifestPath: /etc/kubernetes/manifests
-  protectKernelDefaults: true
-  registerSchedulable: true
-  shutdownGracePeriod: 0s
-  shutdownGracePeriodCriticalPods: 0s
-masterKubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: external
-  clusterDNS: 172.20.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.9
-  podManifestPath: /etc/kubernetes/manifests
-  protectKernelDefaults: true
-  registerSchedulable: true
-  shutdownGracePeriod: 0s
-  shutdownGracePeriodCriticalPods: 0s
-
-__EOF_CLUSTER_SPEC
-
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Dw6+zcf4NDZFgjzaiQXJ6L9eNRProR/ypqFarCn8T28=
+NodeupConfigHash: DJCOjtbpxfVbcDgy6yq9DywMKEKbWxdW5tGO7smW9D8=
 
 __EOF_KUBE_ENV
 

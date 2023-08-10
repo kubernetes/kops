@@ -27,16 +27,14 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
 )
@@ -340,49 +338,6 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 		nodeupScript.ProxyEnv = func() (string, error) {
 			return b.createProxyEnv(c.T.Cluster.Spec.Networking.EgressProxy)
-		}
-
-		nodeupScript.ClusterSpec = func() (string, error) {
-			cs := c.T.Cluster.Spec
-
-			spec := make(map[string]interface{})
-			spec["cloudConfig"] = cs.CloudConfig
-			spec["kubelet"] = cs.Kubelet
-
-			if b.ig.IsControlPlane() {
-				spec["encryptionConfig"] = cs.EncryptionConfig
-				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec)
-				spec["kubeAPIServer"] = cs.KubeAPIServer
-				spec["kubeControllerManager"] = cs.KubeControllerManager
-				spec["kubeScheduler"] = cs.KubeScheduler
-				spec["masterKubelet"] = cs.ControlPlaneKubelet
-
-				for _, etcdCluster := range cs.EtcdClusters {
-					c := kops.EtcdClusterSpec{
-						Image:         etcdCluster.Image,
-						Version:       etcdCluster.Version,
-						Manager:       etcdCluster.Manager,
-						CPURequest:    etcdCluster.CPURequest,
-						MemoryRequest: etcdCluster.MemoryRequest,
-					}
-					for _, etcdMember := range etcdCluster.Members {
-						if fi.ValueOf(etcdMember.InstanceGroup) == b.ig.Name && etcdMember.VolumeSize != nil {
-							m := kops.EtcdMemberSpec{
-								Name:       etcdMember.Name,
-								VolumeSize: etcdMember.VolumeSize,
-							}
-							c.Members = append(c.Members, m)
-						}
-					}
-					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = c
-				}
-			}
-
-			content, err := yaml.Marshal(spec)
-			if err != nil {
-				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
-			}
-			return string(content), nil
 		}
 	}
 

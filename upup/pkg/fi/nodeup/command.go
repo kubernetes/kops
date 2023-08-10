@@ -43,12 +43,10 @@ import (
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
 	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/configserver"
-	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
@@ -78,8 +76,6 @@ type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
 	Target         string
-	// Deprecated: Fields should be accessed from NodeupConfig or BootConfig.
-	cluster *api.Cluster
 }
 
 // Run is responsible for perform the nodeup process
@@ -133,35 +129,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		return fmt.Errorf("ConfigBase or ConfigServer is required")
 	}
-
-	{
-		var b []byte
-		var clusterDescription string
-		if nodeConfig != nil {
-			b = []byte(nodeConfig.ClusterFullConfig)
-			clusterDescription = "config response"
-		} else {
-			p := configBase.Join(registry.PathClusterCompleted)
-			var err error
-
-			b, err = p.ReadFile(ctx)
-			if err != nil {
-				return fmt.Errorf("error loading Cluster %q: %v", p, err)
-			}
-			clusterDescription = fmt.Sprintf("%q", p)
-		}
-
-		o, _, err := kopscodecs.Decode(b, nil)
-		if err != nil {
-			return fmt.Errorf("error parsing Cluster %s: %v", clusterDescription, err)
-		}
-		var ok bool
-		if c.cluster, ok = o.(*api.Cluster); !ok {
-			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
-		}
-	}
-	// Hack to force usage of NodeupConfig
-	c.cluster.Name = "use NodeupConfig.ClusterName instead"
 
 	var nodeupConfig nodeup.Config
 	var nodeupConfigHash [32]byte
@@ -239,9 +206,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
-	} else if c.cluster.Spec.ConfigStore.Secrets != "" {
-		klog.Infof("Building SecretStore at %q", c.cluster.Spec.ConfigStore.Secrets)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.ConfigStore.Secrets)
+	} else if nodeupConfig.ConfigStore.Secrets != "" {
+		klog.Infof("Building SecretStore at %q", nodeupConfig.ConfigStore.Secrets)
+		p, err := vfs.Context.BuildVfsPath(nodeupConfig.ConfigStore.Secrets)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -254,9 +221,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if nodeConfig != nil {
 		modelContext.KeyStore = configserver.NewKeyStore()
-	} else if c.cluster.Spec.ConfigStore.Keypairs != "" {
-		klog.Infof("Building KeyStore at %q", c.cluster.Spec.ConfigStore.Keypairs)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.ConfigStore.Keypairs)
+	} else if nodeupConfig.ConfigStore.Keypairs != "" {
+		klog.Infof("Building KeyStore at %q", nodeupConfig.ConfigStore.Keypairs)
+		p, err := vfs.Context.BuildVfsPath(nodeupConfig.ConfigStore.Keypairs)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
 		}
@@ -375,7 +342,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Cloud:    cloud,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(vfs.Context, c.cluster.Spec.Assets, c.cluster.Spec.KubernetesVersion, false)
+		assetBuilder := assets.NewAssetBuilder(vfs.Context, nil, nodeupConfig.KubernetesVersion, false)
 		target = fi.NewNodeupDryRunTarget(assetBuilder, out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)

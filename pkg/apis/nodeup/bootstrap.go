@@ -54,9 +54,6 @@ type BootstrapResponse struct {
 
 // NodeConfig holds configuration needed to boot a node (without the kops state store)
 type NodeConfig struct {
-	// ClusterFullConfig holds the completed configuration for the cluster.
-	ClusterFullConfig string `json:"clusterFullConfig,omitempty"`
-
 	// NodeupConfig holds the nodeup.Config for the node's instance group.
 	NodeupConfig string `json:"nodeupConfig,omitempty"`
 

@@ -318,6 +318,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://tests/minimal.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://tests/minimal.example.com/pki
+  secrets: memfs://tests/minimal.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

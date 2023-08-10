@@ -313,6 +313,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal-etcd.example.com/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/minimal-etcd.example.com/pki
+  secrets: memfs://clusters.example.com/minimal-etcd.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:

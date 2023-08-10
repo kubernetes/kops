@@ -312,6 +312,9 @@ Networking:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.k8s.local/addons/bootstrap-channel.yaml
+configStore:
+  keypairs: memfs://clusters.example.com/minimal.k8s.local/pki
+  secrets: memfs://clusters.example.com/minimal.k8s.local/secrets
 containerdConfig:
   logLevel: info
   runc:

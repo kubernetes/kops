@@ -44,6 +44,9 @@ type Config struct {
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
+	// ConfigStore configures the stores that nodes use to get their configuration when they don't use kops-controller.
+	ConfigStore *kops.ConfigStoreSpec `json:"configStore,omitempty"`
+
 	// EtcdClusterNames are the names of the etcd clusters.
 	EtcdClusterNames []string `json:",omitempty"`
 	// EtcdManifests are the manifests for running etcd.
@@ -362,6 +365,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 		if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.UseForInternalAPI {
 			config.APIServerConfig.API.LoadBalancer = &kops.LoadBalancerAccessSpec{UseForInternalAPI: true}
+		}
+	}
+
+	if instanceGroup.HasAPIServer() || !model.UseKopsControllerForNodeConfig(cluster) {
+		config.ConfigStore = &kops.ConfigStoreSpec{
+			Keypairs: cluster.Spec.ConfigStore.Keypairs,
+			Secrets:  cluster.Spec.ConfigStore.Secrets,
 		}
 	}
 
