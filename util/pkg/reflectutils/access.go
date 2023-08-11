@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func SetString(target interface{}, targetPath string, newValue string) error {
@@ -187,6 +188,16 @@ func setType(v reflect.Value, newValue string) error {
 		}
 	case "intstr.IntOrString":
 		newV = reflect.ValueOf(intstr.Parse(newValue))
+
+	case "kops.EnvVar":
+		name, value, found := strings.Cut(newValue, "=")
+		envVar := kops.EnvVar{
+			Name: name,
+		}
+		if found {
+			envVar.Value = value
+		}
+		newV = reflect.ValueOf(envVar)
 
 	default:
 		// This handles enums and other simple conversions
