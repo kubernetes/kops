@@ -207,7 +207,7 @@ spec:
       bpfNeighGlobalMax: 524288
       bpfPolicyMapMax: 16384
       clusterID: 253
-      clusterName: default
+      clusterName: privatecilium.example.com
       cpuRequest: 25m
       disableCNPStatusUpdates: true
       disableMasquerade: false

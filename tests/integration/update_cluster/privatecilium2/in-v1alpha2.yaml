@@ -28,6 +28,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     cilium:
+      clusterName: privatecilium.example.com
       clusterID: 253
       hubble:
         enabled: true
