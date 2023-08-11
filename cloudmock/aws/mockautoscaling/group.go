@@ -102,20 +102,6 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return &autoscaling.CreateAutoScalingGroupOutput{}, nil
 }
 
-func (m *MockAutoscaling) WaitUntilGroupInService(request *autoscaling.DescribeAutoScalingGroupsInput) error {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	klog.V(2).Infof("Mock WaitUntilGroupExists %v", request)
-
-	for _, asg := range request.AutoScalingGroupNames {
-		if _, ok := m.Groups[*asg]; !ok {
-			return fmt.Errorf("Autoscaling group not found: %v", *asg)
-		}
-	}
-
-	return nil
-}
-
 func (m *MockAutoscaling) UpdateAutoScalingGroup(request *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
