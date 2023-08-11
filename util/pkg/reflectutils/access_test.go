@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 type fakeEnum string
@@ -55,6 +57,8 @@ type fakeObjectContainers struct {
 	Int   *int32 `json:"int"`
 	Int32 *int32 `json:"int32"`
 	Int64 *int64 `json:"int64"`
+
+	Env []kops.EnvVar `json:"env"`
 
 	Enum      fakeEnum   `json:"enum"`
 	EnumSlice []fakeEnum `json:"enumSlice"`
@@ -168,6 +172,20 @@ func TestSet(t *testing.T) {
 			Expected: "{ 'spec': { 'containers': [ { 'enumSlice': [ 'ABC', 'DEF', 'GHI', 'JKL' ] } ] } }",
 			Path:     "spec.containers[0].enumSlice",
 			Value:    "GHI,JKL",
+		},
+		{
+			Name:     "set env var",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'env': [ { 'name': 'ABC' } ] } ] } }",
+			Path:     "spec.containers[0].env",
+			Value:    "ABC",
+		},
+		{
+			Name:     "set env var with val",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'env': [ { 'name': 'ABC', 'value': 'DEF' } ] } ] } }",
+			Path:     "spec.containers[0].env",
+			Value:    "ABC=DEF",
 		},
 		// Not sure if we should do this...
 		// {
