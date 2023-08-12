@@ -97,6 +97,10 @@ func hasFlag(args string, flag string) bool {
 	return false
 }
 
+func (t *Tester) getKopsVersion() (string, error) {
+	return kops.GetVersion("kops")
+}
+
 func (t *Tester) getKopsCluster() (*api.Cluster, error) {
 	if t.kopsCluster != nil {
 		return t.kopsCluster, nil
