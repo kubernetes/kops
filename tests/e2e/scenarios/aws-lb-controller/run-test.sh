@@ -26,7 +26,7 @@ NETWORKING="amazonvpc"
 OVERRIDES="${OVERRIDES-} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
-OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id}"
+OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE:-099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230811}"
 
 # shellcheck disable=SC2034
 ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
