@@ -2079,7 +2079,7 @@ func resolveSSMParameter(ssmClient ssmiface.SSMAPI, name string) (string, error)
 
 	response, err := ssmClient.GetParameter(request)
 	if err != nil {
-		return "", fmt.Errorf("failed to get value for SSM Parameter %q", name)
+		return "", fmt.Errorf("failed to get value for SSM parameter: %w", err)
 	}
 
 	return aws.StringValue(response.Parameter.Value), nil
