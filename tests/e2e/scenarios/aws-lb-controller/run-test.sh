@@ -45,7 +45,13 @@ REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller"
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go install github.com/onsi/ginkgo/ginkgo@latest
 
-git clone https://github.com/kubernetes-sigs/aws-load-balancer-controller .
+LBC_VERSION=$(kubectl get deployment -n kube-system aws-load-balancer-controller -o jsonpath='{.spec.template.spec.containers[?(@.name=="controller")].image}' | cut -d':' -f2-)
+CLONE_ARGS=
+if [ -n "$LBC_VERSION" ]; then
+    CLONE_ARGS="-b ${LBC_VERSION}"
+fi
+# shellcheck disable=SC2086
+git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-load-balancer-controller .
 
 mkdir -p "${REPORT_DIR}"
 
