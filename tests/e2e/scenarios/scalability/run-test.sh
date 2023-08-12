@@ -35,6 +35,7 @@ popd
 
 # Setup our cleanup function; as we allocate resources we set a variable to indicate they should be cleaned up
 function cleanup {
+  aws autoscaling describe-scaling-activities --region us-east-2
   # shellcheck disable=SC2153
   if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
       kubetest2 kops "${KUBETEST2_ARGS[@]}" --down || echo "kubetest2 down failed"
@@ -86,6 +87,7 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
+create_args=("--network-cidr=10.0.0.0/16")
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
 create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
@@ -96,15 +98,13 @@ create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
-create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
+create_args+=("--node-count=500")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
-if [[ -n "${ZONES:-}" ]]; then
-    create_args+=("--zones=${ZONES}")
-fi
+create_args+=("--master-size=c6g.8xlarge")
+create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
 # Enable cluster addons, this enables us to replace the built-in manifest
@@ -122,7 +122,7 @@ KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
 # More time for bigger clusters
-KUBETEST2_ARGS+=("--validation-wait=30m")
+KUBETEST2_ARGS+=("--validation-wait=20m")
 
 # The caller can set DELETE_CLUSTER=false to stop us deleting the cluster
 if [[ -z "${DELETE_CLUSTER:-}" ]]; then

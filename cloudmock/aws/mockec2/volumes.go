@@ -81,6 +81,10 @@ func (m *MockEC2) CreateVolumeRequest(*ec2.CreateVolumeInput) (*request.Request,
 	panic("Not implemented")
 }
 
+func (m *MockEC2) WaitUntilVolumeAvailable(*ec2.DescribeVolumesInput) error {
+	return nil
+}
+
 func (m *MockEC2) DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput) {
 	panic("MockEC2 DescribeVolumeAttributeRequest not implemented")
 }
