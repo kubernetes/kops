@@ -96,14 +96,17 @@ create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
-create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
+#create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
+create_args+=("--node-count=5")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=c6g.medium")
-create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
+#create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
+create_args+=("--control-plane-count=1")
+#create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
+create_args+=("--master-size=c6g.4xlarge")
 if [[ -n "${ZONES:-}" ]]; then
-    create_args+=("--zones=${ZONES}")
+    create_args+=("--zones=${ZONES}:-eu-central-1a")
 fi
 
 
