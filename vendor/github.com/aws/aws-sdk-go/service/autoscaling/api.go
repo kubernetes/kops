@@ -7038,6 +7038,39 @@ func (s *Alarm) SetAlarmName(v string) *Alarm {
 	return s
 }
 
+// Specifies the CloudWatch alarm specification to use in an instance refresh.
+type AlarmSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The names of one or more CloudWatch alarms to monitor for the instance refresh.
+	// You can specify up to 10 alarms.
+	Alarms []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AlarmSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AlarmSpecification) GoString() string {
+	return s.String()
+}
+
+// SetAlarms sets the Alarms field's value.
+func (s *AlarmSpecification) SetAlarms(v []*string) *AlarmSpecification {
+	s.Alarms = v
+	return s
+}
+
 type AttachInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -18744,8 +18777,13 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
 
+	// (Optional) The CloudWatch alarm specification. CloudWatch alarms can be used
+	// to identify any issues and fail the operation if an alarm threshold is met.
+	AlarmSpecification *AlarmSpecification `type:"structure"`
+
 	// (Optional) Indicates whether to roll back the Auto Scaling group to its previous
-	// configuration if the instance refresh fails. The default is false.
+	// configuration if the instance refresh fails or a CloudWatch alarm threshold
+	// is met. The default is false.
 	//
 	// A rollback is not supported in the following situations:
 	//
@@ -18757,6 +18795,9 @@ type RefreshPreferences struct {
 	//
 	//    * The Auto Scaling group uses the launch template's $Latest or $Default
 	//    version.
+	//
+	// For more information, see Undo changes with a rollback (https://docs.aws.amazon.com/autoscaling/ec2/userguide/instance-refresh-rollback.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	AutoRollback *bool `type:"boolean"`
 
 	// (Optional) The amount of time, in seconds, to wait after a checkpoint before
@@ -18867,6 +18908,12 @@ func (s RefreshPreferences) String() string {
 // value will be replaced with "sensitive".
 func (s RefreshPreferences) GoString() string {
 	return s.String()
+}
+
+// SetAlarmSpecification sets the AlarmSpecification field's value.
+func (s *RefreshPreferences) SetAlarmSpecification(v *AlarmSpecification) *RefreshPreferences {
+	s.AlarmSpecification = v
+	return s
 }
 
 // SetAutoRollback sets the AutoRollback field's value.
@@ -19960,6 +20007,8 @@ type StartInstanceRefreshInput struct {
 	//    * Auto rollback
 	//
 	//    * Checkpoints
+	//
+	//    * CloudWatch alarms
 	//
 	//    * Skip matching
 	Preferences *RefreshPreferences `type:"structure"`

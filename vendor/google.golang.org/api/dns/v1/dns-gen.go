@@ -2510,6 +2510,7 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 	//
 	// Possible values:
 	//   "none"
+	//   "globalL7ilb" - Cross-region internal Application Load Balancer
 	//   "regionalL4ilb" - Regional internal passthrough Network Load
 	// Balancer
 	//   "regionalL7ilb" - Regional internal Application Load Balancer

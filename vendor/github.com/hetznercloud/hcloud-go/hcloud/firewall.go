@@ -180,7 +180,7 @@ func (c *FirewallClient) All(ctx context.Context) ([]*Firewall, error) {
 
 // AllWithOpts returns all Firewalls for the given options.
 func (c *FirewallClient) AllWithOpts(ctx context.Context, opts FirewallListOpts) ([]*Firewall, error) {
-	var allFirewalls []*Firewall
+	allFirewalls := []*Firewall{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

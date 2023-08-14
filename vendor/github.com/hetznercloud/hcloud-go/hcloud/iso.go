@@ -143,7 +143,7 @@ func (c *ISOClient) All(ctx context.Context) ([]*ISO, error) {
 
 // AllWithOpts returns all ISOs for the given options.
 func (c *ISOClient) AllWithOpts(ctx context.Context, opts ISOListOpts) ([]*ISO, error) {
-	allISOs := make([]*ISO, 0)
+	allISOs := []*ISO{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

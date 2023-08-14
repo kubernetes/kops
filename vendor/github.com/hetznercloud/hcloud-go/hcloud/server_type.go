@@ -140,7 +140,7 @@ func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
 
 // AllWithOpts returns all server types for the given options.
 func (c *ServerTypeClient) AllWithOpts(ctx context.Context, opts ServerTypeListOpts) ([]*ServerType, error) {
-	var allServerTypes []*ServerType
+	allServerTypes := []*ServerType{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

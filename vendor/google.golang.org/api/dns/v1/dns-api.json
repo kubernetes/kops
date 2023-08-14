@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20230721",
+  "revision": "20230801",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -3133,11 +3133,13 @@
           "description": "The type of Load Balancer specified by this target. Must match the configuration of the Load Balancer located at the LoadBalancerTarget's IP address/port and region.",
           "enum": [
             "none",
+            "globalL7ilb",
             "regionalL4ilb",
             "regionalL7ilb"
           ],
           "enumDescriptions": [
             "",
+            "Cross-region internal Application Load Balancer",
             "Regional internal passthrough Network Load Balancer",
             "Regional internal Application Load Balancer"
           ],

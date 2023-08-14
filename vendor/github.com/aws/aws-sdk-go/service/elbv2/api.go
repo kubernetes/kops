@@ -1113,6 +1113,8 @@ func (c *ELBV2) DeregisterTargetsRequest(input *DeregisterTargetsInput) (req *re
 // the targets are deregistered, they no longer receive traffic from the load
 // balancer.
 //
+// Note: If the specified target does not exist, the action returns successfully.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3274,11 +3276,13 @@ func (c *ELBV2) SetSecurityGroupsRequest(input *SetSecurityGroupsInput) (req *re
 // SetSecurityGroups API operation for Elastic Load Balancing.
 //
 // Associates the specified security groups with the specified Application Load
-// Balancer. The specified security groups override the previously associated
-// security groups.
+// Balancer or Network Load Balancer. The specified security groups override
+// the previously associated security groups.
 //
-// You can't specify a security group for a Network Load Balancer or Gateway
-// Load Balancer.
+// You can't perform this operation on a Network Load Balancer unless you specified
+// a security group for the load balancer when you created it.
+//
+// You can't associate a security group with a Gateway Load Balancer.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4458,8 +4462,8 @@ type CreateLoadBalancerInput struct {
 	// You cannot specify a scheme for a Gateway Load Balancer.
 	Scheme *string `type:"string" enum:"LoadBalancerSchemeEnum"`
 
-	// [Application Load Balancers] The IDs of the security groups for the load
-	// balancer.
+	// [Application Load Balancers and Network Load Balancers] The IDs of the security
+	// groups for the load balancer.
 	SecurityGroups []*string `type:"list"`
 
 	// The IDs of the public subnets. You can specify only one subnet per Availability
@@ -6836,6 +6840,14 @@ func (s *HttpRequestMethodConditionConfig) SetValues(v []*string) *HttpRequestMe
 
 // Information about an Elastic Load Balancing resource limit for your Amazon
 // Web Services account.
+//
+// For more information, see the following:
+//
+//   - Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
+//
+//   - Quotas for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
+//
+//   - Quotas for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
 type Limit struct {
 	_ struct{} `type:"structure"`
 
@@ -7029,6 +7041,10 @@ type LoadBalancer struct {
 	// The public DNS name of the load balancer.
 	DNSName *string `type:"string"`
 
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string"`
+
 	// The type of IP addresses used by the subnets for your load balancer. The
 	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
 	// IPv6 addresses).
@@ -7109,6 +7125,12 @@ func (s *LoadBalancer) SetCustomerOwnedIpv4Pool(v string) *LoadBalancer {
 // SetDNSName sets the DNSName field's value.
 func (s *LoadBalancer) SetDNSName(v string) *LoadBalancer {
 	s.DNSName = &v
+	return s
+}
+
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *LoadBalancer) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *LoadBalancer {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
 	return s
 }
 
@@ -8683,6 +8705,8 @@ func (s *Rule) SetRuleArn(v string) *Rule {
 // can also optionally include one or more of each of the following conditions:
 // http-header and query-string. Note that the value for a condition cannot
 // be empty.
+//
+// For more information, see Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html).
 type RuleCondition struct {
 	_ struct{} `type:"structure"`
 
@@ -9056,6 +9080,11 @@ func (s *SetRulePrioritiesOutput) SetRules(v []*Rule) *SetRulePrioritiesOutput {
 type SetSecurityGroupsInput struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink. The default
+	// is on.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string" enum:"EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum"`
+
 	// The Amazon Resource Name (ARN) of the load balancer.
 	//
 	// LoadBalancerArn is a required field
@@ -9101,6 +9130,12 @@ func (s *SetSecurityGroupsInput) Validate() error {
 	return nil
 }
 
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *SetSecurityGroupsInput) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *SetSecurityGroupsInput {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
+	return s
+}
+
 // SetLoadBalancerArn sets the LoadBalancerArn field's value.
 func (s *SetSecurityGroupsInput) SetLoadBalancerArn(v string) *SetSecurityGroupsInput {
 	s.LoadBalancerArn = &v
@@ -9115,6 +9150,10 @@ func (s *SetSecurityGroupsInput) SetSecurityGroups(v []*string) *SetSecurityGrou
 
 type SetSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
+
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string" enum:"EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum"`
 
 	// The IDs of the security groups associated with the load balancer.
 	SecurityGroupIds []*string `type:"list"`
@@ -9138,6 +9177,12 @@ func (s SetSecurityGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *SetSecurityGroupsOutput) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *SetSecurityGroupsOutput {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
+	return s
+}
+
 // SetSecurityGroupIds sets the SecurityGroupIds field's value.
 func (s *SetSecurityGroupsOutput) SetSecurityGroupIds(v []*string) *SetSecurityGroupsOutput {
 	s.SecurityGroupIds = v
@@ -9150,7 +9195,7 @@ type SetSubnetsInput struct {
 	// [Network Load Balancers] The type of IP addresses used by the subnets for
 	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
 	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for
-	// a load balancer with a UDP or TCP_UDP listener. .
+	// a load balancer with a UDP or TCP_UDP listener.
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 
 	// The Amazon Resource Name (ARN) of the load balancer.
@@ -9590,7 +9635,8 @@ type TargetDescription struct {
 	// The port on which the target is listening. If the target group protocol is
 	// GENEVE, the supported port is 6081. If the target type is alb, the targeted
 	// Application Load Balancer must have at least one listener whose port matches
-	// the target group port. Not used if the target is a Lambda function.
+	// the target group port. This parameter is not used if the target is a Lambda
+	// function.
 	Port *int64 `min:"1" type:"integer"`
 }
 
@@ -9680,16 +9726,16 @@ type TargetGroup struct {
 	// type defaults to ipv4.
 	IpAddressType *string `type:"string" enum:"TargetGroupIpAddressTypeEnum"`
 
-	// The Amazon Resource Names (ARN) of the load balancers that route traffic
-	// to this target group.
+	// The Amazon Resource Name (ARN) of the load balancer that routes traffic to
+	// this target group. You can use each target group with only one load balancer.
 	LoadBalancerArns []*string `type:"list"`
 
 	// The HTTP or gRPC codes to use when checking for a successful response from
 	// a target.
 	Matcher *Matcher `type:"structure"`
 
-	// The port on which the targets are listening. Not used if the target is a
-	// Lambda function.
+	// The port on which the targets are listening. This parameter is not used if
+	// the target is a Lambda function.
 	Port *int64 `min:"1" type:"integer"`
 
 	// The protocol to use for routing traffic to the targets.
@@ -10311,6 +10357,22 @@ func AuthenticateOidcActionConditionalBehaviorEnum_Values() []string {
 		AuthenticateOidcActionConditionalBehaviorEnumDeny,
 		AuthenticateOidcActionConditionalBehaviorEnumAllow,
 		AuthenticateOidcActionConditionalBehaviorEnumAuthenticate,
+	}
+}
+
+const (
+	// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn is a EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum value
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn = "on"
+
+	// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff is a EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum value
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff = "off"
+)
+
+// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_Values returns all elements of the EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum
+func EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_Values() []string {
+	return []string{
+		EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn,
+		EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff,
 	}
 }
 

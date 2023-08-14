@@ -113,7 +113,7 @@ func (c *LocationClient) All(ctx context.Context) ([]*Location, error) {
 
 // AllWithOpts returns all locations for the given options.
 func (c *LocationClient) AllWithOpts(ctx context.Context, opts LocationListOpts) ([]*Location, error) {
-	var allLocations []*Location
+	allLocations := []*Location{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

@@ -162,7 +162,7 @@ func (c *NetworkClient) All(ctx context.Context) ([]*Network, error) {
 
 // AllWithOpts returns all networks for the given options.
 func (c *NetworkClient) AllWithOpts(ctx context.Context, opts NetworkListOpts) ([]*Network, error) {
-	var allNetworks []*Network
+	allNetworks := []*Network{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

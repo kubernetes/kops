@@ -4166,6 +4166,12 @@ type MonitoringComponentConfig struct {
 	//   "APISERVER" - kube-apiserver
 	//   "SCHEDULER" - kube-scheduler
 	//   "CONTROLLER_MANAGER" - kube-controller-manager
+	//   "STORAGE" - Storage
+	//   "HPA" - Horizontal Pod Autoscaling
+	//   "POD" - Pod
+	//   "DAEMONSET" - DaemonSet
+	//   "DEPLOYMENT" - Deployment
+	//   "STATEFULSET" - Statefulset
 	EnableComponents []string `json:"enableComponents,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "EnableComponents") to
