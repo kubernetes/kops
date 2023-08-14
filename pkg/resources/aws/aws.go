@@ -561,6 +561,17 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	for _, volume := range volumes {
 		id := aws.StringValue(volume.VolumeId)
 
+		deleteOnTermination := false
+		for _, attachment := range volume.Attachments {
+			if aws.BoolValue(attachment.DeleteOnTermination) {
+				deleteOnTermination = true
+				break
+			}
+		}
+		if deleteOnTermination {
+			continue
+		}
+
 		resourceTracker := &resources.Resource{
 			Name:    FindName(volume.Tags),
 			ID:      id,
