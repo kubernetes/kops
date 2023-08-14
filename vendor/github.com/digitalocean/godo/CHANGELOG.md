@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.101.0] - 2023-08-09
+
+- #619 - @danaelhe - Add retryablehttp Client Option
+
 ## [v1.100.0] - 2023-07-20
 
 - #618 - @asaha - load balancers: introduce new type field

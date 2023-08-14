@@ -116,7 +116,7 @@ func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
 
 // AllWithOpts returns all datacenters for the given options.
 func (c *DatacenterClient) AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error) {
-	var allDatacenters []*Datacenter
+	allDatacenters := []*Datacenter{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

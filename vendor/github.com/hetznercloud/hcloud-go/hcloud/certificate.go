@@ -182,7 +182,7 @@ func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
 
 // AllWithOpts returns all Certificates for the given options.
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
-	var allCertificates []*Certificate
+	allCertificates := []*Certificate{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

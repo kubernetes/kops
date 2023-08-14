@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -18,45 +19,56 @@ const Endpoint = "http://169.254.169.254/hetzner/v1/metadata"
 // Client is a client for the Hetzner Cloud Server Metadata Endpoints.
 type Client struct {
 	endpoint string
+	timeout  time.Duration
 
 	httpClient              *http.Client
 	instrumentationRegistry *prometheus.Registry
 }
 
-// A ClientOption is used to configure a Client.
+// A ClientOption is used to configure a [Client].
 type ClientOption func(*Client)
 
-// WithEndpoint configures a Client to use the specified Metadata API endpoint.
+// WithEndpoint configures a [Client] to use the specified Metadata API endpoint.
 func WithEndpoint(endpoint string) ClientOption {
 	return func(client *Client) {
 		client.endpoint = strings.TrimRight(endpoint, "/")
 	}
 }
 
-// WithHTTPClient configures a Client to perform HTTP requests with httpClient.
+// WithHTTPClient configures a [Client] to perform HTTP requests with httpClient.
 func WithHTTPClient(httpClient *http.Client) ClientOption {
 	return func(client *Client) {
 		client.httpClient = httpClient
 	}
 }
 
-// WithInstrumentation configures a Client to collect metrics about the performed HTTP requests.
+// WithInstrumentation configures a [Client] to collect metrics about the performed HTTP requests.
 func WithInstrumentation(registry *prometheus.Registry) ClientOption {
 	return func(client *Client) {
 		client.instrumentationRegistry = registry
 	}
 }
 
-// NewClient creates a new client.
+// WithTimeout specifies a time limit for requests made by this [Client]. Defaults to 5 seconds.
+func WithTimeout(timeout time.Duration) ClientOption {
+	return func(client *Client) {
+		client.timeout = timeout
+	}
+}
+
+// NewClient creates a new [Client] with the options applied.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
 		endpoint:   Endpoint,
 		httpClient: &http.Client{},
+		timeout:    5 * time.Second,
 	}
 
 	for _, option := range options {
 		option(client)
 	}
+
+	client.httpClient.Timeout = client.timeout
 
 	if client.instrumentationRegistry != nil {
 		i := instrumentation.New("metadata", client.instrumentationRegistry)
@@ -65,8 +77,7 @@ func NewClient(options ...ClientOption) *Client {
 	return client
 }
 
-// NewRequest creates an HTTP request against the API. The returned request
-// is assigned with ctx and has all necessary headers set (auth, user agent, etc.).
+// get executes an HTTP request against the API.
 func (c *Client) get(path string) (string, error) {
 	url := c.endpoint + path
 	resp, err := c.httpClient.Get(url)

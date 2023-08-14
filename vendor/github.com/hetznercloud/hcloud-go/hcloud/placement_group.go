@@ -133,7 +133,7 @@ func (c *PlacementGroupClient) All(ctx context.Context) ([]*PlacementGroup, erro
 
 // AllWithOpts returns all PlacementGroups for the given options.
 func (c *PlacementGroupClient) AllWithOpts(ctx context.Context, opts PlacementGroupListOpts) ([]*PlacementGroup, error) {
-	var allPlacementGroups []*PlacementGroup
+	allPlacementGroups := []*PlacementGroup{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

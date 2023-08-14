@@ -145,7 +145,7 @@ func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
 
 // AllWithOpts returns all actions for the given options.
 func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	var allActions []*Action
+	allActions := []*Action{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
@@ -216,6 +216,13 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 				errCh <- err
 				return
 			}
+			if len(as) == 0 {
+				// No actions returned for the provided IDs, they do not exist in the API.
+				// We need to catch and fail early for this, otherwise the loop will continue
+				// indefinitely.
+				errCh <- fmt.Errorf("failed to wait for actions: remaining actions (%v) are not returned from API", opts.ID)
+				return
+			}
 
 			for _, a := range as {
 				switch a.Status {
@@ -280,6 +287,10 @@ func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-cha
 			a, _, err := c.GetByID(ctx, action.ID)
 			if err != nil {
 				errCh <- err
+				return
+			}
+			if a == nil {
+				errCh <- fmt.Errorf("failed to wait for action %d: action not returned from API", action.ID)
 				return
 			}
 

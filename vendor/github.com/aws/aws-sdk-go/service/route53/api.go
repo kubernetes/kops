@@ -1728,13 +1728,6 @@ func (c *Route53) CreateTrafficPolicyInstanceRequest(input *CreateTrafficPolicyI
 // responds to DNS queries for the domain or subdomain name by using the resource
 // record sets that CreateTrafficPolicyInstance created.
 //
-// After you submit an CreateTrafficPolicyInstance request, there's a brief
-// delay while Amazon Route 53 creates the resource record sets that are specified
-// in the traffic policy definition. Use GetTrafficPolicyInstance with the id
-// of new traffic policy instance to confirm that the CreateTrafficPolicyInstance
-// request completed successfully. For more information, see the State response
-// element.
-//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4787,10 +4780,10 @@ func (c *Route53) GetTrafficPolicyInstanceRequest(input *GetTrafficPolicyInstanc
 //
 // Gets information about a specified traffic policy instance.
 //
-// Use GetTrafficPolicyInstance with the id of new traffic policy instance to
-// confirm that the CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance
-// request completed successfully. For more information, see the State response
-// element.
+// After you submit a CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance
+// request, there's a brief delay while Amazon Route 53 creates the resource
+// record sets that are specified in the traffic policy definition. For more
+// information, see the State response element.
 //
 // In the Route 53 console, traffic policy instances are known as policy records.
 //
@@ -7511,12 +7504,6 @@ func (c *Route53) UpdateTrafficPolicyInstanceRequest(input *UpdateTrafficPolicyI
 }
 
 // UpdateTrafficPolicyInstance API operation for Amazon Route 53.
-//
-// After you submit a UpdateTrafficPolicyInstance request, there's a brief delay
-// while Route 53 creates the resource record sets that are specified in the
-// traffic policy definition. Use GetTrafficPolicyInstance with the id of updated
-// traffic policy instance confirm that the UpdateTrafficPolicyInstance request
-// completed successfully. For more information, see the State response element.
 //
 // Updates the resource record sets in a specified hosted zone that were created
 // based on the settings in a specified traffic policy version.
@@ -20450,6 +20437,9 @@ const (
 
 	// CloudWatchRegionApSoutheast4 is a CloudWatchRegion enum value
 	CloudWatchRegionApSoutheast4 = "ap-southeast-4"
+
+	// CloudWatchRegionIlCentral1 is a CloudWatchRegion enum value
+	CloudWatchRegionIlCentral1 = "il-central-1"
 )
 
 // CloudWatchRegion_Values returns all elements of the CloudWatchRegion enum
@@ -20489,6 +20479,7 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionUsIsoWest1,
 		CloudWatchRegionUsIsobEast1,
 		CloudWatchRegionApSoutheast4,
+		CloudWatchRegionIlCentral1,
 	}
 }
 
@@ -20819,6 +20810,9 @@ const (
 
 	// ResourceRecordSetRegionApSoutheast4 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionApSoutheast4 = "ap-southeast-4"
+
+	// ResourceRecordSetRegionIlCentral1 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionIlCentral1 = "il-central-1"
 )
 
 // ResourceRecordSetRegion_Values returns all elements of the ResourceRecordSetRegion enum
@@ -20853,6 +20847,7 @@ func ResourceRecordSetRegion_Values() []string {
 		ResourceRecordSetRegionEuSouth1,
 		ResourceRecordSetRegionEuSouth2,
 		ResourceRecordSetRegionApSoutheast4,
+		ResourceRecordSetRegionIlCentral1,
 	}
 }
 
@@ -21011,6 +21006,9 @@ const (
 
 	// VPCRegionApSoutheast4 is a VPCRegion enum value
 	VPCRegionApSoutheast4 = "ap-southeast-4"
+
+	// VPCRegionIlCentral1 is a VPCRegion enum value
+	VPCRegionIlCentral1 = "il-central-1"
 )
 
 // VPCRegion_Values returns all elements of the VPCRegion enum
@@ -21049,5 +21047,6 @@ func VPCRegion_Values() []string {
 		VPCRegionEuSouth1,
 		VPCRegionEuSouth2,
 		VPCRegionApSoutheast4,
+		VPCRegionIlCentral1,
 	}
 }
