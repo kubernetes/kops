@@ -102,9 +102,7 @@ create_args+=("--dns none")
 create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
-if [[ -n "${ZONES:-}" ]]; then
-    create_args+=("--zones=${ZONES}")
-fi
+create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
 # Enable cluster addons, this enables us to replace the built-in manifest
