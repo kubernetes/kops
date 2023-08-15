@@ -456,6 +456,40 @@ type CiliumNetworkingSpec struct {
 
 	// EnableServiceTopology determine if cilium should use topology aware hints.
 	EnableServiceTopology bool `json:"enableServiceTopology,omitempty"`
+
+	// Ingress specifies the configuration for Cilium Ingress settings.
+	Ingress *CiliumIngressSpec `json:"ingress,omitempty"`
+}
+
+// CiliumIngressSpec configures Cilium Ingress settings.
+type CiliumIngressSpec struct {
+	// Enabled specifies whether Cilium Ingress is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// EnforceHttps specifies whether HTTPS enforcement is enabled for Ingress traffic.
+	// Default: true
+	EnforceHttps *bool `json:"enforceHttps,omitempty"`
+
+	// EnableSecretsSync specifies whether synchronization of secrets is enabled.
+	// Default: true
+	EnableSecretsSync *bool `json:"enableSecretsSync,omitempty"`
+
+	// SecretsNamespace specifies the namespace where secrets are synchronized.
+	// Default: cilium-secrets
+	SecretsNamespace string `json:"secretsNamespace,omitempty"`
+
+	// LoadBalancerAnnotationPrefixes specifies annotation prefixes for Load Balancer configuration.
+	// Default: "service.beta.kubernetes.io service.kubernetes.io cloud.google.com"
+	LoadBalancerAnnotationPrefixes string `json:"loadBalancerAnnotationPrefixes,omitempty"`
+
+	// DefaultLoadBalancerMode specifies the default load balancer mode.
+	// Possible values: 'shared' or 'dedicated'
+	// Default: shared
+	DefaultLoadBalancerMode string `json:"defaultLoadBalancerMode,omitempty"`
+
+	// SharedLoadBalancerServiceName specifies the name of the shared load balancer service.
+	// Default: cilium-ingress
+	SharedLoadBalancerServiceName string `json:"sharedLoadBalancerServiceName,omitempty"`
 }
 
 // HubbleSpec configures the Hubble service on the Cilium agent.

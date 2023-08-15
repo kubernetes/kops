@@ -5014,6 +5014,43 @@ spec:
                         description: 'IdentityChangeGracePeriod specifies the duration
                           to wait before using a changed identity. Default: 5s'
                         type: string
+                      ingress:
+                        description: Ingress specifies the configuration for Cilium
+                          Ingress settings.
+                        properties:
+                          defaultLoadBalancerMode:
+                            description: 'DefaultLoadBalancerMode specifies the default
+                              load balancer mode. Possible values: ''shared'' or ''dedicated''
+                              Default: shared'
+                            type: string
+                          enableSecretsSync:
+                            description: 'EnableSecretsSync specifies whether synchronization
+                              of secrets is enabled. Default: true'
+                            type: boolean
+                          enabled:
+                            description: Enabled specifies whether Cilium Ingress
+                              is enabled.
+                            type: boolean
+                          enforceHttps:
+                            description: 'EnforceHttps specifies whether HTTPS enforcement
+                              is enabled for Ingress traffic. Default: true'
+                            type: boolean
+                          loadBalancerAnnotationPrefixes:
+                            description: 'LoadBalancerAnnotationPrefixes specifies
+                              annotation prefixes for Load Balancer configuration.
+                              Default: "service.beta.kubernetes.io service.kubernetes.io
+                              cloud.google.com"'
+                            type: string
+                          secretsNamespace:
+                            description: 'SecretsNamespace specifies the namespace
+                              where secrets are synchronized. Default: cilium-secrets'
+                            type: string
+                          sharedLoadBalancerServiceName:
+                            description: 'SharedLoadBalancerServiceName specifies
+                              the name of the shared load balancer service. Default:
+                              cilium-ingress'
+                            type: string
+                        type: object
                       ipam:
                         description: 'IPAM specifies the IP address allocation mode
                           to use. Possible values are "crd" and "eni". "eni" will

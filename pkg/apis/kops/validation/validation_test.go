@@ -985,6 +985,25 @@ func Test_Validate_Cilium(t *testing.T) {
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.13.5",
+				Ingress: &kops.CiliumIngressSpec{
+					Enabled:                 fi.PtrTo(true),
+					DefaultLoadBalancerMode: "bad-value",
+				},
+			},
+			ExpectedErrors: []string{"Unsupported value::cilium.ingress.defaultLoadBalancerMode"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.13.5",
+				Ingress: &kops.CiliumIngressSpec{
+					Enabled:                 fi.PtrTo(true),
+					DefaultLoadBalancerMode: "dedicated",
+				},
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.13.5",
 				Hubble: &kops.HubbleSpec{
 					Enabled: fi.PtrTo(true),
 				},
