@@ -23,7 +23,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -63,18 +62,12 @@ func NewCmdCreateSSHPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVar(&options.PublicKeyPath, "pubkey", "", "Path to SSH public key")
+	cmd.Flags().MarkDeprecated("pubkey", "use --ssh-public-key instead")
 	cmd.Flags().StringVarP(&options.PublicKeyPath, "ssh-public-key", "i", "", "Path to SSH public key")
 	cmd.MarkFlagRequired("ssh-public-key")
 	cmd.RegisterFlagCompletionFunc("ssh-public-key", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
-	})
-
-	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
-		switch name {
-		case "pubkey":
-			name = "ssh-public-key"
-		}
-		return pflag.NormalizedName(name)
 	})
 
 	return cmd

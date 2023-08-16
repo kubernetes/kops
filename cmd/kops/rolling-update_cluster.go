@@ -194,6 +194,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
 	cmd.Flags().DurationVar(&options.DrainTimeout, "drain-timeout", options.DrainTimeout, "Maximum time to wait for a node to drain")
 	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
+	cmd.Flags().DurationVar(&options.ControlPlaneInterval, "master-interval", options.ControlPlaneInterval, "Time to wait between restarting control plane nodes")
+	cmd.Flags().MarkDeprecated("master-interval", "use --control-plane-interval instead")
 	cmd.Flags().DurationVar(&options.ControlPlaneInterval, "control-plane-interval", options.ControlPlaneInterval, "Time to wait between restarting control plane nodes")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting worker nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
@@ -213,8 +215,6 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		switch name {
 		case "ig", "instance-groups":
 			name = "instance-group"
-		case "master-interval":
-			name = "control-plane-interval"
 		case "role", "roles", "instance-group-role":
 			name = "instance-group-roles"
 		}

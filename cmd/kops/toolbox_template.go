@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/pkg/strvals"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -103,18 +102,13 @@ func NewCmdToolboxTemplate(f commandutils.Factory, out io.Writer) *cobra.Command
 	cmd.MarkFlagDirname("snippets")
 	cmd.Flags().StringVar(&options.channel, "channel", options.channel, "Channel to use for the channel* functions")
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
+	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file. Defaults to stdout")
+	cmd.Flags().MarkDeprecated("output", "use --out instead")
 	cmd.Flags().StringVar(&options.outputPath, "out", options.outputPath, "Path to output file. Defaults to stdout")
 	cmd.Flags().StringVar(&options.configValue, "config-value", "", "Show the value of a specific configuration value")
 	cmd.RegisterFlagCompletionFunc("config-value", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
 	cmd.Flags().BoolVar(&options.formatYAML, "format-yaml", false, "Attempt to format the generated yaml content before output")
-	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
-		// Old flag name for outputPath
-		if name == "output" {
-			name = "out"
-		}
-		return pflag.NormalizedName(name)
-	})
 
 	return cmd
 }
