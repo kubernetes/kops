@@ -744,7 +744,7 @@ spec:
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
         {{ end }}
-        image: "quay.io/cilium/cilium:{{ .Version }}"
+        image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -822,7 +822,7 @@ spec:
       {{- if semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver }}
       - command:
         - /install-plugin.sh
-        image: "quay.io/cilium/cilium:{{ .Version }}"
+        image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -862,7 +862,7 @@ spec:
               name: cilium-config
               optional: true
         {{- end }}
-        image: "quay.io/cilium/cilium:{{ .Version }}"
+        image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         terminationMessagePolicy: FallbackToLogsOnError
@@ -1033,7 +1033,7 @@ spec:
           value: "{{ APIInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: "quay.io/cilium/operator:{{ .Version }}"
+        image: "{{ or .Registry "quay.io" }}/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -1137,7 +1137,7 @@ spec:
     spec:
       containers:
         - name: hubble-relay
-          image: "quay.io/cilium/hubble-relay:{{ .Version }}"
+          image: "{{ or .Registry "quay.io" }}/cilium/hubble-relay:{{ .Version }}"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay

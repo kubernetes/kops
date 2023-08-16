@@ -2080,6 +2080,7 @@ func Convert_kops_CertManagerConfig_To_v1alpha3_CertManagerConfig(in *kops.CertM
 }
 
 func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
+	out.Registry = in.Registry
 	out.Version = in.Version
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
@@ -2144,6 +2145,7 @@ func Convert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 }
 
 func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
+	out.Registry = in.Registry
 	out.Version = in.Version
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
