@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -38,35 +39,35 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.32.0.0/11"},
+			expected: []string{"10.128.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.32.0.0/11", "10.64.0.0/11"},
+			expected: []string{"10.64.0.0/10", "10.128.0.0/10"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.64.0.0/11", "10.32.0.0/11"},
+			expected: []string{"10.128.0.0/10", "10.64.0.0/10"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "10.64.0.0/11", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.64.0.0/11", "10.32.0.0/11"},
+			expected: []string{"10.64.0.0/11", "10.128.0.0/10"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "10.0.0.0/9", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.0.0.0/9", "10.160.0.0/11"},
+			expected: []string{"10.0.0.0/9", "10.192.0.0/10"},
 		},
 
 		{
@@ -74,14 +75,14 @@ func Test_AssignSubnets(t *testing.T) {
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
 			},
-			expected: []string{"10.32.0.0/11", "10.0.0.0/14"},
+			expected: []string{"10.128.0.0/9", "10.0.0.0/12"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypePublic},
 				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#1", Type: kops.SubnetTypeUtility},
 			},
-			expected: []string{"10.32.0.0/11", "10.0.0.0/14"},
+			expected: []string{"10.128.0.0/9", "10.0.0.0/12"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
@@ -93,7 +94,7 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePrivate},
 			},
-			expected: []string{"10.32.0.0/11"},
+			expected: []string{"10.128.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
@@ -105,7 +106,7 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypeDualStack},
 			},
-			expected: []string{"10.32.0.0/11"},
+			expected: []string{"10.128.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
@@ -126,21 +127,23 @@ func Test_AssignSubnets(t *testing.T) {
 		},
 	}
 	for i, test := range tests {
-		c := &kops.Cluster{}
-		c.Spec.Networking.NetworkCIDR = "10.0.0.0/8"
-		c.Spec.Networking.Subnets = test.subnets
+		t.Run(fmt.Sprintf("test-%d", i+1), func(t *testing.T) {
+			c := &kops.Cluster{}
+			c.Spec.Networking.NetworkCIDR = "10.0.0.0/8"
+			c.Spec.Networking.Subnets = test.subnets
 
-		err := assignCIDRsToSubnets(c, nil)
-		if err != nil {
-			t.Fatalf("unexpected error on test %d: %v", i+1, err)
-		}
+			err := assignCIDRsToSubnets(c, nil)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 
-		var actual []string
-		for _, subnet := range c.Spec.Networking.Subnets {
-			actual = append(actual, subnet.CIDR)
-		}
-		if !reflect.DeepEqual(actual, test.expected) {
-			t.Fatalf("unexpected result of network allocation (#%d): actual=%v, expected=%v", i+1, actual, test.expected)
-		}
+			var actual []string
+			for _, subnet := range c.Spec.Networking.Subnets {
+				actual = append(actual, subnet.CIDR)
+			}
+			if !reflect.DeepEqual(actual, test.expected) {
+				t.Fatalf("unexpected result of network allocation: actual=%v, expected=%v", actual, test.expected)
+			}
+		})
 	}
 }
