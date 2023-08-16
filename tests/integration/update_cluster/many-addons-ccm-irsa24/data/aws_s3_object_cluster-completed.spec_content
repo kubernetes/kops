@@ -21,7 +21,7 @@ spec:
   cloudControllerManager:
     allocateNodeCIDRs: true
     cloudProvider: aws
-    clusterCIDR: 172.20.0.0/16
+    clusterCIDR: 172.20.128.0/17
     clusterName: minimal.example.com
     configureCloudRoutes: false
     enableLeaderMigration: true
