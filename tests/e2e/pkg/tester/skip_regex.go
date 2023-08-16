@@ -76,6 +76,10 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
 
+		if cluster.Spec.LegacyCloudProvider == "gce" {
+			skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
+		}
+
 		if isPre28 {
 			// These may be fixed in Cilium 1.13 but skipping for now
 			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
