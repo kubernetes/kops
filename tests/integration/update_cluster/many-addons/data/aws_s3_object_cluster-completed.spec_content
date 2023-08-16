@@ -20,7 +20,7 @@ spec:
     manageStorageClasses: true
   cloudControllerManager:
     allocateNodeCIDRs: true
-    clusterCIDR: 172.20.0.0/16
+    clusterCIDR: 172.20.128.0/17
     clusterName: minimal.example.com
     configureCloudRoutes: false
     image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.6

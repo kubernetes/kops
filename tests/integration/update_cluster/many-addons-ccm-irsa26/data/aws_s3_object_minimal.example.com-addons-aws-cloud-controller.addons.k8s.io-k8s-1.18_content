@@ -34,7 +34,7 @@ spec:
       - args:
         - --allocate-node-cidrs=true
         - --cloud-provider=aws
-        - --cluster-cidr=172.20.0.0/16
+        - --cluster-cidr=172.20.128.0/17
         - --cluster-name=minimal.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
