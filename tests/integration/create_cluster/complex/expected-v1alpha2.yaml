@@ -47,7 +47,7 @@ spec:
   sshAccess:
   - 1.2.3.4/32
   subnets:
-  - cidr: 172.20.32.0/19
+  - cidr: 172.20.128.0/17
     name: us-test-1a
     type: Public
     zone: us-test-1a

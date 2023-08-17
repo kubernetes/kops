@@ -74,11 +74,11 @@ spec:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - cidr: 10.0.32.0/19
+  - cidr: 10.0.128.0/17
     name: us-test1
     type: Private
     zone: us-test1
-  - cidr: 10.0.0.0/22
+  - cidr: 10.0.0.0/20
     name: utility-us-test1
     type: Utility
     zone: us-test1

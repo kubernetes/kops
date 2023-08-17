@@ -55,12 +55,12 @@ spec:
     name: us-test-1a
     type: Private
     zone: us-test-1a
-  - cidr: 172.20.32.0/19
+  - cidr: 172.20.64.0/18
     ipv6CIDR: /64#1
     name: dualstack-us-test-1a
     type: DualStack
     zone: us-test-1a
-  - cidr: 172.20.0.0/22
+  - cidr: 172.20.0.0/21
     ipv6CIDR: /64#2
     name: utility-us-test-1a
     type: Utility
