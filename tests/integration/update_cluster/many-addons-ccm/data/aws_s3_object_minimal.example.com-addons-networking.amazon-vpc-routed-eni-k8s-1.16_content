@@ -217,7 +217,7 @@ spec:
         - name: ENABLE_POD_ENI
           value: "false"
         - name: ENABLE_PREFIX_DELEGATION
-          value: "false"
+          value: "true"
         - name: WARM_ENI_TARGET
           value: "1"
         - name: WARM_PREFIX_TARGET
