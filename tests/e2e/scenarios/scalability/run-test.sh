@@ -95,6 +95,7 @@ fi
 create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id}")
 create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+create_args+=("--set spec.kubelet.maxPods=45")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
@@ -104,6 +105,7 @@ create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
+
 
 # Enable cluster addons, this enables us to replace the built-in manifest
 KOPS_FEATURE_FLAGS="ClusterAddons,${KOPS_FEATURE_FLAGS:-}"
