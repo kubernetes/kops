@@ -58,6 +58,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		// TODO: aojea
 		// https://github.com/kubernetes/kubernetes/issues/113964
 		skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
+	} else {
+		// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
+		// https://github.com/kubernetes/kubernetes/pull/117718
+		// https://github.com/cilium/cilium/issues/27358
+		skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
 	}
 
 	networking := cluster.Spec.LegacyNetworking
@@ -75,10 +80,6 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
-
-		if cluster.Spec.LegacyCloudProvider == "gce" {
-			skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
-		}
 
 		if isPre28 {
 			// These may be fixed in Cilium 1.13 but skipping for now
