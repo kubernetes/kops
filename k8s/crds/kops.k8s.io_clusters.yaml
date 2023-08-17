@@ -5117,6 +5117,10 @@ spec:
                       reconfigureKubelet:
                         description: ReconfigureKubelet is unused.
                         type: boolean
+                      registry:
+                        description: Registry overrides the default Cilium container
+                          registry (quay.io)
+                        type: string
                       removeCbrBridge:
                         description: RemoveCbrBridge is unused.
                         type: boolean
