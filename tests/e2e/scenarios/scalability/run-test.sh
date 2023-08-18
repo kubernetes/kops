@@ -98,6 +98,8 @@ create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://local
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
+create_args+=("--set spec.kubeControllerManager.endpointUpdatesBatchPeriod=500ms")
+create_args+=("--set spec.kubeControllerManager.endpointSliceUpdatesBatchPeriod=500ms")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
