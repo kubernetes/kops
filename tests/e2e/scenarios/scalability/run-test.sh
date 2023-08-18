@@ -155,7 +155,7 @@ else
   --kubernetes-version="${K8S_VERSION}" \
   -- \
   --test-package-version="${K8S_VERSION}" \
-  --parallel=30 \
+  --parallel=1 \
   --skip-regex="\[Serial\]" \
   --focus-regex="\[Conformance\]"
 fi
