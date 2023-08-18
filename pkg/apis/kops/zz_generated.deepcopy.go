@@ -3570,6 +3570,16 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.EndpointUpdatesBatchPeriod != nil {
+		in, out := &in.EndpointUpdatesBatchPeriod, &out.EndpointUpdatesBatchPeriod
+		*out = new(v1.Duration)
+		**out = **in
+	}
+	if in.EndpointSliceUpdatesBatchPeriod != nil {
+		in, out := &in.EndpointSliceUpdatesBatchPeriod, &out.EndpointSliceUpdatesBatchPeriod
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling
 		*out = new(bool)
