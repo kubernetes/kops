@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -59,6 +60,8 @@ type fakeObjectContainers struct {
 	Int64 *int64 `json:"int64"`
 
 	Env []kops.EnvVar `json:"env"`
+
+	Duration *metav1.Duration `json:"duration"`
 
 	Enum      fakeEnum   `json:"enum"`
 	EnumSlice []fakeEnum `json:"enumSlice"`
@@ -186,6 +189,13 @@ func TestSet(t *testing.T) {
 			Expected: "{ 'spec': { 'containers': [ { 'env': [ { 'name': 'ABC', 'value': 'DEF' } ] } ] } }",
 			Path:     "spec.containers[0].env",
 			Value:    "ABC=DEF",
+		},
+		{
+			Name:     "set duration",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'duration': '500ms' } ] } }",
+			Path:     "spec.containers[0].duration",
+			Value:    "500ms",
 		},
 		// Not sure if we should do this...
 		// {
