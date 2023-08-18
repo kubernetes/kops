@@ -142,10 +142,6 @@ if [[ "${RUN_CL2_TEST:-}" == "true" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
 
-  export PODS_PER_NODE=30
-  export BIG_GROUP_SIZE=250
-  export MEDIUM_GROUP_SIZE=30
-
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
