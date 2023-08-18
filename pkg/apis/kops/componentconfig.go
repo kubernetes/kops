@@ -658,6 +658,14 @@ type KubeControllerManagerConfig struct {
 	// even when an external cloud controller manager is being used.  This can be used instead of installing CSI.  The value should
 	// be the same as is used for the --cloud-provider flag, i.e. "aws".
 	ExternalCloudVolumePlugin string `json:"externalCloudVolumePlugin,omitempty" flag:"external-cloud-volume-plugin"`
+	// The length of endpoint updates batching period. Processing of pod changes will be delayed by this duration
+	// to join them with potential upcoming updates and reduce the overall number of endpoints updates.
+	// Larger number = higher endpoint programming latency, but lower number of endpoints revision generated
+	EndpointUpdatesBatchPeriod *metav1.Duration `json:"endpointUpdatesBatchPeriod,omitempty" flag:"endpoint-updates-batch-period"`
+	// The length of endpoint slice updates batching period. Processing of pod changes will be delayed by this duration
+	// to join them with potential upcoming updates and reduce the overall number of endpoints updates.
+	// Larger number = higher endpoint programming latency, but lower number of endpoints revision generated.
+	EndpointSliceUpdatesBatchPeriod *metav1.Duration `json:"endpointSliceUpdatesBatchPeriod,omitempty" flag:"endpointslice-updates-batch-period"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`

@@ -2124,6 +2124,21 @@ spec:
                     description: EnableProfiling enables profiling via web interface
                       host:port/debug/pprof/
                     type: boolean
+                  endpointSliceUpdatesBatchPeriod:
+                    description: The length of endpoint slice updates batching period.
+                      Processing of pod changes will be delayed by this duration to
+                      join them with potential upcoming updates and reduce the overall
+                      number of endpoints updates. Larger number = higher endpoint
+                      programming latency, but lower number of endpoints revision
+                      generated.
+                    type: string
+                  endpointUpdatesBatchPeriod:
+                    description: The length of endpoint updates batching period. Processing
+                      of pod changes will be delayed by this duration to join them
+                      with potential upcoming updates and reduce the overall number
+                      of endpoints updates. Larger number = higher endpoint programming
+                      latency, but lower number of endpoints revision generated
+                    type: string
                   experimentalClusterSigningDuration:
                     description: ExperimentalClusterSigningDuration is the duration
                       that determines the length of duration that the signed certificates

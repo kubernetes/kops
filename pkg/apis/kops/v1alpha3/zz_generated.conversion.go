@@ -5423,6 +5423,8 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
+	out.EndpointUpdatesBatchPeriod = in.EndpointUpdatesBatchPeriod
+	out.EndpointSliceUpdatesBatchPeriod = in.EndpointSliceUpdatesBatchPeriod
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
@@ -5493,6 +5495,8 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
+	out.EndpointUpdatesBatchPeriod = in.EndpointUpdatesBatchPeriod
+	out.EndpointSliceUpdatesBatchPeriod = in.EndpointSliceUpdatesBatchPeriod
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
