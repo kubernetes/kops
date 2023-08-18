@@ -21,7 +21,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -198,6 +200,13 @@ func setType(v reflect.Value, newValue string) error {
 			envVar.Value = value
 		}
 		newV = reflect.ValueOf(envVar)
+
+	case "v1.Duration":
+		duration, err := time.ParseDuration(newValue)
+		if err != nil {
+			return fmt.Errorf("cannot interpret %q value as v1.Duration", newValue)
+		}
+		newV = reflect.ValueOf(metav1.Duration{Duration: duration})
 
 	default:
 		// This handles enums and other simple conversions
