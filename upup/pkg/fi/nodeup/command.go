@@ -285,7 +285,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader := &Loader{}
 	loader.Builders = append(loader.Builders, &model.EtcHostsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.NTPBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.MiscUtilsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
