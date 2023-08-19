@@ -753,6 +753,9 @@ func (d *clusterDiscoveryGCE) listRoutes(ctx context.Context, resourceMap map[st
 			switch w.Code {
 			case "NEXT_HOP_INSTANCE_NOT_FOUND":
 				remove = true
+			case "NEXT_HOP_NOT_RUNNING":
+				// It might not be running, but it probably exists.
+				remove = false
 			default:
 				klog.Infof("Unknown warning on route %q: %q", r.Name, w.Code)
 			}
