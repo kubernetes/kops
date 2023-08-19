@@ -429,7 +429,14 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			}
 		}
 		if b.CloudProvider() == kops.CloudProviderOpenstack {
-			instanceAddress, err := getInstanceAddress()
+			instanceAddress, err := getOpenstackInstanceAddress()
+			if err != nil {
+				return err
+			}
+			alternateNames = append(alternateNames, instanceAddress)
+		}
+		if b.CloudProvider() == kops.CloudProviderGCE {
+			instanceAddress, err := b.GetMetadataLocalIP()
 			if err != nil {
 				return err
 			}

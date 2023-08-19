@@ -573,6 +573,13 @@ func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
 		}
 		internalIP = localIPv4
 
+	case kops.CloudProviderGCE:
+		b, err := vfs.Context.ReadFile("metadata://gce/instance/network-interfaces/0/ip")
+		if err != nil {
+			return "", fmt.Errorf("error reading internal ip from GCE metadata: %w", err)
+		}
+		internalIP = string(b)
+
 	case kops.CloudProviderHetzner:
 		client := hcloudmetadata.NewClient()
 		privateNetworksYaml, err := client.PrivateNetworks()

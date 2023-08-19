@@ -66,7 +66,7 @@ func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, erro
 	// TODO: cache?
 	addresses, err := b.Resolver.Resolve(ctx, host)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("resolving with custom resolver %T: %w", b.Resolver, err)
 	}
 
 	klog.Infof("resolved %q to %v", host, addresses)
