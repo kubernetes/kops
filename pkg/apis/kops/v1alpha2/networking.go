@@ -296,6 +296,9 @@ const (
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
+	// Registry overrides the default Cilium container registry (quay.io)
+	Registry string `json:"registry,omitempty"`
+
 	// Version is the version of the Cilium agent and the Cilium Operator.
 	Version string `json:"version,omitempty"`
 
