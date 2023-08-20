@@ -60,7 +60,7 @@ func SplitInto8(parent *net.IPNet) ([]*net.IPNet, error) {
 	return SplitInto(3, parent)
 }
 
-// SplitInto splits the parent IPNet into 8 subnets
+// SplitInto splits the parent IPNet into subnets with the specified number of additional bits in the prefix.
 func SplitInto(additionalBits int, parent *net.IPNet) ([]*net.IPNet, error) {
 	if additionalBits < 1 || additionalBits > 3 {
 		return nil, fmt.Errorf("additionalBits value must be between 1 and 3, not %d", additionalBits)
@@ -70,7 +70,7 @@ func SplitInto(additionalBits int, parent *net.IPNet) ([]*net.IPNet, error) {
 	networkLength += additionalBits
 
 	var subnets []*net.IPNet
-	for i := 0; i < 2<<(additionalBits-1); i++ {
+	for i := 0; i < 1<<additionalBits; i++ {
 		ip4 := parent.IP.To4()
 		if ip4 != nil {
 			n := binary.BigEndian.Uint32(ip4)
