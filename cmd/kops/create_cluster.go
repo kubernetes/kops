@@ -68,7 +68,6 @@ type CreateClusterOptions struct {
 	ContainerRuntime           string
 	OutDir                     string
 	DisableSubnetTags          bool
-	NetworkCIDR                string
 	DNSZone                    string
 	NodeSecurityGroups         []string
 	ControlPlaneSecurityGroups []string
@@ -300,7 +299,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("subnets", completeSubnetID(options))
 	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Shared utility subnets to use")
 	cmd.RegisterFlagCompletionFunc("utility-subnets", completeSubnetID(options))
-	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Network CIDR to use")
+	cmd.Flags().StringSliceVar(&options.NetworkCIDRs, "network-cidr", options.NetworkCIDRs, "Network CIDR(s) to use")
 	cmd.RegisterFlagCompletionFunc("network-cidr", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
@@ -614,8 +613,12 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
 
-	if c.NetworkCIDR != "" {
-		cluster.Spec.Networking.NetworkCIDR = c.NetworkCIDR
+	for i, cidr := range c.NetworkCIDRs {
+		if i == 0 {
+			cluster.Spec.Networking.NetworkCIDR = cidr
+		} else {
+			cluster.Spec.Networking.AdditionalNetworkCIDRs = append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cidr)
+		}
 	}
 
 	if c.DisableSubnetTags {

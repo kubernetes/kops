@@ -4,6 +4,10 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: complex.example.com
 spec:
+  additionalNetworkCIDRs:
+  - 10.1.0.0/16
+  - 10.2.0.0/16
+  - 10.3.0.0/16
   api:
     dns: {}
   authorization:
@@ -40,15 +44,27 @@ spec:
   - ::/0
   kubernetesVersion: v1.26.0
   masterPublicName: api.complex.example.com
-  networkCIDR: 172.20.0.0/16
+  networkCIDR: 10.0.0.0/16
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 1.2.3.4/32
   subnets:
-  - cidr: 172.20.0.0/16
+  - cidr: 10.0.0.0/16
     name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  - cidr: 10.1.0.0/16
+    name: us-test-1a-1
+    type: Public
+    zone: us-test-1a
+  - cidr: 10.2.0.0/16
+    name: us-test-1a-2
+    type: Public
+    zone: us-test-1a
+  - cidr: 10.3.0.0/16
+    name: us-test-1a-3
     type: Public
     zone: us-test-1a
   topology:
@@ -74,6 +90,9 @@ spec:
   role: Master
   subnets:
   - us-test-1a
+  - us-test-1a-1
+  - us-test-1a-2
+  - us-test-1a-3
 
 ---
 
@@ -95,3 +114,6 @@ spec:
   role: Node
   subnets:
   - us-test-1a
+  - us-test-1a-1
+  - us-test-1a-2
+  - us-test-1a-3
