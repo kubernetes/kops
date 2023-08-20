@@ -2472,7 +2472,7 @@ func (c *awsCloudImplementation) AccountInfo() (string, string, error) {
 
 	response, err := c.sts.GetCallerIdentity(request)
 	if err != nil {
-		return "", "", fmt.Errorf("error geting AWS account ID: %v", err)
+		return "", "", fmt.Errorf("error getting AWS account ID: %v", err)
 	}
 
 	arn, err := arn.Parse(aws.StringValue(response.Arn))
