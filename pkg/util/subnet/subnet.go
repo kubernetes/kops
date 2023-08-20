@@ -45,6 +45,11 @@ func BelongsTo(parent *net.IPNet, child *net.IPNet) bool {
 	return childMasked.Equal(parentMasked)
 }
 
+// SplitInto1 splits the parent IPNet into 1 subnet
+func SplitInto1(parent *net.IPNet) ([]*net.IPNet, error) {
+	return SplitInto(0, parent)
+}
+
 // SplitInto2 splits the parent IPNet into 2 subnets
 func SplitInto2(parent *net.IPNet) ([]*net.IPNet, error) {
 	return SplitInto(1, parent)
@@ -61,13 +66,9 @@ func SplitInto8(parent *net.IPNet) ([]*net.IPNet, error) {
 }
 
 // SplitInto splits the parent IPNet into subnets with the specified number of additional bits in the prefix.
-func SplitInto(additionalBits int, parent *net.IPNet) ([]*net.IPNet, error) {
-	if additionalBits < 1 || additionalBits > 3 {
-		return nil, fmt.Errorf("additionalBits value must be between 1 and 3, not %d", additionalBits)
-	}
-
+func SplitInto(additionalBits uint, parent *net.IPNet) ([]*net.IPNet, error) {
 	networkLength, _ := parent.Mask.Size()
-	networkLength += additionalBits
+	networkLength += int(additionalBits)
 
 	var subnets []*net.IPNet
 	for i := 0; i < 1<<additionalBits; i++ {

@@ -131,10 +131,21 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 	}
 
+	// Assign a consistent order
+	sort.Sort(ByZone(bigSubnets))
+	sort.Sort(ByZone(littleSubnets))
+
+	// Check how many subnet slices are needed
+	cidrCount := len(bigSubnets)
+	if len(littleSubnets) > 0 {
+		cidrCount += 1
+	}
 	var bigCIDRs []*net.IPNet
-	if len(bigSubnets)+1 <= 2 {
+	if cidrCount <= 1 {
+		bigCIDRs, err = subnet.SplitInto1(cidr)
+	} else if cidrCount <= 2 {
 		bigCIDRs, err = subnet.SplitInto2(cidr)
-	} else if len(bigSubnets)+1 <= 4 {
+	} else if cidrCount <= 4 {
 		bigCIDRs, err = subnet.SplitInto4(cidr)
 	} else {
 		bigCIDRs, err = subnet.SplitInto8(cidr)
@@ -164,16 +175,30 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		return fmt.Errorf("could not find any non-overlapping CIDRs in parent NetworkCIDR; cannot automatically assign CIDR to subnet")
 	}
 
-	littleCIDRs, err := subnet.SplitInto8(bigCIDRs[0])
-	if err != nil {
-		return err
+	// Assign CIDRs to little subnets
+	if len(littleSubnets) > 0 {
+		littleCIDRs, err := subnet.SplitInto8(bigCIDRs[0])
+		if err != nil {
+			return err
+		}
+		bigCIDRs = bigCIDRs[1:]
+
+		for _, subnet := range littleSubnets {
+			if subnet.CIDR != "" {
+				continue
+			}
+
+			if len(littleCIDRs) == 0 {
+				return fmt.Errorf("insufficient (little) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
+			}
+			subnet.CIDR = littleCIDRs[0].String()
+			klog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
+
+			littleCIDRs = littleCIDRs[1:]
+		}
 	}
-	bigCIDRs = bigCIDRs[1:]
 
-	// Assign a consistent order
-	sort.Sort(ByZone(bigSubnets))
-	sort.Sort(ByZone(littleSubnets))
-
+	// Assign CIDRs to big subnets
 	for _, subnet := range bigSubnets {
 		if subnet.CIDR != "" {
 			continue
@@ -189,20 +214,6 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		klog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
 
 		bigCIDRs = bigCIDRs[1:]
-	}
-
-	for _, subnet := range littleSubnets {
-		if subnet.CIDR != "" {
-			continue
-		}
-
-		if len(littleCIDRs) == 0 {
-			return fmt.Errorf("insufficient (little) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
-		}
-		subnet.CIDR = littleCIDRs[0].String()
-		klog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
-
-		littleCIDRs = littleCIDRs[1:]
 	}
 
 	return nil
