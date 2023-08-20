@@ -885,16 +885,21 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 	var version string
 
 	{
-		result, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{
+		input := &ec2.DescribeLaunchTemplatesInput{
 			Filters: []*ec2.Filter{
 				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 				NewEC2Filter("tag:"+TagClusterName, clusterName),
 			},
+		}
+		var list []*ec2.LaunchTemplate
+		err := c.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
+			list = append(list, p.LaunchTemplates...)
+			return true
 		})
 		if err != nil {
 			return nil, err
 		}
-		lt := result.LaunchTemplates[0]
+		lt := list[0]
 		versionNumber := *lt.LatestVersionNumber
 		version = strconv.Itoa(int(versionNumber))
 
