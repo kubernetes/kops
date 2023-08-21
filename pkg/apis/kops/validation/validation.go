@@ -611,7 +611,7 @@ func validateSubnet(subnetSpec *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fie
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q is not a subnet of the networkCIDR %q%s", subnetSpec.Name, subnetSpec.CIDR, c.Networking.NetworkCIDR, extraMsg)))
 			}
 		}
-		if subnet.Overlap(subnetCIDR, podCIDR) {
+		if subnet.Overlap(subnetCIDR, podCIDR) && c.Networking.AmazonVPC == nil {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q cidr %q must not overlap podCIDR %q", subnetSpec.Name, subnetSpec.CIDR, podCIDR)))
 		}
 		if subnet.Overlap(subnetCIDR, serviceClusterIPRange) {

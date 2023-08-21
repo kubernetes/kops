@@ -100,17 +100,9 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.Networking.NetworkCIDR)
 	}
 
-	// We split the network range into 8 subnets
+	// We split the network range into 2, 4 or 8 subnets
 	// But we then reserve the lowest one for the private block
 	// (and we split _that_ into 8 further subnets, leaving the first one unused/for future use)
-	// Note that this limits us to 7 zones
-	// TODO: Does this make sense on GCE?
-	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
-
-	bigCIDRs, err := subnet.SplitInto8(cidr)
-	if err != nil {
-		return err
-	}
 
 	var bigSubnets []*kops.ClusterSubnetSpec
 	var littleSubnets []*kops.ClusterSubnetSpec
@@ -137,6 +129,18 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 
 			reserved = append(reserved, subnetCIDR)
 		}
+	}
+
+	var bigCIDRs []*net.IPNet
+	if len(bigSubnets)+1 <= 2 {
+		bigCIDRs, err = subnet.SplitInto2(cidr)
+	} else if len(bigSubnets)+1 <= 4 {
+		bigCIDRs, err = subnet.SplitInto4(cidr)
+	} else {
+		bigCIDRs, err = subnet.SplitInto8(cidr)
+	}
+	if err != nil {
+		return err
 	}
 
 	// Remove any CIDRs marked as overlapping

@@ -50,12 +50,12 @@ spec:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - cidr: 172.20.32.0/19
+  - cidr: 172.20.128.0/17
     egress: nat-09123456
     name: us-test-1a
     type: Private
     zone: us-test-1a
-  - cidr: 172.20.0.0/22
+  - cidr: 172.20.0.0/20
     name: utility-us-test-1a
     type: Utility
     zone: us-test-1a
