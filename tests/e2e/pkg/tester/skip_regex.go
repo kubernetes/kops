@@ -84,10 +84,16 @@ func (t *Tester) setSkipRegexFlag() error {
 		if isPre28 {
 			// These may be fixed in Cilium 1.13 but skipping for now
 			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 			// https://github.com/cilium/cilium/issues/18241
 			skipRegex += "|Services.should.create.endpoints.for.unready.pods"
 			skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
+		}
+		if k8sVersion.Minor < 27 {
+			// Partially implemented in Cilium 1.13 but kops doesn't enable it
+			// Ref: https://github.com/cilium/cilium/pull/20033
+			// K8s 1.27+ added [Serial] to the test case, which is skipped by default
+			// Ref: https://github.com/kubernetes/kubernetes/pull/113335
+			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
