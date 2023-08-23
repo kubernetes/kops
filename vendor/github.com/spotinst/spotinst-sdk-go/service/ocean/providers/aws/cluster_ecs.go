@@ -216,14 +216,15 @@ type ECSIAMInstanceProfile struct {
 }
 
 type ECSAutoScaler struct {
-	IsEnabled                      *bool                        `json:"isEnabled,omitempty"`
-	IsAutoConfig                   *bool                        `json:"isAutoConfig,omitempty"`
-	Cooldown                       *int                         `json:"cooldown,omitempty"`
-	Headroom                       *ECSAutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits                 *ECSAutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down                           *ECSAutoScalerDown           `json:"down,omitempty"`
-	AutoHeadroomPercentage         *int                         `json:"autoHeadroomPercentage,omitempty"`
-	ShouldScaleDownNonServiceTasks *bool                        `json:"shouldScaleDownNonServiceTasks,omitempty"`
+	IsEnabled                        *bool                        `json:"isEnabled,omitempty"`
+	IsAutoConfig                     *bool                        `json:"isAutoConfig,omitempty"`
+	Cooldown                         *int                         `json:"cooldown,omitempty"`
+	Headroom                         *ECSAutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits                   *ECSAutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                             *ECSAutoScalerDown           `json:"down,omitempty"`
+	AutoHeadroomPercentage           *int                         `json:"autoHeadroomPercentage,omitempty"`
+	ShouldScaleDownNonServiceTasks   *bool                        `json:"shouldScaleDownNonServiceTasks,omitempty"`
+	EnableAutomaticAndManualHeadroom *bool                        `json:"enableAutomaticAndManualHeadroom,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1108,6 +1109,13 @@ func (o *ECSAutoScaler) SetAutoHeadroomPercentage(v *int) *ECSAutoScaler {
 func (o *ECSAutoScaler) SetShouldScaleDownNonServiceTasks(v *bool) *ECSAutoScaler {
 	if o.ShouldScaleDownNonServiceTasks = v; o.ShouldScaleDownNonServiceTasks == nil {
 		o.nullFields = append(o.nullFields, "ShouldScaleDownNonServiceTasks")
+	}
+	return o
+}
+
+func (o *ECSAutoScaler) SetEnableAutomaticAndManualHeadroom(v *bool) *ECSAutoScaler {
+	if o.EnableAutomaticAndManualHeadroom = v; o.EnableAutomaticAndManualHeadroom == nil {
+		o.nullFields = append(o.nullFields, "EnableAutomaticAndManualHeadroom")
 	}
 	return o
 }

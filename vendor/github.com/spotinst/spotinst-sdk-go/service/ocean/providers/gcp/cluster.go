@@ -142,10 +142,27 @@ type ShutdownHours struct {
 }
 
 type Task struct {
-	IsEnabled           *bool   `json:"isEnabled,omitempty"`
-	Type                *string `json:"taskType,omitempty"`
-	CronExpression      *string `json:"cronExpression,omitempty"`
-	BatchSizePercentage *int    `json:"batchSizePercentage,omitempty"`
+	IsEnabled      *bool       `json:"isEnabled,omitempty"`
+	Type           *string     `json:"taskType,omitempty"`
+	CronExpression *string     `json:"cronExpression,omitempty"`
+	Parameters     *Parameters `json:"parameters,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Parameters struct {
+	ClusterRoll *ClusterRoll `json:"clusterRoll,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ClusterRoll struct {
+	BatchMinHealthyPercentage *int    `json:"batchMinHealthyPercentage,omitempty"`
+	BatchSizePercentage       *int    `json:"batchSizePercentage,omitempty"`
+	Comment                   *string `json:"comment,omitempty"`
+	RespectPdb                *bool   `json:"respectPdb,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -798,10 +815,9 @@ func (o *Task) SetCronExpression(v *string) *Task {
 	}
 	return o
 }
-
-func (o *Task) SetBatchSizePercentage(v *int) *Task {
-	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
-		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+func (o *Task) SetParameters(v *Parameters) *Task {
+	if o.Parameters = v; o.Parameters == nil {
+		o.nullFields = append(o.nullFields, "Parameters")
 	}
 	return o
 }
@@ -1420,3 +1436,54 @@ func (o *LaunchSpecShieldedInstanceConfig) SetEnableSecureBoot(v *bool) *LaunchS
 }
 
 //endregion
+
+//region cluster/scheduling/task/parameters
+
+func (o *Parameters) SetClusterRoll(v *ClusterRoll) *Parameters {
+	if o.ClusterRoll = v; o.ClusterRoll == nil {
+		o.nullFields = append(o.nullFields, "RespectPdb")
+	}
+	return o
+}
+func (o Parameters) MarshalJSON() ([]byte, error) {
+	type noMethod Parameters
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+// endregion
+
+//region cluster/scheduling/task/parameters/clusterRoll
+
+func (o *ClusterRoll) SetBatchMinHealthyPercentage(v *int) *ClusterRoll {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
+	}
+	return o
+}
+func (o *ClusterRoll) SetBatchSizePercentage(v *int) *ClusterRoll {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *ClusterRoll) SetComment(v *string) *ClusterRoll {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+func (o *ClusterRoll) SetRespectPdb(v *bool) *ClusterRoll {
+	if o.RespectPdb = v; o.RespectPdb == nil {
+		o.nullFields = append(o.nullFields, "RespectPdb")
+	}
+	return o
+}
+func (o ClusterRoll) MarshalJSON() ([]byte, error) {
+	type noMethod ClusterRoll
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+// endregion
