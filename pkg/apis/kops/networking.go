@@ -511,17 +511,13 @@ type CiliumIngressSpec struct {
 	// Default: true
 	EnableSecretsSync *bool `json:"enableSecretsSync,omitempty"`
 
-	// SecretsNamespace specifies the namespace where secrets are synchronized.
-	// Default: cilium-secrets
-	SecretsNamespace string `json:"secretsNamespace,omitempty"`
-
 	// LoadBalancerAnnotationPrefixes specifies annotation prefixes for Load Balancer configuration.
 	// Default: "service.beta.kubernetes.io service.kubernetes.io cloud.google.com"
 	LoadBalancerAnnotationPrefixes string `json:"loadBalancerAnnotationPrefixes,omitempty"`
 
 	// DefaultLoadBalancerMode specifies the default load balancer mode.
 	// Possible values: 'shared' or 'dedicated'
-	// Default: shared
+	// Default: dedicated
 	DefaultLoadBalancerMode string `json:"defaultLoadBalancerMode,omitempty"`
 
 	// SharedLoadBalancerServiceName specifies the name of the shared load balancer service.

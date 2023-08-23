@@ -284,7 +284,7 @@ data:
   enable-ingress-controller: "true"
   enforce-ingress-https: "{{ .Ingress.EnforceHttps }}"
   enable-ingress-secrets-sync: "{{ .Ingress.EnableSecretsSync }}"
-  ingress-secrets-namespace: {{ .Ingress.SecretsNamespace }}
+  ingress-secrets-namespace: kube-system
   ingress-lb-annotation-prefixes: "{{ .Ingress.LoadBalancerAnnotationPrefixes }}"
   ingress-default-lb-mode: {{ .Ingress.DefaultLoadBalancerMode }}
   ingress-shared-lb-service-name: {{ .Ingress.SharedLoadBalancerServiceName }}
@@ -640,17 +640,12 @@ subjects:
   namespace: kube-system
 {{ if WithDefaultBool .Ingress.Enabled false }}
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Ingress.SecretsNamespace }}
----
 # Source: cilium/templates/cilium-agent/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cilium-ingress-secrets
-  namespace: {{ .Ingress.SecretsNamespace }}
+  namespace: kube-system
   labels:
     app.kubernetes.io/part-of: cilium
 rules:
@@ -668,7 +663,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: cilium-secrets
-  namespace: {{ .Ingress.SecretsNamespace }}
+  namespace: kube-system
   labels:
     app.kubernetes.io/part-of: cilium
 roleRef:
@@ -685,7 +680,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cilium-operator-ingress-secrets
-  namespace: {{ .Ingress.SecretsNamespace }}
+  namespace: kube-system
   labels:
     app.kubernetes.io/part-of: cilium
 rules:
@@ -704,7 +699,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: cilium-operator-ingress-secrets
-  namespace: {{ .Ingress.SecretsNamespace }}
+  namespace: kube-system
   labels:
     app.kubernetes.io/part-of: cilium
 roleRef:

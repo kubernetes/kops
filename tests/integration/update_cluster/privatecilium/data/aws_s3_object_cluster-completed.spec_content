@@ -217,13 +217,12 @@ spec:
       identityAllocationMode: crd
       identityChangeGracePeriod: 5s
       ingress:
-        defaultLoadBalancerMode: shared
+        defaultLoadBalancerMode: dedicated
         enableSecretsSync: true
         enabled: false
         enforceHttps: true
         loadBalancerAnnotationPrefixes: service.beta.kubernetes.io service.kubernetes.io
           cloud.google.com
-        secretsNamespace: cilium-secrets
         sharedLoadBalancerServiceName: cilium-ingress
       ipam: kubernetes
       memoryRequest: 128Mi

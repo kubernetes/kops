@@ -5040,7 +5040,7 @@ spec:
                           defaultLoadBalancerMode:
                             description: 'DefaultLoadBalancerMode specifies the default
                               load balancer mode. Possible values: ''shared'' or ''dedicated''
-                              Default: shared'
+                              Default: dedicated'
                             type: string
                           enableSecretsSync:
                             description: 'EnableSecretsSync specifies whether synchronization
@@ -5059,10 +5059,6 @@ spec:
                               annotation prefixes for Load Balancer configuration.
                               Default: "service.beta.kubernetes.io service.kubernetes.io
                               cloud.google.com"'
-                            type: string
-                          secretsNamespace:
-                            description: 'SecretsNamespace specifies the namespace
-                              where secrets are synchronized. Default: cilium-secrets'
                             type: string
                           sharedLoadBalancerServiceName:
                             description: 'SharedLoadBalancerServiceName specifies

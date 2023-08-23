@@ -36,7 +36,6 @@ spec:
         enableSecretsSync: false
         enforceHttps: false
         loadBalancerAnnotationPrefixes: service.alpha.kubernetes.io
-        secretsNamespace: private-secrets
         sharedLoadBalancerServiceName: private-ingress
       hubble:
         enabled: true
