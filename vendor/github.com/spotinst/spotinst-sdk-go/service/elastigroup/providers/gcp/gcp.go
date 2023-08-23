@@ -238,6 +238,7 @@ type LaunchSpecification struct {
 	StartupScript        *string               `json:"startupScript,omitempty"`
 	ShutdownScript       *string               `json:"shutdownScript,omitempty"`
 	Tags                 []string              `json:"tags,omitempty"`
+	InstanceNamePrefix   *string               `json:"instanceNamePrefix,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1298,6 +1299,14 @@ func (o *LaunchSpecification) SetShutdownScript(v *string) *LaunchSpecification 
 func (o *LaunchSpecification) SetTags(v []string) *LaunchSpecification {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+// SetInstanceNamePrefix sets an instance name prefix to be used for all launched instances and their boot disk.
+func (o *LaunchSpecification) SetInstanceNamePrefix(v *string) *LaunchSpecification {
+	if o.InstanceNamePrefix = v; o.InstanceNamePrefix == nil {
+		o.nullFields = append(o.nullFields, "InstanceNamePrefix")
 	}
 	return o
 }

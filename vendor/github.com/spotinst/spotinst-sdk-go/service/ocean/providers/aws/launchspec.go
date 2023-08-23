@@ -38,6 +38,7 @@ type LaunchSpec struct {
 	RestrictScaleDown        *bool                              `json:"restrictScaleDown,omitempty"`
 	LaunchSpecScheduling     *LaunchSpecScheduling              `json:"scheduling,omitempty"`
 	InstanceMetadataOptions  *LaunchspecInstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
+	Images                   []*Images                          `json:"images,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -261,6 +262,13 @@ type LaunchSpecTaskHeadroom struct {
 	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
 	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
 	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Images struct {
+	ImageId *string `json:"id,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -636,7 +644,7 @@ func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 
 func (o *LaunchSpec) SetScheduling(v *LaunchSpecScheduling) *LaunchSpec {
 	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
-		o.nullFields = append(o.nullFields, "LaunchSpecScheduling")
+		o.nullFields = append(o.nullFields, "scheduling")
 	}
 	return o
 }
@@ -1117,6 +1125,26 @@ func (o *LaunchSpecTaskHeadroom) SetMemoryPerUnit(v *int) *LaunchSpecTaskHeadroo
 func (o *LaunchSpecTaskHeadroom) SetNumOfUnits(v *int) *LaunchSpecTaskHeadroom {
 	if o.NumOfUnits = v; o.NumOfUnits == nil {
 		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetImages(v []*Images) *LaunchSpec {
+	if o.Images = v; o.Images == nil {
+		o.nullFields = append(o.nullFields, "Images")
+	}
+	return o
+}
+
+func (o Images) MarshalJSON() ([]byte, error) {
+	type noMethod Images
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Images) SetImageId(v *string) *Images {
+	if o.ImageId = v; o.ImageId == nil {
+		o.nullFields = append(o.nullFields, "ImageId")
 	}
 	return o
 }
