@@ -173,21 +173,6 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		if ingress.Enabled == nil {
 			ingress.Enabled = fi.PtrTo(true)
 		}
-		if ingress.EnforceHttps == nil {
-			ingress.EnforceHttps = fi.PtrTo(true)
-		}
-		if ingress.EnableSecretsSync == nil {
-			ingress.EnableSecretsSync = fi.PtrTo(true)
-		}
-		if ingress.LoadBalancerAnnotationPrefixes == "" {
-			ingress.LoadBalancerAnnotationPrefixes = "service.beta.kubernetes.io service.kubernetes.io cloud.google.com"
-		}
-		if ingress.DefaultLoadBalancerMode == "" {
-			ingress.DefaultLoadBalancerMode = "dedicated"
-		}
-		if ingress.SharedLoadBalancerServiceName == "" {
-			ingress.SharedLoadBalancerServiceName = "cilium-ingress"
-		}
 	} else {
 		c.Ingress = &kops.CiliumIngressSpec{
 			Enabled: fi.PtrTo(false),

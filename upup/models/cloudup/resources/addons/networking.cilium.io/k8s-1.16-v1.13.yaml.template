@@ -282,12 +282,27 @@ data:
   enable-envoy-config: "true"
   external-envoy-proxy: "false"
   enable-ingress-controller: "true"
-  enforce-ingress-https: "{{ .Ingress.EnforceHttps }}"
-  enable-ingress-secrets-sync: "{{ .Ingress.EnableSecretsSync }}"
   ingress-secrets-namespace: kube-system
-  ingress-lb-annotation-prefixes: "{{ .Ingress.LoadBalancerAnnotationPrefixes }}"
-  ingress-default-lb-mode: {{ .Ingress.DefaultLoadBalancerMode }}
+
+  {{ if .Ingress.EnforceHttps }}
+  enforce-ingress-https: "{{ .Ingress.EnforceHttps }}"
+  {{ end }}
+
+  {{ if .Ingress.EnableSecretsSync }}
+  enable-ingress-secrets-sync: "{{ .Ingress.EnableSecretsSync }}"
+  {{ end }}
+
+  {{ if .Ingress.SharedLoadBalancerServiceName }}
   ingress-shared-lb-service-name: {{ .Ingress.SharedLoadBalancerServiceName }}
+  {{ end }}
+
+  {{ if .Ingress.DefaultLoadBalancerMode }}
+  ingress-default-lb-mode: {{ .Ingress.DefaultLoadBalancerMode }}
+  {{ end }}
+
+  {{ if .Ingress.LoadBalancerAnnotationPrefixes }}
+  ingress-lb-annotation-prefixes: "{{ .Ingress.LoadBalancerAnnotationPrefixes }}"
+  {{ end }}
   {{ end }}
 
   {{ if WithDefaultBool .Hubble.Enabled false }}
@@ -711,6 +726,15 @@ subjects:
     name: "cilium-operator"
     namespace: kube-system
 ---
+# Source: cilium/templates/cilium-ingress-class.yaml
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: cilium
+spec:
+  controller: cilium.io/ingress-controller
+{{ if or (eq .Ingress.DefaultLoadBalancerMode "shared") (not .Ingress.DefaultLoadBalancerMode) }}
+---
 # Source: cilium/templates/cilium-ingress-service.yaml
 apiVersion: v1
 kind: Service
@@ -742,14 +766,7 @@ subsets:
   - ip: "192.192.192.192"
   ports:
   - port: 9999
----
-# Source: cilium/templates/cilium-ingress-class.yaml
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: cilium
-spec:
-  controller: cilium.io/ingress-controller
+{{ end }}
 {{ end }}
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
