@@ -197,15 +197,17 @@ metadata:
   name: "example"
   labels:
     spotinst.io/strategy-cluster-spread-nodes-by: "count"
-    spotinst.io/strategy-cluster-orientation-availability-vs-cost: "balanced"    
+    spotinst.io/strategy-cluster-orientation-availability-vs-cost: "balanced"
+    spotinst.io/resource-tag-specification-volumes: "true"
   ...
 ```
 
 
-| Label | Description                                                                        | Default |
-|---|---|---|
-| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count]. | `count` |
-| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.  | `balanced` |
+| Label | Description                                                                            | Default |
+|---|----------------------------------------------------------------------------------------|---|
+| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count].     | `count` |
+| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.      | `balanced` |
+| `spotinst.io/resource-tag-specification-volumes` | Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags. | `false` |
 
 ## Documentation
 
