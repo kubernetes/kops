@@ -1921,7 +1921,6 @@ func autoConvert_v1alpha2_CiliumIngressSpec_To_kops_CiliumIngressSpec(in *Cilium
 	out.Enabled = in.Enabled
 	out.EnforceHttps = in.EnforceHttps
 	out.EnableSecretsSync = in.EnableSecretsSync
-	out.SecretsNamespace = in.SecretsNamespace
 	out.LoadBalancerAnnotationPrefixes = in.LoadBalancerAnnotationPrefixes
 	out.DefaultLoadBalancerMode = in.DefaultLoadBalancerMode
 	out.SharedLoadBalancerServiceName = in.SharedLoadBalancerServiceName
@@ -1937,7 +1936,6 @@ func autoConvert_kops_CiliumIngressSpec_To_v1alpha2_CiliumIngressSpec(in *kops.C
 	out.Enabled = in.Enabled
 	out.EnforceHttps = in.EnforceHttps
 	out.EnableSecretsSync = in.EnableSecretsSync
-	out.SecretsNamespace = in.SecretsNamespace
 	out.LoadBalancerAnnotationPrefixes = in.LoadBalancerAnnotationPrefixes
 	out.DefaultLoadBalancerMode = in.DefaultLoadBalancerMode
 	out.SharedLoadBalancerServiceName = in.SharedLoadBalancerServiceName

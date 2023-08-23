@@ -83,7 +83,7 @@ data:
   identity-change-grace-period: 5s
   ingress-default-lb-mode: dedicated
   ingress-lb-annotation-prefixes: service.alpha.kubernetes.io
-  ingress-secrets-namespace: private-secrets
+  ingress-secrets-namespace: kube-system
   ingress-shared-lb-service-name: private-ingress
   install-iptables-rules: "true"
   ipam: kubernetes
@@ -455,18 +455,6 @@ subjects:
 
 ---
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.cilium.io
-    app.kubernetes.io/managed-by: kops
-    role.kubernetes.io/networking: "1"
-  name: private-secrets
-
----
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -477,7 +465,7 @@ metadata:
     app.kubernetes.io/part-of: cilium
     role.kubernetes.io/networking: "1"
   name: cilium-ingress-secrets
-  namespace: private-secrets
+  namespace: kube-system
 rules:
 - apiGroups:
   - ""
@@ -500,7 +488,7 @@ metadata:
     app.kubernetes.io/part-of: cilium
     role.kubernetes.io/networking: "1"
   name: cilium-secrets
-  namespace: private-secrets
+  namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -522,7 +510,7 @@ metadata:
     app.kubernetes.io/part-of: cilium
     role.kubernetes.io/networking: "1"
   name: cilium-operator-ingress-secrets
-  namespace: private-secrets
+  namespace: kube-system
 rules:
 - apiGroups:
   - ""
@@ -546,7 +534,7 @@ metadata:
     app.kubernetes.io/part-of: cilium
     role.kubernetes.io/networking: "1"
   name: cilium-operator-ingress-secrets
-  namespace: private-secrets
+  namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
