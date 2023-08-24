@@ -17,7 +17,6 @@ limitations under the License.
 package mirrors
 
 import (
-	"fmt"
 	"strings"
 
 	"k8s.io/kops"
@@ -25,33 +24,73 @@ import (
 
 const (
 	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-	defaultKopsMirrorBase = "https://artifacts.k8s.io/binaries/kops/%s/"
-	githubKopsMirrorBase  = "https://github.com/kubernetes/kops/releases/download/v%s/"
+	kopsDefaultBase      = "https://artifacts.k8s.io/binaries/kops/%s/"
+	githubKopsMirrorBase = "https://github.com/kubernetes/kops/releases/download/v%s/"
 )
 
-func FindUrlMirrors(u string) []string {
-	// Use the canonical URL as the first mirror
-	mirrors := []string{u}
+type mirrorConfig struct {
+	Base    string
+	Mirrors []string
+}
 
-	// Use the mirrors to also find hashes.
-	baseURLString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
+var wellKnownMirrors = []mirrorConfig{
+	{
+		Base: "https://artifacts.k8s.io/binaries/kops/{kopsVersion}/",
+		Mirrors: []string{
+			"https://github.com/kubernetes/kops/releases/download/v{kopsVersion}/",
+		},
+	},
+	{
+		Base: "https://dl.k8s.io/release/",
+		Mirrors: []string{
+			// We include this mirror in case dl.k8s.io is not directly reachable.
+			"https://cdn.dl.k8s.io/release/",
+		},
+	},
+}
+
+func (m *mirrorConfig) findMirrors(u string) ([]string, bool) {
+	baseURLString := m.Base
+	baseURLString = strings.ReplaceAll(baseURLString, "{kopsVersion}", kops.Version)
 	if !strings.HasSuffix(baseURLString, "/") {
 		baseURLString += "/"
 	}
 
 	// Use mirrors when the URL is not a custom one
-	if strings.HasPrefix(u, baseURLString) {
-		suffix := strings.TrimPrefix(u, baseURLString)
-		// GitHub artifact names are quite different, because the suffix path is collapsed.
-		githubSuffix := strings.ReplaceAll(suffix, "/", "-")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-nodeup", "nodeup-linux-amd64")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-nodeup", "nodeup-linux-arm64")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-protokube", "protokube-linux-amd64")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-protokube", "protokube-linux-arm64")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-channels", "channels-linux-amd64")
-		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-channels", "channels-linux-arm64")
-		mirrors = append(mirrors, fmt.Sprintf(githubKopsMirrorBase, kops.Version)+githubSuffix)
+	if !strings.HasPrefix(u, baseURLString) {
+		return nil, false
 	}
 
-	return mirrors
+	// Use the canonical URL as the first mirror
+	mirrors := []string{u}
+
+	for _, mirror := range m.Mirrors {
+		mirror = strings.ReplaceAll(mirror, "{kopsVersion}", kops.Version)
+		suffix := strings.TrimPrefix(u, baseURLString)
+
+		if strings.HasPrefix(mirror, "https://github.com") {
+			// GitHub artifact names are quite different, because the suffix path is collapsed.
+			suffix = strings.ReplaceAll(suffix, "/", "-")
+			suffix = strings.ReplaceAll(suffix, "linux-amd64-nodeup", "nodeup-linux-amd64")
+			suffix = strings.ReplaceAll(suffix, "linux-arm64-nodeup", "nodeup-linux-arm64")
+			suffix = strings.ReplaceAll(suffix, "linux-amd64-protokube", "protokube-linux-amd64")
+			suffix = strings.ReplaceAll(suffix, "linux-arm64-protokube", "protokube-linux-arm64")
+			suffix = strings.ReplaceAll(suffix, "linux-amd64-channels", "channels-linux-amd64")
+			suffix = strings.ReplaceAll(suffix, "linux-arm64-channels", "channels-linux-arm64")
+		}
+		mirrors = append(mirrors, mirror+suffix)
+	}
+	return mirrors, true
+}
+
+// FindURLMirrors will return a list of mirrors for well-known URL locations.
+func FindURLMirrors(u string) []string {
+	for _, mirror := range wellKnownMirrors {
+		mirrors, found := mirror.findMirrors(u)
+		if found {
+			return mirrors
+		}
+	}
+
+	return []string{u}
 }
