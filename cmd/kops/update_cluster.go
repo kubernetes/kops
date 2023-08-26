@@ -37,7 +37,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -313,12 +312,12 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 	firstRun := false
 
 	if !isDryrun && c.CreateKubecfg {
-		hasKubecfg, err := hasKubecfg(cluster.ObjectMeta.Name)
+		hasKubeconfig, err := clusterIsInKubeConfig(cluster.ObjectMeta.Name)
 		if err != nil {
-			klog.Warningf("error reading kubecfg: %v", err)
-			hasKubecfg = true
+			klog.Warningf("error reading kubeconfig: %v", err)
+			hasKubeconfig = true
 		}
-		firstRun = !hasKubecfg
+		firstRun = !hasKubeconfig
 
 		klog.Infof("Exporting kubeconfig for cluster")
 
@@ -439,19 +438,21 @@ func findBastionPublicName(c *kops.Cluster) string {
 	return bastion.PublicName
 }
 
-func hasKubecfg(contextName string) (bool, error) {
-	kubectl := &kutil.Kubectl{}
-
-	config, err := kubectl.GetConfig(false)
+// clusterIsInKubeConfig checks if we have a context with the specified name (cluster name) in ~/.kube/config.
+// It is used as a check to see if this is (likely) a new cluster.
+func clusterIsInKubeConfig(contextName string) (bool, error) {
+	configAccess := clientcmd.NewDefaultPathOptions()
+	config, err := configAccess.GetStartingConfig()
 	if err != nil {
-		return false, fmt.Errorf("error getting config from kubectl: %v", err)
+		return false, fmt.Errorf("error reading kubeconfig: %w", err)
 	}
 
-	for _, context := range config.Contexts {
-		if context.Name == contextName {
+	for k := range config.Contexts {
+		if k == contextName {
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 
