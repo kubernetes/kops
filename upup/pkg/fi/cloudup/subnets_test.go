@@ -39,35 +39,35 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.128.0.0/9"},
+			expected: []string{"10.0.0.0/8"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.64.0.0/10", "10.128.0.0/10"},
+			expected: []string{"10.0.0.0/9", "10.128.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.128.0.0/10", "10.64.0.0/10"},
+			expected: []string{"10.128.0.0/9", "10.0.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "10.64.0.0/11", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.64.0.0/11", "10.128.0.0/10"},
+			expected: []string{"10.64.0.0/11", "10.128.0.0/9"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "10.0.0.0/9", Type: kops.SubnetTypePublic},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
-			expected: []string{"10.0.0.0/9", "10.192.0.0/10"},
+			expected: []string{"10.0.0.0/9", "10.128.0.0/9"},
 		},
 
 		{
@@ -94,7 +94,7 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePrivate},
 			},
-			expected: []string{"10.128.0.0/9"},
+			expected: []string{"10.0.0.0/8"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
@@ -106,7 +106,7 @@ func Test_AssignSubnets(t *testing.T) {
 			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypeDualStack},
 			},
-			expected: []string{"10.128.0.0/9"},
+			expected: []string{"10.0.0.0/8"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{

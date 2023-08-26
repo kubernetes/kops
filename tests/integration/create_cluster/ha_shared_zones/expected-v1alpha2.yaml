@@ -72,11 +72,11 @@ spec:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - cidr: 172.20.64.0/18
+  - cidr: 172.20.0.0/17
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  - cidr: 172.20.128.0/18
+  - cidr: 172.20.128.0/17
     name: us-test-1b
     type: Public
     zone: us-test-1b
