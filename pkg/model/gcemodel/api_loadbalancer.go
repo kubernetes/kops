@@ -70,6 +70,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	}
 	c.AddTask(ipAddress)
 
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	c.AddTask(&gcetasks.ForwardingRule{
 		Name:       s(b.NameForForwardingRule("api")),
 		Lifecycle:  b.Lifecycle,
@@ -77,6 +79,10 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		TargetPool: targetPool,
 		IPAddress:  ipAddress,
 		IPProtocol: "TCP",
+		Labels: map[string]string{
+			clusterLabel.Key: clusterLabel.Value,
+			"name":           "api",
+		},
 	})
 	if b.Cluster.UsesNoneDNS() {
 		c.AddTask(&gcetasks.ForwardingRule{
@@ -86,6 +92,10 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			TargetPool: targetPool,
 			IPAddress:  ipAddress,
 			IPProtocol: "TCP",
+			Labels: map[string]string{
+				clusterLabel.Key: clusterLabel.Value,
+				"name":           "kops-controller",
+			},
 		})
 	}
 
@@ -137,6 +147,8 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
 func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
 		Port:      wellknownports.KubeAPIServer,
@@ -204,6 +216,10 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			LoadBalancingScheme: s("INTERNAL"),
 			Network:             network,
 			Subnetwork:          subnet,
+			Labels: map[string]string{
+				clusterLabel.Key: clusterLabel.Value,
+				"name":           "api-" + sn.Name,
+			},
 		})
 		if b.Cluster.UsesNoneDNS() {
 			c.AddTask(&gcetasks.ForwardingRule{
@@ -216,6 +232,10 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				LoadBalancingScheme: s("INTERNAL"),
 				Network:             network,
 				Subnetwork:          subnet,
+				Labels: map[string]string{
+					clusterLabel.Key: clusterLabel.Value,
+					"name":           "kops-controller-" + sn.Name,
+				},
 			})
 		}
 	}

@@ -366,6 +366,7 @@ type ForwardingRuleClient interface {
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.ForwardingRule, error)
 	List(ctx context.Context, project, region string) ([]*compute.ForwardingRule, error)
+	SetLabels(ctx context.Context, project, region, resource string, request *compute.RegionSetLabelsRequest) (*compute.Operation, error)
 }
 
 type forwardingRuleClientImpl struct {
@@ -384,6 +385,10 @@ func (c *forwardingRuleClientImpl) Delete(project, region, name string) (*comput
 
 func (c *forwardingRuleClientImpl) Get(project, region, name string) (*compute.ForwardingRule, error) {
 	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *forwardingRuleClientImpl) SetLabels(ctx context.Context, project string, region string, resource string, request *compute.RegionSetLabelsRequest) (*compute.Operation, error) {
+	return c.srv.SetLabels(project, region, resource, request).Context(ctx).Do()
 }
 
 func (c *forwardingRuleClientImpl) List(ctx context.Context, project, region string) ([]*compute.ForwardingRule, error) {

@@ -299,7 +299,7 @@ func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupMan
 func (d *clusterDiscoveryGCE) findGCEDisks() ([]*compute.Disk, error) {
 	c := d.gceCloud
 
-	clusterTag := gce.SafeClusterName(d.clusterName)
+	clusterLabel := gce.LabelForCluster(d.clusterName)
 
 	var matches []*compute.Disk
 
@@ -316,8 +316,8 @@ func (d *clusterDiscoveryGCE) findGCEDisks() ([]*compute.Disk, error) {
 		for _, d := range list.Disks {
 			match := false
 			for k, v := range d.Labels {
-				if k == gce.GceLabelNameKubernetesCluster {
-					if v == clusterTag {
+				if k == clusterLabel.Key {
+					if v == clusterLabel.Value {
 						match = true
 					} else {
 						match = false

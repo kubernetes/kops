@@ -440,8 +440,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		case kops.CloudProviderGCE:
 			config.VolumeProvider = "gce"
 
+			clusterLabel := gce.LabelForCluster(b.Cluster.Name)
 			config.VolumeTag = []string{
-				gce.GceLabelNameKubernetesCluster + "=" + gce.SafeClusterName(b.Cluster.Name),
+				clusterLabel.Key + "=" + clusterLabel.Value,
 				gce.GceLabelNameEtcdClusterPrefix + etcdCluster.Name,
 				gce.GceLabelNameRolePrefix + "master=master",
 			}
