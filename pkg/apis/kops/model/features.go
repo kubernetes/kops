@@ -60,8 +60,8 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			// We can use cloud-discovery here.
-		case kops.CloudProviderHetzner, kops.CloudProviderScaleway:
-			// We don't have a cloud-discovery mechanism implemented in nodeup for hetzner,
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO:
+			// We don't have a cloud-discovery mechanism implemented in nodeup for many clouds,
 			// but we assume that we're using a load balancer with a fixed IP address
 		default:
 			return false
