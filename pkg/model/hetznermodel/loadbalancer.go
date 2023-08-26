@@ -23,6 +23,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
@@ -63,6 +64,8 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) error
 		Labels: map[string]string{
 			hetzner.TagKubernetesClusterName: b.ClusterName(),
 		},
+
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer, wellknownservices.KopsController},
 	}
 
 	c.AddTask(&loadbalancer)

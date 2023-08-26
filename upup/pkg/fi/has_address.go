@@ -16,12 +16,16 @@ limitations under the License.
 
 package fi
 
+import "k8s.io/kops/pkg/wellknownservices"
+
 // HasAddress is implemented by elastic/floating IP addresses in order to include
 // relevant dynamically allocated addresses in the api-server's server TLS certificate.
 type HasAddress interface {
 	Task[CloudupSubContext]
-	// IsForAPIServer indicates whether the implementation provides an address that needs to be added to the api-server server certificate.
-	IsForAPIServer() bool
+
+	// GetWellKnownServices returns the services that are behind this address.
+	GetWellKnownServices() []wellknownservices.WellKnownService
+
 	// FindIPAddress returns the address associated with the implementor.  If there is no address, returns (nil, nil).
 	FindAddresses(context *CloudupContext) ([]string, error)
 }

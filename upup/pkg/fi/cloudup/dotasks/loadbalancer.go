@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/util/pkg/vfs"
@@ -39,13 +40,16 @@ type LoadBalancer struct {
 	ID        *string
 	Lifecycle fi.Lifecycle
 
-	Region       *string
-	DropletTag   *string
-	IPAddress    *string
-	VPCUUID      *string
-	VPCName      *string
-	NetworkCIDR  *string
-	ForAPIServer bool
+	Region      *string
+	DropletTag  *string
+	IPAddress   *string
+	VPCUUID     *string
+	VPCName     *string
+	NetworkCIDR *string
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var readBackoff = wait.Backoff{
@@ -85,8 +89,8 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 		VPCUUID: fi.PtrTo(loadbalancer.VPCUUID),
 
 		// Ignore system fields
-		Lifecycle:    lb.Lifecycle,
-		ForAPIServer: lb.ForAPIServer,
+		Lifecycle:         lb.Lifecycle,
+		WellKnownServices: lb.WellKnownServices,
 	}, nil
 }
 
@@ -197,8 +201,10 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	return nil
 }
 
-func (lb *LoadBalancer) IsForAPIServer() bool {
-	return lb.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this load balancer.
+func (lb *LoadBalancer) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return lb.WellKnownServices
 }
 
 func (lb *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {

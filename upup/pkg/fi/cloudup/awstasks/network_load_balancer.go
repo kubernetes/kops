@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -64,14 +65,17 @@ type NetworkLoadBalancer struct {
 
 	IpAddressType *string
 
-	Tags         map[string]string
-	ForAPIServer bool
+	Tags map[string]string
 
 	Type *string
 
 	VPC          *VPC
 	TargetGroups []*TargetGroup
 	AccessLog    *NetworkLoadBalancerAccessLog
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -428,7 +432,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	}
 
 	_ = actual.Normalize(c)
-	actual.ForAPIServer = e.ForAPIServer
+	actual.WellKnownServices = e.WellKnownServices
 	actual.Lifecycle = e.Lifecycle
 
 	klog.V(4).Infof("Found NLB %+v", actual)
@@ -438,8 +442,10 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 
 var _ fi.HasAddress = &NetworkLoadBalancer{}
 
-func (e *NetworkLoadBalancer) IsForAPIServer() bool {
-	return e.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this load balancer.
+func (e *NetworkLoadBalancer) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return e.WellKnownServices
 }
 
 func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {

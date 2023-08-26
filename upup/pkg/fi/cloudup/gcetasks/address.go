@@ -21,6 +21,7 @@ import (
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -35,9 +36,12 @@ type Address struct {
 	IPAddress     *string
 	IPAddressType *string
 	Purpose       *string
-	ForAPIServer  bool
 
 	Subnetwork *Subnet
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var _ fi.CompareWithID = &ForwardingRule{}
@@ -55,7 +59,7 @@ func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
 
 		// Ignore system fields
 		actual.Lifecycle = e.Lifecycle
-		actual.ForAPIServer = e.ForAPIServer
+		actual.WellKnownServices = e.WellKnownServices
 	}
 	return actual, err
 }
@@ -109,8 +113,10 @@ func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
 
 var _ fi.HasAddress = &Address{}
 
-func (e *Address) IsForAPIServer() bool {
-	return e.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this address (likely attached to a load balancer).
+func (e *Address) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return e.WellKnownServices
 }
 
 func (e *Address) FindAddresses(context *fi.CloudupContext) ([]string, error) {

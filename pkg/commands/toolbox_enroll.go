@@ -47,7 +47,9 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/architectures"
@@ -104,7 +106,8 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 		return err
 	}
 
-	apiserverAdditionalIPs := []string{}
+	wellKnownAddresses := make(model.WellKnownAddresses)
+
 	{
 		ingresses, err := cloud.GetApiIngressStatus(cluster)
 		if err != nil {
@@ -117,17 +120,21 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 			// 	apiserverAdditionalIPs = append(apiserverAdditionalIPs, ingress.Hostname)
 			// }
 			if ingress.IP != "" {
-				apiserverAdditionalIPs = append(apiserverAdditionalIPs, ingress.IP)
+				wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], ingress.IP)
 			}
 		}
 	}
 
-	if len(apiserverAdditionalIPs) == 0 {
+	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
 		// TODO: Should we support DNS?
-		return fmt.Errorf("unable to determine IP address for kops-controller")
+		return fmt.Errorf("unable to determine IP address for kube-apiserver")
 	}
 
-	scriptBytes, err := buildBootstrapData(ctx, clientset, cluster, ig, apiserverAdditionalIPs)
+	for k := range wellKnownAddresses {
+		sort.Strings(wellKnownAddresses[k])
+	}
+
+	scriptBytes, err := buildBootstrapData(ctx, clientset, cluster, ig, wellKnownAddresses)
 	if err != nil {
 		return err
 	}
@@ -390,7 +397,7 @@ func (s *SSHHost) getHostname(ctx context.Context) (string, error) {
 	return hostname, nil
 }
 
-func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, ig *kops.InstanceGroup, apiserverAdditionalIPs []string) ([]byte, error) {
+func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, ig *kops.InstanceGroup, wellknownAddresses model.WellKnownAddresses) ([]byte, error) {
 	if cluster.Spec.KubeAPIServer == nil {
 		cluster.Spec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
@@ -451,7 +458,7 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 		keysets[keyName] = keyset
 	}
 
-	_, bootConfig, err := configBuilder.BuildConfig(ig, apiserverAdditionalIPs, keysets)
+	_, bootConfig, err := configBuilder.BuildConfig(ig, wellknownAddresses, keysets)
 	if err != nil {
 		return nil, err
 	}

@@ -31,6 +31,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -55,8 +56,11 @@ type Instance struct {
 	ConfigDrive      *bool
 	Status           *string
 
-	Lifecycle    fi.Lifecycle
-	ForAPIServer bool
+	Lifecycle fi.Lifecycle
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var (
@@ -102,8 +106,10 @@ func (e *Instance) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *Instance) IsForAPIServer() bool {
-	return e.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this instance.
+func (e *Instance) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return e.WellKnownServices
 }
 
 func (e *Instance) FindAddresses(context *fi.CloudupContext) ([]string, error) {
@@ -244,7 +250,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	// Avoid flapping
 	e.ID = actual.ID
 	e.Status = fi.PtrTo(activeStatus)
-	actual.ForAPIServer = e.ForAPIServer
+	actual.WellKnownServices = e.WellKnownServices
 
 	// Immutable fields
 	actual.Flavor = e.Flavor

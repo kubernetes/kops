@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -187,10 +188,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Listeners:      nlbListeners,
 			TargetGroups:   make([]*awstasks.TargetGroup, 0),
 
-			Tags:         tags,
-			ForAPIServer: true,
-			VPC:          b.LinkToVPC(),
-			Type:         fi.PtrTo("network"),
+			Tags:              tags,
+			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+			VPC:               b.LinkToVPC(),
+			Type:              fi.PtrTo("network"),
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{
@@ -222,8 +223,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Timeout: fi.PtrTo(int64(300)),
 			},
 
-			Tags:         tags,
-			ForAPIServer: true,
+			Tags:              tags,
+			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 		}
 
 		if b.Cluster.UsesNoneDNS() {
@@ -536,6 +537,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				ToPort:        fi.PtrTo(int64(4)),
 			})
 			if b.Cluster.UsesNoneDNS() {
+				nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
+				clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsController)
+
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
 					Lifecycle:     b.SecurityLifecycle,
