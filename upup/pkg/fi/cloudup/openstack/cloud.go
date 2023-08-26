@@ -168,7 +168,7 @@ type OpenstackCloud interface {
 	// ListNetworks will return the Neutron networks which match the options
 	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
 
-	// ListExternalNetworks will return the Neutron networks with the router:external property
+	// GetExternalNetwork will return the Neutron networks with the router:external property
 	GetExternalNetwork() (*networks.Network, error)
 
 	// GetExternalSubnet will return the subnet for floatingip which is used in external router
