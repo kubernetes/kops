@@ -107,7 +107,6 @@ create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
 create_args+=("--zones=us-east-2a")
-create_args+=("--set spec.networking.subnets[0].cidr=10.0.0.0/16")
 
 
 # Enable cluster addons, this enables us to replace the built-in manifest
