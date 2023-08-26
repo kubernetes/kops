@@ -127,7 +127,7 @@ kOps should create instances to all three zones, but provision volumes from the 
 
 With the default configuration, the loadbalancers created using the [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack) cloud controller provider do not have access to the exposed NodePorts.
 
-A fix is to add the clouster network to the authorized nodeIds.
+A fix is to add the cluster network to the authorized nodeIds.
 
 First, you have to edit the cluster:
 
