@@ -110,6 +110,16 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	var reserved []*net.IPNet
 	for i := range c.Spec.Networking.Subnets {
 		subnet := &c.Spec.Networking.Subnets[i]
+		if subnet.CIDR != "" {
+			_, cidrSubnet, err := net.ParseCIDR(subnet.CIDR)
+			if err != nil {
+				return fmt.Errorf("invalid subnet %q CIDR: %q", subnet.Name, subnet.CIDR)
+			}
+			// Skip additional subnets
+			if !cidr.Contains(cidrSubnet.IP) {
+				continue
+			}
+		}
 		switch subnet.Type {
 		case kops.SubnetTypeDualStack, kops.SubnetTypePublic, kops.SubnetTypePrivate:
 			bigSubnets = append(bigSubnets, subnet)

@@ -11,6 +11,8 @@ NetworkCIDRs:
 - 10.3.0.0/16
 - 10.4.0.0/16
 Networking: cni
+Topology: private
+Bastion: true
 ControlPlaneCount: 3
 NodeCount: 10
 KubernetesVersion: v1.26.0

@@ -2,7 +2,8 @@ CloudProvider: hetzner
 ClusterName: ha.example.com
 KubernetesVersion: v1.25.0
 ControlPlaneCount: 3
-NetworkCIDR: 10.0.0.0/16
+NetworkCIDRs:
+  - 10.0.0.0/16
 Networking: cni
 Zones:
   - fsn1

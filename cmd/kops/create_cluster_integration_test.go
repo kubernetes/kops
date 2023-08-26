@@ -97,6 +97,11 @@ func TestCreateClusterComplex(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1alpha2")
 }
 
+// TestCreateClusterComplexPrivate runs kops create cluster, with a grab-bag of edge cases
+func TestCreateClusterComplexPrivate(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex-private", "v1alpha2")
+}
+
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")

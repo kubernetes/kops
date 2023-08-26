@@ -68,6 +68,8 @@ type NewClusterOptions struct {
 	AdminAccess []string
 	// SSHAccess is the set of CIDR blocks permitted to connect to SSH on the nodes. It defaults to the value of AdminAccess.
 	SSHAccess []string
+	// NetworkCIDRs is the set of CIDR blocks of the cluster network.
+	NetworkCIDRs []string
 
 	// CloudProvider is the name of the cloud provider. The default is to guess based on the Zones name.
 	CloudProvider string
@@ -371,7 +373,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	zoneToSubnetMap, err := setupZones(opt, cluster, allZones)
+	zoneToSubnetsMap, err := setupZones(opt, cluster, allZones)
 	if err != nil {
 		return nil, err
 	}
@@ -386,7 +388,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	controlPlanes, err := setupControlPlane(opt, cluster, zoneToSubnetMap)
+	controlPlanes, err := setupControlPlane(opt, cluster, zoneToSubnetsMap)
 	if err != nil {
 		return nil, err
 	}
@@ -401,12 +403,12 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.Karpenter = &api.KarpenterConfig{
 			Enabled: true,
 		}
-		nodes, err = setupKarpenterNodes(opt, cluster, zoneToSubnetMap)
+		nodes, err = setupKarpenterNodes(cluster)
 		if err != nil {
 			return nil, err
 		}
 	case "cloudgroups":
-		nodes, err = setupNodes(opt, cluster, zoneToSubnetMap)
+		nodes, err = setupNodes(opt, cluster, zoneToSubnetsMap)
 		if err != nil {
 			return nil, err
 		}
@@ -414,7 +416,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, fmt.Errorf("invalid value %q for --instance-manager", opt.InstanceManager)
 	}
 
-	apiservers, err := setupAPIServers(opt, cluster, zoneToSubnetMap)
+	apiservers, err := setupAPIServers(opt, cluster, zoneToSubnetsMap)
 	if err != nil {
 		return nil, err
 	}
@@ -616,9 +618,9 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 	return nil
 }
 
-func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) (map[string]*api.ClusterSubnetSpec, error) {
+func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) (map[string][]*api.ClusterSubnetSpec, error) {
 	var err error
-	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
+	zoneToSubnetsMap := make(map[string][]*api.ClusterSubnetSpec)
 
 	var zoneToSubnetProviderID map[string]string
 
@@ -649,10 +651,10 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				}
 				cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 			}
-			zoneToSubnetMap[zoneName] = subnet
+			zoneToSubnetsMap[zoneName] = append(zoneToSubnetsMap[zoneName], subnet)
 		}
 
-		return zoneToSubnetMap, nil
+		return zoneToSubnetsMap, nil
 
 	case api.CloudProviderDO:
 		if len(opt.Zones) > 1 {
@@ -675,8 +677,8 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			}
 			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 		}
-		zoneToSubnetMap[region] = subnet
-		return zoneToSubnetMap, nil
+		zoneToSubnetsMap[region] = append(zoneToSubnetsMap[region], subnet)
+		return zoneToSubnetsMap, nil
 
 	case api.CloudProviderHetzner:
 		if len(opt.Zones) > 1 {
@@ -703,9 +705,9 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				}
 				cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 			}
-			zoneToSubnetMap[zoneName] = subnet
+			zoneToSubnetsMap[zoneName] = append(zoneToSubnetsMap[zoneName], subnet)
 		}
-		return zoneToSubnetMap, nil
+		return zoneToSubnetsMap, nil
 
 	case api.CloudProviderAWS:
 		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
@@ -745,10 +747,32 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			}
 			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 		}
-		zoneToSubnetMap[zoneName] = subnet
+		zoneToSubnetsMap[zoneName] = append(zoneToSubnetsMap[zoneName], subnet)
 	}
 
-	return zoneToSubnetMap, nil
+	if len(opt.NetworkCIDRs) > 1 {
+		for i, cidr := range opt.NetworkCIDRs[1:] {
+			zoneName := opt.Zones[i%len(opt.Zones)]
+			subnetName := fmt.Sprintf("%s-%d", zoneName, i+1)
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Zone:   zoneName,
+					CIDR:   cidr,
+					Egress: opt.Egress,
+				}
+				if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
+					subnet.ID = subnetID
+				}
+				cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
+			}
+			zoneToSubnetsMap[zoneName] = append(zoneToSubnetsMap[zoneName], subnet)
+		}
+	}
+
+	return zoneToSubnetsMap, nil
 }
 
 func getAWSZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
@@ -817,7 +841,7 @@ func getOpenstackZoneToSubnetProviderID(cluster *api.Cluster, zones []string, su
 	return res, nil
 }
 
-func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
 	cloudProvider := cluster.Spec.GetCloudProvider()
 
 	var controlPlanes []*api.InstanceGroup
@@ -872,15 +896,18 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			g.Spec.MaxSize = fi.PtrTo(int32(1))
 			g.ObjectMeta.Name = "control-plane-" + name
 
-			subnet := zoneToSubnetMap[zone]
-			if subnet == nil {
-				klog.Fatalf("subnet not found in zoneToSubnetMap")
+			subnets := zoneToSubnetsMap[zone]
+			if len(subnets) == 0 {
+				klog.Fatalf("subnet not found in zoneToSubnetsMap")
+			}
+			for _, subnet := range subnets {
+				if opt.IPv6 && opt.Topology == api.TopologyPrivate {
+					g.Spec.Subnets = append(g.Spec.Subnets, "dualstack-"+subnet.Name)
+				} else {
+					g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+				}
 			}
 
-			g.Spec.Subnets = []string{subnet.Name}
-			if opt.IPv6 && opt.Topology == api.TopologyPrivate {
-				g.Spec.Subnets = []string{"dualstack-" + subnet.Name}
-			}
 			if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 				g.Spec.Zones = []string{zone}
 			}
@@ -971,7 +998,7 @@ func trimCommonPrefix(names []string) []string {
 	return names
 }
 
-func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
 	cloudProvider := cluster.Spec.GetCloudProvider()
 
 	var nodes []*api.InstanceGroup
@@ -1000,12 +1027,14 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "nodes-" + zone
 
-		subnet := zoneToSubnetMap[zone]
-		if subnet == nil {
-			klog.Fatalf("subnet not found in zoneToSubnetMap")
+		subnets := zoneToSubnetsMap[zone]
+		if len(subnets) == 0 {
+			klog.Fatalf("subnet not found in zoneToSubnetsMap")
+		}
+		for _, subnet := range subnets {
+			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 		}
 
-		g.Spec.Subnets = []string{subnet.Name}
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
@@ -1035,7 +1064,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 	return nodes, nil
 }
 
-func setupKarpenterNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
 	g := &api.InstanceGroup{}
 	g.Spec.Role = api.InstanceGroupRoleNode
 	g.Spec.Manager = api.InstanceManagerKarpenter
@@ -1051,7 +1080,7 @@ func setupKarpenterNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSub
 	return []*api.InstanceGroup{g}, nil
 }
 
-func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
 	cloudProvider := cluster.Spec.GetCloudProvider()
 
 	var nodes []*api.InstanceGroup
@@ -1078,12 +1107,14 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "apiserver-" + zone
 
-		subnet := zoneToSubnetMap[zone]
-		if subnet == nil {
-			klog.Fatalf("subnet not found in zoneToSubnetMap")
+		subnets := zoneToSubnetsMap[zone]
+		if len(subnets) == 0 {
+			klog.Fatalf("subnet not found in zoneToSubnetsMap")
+		}
+		for _, subnet := range subnets {
+			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 		}
 
-		g.Spec.Subnets = []string{subnet.Name}
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
