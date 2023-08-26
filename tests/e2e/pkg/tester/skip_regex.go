@@ -51,14 +51,15 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	skipRegex := skipRegexBase
 
-	if isPre28 {
-		// All the loadbalancer tests in the suite fail on IPv6, however,
-		// they were skipped because they were tagged as [Slow]
-		// skip these tests temporary since they fail always on IPv6
-		// TODO: aojea
-		// https://github.com/kubernetes/kubernetes/issues/113964
+	if k8sVersion.Minor == 26 && cluster.Spec.LegacyCloudProvider == "aws" {
+		// This test was introduced in k8s 1.26
+		// and skipped automatically for AWS clusters as of k8s 1.27
+		// because Classic Load Balancers dont support UDP
+		// https://github.com/kubernetes/kubernetes/pull/113650
+		// https://github.com/kubernetes/kubernetes/pull/115977
 		skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
-	} else {
+	}
+	if !isPre28 {
 		// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
 		// https://github.com/kubernetes/kubernetes/pull/117718
 		// https://github.com/cilium/cilium/issues/27358
