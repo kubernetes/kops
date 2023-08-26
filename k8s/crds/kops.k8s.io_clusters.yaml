@@ -3717,6 +3717,10 @@ spec:
                     description: Comma-delimited list of grace periods for each soft
                       eviction signal.  For example, 'memory.available=30s'.
                     type: string
+                  experimentalAllocatableIgnoreEviction:
+                    description: ExperimentalAllocatableIgnoreEviction enables ignoring
+                      Hard Eviction Thresholds while calculating Node Allocatable
+                    type: boolean
                   experimentalAllowedUnsafeSysctls:
                     description: ExperimentalAllowedUnsafeSysctls are passed to the
                       kubelet config to whitelist allowable sysctls Was promoted to
@@ -4150,6 +4154,10 @@ spec:
                     description: Comma-delimited list of grace periods for each soft
                       eviction signal.  For example, 'memory.available=30s'.
                     type: string
+                  experimentalAllocatableIgnoreEviction:
+                    description: ExperimentalAllocatableIgnoreEviction enables ignoring
+                      Hard Eviction Thresholds while calculating Node Allocatable
+                    type: boolean
                   experimentalAllowedUnsafeSysctls:
                     description: ExperimentalAllowedUnsafeSysctls are passed to the
                       kubelet config to whitelist allowable sysctls Was promoted to
