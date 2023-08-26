@@ -5788,6 +5788,7 @@ func autoConvert_v1alpha3_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ContainerLogMaxFiles = in.ContainerLogMaxFiles
 	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	out.PodPidsLimit = in.PodPidsLimit
+	out.ExperimentalAllocatableIgnoreEviction = in.ExperimentalAllocatableIgnoreEviction
 	out.ShutdownGracePeriod = in.ShutdownGracePeriod
 	out.ShutdownGracePeriodCriticalPods = in.ShutdownGracePeriodCriticalPods
 	out.MemorySwapBehavior = in.MemorySwapBehavior
@@ -5888,6 +5889,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha3_KubeletConfigSpec(in *kops.K
 	out.ContainerLogMaxFiles = in.ContainerLogMaxFiles
 	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	out.PodPidsLimit = in.PodPidsLimit
+	out.ExperimentalAllocatableIgnoreEviction = in.ExperimentalAllocatableIgnoreEviction
 	out.ShutdownGracePeriod = in.ShutdownGracePeriod
 	out.ShutdownGracePeriodCriticalPods = in.ShutdownGracePeriodCriticalPods
 	out.MemorySwapBehavior = in.MemorySwapBehavior

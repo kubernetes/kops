@@ -223,6 +223,8 @@ type KubeletConfigSpec struct {
 	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
 	// PodPidsLimit is the maximum number of pids in any pod.
 	PodPidsLimit *int64 `json:"podPidsLimit,omitempty" flag:"pod-max-pids"`
+	// ExperimentalAllocatableIgnoreEviction enables ignoring Hard Eviction Thresholds while calculating Node Allocatable
+	ExperimentalAllocatableIgnoreEviction *bool `json:"experimentalAllocatableIgnoreEviction,omitempty" flag:"experimental-allocatable-ignore-eviction"`
 
 	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown by.
 	// Default: 30s
