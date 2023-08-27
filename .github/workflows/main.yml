@@ -21,7 +21,7 @@ jobs:
         with:
           go-version: '1.20.6'
 
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -38,7 +38,7 @@ jobs:
       with:
         go-version: '1.20.6'
 
-    - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -55,7 +55,7 @@ jobs:
       with:
         go-version: '1.20.6'
 
-    - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -72,7 +72,7 @@ jobs:
         with:
           go-version: '1.20.6'
 
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
