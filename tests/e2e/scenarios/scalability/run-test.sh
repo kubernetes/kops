@@ -86,11 +86,7 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
-create_args=("--network-cidr=10.0.0.0/16")
-create_args=("--network-cidr=10.1.0.0/16")
-create_args=("--network-cidr=10.2.0.0/16")
-create_args=("--network-cidr=10.3.0.0/16")
-create_args=("--network-cidr=10.4.0.0/16")
+create_args=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16")
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
 create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
