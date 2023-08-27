@@ -56,7 +56,11 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 			} else {
 				klog.Warningf("Unsupported etcd version %q detected; please update etcd version.", etcdCluster.Version)
 				klog.Warningf("Use export KOPS_FEATURE_FLAGS=SkipEtcdVersionCheck to override this check.")
-				klog.Warningf("Supported etcd versions: %s", strings.Join(etcdSupportedVersions(), ", "))
+				var versions []string
+				for _, v := range etcdSupportedVersions() {
+					versions = append(versions, v.Version)
+				}
+				klog.Warningf("Supported etcd versions: %s", strings.Join(versions, ", "))
 				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the recommended version", etcdCluster.Version)
 			}
 		}
@@ -65,34 +69,41 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-var etcdSupportedImages = map[string]string{
-	"3.2.24": "registry.k8s.io/etcd:3.2.24-1",
-	"3.3.10": "registry.k8s.io/etcd:3.3.10-0",
-	"3.3.17": "registry.k8s.io/etcd:3.3.17-0",
-	"3.4.3":  "registry.k8s.io/etcd:3.4.3-0",
-	"3.4.13": "registry.k8s.io/etcd:3.4.13-0",
-	"3.5.0":  "registry.k8s.io/etcd:3.5.0-0",
-	"3.5.1":  "registry.k8s.io/etcd:3.5.1-0",
-	"3.5.3":  "registry.k8s.io/etcd:3.5.3-0",
-	"3.5.4":  "registry.k8s.io/etcd:3.5.4-0",
-	"3.5.6":  "registry.k8s.io/etcd:3.5.6-0",
-	"3.5.7":  "registry.k8s.io/etcd:3.5.7-0",
-	"3.5.9":  "registry.k8s.io/etcd:3.5.9-0",
+// etcdVersion describes how we want to support each etcd version.
+type etcdVersion struct {
+	Version          string
+	Image            string
+	SymlinkToVersion string
 }
 
-func etcdSupportedVersions() []string {
-	var versions []string
-	for etcdVersion := range etcdSupportedImages {
-		versions = append(versions, etcdVersion)
-	}
-	sort.Strings(versions)
+var etcdSupportedImages = []etcdVersion{
+	{Version: "3.2.24", Image: "registry.k8s.io/etcd:3.2.24-1"},
+	{Version: "3.3.10", Image: "registry.k8s.io/etcd:3.3.10-0"},
+	{Version: "3.3.17", Image: "registry.k8s.io/etcd:3.3.17-0"},
+	{Version: "3.4.3", Image: "registry.k8s.io/etcd:3.4.3-0"},
+	{Version: "3.4.13", Image: "registry.k8s.io/etcd:3.4.13-0"},
+	{Version: "3.5.0", Image: "registry.k8s.io/etcd:3.5.0-0"},
+	{Version: "3.5.1", Image: "registry.k8s.io/etcd:3.5.1-0"},
+	{Version: "3.5.3", Image: "registry.k8s.io/etcd:3.5.3-0"},
+	{Version: "3.5.4", Image: "registry.k8s.io/etcd:3.5.4-0"},
+	{Version: "3.5.6", Image: "registry.k8s.io/etcd:3.5.6-0"},
+	{Version: "3.5.7", Image: "registry.k8s.io/etcd:3.5.7-0"},
+	{Version: "3.5.9", Image: "registry.k8s.io/etcd:3.5.9-0"},
+}
+
+func etcdSupportedVersions() []etcdVersion {
+	var versions []etcdVersion
+	versions = append(versions, etcdSupportedImages...)
+	sort.Slice(versions, func(i, j int) bool { return versions[i].Version < versions[j].Version })
 	return versions
 }
 
 func etcdVersionIsSupported(version string) bool {
 	version = strings.TrimPrefix(version, "v")
-	if _, ok := etcdSupportedImages[version]; ok {
-		return true
+	for _, etcdVersion := range etcdSupportedImages {
+		if etcdVersion.Version == version {
+			return true
+		}
 	}
 	return false
 }
