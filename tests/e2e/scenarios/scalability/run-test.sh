@@ -55,7 +55,7 @@ fi
 
 # Download latest prebuilt kOps
 if [[ -z "${KOPS_BASE_URL:-}" ]]; then
-  KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+  KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci.txt)"
 fi
 export KOPS_BASE_URL
 
@@ -86,7 +86,7 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
-create_args=("--network-cidr=10.0.0.0/16")
+create_args=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16")
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
 create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
@@ -95,15 +95,18 @@ fi
 create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id}")
 create_args+=("--etcd-clusters=main")
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
+create_args+=("--set spec.kubeControllerManager.endpointUpdatesBatchPeriod=500ms")
+create_args+=("--set spec.kubeControllerManager.endpointSliceUpdatesBatchPeriod=500ms")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
-create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
+create_args+=("--zones=us-east-2a")
 
 
 # Enable cluster addons, this enables us to replace the built-in manifest
@@ -154,7 +157,7 @@ else
   --kubernetes-version="${K8S_VERSION}" \
   -- \
   --test-package-version="${K8S_VERSION}" \
-  --parallel=30 \
+  --parallel=1 \
   --skip-regex="\[Serial\]" \
   --focus-regex="\[Conformance\]"
 fi
