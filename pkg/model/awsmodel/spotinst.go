@@ -128,6 +128,10 @@ const (
 	// instance group to specify whether the scale-down activities should be restricted.
 	SpotInstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
 
+	// SpotInstanceGroupLabelOtherArchitectureImage  Identifier of other architecture image in AWS.
+	//For each architecture type (amd64, arm64) only one AMI is allowed,first image is from  config.InstanceGroup.spec.image
+	SpotInstanceGroupLabelOtherArchitectureImage = "spotinst.io/other-architecture-image"
+
 	// SpotClusterLabelSpreadNodesBy is the cloud  label used on the
 	// cluster spec to specify how Ocean will spread the nodes across markets by this value
 	SpotClusterLabelSpreadNodesBy = "spotinst.io/strategy-cluster-spread-nodes-by"
@@ -567,6 +571,9 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 			if err != nil {
 				return err
 			}
+
+		case SpotInstanceGroupLabelOtherArchitectureImage:
+			launchSpec.OtherArchitectureImage = fi.PtrTo(v)
 		}
 	}
 
