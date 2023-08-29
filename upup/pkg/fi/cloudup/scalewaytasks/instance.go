@@ -450,16 +450,16 @@ func checkUserDataDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, act
 		Key:      "cloud-init",
 	}, scw.WithContext(c.Context()))
 	if err != nil {
-		return false, fmt.Errorf("error getting actual user-data: %w", err)
+		return false, fmt.Errorf("getting actual user-data: %w", err)
 	}
 
 	actualUserDataBytes, err := io.ReadAll(actualUserData)
 	if err != nil {
-		return false, fmt.Errorf("error reading actual user-data: %w", err)
+		return false, fmt.Errorf("reading actual user-data: %w", err)
 	}
 	expectedUserDataBytes, err := fi.ResourceAsBytes(*expectedUserData)
 	if err != nil {
-		return false, fmt.Errorf("error reading expected user-data: %w", err)
+		return false, fmt.Errorf("reading expected user-data: %w", err)
 	}
 
 	if sha256.Sum256(actualUserDataBytes) != sha256.Sum256(expectedUserDataBytes) {
