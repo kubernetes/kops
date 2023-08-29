@@ -1490,13 +1490,13 @@ type ListSubscriberResponse struct {
 type PrivateNetwork struct {
 	// LB: load Balancer object which is attached to the Private Network.
 	LB *LB `json:"lb"`
-	// StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
+	// Deprecated: StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	StaticConfig *PrivateNetworkStaticConfig `json:"static_config,omitempty"`
-	// DHCPConfig: defines whether to let DHCP assign IP addresses.
+	// DHCPConfig: object containing DHCP-assigned IP addresses.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	DHCPConfig *PrivateNetworkDHCPConfig `json:"dhcp_config,omitempty"`
-	// IpamConfig: for internal use only.
+	// Deprecated: IpamConfig: for internal use only.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	IpamConfig *PrivateNetworkIpamConfig `json:"ipam_config,omitempty"`
 	// PrivateNetworkID: private Network ID.
@@ -1511,6 +1511,7 @@ type PrivateNetwork struct {
 }
 
 type PrivateNetworkDHCPConfig struct {
+	IPID *string `json:"ip_id"`
 }
 
 type PrivateNetworkIpamConfig struct {
@@ -1518,8 +1519,8 @@ type PrivateNetworkIpamConfig struct {
 
 // PrivateNetworkStaticConfig: private network. static config.
 type PrivateNetworkStaticConfig struct {
-	// IPAddress: array of a local IP address for the Load Balancer on this Private Network.
-	IPAddress []string `json:"ip_address"`
+	// Deprecated: IPAddress: array of a local IP address for the Load Balancer on this Private Network.
+	IPAddress *[]string `json:"ip_address,omitempty"`
 }
 
 // Route: route.
@@ -4470,13 +4471,13 @@ type ZonedAPIAttachPrivateNetworkRequest struct {
 	LBID string `json:"-"`
 	// PrivateNetworkID: private Network ID.
 	PrivateNetworkID string `json:"-"`
-	// StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
+	// Deprecated: StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	StaticConfig *PrivateNetworkStaticConfig `json:"static_config,omitempty"`
 	// DHCPConfig: defines whether to let DHCP assign IP addresses.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	DHCPConfig *PrivateNetworkDHCPConfig `json:"dhcp_config,omitempty"`
-	// IpamConfig: for internal use only.
+	// Deprecated: IpamConfig: for internal use only.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	IpamConfig *PrivateNetworkIpamConfig `json:"ipam_config,omitempty"`
 }
@@ -7361,13 +7362,13 @@ type AttachPrivateNetworkRequest struct {
 	LBID string `json:"-"`
 	// PrivateNetworkID: private Network ID.
 	PrivateNetworkID string `json:"-"`
-	// StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
+	// Deprecated: StaticConfig: object containing an array of a local IP address for the Load Balancer on this Private Network.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	StaticConfig *PrivateNetworkStaticConfig `json:"static_config,omitempty"`
 	// DHCPConfig: defines whether to let DHCP assign IP addresses.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	DHCPConfig *PrivateNetworkDHCPConfig `json:"dhcp_config,omitempty"`
-	// IpamConfig: for internal use only.
+	// Deprecated: IpamConfig: for internal use only.
 	// Precisely one of DHCPConfig, IpamConfig, StaticConfig must be set.
 	IpamConfig *PrivateNetworkIpamConfig `json:"ipam_config,omitempty"`
 }
