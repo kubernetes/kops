@@ -533,7 +533,7 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 }
 
 func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
-	_, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
+	srv, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     s.zone,
 		ServerID: server.ID,
 	})
@@ -545,6 +545,28 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		return err
 	}
 
+	// We detach the etcd volumes
+	for _, volume := range srv.Server.Volumes {
+		volumeResponse, err := s.instanceAPI.GetVolume(&instance.GetVolumeRequest{
+			Zone:     s.zone,
+			VolumeID: volume.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("delete server %s: getting infos for volume %s", server.ID, volume.ID)
+		}
+		for _, tag := range volumeResponse.Volume.Tags {
+			if strings.HasPrefix(tag, TagNameEtcdClusterPrefix) {
+				_, err = s.instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+					Zone:     s.zone,
+					VolumeID: volume.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("delete server %s: detaching volume %s", server.ID, volume.ID)
+				}
+			}
+		}
+	}
+
 	// We terminate the server. This stops and deletes the machine immediately
 	_, err = s.instanceAPI.ServerAction(&instance.ServerActionRequest{
 		Zone:     s.zone,
@@ -552,7 +574,7 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		Action:   instance.ServerActionTerminate,
 	})
 	if err != nil && !is404Error(err) {
-		return fmt.Errorf("delete server %s: error terminating instance: %w", server.ID, err)
+		return fmt.Errorf("delete server %s: terminating instance: %w", server.ID, err)
 	}
 
 	_, err = s.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
@@ -560,7 +582,7 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		Zone:     s.zone,
 	})
 	if err != nil && !is404Error(err) {
-		return fmt.Errorf("delete server %s: error waiting for instance after termination: %w", server.ID, err)
+		return fmt.Errorf("delete server %s: waiting for instance after termination: %w", server.ID, err)
 	}
 
 	return nil
