@@ -25,6 +25,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -39,8 +40,9 @@ import (
 const (
 	TagClusterName           = "noprefix=kops.k8s.io/cluster"
 	TagInstanceGroup         = "noprefix=kops.k8s.io/instance-group"
-	TagNameRolePrefix        = "noprefix=kops.k8s.io/role"
 	TagNameEtcdClusterPrefix = "noprefix=kops.k8s.io/etcd"
+	TagNeedsUpdate           = "noprefix=kops.k8s.io/needs-update"
+	TagNameRolePrefix        = "noprefix=kops.k8s.io/role"
 	TagRoleControlPlane      = "ControlPlane"
 	TagRoleWorker            = "Node"
 	KopsUserAgentPrefix      = "kubernetes-kops/"
@@ -60,6 +62,7 @@ type ScwCloud interface {
 	IamService() *iam.API
 	InstanceService() *instance.API
 	LBService() *lb.ZonedAPI
+	MarketplaceService() *marketplace.API
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 	DeleteInstance(i *cloudinstances.CloudInstance) error
@@ -94,10 +97,11 @@ type scwCloudImplementation struct {
 	dns    dnsprovider.Interface
 	tags   map[string]string
 
-	domainAPI   *domain.API
-	iamAPI      *iam.API
-	instanceAPI *instance.API
-	lbAPI       *lb.ZonedAPI
+	domainAPI      *domain.API
+	iamAPI         *iam.API
+	instanceAPI    *instance.API
+	lbAPI          *lb.ZonedAPI
+	marketplaceAPI *marketplace.API
 }
 
 // NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_PROFILE or
@@ -134,15 +138,16 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	}
 
 	return &scwCloudImplementation{
-		client:      scwClient,
-		region:      region,
-		zone:        zone,
-		dns:         dns.NewProvider(domain.NewAPI(scwClient)),
-		tags:        tags,
-		domainAPI:   domain.NewAPI(scwClient),
-		iamAPI:      iam.NewAPI(scwClient),
-		instanceAPI: instance.NewAPI(scwClient),
-		lbAPI:       lb.NewZonedAPI(scwClient),
+		client:         scwClient,
+		region:         region,
+		zone:           zone,
+		dns:            dns.NewProvider(domain.NewAPI(scwClient)),
+		tags:           tags,
+		domainAPI:      domain.NewAPI(scwClient),
+		iamAPI:         iam.NewAPI(scwClient),
+		instanceAPI:    instance.NewAPI(scwClient),
+		lbAPI:          lb.NewZonedAPI(scwClient),
+		marketplaceAPI: marketplace.NewAPI(scwClient),
 	}, nil
 }
 
@@ -184,6 +189,10 @@ func (s *scwCloudImplementation) InstanceService() *instance.API {
 
 func (s *scwCloudImplementation) LBService() *lb.ZonedAPI {
 	return s.lbAPI
+}
+
+func (s *scwCloudImplementation) MarketplaceService() *marketplace.API {
+	return s.marketplaceAPI
 }
 
 func (s *scwCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
@@ -359,6 +368,11 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 
 	for _, server := range sg {
 		status := cloudinstances.CloudInstanceStatusUpToDate
+		for _, tag := range server.Tags {
+			if tag == TagNeedsUpdate {
+				status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			}
+		}
 		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(server.ID, status, nodeMap[server.ID])
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloud instance for server %s(%s): %w", server.Name, server.ID, err)

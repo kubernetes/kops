@@ -18,11 +18,14 @@ package scalewaytasks
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -43,6 +46,7 @@ type Instance struct {
 	Image          *string
 	Tags           []string
 	Count          int
+	NeedsUpdate    []string
 
 	UserData     *fi.Resource
 	LoadBalancer *LoadBalancer
@@ -65,6 +69,48 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	if len(servers) == 0 {
 		return nil, nil
 	}
+
+	// Check if servers updates are needed
+	var needsUpdate []string
+	for _, server := range servers {
+
+		// Check if server is already marked as needing update
+		alreadyTagged := false
+		for _, tag := range server.Tags {
+			if tag == scaleway.TagNeedsUpdate {
+				alreadyTagged = true
+			}
+		}
+		if alreadyTagged == true {
+			continue
+		}
+
+		// Check commercial type differences
+		if server.CommercialType != *s.CommercialType {
+			needsUpdate = append(needsUpdate, server.ID)
+			continue
+		}
+
+		// Check image differences
+		diff, err := checkImageDifferences(c, cloud, server, fi.ValueOf(s.Image))
+		if err != nil {
+			return nil, fmt.Errorf("checking image differences in server %s (%s): %w", server.Name, server.ID, err)
+		}
+		if diff == true {
+			needsUpdate = append(needsUpdate, server.ID)
+			continue
+		}
+
+		// Check user-data differences
+		diff, err = checkUserDataDifferences(c, cloud, server, s.UserData)
+		if err != nil {
+			return nil, fmt.Errorf("checking user-data differences in server %s (%s): %w", server.Name, server.ID, err)
+		}
+		if diff == true {
+			needsUpdate = append(needsUpdate, server.ID)
+		}
+	}
+
 	server := servers[0]
 
 	igName := ""
@@ -81,16 +127,22 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		}
 	}
 
+	imageLabel, err := imageLabelFromID(c, cloud, server.Image.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Instance{
 		Name:           fi.PtrTo(igName),
-		Count:          len(servers),
+		Lifecycle:      s.Lifecycle,
 		Zone:           fi.PtrTo(server.Zone.String()),
 		Role:           fi.PtrTo(role),
 		CommercialType: fi.PtrTo(server.CommercialType),
-		Image:          s.Image,
+		Image:          fi.PtrTo(imageLabel),
 		Tags:           server.Tags,
+		Count:          len(servers),
+		NeedsUpdate:    needsUpdate,
 		UserData:       s.UserData,
-		Lifecycle:      s.Lifecycle,
 	}, nil
 }
 
@@ -105,12 +157,6 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 		}
 		if changes.Zone != nil {
 			return fi.CannotChangeField("Zone")
-		}
-		if changes.CommercialType != nil {
-			return fi.CannotChangeField("CommercialType")
-		}
-		if changes.Image != nil {
-			return fi.CannotChangeField("Image")
 		}
 	} else {
 		if expected.Name == nil {
@@ -142,10 +188,31 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 
 	newInstanceCount := expected.Count
 	if actual != nil {
+
+		// Add "kops.k8s.io/needs-update" label to servers needing update
+		for _, serverID := range actual.NeedsUpdate {
+			server, err := instanceService.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: serverID,
+			})
+			if err != nil {
+				return fmt.Errorf("rendering server group: listing existing servers: %w", err)
+			}
+			_, err = instanceService.UpdateServer(&instance.UpdateServerRequest{
+				Zone:     zone,
+				ServerID: serverID,
+				Tags:     scw.StringsPtr(append(server.Server.Tags, scaleway.TagNeedsUpdate)),
+			})
+			if err != nil {
+				return fmt.Errorf("rendering server group: adding update tag to server %q (%s): %w", server.Server.Name, serverID, err)
+			}
+		}
+
 		if expected.Count == actual.Count {
 			return nil
 		}
 		newInstanceCount = expected.Count - actual.Count
+
 	}
 
 	// If newInstanceCount > 0, we need to create new instances for this group
@@ -358,4 +425,55 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 		}
 	}
 	return t.RenderResource("scaleway_instance_server", tfName, tfInstance)
+}
+
+func checkImageDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, actualServer *instance.Server, expectedImage string) (bool, error) {
+	localImage, err := cloud.MarketplaceService().GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
+		ImageLabel:     expectedImage,
+		Zone:           actualServer.Zone,
+		CommercialType: actualServer.CommercialType,
+	}, scw.WithContext(c.Context()))
+	if err != nil {
+		return false, fmt.Errorf("getting image from the marketplace: %w", err)
+	}
+
+	if actualServer.Image.ID != localImage.ID {
+		return true, nil
+	}
+	return false, nil
+}
+
+func checkUserDataDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, actualServer *instance.Server, expectedUserData *fi.Resource) (bool, error) {
+	actualUserData, err := cloud.InstanceService().GetServerUserData(&instance.GetServerUserDataRequest{
+		Zone:     actualServer.Zone,
+		ServerID: actualServer.ID,
+		Key:      "cloud-init",
+	}, scw.WithContext(c.Context()))
+	if err != nil {
+		return false, fmt.Errorf("error getting actual user-data: %w", err)
+	}
+
+	actualUserDataBytes, err := io.ReadAll(actualUserData)
+	if err != nil {
+		return false, fmt.Errorf("error reading actual user-data: %w", err)
+	}
+	expectedUserDataBytes, err := fi.ResourceAsBytes(*expectedUserData)
+	if err != nil {
+		return false, fmt.Errorf("error reading expected user-data: %w", err)
+	}
+
+	if sha256.Sum256(actualUserDataBytes) != sha256.Sum256(expectedUserDataBytes) {
+		return true, nil
+	}
+	return false, nil
+}
+
+func imageLabelFromID(c *fi.CloudupContext, cloud scaleway.ScwCloud, id string) (string, error) {
+	localImage, err := cloud.MarketplaceService().GetLocalImage(&marketplace.GetLocalImageRequest{
+		LocalImageID: id,
+	}, scw.WithContext(c.Context()))
+	if err != nil {
+		return "", fmt.Errorf("getting image from the marketplace: %w", err)
+	}
+	return localImage.Label, nil
 }
