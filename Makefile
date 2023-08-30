@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# testing.. 1,2,3
+
 # kops source root directory (without trailing /)
 KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 DOCKER_REGISTRY?=gcr.io/must-override
