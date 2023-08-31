@@ -126,6 +126,10 @@ func getDependencies[T SubContext](tasks map[string]Task[T], v reflect.Value) []
 			if hd, ok := intf.(HasDependencies[T]); ok {
 				deps := hd.GetDependencies(tasks)
 				dependencies = append(dependencies, deps...)
+				// Add the direct dependency if it's a task as well
+				if dep, ok := intf.(Task[T]); ok {
+					dependencies = append(dependencies, dep)
+				}
 			} else if dep, ok := intf.(Task[T]); ok {
 				dependencies = append(dependencies, dep)
 			} else if _, ok := intf.(Resource); ok {
