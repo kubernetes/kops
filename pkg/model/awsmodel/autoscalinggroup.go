@@ -93,9 +93,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 
 			enabled := fi.PtrTo(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{
-				Name:      &name,
-				Lifecycle: b.Lifecycle,
-				Enabled:   enabled,
+				Name:             &name,
+				Lifecycle:        b.Lifecycle,
+				Enabled:          enabled,
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 			}
 			if warmPool.IsEnabled() {
 				warmPoolTask.MinSize = warmPool.MinSize
