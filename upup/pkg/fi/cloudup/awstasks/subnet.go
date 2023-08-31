@@ -44,6 +44,7 @@ type Subnet struct {
 
 	ID                          *string
 	VPC                         *VPC
+	VPCCIDRBlock                *VPCCIDRBlock
 	AmazonIPv6CIDR              *VPCAmazonIPv6CIDRBlock
 	AvailabilityZone            *string
 	CIDR                        *string
@@ -135,6 +136,7 @@ func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 	actual.ShortName = e.ShortName // Not materialized in AWS
 	actual.Name = e.Name           // Name is part of Tags
 	// Task dependencies
+	actual.VPCCIDRBlock = e.VPCCIDRBlock
 	actual.AmazonIPv6CIDR = e.AmazonIPv6CIDR
 
 	return actual, nil
