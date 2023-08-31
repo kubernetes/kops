@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
@@ -294,6 +295,19 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		if subnetSpec.CIDR != "" {
 			subnet.CIDR = fi.PtrTo(subnetSpec.CIDR)
+			for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
+				_, additionalCIDR, err := net.ParseCIDR(cidr)
+				if err != nil {
+					return err
+				}
+				subnetIP, _, err := net.ParseCIDR(subnetSpec.CIDR)
+				if err != nil {
+					return err
+				}
+				if additionalCIDR.Contains(subnetIP) {
+					subnet.VPCCIDRBlock = &awstasks.VPCCIDRBlock{Name: fi.PtrTo(cidr)}
+				}
+			}
 		}
 
 		if subnetSpec.IPv6CIDR != "" {
