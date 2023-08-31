@@ -72,25 +72,12 @@ func (a *Action) Error() error {
 
 // ActionClient is a client for the actions API.
 type ActionClient struct {
-	client *Client
+	action *ResourceActionClient
 }
 
 // GetByID retrieves an action by its ID. If the action does not exist, nil is returned.
 func (c *ActionClient) GetByID(ctx context.Context, id int) (*Action, *Response, error) {
-	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/actions/%d", id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var body schema.ActionGetResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		if IsError(err, ErrorCodeNotFound) {
-			return nil, resp, nil
-		}
-		return nil, nil, err
-	}
-	return ActionFromSchema(body.Action), resp, nil
+	return c.action.GetByID(ctx, id)
 }
 
 // ActionListOpts specifies options for listing actions.
@@ -120,47 +107,17 @@ func (l ActionListOpts) values() url.Values {
 // Please note that filters specified in opts are not taken into account
 // when their value corresponds to their zero value or when they are empty.
 func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action, *Response, error) {
-	path := "/actions?" + opts.values().Encode()
-	req, err := c.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var body schema.ActionListResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		return nil, nil, err
-	}
-	actions := make([]*Action, 0, len(body.Actions))
-	for _, i := range body.Actions {
-		actions = append(actions, ActionFromSchema(i))
-	}
-	return actions, resp, nil
+	return c.action.List(ctx, opts)
 }
 
 // All returns all actions.
 func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
-	return c.AllWithOpts(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.action.All(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all actions for the given options.
 func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	allActions := []*Action{}
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		actions, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allActions = append(allActions, actions...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allActions, nil
+	return c.action.All(ctx, opts)
 }
 
 // WatchOverallProgress watches several actions' progress until they complete
@@ -189,20 +146,22 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 		defer close(errCh)
 		defer close(progressCh)
 
-		successIDs := make([]int, 0, len(actions))
+		completedIDs := make([]int, 0, len(actions))
 		watchIDs := make(map[int]struct{}, len(actions))
+
 		for _, action := range actions {
 			watchIDs[action.ID] = struct{}{}
 		}
 
 		retries := 0
+		previousProgress := 0
 
 		for {
 			select {
 			case <-ctx.Done():
 				errCh <- ctx.Err()
 				return
-			case <-time.After(c.client.pollBackoffFunc(retries)):
+			case <-time.After(c.action.client.pollBackoffFunc(retries)):
 				retries++
 			}
 
@@ -224,18 +183,25 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 				return
 			}
 
+			progress := 0
 			for _, a := range as {
 				switch a.Status {
 				case ActionStatusRunning:
-					continue
+					progress += a.Progress
 				case ActionStatusSuccess:
 					delete(watchIDs, a.ID)
-					successIDs = append(successIDs, a.ID)
-					sendProgress(progressCh, int(float64(len(actions)-len(successIDs))/float64(len(actions))*100))
+					completedIDs = append(completedIDs, a.ID)
 				case ActionStatusError:
 					delete(watchIDs, a.ID)
+					completedIDs = append(completedIDs, a.ID)
 					errCh <- fmt.Errorf("action %d failed: %w", a.ID, a.Error())
 				}
+			}
+
+			progress += len(completedIDs) * 100
+			if progress != 0 && progress != previousProgress {
+				sendProgress(progressCh, progress/len(actions))
+				previousProgress = progress
 			}
 
 			if len(watchIDs) == 0 {
@@ -280,7 +246,7 @@ func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-cha
 			case <-ctx.Done():
 				errCh <- ctx.Err()
 				return
-			case <-time.After(c.client.pollBackoffFunc(retries)):
+			case <-time.After(c.action.client.pollBackoffFunc(retries)):
 				retries++
 			}
 
@@ -311,6 +277,7 @@ func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-cha
 	return progressCh, errCh
 }
 
+// sendProgress allows the user to only read from the error channel and ignore any progress updates.
 func sendProgress(progressCh chan int, p int) {
 	select {
 	case progressCh <- p:
@@ -318,4 +285,83 @@ func sendProgress(progressCh chan int, p int) {
 	default:
 		break
 	}
+}
+
+// ResourceActionClient is a client for the actions API exposed by the resource.
+type ResourceActionClient struct {
+	resource string
+	client   *Client
+}
+
+func (c *ResourceActionClient) getBaseURL() string {
+	if c.resource == "" {
+		return ""
+	}
+
+	return "/" + c.resource
+}
+
+// GetByID retrieves an action by its ID. If the action does not exist, nil is returned.
+func (c *ResourceActionClient) GetByID(ctx context.Context, id int) (*Action, *Response, error) {
+	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("%s/actions/%d", c.getBaseURL(), id), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var body schema.ActionGetResponse
+	resp, err := c.client.Do(req, &body)
+	if err != nil {
+		if IsError(err, ErrorCodeNotFound) {
+			return nil, resp, nil
+		}
+		return nil, nil, err
+	}
+	return ActionFromSchema(body.Action), resp, nil
+}
+
+// List returns a list of actions for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
+func (c *ResourceActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action, *Response, error) {
+	req, err := c.client.NewRequest(
+		ctx,
+		"GET",
+		fmt.Sprintf("%s/actions?%s", c.getBaseURL(), opts.values().Encode()),
+		nil,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var body schema.ActionListResponse
+	resp, err := c.client.Do(req, &body)
+	if err != nil {
+		return nil, nil, err
+	}
+	actions := make([]*Action, 0, len(body.Actions))
+	for _, i := range body.Actions {
+		actions = append(actions, ActionFromSchema(i))
+	}
+	return actions, resp, nil
+}
+
+// All returns all actions for the given options.
+func (c *ResourceActionClient) All(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
+	allActions := []*Action{}
+
+	err := c.client.all(func(page int) (*Response, error) {
+		opts.Page = page
+		actions, resp, err := c.List(ctx, opts)
+		if err != nil {
+			return resp, err
+		}
+		allActions = append(allActions, actions...)
+		return resp, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return allActions, nil
 }

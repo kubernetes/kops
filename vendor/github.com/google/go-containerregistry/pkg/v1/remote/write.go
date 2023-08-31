@@ -210,7 +210,7 @@ func (w *writer) initiateUpload(ctx context.Context, from, mount, origin string)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := w.client.Do(req.WithContext(ctx))
 	if err != nil {
-		if origin != "" && origin != w.repo.RegistryStr() {
+		if from != "" {
 			// https://github.com/google/go-containerregistry/issues/1679
 			logs.Warn.Printf("retrying without mount: %v", err)
 			return w.initiateUpload(ctx, "", "", "")
@@ -220,7 +220,7 @@ func (w *writer) initiateUpload(ctx context.Context, from, mount, origin string)
 	defer resp.Body.Close()
 
 	if err := transport.CheckError(resp, http.StatusCreated, http.StatusAccepted); err != nil {
-		if origin != "" && origin != w.repo.RegistryStr() {
+		if from != "" {
 			// https://github.com/google/go-containerregistry/issues/1404
 			logs.Warn.Printf("retrying without mount: %v", err)
 			return w.initiateUpload(ctx, "", "", "")
@@ -360,8 +360,16 @@ func (w *writer) uploadOne(ctx context.Context, l v1.Layer) error {
 			if err := w.maybeUpdateScopes(ctx, ml); err != nil {
 				return err
 			}
+
 			from = ml.Reference.Context().RepositoryStr()
 			origin = ml.Reference.Context().RegistryStr()
+
+			// This keeps breaking with DockerHub.
+			// https://github.com/google/go-containerregistry/issues/1741
+			if w.repo.RegistryStr() == name.DefaultRegistry && origin != w.repo.RegistryStr() {
+				from = ""
+				origin = ""
+			}
 		}
 
 		location, mounted, err := w.initiateUpload(ctx, from, mount, origin)

@@ -45,10 +45,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"gopkg.in/gcfg.v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/klog/v2"
-	netutils "k8s.io/utils/net"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -68,6 +66,8 @@ import (
 	cloudvolume "k8s.io/cloud-provider/volume"
 	volerr "k8s.io/cloud-provider/volume/errors"
 	volumehelpers "k8s.io/cloud-provider/volume/helpers"
+	"k8s.io/klog/v2"
+	netutils "k8s.io/utils/net"
 )
 
 // NLBHealthCheckRuleDescription is the comment used on a security group rule to
@@ -850,7 +850,9 @@ func InstanceIDIndexFunc(obj interface{}) ([]string, error) {
 	}
 	instanceID, err := KubernetesInstanceID(node.Spec.ProviderID).MapToAWSInstanceID()
 	if err != nil {
-		return []string{""}, fmt.Errorf("error mapping node %q's provider ID %q to instance ID: %v", node.Name, node.Spec.ProviderID, err)
+		//logging the error as warning as Informer.AddIndexers would panic if there is an error
+		klog.Warningf("error mapping node %q's provider ID %q to instance ID: %v", node.Name, node.Spec.ProviderID, err)
+		return []string{""}, nil
 	}
 	return []string{string(instanceID)}, nil
 }

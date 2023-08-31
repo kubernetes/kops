@@ -27,13 +27,13 @@ import (
 
 // Options hold the options that crane uses when calling other packages.
 type Options struct {
-	Name     []name.Option
-	Remote   []remote.Option
-	Platform *v1.Platform
-	Keychain authn.Keychain
+	Name      []name.Option
+	Remote    []remote.Option
+	Platform  *v1.Platform
+	Keychain  authn.Keychain
+	Transport http.RoundTripper
 
 	auth      authn.Authenticator
-	transport http.RoundTripper
 	insecure  bool
 	jobs      int
 	noclobber bool
@@ -64,13 +64,15 @@ func makeOptions(opts ...Option) Options {
 
 	// Allow for untrusted certificates if the user
 	// passed Insecure but no custom transport.
-	if opt.insecure && opt.transport == nil {
+	if opt.insecure && opt.Transport == nil {
 		transport := remote.DefaultTransport.(*http.Transport).Clone()
 		transport.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true, //nolint: gosec
 		}
 
 		WithTransport(transport)(&opt)
+	} else if opt.Transport == nil {
+		opt.Transport = remote.DefaultTransport
 	}
 
 	return opt
@@ -85,7 +87,7 @@ type Option func(*Options)
 func WithTransport(t http.RoundTripper) Option {
 	return func(o *Options) {
 		o.Remote = append(o.Remote, remote.WithTransport(t))
-		o.transport = t
+		o.Transport = t
 	}
 }
 
