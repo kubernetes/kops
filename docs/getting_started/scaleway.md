@@ -5,7 +5,10 @@
 ## Features
 
 * Create, update and delete clusters
-* Create, edit and delete instance groups 
+  * [Rolling-update](../operations/rolling-update.md)
+* Create, edit and delete instance groups --> Editable fields include but are not limited to:
+  * Instance image
+  * Instance size (also called commercial type)
 * Migrating from single to multi-master
 
 ### Coming soon
@@ -15,7 +18,6 @@
 
 ### Next features to implement
 
-* `kops rolling-update`
 * [Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/scaleway) support
 * BareMetal servers
 

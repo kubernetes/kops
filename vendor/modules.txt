@@ -774,13 +774,14 @@ github.com/russross/blackfriday/v2
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.20
+# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.20.0.20230829075301-d16b548612e4
 ## explicit; go 1.17
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
 github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1
 github.com/scaleway/scaleway-sdk-go/api/instance/v1
 github.com/scaleway/scaleway-sdk-go/api/lb/v1
 github.com/scaleway/scaleway-sdk-go/api/marketplace/v1
+github.com/scaleway/scaleway-sdk-go/api/marketplace/v2
 github.com/scaleway/scaleway-sdk-go/internal/async
 github.com/scaleway/scaleway-sdk-go/internal/auth
 github.com/scaleway/scaleway-sdk-go/internal/errors

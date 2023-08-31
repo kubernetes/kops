@@ -56,6 +56,7 @@ type Arch string
 const (
 	ArchX86_64 = Arch("x86_64")
 	ArchArm    = Arch("arm")
+	ArchArm64  = Arch("arm64")
 )
 
 func (enum Arch) String() string {
@@ -1493,6 +1494,8 @@ type ServerType struct {
 	Network *ServerTypeNetwork `json:"network"`
 	// Capabilities: capabilities.
 	Capabilities *ServerTypeCapabilities `json:"capabilities"`
+	// ScratchStorageMaxSize: maximum available scratch storage.
+	ScratchStorageMaxSize *uint64 `json:"scratch_storage_max_size"`
 }
 
 // ServerTypeCapabilities: server type. capabilities.
@@ -1821,7 +1824,7 @@ type setSnapshotResponse struct {
 
 // Zones list localities the api is available in
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3}
 }
 
 type GetServerTypesAvailabilityRequest struct {
@@ -2077,7 +2080,7 @@ type CreateServerRequest struct {
 	// PublicIP: ID of the reserved IP to attach to the Instance.
 	PublicIP *string `json:"public_ip,omitempty"`
 	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
-	PublicIPs []*string `json:"public_ips,omitempty"`
+	PublicIPs *[]string `json:"public_ips,omitempty"`
 	// BootType: boot type to use.
 	// Default value: local
 	BootType *BootType `json:"boot_type,omitempty"`
@@ -2974,7 +2977,7 @@ type CreateSnapshotRequest struct {
 	// VolumeID: UUID of the volume.
 	VolumeID *string `json:"volume_id,omitempty"`
 	// Tags: tags of the snapshot.
-	Tags []string `json:"tags,omitempty"`
+	Tags *[]string `json:"tags,omitempty"`
 	// Deprecated: Organization: organization ID of the snapshot.
 	// Precisely one of Organization, Project must be set.
 	Organization *string `json:"organization,omitempty"`

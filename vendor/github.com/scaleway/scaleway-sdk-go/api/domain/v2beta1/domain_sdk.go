@@ -581,6 +581,41 @@ func (enum *LanguageCode) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ListContactsRequestRole string
+
+const (
+	ListContactsRequestRoleUnknownRole = ListContactsRequestRole("unknown_role")
+	// The contact is a domain's owner.
+	ListContactsRequestRoleOwner = ListContactsRequestRole("owner")
+	// The contact is a domain's administrative contact.
+	ListContactsRequestRoleAdministrative = ListContactsRequestRole("administrative")
+	// The contact is a domain's technical contact.
+	ListContactsRequestRoleTechnical = ListContactsRequestRole("technical")
+)
+
+func (enum ListContactsRequestRole) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_role"
+	}
+	return string(enum)
+}
+
+func (enum ListContactsRequestRole) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListContactsRequestRole) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListContactsRequestRole(ListContactsRequestRole(tmp).String())
+	return nil
+}
+
 type ListDNSZoneRecordsRequestOrderBy string
 
 const (
@@ -1052,6 +1087,8 @@ const (
 	TaskTypeUpdateHost = TaskType("update_host")
 	// Delete domain's hostname.
 	TaskTypeDeleteHost = TaskType("delete_host")
+	// Move a domain to another project.
+	TaskTypeMoveProject = TaskType("move_project")
 )
 
 func (enum TaskType) String() string {
@@ -3145,6 +3182,10 @@ type RegistrarAPIListContactsRequest struct {
 	ProjectID *string `json:"-"`
 
 	OrganizationID *string `json:"-"`
+	// Role: default value: unknown_role
+	Role ListContactsRequestRole `json:"-"`
+	// EmailStatus: default value: email_status_unknown
+	EmailStatus ContactEmailStatus `json:"-"`
 }
 
 // ListContacts: list contacts.
@@ -3164,6 +3205,8 @@ func (s *RegistrarAPI) ListContacts(req *RegistrarAPIListContactsRequest, opts .
 	parameter.AddToQuery(query, "domain", req.Domain)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "role", req.Role)
+	parameter.AddToQuery(query, "email_status", req.EmailStatus)
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
