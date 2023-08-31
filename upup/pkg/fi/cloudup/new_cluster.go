@@ -164,6 +164,7 @@ type NewClusterOptions struct {
 	BastionImage      string
 	ControlPlaneSize  string
 	NodeSize          string
+	NodeSizes         []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -1014,6 +1015,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 
 	countPerIG := nodeCount / int32(numZones)
 	remainder := int(nodeCount) % numZones
+	instanceTypes := make([]string, len(opt.NodeSizes))
+	instanceTypes = append([]string{opt.NodeSize}, instanceTypes...)
 
 	for i, zone := range opt.Zones {
 		count := countPerIG
@@ -1055,7 +1058,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 			g.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
 		}
 
-		g.Spec.MachineType = opt.NodeSize
+		g.Spec.MachineType = instanceTypes[i%len(instanceTypes)]
 		g.Spec.Image = opt.NodeImage
 
 		nodes = append(nodes, g)

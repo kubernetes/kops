@@ -278,7 +278,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.BastionImage, "bastion-image", options.BastionImage, "Machine image for bastions. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("bastion-image", completeInstanceImage)
 
+	cmd.Flags().StringSliceVar(&options.NodeSizes, "node-sizes", options.NodeSizes, "Machine type(s) for worker nodes")
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Machine type for worker nodes")
+	cmd.Flags().MarkDeprecated("node-size", "use --node-sizes instead")
 	cmd.RegisterFlagCompletionFunc("node-size", completeMachineType)
 	cmd.Flags().StringVar(&options.ControlPlaneSize, "master-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
 	cmd.Flags().MarkDeprecated("master-size", "use --control-plane-size instead")

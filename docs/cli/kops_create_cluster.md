@@ -105,7 +105,7 @@ kops create cluster [CLUSTER] [flags]
       --node-count int32                        Total number of worker nodes. Defaults to one node per zone
       --node-image string                       Machine image for worker nodes. Takes precedence over --image
       --node-security-groups strings            Additional pre-created security groups to add to worker nodes.
-      --node-size string                        Machine type for worker nodes
+      --node-sizes strings                      Machine type(s) for worker nodes
       --node-tenancy string                     Tenancy of the node group (AWS only): default or dedicated
       --node-volume-size int32                  Instance volume size (in GB) for worker nodes
       --os-dns-servers string                   comma separated list of DNS Servers which is used in network
