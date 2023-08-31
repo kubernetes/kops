@@ -35,6 +35,8 @@ popd
 
 # Setup our cleanup function; as we allocate resources we set a variable to indicate they should be cleaned up
 function cleanup {
+  # will help us better diagnose failures
+  aws autoscaling describe-scaling-activities --region us-east-2
   # shellcheck disable=SC2153
   if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
       kubetest2 kops "${KUBETEST2_ARGS[@]}" --down || echo "kubetest2 down failed"
@@ -106,7 +108,7 @@ create_args+=("--dns none")
 create_args+=("--node-size=c6g.medium")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c6g.2xlarge}")
-create_args+=("--zones=us-east-2a")
+create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
 # Enable cluster addons, this enables us to replace the built-in manifest
