@@ -28,8 +28,9 @@ import (
 // WarmPool provdes the definition for an ASG warm pool in aws.
 // +kops:fitask
 type WarmPool struct {
-	// Name is the name of the ASG.
+	// Name is the name of the task.
 	Name *string
+
 	// Lifecycle is the resource lifecycle.
 	Lifecycle fi.Lifecycle
 
@@ -47,7 +48,7 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	svc := cloud.Autoscaling()
 	warmPool, err := svc.DescribeWarmPool(&autoscaling.DescribeWarmPoolInput{
-		AutoScalingGroupName: e.Name,
+		AutoScalingGroupName: e.AutoscalingGroup.Name,
 	})
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "ValidationError" {
@@ -57,18 +58,20 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	}
 	if warmPool.WarmPoolConfiguration == nil {
 		return &WarmPool{
-			Name:      e.Name,
-			Lifecycle: e.Lifecycle,
-			Enabled:   fi.PtrTo(false),
+			Name:             e.Name,
+			Lifecycle:        e.Lifecycle,
+			Enabled:          fi.PtrTo(false),
+			AutoscalingGroup: &AutoscalingGroup{Name: e.AutoscalingGroup.Name},
 		}, nil
 	}
 
 	actual := &WarmPool{
-		Name:      e.Name,
-		Lifecycle: e.Lifecycle,
-		Enabled:   fi.PtrTo(true),
-		MaxSize:   warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
-		MinSize:   fi.ValueOf(warmPool.WarmPoolConfiguration.MinSize),
+		Name:             e.Name,
+		Lifecycle:        e.Lifecycle,
+		Enabled:          fi.PtrTo(true),
+		AutoscalingGroup: &AutoscalingGroup{Name: e.AutoscalingGroup.Name},
+		MaxSize:          warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
+		MinSize:          fi.ValueOf(warmPool.WarmPoolConfiguration.MinSize),
 	}
 	return actual, nil
 }
@@ -91,7 +94,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				maxSize = fi.PtrTo(int64(-1))
 			}
 			request := &autoscaling.PutWarmPoolInput{
-				AutoScalingGroupName:     e.Name,
+				AutoScalingGroupName:     e.AutoscalingGroup.Name,
 				MaxGroupPreparedCapacity: maxSize,
 				MinSize:                  fi.PtrTo(minSize),
 			}
@@ -105,7 +108,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			}
 		} else if a != nil {
 			_, err := svc.DeleteWarmPool(&autoscaling.DeleteWarmPoolInput{
-				AutoScalingGroupName: e.Name,
+				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				// We don't need to do any cleanup so, the faster the better
 				ForceDelete: fi.PtrTo(true),
 			})
