@@ -21,26 +21,27 @@ type ListOptsBuilder interface {
 // by a particular port attribute. SortDir sets the direction, and is either
 // `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
-	Status       string `q:"status"`
-	Name         string `q:"name"`
-	Description  string `q:"description"`
-	AdminStateUp *bool  `q:"admin_state_up"`
-	NetworkID    string `q:"network_id"`
-	TenantID     string `q:"tenant_id"`
-	ProjectID    string `q:"project_id"`
-	DeviceOwner  string `q:"device_owner"`
-	MACAddress   string `q:"mac_address"`
-	ID           string `q:"id"`
-	DeviceID     string `q:"device_id"`
-	Limit        int    `q:"limit"`
-	Marker       string `q:"marker"`
-	SortKey      string `q:"sort_key"`
-	SortDir      string `q:"sort_dir"`
-	Tags         string `q:"tags"`
-	TagsAny      string `q:"tags-any"`
-	NotTags      string `q:"not-tags"`
-	NotTagsAny   string `q:"not-tags-any"`
-	FixedIPs     []FixedIPOpts
+	Status         string   `q:"status"`
+	Name           string   `q:"name"`
+	Description    string   `q:"description"`
+	AdminStateUp   *bool    `q:"admin_state_up"`
+	NetworkID      string   `q:"network_id"`
+	TenantID       string   `q:"tenant_id"`
+	ProjectID      string   `q:"project_id"`
+	DeviceOwner    string   `q:"device_owner"`
+	MACAddress     string   `q:"mac_address"`
+	ID             string   `q:"id"`
+	DeviceID       string   `q:"device_id"`
+	Limit          int      `q:"limit"`
+	Marker         string   `q:"marker"`
+	SortKey        string   `q:"sort_key"`
+	SortDir        string   `q:"sort_dir"`
+	Tags           string   `q:"tags"`
+	TagsAny        string   `q:"tags-any"`
+	NotTags        string   `q:"not-tags"`
+	NotTagsAny     string   `q:"not-tags-any"`
+	SecurityGroups []string `q:"security_groups"`
+	FixedIPs       []FixedIPOpts
 }
 
 type FixedIPOpts struct {

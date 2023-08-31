@@ -238,6 +238,7 @@ func (lb *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
 // LoadBalancerClient is a client for the Load Balancers API.
 type LoadBalancerClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Load Balancer by its ID. If the Load Balancer does not exist, nil is returned.

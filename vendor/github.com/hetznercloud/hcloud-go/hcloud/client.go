@@ -189,25 +189,25 @@ func NewClient(options ...ClientOption) *Client {
 		client.httpClient.Transport = i.InstrumentedRoundTripper()
 	}
 
-	client.Action = ActionClient{client: client}
+	client.Action = ActionClient{action: &ResourceActionClient{client: client}}
 	client.Datacenter = DatacenterClient{client: client}
-	client.FloatingIP = FloatingIPClient{client: client}
-	client.Image = ImageClient{client: client}
+	client.FloatingIP = FloatingIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "floating_ips"}}
+	client.Image = ImageClient{client: client, Action: &ResourceActionClient{client: client, resource: "images"}}
 	client.ISO = ISOClient{client: client}
 	client.Location = LocationClient{client: client}
-	client.Network = NetworkClient{client: client}
+	client.Network = NetworkClient{client: client, Action: &ResourceActionClient{client: client, resource: "networks"}}
 	client.Pricing = PricingClient{client: client}
-	client.Server = ServerClient{client: client}
+	client.Server = ServerClient{client: client, Action: &ResourceActionClient{client: client, resource: "servers"}}
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
-	client.Volume = VolumeClient{client: client}
-	client.LoadBalancer = LoadBalancerClient{client: client}
+	client.Volume = VolumeClient{client: client, Action: &ResourceActionClient{client: client, resource: "volumes"}}
+	client.LoadBalancer = LoadBalancerClient{client: client, Action: &ResourceActionClient{client: client, resource: "load_balancers"}}
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
-	client.Certificate = CertificateClient{client: client}
-	client.Firewall = FirewallClient{client: client}
+	client.Certificate = CertificateClient{client: client, Action: &ResourceActionClient{client: client, resource: "certificates"}}
+	client.Firewall = FirewallClient{client: client, Action: &ResourceActionClient{client: client, resource: "firewalls"}}
 	client.PlacementGroup = PlacementGroupClient{client: client}
 	client.RDNS = RDNSClient{client: client}
-	client.PrimaryIP = PrimaryIPClient{client: client}
+	client.PrimaryIP = PrimaryIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "primary_ips"}}
 
 	return client
 }

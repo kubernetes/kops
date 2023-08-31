@@ -52,6 +52,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/yaml"
 	// +kubebuilder:scaffold:imports
 )
@@ -106,10 +107,12 @@ func main() {
 
 	kubeConfig := ctrl.GetConfigOrDie()
 	mgr, err := ctrl.NewManager(kubeConfig, ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddress,
-		LeaderElection:     true,
-		LeaderElectionID:   "kops-controller-leader",
+		Scheme: scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddress,
+		},
+		LeaderElection:   true,
+		LeaderElectionID: "kops-controller-leader",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

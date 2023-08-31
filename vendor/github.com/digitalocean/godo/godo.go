@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -22,20 +21,22 @@ import (
 )
 
 const (
-	libraryVersion = "1.101.0"
+	libraryVersion = "1.102.1"
 	defaultBaseURL = "https://api.digitalocean.com/"
 	userAgent      = "godo/" + libraryVersion
 	mediaType      = "application/json"
 
-	headerRateLimit     = "RateLimit-Limit"
-	headerRateRemaining = "RateLimit-Remaining"
-	headerRateReset     = "RateLimit-Reset"
+	headerRateLimit             = "RateLimit-Limit"
+	headerRateRemaining         = "RateLimit-Remaining"
+	headerRateReset             = "RateLimit-Reset"
+	headerRequestID             = "x-request-id"
+	internalHeaderRetryAttempts = "X-Godo-Retry-Attempts"
 )
 
 // Client manages communication with DigitalOcean V2 API.
 type Client struct {
 	// HTTP client used to communicate with the DO API.
-	client *http.Client
+	HTTPClient *http.Client
 
 	// Base URL for API requests.
 	BaseURL *url.URL
@@ -111,11 +112,12 @@ type Client struct {
 // to explicitly set the RetryWaitMin and RetryWaitMax values.
 //
 // Note: Opting to use the go-retryablehttp client will overwrite any custom HTTP client passed into New().
-// Only the custom HTTP client's custom transport and timeout will be maintained.
+// Only the oauth2.TokenSource and Timeout will be maintained.
 type RetryConfig struct {
 	RetryMax     int
-	RetryWaitMin *float64 // Minimum time to wait
-	RetryWaitMax *float64 // Maximum time to wait
+	RetryWaitMin *float64    // Minimum time to wait
+	RetryWaitMax *float64    // Maximum time to wait
+	Logger       interface{} // Customer logger instance. Must implement either go-retryablehttp.Logger or go-retryablehttp.LeveledLogger
 }
 
 // RequestCompletionCallback defines the type of the request callback function
@@ -177,6 +179,9 @@ type ErrorResponse struct {
 
 	// RequestID returned from the API, useful to contact support.
 	RequestID string `json:"request_id"`
+
+	// Attempts is the number of times the request was attempted when retries are enabled.
+	Attempts int
 }
 
 // Rate contains the rate limit for the current client.
@@ -240,7 +245,7 @@ func NewClient(httpClient *http.Client) *Client {
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
+	c := &Client{HTTPClient: httpClient, BaseURL: baseURL, UserAgent: userAgent}
 
 	c.Account = &AccountServiceOp{client: c}
 	c.Actions = &ActionsServiceOp{client: c}
@@ -307,16 +312,32 @@ func New(httpClient *http.Client, opts ...ClientOpt) (*Client, error) {
 			retryableClient.RetryWaitMax = time.Duration(*c.RetryConfig.RetryWaitMax * float64(time.Second))
 		}
 
+		// By default this is nil and does not log.
+		retryableClient.Logger = c.RetryConfig.Logger
+
 		// if timeout is set, it is maintained before overwriting client with StandardClient()
-		retryableClient.HTTPClient.Timeout = c.client.Timeout
+		retryableClient.HTTPClient.Timeout = c.HTTPClient.Timeout
+
+		// This custom ErrorHandler is required to provide errors that are consistent
+		// with a *godo.ErrorResponse and a non-nil *godo.Response while providing
+		// insight into retries using an internal header.
+		retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+			if resp != nil {
+				resp.Header.Add(internalHeaderRetryAttempts, strconv.Itoa(numTries))
+
+				return resp, err
+			}
+
+			return resp, err
+		}
 
 		var source *oauth2.Transport
-		if _, ok := c.client.Transport.(*oauth2.Transport); ok {
-			source = c.client.Transport.(*oauth2.Transport)
+		if _, ok := c.HTTPClient.Transport.(*oauth2.Transport); ok {
+			source = c.HTTPClient.Transport.(*oauth2.Transport)
 		}
-		c.client = retryableClient.StandardClient()
-		c.client.Transport = &oauth2.Transport{
-			Base:   c.client.Transport,
+		c.HTTPClient = retryableClient.StandardClient()
+		c.HTTPClient.Transport = &oauth2.Transport{
+			Base:   c.HTTPClient.Transport,
 			Source: source.Source,
 		}
 
@@ -373,6 +394,7 @@ func WithRetryAndBackoffs(retryConfig RetryConfig) ClientOpt {
 		c.RetryConfig.RetryMax = retryConfig.RetryMax
 		c.RetryConfig.RetryWaitMax = retryConfig.RetryWaitMax
 		c.RetryConfig.RetryWaitMin = retryConfig.RetryWaitMin
+		c.RetryConfig.Logger = retryConfig.Logger
 		return nil
 	}
 }
@@ -467,7 +489,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 		}
 	}
 
-	resp, err := DoRequestWithClient(ctx, c.client, req)
+	resp, err := DoRequestWithClient(ctx, c.HTTPClient, req)
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +506,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 		// won't reuse it anyway.
 		const maxBodySlurpSize = 2 << 10
 		if resp.ContentLength == -1 || resp.ContentLength <= maxBodySlurpSize {
-			io.CopyN(ioutil.Discard, resp.Body, maxBodySlurpSize)
+			io.CopyN(io.Discard, resp.Body, maxBodySlurpSize)
 		}
 
 		if rerr := resp.Body.Close(); err == nil {
@@ -534,12 +556,17 @@ func DoRequestWithClient(
 }
 
 func (r *ErrorResponse) Error() string {
-	if r.RequestID != "" {
-		return fmt.Sprintf("%v %v: %d (request %q) %v",
-			r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.RequestID, r.Message)
+	var attempted string
+	if r.Attempts > 0 {
+		attempted = fmt.Sprintf("; giving up after %d attempt(s)", r.Attempts)
 	}
-	return fmt.Sprintf("%v %v: %d %v",
-		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
+
+	if r.RequestID != "" {
+		return fmt.Sprintf("%v %v: %d (request %q) %v%s",
+			r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.RequestID, r.Message, attempted)
+	}
+	return fmt.Sprintf("%v %v: %d %v%s",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message, attempted)
 }
 
 // CheckResponse checks the API response for errors, and returns them if present. A response is considered an
@@ -552,7 +579,7 @@ func CheckResponse(r *http.Response) error {
 	}
 
 	errorResponse := &ErrorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err == nil && len(data) > 0 {
 		err := json.Unmarshal(data, errorResponse)
 		if err != nil {
@@ -561,7 +588,12 @@ func CheckResponse(r *http.Response) error {
 	}
 
 	if errorResponse.RequestID == "" {
-		errorResponse.RequestID = r.Header.Get("x-request-id")
+		errorResponse.RequestID = r.Header.Get(headerRequestID)
+	}
+
+	attempts, strconvErr := strconv.Atoi(r.Header.Get(internalHeaderRetryAttempts))
+	if strconvErr == nil {
+		errorResponse.Attempts = attempts
 	}
 
 	return errorResponse

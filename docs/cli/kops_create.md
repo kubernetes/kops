@@ -8,7 +8,7 @@ Create a resource by command line, filename or stdin.
 ### Synopsis
 
 Create a resource:
-  
+        
   *  cluster
   *  instancegroup
   *  secret
