@@ -352,45 +352,21 @@ metadata:
   namespace: kube-system
 data:
   config.yaml: |
-    cluster-name: "{{ .ClusterName }}"
-    peer-service: "hubble-peer.kube-system.svc.cluster.local:443"
+    peer-service: unix:///var/run/cilium/hubble.sock
     listen-address: :4245
-    gops: true
-    gops-port: "9893"
 
     disable-server-tls: true
 
     tls-client-cert-file: /var/lib/hubble-relay/tls/client.crt
     tls-client-key-file: /var/lib/hubble-relay/tls/client.key
     tls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt
----
-# Source: cilium/templates/hubble/peer-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: hubble-peer
-  namespace: kube-system
-  labels:
-    k8s-app: cilium
-    app.kubernetes.io/part-of: cilium
-    app.kubernetes.io/name: hubble-peer
-spec:
-  selector:
-    k8s-app: cilium
-  ports:
-  - name: peer-service
-    port: 443
-    protocol: TCP
-    targetPort: 4244
-  internalTrafficPolicy: Local
+
 {{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
-  labels:
-    app.kubernetes.io/part-of: cilium
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -427,9 +403,6 @@ rules:
   verbs:
   - list
   - watch
-  # This is used when validating policies in preflight. This will need to stay
-  # until we figure out how to avoid "get" inside the preflight, and then
-  # should be removed ideally.
   - get
 - apiGroups:
   - cilium.io
@@ -498,8 +471,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
-  labels:
-    app.kubernetes.io/part-of: cilium
 rules:
 - apiGroups:
   - ""
@@ -689,12 +660,6 @@ rules:
   - ciliumloadbalancerippools/status
   verbs:
   - patch
-# For cilium-operator running in HA mode.
-#
-# Cilium operator running in HA mode requires the use of ResourceLock for Leader Election
-# between multiple running instances.
-# The preferred way of doing this is to use LeasesResourceLock as edits to Leases are less
-# common and fewer objects in the cluster watch "all Leases".
 - apiGroups:
   - coordination.k8s.io
   resources:
@@ -725,30 +690,26 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
-  labels:
-    app.kubernetes.io/part-of: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cilium
 subjects:
 - kind: ServiceAccount
-  name: "cilium"
+  name: cilium
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
-  labels:
-    app.kubernetes.io/part-of: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cilium-operator
 subjects:
 - kind: ServiceAccount
-  name: "cilium-operator"
+  name: cilium-operator
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -908,7 +869,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: hubble-relay
-    app.kubernetes.io/part-of: cilium
 spec:
   type: ClusterIP
   selector:
@@ -927,8 +887,6 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
-    app.kubernetes.io/name: cilium-agent
-    app.kubernetes.io/part-of: cilium
 spec:
   selector:
     matchLabels:
@@ -941,13 +899,6 @@ spec:
   template:
     metadata:
       annotations:
-        # Set app AppArmor's profile to "unconfined". The value of this annotation
-        # can be modified as long users know which profiles they have available
-        # in AppArmor.
-        container.apparmor.security.beta.kubernetes.io/cilium-agent: "unconfined"
-        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: "unconfined"
-        container.apparmor.security.beta.kubernetes.io/mount-cgroup: "unconfined"
-        container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: "unconfined"
         {{ if .EnablePrometheusMetrics }}
         # Annotation required for prometheus auto-discovery scraping
         # https://docs.cilium.io/en/v1.9/operations/metrics/#installation
@@ -960,8 +911,6 @@ spec:
       labels:
         k8s-app: cilium
         kubernetes.io/cluster-service: "true"
-        app.kubernetes.io/name: cilium-agent
-        app.kubernetes.io/part-of: cilium
     spec:
       containers:
       - name: cilium-agent
@@ -996,6 +945,10 @@ spec:
           successThreshold: 1
           failureThreshold: 10
           timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: {{ or .CPURequest "25m" }}
+            memory: {{ or .MemoryRequest "128Mi" }}
         readinessProbe:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
@@ -1074,15 +1027,7 @@ spec:
             exec:
               command:
               - /cni-uninstall.sh
-        resources:
-          requests:
-            cpu: {{ or .CPURequest "25m" }}
-            memory: {{ or .MemoryRequest "128Mi" }}
         ports:
-        - name: peer-service
-          containerPort: 4244
-          hostPort: 4244
-          protocol: TCP
         {{ if .EnablePrometheusMetrics }}
         - containerPort: {{ .AgentPrometheusPort }}
           name: prometheus
@@ -1096,37 +1041,21 @@ spec:
         {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-        {{- if ContainerdSELinuxEnabled }}
-          seLinuxOptions:
-            type: spc_t
-            level: s0
-        {{- end }}
-          # Writing to /host/proc/sys/net does not work without a privileged container
           privileged: true
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
-        # Unprivileged containers need to mount /proc/sys/net from the host
-        # to have write access
-        - mountPath: /host/proc/sys/net
-          name: host-proc-sys-net
-        # Unprivileged containers need to mount /proc/sys/kernel from the host
-        # to have write access
-        - mountPath: /host/proc/sys/kernel
-          name: host-proc-sys-kernel
         - name: bpf-maps
           mountPath: /sys/fs/bpf
-          # Unprivileged containers can't set mount propagation to bidirectional
-          # in this case we will mount the bpf fs from an init container that
-          # is privileged and set the mount propagation from host to container
-          # in Cilium.
-          mountPropagation: HostToContainer
+          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
+          mountPropagation: Bidirectional
+          {{- end }}
         - name: cilium-cgroup
           mountPath: /run/cilium/cgroupv2
         - name: cilium-run
           mountPath: /var/run/cilium
           {{- if not (semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver) }}
-        - mountPath: /host/opt/cni/bin
-          name: cni-path
+        - name: cni-path
+          mountPath: /host/opt/cni/bin
           {{- end }}
         - name: etc-cni-netd
           mountPath: /host/etc/cni/net.d
@@ -1141,8 +1070,8 @@ spec:
         - name: clustermesh-secrets
           mountPath: /var/lib/cilium/clustermesh
           readOnly: true
-        - mountPath: /tmp/cilium/config-map
-          name: cilium-config-path
+        - name: cilium-config-path
+          mountPath: /tmp/cilium/config-map
           readOnly: true
           # Needed to be able to load kernel modules
         - name: lib-modules
@@ -1150,17 +1079,17 @@ spec:
           readOnly: true
         - name: xtables-lock
           mountPath: /run/xtables.lock
-{{ if CiliumSecret }}
-        - name: cilium-ipsec-secrets
-          mountPath: /etc/ipsec
-{{ end }}
+        - name: tmp
+          mountPath: /tmp
 {{ if WithDefaultBool .Hubble.Enabled false }}
         - name: hubble-tls
           mountPath: /var/lib/cilium/tls/hubble
           readOnly: true
 {{ end }}
-        - name: tmp
-          mountPath: /tmp
+{{ if CiliumSecret }}
+        - mountPath: /etc/ipsec
+          name: cilium-ipsec-secrets
+{{ end }}
 {{ if .Debug }}
       - name: cilium-monitor
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
@@ -1216,10 +1145,6 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
         command:
         - sh
         - -ec
@@ -1239,20 +1164,7 @@ spec:
           mountPath: /hostbin
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          {{- if ContainerdSELinuxEnabled }}
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-          {{- end }}
-          capabilities:
-            add:
-            # Only used for 'mount' cgroup
-            - SYS_ADMIN
-            # Used for nsenter
-            - SYS_CHROOT
-            - SYS_PTRACE
-            drop:
-              - ALL
+          privileged: true
       - name: apply-sysctl-overwrites
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
@@ -1278,39 +1190,7 @@ spec:
           mountPath: /hostbin
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          {{- if ContainerdSELinuxEnabled }}
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-          {{- end }}
-          capabilities:
-            add:
-            # Required in order to access host's /etc/sysctl.d dir
-            - SYS_ADMIN
-            # Used for nsenter
-            - SYS_CHROOT
-            - SYS_PTRACE
-            drop:
-              - ALL
-      # Mount the bpf fs if it is not mounted. We will perform this task
-      # from a privileged container because the mount propagation bidirectional
-      # only works from privileged containers.
-      - name: mount-bpf-fs
-        image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
-        imagePullPolicy: IfNotPresent
-        args:
-        - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
-        command:
-        - /bin/bash
-        - -c
-        - --
-        terminationMessagePolicy: FallbackToLogsOnError
-        securityContext:
           privileged: true
-        volumeMounts:
-        - name: bpf-maps
-          mountPath: /sys/fs/bpf
-          mountPropagation: Bidirectional
       - name: clean-cilium-state
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
@@ -1343,39 +1223,12 @@ spec:
         {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          {{- if ContainerdSELinuxEnabled }}
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-          {{- end }}
-          capabilities:
-            add:
-            # Most of the capabilities here are the same ones used in the
-            # cilium-agent's container because this container can be used to
-            # uninstall all Cilium resources, and therefore it is likely that
-            # will need the same capabilities.
-            # Used since cilium modifies routing tables, etc...
-            - NET_ADMIN
-            # Used in iptables. Consider removing once we are iptables-free
-            - SYS_MODULE
-            # We need it for now but might not need it for >= 5.11 specially
-            # for the 'SYS_RESOURCE'.
-            # In >= 5.8 there's already BPF and PERMON capabilities
-            - SYS_ADMIN
-            # Could be an alternative for the SYS_ADMIN for the RLIMIT_NPROC
-            - SYS_RESOURCE
-            # Both PERFMON and BPF requires kernel 5.8, container runtime
-            # cri-o >= v1.22.0 or containerd >= v1.5.0.
-            # If available, SYS_ADMIN can be removed.
-            #- PERFMON
-            #- BPF
-            drop:
-              - ALL
+          privileged: true
         volumeMounts:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
-          {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
-          mountPropagation: HostToContainer
+          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
+          mountPropagation: Bidirectional
           {{- end }}
           # Required to mount cgroup filesystem from the host to cilium agent pod
         - name: cilium-cgroup
@@ -1389,18 +1242,16 @@ spec:
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         command:
-          - "/install-plugin.sh"
+        - /install-plugin.sh
         resources:
           requests:
             cpu: 100m
             memory: 10Mi
         securityContext:
-          privileged: true
-          {{- if ContainerdSELinuxEnabled }}
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-          {{- end }}
+          capabilities:
+            drop:
+            - ALL
+        terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
           - name: cni-path
@@ -1408,9 +1259,14 @@ spec:
       {{- end }}
       restartPolicy: Always
       priorityClassName: system-node-critical
-      serviceAccount: "cilium"
-      serviceAccountName: "cilium"
-      automountServiceAccountToken: true
+{{ if ContainerdSELinuxEnabled }}
+      securityContext:
+        seLinuxOptions:
+          type: spc_t
+          level: s0
+{{ end }}
+      serviceAccount: cilium
+      serviceAccountName: cilium
       terminationGracePeriodSeconds: 1
       hostNetwork: true
       affinity:
@@ -1423,7 +1279,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       tolerations:
-        - operator: Exists
+      - operator: Exists
       volumes:
         # For sharing configuration between the "config" initContainer and the agent
       - name: tmp
@@ -1508,19 +1364,11 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
-      {{- if CiliumSecret }}
+{{ if CiliumSecret }}
       - name: cilium-ipsec-secrets
         secret:
           secretName: cilium-ipsec-keys
-      {{- end }}
-      - name: host-proc-sys-net
-        hostPath:
-          path: /proc/sys/net
-          type: Directory
-      - name: host-proc-sys-kernel
-        hostPath:
-          path: /proc/sys/kernel
-          type: Directory
+{{ end }}
 {{ if WithDefaultBool .Hubble.Enabled false }}
       - name: hubble-tls
         projected:
@@ -1538,8 +1386,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    app.kubernetes.io/name: cilium-operator
-    app.kubernetes.io/part-of: cilium
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -1562,8 +1408,6 @@ spec:
       labels:
         io.cilium/app: operator
         name: cilium-operator
-        app.kubernetes.io/part-of: cilium
-        app.kubernetes.io/name: cilium-operator
     spec:
       nodeSelector: null
       affinity:
@@ -1576,16 +1420,6 @@ spec:
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchLabels:
-                io.cilium/app: operator
-            topologyKey: kubernetes.io/hostname
-      nodeSelector:
-        kubernetes.io/os: linux
-      tolerations:
-        - operator: Exists
       containers:
       - name: cilium-operator
         image: "{{ or .Registry "quay.io" }}/cilium/operator:{{ .Version }}"
@@ -1718,8 +1552,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: hubble-relay
-    app.kubernetes.io/name: hubble-relay
-    app.kubernetes.io/part-of: cilium
 spec:
   replicas: 2
   selector:
@@ -1733,8 +1565,6 @@ spec:
     metadata:
       labels:
         k8s-app: hubble-relay
-        app.kubernetes.io/name: hubble-relay
-        app.kubernetes.io/part-of: cilium
     spec:
       securityContext:
         fsGroup: 65532
@@ -1752,10 +1582,13 @@ spec:
           command:
             - hubble-relay
           args:
-            - serve
-            {{- if .Debug }}
-            - '--debug'
-            {{- end }}
+            - "serve"
+            - "--peer-service=unix:///var/run/cilium/hubble.sock"
+            - "--listen-address=:4245"
+          env:
+            # unfortunately, the addon CAs use only CN
+            - name: GODEBUG
+              value: x509ignoreCN=0
           ports:
             - name: grpc
               containerPort: 4245
@@ -1765,51 +1598,46 @@ spec:
           livenessProbe:
             tcpSocket:
               port: grpc
-          volumeMounts:
-          - name: config
-            mountPath: /etc/hubble-relay
-            readOnly: true
-          - name: tls
-            mountPath: /var/lib/hubble-relay/tls
-            readOnly: true
           terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+          - mountPath: /var/run/cilium
+            name: hubble-sock-dir
+            readOnly: true
+          - mountPath: /etc/hubble-relay
+            name: config
+            readOnly: true
+          - mountPath: /var/lib/hubble-relay/tls
+            name: tls
+            readOnly: true
       restartPolicy: Always
-      serviceAccount: "hubble-relay"
-      serviceAccountName: "hubble-relay"
-      terminationGracePeriodSeconds: 1
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchLabels:
-                k8s-app: cilium
-            topologyKey: kubernetes.io/hostname
-      nodeSelector:
-        kubernetes.io/os: linux
+      serviceAccount: hubble-relay
+      serviceAccountName: hubble-relay
+      terminationGracePeriodSeconds: 0
       topologySpreadConstraints:
       - maxSkew: 1
-        topologyKey: topology.kubernetes.io/zone
+        topologyKey: "topology.kubernetes.io/zone"
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
             k8s-app: hubble-relay
       - maxSkew: 1
-        topologyKey: kubernetes.io/hostname
+        topologyKey: "kubernetes.io/hostname"
         whenUnsatisfiable: DoNotSchedule
         labelSelector:
           matchLabels:
             k8s-app: hubble-relay
       volumes:
-      - name: config
-        configMap:
+      - hostPath:
+          path: /var/run/cilium
+          type: Directory
+        name: hubble-sock-dir
+      - configMap:
           name: hubble-relay-config
           items:
           - key: config.yaml
             path: config.yaml
-      - name: tls
-        projected:
-          # note: the leading zero means this number is in octal representation: do not remove it
-          defaultMode: 0400
+        name: config
+      - projected:
           sources:
           - secret:
               name: hubble-relay-client-certs
@@ -1820,14 +1648,13 @@ spec:
                   path: client.key
                 - key: ca.crt
                   path: hubble-server-ca.crt
+        name: tls
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   labels:
     k8s-app: cilium
-    app.kubernetes.io/name: cilium-agent
-    app.kubernetes.io/part-of: cilium
   name: hubble-server-certs
   namespace: kube-system
 spec:
@@ -1843,8 +1670,6 @@ kind: Certificate
 metadata:
   labels:
     k8s-app: cilium
-    app.kubernetes.io/name: cilium-agent
-    app.kubernetes.io/part-of: cilium
   name: hubble-relay-client-certs
   namespace: kube-system
 spec:
@@ -1867,8 +1692,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    app.kubernetes.io/name: cilium-operator
-    app.kubernetes.io/part-of: cilium
 spec:
   selector:
     matchLabels:
