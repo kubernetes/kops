@@ -14,7 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-	github.com/aws/aws-sdk-go v1.45.0
+	github.com/aws/aws-sdk-go v1.45.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.12.3
 	github.com/digitalocean/godo v1.102.1
@@ -68,7 +68,7 @@ require (
 	k8s.io/kubelet v0.28.1
 	k8s.io/mount-utils v0.28.1
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
-	sigs.k8s.io/controller-runtime v0.16.0
+	sigs.k8s.io/controller-runtime v0.16.1
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0
 	sigs.k8s.io/yaml v1.3.0
 )
