@@ -13,8 +13,10 @@ OpenstackExternalNet: vlan1
 OpenstackExternalSubnet: vlan1subnet
 OpenstackLBSubnet: vlan1lbsubnet
 OpenstackDNSServers: 1.1.1.1
-ControlPlaneSize: m1.medium
-NodeSize: m1.large
+ControlPlaneSizes:
+- m1.medium
+NodeSizes:
+- m1.large
 APILoadBalancerType: public
 Topology: private
 DNSType: none

@@ -15,4 +15,5 @@ KubernetesVersion: v1.26.0
 cloudLabels: "Owner=John Doe,dn=\"cn=John Doe: dc=example dc=com\", foo/bar=fib+baz"
 Project: testproject
 GCEServiceAccount: test-account@testproject.iam.gserviceaccount.com
-ControlPlaneSize: e2-standard-2
+ControlPlaneSizes:
+- e2-standard-2

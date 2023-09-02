@@ -162,8 +162,8 @@ type NewClusterOptions struct {
 	NodeImage         string
 	ControlPlaneImage string
 	BastionImage      string
-	ControlPlaneSize  string
-	NodeSize          string
+	ControlPlaneSizes []string
+	NodeSizes         []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -918,7 +918,18 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 				}
 			}
 
-			g.Spec.MachineType = opt.ControlPlaneSize
+			for i, size := range opt.ControlPlaneSizes {
+				if i == 0 {
+					g.Spec.MachineType = size
+				}
+				if cloudProvider == api.CloudProviderAWS && len(opt.ControlPlaneSizes) > 1 {
+					if g.Spec.MixedInstancesPolicy == nil {
+						g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{}
+
+					}
+					g.Spec.MixedInstancesPolicy.Instances = append(g.Spec.MixedInstancesPolicy.Instances, size)
+				}
+			}
 			g.Spec.Image = opt.ControlPlaneImage
 
 			controlPlanes = append(controlPlanes, g)
@@ -1055,7 +1066,18 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 			g.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
 		}
 
-		g.Spec.MachineType = opt.NodeSize
+		for i, size := range opt.NodeSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if cloudProvider == api.CloudProviderAWS && len(opt.NodeSizes) > 1 {
+				if g.Spec.MixedInstancesPolicy == nil {
+					g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{}
+
+				}
+				g.Spec.MixedInstancesPolicy.Instances = append(g.Spec.MixedInstancesPolicy.Instances, size)
+			}
+		}
 		g.Spec.Image = opt.NodeImage
 
 		nodes = append(nodes, g)
