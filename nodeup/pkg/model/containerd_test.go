@@ -32,14 +32,6 @@ import (
 	"k8s.io/kops/util/pkg/distributions"
 )
 
-func TestContainerdBuilder_Docker_19_03_13(t *testing.T) {
-	runContainerdBuilderTest(t, "from_docker_19.03.11", distributions.DistributionUbuntu2004)
-}
-
-func TestContainerdBuilder_Docker_19_03_14(t *testing.T) {
-	runContainerdBuilderTest(t, "from_docker_19.03.14", distributions.DistributionUbuntu2004)
-}
-
 func TestContainerdBuilder_Simple(t *testing.T) {
 	runContainerdBuilderTest(t, "simple", distributions.DistributionUbuntu2004)
 }
@@ -49,7 +41,7 @@ func TestContainerdBuilder_Flatcar(t *testing.T) {
 }
 
 func TestContainerdBuilder_SkipInstall(t *testing.T) {
-	runDockerBuilderTest(t, "skipinstall")
+	runContainerdBuilderTest(t, "skipinstall", distributions.DistributionUbuntu2004)
 }
 
 func TestContainerdBuilder_BuildFlags(t *testing.T) {

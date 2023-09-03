@@ -313,16 +313,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	// Add container runtime spcific flags
 	switch b.NodeupConfig.ContainerRuntime {
-	case "docker":
-		if b.IsKubernetesLT("1.24") {
-			flags += " --container-runtime=docker"
-			flags += " --cni-bin-dir=" + b.CNIBinDir()
-			flags += " --cni-conf-dir=" + b.CNIConfDir()
-		}
 	case "containerd":
-		if b.IsKubernetesLT("1.24") {
-			flags += " --container-runtime=remote"
-		}
 		flags += " --runtime-request-timeout=15m"
 		if b.NodeupConfig.ContainerdConfig.Address == nil {
 			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
@@ -366,8 +357,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
 	switch b.NodeupConfig.ContainerRuntime {
-	case "docker":
-		manifest.Set("Unit", "After", "docker.service")
 	case "containerd":
 		manifest.Set("Unit", "After", "containerd.service")
 	default:

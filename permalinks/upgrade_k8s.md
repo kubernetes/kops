@@ -18,6 +18,7 @@ Kops will remove support for Kubernetes versions as follows:
 | 1.28         | 1.22                                   |
 | 1.29         | 1.23                                   |
 | 1.30         | 1.24                                   |
+| 1.31         | 1.25                                   |
 
 You are running a version of kubernetes that we recommend upgrading.
 

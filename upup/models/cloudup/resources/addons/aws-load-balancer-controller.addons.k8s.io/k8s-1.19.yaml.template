@@ -799,12 +799,12 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
 spec:
-  replicas: {{ ControlPlaneControllerReplicas (IsKubernetesGTE "1.24") }}
+  replicas: {{ ControlPlaneControllerReplicas true }}
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
       app.kubernetes.io/name: aws-load-balancer-controller
-  {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+  {{ if not (UseServiceAccountExternalPermissions) }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -817,7 +817,7 @@ spec:
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:
       nodeSelector: null
-      {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+      {{ if not (UseServiceAccountExternalPermissions) }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -879,7 +879,7 @@ spec:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
-      {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+      {{ if not (UseServiceAccountExternalPermissions) }}
       hostNetwork: true
       tolerations:
         - key: node-role.kubernetes.io/control-plane
@@ -1056,11 +1056,7 @@ spec:
     kind: IngressClassParams
     name: alb
 ---
-{{ if IsKubernetesGTE "1.23" }}
 apiVersion: policy/v1
-{{ else }}
-apiVersion: policy/v1beta1
-{{ end }}
 
 kind: PodDisruptionBudget
 metadata:

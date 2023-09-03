@@ -25,11 +25,6 @@ import (
 )
 
 const (
-	RoleLabelName15           = "kubernetes.io/role"
-	RoleMasterLabelValue15    = "master"
-	RoleAPIServerLabelValue15 = "api-server"
-	RoleNodeLabelValue15      = "node"
-
 	RoleLabelMaster16    = "node-role.kubernetes.io/master"
 	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
 	RoleLabelNode16      = "node-role.kubernetes.io/node"
@@ -81,9 +76,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		if isAPIServer || featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
 		}
-		if cluster.IsKubernetesLT("1.24") {
-			nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
-		}
 	}
 
 	if isNode {
@@ -91,9 +83,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
-		if cluster.IsKubernetesLT("1.24") {
-			nodeLabels[RoleLabelName15] = RoleNodeLabelValue15
-		}
 	}
 
 	if isControlPlane {
@@ -102,10 +91,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		}
 		for label, value := range BuildMandatoryControlPlaneLabels() {
 			nodeLabels[label] = value
-		}
-		if cluster.IsKubernetesLT("1.24") {
-			nodeLabels[RoleLabelMaster16] = ""
-			nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
 		}
 	}
 

@@ -39,7 +39,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		return nil
 	}
 
-	if clusterSpec.ExternalCloudControllerManager == nil && b.IsKubernetesGTE("1.24") {
+	if clusterSpec.ExternalCloudControllerManager == nil {
 		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
 
@@ -79,8 +79,6 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 	if eccm.Image == "" {
 		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
 		switch b.KubernetesVersion.Minor {
-		case 23:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.23.17"
 		case 24:
 			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.15"
 		case 25:
@@ -96,7 +94,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		}
 	}
 
-	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
+	if b.IsKubernetesLT("1.25") {
 		eccm.EnableLeaderMigration = fi.PtrTo(true)
 	}
 
