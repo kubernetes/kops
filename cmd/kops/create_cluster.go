@@ -278,11 +278,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.BastionImage, "bastion-image", options.BastionImage, "Machine image for bastions. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("bastion-image", completeInstanceImage)
 
-	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Machine type for worker nodes")
+	cmd.Flags().StringSliceVar(&options.NodeSizes, "node-size", options.NodeSizes, "Machine type(s) for worker nodes")
 	cmd.RegisterFlagCompletionFunc("node-size", completeMachineType)
-	cmd.Flags().StringVar(&options.ControlPlaneSize, "master-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
+	cmd.Flags().StringSliceVar(&options.ControlPlaneSizes, "master-size", options.ControlPlaneSizes, "Machine type(s) for control-plane nodes")
 	cmd.Flags().MarkDeprecated("master-size", "use --control-plane-size instead")
-	cmd.Flags().StringVar(&options.ControlPlaneSize, "control-plane-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
+	cmd.Flags().StringSliceVar(&options.ControlPlaneSizes, "control-plane-size", options.ControlPlaneSizes, "Machine type(s) for control-plane nodes")
 	cmd.RegisterFlagCompletionFunc("control-plane-size", completeMachineType)
 
 	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "master-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")

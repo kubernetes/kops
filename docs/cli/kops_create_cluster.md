@@ -80,7 +80,7 @@ kops create cluster [CLUSTER] [flags]
       --control-plane-count int32               Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone
       --control-plane-image string              Machine image for control-plane nodes. Takes precedence over --image
       --control-plane-security-groups strings   Additional pre-created security groups to add to control-plane nodes.
-      --control-plane-size string               Machine type for control-plane nodes
+      --control-plane-size strings              Machine type(s) for control-plane nodes
       --control-plane-tenancy string            Tenancy of the control-plane group (AWS only): default or dedicated
       --control-plane-volume-size int32         Instance volume size (in GB) for control-plane nodes
       --control-plane-zones strings             Zones in which to run control-plane nodes. (must be an odd number)
@@ -105,7 +105,7 @@ kops create cluster [CLUSTER] [flags]
       --node-count int32                        Total number of worker nodes. Defaults to one node per zone
       --node-image string                       Machine image for worker nodes. Takes precedence over --image
       --node-security-groups strings            Additional pre-created security groups to add to worker nodes.
-      --node-size string                        Machine type for worker nodes
+      --node-size strings                       Machine type(s) for worker nodes
       --node-tenancy string                     Tenancy of the node group (AWS only): default or dedicated
       --node-volume-size int32                  Instance volume size (in GB) for worker nodes
       --os-dns-servers string                   comma separated list of DNS Servers which is used in network
