@@ -115,7 +115,7 @@ Contents: |
       - --src=/ko-app/kops-utils-cp
       command:
       - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.27.0
+      image: registry.k8s.io/kops/kops-utils-cp:1.27.2
       name: kops-utils-cp
       resources: {}
       volumeMounts:
@@ -346,7 +346,7 @@ Contents: |
       - --src=/ko-app/kops-utils-cp
       command:
       - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.27.0
+      image: registry.k8s.io/kops/kops-utils-cp:1.27.2
       name: kops-utils-cp
       resources: {}
       volumeMounts:
