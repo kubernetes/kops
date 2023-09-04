@@ -190,9 +190,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c "+containerdConfigFilePath+" \"$CONTAINERD_OPTS\"")
 
 	// notify the daemon's readiness to systemd
-	if sv.GTE(semver.MustParse("1.3.4")) {
-		manifest.Set("Service", "Type", "notify")
-	}
+	manifest.Set("Service", "Type", "notify")
 
 	// set delegate yes so that systemd does not reset the cgroups of containerd containers
 	manifest.Set("Service", "Delegate", "yes")

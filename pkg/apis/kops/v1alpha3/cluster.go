@@ -58,7 +58,6 @@ type ClusterSpec struct {
 	// GossipConfig for the cluster assuming the use of gossip DNS
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
 	// ContainerRuntime was removed.
-	// +k8s:conversion-gen=false
 	ContainerRuntime string `json:"-"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
@@ -93,11 +92,10 @@ type ClusterSpec struct {
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
-	// Component configurations
-	Containerd *ContainerdConfig `json:"containerd,omitempty"`
 	// Docker was removed.
-	// +k8s:conversion-gen=false
-	Docker                         *DockerConfig                 `json:"-"`
+	Docker *DockerConfig `json:"-"`
+	// Component configurations
+	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager          *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`

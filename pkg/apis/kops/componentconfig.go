@@ -182,7 +182,6 @@ type KubeletConfigSpec struct {
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
 	// DockerDisableSharedPID was removed.
-	// +k8s:conversion-gen=false
 	DockerDisableSharedPID *bool `json:"-"`
 	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
 	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`

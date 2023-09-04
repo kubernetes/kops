@@ -1138,14 +1138,14 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.Containerd != nil {
-		in, out := &in.Containerd, &out.Containerd
-		*out = new(ContainerdConfig)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.Docker != nil {
 		in, out := &in.Docker, &out.Docker
 		*out = new(DockerConfig)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(ContainerdConfig)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.KubeDNS != nil {

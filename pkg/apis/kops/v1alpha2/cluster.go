@@ -167,9 +167,10 @@ type ClusterSpec struct {
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
+	// Docker was removed.
+	Docker *DockerConfig `json:"docker,omitempty"`
 	// Component configurations
 	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
-	Docker                         *DockerConfig                 `json:"docker,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager          *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`

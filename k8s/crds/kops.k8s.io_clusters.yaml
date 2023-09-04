@@ -944,7 +944,7 @@ spec:
                   the zone.
                 type: string
               docker:
-                description: DockerConfig is the configuration for docker
+                description: Docker was removed.
                 properties:
                   authorizationPlugins:
                     description: AuthorizationPlugins is a list of authorization plugins

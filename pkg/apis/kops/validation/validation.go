@@ -188,8 +188,16 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	if spec.ContainerRuntime != "" {
+		allErrs = append(allErrs, validateContainerRuntime(c, spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+	}
+
 	if spec.Containerd != nil {
 		allErrs = append(allErrs, validateContainerdConfig(spec, spec.Containerd, fieldPath.Child("containerd"), true)...)
+	}
+
+	if spec.Docker != nil {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("docker"), "Docker CRI support was removed in Kubernetes 1.24: https://kubernetes.io/blog/2020/12/02/dockershim-faq"))
 	}
 
 	if spec.Assets != nil {
@@ -1640,6 +1648,19 @@ func validateCalicoEncapsulationMode(mode string, fldPath *field.Path) field.Err
 
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, IsValidValue(fldPath, &mode, valid)...)
+
+	return allErrs
+}
+
+func validateContainerRuntime(c *kops.Cluster, runtime string, fldPath *field.Path) field.ErrorList {
+	valid := []string{"containerd", "docker"}
+
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, IsValidValue(fldPath, &runtime, valid)...)
+
+	if runtime == "docker" {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Docker CRI support was removed in Kubernetes 1.24: https://kubernetes.io/blog/2020/12/02/dockershim-faq"))
+	}
 
 	return allErrs
 }
