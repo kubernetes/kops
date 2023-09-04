@@ -171,7 +171,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 
-	if clusterSpec.CloudProvider.AWS != nil && clusterSpec.CloudProvider.AWS.EBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudProvider.AWS.EBSCSIDriver.Enabled) {
+	if clusterSpec.CloudProvider.AWS != nil {
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
