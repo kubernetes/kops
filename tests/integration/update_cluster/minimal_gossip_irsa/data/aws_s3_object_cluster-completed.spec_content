@@ -24,14 +24,11 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal.k8s.local
-  containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
       version: 1.1.5
     version: 1.6.20
-  docker:
-    skipInstall: true
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/minimal.k8s.local/backups/etcd/main

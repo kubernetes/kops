@@ -1,5 +1,4 @@
 CAs: {}
-ContainerRuntime: docker
 FileAssets:
 - content: blah blah
   name: iptables-restore
@@ -44,7 +43,5 @@ Networking:
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
-docker:
-  logLevel: INFO
 usesLegacyGossip: false
 usesNoneDNS: false

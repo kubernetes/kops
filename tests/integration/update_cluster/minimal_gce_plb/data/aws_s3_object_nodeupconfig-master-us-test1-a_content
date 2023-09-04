@@ -227,7 +227,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal-gce-plb.example.com
-ContainerRuntime: containerd
 ControlPlaneConfig:
   KubeControllerManager:
     allocateNodeCIDRs: true
@@ -313,8 +312,6 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 etcdManifests:
 - memfs://tests/minimal-gce-plb.example.com/manifests/etcd/main-master-us-test1-a.yaml
 - memfs://tests/minimal-gce-plb.example.com/manifests/etcd/events-master-us-test1-a.yaml

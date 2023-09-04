@@ -13,7 +13,6 @@ Assets:
   - 54e79e4d48b9e191767e4abc08be1a8476a1c757e9a9f8c45c6ded001226867f@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.arm64
 CAs: {}
 ClusterName: private-shared-ip.example.com
-ContainerRuntime: containerd
 Hooks:
 - null
 - null
@@ -56,7 +55,5 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 usesLegacyGossip: false
 usesNoneDNS: false

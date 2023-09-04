@@ -15,7 +15,6 @@ Assets:
   - 1b309c4d5aa4cc7b888b2f79c385ecee26ca3d55dae0852e7c4a692196d5faab@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
-ContainerRuntime: containerd
 Hooks:
 - null
 - null
@@ -58,7 +57,5 @@ containerdConfig:
   runc:
     version: 1.1.7
   version: 1.7.2
-docker:
-  skipInstall: true
 usesLegacyGossip: false
 usesNoneDNS: false
