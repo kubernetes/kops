@@ -264,7 +264,6 @@ data:
   {{ if eq . "eni" }}
   enable-endpoint-routes: "true"
   auto-create-cilium-node-resource: "true"
-  blacklist-conflicting-routes: "false"
   eni-tags: "{{ CloudLabels }}"
   {{ end }}
   {{ end }}
