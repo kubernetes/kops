@@ -164,14 +164,10 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 				}
 			}
 			formatTaskCount := func(n int) string {
-				if n == 1 {
-					return "1 task"
-				} else {
-					return fmt.Sprintf("%d tasks", n)
-				}
+				return fmt.Sprintf("%d task(s)", n)
 			}
 			if tryAgainLaterCount == n {
-				klog.Infof("continuing to run %s", formatTaskCount(tryAgainLaterCount))
+				klog.Infof("Continuing to run %s", formatTaskCount(tryAgainLaterCount))
 			} else {
 				klog.Infof("No progress made, sleeping before retrying %s", formatTaskCount(n))
 			}
