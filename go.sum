@@ -645,8 +645,6 @@ github.com/spf13/viper v1.16.0 h1:rGGH0XDZhdUOryiDWjmIvUSWpbNqisK8Wk0Vyefw8hc=
 github.com/spf13/viper v1.16.0/go.mod h1:yg78JgCJcbrQOvV9YLXgkLaZqUidkY9K+Dd1FofRzQg=
 github.com/spotinst/spotinst-sdk-go v1.171.0 h1:ZihMPEjkpIkSpawWLJt9RtCRY4mOQMGlfrkVmA03000=
 github.com/spotinst/spotinst-sdk-go v1.171.0/go.mod h1:Ku9c4p+kRWnQqmXkzGcTMHLcQKgLHrQZISxeKY7mPqE=
-github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
->>>>>>> 380f9b2f0d (update to github.com/spotinst/spotinst-sdk-go@v1.171.0)
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
