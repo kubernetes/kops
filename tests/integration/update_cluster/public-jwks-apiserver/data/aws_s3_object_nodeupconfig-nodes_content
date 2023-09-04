@@ -58,6 +58,5 @@ containerdConfig:
   version: 1.6.20
 docker:
   skipInstall: true
-useInstanceIDForNodeName: true
 usesLegacyGossip: false
 usesNoneDNS: false

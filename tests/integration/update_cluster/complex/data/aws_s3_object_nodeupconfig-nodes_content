@@ -61,6 +61,5 @@ docker:
   skipInstall: true
 packages:
 - nfs-common
-useInstanceIDForNodeName: true
 usesLegacyGossip: false
 usesNoneDNS: false

@@ -60,6 +60,5 @@ containerdConfig:
   version: 1.7.2
 docker:
   skipInstall: true
-useInstanceIDForNodeName: true
 usesLegacyGossip: false
 usesNoneDNS: false

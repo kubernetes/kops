@@ -128,7 +128,7 @@ ClusterName: ha.example.com
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: master-us-test-1b
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 4yGNjR0e8zEmfYAETwNW8ahaCvxEk+HmSALFojenem4=
+NodeupConfigHash: LoOPXwKyP76MfmV8wiDBwKvXiyWSd8W/b6vKzLBzBR0=
 
 __EOF_KUBE_ENV
 
