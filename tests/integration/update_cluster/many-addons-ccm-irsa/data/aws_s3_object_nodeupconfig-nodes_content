@@ -29,7 +29,7 @@ KubeletConfig:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: external
-  clusterDNS: 172.20.0.10
+  clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -50,7 +50,7 @@ KubernetesVersion: 1.26.0
 Networking:
   amazonVPC: {}
   nonMasqueradeCIDR: 172.20.0.0/16
-  serviceClusterIPRange: 172.20.0.0/19
+  serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
