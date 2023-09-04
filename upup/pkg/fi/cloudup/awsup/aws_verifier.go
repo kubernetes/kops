@@ -121,7 +121,7 @@ type ResponseMetadata struct {
 	RequestId string `xml:"RequestId"`
 }
 
-func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, AWSAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
@@ -233,7 +233,7 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 
 	instance := instances.Reservations[0].Instances[0]
 
-	addrs, err := GetInstanceCertificateNames(instances, useInstanceIDForNodeName)
+	addrs, err := GetInstanceCertificateNames(instances)
 	if err != nil {
 		return nil, err
 	}

@@ -2506,7 +2506,7 @@ func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error)
 
 // GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
 // The first value is the node name and any additional values are the DNS name and IP addresses.
-func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput, useInstanceIDForNodeName bool) (addrs []string, err error) {
+func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
 	if len(instances.Reservations) != 1 {
 		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
 	}
@@ -2517,9 +2517,7 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput, useInst
 
 	instance := instances.Reservations[0].Instances[0]
 
-	if useInstanceIDForNodeName {
-		addrs = append(addrs, *instance.InstanceId)
-	}
+	addrs = append(addrs, *instance.InstanceId)
 
 	if instance.PrivateDnsName != nil {
 		addrs = append(addrs, *instance.PrivateDnsName)

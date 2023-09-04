@@ -116,8 +116,6 @@ type Config struct {
 	ElbSecurityGroup *string `json:"elbSecurityGroup,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node.
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
-	// UseInstanceIDForNodeName uses the instance ID instead of the hostname for the node name.
-	UseInstanceIDForNodeName bool `json:"useInstanceIDForNodeName,omitempty"`
 	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
 	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
@@ -336,10 +334,6 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.KubeRouter = &kops.KuberouterNetworkingSpec{}
 	}
 
-	if UsesInstanceIDForNodeName(cluster) {
-		config.UseInstanceIDForNodeName = true
-	}
-
 	if instanceGroup.Spec.Kubelet != nil {
 		config.KubeletConfig = *instanceGroup.Spec.Kubelet
 	}
@@ -452,10 +446,6 @@ func buildKubeProxy(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *k
 	}
 
 	return config
-}
-
-func UsesInstanceIDForNodeName(cluster *kops.Cluster) bool {
-	return cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS
 }
 
 func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {

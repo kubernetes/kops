@@ -120,7 +120,7 @@ func readKubeConfig() (*restclient.Config, error) {
 		&clientcmd.ConfigOverrides{}).ClientConfig()
 }
 
-func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, OpenstackAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}

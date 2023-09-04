@@ -59,7 +59,7 @@ func NewVerifier(ctx context.Context, opt *DigitalOceanVerifierOptions) (bootstr
 	}, nil
 }
 
-func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, DOAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}

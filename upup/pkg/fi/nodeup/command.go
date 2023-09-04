@@ -35,7 +35,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"go.uber.org/multierr"
 	"k8s.io/klog/v2"
@@ -421,7 +420,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 }
 
 func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
-	hostnameOverride, err := evaluateHostnameOverride(cloudProvider, nodeupConfig.UseInstanceIDForNodeName)
+	hostnameOverride, err := evaluateHostnameOverride(cloudProvider)
 	if err != nil {
 		return err
 	}
@@ -439,49 +438,15 @@ func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID
 	return nil
 }
 
-func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDForNodeName bool) (string, error) {
+func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error) {
 	switch cloudProvider {
 	case api.CloudProviderAWS:
 		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
 		}
-		instanceID := string(instanceIDBytes)
 
-		if useInstanceIDForNodeName {
-			return instanceID, nil
-		}
-
-		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
-		if err != nil {
-			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
-		}
-
-		config := aws.NewConfig()
-		config = config.WithCredentialsChainVerboseErrors(true)
-
-		s, err := session.NewSession(config)
-		if err != nil {
-			return "", fmt.Errorf("error starting new AWS session: %v", err)
-		}
-
-		svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
-
-		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
-			InstanceIds: []*string{&instanceID},
-		})
-		if err != nil {
-			return "", fmt.Errorf("error describing instances: %v", err)
-		}
-
-		if len(result.Reservations) > 1 {
-			return "", fmt.Errorf("too many reservations returned for the single instance-id")
-		}
-		if len(result.Reservations[0].Instances) > 1 {
-			return "", fmt.Errorf("too many instances returned for the single instance-id")
-		}
-
-		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
+		return string(instanceIDBytes), nil
 
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
