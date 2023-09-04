@@ -115,7 +115,7 @@ metadata:
   name: aws-node-termination-handler
   namespace: kube-system
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/instance: aws-node-termination-handler
