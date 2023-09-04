@@ -50,7 +50,7 @@ KubernetesVersion: 1.26.0-alpha.0
 Networking:
   amazonVPC: {}
   nonMasqueradeCIDR: 172.20.0.0/16
-  serviceClusterIPRange: 172.20.0.0/19
+  serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info

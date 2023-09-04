@@ -394,14 +394,7 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 		if nmBits > 32 {
 			cluster.Spec.Networking.ServiceClusterIPRange = "fd00:5e4f:ce::/108"
 		} else {
-			// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
-			serviceOnes := nmOnes + 3
-			// Max size of network is 20 bits
-			if nmBits-serviceOnes > 20 {
-				serviceOnes = nmBits - 20
-			}
-			cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(serviceOnes, nmBits)}
-			cluster.Spec.Networking.ServiceClusterIPRange = cidr.String()
+			cluster.Spec.Networking.ServiceClusterIPRange = "100.64.0.0/13"
 		}
 		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.Networking.ServiceClusterIPRange)
 	}

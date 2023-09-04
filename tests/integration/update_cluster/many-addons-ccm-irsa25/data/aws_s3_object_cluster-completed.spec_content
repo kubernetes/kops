@@ -123,7 +123,7 @@ spec:
     securePort: 443
     serviceAccountIssuer: https://discovery.example.com/minimal.example.com
     serviceAccountJWKSURI: https://discovery.example.com/minimal.example.com/openid/v1/jwks
-    serviceClusterIPRange: 172.20.0.0/19
+    serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: true
@@ -153,7 +153,7 @@ spec:
       image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
-    serverIP: 172.20.0.10
+    serverIP: 100.64.0.10
   kubeProxy:
     cpuRequest: 100m
     image: registry.k8s.io/kube-proxy:v1.25.0-rc.1
@@ -171,7 +171,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: external
-    clusterDNS: 172.20.0.10
+    clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -194,7 +194,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: external
-    clusterDNS: 172.20.0.10
+    clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -233,7 +233,7 @@ spec:
   serviceAccountIssuerDiscovery:
     discoveryStore: memfs://discovery.example.com/minimal.example.com
     enableAWSOIDCProvider: true
-  serviceClusterIPRange: 172.20.0.0/19
+  serviceClusterIPRange: 100.64.0.0/13
   snapshotController:
     enabled: true
   sshAccess:

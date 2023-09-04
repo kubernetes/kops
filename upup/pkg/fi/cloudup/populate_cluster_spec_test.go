@@ -71,12 +71,12 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 		{
 			NonMasqueradeCIDR:             "10.0.0.0/9",
 			ExpectedClusterCIDR:           "10.64.0.0/10",
-			ExpectedServiceClusterIPRange: "10.0.0.0/12",
+			ExpectedServiceClusterIPRange: "100.64.0.0/13",
 		},
 		{
 			NonMasqueradeCIDR:             "10.0.0.0/8",
 			ExpectedClusterCIDR:           "10.128.0.0/9",
-			ExpectedServiceClusterIPRange: "10.0.0.0/12",
+			ExpectedServiceClusterIPRange: "100.64.0.0/13",
 		},
 		{
 			NonMasqueradeCIDR:             "::/0",
