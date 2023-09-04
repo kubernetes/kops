@@ -127,7 +127,7 @@ type ClusterSpec struct {
 	// +k8s:conversion-gen=false
 	PodCIDR string `json:"podCIDR,omitempty"`
 	// MasterIPRange                 string `json:",omitempty"`
-	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
+	// NonMasqueradeCIDR is the CIDR for the internal k8s network (for pod IPs)
 	// It cannot overlap ServiceClusterIPRange
 	// +k8s:conversion-gen=false
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
