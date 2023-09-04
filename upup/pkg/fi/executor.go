@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -119,7 +120,7 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 		tasks = append(tasks, canRun...)
 
 		taskErrors := e.forkJoin(tasks)
-		var errors []error
+		var errs []error
 		for i, err := range taskErrors {
 			ts := tasks[i]
 			if err != nil {
@@ -138,7 +139,7 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 				} else {
 					klog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				}
-				errors = append(errors, err)
+				errs = append(errs, err)
 				ts.lastError = err
 			} else {
 				ts.done = true
@@ -148,11 +149,28 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 		}
 
 		if !progress {
-			if len(errors) == 0 {
+			n := len(errs)
+
+			if n == 0 {
 				// Logic error!
 				panic("did not make progress executing tasks; but no errors reported")
 			}
-			klog.Infof("No progress made, sleeping before retrying %d task(s)", len(errors))
+
+			tryAgainLaterCount := 0
+			for _, err := range errs {
+				var tryAgainLaterError TryAgainLaterError
+				if !errors.Is(err, &tryAgainLaterError) {
+					tryAgainLaterCount++
+				}
+			}
+			formatTaskCount := func(n int) string {
+				return fmt.Sprintf("%d task(s)", n)
+			}
+			if tryAgainLaterCount == n {
+				klog.Infof("Continuing to run %s", formatTaskCount(tryAgainLaterCount))
+			} else {
+				klog.Infof("No progress made, sleeping before retrying %s", formatTaskCount(n))
+			}
 			time.Sleep(e.options.WaitAfterAllTasksFailed)
 		}
 	}
