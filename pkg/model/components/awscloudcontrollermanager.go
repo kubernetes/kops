@@ -45,10 +45,6 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	eccm := clusterSpec.ExternalCloudControllerManager
 
-	if eccm == nil {
-		return nil
-	}
-
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
 	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}

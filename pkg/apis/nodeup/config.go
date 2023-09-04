@@ -455,7 +455,7 @@ func buildKubeProxy(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *k
 }
 
 func UsesInstanceIDForNodeName(cluster *kops.Cluster) bool {
-	return cluster.Spec.ExternalCloudControllerManager != nil && cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS
+	return cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS
 }
 
 func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {

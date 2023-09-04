@@ -42,10 +42,6 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 
 	ccmConfig := clusterSpec.ExternalCloudControllerManager
 
-	if ccmConfig == nil {
-		return nil
-	}
-
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
 	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}

@@ -77,14 +77,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	kcm.ClusterName = b.ClusterName
 	kcm.CloudProvider = "external"
 
-	if clusterSpec.ExternalCloudControllerManager == nil {
-		if kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce" {
-			kcm.EnableLeaderMigration = fi.PtrTo(true)
-		}
-	} else {
-		kcm.CloudProvider = "external"
-	}
-
 	if kcm.LogLevel == 0 {
 		kcm.LogLevel = 2
 	}

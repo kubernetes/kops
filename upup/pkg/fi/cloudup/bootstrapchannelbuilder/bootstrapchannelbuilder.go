@@ -865,7 +865,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 
 		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
-			if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+			{
 				key := "gcp-cloud-controller.addons.k8s.io"
 				useBuiltin := !b.hasExternalAddon(key)
 
@@ -1141,7 +1141,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+		{
 			key := "aws-cloud-controller.addons.k8s.io"
 
 			{

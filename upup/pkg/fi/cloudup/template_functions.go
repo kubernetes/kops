@@ -721,9 +721,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				Region:     tf.Region,
 			}
 
-			if cluster.Spec.ExternalCloudControllerManager != nil {
-				config.Server.UseInstanceIDForNodeName = true
-			}
+			config.Server.UseInstanceIDForNodeName = true
 
 		case kops.CloudProviderGCE:
 			c := tf.cloud.(gce.GCECloud)
