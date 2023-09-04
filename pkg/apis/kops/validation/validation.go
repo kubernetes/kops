@@ -805,12 +805,7 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 	}
 
 	if v.InsecurePort != nil {
-		insecurePort := *v.InsecurePort
-		if c.IsKubernetesGTE("1.24") {
-			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort must not be set as of Kubernetes 1.24")
-		} else if insecurePort != 0 {
-			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort can only be 0 or nil")
-		}
+		field.Forbidden(fldPath.Child("insecurePort"), "insecurePort must not be set as of Kubernetes 1.24")
 	}
 
 	if v.AuditPolicyFile == "" && v.AuditWebhookConfigFile != "" {
@@ -909,20 +904,14 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("cpuCFSQuotaPeriod"), "cpuCFSQuotaPeriod has been removed on Kubernetes >=1.20"))
 		}
 
-		if c.IsKubernetesGTE("1.24") {
-			if k.NetworkPluginName != nil {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginName"), "networkPluginName has been removed on Kubernetes >=1.24"))
-			}
-			if k.NetworkPluginMTU != nil {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginMTU"), "networkPluginMTU has been removed on Kubernetes >=1.24"))
-			}
-			if k.NonMasqueradeCIDR != nil {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "nonMasqueradeCIDR has been removed on Kubernetes >=1.24"))
-			}
-		} else {
-			if c.Spec.ContainerRuntime == "docker" && fi.ValueOf(c.Spec.Kubelet.NetworkPluginName) == "kubenet" && fi.ValueOf(k.NonMasqueradeCIDR) != c.Spec.Networking.NonMasqueradeCIDR {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR does not match cluster nonMasqueradeCIDR"))
-			}
+		if k.NetworkPluginName != nil {
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginName"), "networkPluginName has been removed on Kubernetes >=1.24"))
+		}
+		if k.NetworkPluginMTU != nil {
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginMTU"), "networkPluginMTU has been removed on Kubernetes >=1.24"))
+		}
+		if k.NonMasqueradeCIDR != nil {
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "nonMasqueradeCIDR has been removed on Kubernetes >=1.24"))
 		}
 
 		if k.ShutdownGracePeriodCriticalPods != nil {
@@ -1673,7 +1662,7 @@ func validateContainerRuntime(c *kops.Cluster, runtime string, fldPath *field.Pa
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, IsValidValue(fldPath, &runtime, valid)...)
 
-	if runtime == "docker" && c.IsKubernetesGTE("1.24") {
+	if runtime == "docker" {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Docker CRI support was removed in Kubernetes 1.24: https://kubernetes.io/blog/2020/12/02/dockershim-faq"))
 	}
 

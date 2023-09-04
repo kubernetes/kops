@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -76,36 +75,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	kcm.ClusterName = b.ClusterName
-	if b.IsKubernetesGTE("1.24") {
-		kcm.CloudProvider = "external"
-	} else {
-		switch kops.CloudProviderID(clusterSpec.GetCloudProvider()) {
-		case kops.CloudProviderAWS:
-			kcm.CloudProvider = "aws"
-
-		case kops.CloudProviderGCE:
-			kcm.CloudProvider = "gce"
-			kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
-
-		case kops.CloudProviderDO:
-			kcm.CloudProvider = "external"
-
-		case kops.CloudProviderHetzner:
-			kcm.CloudProvider = "external"
-
-		case kops.CloudProviderOpenstack:
-			kcm.CloudProvider = "openstack"
-
-		case kops.CloudProviderAzure:
-			kcm.CloudProvider = "azure"
-
-		case kops.CloudProviderScaleway:
-			kcm.CloudProvider = "external"
-
-		default:
-			return fmt.Errorf("unknown cloudprovider %q", clusterSpec.GetCloudProvider())
-		}
-	}
+	kcm.CloudProvider = "external"
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
 		if kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce" {

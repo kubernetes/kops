@@ -158,15 +158,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
 
-	if clusterSpec.ContainerRuntime == "docker" || clusterSpec.ContainerRuntime == "" {
-		networking := &clusterSpec.Networking
-		if networking.UsesKubenet() && b.IsKubernetesLT("1.24") {
-			clusterSpec.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
-			clusterSpec.Kubelet.NetworkPluginMTU = fi.PtrTo(int32(9001))
-			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.PtrTo(networking.NonMasqueradeCIDR)
-		}
-	}
-
 	// Prevent image GC from pruning the pause image
 	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2040-kubelet-cri#pinned-images
 	image := "registry.k8s.io/pause:3.9"

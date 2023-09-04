@@ -34,7 +34,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			name: "RoleControlPlane",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					KubernetesVersion: "v1.9.0",
+					KubernetesVersion: "v1.24.0",
 					ControlPlaneKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
 							"controlPlane1": "controlPlane1",
@@ -61,10 +61,8 @@ func TestBuildNodeLabels(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				RoleLabelMaster16:       "",
 				RoleLabelControlPlane20: "",
 				// RoleLabelAPIServer16:    "",
-				RoleLabelName15: RoleMasterLabelValue15,
 				"node.kubernetes.io/exclude-from-external-load-balancers": "",
 				"kops.k8s.io/kops-controller-pki":                         "",
 				"controlPlane1":                                           "controlPlane1",
@@ -77,7 +75,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			name: "RoleNode",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					KubernetesVersion: "v1.9.0",
+					KubernetesVersion: "v1.24.0",
 					ControlPlaneKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
 							"controlPlane1": "controlPlane1",
@@ -105,7 +103,6 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 			expected: map[string]string{
 				RoleLabelNode16: "",
-				RoleLabelName15: RoleNodeLabelValue15,
 				"node2":         "node2",
 				"node1":         "override1",
 				"node3":         "override3",

@@ -67,7 +67,7 @@ spec:
     auditWebhookConfigFile: /etc/kubernetes/audit/webhook-config.yaml
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.23.0
+  kubernetesVersion: v1.28.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

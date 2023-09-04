@@ -232,17 +232,6 @@ func TestMinimal(t *testing.T) {
 }
 
 // TestMinimal runs the test on a minimum configuration
-func TestMinimal_v1_23(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal-1.23").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			leaderElectionAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_24(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.24").
 		withAddons(
@@ -284,6 +273,32 @@ func TestMinimal_v1_27(t *testing.T) {
 	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 
 	newIntegrationTest("minimal.example.com", "minimal-1.27").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_28(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	newIntegrationTest("minimal.example.com", "minimal-1.28").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_29(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	newIntegrationTest("minimal.example.com", "minimal-1.29").
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
@@ -828,30 +843,6 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-func TestManyAddonsCCMIRSA23(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa23").
-		withOIDCDiscovery().
-		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("cluster-autoscaler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withAddons(
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
-			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
-			leaderElectionAddon,
-			metricsServerAddon,
-			dnsControllerAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
 func TestManyAddonsCCMIRSA24(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa24").
 		withOIDCDiscovery().
@@ -1099,7 +1090,7 @@ func TestMixedInstancesSpotASG(t *testing.T) {
 // TestAdditionalObjects runs the test on a configuration that includes additional objects
 func TestAdditionalObjects(t *testing.T) {
 	newIntegrationTest("additionalobjects.example.com", "additionalobjects").
-		withAddons(dnsControllerAddon, awsEBSCSIAddon, leaderElectionAddon).
+		withAddons(dnsControllerAddon, awsEBSCSIAddon, awsCCMAddon).
 		runTestTerraformAWS(t)
 }
 
@@ -1121,17 +1112,6 @@ func TestContainerdCustom(t *testing.T) {
 			awsEBSCSIAddon,
 			dnsControllerAddon,
 			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestDockerCustom runs the test on a custom Docker URL configuration
-func TestDockerCustom(t *testing.T) {
-	newIntegrationTest("docker.example.com", "docker-custom").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			leaderElectionAddon,
 		).
 		runTestTerraformAWS(t)
 }

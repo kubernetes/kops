@@ -171,12 +171,6 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 		} else {
 			return fmt.Errorf("error finding contained version")
 		}
-	} else {
-		if b.NodeupConfig.Docker != nil {
-			containerRuntimeVersion = fi.ValueOf(b.NodeupConfig.Docker.Version)
-		} else {
-			return fmt.Errorf("error finding Docker version")
-		}
 	}
 	sv, err := semver.ParseTolerant(containerRuntimeVersion)
 	if err != nil {

@@ -129,10 +129,6 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 				if err := h.buildContainerdService(unit, hook, name); err != nil {
 					return nil, err
 				}
-			case "docker":
-				if err := h.buildDockerService(unit, hook); err != nil {
-					return nil, err
-				}
 			default:
 				return nil, fmt.Errorf("unknown container runtime %q", h.NodeupConfig.ContainerRuntime)
 			}
@@ -179,32 +175,6 @@ func (h *HookBuilder) buildContainerdService(unit *systemd.Manifest, hook *kops.
 	unit.Set("Unit", "Requires", "containerd.service")
 	unit.Set("Service", "ExecStartPre", containerdPullCommand)
 	unit.Set("Service", "ExecStart", containerdRunCommand)
-	unit.Set("Service", "Type", "oneshot")
-	unit.Set("Install", "WantedBy", "multi-user.target")
-
-	return nil
-}
-
-// buildDockerService is responsible for generating a docker exec unit file
-func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.HookSpec) error {
-	dockerArgs := []string{
-		"/usr/bin/docker", "run",
-		"-v", "/:/rootfs/",
-		"-v", "/var/run/dbus:/var/run/dbus",
-		"-v", "/run/systemd:/run/systemd",
-		"--net=host",
-		"--privileged",
-	}
-	dockerArgs = append(dockerArgs, buildContainerRuntimeEnvironmentVars(hook.ExecContainer.Environment)...)
-	dockerArgs = append(dockerArgs, hook.ExecContainer.Image)
-	dockerArgs = append(dockerArgs, hook.ExecContainer.Command...)
-
-	dockerRunCommand := systemd.EscapeCommand(dockerArgs)
-	dockerPullCommand := systemd.EscapeCommand([]string{"/usr/bin/docker", "pull", hook.ExecContainer.Image})
-
-	unit.Set("Unit", "Requires", "docker.service")
-	unit.Set("Service", "ExecStartPre", dockerPullCommand)
-	unit.Set("Service", "ExecStart", dockerRunCommand)
 	unit.Set("Service", "Type", "oneshot")
 	unit.Set("Install", "WantedBy", "multi-user.target")
 

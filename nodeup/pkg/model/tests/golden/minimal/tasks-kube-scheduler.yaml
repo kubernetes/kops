@@ -16,14 +16,14 @@ contents: |
       - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
-      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --feature-gates=InTreePluginAWSUnregister=true
       - --leader-elect=true
       - --tls-cert-file=/srv/kubernetes/kube-scheduler/server.crt
       - --tls-private-key-file=/srv/kubernetes/kube-scheduler/server.key
       - --v=2
       command:
       - /go-runner
-      image: registry.k8s.io/kube-scheduler:v1.23.0
+      image: registry.k8s.io/kube-scheduler:v1.28.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
@@ -97,7 +97,7 @@ path: /srv/kubernetes/kube-scheduler/server.key
 type: file
 ---
 contents: |
-  apiVersion: kubescheduler.config.k8s.io/v1beta2
+  apiVersion: kubescheduler.config.k8s.io/v1
   clientConnection:
     kubeconfig: /var/lib/kube-scheduler/kubeconfig
   kind: KubeSchedulerConfiguration

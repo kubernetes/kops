@@ -32,14 +32,14 @@ contents: |
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
       - --cloud-config=/etc/kubernetes/in-tree-cloud.config
-      - --cloud-provider=aws
+      - --cloud-provider=external
       - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
       - --etcd-cafile=/srv/kubernetes/kube-apiserver/etcd-ca.crt
       - --etcd-certfile=/srv/kubernetes/kube-apiserver/etcd-client.crt
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
-      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --feature-gates=InTreePluginAWSUnregister=true
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
@@ -62,7 +62,7 @@ contents: |
       - --v=2
       command:
       - /go-runner
-      image: registry.k8s.io/kube-apiserver:v1.23.0
+      image: registry.k8s.io/kube-apiserver:v1.28.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1

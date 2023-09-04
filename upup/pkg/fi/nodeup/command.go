@@ -289,7 +289,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
@@ -437,13 +436,6 @@ func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID
 		}
 	}
 
-	if nodeupConfig.ContainerRuntime == "docker" {
-		err = evaluateDockerSpecStorage(nodeupConfig.Docker)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -548,56 +540,6 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 		return "", fmt.Errorf("bindAddress is not valid IP address")
 	}
 	return bindAddress, nil
-}
-
-// evaluateDockerSpec selects the first supported storage mode, if it is a list
-func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
-	storage := fi.ValueOf(spec.Storage)
-	if strings.Contains(fi.ValueOf(spec.Storage), ",") {
-		precedence := strings.Split(storage, ",")
-		for _, opt := range precedence {
-			fs := opt
-			if fs == "overlay2" {
-				fs = "overlay"
-			}
-			supported, err := kernelHasFilesystem(fs)
-			if err != nil {
-				klog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
-				continue
-			}
-
-			if !supported {
-				// overlay -> overlay
-				// aufs -> aufs
-				module := fs
-				if err = modprobe(fs); err != nil {
-					klog.Warningf("error running `modprobe %q`: %v", module, err)
-				}
-			}
-
-			supported, err = kernelHasFilesystem(fs)
-			if err != nil {
-				klog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
-				continue
-			}
-
-			if supported {
-				klog.Infof("Using supported docker storage %q", opt)
-				spec.Storage = fi.PtrTo(opt)
-				return nil
-			}
-
-			klog.Warningf("%q docker storage was specified, but filesystem is not supported", opt)
-		}
-
-		// Just in case we don't recognize the driver?
-		// TODO: Is this the best behaviour
-		klog.Warningf("No storage module was supported from %q, will default to %q", storage, precedence[0])
-		spec.Storage = fi.PtrTo(precedence[0])
-		return nil
-	}
-
-	return nil
 }
 
 // kernelHasFilesystem checks if /proc/filesystems contains the specified filesystem

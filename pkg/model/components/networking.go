@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -40,13 +39,6 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	networking := &clusterSpec.Networking
-	if b.Context.IsKubernetesLT("1.24") {
-		if UsesCNI(networking) {
-			options.Kubelet.NetworkPluginName = fi.PtrTo("cni")
-		} else if networking.GCP != nil {
-			options.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
-		}
-	}
 
 	if networking.Classic != nil {
 		return fmt.Errorf("classic networking not supported")

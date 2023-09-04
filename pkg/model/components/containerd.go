@@ -17,10 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"fmt"
-
-	"github.com/blang/semver/v4"
-	"github.com/pelletier/go-toml"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -72,29 +68,6 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		// Set default log level to INFO
 		containerd.LogLevel = fi.PtrTo("info")
-	} else if clusterSpec.ContainerRuntime == "docker" {
-		// Docker version should always be available
-		dockerVersion := fi.ValueOf(clusterSpec.Docker.Version)
-		if dockerVersion == "" {
-			return fmt.Errorf("docker version is required")
-		} else {
-			// Skip containerd setup for older versions without containerd service
-			sv, err := semver.ParseTolerant(dockerVersion)
-			if err != nil {
-				return fmt.Errorf("unable to parse version string: %q", dockerVersion)
-			}
-			if sv.LT(semver.MustParse("18.9.0")) {
-				containerd.SkipInstall = true
-				return nil
-			}
-		}
-		// Set default log level to INFO
-		containerd.LogLevel = fi.PtrTo("info")
-		// Build config file for containerd running in Docker mode
-		config, _ := toml.Load("")
-		config.SetPath([]string{"disabled_plugins"}, []string{"cri"})
-		containerd.ConfigOverride = fi.PtrTo(config.String())
-
 	} else {
 		// Unknown container runtime, should not install containerd
 		containerd.SkipInstall = true

@@ -374,33 +374,6 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	}
 }
 
-func TestPopulateCluster_DockerVersion(t *testing.T) {
-	grid := []struct {
-		KubernetesVersion string
-		DockerVersion     string
-	}{
-		{
-			KubernetesVersion: "1.21.0",
-			DockerVersion:     "20.10.17",
-		},
-	}
-
-	for _, test := range grid {
-		_, c := buildMinimalCluster()
-		c.Spec.KubernetesVersion = test.KubernetesVersion
-		c.Spec.ContainerRuntime = "docker"
-
-		full, err := build(c)
-		if err != nil {
-			t.Fatalf("error during build: %v", err)
-		}
-
-		if fi.ValueOf(full.Spec.Docker.Version) != test.DockerVersion {
-			t.Fatalf("Unexpected DockerVersion: %v", fi.ValueOf(full.Spec.Docker.Version))
-		}
-	}
-}
-
 func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()

@@ -272,7 +272,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			config.EnableLifecycleHook = true
 		}
 
-		if instanceGroup.HasAPIServer() || cluster.IsKubernetesLT("1.24") {
+		if instanceGroup.HasAPIServer() {
 			config.DisableSecurityGroupIngress = aws.DisableSecurityGroupIngress
 			config.ElbSecurityGroup = aws.ElbSecurityGroup
 			config.NodeIPFamilies = aws.NodeIPFamilies
