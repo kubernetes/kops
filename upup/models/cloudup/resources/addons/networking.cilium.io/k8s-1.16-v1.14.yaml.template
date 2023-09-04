@@ -265,6 +265,7 @@ data:
   enable-endpoint-routes: "true"
   auto-create-cilium-node-resource: "true"
   blacklist-conflicting-routes: "false"
+  eni-tags: "{{ CloudLabels }}"
   {{ end }}
   {{ end }}
 
@@ -387,6 +388,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
+  labels:
+    app.kubernetes.io/part-of: cilium
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -491,6 +494,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
+  labels:
+    app.kubernetes.io/part-of: cilium
 rules:
 - apiGroups:
   - ""
@@ -710,6 +715,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
+  labels:
+    app.kubernetes.io/part-of: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -723,6 +730,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
+  labels:
+    app.kubernetes.io/part-of: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -889,6 +898,8 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: hubble-relay
+    app.kubernetes.io/name: hubble-relay
+    app.kubernetes.io/part-of: cilium
 spec:
   type: ClusterIP
   selector:
@@ -906,6 +917,8 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: cilium
+    app.kubernetes.io/part-of: cilium
+    app.kubernetes.io/name: cilium-agent
     kubernetes.io/cluster-service: "true"
 spec:
   selector:
@@ -930,6 +943,8 @@ spec:
         {{- end }}
       labels:
         k8s-app: cilium
+        app.kubernetes.io/name: cilium-agent
+        app.kubernetes.io/part-of: cilium
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
@@ -1068,7 +1083,6 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           privileged: true
-        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
@@ -1412,6 +1426,8 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
+    app.kubernetes.io/part-of: cilium
+    app.kubernetes.io/name: cilium-operator
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -1434,6 +1450,8 @@ spec:
       labels:
         io.cilium/app: operator
         name: cilium-operator
+        app.kubernetes.io/part-of: cilium
+        app.kubernetes.io/name: cilium-operator
     spec:
       nodeSelector: null
       affinity:
@@ -1578,6 +1596,8 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: hubble-relay
+    app.kubernetes.io/name: hubble-relay
+    app.kubernetes.io/part-of: cilium
 spec:
   replicas: 2
   selector:
@@ -1591,6 +1611,8 @@ spec:
     metadata:
       labels:
         k8s-app: hubble-relay
+        app.kubernetes.io/name: hubble-relay
+        app.kubernetes.io/part-of: cilium
     spec:
       securityContext:
         fsGroup: 65532
@@ -1697,6 +1719,7 @@ kind: Certificate
 metadata:
   labels:
     k8s-app: cilium
+    app.kubernetes.io/part-of: cilium
   name: hubble-relay-client-certs
   namespace: kube-system
 spec:
