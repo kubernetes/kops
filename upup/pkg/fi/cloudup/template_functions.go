@@ -442,14 +442,27 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 	return ig, nil
 }
 
-// ControlPlaneControllerReplicas returns the amount of replicas for a controllers that should run in the cluster
-// If the cluster has a highly available control plane, this function will return 2, if it has 1 control plane node, it will return 1
-// deployOnWorkersIfExternalPermissons should be true if a controller runs on worker nodes when external IAM permissions is enabled for the cluster.
-// In this case it is assumed that it can run 2 replicas.
+// ControlPlaneControllerReplicas returns the amount of replicas for a controllers that should run in the cluster.
+// deployOnWorkersIfExternalPermissons indicates if a controller can run on worker nodes when external IAM permissions is enabled for the cluster.
 func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExternalPermissions bool) int {
+	// Check if we are running on worker nodes
 	if deployOnWorkersIfExternalPermissions && tf.Cluster.Spec.IAM != nil && fi.ValueOf(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
-		return 2
+		// If we only have one control plane node, we still only run one instance,
+		// because most controllers still need a lease from the control plane,
+		// so we can't get higher availability by running multiple instances
+		// (though we would get faster time-to-recovery)
+		//
+		// This also supports running with one control-plane node and one worker node,
+		// and we may have spreading constraints that prevent both pods running on
+		// the same worker node.  Issue #15852
+		if tf.HasHighlyAvailableControlPlane() {
+			return 2
+		}
+		return 1
 	}
+
+	// If the cluster has a highly available control plane, we should run two instances of the controller,
+	// otherwise we run one 1.
 	if tf.HasHighlyAvailableControlPlane() {
 		return 2
 	}
