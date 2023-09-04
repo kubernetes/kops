@@ -2605,7 +2605,7 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.GossipConfig = nil
 	}
-	out.ContainerRuntime = in.ContainerRuntime
+	// INFO: in.ContainerRuntime opted out of conversion generation
 	out.KubernetesVersion = in.KubernetesVersion
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
@@ -2655,15 +2655,7 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Containerd = nil
 	}
-	if in.Docker != nil {
-		in, out := &in.Docker, &out.Docker
-		*out = new(kops.DockerConfig)
-		if err := Convert_v1alpha3_DockerConfig_To_kops_DockerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Docker = nil
-	}
+	// INFO: in.Docker opted out of conversion generation
 	if in.KubeDNS != nil {
 		in, out := &in.KubeDNS, &out.KubeDNS
 		*out = new(kops.KubeDNSConfig)
@@ -2938,7 +2930,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.GossipConfig = nil
 	}
-	out.ContainerRuntime = in.ContainerRuntime
+	// INFO: in.ContainerRuntime opted out of conversion generation
 	out.KubernetesVersion = in.KubernetesVersion
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
@@ -2988,15 +2980,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Containerd = nil
 	}
-	if in.Docker != nil {
-		in, out := &in.Docker, &out.Docker
-		*out = new(DockerConfig)
-		if err := Convert_kops_DockerConfig_To_v1alpha3_DockerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Docker = nil
-	}
+	// INFO: in.Docker opted out of conversion generation
 	if in.KubeDNS != nil {
 		in, out := &in.KubeDNS, &out.KubeDNS
 		*out = new(KubeDNSConfig)
@@ -5768,7 +5752,7 @@ func autoConvert_v1alpha3_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.AllowedUnsafeSysctls = in.AllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
-	out.DockerDisableSharedPID = in.DockerDisableSharedPID
+	// INFO: in.DockerDisableSharedPID opted out of conversion generation
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
@@ -5869,7 +5853,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha3_KubeletConfigSpec(in *kops.K
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.AllowedUnsafeSysctls = in.AllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
-	out.DockerDisableSharedPID = in.DockerDisableSharedPID
+	// INFO: in.DockerDisableSharedPID opted out of conversion generation
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL

@@ -325,7 +325,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
-			Runtime: nodeupConfig.ContainerRuntime,
 		}
 	}
 	// Protokube load image task is in ProtokubeBuilder

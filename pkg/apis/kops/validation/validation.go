@@ -188,16 +188,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if spec.ContainerRuntime != "" {
-		allErrs = append(allErrs, validateContainerRuntime(c, spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
-	}
-
 	if spec.Containerd != nil {
 		allErrs = append(allErrs, validateContainerdConfig(spec, spec.Containerd, fieldPath.Child("containerd"), true)...)
-	}
-
-	if spec.Docker != nil {
-		allErrs = append(allErrs, validateDockerConfig(spec.Docker, fieldPath.Child("docker"))...)
 	}
 
 	if spec.Assets != nil {
@@ -1652,19 +1644,6 @@ func validateCalicoEncapsulationMode(mode string, fldPath *field.Path) field.Err
 	return allErrs
 }
 
-func validateContainerRuntime(c *kops.Cluster, runtime string, fldPath *field.Path) field.ErrorList {
-	valid := []string{"containerd", "docker"}
-
-	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, IsValidValue(fldPath, &runtime, valid)...)
-
-	if runtime == "docker" {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Docker CRI support was removed in Kubernetes 1.24: https://kubernetes.io/blog/2020/12/02/dockershim-faq"))
-	}
-
-	return allErrs
-}
-
 func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdConfig, fldPath *field.Path, inClusterConfig bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -1729,86 +1708,12 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 	return allErrs
 }
 
-func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	if config.Version != nil {
-		sv, err := semver.ParseTolerant(*config.Version)
-		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
-				fmt.Sprintf("unable to parse version string: %s", err.Error())))
-		}
-		if sv.LT(semver.MustParse("1.14.0")) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
-				"version is no longer available: https://www.docker.com/blog/changes-dockerproject-org-apt-yum-repositories"))
-		} else if sv.LT(semver.MustParse("17.3.0")) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
-				"unsupported legacy version"))
-		}
-	}
-
-	if config.Packages != nil {
-		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
-			u := fi.ValueOf(config.Packages.UrlAmd64)
-			_, err := url.Parse(u)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
-					fmt.Sprintf("unable parse package URL string: %v", err)))
-			}
-			h := fi.ValueOf(config.Packages.HashAmd64)
-			if len(h) > 64 {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
-					"Package hash must be 64 characters long"))
-			}
-		} else if config.Packages.UrlAmd64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.HashAmd64,
-				"Package hash must also be set"))
-		} else if config.Packages.HashAmd64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
-				"Package URL must also be set"))
-		}
-
-		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
-			u := fi.ValueOf(config.Packages.UrlArm64)
-			_, err := url.Parse(u)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
-					fmt.Sprintf("unable parse package URL string: %v", err)))
-			}
-			h := fi.ValueOf(config.Packages.HashArm64)
-			if len(h) > 64 {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
-					"Package hash must be 64 characters long"))
-			}
-		} else if config.Packages.UrlArm64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.HashArm64,
-				"Package hash must also be set"))
-		} else if config.Packages.HashArm64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
-				"Package URL must also be set"))
-		}
-	}
-
-	if config.Storage != nil {
-		valid := []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
-		values := strings.Split(*config.Storage, ",")
-		for _, value := range values {
-			allErrs = append(allErrs, IsValidValue(fldPath.Child("storage"), &value, valid)...)
-		}
-	}
-
-	return allErrs
-}
-
 func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
 	if !fi.ValueOf(nvidia.Enabled) {
 		return allErrs
 	}
 	if spec.GetCloudProvider() != kops.CloudProviderAWS && spec.GetCloudProvider() != kops.CloudProviderOpenstack {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS and OpenStack"))
-	}
-	if spec.ContainerRuntime != "" && spec.ContainerRuntime != "containerd" {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
 	}
 	if spec.GetCloudProvider() == kops.CloudProviderOpenstack && inClusterConfig {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "OpenStack supports nvidia configuration only in instance group"))

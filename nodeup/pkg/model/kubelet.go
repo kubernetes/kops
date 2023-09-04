@@ -164,7 +164,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
-	if kubeletConfig.CgroupDriver == "systemd" && b.NodeupConfig.ContainerRuntime == "containerd" {
+	if kubeletConfig.CgroupDriver == "systemd" {
 
 		{
 			cgroup := kubeletConfig.KubeletCgroups
@@ -312,14 +312,11 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	// Add container runtime spcific flags
-	switch b.NodeupConfig.ContainerRuntime {
-	case "containerd":
-		flags += " --runtime-request-timeout=15m"
-		if b.NodeupConfig.ContainerdConfig.Address == nil {
-			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-		} else {
-			flags += " --container-runtime-endpoint=unix://" + fi.ValueOf(b.NodeupConfig.ContainerdConfig.Address)
-		}
+	flags += " --runtime-request-timeout=15m"
+	if b.NodeupConfig.ContainerdConfig.Address == nil {
+		flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+	} else {
+		flags += " --container-runtime-endpoint=unix://" + fi.ValueOf(b.NodeupConfig.ContainerdConfig.Address)
 	}
 
 	flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
@@ -356,12 +353,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
-	switch b.NodeupConfig.ContainerRuntime {
-	case "containerd":
-		manifest.Set("Unit", "After", "containerd.service")
-	default:
-		klog.Warningf("unknown container runtime %q", b.NodeupConfig.ContainerRuntime)
-	}
+	manifest.Set("Unit", "After", "containerd.service")
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
 
@@ -376,7 +368,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" && b.NodeupConfig.ContainerRuntime == "containerd" {
+	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
 		cgroup := b.NodeupConfig.KubeletConfig.KubeletCgroups
 		if cgroup != "" {
 			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")

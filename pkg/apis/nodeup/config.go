@@ -88,12 +88,8 @@ type Config struct {
 	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
-	// ContainerRuntime is the container runtime to use for Kubernetes.
-	ContainerRuntime string
 	// ContainerdConfig holds the configuration for containerd.
 	ContainerdConfig *kops.ContainerdConfig `json:"containerdConfig,omitempty"`
-	// Docker holds the configuration for docker.
-	Docker *kops.DockerConfig `json:"docker,omitempty"`
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
@@ -172,7 +168,7 @@ type ConfigServerOptions struct {
 	CACertificates string
 }
 
-// Image is a docker image we should pre-load
+// Image is a container image we should pre-load
 type Image struct {
 	// This is the name we would pass to "docker run", whereas source could be a URL from which we would download an image.
 	Name string `json:"name,omitempty"`
@@ -236,8 +232,6 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		VolumeMounts:         instanceGroup.Spec.VolumeMounts,
 		FileAssets:           append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:                [][]kops.HookSpec{igHooks, clusterHooks},
-		ContainerRuntime:     cluster.Spec.ContainerRuntime,
-		Docker:               cluster.Spec.Docker,
 		UsesLegacyGossip:     cluster.UsesLegacyGossip(),
 		UsesNoneDNS:          cluster.UsesNoneDNS(),
 	}

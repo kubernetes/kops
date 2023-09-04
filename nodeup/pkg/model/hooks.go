@@ -124,13 +124,8 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 		case nil:
 			unit.SetSection("Service", hook.Manifest)
 		default:
-			switch h.NodeupConfig.ContainerRuntime {
-			case "containerd":
-				if err := h.buildContainerdService(unit, hook, name); err != nil {
-					return nil, err
-				}
-			default:
-				return nil, fmt.Errorf("unknown container runtime %q", h.NodeupConfig.ContainerRuntime)
+			if err := h.buildContainerdService(unit, hook, name); err != nil {
+				return nil, err
 			}
 		}
 		definition = s(unit.Render())

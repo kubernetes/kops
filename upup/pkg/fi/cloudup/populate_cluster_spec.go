@@ -314,7 +314,6 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
-			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.ContainerdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})

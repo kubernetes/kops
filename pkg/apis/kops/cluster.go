@@ -61,8 +61,9 @@ type ClusterSpec struct {
 	CloudProvider CloudProviderSpec `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
-	// Container runtime to use for Kubernetes
-	ContainerRuntime string `json:"containerRuntime,omitempty"`
+	// ContainerRuntime was removed.
+	// +k8s:conversion-gen=false
+	ContainerRuntime string `json:"-"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -96,8 +97,10 @@ type ClusterSpec struct {
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
-	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
-	Docker                         *DockerConfig                 `json:"docker,omitempty"`
+	Containerd *ContainerdConfig `json:"containerd,omitempty"`
+	// Docker was removed.
+	// +k8s:conversion-gen=false
+	Docker                         *DockerConfig                 `json:"-"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager          *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`
@@ -337,11 +340,11 @@ type FileAssetSpec struct {
 
 // AssetsSpec defines the privately hosted assets
 type AssetsSpec struct {
-	// ContainerRegistry is a url for to a docker registry
+	// ContainerRegistry is a url for to a container registry.
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	// FileRepository is the url for a private file serving repository
 	FileRepository *string `json:"fileRepository,omitempty"`
-	// ContainerProxy is a url for a pull-through proxy of a docker registry
+	// ContainerProxy is a url for a pull-through proxy of a container registry.
 	ContainerProxy *string `json:"containerProxy,omitempty"`
 }
 
@@ -381,7 +384,7 @@ type HookSpec struct {
 
 // ExecContainerAction defines an hood action
 type ExecContainerAction struct {
-	// Image is the docker image
+	// Image is the container image.
 	Image string `json:"image,omitempty"`
 	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
@@ -402,7 +405,7 @@ func (s *AuthenticationSpec) IsEmpty() bool {
 type KopeioAuthenticationSpec struct{}
 
 type AWSAuthenticationSpec struct {
-	// Image is the AWS IAM Authenticator docker image to use
+	// Image is the AWS IAM Authenticator container image to use.
 	Image string `json:"image,omitempty"`
 	// BackendMode is the AWS IAM Authenticator backend to use. Default MountedFile
 	BackendMode string `json:"backendMode,omitempty"`
@@ -594,7 +597,7 @@ type NodeLocalDNSConfig struct {
 	ExternalCoreFile string `json:"externalCoreFile,omitempty"`
 	// AdditionalConfig is used to provide additional config for node local dns by the user - it will include the original CoreFile made by kOps.
 	AdditionalConfig string `json:"additionalConfig,omitempty"`
-	// Image overrides the default docker image used for node-local-dns addon.
+	// Image overrides the default container image used for node-local-dns addon.
 	Image *string `json:"image,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
 	LocalIP string `json:"localIP,omitempty"`
@@ -652,7 +655,7 @@ type EtcdClusterSpec struct {
 	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
 	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
 	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
-	// Image is the etcd docker image to use. Setting this will ignore the Version specified.
+	// Image is the etcd container image to use. Setting this will ignore the Version specified.
 	Image string `json:"image,omitempty"`
 	// Backups describes how we do backups of etcd
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`

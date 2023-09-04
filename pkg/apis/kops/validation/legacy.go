@@ -69,9 +69,6 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 	if strict && c.Spec.KubeProxy == nil {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubeProxy"), "kubeProxy not configured"))
 	}
-	if strict && c.Spec.Docker == nil {
-		allErrs = append(allErrs, field.Required(fieldSpec.Child("docker"), "docker not configured"))
-	}
 
 	var nonMasqueradeCIDR *net.IPNet
 	var serviceClusterIPRange *net.IPNet
