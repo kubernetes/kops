@@ -21,6 +21,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -215,11 +216,10 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 		// We create a unique name for each server
-		actualCount := 0
-		if actual != nil {
-			actualCount = actual.Count
+		uniqueName, err := uniqueName(cloud, scaleway.ClusterNameFromTags(expected.Tags), fi.ValueOf(expected.Name))
+		if err != nil {
+			return fmt.Errorf("error rendering server group %s: computing unique name for server: %w", fi.ValueOf(expected.Name), err)
 		}
-		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i+actualCount)
 
 		createServerRequest := instance.CreateServerRequest{
 			Zone:           zone,
@@ -420,4 +420,31 @@ func imageLabelFromID(c *fi.CloudupContext, cloud scaleway.ScwCloud, id string) 
 		return "", fmt.Errorf("getting image from the marketplace: %w", err)
 	}
 	return localImage.Label, nil
+}
+
+func findFirstFreeIndex(existing []*instance.Server) int {
+	index := 0
+	for {
+		found := false
+		for _, server := range existing {
+			if strings.HasSuffix(server.Name, strconv.Itoa(index)) {
+				found = true
+				index++
+				break
+			}
+		}
+		if found == false {
+			return index
+		}
+	}
+}
+
+func uniqueName(cloud scaleway.ScwCloud, clusterName, igName string) (string, error) {
+	existing, err := cloud.GetClusterServers(clusterName, &igName)
+	if err != nil {
+		return "", err
+	}
+	index := findFirstFreeIndex(existing)
+
+	return fmt.Sprintf("%s-%d", igName, index), nil
 }
