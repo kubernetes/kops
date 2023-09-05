@@ -63,7 +63,7 @@ type ClusterSpec struct {
 	LegacyCloudProvider string `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
-	// Container runtime to use for Kubernetes
+	// ContainerRuntime was removed.
 	ContainerRuntime string `json:"containerRuntime,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
@@ -167,9 +167,10 @@ type ClusterSpec struct {
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
+	// Docker was removed.
+	Docker *DockerConfig `json:"docker,omitempty"`
 	// Component configurations
 	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
-	Docker                         *DockerConfig                 `json:"docker,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager          *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`
@@ -237,7 +238,7 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
-	// ClusterAutoscaler defines the cluaster autoscaler configuration.
+	// ClusterAutoscaler defines the cluster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 	// WarmPool defines the default warm pool settings for instance groups (AWS only).
 	// +k8s:conversion-gen=false
@@ -409,7 +410,7 @@ func (s *AuthenticationSpec) IsEmpty() bool {
 type KopeioAuthenticationSpec struct{}
 
 type AWSAuthenticationSpec struct {
-	// Image is the AWS IAM Authenticator docker image to uses
+	// Image is the AWS IAM Authenticator container image to use.
 	Image string `json:"image,omitempty"`
 	// BackendMode is the AWS IAM Authenticator backend to use. Default MountedFile
 	BackendMode string `json:"backendMode,omitempty"`

@@ -38,7 +38,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal.k8s.local
-ContainerRuntime: containerd
 Hooks:
 - null
 - null
@@ -86,7 +85,5 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 usesLegacyGossip: true
 usesNoneDNS: false

@@ -128,7 +128,7 @@ ClusterName: privatecanal.example.com
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: V2xXI+gZ8IuOmhHiTU47XRflgrZpp9Wf1tiJYZP/q+8=
+NodeupConfigHash: ZwZ+BrNXwlpfaHz/iEgD5Oi1kXgil838TEydD+r/Qus=
 
 __EOF_KUBE_ENV
 

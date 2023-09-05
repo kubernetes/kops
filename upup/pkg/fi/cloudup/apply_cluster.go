@@ -1080,24 +1080,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
 		}
 
-		switch c.Cluster.Spec.ContainerRuntime {
-		case "docker":
-			if c.Cluster.Spec.Docker != nil && c.Cluster.Spec.Docker.SkipInstall {
-				break
-			}
-
-			dockerAssetUrl, dockerAssetHash, err := findDockerAsset(c.Cluster, assetBuilder, arch)
-			if err != nil {
-				return err
-			}
-			if dockerAssetUrl != nil && dockerAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(dockerAssetUrl, dockerAssetHash))
-			}
-		case "containerd":
-			if c.Cluster.Spec.Containerd != nil && c.Cluster.Spec.Containerd.SkipInstall {
-				break
-			}
-
+		if c.Cluster.Spec.Containerd == nil || !c.Cluster.Spec.Containerd.SkipInstall {
 			containerdAssetUrl, containerdAssetHash, err := findContainerdAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
@@ -1113,8 +1096,6 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			if runcAssetUrl != nil && runcAssetHash != nil {
 				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
 			}
-		default:
-			return fmt.Errorf("unknown container runtime: %q", c.Cluster.Spec.ContainerRuntime)
 		}
 
 		asset, err := NodeUpAsset(assetBuilder, arch)

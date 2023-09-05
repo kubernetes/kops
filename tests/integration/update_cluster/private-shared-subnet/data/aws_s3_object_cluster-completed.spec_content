@@ -26,15 +26,12 @@ spec:
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/private-shared-subnet.example.com
-  containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
       version: 1.1.5
     version: 1.6.20
   dnsZone: Z1AFAKE1ZON3YO
-  docker:
-    skipInstall: true
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/private-shared-subnet.example.com/backups/etcd/main

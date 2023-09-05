@@ -119,49 +119,6 @@ func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi
 	return PopulateClusterSpec(ctx, clientset, c, nil, cloud, assetBuilder)
 }
 
-func TestPopulateCluster_Docker_Spec(t *testing.T) {
-	ctx := context.TODO()
-
-	cloud, c := buildMinimalCluster()
-	c.Spec.Docker = &kopsapi.DockerConfig{
-		MTU:                fi.PtrTo(int32(5678)),
-		InsecureRegistry:   fi.PtrTo("myregistry.com:1234"),
-		InsecureRegistries: []string{"myregistry.com:1234", "myregistry2.com:1234"},
-		RegistryMirrors:    []string{"https://registry.example.com"},
-		LogOpt:             []string{"env=FOO"},
-	}
-
-	err := PerformAssignments(c, vfs.Context, cloud)
-	if err != nil {
-		t.Fatalf("error from PerformAssignments: %v", err)
-	}
-
-	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
-	if err != nil {
-		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
-	}
-
-	if fi.ValueOf(full.Spec.Docker.MTU) != 5678 {
-		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
-	}
-
-	if fi.ValueOf(full.Spec.Docker.InsecureRegistry) != "myregistry.com:1234" {
-		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
-	}
-
-	if strings.Join(full.Spec.Docker.InsecureRegistries, "!") != "myregistry.com:1234!myregistry2.com:1234" {
-		t.Fatalf("Unexpected Docker InsecureRegistries: %v", full.Spec.Docker.InsecureRegistries)
-	}
-
-	if strings.Join(full.Spec.Docker.RegistryMirrors, "!") != "https://registry.example.com" {
-		t.Fatalf("Unexpected Docker RegistryMirrors: %v", full.Spec.Docker.RegistryMirrors)
-	}
-
-	if strings.Join(full.Spec.Docker.LogOpt, "!") != "env=FOO" {
-		t.Fatalf("Unexpected Docker LogOpt: %v", full.Spec.Docker.LogOpt)
-	}
-}
-
 func TestPopulateCluster_StorageDefault(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()

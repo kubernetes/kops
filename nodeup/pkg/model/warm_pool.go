@@ -38,8 +38,7 @@ func (b *WarmPoolBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.NodeupConfig != nil && b.ConfigurationMode == "Warming" {
 		for _, image := range b.NodeupConfig.WarmPoolImages {
 			c.AddTask(&nodetasks.PullImageTask{
-				Name:    image,
-				Runtime: b.NodeupConfig.ContainerRuntime,
+				Name: image,
 			})
 		}
 	}

@@ -36,7 +36,6 @@ CAs:
     MQNfAQ==
     -----END CERTIFICATE-----
 ClusterName: privateciliumadvanced.example.com
-ContainerRuntime: containerd
 Hooks:
 - null
 - null
@@ -79,7 +78,5 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 usesLegacyGossip: false
 usesNoneDNS: false

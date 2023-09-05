@@ -222,7 +222,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: scw-minimal.k8s.local
-ContainerRuntime: containerd
 ControlPlaneConfig:
   KubeControllerManager:
     allocateNodeCIDRs: true
@@ -303,8 +302,6 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 etcdManifests:
 - memfs://tests/scw-minimal.k8s.local/manifests/etcd/main-control-plane-fr-par-1.yaml
 - memfs://tests/scw-minimal.k8s.local/manifests/etcd/events-control-plane-fr-par-1.yaml

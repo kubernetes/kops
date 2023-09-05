@@ -252,9 +252,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.KubernetesFeatureGates, "kubernetes-feature-gates", options.KubernetesFeatureGates, "List of Kubernetes feature gates to enable/disable")
 	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesFeatureGates)
 
-	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd, docker")
+	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd")
+	cmd.Flags().MarkDeprecated("container-runtime", "containerd is the only supported value")
 	cmd.RegisterFlagCompletionFunc("container-runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"containerd", "docker"}, cobra.ShellCompDirectiveNoFileComp
+		return []string{"containerd"}, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
@@ -607,10 +608,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.DNSZone != "" {
 		cluster.Spec.DNSZone = c.DNSZone
-	}
-
-	if c.ContainerRuntime != "" {
-		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
 
 	for i, cidr := range c.NetworkCIDRs {

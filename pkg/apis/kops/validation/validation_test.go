@@ -339,27 +339,6 @@ func TestValidateKubeAPIServer(t *testing.T) {
 	}
 }
 
-func Test_Validate_DockerConfig_Storage(t *testing.T) {
-	for _, name := range []string{"aufs", "zfs", "overlay"} {
-		config := &kops.DockerConfig{Storage: &name}
-		errs := validateDockerConfig(config, field.NewPath("docker"))
-		if len(errs) != 0 {
-			t.Fatalf("Unexpected errors validating DockerConfig %q", errs)
-		}
-	}
-
-	for _, name := range []string{"overlayfs", "", "au"} {
-		config := &kops.DockerConfig{Storage: &name}
-		errs := validateDockerConfig(config, field.NewPath("docker"))
-		if len(errs) != 1 {
-			t.Fatalf("Expected errors validating DockerConfig %+v", config)
-		}
-		if errs[0].Field != "docker.storage" || errs[0].Type != field.ErrorTypeNotSupported {
-			t.Fatalf("Not the expected error validating DockerConfig %q", errs)
-		}
-	}
-}
-
 func Test_Validate_Networking_Flannel(t *testing.T) {
 	grid := []struct {
 		Input          kops.FlannelNetworkingSpec
@@ -1451,7 +1430,6 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					AWS: &kops.AWSSpec{},
 				},
-				ContainerRuntime: "containerd",
 			},
 		},
 		{
@@ -1464,7 +1442,6 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{},
 				},
-				ContainerRuntime: "containerd",
 			},
 			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
 		},
@@ -1478,21 +1455,6 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					GCE: &kops.GCESpec{},
 				},
-				ContainerRuntime: "containerd",
-			},
-			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
-		},
-		{
-			Input: kops.ClusterSpec{
-				Containerd: &kops.ContainerdConfig{
-					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.PtrTo(true),
-					},
-				},
-				CloudProvider: kops.CloudProviderSpec{
-					AWS: &kops.AWSSpec{},
-				},
-				ContainerRuntime: "docker",
 			},
 			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
 		},
@@ -1518,7 +1480,6 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					AWS: &kops.AWSSpec{},
 				},
-				ContainerRuntime: "containerd",
 			},
 		},
 		{
@@ -1531,7 +1492,6 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{},
 				},
-				ContainerRuntime: "containerd",
 			},
 		},
 		{
@@ -1544,21 +1504,6 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					GCE: &kops.GCESpec{},
 				},
-				ContainerRuntime: "containerd",
-			},
-			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
-		},
-		{
-			Input: kops.ClusterSpec{
-				Containerd: &kops.ContainerdConfig{
-					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.PtrTo(true),
-					},
-				},
-				CloudProvider: kops.CloudProviderSpec{
-					AWS: &kops.AWSSpec{},
-				},
-				ContainerRuntime: "docker",
 			},
 			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
 		},

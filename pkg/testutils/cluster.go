@@ -33,7 +33,6 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}
 
-	c.Spec.ContainerRuntime = "containerd"
 	c.Spec.Containerd = &kops.ContainerdConfig{}
 
 	c.Spec.API.PublicName = fmt.Sprintf("api.%v", clusterName)

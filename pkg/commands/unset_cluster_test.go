@@ -108,21 +108,6 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 		},
 		{
-			Fields: []string{"spec.docker.selinuxEnabled"},
-			Input: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					Docker: &kops.DockerConfig{
-						SelinuxEnabled: fi.PtrTo(true),
-					},
-				},
-			},
-			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					Docker: &kops.DockerConfig{},
-				},
-			},
-		},
-		{
 			Fields: []string{"spec.kubernetesVersion"},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{

@@ -30,14 +30,11 @@ spec:
   cloudProvider: gce
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal-gce.example.com
-  containerRuntime: containerd
   containerd:
     logLevel: info
     runc:
       version: 1.1.5
     version: 1.6.20
-  docker:
-    skipInstall: true
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/main

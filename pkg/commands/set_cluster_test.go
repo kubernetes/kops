@@ -98,16 +98,6 @@ func TestSetClusterFields(t *testing.T) {
 			},
 		},
 		{
-			Fields: []string{"spec.docker.selinuxEnabled=true"},
-			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					Docker: &kops.DockerConfig{
-						SelinuxEnabled: fi.PtrTo(true),
-					},
-				},
-			},
-		},
-		{
 			Fields: []string{"spec.kubernetesVersion=v1.2.3"},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{

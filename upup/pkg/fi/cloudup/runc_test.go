@@ -19,9 +19,12 @@ package cloudup
 import (
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"reflect"
 	"testing"
 
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -263,4 +266,25 @@ func TestRuncVersionsHashesArm64(t *testing.T) {
 			}
 		})
 	}
+}
+
+func verifyPackageHash(u string, h string) error {
+	name := fmt.Sprintf("%s-%s", h, path.Base(u))
+	path := filepath.Join("/tmp", name)
+
+	actualHash, err := fi.DownloadURL(u, path, nil)
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	if h != actualHash.Hex() {
+		return fmt.Errorf("actual hash %q differs from expected hash %q", actualHash.Hex(), h)
+	}
+
+	return nil
 }

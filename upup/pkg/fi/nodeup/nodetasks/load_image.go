@@ -88,11 +88,6 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 }
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
-	runtime := e.Runtime
-	if runtime != "docker" && runtime != "containerd" {
-		return fmt.Errorf("no runtime specified")
-	}
-
 	hash, err := hashing.FromString(e.Hash)
 	if err != nil {
 		return err
@@ -148,14 +143,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 
 	// Load the container image
 	var args []string
-	switch runtime {
-	case "docker":
-		args = []string{"docker", "load", "-i", tarFile}
-	case "containerd":
-		args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
-	default:
-		return fmt.Errorf("unknown container runtime: %s", runtime)
-	}
+	args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
 	human := strings.Join(args, " ")
 
 	klog.Infof("running command %s", human)

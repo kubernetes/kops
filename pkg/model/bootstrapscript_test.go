@@ -241,12 +241,8 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Image:   "gcr.io/etcd-development/etcd:v3.1.11",
 				},
 			},
-			ContainerRuntime: "docker",
 			Containerd: &kops.ContainerdConfig{
 				LogLevel: fi.PtrTo("info"),
-			},
-			Docker: &kops.DockerConfig{
-				LogLevel: fi.PtrTo("INFO"),
 			},
 			KubeAPIServer: &kops.KubeAPIServerConfig{
 				Image: "CoreOS",

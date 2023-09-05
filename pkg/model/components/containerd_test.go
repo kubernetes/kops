@@ -45,7 +45,6 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 	for _, v := range kubernetesVersions {
 
 		c := buildContainerdCluster(v)
-		c.Spec.ContainerRuntime = "containerd"
 		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
 
 		version, err := util.ParseKubernetesVersion(v)

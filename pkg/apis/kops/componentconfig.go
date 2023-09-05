@@ -116,10 +116,7 @@ type KubeletConfigSpec struct {
 	ReconcileCIDR *bool `json:"reconcileCIDR,omitempty" flag:"reconcile-cidr"`
 	// registerSchedulable tells the kubelet to register the node as schedulable. No-op if register-node is false.
 	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
-	//// SerializeImagePulls when enabled, tells the Kubelet to pull images one
-	//// at a time. We recommend *not* changing the default value on nodes that
-	//// run docker daemon with version  < 1.9 or an Aufs storage backend.
-	//// Issue #10959 has more details.
+	// SerializeImagePulls when enabled, tells the Kubelet to pull images one at a time.
 	SerializeImagePulls *bool `json:"serializeImagePulls,omitempty" flag:"serialize-image-pulls"`
 	// NodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
@@ -184,8 +181,8 @@ type KubeletConfigSpec struct {
 	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls,omitempty" flag:"allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
-	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
-	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
+	// DockerDisableSharedPID was removed.
+	DockerDisableSharedPID *bool `json:"-"`
 	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
 	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
 	// AuthenticationTokenWebhook uses the TokenReview API to determine authentication for bearer tokens.
@@ -284,7 +281,7 @@ type KubeProxyConfig struct {
 
 // KubeAPIServerConfig defines the configuration for the kube api
 type KubeAPIServerConfig struct {
-	// Image is the docker container used
+	// Image is the container image used.
 	Image string `json:"image,omitempty"`
 	// DisableBasicAuth removes the --basic-auth-file flag
 	DisableBasicAuth *bool `json:"disableBasicAuth,omitempty"`
@@ -546,7 +543,7 @@ type KubeControllerManagerConfig struct {
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// ServiceAccountPrivateKeyFile is the location of the private key for service account token signing.
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
-	// Image is the docker image to use
+	// Image is the container image to use.
 	Image string `json:"image,omitempty"`
 	// CloudProvider is the provider for cloud services.
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
@@ -727,7 +724,7 @@ type KubeSchedulerConfig struct {
 	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the logging level
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
-	// Image is the docker image to use
+	// Image is the container image to use.
 	Image string `json:"image,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
@@ -987,7 +984,7 @@ type NodeProblemDetectorConfig struct {
 	// Enabled enables the NodeProblemDetector.
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
-	// Image is the NodeProblemDetector docker container used.
+	// Image is the NodeProblemDetector container image used.
 	Image *string `json:"image,omitempty"`
 
 	// MemoryRequest of NodeProblemDetector container.
@@ -1048,7 +1045,7 @@ type ClusterAutoscalerConfig struct {
 	// CordonNodeBeforeTerminating should CA cordon nodes before terminating during downscale process
 	// Default: false
 	CordonNodeBeforeTerminating *bool `json:"cordonNodeBeforeTerminating,omitempty"`
-	// Image is the docker container used.
+	// Image is the container image used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
 	// MemoryRequest of cluster autoscaler container.
@@ -1075,7 +1072,7 @@ type MetricsServerConfig struct {
 	// Enabled enables the metrics server.
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
-	// Image is the docker container used.
+	// Image is the container image used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
 	// Insecure determines if API server will validate metrics server TLS cert.
@@ -1093,7 +1090,7 @@ type CertManagerConfig struct {
 	// The deployment of cert-manager is skipped if this is set to false.
 	Managed *bool `json:"managed,omitempty"`
 
-	// Image is the docker container used.
+	// Image is the container image used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
 

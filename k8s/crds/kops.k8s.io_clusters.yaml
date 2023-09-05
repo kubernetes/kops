@@ -226,8 +226,8 @@ spec:
                           type: object
                         type: array
                       image:
-                        description: Image is the AWS IAM Authenticator docker image
-                          to uses
+                        description: Image is the AWS IAM Authenticator container
+                          image to use.
                         type: string
                       memoryLimit:
                         anyOf:
@@ -299,7 +299,7 @@ spec:
                       type: string
                     type: array
                   image:
-                    description: 'Image is the docker container used. Default: the
+                    description: 'Image is the container image used. Default: the
                       latest supported image for the specified kubernetes version.'
                     type: string
                   managed:
@@ -681,7 +681,7 @@ spec:
                 description: The CloudProvider to use (aws or gce)
                 type: string
               clusterAutoscaler:
-                description: ClusterAutoscaler defines the cluaster autoscaler configuration.
+                description: ClusterAutoscaler defines the cluster autoscaler configuration.
                 properties:
                   awsUseStaticInstanceList:
                     description: 'AWSUseStaticInstanceList makes the cluster autoscaler
@@ -736,7 +736,7 @@ spec:
                       for scaling down. Default: false'
                     type: boolean
                   image:
-                    description: 'Image is the docker container used. Default: the
+                    description: 'Image is the container image used. Default: the
                       latest supported image for the specified kubernetes version.'
                     type: string
                   maxNodeProvisionTime:
@@ -805,7 +805,7 @@ spec:
                 description: ConfigStore is unused.
                 type: string
               containerRuntime:
-                description: Container runtime to use for Kubernetes
+                description: ContainerRuntime was removed.
                 type: string
               containerd:
                 description: Component configurations
@@ -944,7 +944,7 @@ spec:
                   the zone.
                 type: string
               docker:
-                description: DockerConfig is the configuration for docker
+                description: Docker was removed.
                 properties:
                   authorizationPlugins:
                     description: AuthorizationPlugins is a list of authorization plugins
@@ -1804,7 +1804,7 @@ spec:
                     format: int32
                     type: integer
                   image:
-                    description: Image is the docker container used
+                    description: Image is the container image used.
                     type: string
                   insecureBindAddress:
                     description: InsecureBindAddress is the binding address for the
@@ -2214,7 +2214,7 @@ spec:
                       metrics is enabled.
                     type: boolean
                   image:
-                    description: Image is the docker image to use
+                    description: Image is the container image to use.
                     type: string
                   kubeAPIBurst:
                     description: KubeAPIBurst Burst to use while talking with kubernetes
@@ -3519,7 +3519,7 @@ spec:
                       feature gates for alpha/experimental features.
                     type: object
                   image:
-                    description: Image is the docker image to use
+                    description: Image is the container image to use.
                     type: string
                   kubeAPIBurst:
                     description: KubeAPIBurst Burst to use while talking with kubernetes
@@ -3709,8 +3709,7 @@ spec:
                       policy of None to static
                     type: string
                   dockerDisableSharedPID:
-                    description: DockerDisableSharedPID uses a shared PID namespace
-                      for containers in a pod.
+                    description: DockerDisableSharedPID was removed.
                     type: boolean
                   enableCadvisorJsonEndpoints:
                     description: EnableCadvisorJsonEndpoints enables cAdvisor json
@@ -3972,10 +3971,8 @@ spec:
                       profiles.
                     type: string
                   serializeImagePulls:
-                    description: '// SerializeImagePulls when enabled, tells the Kubelet
-                      to pull images one // at a time. We recommend *not* changing
-                      the default value on nodes that // run docker daemon with version  <
-                      1.9 or an Aufs storage backend. // Issue #10959 has more details.'
+                    description: SerializeImagePulls when enabled, tells the Kubelet
+                      to pull images one at a time.
                     type: boolean
                   shutdownGracePeriod:
                     description: 'ShutdownGracePeriod specifies the total duration
@@ -4146,8 +4143,7 @@ spec:
                       policy of None to static
                     type: string
                   dockerDisableSharedPID:
-                    description: DockerDisableSharedPID uses a shared PID namespace
-                      for containers in a pod.
+                    description: DockerDisableSharedPID was removed.
                     type: boolean
                   enableCadvisorJsonEndpoints:
                     description: EnableCadvisorJsonEndpoints enables cAdvisor json
@@ -4409,10 +4405,8 @@ spec:
                       profiles.
                     type: string
                   serializeImagePulls:
-                    description: '// SerializeImagePulls when enabled, tells the Kubelet
-                      to pull images one // at a time. We recommend *not* changing
-                      the default value on nodes that // run docker daemon with version  <
-                      1.9 or an Aufs storage backend. // Issue #10959 has more details.'
+                    description: SerializeImagePulls when enabled, tells the Kubelet
+                      to pull images one at a time.
                     type: boolean
                   shutdownGracePeriod:
                     description: 'ShutdownGracePeriod specifies the total duration
@@ -4489,7 +4483,7 @@ spec:
                     description: 'Enabled enables the metrics server. Default: false'
                     type: boolean
                   image:
-                    description: 'Image is the docker container used. Default: the
+                    description: 'Image is the container image used. Default: the
                       latest supported image for the specified kubernetes version.'
                     type: string
                   insecure:
@@ -5448,7 +5442,7 @@ spec:
                       false'
                     type: boolean
                   image:
-                    description: Image is the NodeProblemDetector docker container
+                    description: Image is the NodeProblemDetector container image
                       used.
                     type: string
                   memoryLimit:

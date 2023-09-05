@@ -76,7 +76,6 @@ kops create cluster [CLUSTER] [flags]
       --channel string                          Channel for default versions and configuration to use (default "stable")
       --cloud string                            Cloud provider to use - aws, digitalocean, gce, hetzner, openstack
       --cloud-labels string                     A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
-      --container-runtime string                Container runtime to use: containerd, docker
       --control-plane-count int32               Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone
       --control-plane-image string              Machine image for control-plane nodes. Takes precedence over --image
       --control-plane-security-groups strings   Additional pre-created security groups to add to control-plane nodes.

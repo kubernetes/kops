@@ -36,13 +36,5 @@ func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
 		options.ClusterDNSDomain = "cluster.local"
 	}
 
-	if options.ContainerRuntime == "" {
-		if options.Docker != nil {
-			options.ContainerRuntime = "docker"
-		} else {
-			options.ContainerRuntime = "containerd"
-		}
-	}
-
 	return nil
 }

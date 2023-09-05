@@ -128,7 +128,7 @@ ClusterName: private-shared-ip.example.com
 ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: F2+wDoOQG4ALl2pMLLZecWmYFw6MtWrOLLAbqhNf14c=
+NodeupConfigHash: OSX2aIPkK/GEjTZij3MvUNKt+kZSRbv6tSavgrvdteE=
 
 __EOF_KUBE_ENV
 

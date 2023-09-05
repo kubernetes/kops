@@ -2416,15 +2416,6 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.EtcdClusters = nil
 	}
-	if in.Containerd != nil {
-		in, out := &in.Containerd, &out.Containerd
-		*out = new(kops.ContainerdConfig)
-		if err := Convert_v1alpha2_ContainerdConfig_To_kops_ContainerdConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Containerd = nil
-	}
 	if in.Docker != nil {
 		in, out := &in.Docker, &out.Docker
 		*out = new(kops.DockerConfig)
@@ -2433,6 +2424,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		}
 	} else {
 		out.Docker = nil
+	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(kops.ContainerdConfig)
+		if err := Convert_v1alpha2_ContainerdConfig_To_kops_ContainerdConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Containerd = nil
 	}
 	if in.KubeDNS != nil {
 		in, out := &in.KubeDNS, &out.KubeDNS
@@ -2755,15 +2755,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.EtcdClusters = nil
 	}
-	if in.Containerd != nil {
-		in, out := &in.Containerd, &out.Containerd
-		*out = new(ContainerdConfig)
-		if err := Convert_kops_ContainerdConfig_To_v1alpha2_ContainerdConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Containerd = nil
-	}
 	if in.Docker != nil {
 		in, out := &in.Docker, &out.Docker
 		*out = new(DockerConfig)
@@ -2772,6 +2763,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.Docker = nil
+	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(ContainerdConfig)
+		if err := Convert_kops_ContainerdConfig_To_v1alpha2_ContainerdConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Containerd = nil
 	}
 	if in.KubeDNS != nil {
 		in, out := &in.KubeDNS, &out.KubeDNS

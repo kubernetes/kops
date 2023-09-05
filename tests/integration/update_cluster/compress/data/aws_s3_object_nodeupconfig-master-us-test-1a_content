@@ -227,7 +227,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: compress.example.com
-ContainerRuntime: containerd
 ControlPlaneConfig:
   KubeControllerManager:
     allocateNodeCIDRs: true
@@ -321,8 +320,6 @@ containerdConfig:
   runc:
     version: 1.1.5
   version: 1.6.20
-docker:
-  skipInstall: true
 etcdManifests:
 - memfs://clusters.example.com/compress.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/compress.example.com/manifests/etcd/events-master-us-test-1a.yaml

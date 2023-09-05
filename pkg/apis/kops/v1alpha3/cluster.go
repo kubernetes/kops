@@ -57,8 +57,8 @@ type ClusterSpec struct {
 	CloudProvider CloudProviderSpec `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
-	// Container runtime to use for Kubernetes
-	ContainerRuntime string `json:"containerRuntime,omitempty"`
+	// ContainerRuntime was removed.
+	ContainerRuntime string `json:"-"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -92,9 +92,10 @@ type ClusterSpec struct {
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
+	// Docker was removed.
+	Docker *DockerConfig `json:"-"`
 	// Component configurations
 	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
-	Docker                         *DockerConfig                 `json:"docker,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager          *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`
