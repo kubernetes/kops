@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops"
@@ -207,6 +208,13 @@ func setType(v reflect.Value, newValue string) error {
 			return fmt.Errorf("cannot interpret %q value as v1.Duration", newValue)
 		}
 		newV = reflect.ValueOf(metav1.Duration{Duration: duration})
+
+	case "resource.Quantity":
+		quantity, err := resource.ParseQuantity(newValue)
+		if err != nil {
+			return fmt.Errorf("cannot interpret %q value as resource.Quantity", newValue)
+		}
+		newV = reflect.ValueOf(quantity)
 
 	default:
 		// This handles enums and other simple conversions
