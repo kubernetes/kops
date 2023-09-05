@@ -1514,16 +1514,6 @@ spec:
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
-            path: /healthz
-            port: {{ $operatorHealthPort }}
-            scheme: HTTP
-          initialDelaySeconds: 0
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 5
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
