@@ -304,16 +304,21 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	return nil
 }
 
-type terraformInstanceIP struct{}
+type terraformInstanceIP struct {
+	Tags []string `cty:"tags"`
+}
 
 type terraformInstance struct {
-	Name       *string                             `cty:"name"`
-	IPID       *terraformWriter.Literal            `cty:"ip_id"`
-	Type       *string                             `cty:"type"`
-	Tags       []string                            `cty:"tags"`
-	Image      *string                             `cty:"image"`
-	UserData   map[string]*terraformWriter.Literal `cty:"user_data"`
-	RootVolume []terraformVolume                   `cty:"root_volume"`
+	Name                *string                             `cty:"name"`
+	IPID                *terraformWriter.Literal            `cty:"ip_id"`
+	Type                *string                             `cty:"type"`
+	Tags                []string                            `cty:"tags"`
+	Image               *string                             `cty:"image"`
+	UserData            map[string]*terraformWriter.Literal `cty:"user_data"`
+	RootVolume          []terraformVolume                   `cty:"root_volume"`
+	EnableDynamicIP     *bool                               `cty:"enable_dynamic_ip"`
+	ReplaceOnTypeChange *bool                               `cty:"replace_on_type_change"`
+	Lifecycle           *terraform.Lifecycle                `cty:"lifecycle"`
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Instance) error {
@@ -323,11 +328,14 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 		tfName := strings.ReplaceAll(uniqueName, ".", "-")
 
 		tfInstance := terraformInstance{
-			Name:  &uniqueName,
-			IPID:  terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
-			Type:  expected.CommercialType,
-			Tags:  expected.Tags,
-			Image: expected.Image,
+			Name:                &uniqueName,
+			IPID:                terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
+			Type:                expected.CommercialType,
+			Tags:                expected.Tags,
+			Image:               expected.Image,
+			EnableDynamicIP:     fi.PtrTo(true),
+			ReplaceOnTypeChange: fi.PtrTo(false),
+			Lifecycle:           nil,
 		}
 
 		// We load the cloud-init script in the instance user data
@@ -352,11 +360,27 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 			tfInstance.RootVolume = []terraformVolume{
 				{
 					SizeInGB: expected.VolumeSize,
+					Boot:     fi.PtrTo(true),
 				},
 			}
 		}
+
+		// For control-plane instances, we want to ignore changes to additional volumes since the etcd-manager will
+		// attach etcd volumes outside of Terraform
+		if scaleway.InstanceRoleFromTags(expected.Tags) == scaleway.TagRoleControlPlane {
+			tfInstance.Lifecycle = &terraform.Lifecycle{
+				IgnoreChanges: []*terraformWriter.Literal{&terraformWriter.Literal{String: "additional_volume_ids"}},
+			}
+		}
+
 		// We create an IP for the server (we only render it now to avoid duplicates if Instance task fails)
 		tfInstanceIP := terraformInstanceIP{}
+		for _, tag := range expected.Tags {
+			if strings.HasPrefix(tag, scaleway.TagClusterName) {
+				tfInstanceIP.Tags = []string{tag}
+				break
+			}
+		}
 		err := t.RenderResource("scaleway_instance_ip", tfName, tfInstanceIP)
 		if err != nil {
 			return err
@@ -367,7 +391,6 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 			return err
 		}
 	}
-
 	return nil
 }
 

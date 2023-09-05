@@ -202,10 +202,11 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 type terraformLBIP struct{}
 
 type terraformLoadBalancer struct {
-	Type string                   `cty:"type"`
-	Name *string                  `cty:"name"`
-	Tags []string                 `cty:"tags"`
-	IPID *terraformWriter.Literal `cty:"ip_id"`
+	Type        string                   `cty:"type"`
+	Name        *string                  `cty:"name"`
+	Description string                   `cty:"description"`
+	Tags        []string                 `cty:"tags"`
+	IPID        *terraformWriter.Literal `cty:"ip_id"`
 }
 
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *LoadBalancer) error {
@@ -218,10 +219,11 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, exp
 	}
 
 	tfLB := terraformLoadBalancer{
-		Type: "LB-S",
-		Name: expected.Name,
-		Tags: expected.Tags,
-		IPID: terraformWriter.LiteralProperty("scaleway_lb_ip", tfName, "id"),
+		Type:        "LB-S",
+		Name:        expected.Name,
+		Description: expected.Description,
+		Tags:        expected.Tags,
+		IPID:        terraformWriter.LiteralProperty("scaleway_lb_ip", tfName, "id"),
 	}
 	return t.RenderResource("scaleway_lb", tfName, tfLB)
 }

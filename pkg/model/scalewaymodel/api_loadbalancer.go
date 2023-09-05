@@ -109,7 +109,7 @@ func createLbBackendAndFrontend(name string, port int, zone scw.Zone, loadBalanc
 		ForwardPort:          fi.PtrTo(int32(port)),
 		ForwardPortAlgorithm: fi.PtrTo(string(lb.ForwardPortAlgorithmRoundrobin)),
 		StickySessions:       fi.PtrTo(string(lb.StickySessionsTypeNone)),
-		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolUnknown)),
+		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolNone)),
 		LoadBalancer:         loadBalancer,
 	}
 

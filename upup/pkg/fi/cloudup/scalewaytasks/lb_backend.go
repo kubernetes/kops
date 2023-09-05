@@ -18,6 +18,7 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -207,6 +208,7 @@ type terraformLBBackend struct {
 	Name            *string                    `cty:"name"`
 	ForwardProtocol *string                    `cty:"forward_protocol"`
 	ForwardPort     *int32                     `cty:"forward_port"`
+	ProxyProtocol   *string                    `cty:"proxy_protocol"`
 	ServerIPs       []*terraformWriter.Literal `cty:"server_ips"`
 }
 
@@ -229,6 +231,7 @@ func (l *LBBackend) RenderTerraform(t *terraform.TerraformTarget, actual, expect
 		Name:            expected.Name,
 		ForwardProtocol: expected.ForwardProtocol,
 		ForwardPort:     expected.ForwardPort,
+		ProxyProtocol:   fi.PtrTo(strings.TrimPrefix(*expected.ProxyProtocol, "proxy_protocol_")),
 		ServerIPs:       serverIPs,
 	}
 	return t.RenderResource("scaleway_lb_backend", fi.ValueOf(expected.Name), tf)

@@ -16,7 +16,10 @@ limitations under the License.
 
 package terraform
 
+import "k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+
 type Lifecycle struct {
-	PreventDestroy      *bool `cty:"prevent_destroy"`
-	CreateBeforeDestroy *bool `cty:"create_before_destroy"`
+	PreventDestroy      *bool                      `cty:"prevent_destroy"`
+	CreateBeforeDestroy *bool                      `cty:"create_before_destroy"`
+	IgnoreChanges       []*terraformWriter.Literal `cty:"ignore_changes"`
 }

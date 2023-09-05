@@ -140,6 +140,7 @@ type terraformVolume struct {
 	SizeInGB *int     `cty:"size_in_gb"`
 	Type     *string  `cty:"type"`
 	Tags     []string `cty:"tags"`
+	Boot     *bool    `cty:"boot"`
 }
 
 func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Volume) error {
