@@ -50,7 +50,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -373,10 +372,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
 
 	dest["ParseTaint"] = util.ParseTaint
-
-	dest["UsesInstanceIDForNodeName"] = func() bool {
-		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
-	}
 
 	dest["KarpenterEnabled"] = func() bool {
 		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
@@ -719,10 +714,6 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
 				NodesRoles: nodesRoles.List(),
 				Region:     tf.Region,
-			}
-
-			if cluster.Spec.ExternalCloudControllerManager != nil {
-				config.Server.UseInstanceIDForNodeName = true
 			}
 
 		case kops.CloudProviderGCE:

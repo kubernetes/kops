@@ -405,20 +405,12 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountExternalPermissions.
 	AddDNSControllerPermissions(b, p)
 
-	// If cluster does not use external CCM, the master IAM Role needs CCM permissions
-	if b.Cluster.Spec.ExternalCloudControllerManager == nil {
-		AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
-		AddLegacyCCMPermissions(p)
-	}
-
 	if !b.UseServiceAccountExternalPermisssions {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.ValueOf(b.Cluster.Spec.SnapshotController.Enabled)
 		AddAWSEBSCSIDriverPermissions(p, esc)
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
-		}
+		AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
 
 		if c := b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, c.EnableWAF, c.EnableWAFv2, c.EnableShield)
@@ -823,28 +815,6 @@ func addEtcdManagerPermissions(p *Policy) {
 				},
 			},
 		},
-	)
-}
-
-func AddLegacyCCMPermissions(p *Policy) {
-	p.unconditionalAction.Insert(
-		"ec2:CreateSecurityGroup",
-		"ec2:CreateTags",
-		"elasticloadbalancing:CreateTargetGroup",
-		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:RegisterTargets",
-		"elasticloadbalancing:CreateListener",
-		"elasticloadbalancing:DeleteListener",
-		"elasticloadbalancing:ModifyListener",
-		"ec2:DescribeVolumes",
-		"ec2:ModifyInstanceAttribute",
-		"ec2:ModifyVolume",
-		"ec2:AttachVolume",
-		"ec2:AuthorizeSecurityGroupIngress",
-		"ec2:DeleteRoute",
-		"ec2:DeleteSecurityGroup",
-		"ec2:DeleteVolume",
-		"ec2:DetachVolume",
 	)
 }
 

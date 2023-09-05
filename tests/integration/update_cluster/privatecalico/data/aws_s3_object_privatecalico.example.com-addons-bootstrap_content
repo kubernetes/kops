@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 403a16eaca92467172c3b8ba512f6f5977d59e014ff82e6515763761e9626634
+    manifestHash: f3635c7270ed274171b015aa11ff54cebb19c27ed7c608bea495d3dff94802b8
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:

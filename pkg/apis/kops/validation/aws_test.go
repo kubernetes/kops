@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-func TestAWSValidateExternalCloudConfig(t *testing.T) {
+func TestAWSValidateEBSCSIDriver(t *testing.T) {
 	grid := []struct {
 		Input          kops.ClusterSpec
 		ExpectedErrors []string
@@ -49,7 +49,7 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 					},
 				},
 			},
-			ExpectedErrors: []string{"Forbidden::spec.externalCloudControllerManager"},
+			ExpectedErrors: []string{"Forbidden::spec.cloudProvider.aws.ebsCSIDriver.enabled"},
 		},
 		{
 			Input: kops.ClusterSpec{
@@ -80,7 +80,7 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		cluster := &kops.Cluster{
 			Spec: g.Input,
 		}
-		errs := awsValidateExternalCloudControllerManager(cluster)
+		errs := awsValidateEBSCSIDriver(cluster)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -585,6 +585,9 @@ func TestLoadBalancerSubnets(t *testing.T) {
 						Type:  kops.LoadBalancerTypeInternal,
 					},
 				},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 			},
 		}
 		if test.class != nil {
@@ -667,6 +670,9 @@ func TestAWSAuthentication(t *testing.T) {
 						BackendMode:      test.backendMode,
 						IdentityMappings: test.identityMappings,
 					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
 				},
 			},
 		}

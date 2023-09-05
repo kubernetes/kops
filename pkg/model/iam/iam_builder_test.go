@@ -209,6 +209,7 @@ func TestPolicyGeneration(t *testing.T) {
 							},
 						},
 					},
+					ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
 					Networking: kops.NetworkingSpec{
 						Kubenet: &kops.KubenetNetworkingSpec{},
 					},

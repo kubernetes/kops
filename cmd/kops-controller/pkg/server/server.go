@@ -157,7 +157,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	id, err := s.verifier.VerifyToken(ctx, r, r.Header.Get("Authorization"), body, s.opt.Server.UseInstanceIDForNodeName)
+	id, err := s.verifier.VerifyToken(ctx, r, r.Header.Get("Authorization"), body)
 	if err != nil {
 		// means that we should exit nodeup gracefully
 		if err == bootstrap.ErrAlreadyExists {

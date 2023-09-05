@@ -399,6 +399,5 @@ etcdManifests:
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
-useInstanceIDForNodeName: true
 usesLegacyGossip: false
 usesNoneDNS: false

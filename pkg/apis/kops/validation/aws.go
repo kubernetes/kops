@@ -54,7 +54,7 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		allErrs = append(allErrs, awsValidateLoadBalancerSubnets(lbPath.Child("subnets"), c.Spec)...)
 	}
 
-	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
+	allErrs = append(allErrs, awsValidateEBSCSIDriver(c)...)
 
 	if c.Spec.Authentication != nil && c.Spec.Authentication.AWS != nil {
 		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.AWS)...)
@@ -63,16 +63,12 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	return allErrs
 }
 
-func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs field.ErrorList) {
+func awsValidateEBSCSIDriver(cluster *kops.Cluster) (allErrs field.ErrorList) {
 	c := cluster.Spec
 
-	if c.ExternalCloudControllerManager == nil {
-		return allErrs
-	}
-	fldPath := field.NewPath("spec", "externalCloudControllerManager")
-	if !hasAWSEBSCSIDriver(c) {
-		allErrs = append(allErrs, field.Forbidden(fldPath,
-			"AWS external CCM cannot be used without enabling spec.cloudProvider.aws.ebsCSIDriverSpec."))
+	fldPath := field.NewPath("spec", "cloudProvider", "aws", "ebsCSIDriver", "enabled")
+	if c.CloudProvider.AWS.EBSCSIDriver != nil && c.CloudProvider.AWS.EBSCSIDriver.Enabled != nil && !*c.CloudProvider.AWS.EBSCSIDriver.Enabled {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "must not be disabled"))
 	}
 	return allErrs
 }
@@ -395,15 +391,6 @@ func awsValidateIAMAuthenticator(fieldPath *field.Path, spec *kops.AWSAuthentica
 		}
 	}
 	return allErrs
-}
-
-func hasAWSEBSCSIDriver(c kops.ClusterSpec) bool {
-	// EBSCSIDriverSpec will have a default value, so if this is all false, it will be populated on next pass
-	if c.CloudProvider.AWS.EBSCSIDriver == nil || c.CloudProvider.AWS.EBSCSIDriver.Enabled == nil {
-		return true
-	}
-
-	return *c.CloudProvider.AWS.EBSCSIDriver.Enabled
 }
 
 func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec, networkCIDRs []*net.IPNet) field.ErrorList {

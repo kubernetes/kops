@@ -726,7 +726,7 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 		return nil, fmt.Errorf("error describing instances: %v", err)
 	}
 
-	return awsup.GetInstanceCertificateNames(result, b.NodeupConfig.UseInstanceIDForNodeName)
+	return awsup.GetInstanceCertificateNames(result)
 }
 
 func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {

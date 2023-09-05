@@ -325,8 +325,8 @@ spec:
                       driver
                     properties:
                       enabled:
-                        description: 'Enabled enables the AWS EBS CSI driver Default:
-                          false'
+                        description: 'Enabled enables the AWS EBS CSI driver. Can
+                          only be set to true. Default: true'
                         type: boolean
                       managed:
                         description: Managed controls if aws-ebs-csi-driver is manged

@@ -883,9 +883,9 @@ type CloudConfiguration struct {
 
 // EBSCSIDriverSpec is the config for the AWS EBS CSI driver
 type EBSCSIDriverSpec struct {
-	// Enabled enables the AWS EBS CSI driver
-	// Default: false
-	Enabled *bool `json:"enabled,omitempty"`
+	// Enabled enables the AWS EBS CSI driver. Can only be set to true.
+	// Default: true
+	Enabled *bool `json:"-"`
 
 	// Managed controls if aws-ebs-csi-driver is manged and deployed by kOps.
 	// The deployment of aws-ebs-csi-driver is skipped if this is set to false.
