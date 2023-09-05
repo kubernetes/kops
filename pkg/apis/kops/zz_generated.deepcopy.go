@@ -3357,6 +3357,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableContentionProfiling != nil {
+		in, out := &in.EnableContentionProfiling, &out.EnableContentionProfiling
+		*out = new(bool)
+		**out = **in
+	}
 	if in.CorsAllowedOrigins != nil {
 		in, out := &in.CorsAllowedOrigins, &out.CorsAllowedOrigins
 		*out = make([]string, len(*in))
@@ -3585,6 +3590,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableContentionProfiling != nil {
+		in, out := &in.EnableContentionProfiling, &out.EnableContentionProfiling
+		*out = new(bool)
+		**out = **in
+	}
 	if in.EnableLeaderMigration != nil {
 		in, out := &in.EnableLeaderMigration, &out.EnableLeaderMigration
 		*out = new(bool)
@@ -3789,6 +3799,16 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.KubeAPIQPS != nil {
+		in, out := &in.KubeAPIQPS, &out.KubeAPIQPS
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.KubeAPIBurst != nil {
+		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
+		*out = new(int32)
+		**out = **in
+	}
 	if in.AuthorizationAlwaysAllowPaths != nil {
 		in, out := &in.AuthorizationAlwaysAllowPaths, &out.AuthorizationAlwaysAllowPaths
 		*out = make([]string, len(*in))
@@ -3796,6 +3816,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 	}
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableContentionProfiling != nil {
+		in, out := &in.EnableContentionProfiling, &out.EnableContentionProfiling
 		*out = new(bool)
 		**out = **in
 	}

@@ -5242,6 +5242,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
 	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
 	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
@@ -5354,6 +5355,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
 	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
 	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
@@ -5428,6 +5430,7 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.EndpointUpdatesBatchPeriod = in.EndpointUpdatesBatchPeriod
 	out.EndpointSliceUpdatesBatchPeriod = in.EndpointSliceUpdatesBatchPeriod
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
@@ -5500,6 +5503,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.EndpointUpdatesBatchPeriod = in.EndpointUpdatesBatchPeriod
 	out.EndpointSliceUpdatesBatchPeriod = in.EndpointSliceUpdatesBatchPeriod
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
@@ -5652,10 +5656,13 @@ func autoConvert_v1alpha3_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.KubeAPIQPS = in.KubeAPIQPS
+	out.KubeAPIBurst = in.KubeAPIBurst
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	return nil
@@ -5685,10 +5692,13 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha3_KubeSchedulerConfig(in *ko
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.KubeAPIQPS = in.KubeAPIQPS
+	out.KubeAPIBurst = in.KubeAPIBurst
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
+	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	return nil

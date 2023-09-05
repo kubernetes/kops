@@ -1746,6 +1746,10 @@ spec:
                       in the 'kube-system' namespace to be used for TLS bootstrapping
                       authentication
                     type: boolean
+                  enableContentionProfiling:
+                    description: EnableContentionProfiling enables block profiling,
+                      if profiling is enabled
+                    type: boolean
                   enableProfiling:
                     description: EnableProfiling enables profiling via web interface
                       host:port/debug/pprof/
@@ -2116,6 +2120,10 @@ spec:
                     description: DisableAttachDetachReconcileSync disables the reconcile
                       sync loop in the attach-detach controller. This can cause volumes
                       to become mismatched with pods
+                    type: boolean
+                  enableContentionProfiling:
+                    description: EnableContentionProfiling enables block profiling,
+                      if profiling is enabled
                     type: boolean
                   enableLeaderMigration:
                     description: EnableLeaderMigration enables controller leader migration.
@@ -3496,6 +3504,10 @@ spec:
                       the burst quota is exhausted
                     format: int32
                     type: integer
+                  enableContentionProfiling:
+                    description: EnableContentionProfiling enables block profiling,
+                      if profiling is enabled
+                    type: boolean
                   enableProfiling:
                     description: EnableProfiling enables profiling via web interface
                       host:port/debug/pprof/
@@ -3509,6 +3521,19 @@ spec:
                   image:
                     description: Image is the docker image to use
                     type: string
+                  kubeAPIBurst:
+                    description: KubeAPIBurst Burst to use while talking with kubernetes
+                      apiserver. (default 30)
+                    format: int32
+                    type: integer
+                  kubeAPIQPS:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: KubeAPIQPS QPS to use while talking with kubernetes
+                      apiserver. (default 20)
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   leaderElection:
                     description: LeaderElection defines the configuration of leader
                       election client.
