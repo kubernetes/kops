@@ -521,6 +521,8 @@ type KubeAPIServerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+	// EnableContentionProfiling enables block profiling, if profiling is enabled
+	EnableContentionProfiling *bool `json:"enableContentionProfiling,omitempty" flag:"contention-profiling"`
 
 	// CorsAllowedOrigins is a list of origins for CORS. An allowed origin can be a regular
 	// expression to support subdomain matching. If this list is empty CORS will not be enabled.
@@ -671,6 +673,8 @@ type KubeControllerManagerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+	// EnableContentionProfiling enables block profiling, if profiling is enabled
+	EnableContentionProfiling *bool `json:"enableContentionProfiling,omitempty" flag:"contention-profiling"`
 	// EnableLeaderMigration enables controller leader migration.
 	EnableLeaderMigration *bool `json:"enableLeaderMigration,omitempty" flag:"enable-leader-migration"`
 }
@@ -740,6 +744,10 @@ type KubeSchedulerConfig struct {
 	Qps *resource.Quantity `json:"qps,omitempty" configfile:"ClientConnection.QPS" config:"clientConnection.qps,omitempty"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst" config:"clientConnection.burst,omitempty"`
+	// KubeAPIQPS QPS to use while talking with kubernetes apiserver. (default 20)
+	KubeAPIQPS *resource.Quantity `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
+	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 30)
+	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
 	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
@@ -749,6 +757,8 @@ type KubeSchedulerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+	// EnableContentionProfiling enables block profiling, if profiling is enabled
+	EnableContentionProfiling *bool `json:"enableContentionProfiling,omitempty" flag:"contention-profiling"`
 	// TLSCertFile is the file containing the TLS server certificate.
 	TLSCertFile *string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TLSPrivateKeyFile is the file containing the private key for the TLS server certificate.
