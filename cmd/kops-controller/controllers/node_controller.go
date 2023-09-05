@@ -104,7 +104,7 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	for k := range node.Labels {
 		// If it is one of our managed labels, "prune" values we don't want to be there
 		switch k {
-		case nodelabels.RoleLabelMaster16, nodelabels.RoleLabelAPIServer16, nodelabels.RoleLabelNode16, nodelabels.RoleLabelControlPlane20:
+		case nodelabels.RoleLabelAPIServer16, nodelabels.RoleLabelNode16, nodelabels.RoleLabelControlPlane20:
 			if _, found := labels[k]; !found {
 				deleteLabels[k] = struct{}{}
 			}

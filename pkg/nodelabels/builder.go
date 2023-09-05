@@ -25,7 +25,6 @@ import (
 )
 
 const (
-	RoleLabelMaster16    = "node-role.kubernetes.io/master"
 	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
 	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
