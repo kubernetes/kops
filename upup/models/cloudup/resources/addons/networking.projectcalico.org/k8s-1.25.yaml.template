@@ -1017,10 +1017,10 @@ spec:
                 - type: string
                 description: 'BPFPSNATPorts sets the range from which we randomly
                   pick a port if there is a source port collision. This should be
-                  within the ephemeral range as defined by RFC 6056 (1024â€“65535) and
+                  within the ephemeral range as defined by RFC 6056 (1024–65535) and
                   preferably outside the  ephemeral ranges used by common operating
-                  systems. Linux uses 32768â€“60999, while others mostly use the IANA
-                  defined range 49152â€“65535. It is not necessarily a problem if this
+                  systems. Linux uses 32768–60999, while others mostly use the IANA
+                  defined range 49152–65535. It is not necessarily a problem if this
                   range overlaps with the operating systems. Both ends of the range
                   are inclusive. [Default: 20000:29999]'
                 pattern: ^.*
@@ -4507,7 +4507,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.25.1" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.25.2" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
@@ -4536,7 +4536,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.25.1" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.25.2" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/install"]
           envFrom:
@@ -4579,7 +4579,7 @@ spec:
         # i.e. bpf at /sys/fs/bpf and cgroup2 at /run/calico/cgroup. Calico-node initialisation is executed
         # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptable mode.
         - name: "mount-bpffs"
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.25.1" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.25.2" }}
           imagePullPolicy: IfNotPresent
           command: ["calico-node", "-init", "-best-effort"]
           volumeMounts:
@@ -4605,7 +4605,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.25.1" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.25.2" }}
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -4934,7 +4934,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.25.1" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.25.2" }}
           imagePullPolicy: IfNotPresent
           env:
             # Choose which controllers to run.
@@ -4982,9 +4982,18 @@ spec:
     matchLabels:
       k8s-app: calico-typha
   strategy:
-    type: RollingUpdate
     rollingUpdate:
+      # 100% surge allows a complete up-level set of typha instances to start and become ready,
+      # which in turn allows all the back-level typha instances to start shutting down. This
+      # means that connections tend to bounce directly from a back-level instance to an up-level
+      # instance.
+      maxSurge: 100%
+      # In case the cluster is unable to schedule extra surge instances, allow at most one instance
+      # to shut down to make room. You can set this to 0 if you're sure there'll always be enough room to
+      # schedule extra typha instances during an upgrade (because setting it to 0 blocks shutdown until
+      # up-level typha instances are online and ready).
       maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -4995,6 +5004,9 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: true
+      # Typha supports graceful shut down, disconnecting clients slowly during the grace period.
+      # The TYPHA_SHUTDOWNTIMEOUTSECS env var should be kept in sync with this value.
+      terminationGracePeriodSeconds: 300
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
@@ -5011,7 +5023,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.25.1" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.25.2" }}
         imagePullPolicy: IfNotPresent
         name: calico-typha
         ports:
