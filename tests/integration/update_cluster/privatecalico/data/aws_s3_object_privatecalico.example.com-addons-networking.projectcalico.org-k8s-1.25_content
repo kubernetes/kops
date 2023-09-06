@@ -1018,12 +1018,12 @@ spec:
                 - type: string
                 description: 'BPFPSNATPorts sets the range from which we randomly
                   pick a port if there is a source port collision. This should be
-                  within the ephemeral range as defined by RFC 6056 (1024â€“65535)
-                  and preferably outside the  ephemeral ranges used by common operating
-                  systems. Linux uses 32768â€“60999, while others mostly use the IANA
-                  defined range 49152â€“65535. It is not necessarily a problem if
-                  this range overlaps with the operating systems. Both ends of the
-                  range are inclusive. [Default: 20000:29999]'
+                  within the ephemeral range as defined by RFC 6056 (1024–65535) and
+                  preferably outside the  ephemeral ranges used by common operating
+                  systems. Linux uses 32768–60999, while others mostly use the IANA
+                  defined range 49152–65535. It is not necessarily a problem if this
+                  range overlaps with the operating systems. Both ends of the range
+                  are inclusive. [Default: 20000:29999]'
                 pattern: ^.*
                 x-kubernetes-int-or-string: true
               bpfPolicyDebugEnabled:
@@ -4621,7 +4621,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.25.1
+        image: docker.io/calico/node:v3.25.2
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -4695,7 +4695,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.25.1
+        image: docker.io/calico/cni:v3.25.2
         imagePullPolicy: IfNotPresent
         name: upgrade-ipam
         securityContext:
@@ -4730,7 +4730,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.25.1
+        image: docker.io/calico/cni:v3.25.2
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -4744,7 +4744,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.25.1
+        image: docker.io/calico/node:v3.25.2
         imagePullPolicy: IfNotPresent
         name: mount-bpffs
         securityContext:
@@ -4870,7 +4870,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.25.1
+        image: docker.io/calico/kube-controllers:v3.25.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
