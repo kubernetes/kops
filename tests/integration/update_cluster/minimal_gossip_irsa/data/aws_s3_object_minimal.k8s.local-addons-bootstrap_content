@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 81590af93273a9017ac49716ed272602499f6f3f451400c72ab659a043eb1028
+    manifestHash: 823c9be1de94825c5ff27fa8864c2137ebf2afb52cb0335f0d810dee4d9d72fc
     name: node-termination-handler.aws
     prune:
       kinds:
@@ -106,7 +106,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: d22223f3fb5b253b0db251627f0bde2cd9afdc240ae090fb287465ab78b24bdd
+    manifestHash: 08b7f60392914b42c8d16377905d9e7c572d996c46f5a53026483840da884f28
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
