@@ -66,18 +66,21 @@ func DumpENI(op *resources.DumpOperation, r *resources.Resource) error {
 func DescribeENIs(cloud fi.Cloud, clusterName string) (map[string]*ec2.NetworkInterface, error) {
 	c := cloud.(awsup.AWSCloud)
 
+	statusFilter := &ec2.Filter{
+		Name: aws.String("status"),
+		Values: []*string{
+			aws.String(ec2.NetworkInterfaceStatusDetaching),
+			aws.String(ec2.NetworkInterfaceStatusAvailable),
+		},
+	}
 	enis := make(map[string]*ec2.NetworkInterface)
 	klog.V(2).Info("Listing ENIs")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeNetworkInterfacesInput{
-			Filters: filters,
+			Filters: append(filters, statusFilter),
 		}
 		err := c.EC2().DescribeNetworkInterfacesPages(request, func(dnio *ec2.DescribeNetworkInterfacesOutput, b bool) bool {
 			for _, eni := range dnio.NetworkInterfaces {
-				// Skip ENIs that are attached
-				if eni.Attachment != nil {
-					continue
-				}
 				enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
 			}
 			return true
