@@ -72,17 +72,18 @@ func DescribeENIs(cloud fi.Cloud, clusterName string) (map[string]*ec2.NetworkIn
 		request := &ec2.DescribeNetworkInterfacesInput{
 			Filters: filters,
 		}
-		response, err := c.EC2().DescribeNetworkInterfaces(request)
+		err := c.EC2().DescribeNetworkInterfacesPages(request, func(dnio *ec2.DescribeNetworkInterfacesOutput, b bool) bool {
+			for _, eni := range dnio.NetworkInterfaces {
+				// Skip ENIs that are attached
+				if eni.Attachment != nil {
+					continue
+				}
+				enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
+			}
+			return true
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error listing ENIs: %v", err)
-		}
-
-		for _, eni := range response.NetworkInterfaces {
-			// Skip ENIs that are attached
-			if eni.Attachment != nil {
-				continue
-			}
-			enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
 		}
 	}
 
