@@ -22,3 +22,7 @@ func (m *MockEC2) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInterfaces
 	output := &ec2.DescribeNetworkInterfacesOutput{}
 	return output, nil
 }
+
+func (m *MockEC2) DescribeNetworkInterfacesPages(*ec2.DescribeNetworkInterfacesInput, func(*ec2.DescribeNetworkInterfacesOutput, bool) bool) error {
+	return nil
+}
