@@ -344,7 +344,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		return nil
 	}
 
-	updateRecordsRequest := []*domain.RecordChange(nil)
+	changeBatch := []*domain.RecordChange(nil)
 	klog.V(8).Infof("applying changes in record change set : [ %d additions | %d upserts | %d removals ]",
 		len(r.additions), len(r.upserts), len(r.removals))
 
@@ -353,75 +353,35 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		return err
 	}
 
-	if len(r.additions) > 0 {
-		recordsToAdd := []*domain.Record(nil)
-		for _, rrset := range r.additions {
-			recordName := strings.TrimSuffix(rrset.Name(), ".")
-			recordName = strings.TrimSuffix(recordName, "."+r.zone.Name())
-			for _, rrdata := range rrset.Rrdatas() {
-				recordsToAdd = append(recordsToAdd, &domain.Record{
-					Name: recordName,
-					Data: rrdata,
-					TTL:  uint32(rrset.Ttl()),
-					Type: domain.RecordType(rrset.Type()),
-				})
-			}
-			klog.V(8).Infof("adding new DNS record %q to zone %q", recordName, r.zone.name)
-			updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
-				Add: &domain.RecordChangeAdd{
-					Records: recordsToAdd,
-				},
-			})
-		}
-	}
-
+	// Scaleway's Domain API doesn't allow edits to the same record if one request, so we have to check for duplicates
+	// in the upsert category and if there are, treat them as additions instead
 	if len(r.upserts) > 0 {
 		for _, rrset := range r.upserts {
-			for _, rrdata := range rrset.Rrdatas() {
-				for _, record := range records {
-					recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, r.zone.Name())
-					if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && rrset.Type() == rrstype.RrsType(record.Type) {
-						klog.V(8).Infof("changing DNS record %q of zone %q", record.Name, r.zone.Name())
-						updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
-							Set: &domain.RecordChangeSet{
-								ID: &record.ID,
-								Records: []*domain.Record{
-									{
-										Name: record.Name,
-										Data: rrdata,
-										TTL:  uint32(rrset.Ttl()),
-										Type: domain.RecordType(rrset.Type()),
-									},
-								},
-							},
-						})
-					}
+			for i, rrdata := range rrset.Rrdatas() {
+				if i == 0 {
+					changeBatch = putRecordToUpdateInChangeBatch(changeBatch, rrset, r.zone.Name(), records, rrdata)
+				} else {
+					rrsetFromIndex1 := r.rrsets.New(rrset.Name(), rrset.Rrdatas()[1:], rrset.Ttl(), rrset.Type())
+					changeBatch = putRecordToAddInChangeBatch(changeBatch, rrsetFromIndex1, r.zone.Name())
+					break
 				}
 			}
 		}
 	}
-
+	if len(r.additions) > 0 {
+		for _, rrset := range r.additions {
+			changeBatch = putRecordToAddInChangeBatch(changeBatch, rrset, r.zone.Name())
+		}
+	}
 	if len(r.removals) > 0 {
 		for _, rrset := range r.removals {
-			for _, record := range records {
-				recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, r.zone.Name())
-				if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && record.Data == rrset.Rrdatas()[0] &&
-					rrset.Type() == rrstype.RrsType(record.Type) {
-					klog.V(8).Infof("removing DNS record %q of zone %q", record.Name, r.zone.name)
-					updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
-						Delete: &domain.RecordChangeDelete{
-							ID: &record.ID,
-						},
-					})
-				}
-
-			}
+			changeBatch = putRecordToDeleteInChangeBatch(changeBatch, rrset, r.zone.Name(), records)
 		}
 	}
 
 	_, err = r.domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: r.zone.Name(),
-		Changes: updateRecordsRequest,
+		Changes: changeBatch,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to apply resource record set: %w", err)
@@ -455,4 +415,63 @@ func listRecords(api DomainAPI, zoneName string) ([]*domain.Record, error) {
 	}
 
 	return records.Records, err
+}
+
+func putRecordToAddInChangeBatch(changeBatch []*domain.RecordChange, rrset dnsprovider.ResourceRecordSet, zoneName string) []*domain.RecordChange {
+	recordsToAdd := []*domain.Record(nil)
+	recordName := strings.TrimSuffix(rrset.Name(), ".")
+	recordName = strings.TrimSuffix(recordName, "."+zoneName)
+	for _, rrdata := range rrset.Rrdatas() {
+		recordsToAdd = append(recordsToAdd, &domain.Record{
+			Name: recordName,
+			Data: rrdata,
+			TTL:  uint32(rrset.Ttl()),
+			Type: domain.RecordType(rrset.Type()),
+		})
+	}
+	klog.V(8).Infof("adding new DNS record %q to zone %q", recordName, zoneName)
+	return append(changeBatch, &domain.RecordChange{
+		Add: &domain.RecordChangeAdd{
+			Records: recordsToAdd,
+		},
+	})
+}
+
+func putRecordToUpdateInChangeBatch(changeBatch []*domain.RecordChange, rrset dnsprovider.ResourceRecordSet, zoneName string, records []*domain.Record, rrdata string) []*domain.RecordChange {
+	for _, record := range records {
+		recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, zoneName)
+		if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && rrset.Type() == rrstype.RrsType(record.Type) {
+			klog.V(8).Infof("changing DNS record %q of zone %q", record.Name, zoneName)
+			return append(changeBatch, &domain.RecordChange{
+				Set: &domain.RecordChangeSet{
+					ID: &record.ID,
+					Records: []*domain.Record{
+						{
+							Name: record.Name,
+							Data: rrdata,
+							TTL:  uint32(rrset.Ttl()),
+							Type: domain.RecordType(rrset.Type()),
+						},
+					},
+				},
+			})
+		}
+	}
+	return changeBatch
+}
+
+func putRecordToDeleteInChangeBatch(changeBatch []*domain.RecordChange, rrset dnsprovider.ResourceRecordSet, zoneName string, records []*domain.Record) []*domain.RecordChange {
+	for _, record := range records {
+		recordNameWithZone := fmt.Sprintf("%s.%s.", record.Name, zoneName)
+		if recordNameWithZone == dns.EnsureDotSuffix(rrset.Name()) && record.Data == rrset.Rrdatas()[0] &&
+			rrset.Type() == rrstype.RrsType(record.Type) {
+			klog.V(8).Infof("removing DNS record %q of zone %q", record.Name, zoneName)
+			return append(changeBatch, &domain.RecordChange{
+				Delete: &domain.RecordChangeDelete{
+					ID: &record.ID,
+				},
+			})
+		}
+	}
+	return changeBatch
 }

@@ -762,6 +762,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			shouldPrecreateDNS = true
+		}
 
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
