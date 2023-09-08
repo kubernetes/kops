@@ -14,9 +14,9 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-	github.com/aws/aws-sdk-go v1.45.1
+	github.com/aws/aws-sdk-go v1.45.5
 	github.com/blang/semver/v4 v4.0.0
-	github.com/cert-manager/cert-manager v1.12.3
+	github.com/cert-manager/cert-manager v1.12.4
 	github.com/digitalocean/godo v1.102.1
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.4
@@ -42,14 +42,14 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.11.0
-	golang.org/x/crypto v0.12.0
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
-	golang.org/x/net v0.14.0
-	golang.org/x/oauth2 v0.11.0
+	golang.org/x/crypto v0.13.0
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+	golang.org/x/net v0.15.0
+	golang.org/x/oauth2 v0.12.0
 	golang.org/x/sync v0.3.0
-	golang.org/x/sys v0.11.0
+	golang.org/x/sys v0.12.0
 	google.golang.org/api v0.138.0
-	google.golang.org/grpc v1.57.0
+	google.golang.org/grpc v1.58.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
@@ -209,10 +209,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.15.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
