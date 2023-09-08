@@ -36,6 +36,7 @@ popd
 # Setup our cleanup function; as we allocate resources we set a variable to indicate they should be cleaned up
 function cleanup {
   # will help us better diagnose failures
+  aws resourcegroupstaggingapi get-resources --region us-east-2
   aws autoscaling describe-scaling-activities --region us-east-2
   # shellcheck disable=SC2153
   if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
