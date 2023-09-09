@@ -1063,7 +1063,9 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 			if g.Spec.NodeLabels == nil {
 				g.Spec.NodeLabels = make(map[string]string)
 			}
-			g.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+			if cluster.IsKubernetesLT("1.29") {
+				g.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+			}
 		}
 
 		for i, size := range opt.NodeSizes {
