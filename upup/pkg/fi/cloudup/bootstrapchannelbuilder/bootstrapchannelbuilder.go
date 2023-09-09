@@ -849,7 +849,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	// The metadata-proxy daemonset conceals node metadata endpoints in GCE.
 	// It will land on nodes labeled cloud.google.com/metadata-proxy-ready=true
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE && b.Cluster.IsKubernetesLT("1.29") {
 		key := "metadata-proxy.addons.k8s.io"
 
 		{
@@ -863,61 +863,61 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Id:       id,
 			})
 		}
+	}
 
-		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
-			{
-				key := "gcp-cloud-controller.addons.k8s.io"
-				useBuiltin := !b.hasExternalAddon(key)
+	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+		{
+			key := "gcp-cloud-controller.addons.k8s.io"
+			useBuiltin := !b.hasExternalAddon(key)
 
-				if !useBuiltin {
-					klog.Infof("Found cloud-controller-manager in addons; won't use builtin")
+			if !useBuiltin {
+				klog.Infof("Found cloud-controller-manager in addons; won't use builtin")
 
-					// Until we make the manifest extensible, we still need to inject our arguments.
-					// TODO(justinsb): we don't really want to do this, it limits the ability for users to override things.
-					// However, this is behind a feature flag at the moment, and this way we can work towards something better.
-					gkDaemonset := schema.GroupKind{Group: "apps", Kind: "DaemonSet"}
-					for _, addon := range b.ClusterAddons {
-						if addon.GroupVersionKind().GroupKind() == gkDaemonset &&
-							addon.GetName() == "cloud-controller-manager" &&
-							addon.GetNamespace() == "kube-system" {
+				// Until we make the manifest extensible, we still need to inject our arguments.
+				// TODO(justinsb): we don't really want to do this, it limits the ability for users to override things.
+				// However, this is behind a feature flag at the moment, and this way we can work towards something better.
+				gkDaemonset := schema.GroupKind{Group: "apps", Kind: "DaemonSet"}
+				for _, addon := range b.ClusterAddons {
+					if addon.GroupVersionKind().GroupKind() == gkDaemonset &&
+						addon.GetName() == "cloud-controller-manager" &&
+						addon.GetNamespace() == "kube-system" {
 
-							klog.Infof("replacing arguments in externally provided cloud-controller-manager")
+						klog.Infof("replacing arguments in externally provided cloud-controller-manager")
 
-							fnAny, ok := b.templates.TemplateFunctions["CloudControllerConfigArgv"]
-							if !ok {
-								return nil, nil, fmt.Errorf("unable to find TemplateFunction CloudControllerConfigArgv")
-							}
-							fn, ok := fnAny.(func() ([]string, error))
-							if !ok {
-								return nil, nil, fmt.Errorf("unexpected type for TemplateFunction CloudControllerConfigArgv: %T", fnAny)
-							}
-							args, err := fn()
-							if err != nil {
-								return nil, nil, fmt.Errorf("in TemplateFunction CloudControllerConfigArgv: %w", err)
-							}
+						fnAny, ok := b.templates.TemplateFunctions["CloudControllerConfigArgv"]
+						if !ok {
+							return nil, nil, fmt.Errorf("unable to find TemplateFunction CloudControllerConfigArgv")
+						}
+						fn, ok := fnAny.(func() ([]string, error))
+						if !ok {
+							return nil, nil, fmt.Errorf("unexpected type for TemplateFunction CloudControllerConfigArgv: %T", fnAny)
+						}
+						args, err := fn()
+						if err != nil {
+							return nil, nil, fmt.Errorf("in TemplateFunction CloudControllerConfigArgv: %w", err)
+						}
 
-							if err := addon.VisitContainers(func(container map[string]interface{}) error {
-								// TODO: Check name?
-								container["args"] = args
-								return nil
-							}); err != nil {
-								return nil, nil, fmt.Errorf("error visiting containers: %w", err)
-							}
+						if err := addon.VisitContainers(func(container map[string]interface{}) error {
+							// TODO: Check name?
+							container["args"] = args
+							return nil
+						}); err != nil {
+							return nil, nil, fmt.Errorf("error visiting containers: %w", err)
 						}
 					}
 				}
+			}
 
-				if useBuiltin {
-					id := "k8s-1.23"
-					location := key + "/" + id + ".yaml"
-					addon := addons.Add(&channelsapi.AddonSpec{
-						Name:     fi.PtrTo(key),
-						Manifest: fi.PtrTo(location),
-						Selector: map[string]string{"k8s-addon": key},
-						Id:       id,
-					})
-					addon.BuildPrune = true
-				}
+			if useBuiltin {
+				id := "k8s-1.23"
+				location := key + "/" + id + ".yaml"
+				addon := addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.PtrTo(key),
+					Manifest: fi.PtrTo(location),
+					Selector: map[string]string{"k8s-addon": key},
+					Id:       id,
+				})
+				addon.BuildPrune = true
 			}
 		}
 	}
