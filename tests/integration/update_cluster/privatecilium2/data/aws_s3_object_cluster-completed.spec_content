@@ -216,6 +216,13 @@ spec:
         enabled: true
       identityAllocationMode: crd
       identityChangeGracePeriod: 5s
+      ingress:
+        defaultLoadBalancerMode: dedicated
+        enableSecretsSync: false
+        enabled: true
+        enforceHttps: false
+        loadBalancerAnnotationPrefixes: service.alpha.kubernetes.io
+        sharedLoadBalancerServiceName: private-ingress
       ipam: kubernetes
       memoryRequest: 128Mi
       monitorAggregation: medium

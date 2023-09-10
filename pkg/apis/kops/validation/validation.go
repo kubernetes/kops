@@ -1338,6 +1338,12 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 	}
 
+	if v.Ingress != nil && fi.ValueOf(v.Ingress.Enabled) {
+		if v.Ingress.DefaultLoadBalancerMode != "" {
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("ingress", "defaultLoadBalancerMode"), &v.Ingress.DefaultLoadBalancerMode, []string{"shared", "dedicated"})...)
+		}
+	}
+
 	return allErrs
 }
 

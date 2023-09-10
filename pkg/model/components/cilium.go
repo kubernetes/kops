@@ -168,5 +168,16 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	ingress := c.Ingress
+	if ingress != nil {
+		if ingress.Enabled == nil {
+			ingress.Enabled = fi.PtrTo(true)
+		}
+	} else {
+		c.Ingress = &kops.CiliumIngressSpec{
+			Enabled: fi.PtrTo(false),
+		}
+	}
+
 	return nil
 }

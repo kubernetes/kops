@@ -224,6 +224,8 @@ spec:
         enabled: false
       identityAllocationMode: crd
       identityChangeGracePeriod: 5s
+      ingress:
+        enabled: false
       ipam: eni
       memoryRequest: 128Mi
       monitorAggregation: medium

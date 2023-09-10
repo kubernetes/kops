@@ -278,6 +278,33 @@ data:
 
   enable-service-topology: "{{ .EnableServiceTopology }}"
 
+  {{ if WithDefaultBool .Ingress.Enabled false }}
+  enable-envoy-config: "true"
+  external-envoy-proxy: "false"
+  enable-ingress-controller: "true"
+  ingress-secrets-namespace: kube-system
+
+  {{ if .Ingress.EnforceHttps }}
+  enforce-ingress-https: "{{ .Ingress.EnforceHttps }}"
+  {{ end }}
+
+  {{ if .Ingress.EnableSecretsSync }}
+  enable-ingress-secrets-sync: "{{ .Ingress.EnableSecretsSync }}"
+  {{ end }}
+
+  {{ if .Ingress.SharedLoadBalancerServiceName }}
+  ingress-shared-lb-service-name: {{ .Ingress.SharedLoadBalancerServiceName }}
+  {{ end }}
+
+  {{ if .Ingress.DefaultLoadBalancerMode }}
+  ingress-default-lb-mode: {{ .Ingress.DefaultLoadBalancerMode }}
+  {{ end }}
+
+  {{ if .Ingress.LoadBalancerAnnotationPrefixes }}
+  ingress-lb-annotation-prefixes: "{{ .Ingress.LoadBalancerAnnotationPrefixes }}"
+  {{ end }}
+  {{ end }}
+
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"
@@ -583,6 +610,23 @@ rules:
   - create
   - get
   - update
+{{ if WithDefaultBool .Ingress.Enabled false }}
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status # To update ingress status with load balancer IP.
+  verbs:
+  - update
+{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -609,6 +653,121 @@ subjects:
 - kind: ServiceAccount
   name: cilium-operator
   namespace: kube-system
+{{ if WithDefaultBool .Ingress.Enabled false }}
+---
+# Source: cilium/templates/cilium-agent/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cilium-ingress-secrets
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: cilium
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: cilium/templates/cilium-agent/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cilium-secrets
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-ingress-secrets
+subjects:
+  - kind: ServiceAccount
+    name: "cilium"
+    namespace: kube-system
+---
+# Source: cilium/templates/cilium-operator/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cilium-operator-ingress-secrets
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: cilium
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - update
+  - patch
+---
+# Source: cilium/templates/cilium-operator/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cilium-operator-ingress-secrets
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-operator-ingress-secrets
+subjects:
+  - kind: ServiceAccount
+    name: "cilium-operator"
+    namespace: kube-system
+---
+# Source: cilium/templates/cilium-ingress-class.yaml
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: cilium
+spec:
+  controller: cilium.io/ingress-controller
+{{ if or (eq .Ingress.DefaultLoadBalancerMode "shared") (not .Ingress.DefaultLoadBalancerMode) }}
+---
+# Source: cilium/templates/cilium-ingress-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Ingress.SharedLoadBalancerServiceName }}
+  namespace: kube-system
+  labels:
+    cilium.io/ingress: "true"
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    nodePort:
+  - name: https
+    port: 443
+    protocol: TCP
+    nodePort:
+  type: LoadBalancer
+---
+# Source: cilium/templates/cilium-ingress-service.yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Ingress.SharedLoadBalancerServiceName }}
+  namespace: kube-system
+subsets:
+- addresses:
+  - ip: "192.192.192.192"
+  ports:
+  - port: 9999
+{{ end }}
+{{ end }}
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
 # Source: cilium/templates/hubble-relay-service.yaml

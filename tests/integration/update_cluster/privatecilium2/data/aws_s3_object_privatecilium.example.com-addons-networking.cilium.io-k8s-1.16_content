@@ -58,7 +58,10 @@ data:
   disable-endpoint-crd: "false"
   enable-bpf-masquerade: "false"
   enable-endpoint-health-checking: "true"
+  enable-envoy-config: "true"
   enable-hubble: "true"
+  enable-ingress-controller: "true"
+  enable-ingress-secrets-sync: "false"
   enable-ipv4: "true"
   enable-ipv4-masquerade: "true"
   enable-ipv6: "false"
@@ -68,6 +71,8 @@ data:
   enable-remote-node-identity: "true"
   enable-service-topology: "false"
   enable-unreachable-routes: "false"
+  enforce-ingress-https: "false"
+  external-envoy-proxy: "false"
   hubble-disable-tls: "false"
   hubble-listen-address: :4244
   hubble-socket-path: /var/run/cilium/hubble.sock
@@ -76,6 +81,10 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/tls.key
   identity-allocation-mode: crd
   identity-change-grace-period: 5s
+  ingress-default-lb-mode: dedicated
+  ingress-lb-annotation-prefixes: service.alpha.kubernetes.io
+  ingress-secrets-namespace: kube-system
+  ingress-shared-lb-service-name: private-ingress
   install-iptables-rules: "true"
   ipam: kubernetes
   kube-proxy-replacement: partial
@@ -388,6 +397,21 @@ rules:
   - create
   - get
   - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - update
 
 ---
 
@@ -428,6 +452,111 @@ subjects:
 - kind: ServiceAccount
   name: cilium-operator
   namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/part-of: cilium
+    role.kubernetes.io/networking: "1"
+  name: cilium-ingress-secrets
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/part-of: cilium
+    role.kubernetes.io/networking: "1"
+  name: cilium-secrets
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-ingress-secrets
+subjects:
+- kind: ServiceAccount
+  name: cilium
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/part-of: cilium
+    role.kubernetes.io/networking: "1"
+  name: cilium-operator-ingress-secrets
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - update
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/part-of: cilium
+    role.kubernetes.io/networking: "1"
+  name: cilium-operator-ingress-secrets
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-operator-ingress-secrets
+subjects:
+- kind: ServiceAccount
+  name: cilium-operator
+  namespace: kube-system
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: cilium
+spec:
+  controller: cilium.io/ingress-controller
 
 ---
 

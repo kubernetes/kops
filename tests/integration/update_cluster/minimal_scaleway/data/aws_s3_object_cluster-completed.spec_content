@@ -191,6 +191,8 @@ spec:
         enabled: false
       identityAllocationMode: crd
       identityChangeGracePeriod: 5s
+      ingress:
+        enabled: false
       ipam: kubernetes
       memoryRequest: 128Mi
       monitorAggregation: medium

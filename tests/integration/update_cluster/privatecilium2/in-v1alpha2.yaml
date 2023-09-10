@@ -30,6 +30,13 @@ spec:
     cilium:
       clusterName: privatecilium.example.com
       clusterID: 253
+      ingress:
+        enabled: true
+        defaultLoadBalancerMode: dedicated
+        enableSecretsSync: false
+        enforceHttps: false
+        loadBalancerAnnotationPrefixes: service.alpha.kubernetes.io
+        sharedLoadBalancerServiceName: private-ingress
       hubble:
         enabled: true
   nonMasqueradeCIDR: 100.64.0.0/10
