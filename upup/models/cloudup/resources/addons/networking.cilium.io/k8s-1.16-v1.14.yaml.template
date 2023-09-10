@@ -925,9 +925,7 @@ spec:
       k8s-app: cilium
       kubernetes.io/cluster-service: "true"
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 2
-    type: RollingUpdate
+    type: OnDelete
   template:
     metadata:
       annotations:
@@ -946,6 +944,15 @@ spec:
         app.kubernetes.io/part-of: cilium
         kubernetes.io/cluster-service: "true"
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - name: cilium-agent
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
@@ -1308,15 +1315,6 @@ spec:
       serviceAccountName: cilium
       terminationGracePeriodSeconds: 1
       hostNetwork: true
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchLabels:
-                k8s-app: cilium
-            topologyKey: kubernetes.io/hostname
-      nodeSelector:
-        kubernetes.io/os: linux
       tolerations:
       - operator: Exists
       volumes:
@@ -1647,8 +1645,6 @@ spec:
               matchLabels:
                 k8s-app: cilium
             topologyKey: kubernetes.io/hostname
-      nodeSelector:
-        kubernetes.io/os: linux
       restartPolicy: Always
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
