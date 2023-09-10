@@ -145,6 +145,8 @@ type NewClusterOptions struct {
 	Topology string
 	// DNSType is the DNS type to use; "public" or "private". Defaults to "public".
 	DNSType string
+	// DNSZone is the DNS zone to use.
+	DNSZone string
 
 	// APILoadBalancerClass determines whether to use classic or network load balancers for the API
 	APILoadBalancerClass string
@@ -1369,15 +1371,20 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
-		switch cluster.Spec.GetCloudProvider() {
-		case api.CloudProviderHetzner, api.CloudProviderDO, api.CloudProviderAzure:
-			// Use dns=none if not specified
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
-		default:
-			if cluster.UsesLegacyGossip() {
-				cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
-			} else {
-				cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+		if opt.DNSZone != "" {
+			// Use dns=public if zone is specified
+			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+		} else {
+			switch cluster.Spec.GetCloudProvider() {
+			case api.CloudProviderAWS, api.CloudProviderHetzner, api.CloudProviderDO, api.CloudProviderAzure:
+				// Use dns=none if not specified
+				cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
+			default:
+				if cluster.UsesLegacyGossip() {
+					cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
+				} else {
+					cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
+				}
 			}
 		}
 	case "public":
