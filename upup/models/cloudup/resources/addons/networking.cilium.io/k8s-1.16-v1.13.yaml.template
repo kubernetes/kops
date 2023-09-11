@@ -103,6 +103,7 @@ data:
   {{ else if eq .EncryptionType "wireguard"  }}
   enable-wireguard: "true"
   {{ end }}
+  encrypt-node: "{{ .NodeEncryption }}"
   {{ end }}
 
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
