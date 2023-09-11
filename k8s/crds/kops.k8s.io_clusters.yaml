@@ -5167,6 +5167,10 @@ spec:
                       nat46Range:
                         description: Nat46Range is unused.
                         type: string
+                      nodeEncryption:
+                        description: 'NodeEncryption enables encryption for pure node
+                          to node traffic. Default: false'
+                        type: boolean
                       nodeInitBootstrapFile:
                         description: NodeInitBootstrapFile is unused.
                         type: string
