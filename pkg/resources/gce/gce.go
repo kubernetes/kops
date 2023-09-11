@@ -377,10 +377,10 @@ func deleteGCEDisk(cloud fi.Cloud, r *resources.Resource) error {
 	op, err := c.Compute().Disks().Delete(u.Project, u.Zone, u.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
-			klog.Infof("disk not found, assuming deleted: %q", t.SelfLink)
+			klog.Infof("Disk not found, assuming deleted: %q", t.SelfLink)
 			return nil
 		}
-		return fmt.Errorf("error deleting disk %s: %v", t.SelfLink, err)
+		return fmt.Errorf("error deleting Disk %s: %v", t.SelfLink, err)
 	}
 
 	return c.WaitForOp(op)
@@ -930,7 +930,7 @@ func deleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	o := r.Obj.(*compute.Subnetwork)
 
-	klog.V(2).Infof("deleting GCE subnetwork %s", o.SelfLink)
+	klog.V(2).Infof("deleting GCE Subnetwork %s", o.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
 	if err != nil {
 		return err
@@ -939,10 +939,10 @@ func deleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
 	op, err := c.Compute().Subnetworks().Delete(u.Project, u.Region, u.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
-			klog.Infof("subnetwork not found, assuming deleted: %q", o.SelfLink)
+			klog.Infof("Subnetwork not found, assuming deleted: %q", o.SelfLink)
 			return nil
 		}
-		return fmt.Errorf("error deleting subnetwork %s: %v", o.SelfLink, err)
+		return fmt.Errorf("error deleting Subnetwork %s: %v", o.SelfLink, err)
 	}
 
 	return c.WaitForOp(op)
@@ -993,7 +993,7 @@ func deleteRouter(cloud fi.Cloud, r *resources.Resource) error {
 	op, err := c.Compute().Routers().Delete(u.Project, u.Region, u.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
-			klog.Infof("router not found, assuming deleted: %q", o.SelfLink)
+			klog.Infof("Router not found, assuming deleted: %q", o.SelfLink)
 			return nil
 		}
 		return fmt.Errorf("error deleting router %s: %v", o.SelfLink, err)
@@ -1044,7 +1044,14 @@ func deleteServiceAccount(cloud fi.Cloud, r *resources.Resource) error {
 
 	klog.V(2).Infof("deleting GCE ServiceAccount %s", o.Name)
 	_, err := c.IAM().ServiceAccounts().Delete(o.Name)
-	return err
+	if err != nil {
+		if gce.IsNotFound(err) {
+			klog.Infof("ServiceAccount not found, assuming deleted: %q", o.Name)
+			return nil
+		}
+		return fmt.Errorf("error deleting ServiceAccount %s: %v", o.Name, err)
+	}
+	return nil
 }
 
 // containsOnlyListedIGMs returns true if all the given backend service's backends
