@@ -22,10 +22,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/util/pkg/maps"
 )
 
 func DeleteVPC(cloud fi.Cloud, r *resources.Resource) error {
@@ -68,7 +68,7 @@ func DumpVPC(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func DescribeVPCs(cloud fi.Cloud, clusterName string) (map[string]*ec2.Vpc, error) {
+func DescribeVPC(cloud fi.Cloud, clusterName string) (*ec2.Vpc, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	vpcs := make(map[string]*ec2.Vpc)
@@ -87,31 +87,38 @@ func DescribeVPCs(cloud fi.Cloud, clusterName string) (map[string]*ec2.Vpc, erro
 		}
 	}
 
-	return vpcs, nil
+	switch len(vpcs) {
+	case 0:
+		return nil, nil
+	case 1:
+		return vpcs[maps.Keys(vpcs)[0]], nil
+	default:
+		return nil, fmt.Errorf("found multiple VPCs for cluster %q: %v", clusterName, maps.Keys(vpcs))
+	}
 }
 
 func ListVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	vpcs, err := DescribeVPCs(cloud, clusterName)
+	vpc, err := DescribeVPC(cloud, clusterName)
 	if err != nil {
 		return nil, err
 	}
 
 	var resourceTrackers []*resources.Resource
-	for _, v := range vpcs {
-		vpcID := aws.StringValue(v.VpcId)
+	if vpc != nil {
+		vpcID := aws.StringValue(vpc.VpcId)
 
 		resourceTracker := &resources.Resource{
-			Name:    FindName(v.Tags),
+			Name:    FindName(vpc.Tags),
 			ID:      vpcID,
 			Type:    ec2.ResourceTypeVpc,
 			Deleter: DeleteVPC,
 			Dumper:  DumpVPC,
-			Obj:     v,
-			Shared:  !HasOwnedTag(ec2.ResourceTypeVpc+":"+vpcID, v.Tags, clusterName),
+			Obj:     vpc,
+			Shared:  !HasOwnedTag(ec2.ResourceTypeVpc+":"+vpcID, vpc.Tags, clusterName),
 		}
 
 		var blocks []string
-		blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
+		blocks = append(blocks, "dhcp-options:"+aws.StringValue(vpc.DhcpOptionsId))
 
 		resourceTracker.Blocks = blocks
 

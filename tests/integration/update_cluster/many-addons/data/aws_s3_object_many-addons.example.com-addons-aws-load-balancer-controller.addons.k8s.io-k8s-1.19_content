@@ -876,12 +876,12 @@ spec:
       containers:
       - args:
         - --metrics-bind-addr=:9442
-        - --cluster-name=minimal.example.com
+        - --cluster-name=many-addons.example.com
         - --enable-waf=false
         - --enable-wafv2=false
         - --enable-shield=false
         - --ingress-class=alb
-        - --default-tags=KubernetesCluster=minimal.example.com
+        - --default-tags=KubernetesCluster=many-addons.example.com
         - --aws-region=us-test-1
         env:
         - name: NODENAME

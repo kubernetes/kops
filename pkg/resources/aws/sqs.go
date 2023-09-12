@@ -54,7 +54,7 @@ func DeleteSQSQueue(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListSQSQueues(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSQSQueues(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing SQS queues")

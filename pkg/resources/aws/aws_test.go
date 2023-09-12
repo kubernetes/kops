@@ -158,7 +158,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 		}
 	}
 
-	resourceTrackers, err := ListIAMInstanceProfiles(cloud, clusterName)
+	resourceTrackers, err := ListIAMInstanceProfiles(cloud, "", clusterName)
 	if err != nil {
 		t.Fatalf("error listing IAM roles: %v", err)
 	}
@@ -224,7 +224,7 @@ func TestListIAMRoles(t *testing.T) {
 		}
 	}
 
-	resourceTrackers, err := ListIAMRoles(cloud, clusterName)
+	resourceTrackers, err := ListIAMRoles(cloud, "", clusterName)
 	if err != nil {
 		t.Fatalf("error listing IAM roles: %v", err)
 	}
@@ -272,7 +272,7 @@ func TestListRouteTables(t *testing.T) {
 		},
 	})
 
-	resourceTrackers, err := ListRouteTables(cloud, clusterName)
+	resourceTrackers, err := ListRouteTables(cloud, "", clusterName)
 	if err != nil {
 		t.Fatalf("error listing route tables: %v", err)
 	}
@@ -327,7 +327,7 @@ func TestSharedVolume(t *testing.T) {
 		t.Fatalf("error creating volume: %v", err)
 	}
 
-	resourceTrackers, err := ListVolumes(cloud, clusterName)
+	resourceTrackers, err := ListVolumes(cloud, "", clusterName)
 	if err != nil {
 		t.Fatalf("error listing volumes: %v", err)
 	}

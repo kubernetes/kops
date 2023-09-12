@@ -331,7 +331,7 @@ spec:
         - --cloud-provider=aws
         - --aws-use-static-instance-list=false
         - --expander=random
-        - --nodes=2:2:nodes.minimal.example.com
+        - --nodes=2:2:nodes.many-addons.example.com
         - --ignore-daemonsets-utilization=false
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true

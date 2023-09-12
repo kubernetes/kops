@@ -12,12 +12,12 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-      --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main
-      --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=.internal.minimal.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
-      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
-      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
-      --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
+      --backup-store=memfs://tests/many-addons.example.com/backups/etcd/main --client-urls=https://__name__:4001
+      --cluster-name=etcd --containerized=true --dns-suffix=.internal.many-addons.example.com
+      --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
+      --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
+      --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/many-addons.example.com=owned
+      > /tmp/pipe 2>&1
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d

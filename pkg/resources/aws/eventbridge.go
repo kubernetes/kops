@@ -79,7 +79,7 @@ func DeleteEventBridgeRule(cloud fi.Cloud, ruleName string) error {
 	return nil
 }
 
-func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListEventBridgeRules(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing EventBridge rules")

@@ -174,7 +174,7 @@ spec:
       containers:
       - env:
         - name: ADDITIONAL_ENI_TAGS
-          value: '{"KubernetesCluster":"minimal.example.com","kubernetes.io/cluster/minimal.example.com":"owned"}'
+          value: '{"KubernetesCluster":"many-addons.example.com","kubernetes.io/cluster/many-addons.example.com":"owned"}'
         - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
           value: "true"
         - name: AWS_VPC_ENI_MTU
@@ -226,7 +226,7 @@ spec:
               apiVersion: v1
               fieldPath: metadata.name
         - name: CLUSTER_NAME
-          value: minimal.example.com
+          value: many-addons.example.com
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.13.4
         livenessProbe:
           exec:

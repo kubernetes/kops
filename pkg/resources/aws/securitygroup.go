@@ -92,7 +92,7 @@ func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error
 	return nil
 }
 
-func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSecurityGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	groups, err := DescribeSecurityGroups(cloud, clusterName)
 	if err != nil {
 		return nil, err

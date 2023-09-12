@@ -632,8 +632,8 @@ spec:
         - controller
         - --endpoint=$(CSI_ENDPOINT)
         - --logtostderr
-        - --k8s-tag-cluster-id=minimal.example.com
-        - --extra-tags=KubernetesCluster=minimal.example.com
+        - --k8s-tag-cluster-id=minimal-aws.example.com
+        - --extra-tags=KubernetesCluster=minimal-aws.example.com
         - --http-endpoint=0.0.0.0:3301
         - --v=5
         env:
@@ -717,21 +717,6 @@ spec:
         image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
         imagePullPolicy: IfNotPresent
         name: csi-attacher
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-        volumeMounts:
-        - mountPath: /var/lib/csi/sockets/pluginproxy/
-          name: socket-dir
-      - args:
-        - --csi-address=$(ADDRESS)
-        - --leader-election=true
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
-        imagePullPolicy: IfNotPresent
-        name: csi-snapshotter
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

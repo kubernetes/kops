@@ -124,7 +124,7 @@ ensure-install-dir
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
-ClusterName: minimal.example.com
+ClusterName: many-addons.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -148,10 +148,10 @@ ConfigServer:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
   servers:
-  - https://kops-controller.internal.minimal.example.com:3988/
+  - https://kops-controller.internal.many-addons.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: P1X6Xy+8U6wxivg3gwhwDhfAwULBvUYFrcUE20bA/wE=
+NodeupConfigHash: XUCTela0KbyEi8FisfgSoLs9G42zHNr/SUd00OG309w=
 
 __EOF_KUBE_ENV
 

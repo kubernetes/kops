@@ -3,8 +3,8 @@ kind: Pod
 metadata:
   creationTimestamp: null
   labels:
-    k8s-app: etcd-manager-events
-  name: etcd-manager-events
+    k8s-app: etcd-manager-main
+  name: etcd-manager-main
   namespace: kube-system
 spec:
   containers:
@@ -12,12 +12,13 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-      --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/events
-      --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
-      --dns-suffix=.internal.minimal.example.com --grpc-port=3997 --peer-urls=https://__name__:2381
-      --quarantine-client-urls=https://__name__:3995 --v=6 --volume-name-tag=k8s.io/etcd/events
-      --volume-provider=aws --volume-tag=k8s.io/etcd/events --volume-tag=k8s.io/role/control-plane=1
-      --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
+      --backup-store=memfs://clusters.example.com/minimal-aws.example.com/backups/etcd/main
+      --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
+      --dns-suffix=.internal.minimal-aws.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
+      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
+      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
+      --volume-tag=kubernetes.io/cluster/minimal-aws.example.com=owned > /tmp/pipe
+      2>&1
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
@@ -123,13 +124,13 @@ spec:
       type: DirectoryOrCreate
     name: run
   - hostPath:
-      path: /etc/kubernetes/pki/etcd-manager-events
+      path: /etc/kubernetes/pki/etcd-manager-main
       type: DirectoryOrCreate
     name: pki
   - emptyDir: {}
     name: opt
   - hostPath:
-      path: /var/log/etcd-events.log
+      path: /var/log/etcd.log
       type: FileOrCreate
     name: varlogetcd
 status: {}
