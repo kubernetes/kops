@@ -259,7 +259,7 @@ func (t *Tester) addRegionFlag() error {
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	case "scaleway":
-		scwRegion, err := scaleway.ParseRegionFromZone(scw.Zone(cluster.Spec.Subnets[0].Zone))
+		scwRegion, err := (scw.Zone(cluster.Spec.Subnets[0].Zone)).Region()
 		if err != nil {
 			return fmt.Errorf("adding region flag: %w", err)
 		}
