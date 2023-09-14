@@ -201,7 +201,7 @@ func (s *scwCloudImplementation) ClusterName(tags []string) string {
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	provider, err := dnsprovider.GetDnsProvider(dns.ProviderName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error building DNS provider: %w", err)
+		return nil, fmt.Errorf("building DNS provider: %w", err)
 	}
 	return provider, nil
 }
@@ -256,7 +256,7 @@ func (s *scwCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstance
 	for _, cloudInstance := range toDelete {
 		err := s.DeleteInstance(cloudInstance)
 		if err != nil {
-			return fmt.Errorf("error deleting group %q: %w", group.HumanName, err)
+			return fmt.Errorf("deleting group %q: %w", group.HumanName, err)
 		}
 	}
 	return nil
@@ -269,7 +269,7 @@ func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 	})
 	if err != nil {
 		if is404Error(err) {
-			klog.V(4).Infof("error deleting cloud instance %s of group %s : instance was already deleted", i.ID, i.CloudInstanceGroup.HumanName)
+			klog.V(4).Infof("deleting cloud instance %s of group %s: instance was already deleted", i.ID, i.CloudInstanceGroup.HumanName)
 			return nil
 		}
 		return fmt.Errorf("deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
@@ -619,7 +619,7 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 			klog.V(8).Infof("Gateway %q (%s) was already deleted", gateway.Name, gateway.ID)
 			return nil
 		}
-		return fmt.Errorf("error listing gateway networks: %w", err)
+		return fmt.Errorf("listing gateway networks: %w", err)
 	}
 	for _, connexion := range connexions {
 		err := s.gatewayAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
@@ -642,7 +642,7 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 			klog.V(8).Infof("Gateway %q (%s) was already deleted", gateway.Name, gateway.ID)
 			return nil
 		}
-		return fmt.Errorf("error waiting for gateway: %w", err)
+		return fmt.Errorf("waiting for gateway: %w", err)
 	}
 
 	_, err = s.gatewayAPI.UpdateIP(&vpcgw.UpdateIPRequest{
@@ -660,7 +660,7 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 		Zone:      s.zone,
 	})
 	if err != nil {
-		return fmt.Errorf("error waiting for gateway: %w", err)
+		return fmt.Errorf("waiting for gateway: %w", err)
 	}
 
 	err = s.gatewayAPI.DeleteIP(&vpcgw.DeleteIPRequest{
@@ -677,7 +677,7 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 		Zone:      s.zone,
 	})
 	if err != nil {
-		return fmt.Errorf("error waiting for gateway: %w", err)
+		return fmt.Errorf("waiting for gateway: %w", err)
 	}
 	err = s.gatewayAPI.DeleteGateway(&vpcgw.DeleteGatewayRequest{
 		Zone:        s.zone,
@@ -857,7 +857,7 @@ func (s *scwCloudImplementation) DeleteVolume(volume *instance.Volume) error {
 		Zone:     s.zone,
 	})
 	if !is404Error(err) {
-		return fmt.Errorf("delete volume %s: error waiting for volume after deletion: %w", volume.ID, err)
+		return fmt.Errorf("delete volume %s: waiting for volume after deletion: %w", volume.ID, err)
 	}
 
 	return nil

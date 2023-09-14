@@ -89,12 +89,10 @@ _output
 # Used to cache terraform providers etc during testing
 .cache/
 
-# Used by E2E testing#  echo $LOG_FILE
-#  cat $LOG_FILE | grep "Your cluster $CLUSTER_NAME is ready"
+# Used by E2E testing
 _artifacts
 _rundir
 
-# TODO(Mia-Cross): make this clean before PR#1
 .run/
 ./data
 logs/
