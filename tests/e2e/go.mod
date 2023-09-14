@@ -7,11 +7,13 @@ replace k8s.io/kops => ../../.
 // These should match the go.mod from k8s.io/kops
 replace k8s.io/client-go => k8s.io/client-go v0.29.0
 
+replace google.golang.org/grpc => google.golang.org/grpc v1.54.1
+
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.21
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.24
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	k8s.io/api v0.30.0

@@ -39,7 +39,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API: vPC Public Gateway API
+// API: public Gateways API.
 type API struct {
 	client *scw.Client
 }
@@ -54,12 +54,9 @@ func NewAPI(client *scw.Client) *API {
 type DHCPEntryType string
 
 const (
-	// DHCPEntryTypeUnknown is [insert doc].
-	DHCPEntryTypeUnknown = DHCPEntryType("unknown")
-	// DHCPEntryTypeReservation is [insert doc].
+	DHCPEntryTypeUnknown     = DHCPEntryType("unknown")
 	DHCPEntryTypeReservation = DHCPEntryType("reservation")
-	// DHCPEntryTypeLease is [insert doc].
-	DHCPEntryTypeLease = DHCPEntryType("lease")
+	DHCPEntryTypeLease       = DHCPEntryType("lease")
 )
 
 func (enum DHCPEntryType) String() string {
@@ -88,20 +85,13 @@ func (enum *DHCPEntryType) UnmarshalJSON(data []byte) error {
 type GatewayNetworkStatus string
 
 const (
-	// GatewayNetworkStatusUnknown is [insert doc].
-	GatewayNetworkStatusUnknown = GatewayNetworkStatus("unknown")
-	// GatewayNetworkStatusCreated is [insert doc].
-	GatewayNetworkStatusCreated = GatewayNetworkStatus("created")
-	// GatewayNetworkStatusAttaching is [insert doc].
-	GatewayNetworkStatusAttaching = GatewayNetworkStatus("attaching")
-	// GatewayNetworkStatusConfiguring is [insert doc].
+	GatewayNetworkStatusUnknown     = GatewayNetworkStatus("unknown")
+	GatewayNetworkStatusCreated     = GatewayNetworkStatus("created")
+	GatewayNetworkStatusAttaching   = GatewayNetworkStatus("attaching")
 	GatewayNetworkStatusConfiguring = GatewayNetworkStatus("configuring")
-	// GatewayNetworkStatusReady is [insert doc].
-	GatewayNetworkStatusReady = GatewayNetworkStatus("ready")
-	// GatewayNetworkStatusDetaching is [insert doc].
-	GatewayNetworkStatusDetaching = GatewayNetworkStatus("detaching")
-	// GatewayNetworkStatusDeleted is [insert doc].
-	GatewayNetworkStatusDeleted = GatewayNetworkStatus("deleted")
+	GatewayNetworkStatusReady       = GatewayNetworkStatus("ready")
+	GatewayNetworkStatusDetaching   = GatewayNetworkStatus("detaching")
+	GatewayNetworkStatusDeleted     = GatewayNetworkStatus("deleted")
 )
 
 func (enum GatewayNetworkStatus) String() string {
@@ -130,26 +120,16 @@ func (enum *GatewayNetworkStatus) UnmarshalJSON(data []byte) error {
 type GatewayStatus string
 
 const (
-	// GatewayStatusUnknown is [insert doc].
-	GatewayStatusUnknown = GatewayStatus("unknown")
-	// GatewayStatusStopped is [insert doc].
-	GatewayStatusStopped = GatewayStatus("stopped")
-	// GatewayStatusAllocating is [insert doc].
-	GatewayStatusAllocating = GatewayStatus("allocating")
-	// GatewayStatusConfiguring is [insert doc].
+	GatewayStatusUnknown     = GatewayStatus("unknown")
+	GatewayStatusStopped     = GatewayStatus("stopped")
+	GatewayStatusAllocating  = GatewayStatus("allocating")
 	GatewayStatusConfiguring = GatewayStatus("configuring")
-	// GatewayStatusRunning is [insert doc].
-	GatewayStatusRunning = GatewayStatus("running")
-	// GatewayStatusStopping is [insert doc].
-	GatewayStatusStopping = GatewayStatus("stopping")
-	// GatewayStatusFailed is [insert doc].
-	GatewayStatusFailed = GatewayStatus("failed")
-	// GatewayStatusDeleting is [insert doc].
-	GatewayStatusDeleting = GatewayStatus("deleting")
-	// GatewayStatusDeleted is [insert doc].
-	GatewayStatusDeleted = GatewayStatus("deleted")
-	// GatewayStatusLocked is [insert doc].
-	GatewayStatusLocked = GatewayStatus("locked")
+	GatewayStatusRunning     = GatewayStatus("running")
+	GatewayStatusStopping    = GatewayStatus("stopping")
+	GatewayStatusFailed      = GatewayStatus("failed")
+	GatewayStatusDeleting    = GatewayStatus("deleting")
+	GatewayStatusDeleted     = GatewayStatus("deleted")
+	GatewayStatusLocked      = GatewayStatus("locked")
 )
 
 func (enum GatewayStatus) String() string {
@@ -178,18 +158,12 @@ func (enum *GatewayStatus) UnmarshalJSON(data []byte) error {
 type ListDHCPEntriesRequestOrderBy string
 
 const (
-	// ListDHCPEntriesRequestOrderByCreatedAtAsc is [insert doc].
-	ListDHCPEntriesRequestOrderByCreatedAtAsc = ListDHCPEntriesRequestOrderBy("created_at_asc")
-	// ListDHCPEntriesRequestOrderByCreatedAtDesc is [insert doc].
+	ListDHCPEntriesRequestOrderByCreatedAtAsc  = ListDHCPEntriesRequestOrderBy("created_at_asc")
 	ListDHCPEntriesRequestOrderByCreatedAtDesc = ListDHCPEntriesRequestOrderBy("created_at_desc")
-	// ListDHCPEntriesRequestOrderByIPAddressAsc is [insert doc].
-	ListDHCPEntriesRequestOrderByIPAddressAsc = ListDHCPEntriesRequestOrderBy("ip_address_asc")
-	// ListDHCPEntriesRequestOrderByIPAddressDesc is [insert doc].
+	ListDHCPEntriesRequestOrderByIPAddressAsc  = ListDHCPEntriesRequestOrderBy("ip_address_asc")
 	ListDHCPEntriesRequestOrderByIPAddressDesc = ListDHCPEntriesRequestOrderBy("ip_address_desc")
-	// ListDHCPEntriesRequestOrderByHostnameAsc is [insert doc].
-	ListDHCPEntriesRequestOrderByHostnameAsc = ListDHCPEntriesRequestOrderBy("hostname_asc")
-	// ListDHCPEntriesRequestOrderByHostnameDesc is [insert doc].
-	ListDHCPEntriesRequestOrderByHostnameDesc = ListDHCPEntriesRequestOrderBy("hostname_desc")
+	ListDHCPEntriesRequestOrderByHostnameAsc   = ListDHCPEntriesRequestOrderBy("hostname_asc")
+	ListDHCPEntriesRequestOrderByHostnameDesc  = ListDHCPEntriesRequestOrderBy("hostname_desc")
 )
 
 func (enum ListDHCPEntriesRequestOrderBy) String() string {
@@ -218,14 +192,10 @@ func (enum *ListDHCPEntriesRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListDHCPsRequestOrderBy string
 
 const (
-	// ListDHCPsRequestOrderByCreatedAtAsc is [insert doc].
-	ListDHCPsRequestOrderByCreatedAtAsc = ListDHCPsRequestOrderBy("created_at_asc")
-	// ListDHCPsRequestOrderByCreatedAtDesc is [insert doc].
+	ListDHCPsRequestOrderByCreatedAtAsc  = ListDHCPsRequestOrderBy("created_at_asc")
 	ListDHCPsRequestOrderByCreatedAtDesc = ListDHCPsRequestOrderBy("created_at_desc")
-	// ListDHCPsRequestOrderBySubnetAsc is [insert doc].
-	ListDHCPsRequestOrderBySubnetAsc = ListDHCPsRequestOrderBy("subnet_asc")
-	// ListDHCPsRequestOrderBySubnetDesc is [insert doc].
-	ListDHCPsRequestOrderBySubnetDesc = ListDHCPsRequestOrderBy("subnet_desc")
+	ListDHCPsRequestOrderBySubnetAsc     = ListDHCPsRequestOrderBy("subnet_asc")
+	ListDHCPsRequestOrderBySubnetDesc    = ListDHCPsRequestOrderBy("subnet_desc")
 )
 
 func (enum ListDHCPsRequestOrderBy) String() string {
@@ -254,14 +224,10 @@ func (enum *ListDHCPsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListGatewayNetworksRequestOrderBy string
 
 const (
-	// ListGatewayNetworksRequestOrderByCreatedAtAsc is [insert doc].
-	ListGatewayNetworksRequestOrderByCreatedAtAsc = ListGatewayNetworksRequestOrderBy("created_at_asc")
-	// ListGatewayNetworksRequestOrderByCreatedAtDesc is [insert doc].
+	ListGatewayNetworksRequestOrderByCreatedAtAsc  = ListGatewayNetworksRequestOrderBy("created_at_asc")
 	ListGatewayNetworksRequestOrderByCreatedAtDesc = ListGatewayNetworksRequestOrderBy("created_at_desc")
-	// ListGatewayNetworksRequestOrderByStatusAsc is [insert doc].
-	ListGatewayNetworksRequestOrderByStatusAsc = ListGatewayNetworksRequestOrderBy("status_asc")
-	// ListGatewayNetworksRequestOrderByStatusDesc is [insert doc].
-	ListGatewayNetworksRequestOrderByStatusDesc = ListGatewayNetworksRequestOrderBy("status_desc")
+	ListGatewayNetworksRequestOrderByStatusAsc     = ListGatewayNetworksRequestOrderBy("status_asc")
+	ListGatewayNetworksRequestOrderByStatusDesc    = ListGatewayNetworksRequestOrderBy("status_desc")
 )
 
 func (enum ListGatewayNetworksRequestOrderBy) String() string {
@@ -290,22 +256,14 @@ func (enum *ListGatewayNetworksRequestOrderBy) UnmarshalJSON(data []byte) error 
 type ListGatewaysRequestOrderBy string
 
 const (
-	// ListGatewaysRequestOrderByCreatedAtAsc is [insert doc].
-	ListGatewaysRequestOrderByCreatedAtAsc = ListGatewaysRequestOrderBy("created_at_asc")
-	// ListGatewaysRequestOrderByCreatedAtDesc is [insert doc].
+	ListGatewaysRequestOrderByCreatedAtAsc  = ListGatewaysRequestOrderBy("created_at_asc")
 	ListGatewaysRequestOrderByCreatedAtDesc = ListGatewaysRequestOrderBy("created_at_desc")
-	// ListGatewaysRequestOrderByNameAsc is [insert doc].
-	ListGatewaysRequestOrderByNameAsc = ListGatewaysRequestOrderBy("name_asc")
-	// ListGatewaysRequestOrderByNameDesc is [insert doc].
-	ListGatewaysRequestOrderByNameDesc = ListGatewaysRequestOrderBy("name_desc")
-	// ListGatewaysRequestOrderByTypeAsc is [insert doc].
-	ListGatewaysRequestOrderByTypeAsc = ListGatewaysRequestOrderBy("type_asc")
-	// ListGatewaysRequestOrderByTypeDesc is [insert doc].
-	ListGatewaysRequestOrderByTypeDesc = ListGatewaysRequestOrderBy("type_desc")
-	// ListGatewaysRequestOrderByStatusAsc is [insert doc].
-	ListGatewaysRequestOrderByStatusAsc = ListGatewaysRequestOrderBy("status_asc")
-	// ListGatewaysRequestOrderByStatusDesc is [insert doc].
-	ListGatewaysRequestOrderByStatusDesc = ListGatewaysRequestOrderBy("status_desc")
+	ListGatewaysRequestOrderByNameAsc       = ListGatewaysRequestOrderBy("name_asc")
+	ListGatewaysRequestOrderByNameDesc      = ListGatewaysRequestOrderBy("name_desc")
+	ListGatewaysRequestOrderByTypeAsc       = ListGatewaysRequestOrderBy("type_asc")
+	ListGatewaysRequestOrderByTypeDesc      = ListGatewaysRequestOrderBy("type_desc")
+	ListGatewaysRequestOrderByStatusAsc     = ListGatewaysRequestOrderBy("status_asc")
+	ListGatewaysRequestOrderByStatusDesc    = ListGatewaysRequestOrderBy("status_desc")
 )
 
 func (enum ListGatewaysRequestOrderBy) String() string {
@@ -334,18 +292,12 @@ func (enum *ListGatewaysRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListIPsRequestOrderBy string
 
 const (
-	// ListIPsRequestOrderByCreatedAtAsc is [insert doc].
-	ListIPsRequestOrderByCreatedAtAsc = ListIPsRequestOrderBy("created_at_asc")
-	// ListIPsRequestOrderByCreatedAtDesc is [insert doc].
+	ListIPsRequestOrderByCreatedAtAsc  = ListIPsRequestOrderBy("created_at_asc")
 	ListIPsRequestOrderByCreatedAtDesc = ListIPsRequestOrderBy("created_at_desc")
-	// ListIPsRequestOrderByIPAsc is [insert doc].
-	ListIPsRequestOrderByIPAsc = ListIPsRequestOrderBy("ip_asc")
-	// ListIPsRequestOrderByIPDesc is [insert doc].
-	ListIPsRequestOrderByIPDesc = ListIPsRequestOrderBy("ip_desc")
-	// ListIPsRequestOrderByReverseAsc is [insert doc].
-	ListIPsRequestOrderByReverseAsc = ListIPsRequestOrderBy("reverse_asc")
-	// ListIPsRequestOrderByReverseDesc is [insert doc].
-	ListIPsRequestOrderByReverseDesc = ListIPsRequestOrderBy("reverse_desc")
+	ListIPsRequestOrderByIPAsc         = ListIPsRequestOrderBy("ip_asc")
+	ListIPsRequestOrderByIPDesc        = ListIPsRequestOrderBy("ip_desc")
+	ListIPsRequestOrderByReverseAsc    = ListIPsRequestOrderBy("reverse_asc")
+	ListIPsRequestOrderByReverseDesc   = ListIPsRequestOrderBy("reverse_desc")
 )
 
 func (enum ListIPsRequestOrderBy) String() string {
@@ -374,13 +326,9 @@ func (enum *ListIPsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListPATRulesRequestOrderBy string
 
 const (
-	// ListPATRulesRequestOrderByCreatedAtAsc is [insert doc].
-	ListPATRulesRequestOrderByCreatedAtAsc = ListPATRulesRequestOrderBy("created_at_asc")
-	// ListPATRulesRequestOrderByCreatedAtDesc is [insert doc].
-	ListPATRulesRequestOrderByCreatedAtDesc = ListPATRulesRequestOrderBy("created_at_desc")
-	// ListPATRulesRequestOrderByPublicPortAsc is [insert doc].
-	ListPATRulesRequestOrderByPublicPortAsc = ListPATRulesRequestOrderBy("public_port_asc")
-	// ListPATRulesRequestOrderByPublicPortDesc is [insert doc].
+	ListPATRulesRequestOrderByCreatedAtAsc   = ListPATRulesRequestOrderBy("created_at_asc")
+	ListPATRulesRequestOrderByCreatedAtDesc  = ListPATRulesRequestOrderBy("created_at_desc")
+	ListPATRulesRequestOrderByPublicPortAsc  = ListPATRulesRequestOrderBy("public_port_asc")
 	ListPATRulesRequestOrderByPublicPortDesc = ListPATRulesRequestOrderBy("public_port_desc")
 )
 
@@ -410,14 +358,10 @@ func (enum *ListPATRulesRequestOrderBy) UnmarshalJSON(data []byte) error {
 type PATRuleProtocol string
 
 const (
-	// PATRuleProtocolUnknown is [insert doc].
 	PATRuleProtocolUnknown = PATRuleProtocol("unknown")
-	// PATRuleProtocolBoth is [insert doc].
-	PATRuleProtocolBoth = PATRuleProtocol("both")
-	// PATRuleProtocolTCP is [insert doc].
-	PATRuleProtocolTCP = PATRuleProtocol("tcp")
-	// PATRuleProtocolUDP is [insert doc].
-	PATRuleProtocolUDP = PATRuleProtocol("udp")
+	PATRuleProtocolBoth    = PATRuleProtocol("both")
+	PATRuleProtocolTCP     = PATRuleProtocol("tcp")
+	PATRuleProtocolUDP     = PATRuleProtocol("udp")
 )
 
 func (enum PATRuleProtocol) String() string {
@@ -443,351 +387,323 @@ func (enum *PATRuleProtocol) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// DHCP: dhcp
+// DHCP: dhcp.
 type DHCP struct {
-	// ID: ID of the DHCP config
+	// ID: ID of the DHCP config.
 	ID string `json:"id"`
-	// OrganizationID: owning organization
+	// OrganizationID: owning Organization.
 	OrganizationID string `json:"organization_id"`
-	// ProjectID: owning project
+	// ProjectID: owning Project.
 	ProjectID string `json:"project_id"`
-	// CreatedAt: configuration creation date
+	// CreatedAt: date the DHCP configuration was created.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: configuration last modification date
+	// UpdatedAt: configuration last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Subnet: subnet for the DHCP server
+	// Subnet: subnet for the DHCP server.
 	Subnet scw.IPNet `json:"subnet"`
-	// Address: address of the DHCP server
-	//
-	// Address of the DHCP server. This will be the gateway's address in the private network. It must be part of config's subnet.
-	//
+	// Address: IP address of the DHCP server. This will be the Public Gateway's address in the Private Network. It must be part of config's subnet.
 	Address net.IP `json:"address"`
-	// PoolLow: low IP (included) of the dynamic address pool. Must be in the config's subnet
+	// PoolLow: low IP (inclusive) of the dynamic address pool. Must be in the config's subnet.
 	PoolLow net.IP `json:"pool_low"`
-	// PoolHigh: high IP (included) of the dynamic address pool. Must be in the config's subnet
+	// PoolHigh: high IP (inclusive) of the dynamic address pool. Must be in the config's subnet.
 	PoolHigh net.IP `json:"pool_high"`
-	// EnableDynamic: whether to enable dynamic pooling of IPs
-	//
-	// Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out.
-	//
+	// EnableDynamic: defines whether to enable dynamic pooling of IPs. When false, only pre-existing DHCP reservations will be handed out.
 	EnableDynamic bool `json:"enable_dynamic"`
-	// ValidLifetime: how long, in seconds, DHCP entries will be valid for
+	// ValidLifetime: how long DHCP entries will be valid for.
 	ValidLifetime *scw.Duration `json:"valid_lifetime"`
-	// RenewTimer: after how long a renew will be attempted
-	//
-	// After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`.
-	//
+	// RenewTimer: after how long a renew will be attempted. Must be 30s lower than `rebind_timer`.
 	RenewTimer *scw.Duration `json:"renew_timer"`
-	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail
-	//
-	// After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`.
-	//
+	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`.
 	RebindTimer *scw.Duration `json:"rebind_timer"`
-	// PushDefaultRoute: whether the gateway should push a default route to DHCP clients or only hand out IPs
+	// PushDefaultRoute: defines whether the gateway should push a default route to DHCP clients, or only hand out IPs.
 	PushDefaultRoute bool `json:"push_default_route"`
-	// PushDNSServer: whether the gateway should push custom DNS servers to clients
-	//
-	// Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution.
-	//
+	// PushDNSServer: defines whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution.
 	PushDNSServer bool `json:"push_dns_server"`
-	// DNSServersOverride: override the DNS server list pushed to DHCP clients, instead of the gateway itself
+	// DNSServersOverride: array of DNS server IP addresses used to override the DNS server list pushed to DHCP clients, instead of the gateway itself.
 	DNSServersOverride []string `json:"dns_servers_override"`
-	// DNSSearch: add search paths to the pushed DNS configuration
+	// DNSSearch: array of search paths in addition to the pushed DNS configuration.
 	DNSSearch []string `json:"dns_search"`
-	// DNSLocalName: tLD given to hostnames in the Private Networks
-	//
-	// TLD given to hostnames in the Private Network. If an instance with hostname `foo` gets a lease, and this is set to `bar`, `foo.bar` will resolve.
-	//
+	// DNSLocalName: tLD given to hostnames in the Private Networks. If an Instance with hostname `foo` gets a lease, and this is set to `bar`, `foo.bar` will resolve.
 	DNSLocalName string `json:"dns_local_name"`
-	// Zone: zone this configuration is available in
+	// Zone: zone of this DHCP configuration.
 	Zone scw.Zone `json:"zone"`
 }
 
-// DHCPEntry: dhcp entry
+// DHCPEntry: dhcp entry.
 type DHCPEntry struct {
-	// ID: entry ID
+	// ID: DHCP entry ID.
 	ID string `json:"id"`
-	// CreatedAt: configuration creation date
+	// CreatedAt: DHCP entry creation date.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: configuration last modification date
+	// UpdatedAt: DHCP entry last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// GatewayNetworkID: owning GatewayNetwork
+	// GatewayNetworkID: owning GatewayNetwork.
 	GatewayNetworkID string `json:"gateway_network_id"`
-	// MacAddress: mAC address of the client machine
+	// MacAddress: mAC address of the client device.
 	MacAddress string `json:"mac_address"`
-	// IPAddress: assigned IP address
+	// IPAddress: assigned IP address.
 	IPAddress net.IP `json:"ip_address"`
-	// Hostname: hostname of the client machine
+	// Hostname: hostname of the client device.
 	Hostname string `json:"hostname"`
-	// Type: entry type, either static (DHCP reservation) or dynamic (DHCP lease)
-	//
+	// Type: entry type, either static (DHCP reservation) or dynamic (DHCP lease).
 	// Default value: unknown
 	Type DHCPEntryType `json:"type"`
-	// Zone: zone this entry is available in
+	// Zone: zone of this DHCP entry.
 	Zone scw.Zone `json:"zone"`
 }
 
-// Gateway: gateway
+// Gateway: gateway.
 type Gateway struct {
-	// ID: ID of the gateway
+	// ID: ID of the gateway.
 	ID string `json:"id"`
-	// OrganizationID: owning organization
+	// OrganizationID: owning Organization.
 	OrganizationID string `json:"organization_id"`
-	// ProjectID: owning project
+	// ProjectID: owning Project.
 	ProjectID string `json:"project_id"`
-	// CreatedAt: gateway creation date
+	// CreatedAt: gateway creation date.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: gateway last modification date
+	// UpdatedAt: gateway last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Type: gateway type
+	// Type: gateway type (commercial offer).
 	Type *GatewayType `json:"type"`
-	// Status: gateway's current status
-	//
+	// Status: current status of the gateway.
 	// Default value: unknown
 	Status GatewayStatus `json:"status"`
-	// Name: name of the gateway
+	// Name: name of the gateway.
 	Name string `json:"name"`
-	// Tags: tags of the gateway
+	// Tags: tags associated with the gateway.
 	Tags []string `json:"tags"`
-	// IP: public IP of the gateway
+	// IP: public IP address of the gateway.
 	IP *IP `json:"ip"`
-	// GatewayNetworks: gatewayNetworks attached to the gateway
+	// GatewayNetworks: gatewayNetwork objects attached to the gateway (each one represents a connection to a Private Network).
 	GatewayNetworks []*GatewayNetwork `json:"gateway_networks"`
-	// UpstreamDNSServers: override the gateway's default recursive DNS servers
+	// UpstreamDNSServers: array of DNS server IP addresses to override the gateway's default recursive DNS servers.
 	UpstreamDNSServers []string `json:"upstream_dns_servers"`
-	// Version: version of the running gateway software
+	// Version: version of the running gateway software.
 	Version *string `json:"version"`
-	// CanUpgradeTo: newly available gateway software version that can be updated to
+	// CanUpgradeTo: newly available gateway software version that can be updated to.
 	CanUpgradeTo *string `json:"can_upgrade_to"`
-	// BastionEnabled: whether SSH bastion is enabled on the gateway
+	// BastionEnabled: defines whether SSH bastion is enabled on the gateway.
 	BastionEnabled bool `json:"bastion_enabled"`
-	// BastionPort: port of the SSH bastion
+	// BastionPort: port of the SSH bastion.
 	BastionPort uint32 `json:"bastion_port"`
-	// SMTPEnabled: whether SMTP traffic is allowed to pass through the gateway
+	// SMTPEnabled: defines whether SMTP traffic is allowed to pass through the gateway.
 	SMTPEnabled bool `json:"smtp_enabled"`
-	// Zone: zone the gateway is available in
+	// Zone: zone of the gateway.
 	Zone scw.Zone `json:"zone"`
 }
 
-// GatewayNetwork: gateway network
+// GatewayNetwork: gateway network.
 type GatewayNetwork struct {
-	// ID: ID of the connection
+	// ID: ID of the Public Gateway-Private Network connection.
 	ID string `json:"id"`
-	// CreatedAt: connection creation date
+	// CreatedAt: connection creation date.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: connection last modification date
+	// UpdatedAt: connection last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// GatewayID: ID of the connected gateway
+	// GatewayID: ID of the connected Public Gateway.
 	GatewayID string `json:"gateway_id"`
-	// PrivateNetworkID: ID of the connected private network
+	// PrivateNetworkID: ID of the connected Private Network.
 	PrivateNetworkID string `json:"private_network_id"`
-	// MacAddress: mAC address of the gateway in the network (if the gateway is up and running)
+	// MacAddress: mAC address of the gateway in the Private Network (if the gateway is up and running).
 	MacAddress *string `json:"mac_address"`
-	// EnableMasquerade: whether the gateway masquerades traffic for this network
+	// EnableMasquerade: defines whether the gateway masquerades traffic for this Private Network (Dynamic NAT).
 	EnableMasquerade bool `json:"enable_masquerade"`
-	// Status: current status of the gateway network connection
-	//
+	// Status: current status of the Public Gateway's connection to the Private Network.
 	// Default value: unknown
 	Status GatewayNetworkStatus `json:"status"`
-	// DHCP: DHCP configuration for the connected private network
+	// DHCP: DHCP configuration for the connected Private Network.
 	DHCP *DHCP `json:"dhcp"`
-	// EnableDHCP: whether DHCP is enabled on the connected Private Network
+	// EnableDHCP: defines whether DHCP is enabled on the connected Private Network.
 	EnableDHCP bool `json:"enable_dhcp"`
-	// Address: address of the Gateway in CIDR form to use when DHCP is not used
+	// Address: address of the Gateway (in CIDR form) to use when DHCP is not used.
 	Address *scw.IPNet `json:"address"`
-	// Zone: zone the connection lives in
+	// Zone: zone of the GatewayNetwork connection.
 	Zone scw.Zone `json:"zone"`
 }
 
-// GatewayType: gateway type
+// GatewayType: gateway type.
 type GatewayType struct {
-	// Name: type name
+	// Name: public Gateway type name.
 	Name string `json:"name"`
-	// Bandwidth: bandwidth, in bps, the gateway has
-	//
-	// Bandwidth, in bps, the gateway has. This is the public bandwidth to the outer internet, and the internal bandwidth to each connected Private Networks.
-	//
+	// Bandwidth: bandwidth, in bps, of the Public Gateway. This is the public bandwidth to the outer Internet, and the internal bandwidth to each connected Private Networks.
 	Bandwidth uint64 `json:"bandwidth"`
-	// Zone: zone the type is available in
+	// Zone: zone the Public Gateway type is available in.
 	Zone scw.Zone `json:"zone"`
 }
 
-// IP: ip
+// IP: ip.
 type IP struct {
-	// ID: IP ID
+	// ID: IP address ID.
 	ID string `json:"id"`
-	// OrganizationID: owning organization
+	// OrganizationID: owning Organization.
 	OrganizationID string `json:"organization_id"`
-	// ProjectID: owning project
+	// ProjectID: owning Project.
 	ProjectID string `json:"project_id"`
-	// CreatedAt: configuration creation date
+	// CreatedAt: IP address creation date.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: configuration last modification date
+	// UpdatedAt: IP address last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Tags: tags associated with the IP
+	// Tags: tags associated with the IP address.
 	Tags []string `json:"tags"`
-	// Address: the IP itself
+	// Address: the IP address itself.
 	Address net.IP `json:"address"`
-	// Reverse: reverse domain name for the IP address
+	// Reverse: reverse domain name for the IP address.
 	Reverse *string `json:"reverse"`
-	// GatewayID: gateway associated to the IP
+	// GatewayID: public Gateway associated with the IP address.
 	GatewayID *string `json:"gateway_id"`
-	// Zone: zone this IP is available in
+	// Zone: zone of the IP address.
 	Zone scw.Zone `json:"zone"`
 }
 
-// ListDHCPEntriesResponse: list dhcp entries response
+// ListDHCPEntriesResponse: list dhcp entries response.
 type ListDHCPEntriesResponse struct {
-	// DHCPEntries: DHCP entries in this page
+	// DHCPEntries: DHCP entries in this page.
 	DHCPEntries []*DHCPEntry `json:"dhcp_entries"`
-	// TotalCount: total DHCP entries matching the filter
+	// TotalCount: total count of DHCP entries matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListDHCPsResponse: list dhc ps response
+// ListDHCPsResponse: list dhc ps response.
 type ListDHCPsResponse struct {
-	// Dhcps: first page of DHCP configs
+	// Dhcps: first page of DHCP configuration objects.
 	Dhcps []*DHCP `json:"dhcps"`
-	// TotalCount: total DHCP configs matching the filter
+	// TotalCount: total count of DHCP configuration objects matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListGatewayNetworksResponse: list gateway networks response
+// ListGatewayNetworksResponse: list gateway networks response.
 type ListGatewayNetworksResponse struct {
-	// GatewayNetworks: gatewayNetworks in this page
+	// GatewayNetworks: gatewayNetworks on this page.
 	GatewayNetworks []*GatewayNetwork `json:"gateway_networks"`
-	// TotalCount: total GatewayNetworks count matching the filter
+	// TotalCount: total GatewayNetworks count matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListGatewayTypesResponse: list gateway types response
+// ListGatewayTypesResponse: list gateway types response.
 type ListGatewayTypesResponse struct {
-	// Types: available types of gateway
+	// Types: available types of Public Gateway.
 	Types []*GatewayType `json:"types"`
 }
 
-// ListGatewaysResponse: list gateways response
+// ListGatewaysResponse: list gateways response.
 type ListGatewaysResponse struct {
-	// Gateways: gateways in this page
+	// Gateways: gateways on this page.
 	Gateways []*Gateway `json:"gateways"`
-	// TotalCount: total count of gateways matching the filter
+	// TotalCount: total count of gateways matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListIPsResponse: list i ps response
+// ListIPsResponse: list i ps response.
 type ListIPsResponse struct {
-	// IPs: iPs in this page
+	// IPs: IP addresses on this page.
 	IPs []*IP `json:"ips"`
-	// TotalCount: total IP count matching the filter
+	// TotalCount: total count of IP addresses matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListPATRulesResponse: list pat rules response
+// ListPATRulesResponse: list pat rules response.
 type ListPATRulesResponse struct {
-	// PatRules: this page of PAT rules matching the filter
+	// PatRules: array of PAT rules matching the filter.
 	PatRules []*PATRule `json:"pat_rules"`
-	// TotalCount: total PAT rules matching the filter
+	// TotalCount: total count of PAT rules matching the filter.
 	TotalCount uint32 `json:"total_count"`
 }
 
-// PATRule: pat rule
+// PATRule: pat rule.
 type PATRule struct {
-	// ID: rule ID
+	// ID: pAT rule ID.
 	ID string `json:"id"`
-	// GatewayID: gateway the PAT rule applies to
+	// GatewayID: gateway the PAT rule applies to.
 	GatewayID string `json:"gateway_id"`
-	// CreatedAt: rule creation date
+	// CreatedAt: pAT rule creation date.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: rule last modification date
+	// UpdatedAt: pAT rule last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// PublicPort: public port to listen on
+	// PublicPort: public port to listen on.
 	PublicPort uint32 `json:"public_port"`
-	// PrivateIP: private IP to forward data to
+	// PrivateIP: private IP address to forward data to.
 	PrivateIP net.IP `json:"private_ip"`
-	// PrivatePort: private port to translate to
+	// PrivatePort: private port to translate to.
 	PrivatePort uint32 `json:"private_port"`
-	// Protocol: protocol the rule applies to
-	//
+	// Protocol: protocol the rule applies to.
 	// Default value: unknown
 	Protocol PATRuleProtocol `json:"protocol"`
-	// Zone: zone this rule is available in
+	// Zone: zone of the PAT rule.
 	Zone scw.Zone `json:"zone"`
 }
 
-// SetDHCPEntriesRequestEntry: set dhcp entries request. entry
+// SetDHCPEntriesRequestEntry: set dhcp entries request. entry.
 type SetDHCPEntriesRequestEntry struct {
-	// MacAddress: mAC address to give a static entry to
-	//
+	// MacAddress: mAC address to give a static entry to.
 	// MAC address to give a static entry to. A matching entry will be upgraded to a reservation, and a matching reservation will be updated.
-	//
 	MacAddress string `json:"mac_address"`
-	// IPAddress: IP address to give to the machine
+	// IPAddress: IP address to give to the device.
 	IPAddress net.IP `json:"ip_address"`
 }
 
-// SetDHCPEntriesResponse: set dhcp entries response
+// SetDHCPEntriesResponse: set dhcp entries response.
 type SetDHCPEntriesResponse struct {
-	// DHCPEntries: list of DHCP entries
+	// DHCPEntries: list of DHCP entries.
 	DHCPEntries []*DHCPEntry `json:"dhcp_entries"`
 }
 
-// SetPATRulesRequestRule: set pat rules request. rule
+// SetPATRulesRequestRule: set pat rules request. rule.
 type SetPATRulesRequestRule struct {
-	// PublicPort: public port to listen on
-	//
+	// PublicPort: public port to listen on.
 	// Public port to listen on. Uniquely identifies the rule, and a matching rule will be updated with the new parameters.
-	//
 	PublicPort uint32 `json:"public_port"`
-	// PrivateIP: private IP to forward data to
+	// PrivateIP: private IP to forward data to.
 	PrivateIP net.IP `json:"private_ip"`
-	// PrivatePort: private port to translate to
+	// PrivatePort: private port to translate to.
 	PrivatePort uint32 `json:"private_port"`
-	// Protocol: protocol the rule should apply to
-	//
+	// Protocol: protocol the rule should apply to.
 	// Default value: unknown
 	Protocol PATRuleProtocol `json:"protocol"`
 }
 
-// SetPATRulesResponse: set pat rules response
+// SetPATRulesResponse: set pat rules response.
 type SetPATRulesResponse struct {
-	// PatRules: list of PAT rules
+	// PatRules: list of PAT rules.
 	PatRules []*PATRule `json:"pat_rules"`
 }
 
 // Service API
 
+// Zones list localities the api is available in
+func (s *API) Zones() []scw.Zone {
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2}
+}
+
 type ListGatewaysRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListGatewaysRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number to return.
 	Page *int32 `json:"-"`
-	// PageSize: gateways per page
+	// PageSize: gateways per page.
 	PageSize *uint32 `json:"-"`
-	// OrganizationID: include only gateways in this organization
+	// OrganizationID: include only gateways in this Organization.
 	OrganizationID *string `json:"-"`
-	// ProjectID: include only gateways in this project
+	// ProjectID: include only gateways in this Project.
 	ProjectID *string `json:"-"`
-	// Name: filter gateways including this name
+	// Name: filter for gateways which have this search term in their name.
 	Name *string `json:"-"`
-	// Tags: filter gateways with these tags
+	// Tags: filter for gateways with these tags.
 	Tags []string `json:"-"`
-	// Type: filter gateways of this type
+	// Type: filter for gateways of this type.
 	Type *string `json:"-"`
-	// Status: filter gateways in this status (unknown for any)
-	//
+	// Status: filter for gateways with this current status. Use `unknown` to include all statuses.
 	// Default value: unknown
 	Status GatewayStatus `json:"-"`
-	// PrivateNetworkID: filter gateways attached to this private network
+	// PrivateNetworkID: filter for gateways attached to this Private nNetwork.
 	PrivateNetworkID *string `json:"-"`
 }
 
-// ListGateways: list VPC Public Gateways
+// ListGateways: list Public Gateways.
+// List Public Gateways in a given Scaleway Organization or Project. By default, results are displayed in ascending order of creation date.
 func (s *API) ListGateways(req *ListGatewaysRequest, opts ...scw.RequestOption) (*ListGatewaysResponse, error) {
 	var err error
 
@@ -834,15 +750,14 @@ func (s *API) ListGateways(req *ListGatewaysRequest, opts ...scw.RequestOption) 
 }
 
 type GetGatewayRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: ID of the gateway to fetch
+	// GatewayID: ID of the gateway to fetch.
 	GatewayID string `json:"-"`
 }
 
-// GetGateway: get a VPC Public Gateway
+// GetGateway: get a Public Gateway.
+// Get details of a Public Gateway, specified by its gateway ID. The response object contains full details of the gateway, including its **name**, **type**, **status** and more.
 func (s *API) GetGateway(req *GetGatewayRequest, opts ...scw.RequestOption) (*Gateway, error) {
 	var err error
 
@@ -875,31 +790,30 @@ func (s *API) GetGateway(req *GetGatewayRequest, opts ...scw.RequestOption) (*Ga
 }
 
 type CreateGatewayRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ProjectID: project to create the gateway into
+	// ProjectID: scaleway Project to create the gateway in.
 	ProjectID string `json:"project_id"`
-	// Name: name of the gateway
+	// Name: name for the gateway.
 	Name string `json:"name"`
-	// Tags: tags for the gateway
+	// Tags: tags for the gateway.
 	Tags []string `json:"tags"`
-	// Type: gateway type
+	// Type: gateway type (commercial offer type).
 	Type string `json:"type"`
-	// UpstreamDNSServers: override the gateway's default recursive DNS servers, if DNS features are enabled
+	// UpstreamDNSServers: array of DNS server IP addresses to override the gateway's default recursive DNS servers.
 	UpstreamDNSServers []string `json:"upstream_dns_servers"`
-	// IPID: attach an existing IP to the gateway
+	// IPID: existing IP address to attach to the gateway.
 	IPID *string `json:"ip_id"`
-	// EnableSMTP: allow SMTP traffic to pass through the gateway
+	// EnableSMTP: defines whether SMTP traffic should be allowed pass through the gateway.
 	EnableSMTP bool `json:"enable_smtp"`
-	// EnableBastion: enable SSH bastion on the gateway
+	// EnableBastion: defines whether SSH bastion should be enabled the gateway.
 	EnableBastion bool `json:"enable_bastion"`
-	// BastionPort: port of the SSH bastion
+	// BastionPort: port of the SSH bastion.
 	BastionPort *uint32 `json:"bastion_port"`
 }
 
-// CreateGateway: create a VPC Public Gateway
+// CreateGateway: create a Public Gateway.
+// Create a new Public Gateway in the specified Scaleway Project, defining its **name**, **type** and other configuration details such as whether to enable SSH bastion.
 func (s *API) CreateGateway(req *CreateGatewayRequest, opts ...scw.RequestOption) (*Gateway, error) {
 	var err error
 
@@ -942,27 +856,26 @@ func (s *API) CreateGateway(req *CreateGatewayRequest, opts ...scw.RequestOption
 }
 
 type UpdateGatewayRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: ID of the gateway to update
+	// GatewayID: ID of the gateway to update.
 	GatewayID string `json:"-"`
-	// Name: name fo the gateway
+	// Name: name for the gateway.
 	Name *string `json:"name"`
-	// Tags: tags for the gateway
+	// Tags: tags for the gateway.
 	Tags *[]string `json:"tags"`
-	// UpstreamDNSServers: override the gateway's default recursive DNS servers, if DNS features are enabled
+	// UpstreamDNSServers: array of DNS server IP addresses to override the gateway's default recursive DNS servers.
 	UpstreamDNSServers *[]string `json:"upstream_dns_servers"`
-	// EnableBastion: enable SSH bastion on the gateway
+	// EnableBastion: defines whether SSH bastion should be enabled the gateway.
 	EnableBastion *bool `json:"enable_bastion"`
-	// BastionPort: port of the SSH bastion
+	// BastionPort: port of the SSH bastion.
 	BastionPort *uint32 `json:"bastion_port"`
-	// EnableSMTP: allow SMTP traffic to pass through the gateway
+	// EnableSMTP: defines whether SMTP traffic should be allowed to pass through the gateway.
 	EnableSMTP *bool `json:"enable_smtp"`
 }
 
-// UpdateGateway: update a VPC Public Gateway
+// UpdateGateway: update a Public Gateway.
+// Update the parameters of an existing Public Gateway, for example, its **name**, **tags**, **SSH bastion configuration**, and **DNS servers**.
 func (s *API) UpdateGateway(req *UpdateGatewayRequest, opts ...scw.RequestOption) (*Gateway, error) {
 	var err error
 
@@ -1000,20 +913,16 @@ func (s *API) UpdateGateway(req *UpdateGatewayRequest, opts ...scw.RequestOption
 }
 
 type DeleteGatewayRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: ID of the gateway to delete
+	// GatewayID: ID of the gateway to delete.
 	GatewayID string `json:"-"`
-	// CleanupDHCP: whether to cleanup attached DHCP configurations
-	//
-	// Whether to cleanup attached DHCP configurations (if any, and if not attached to another Gateway Network).
-	//
+	// CleanupDHCP: defines whether to clean up attached DHCP configurations (if any, and if not attached to another Gateway Network).
 	CleanupDHCP bool `json:"-"`
 }
 
-// DeleteGateway: delete a VPC Public Gateway
+// DeleteGateway: delete a Public Gateway.
+// Delete an existing Public Gateway, specified by its gateway ID. This action is irreversible.
 func (s *API) DeleteGateway(req *DeleteGatewayRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1048,15 +957,14 @@ func (s *API) DeleteGateway(req *DeleteGatewayRequest, opts ...scw.RequestOption
 }
 
 type UpgradeGatewayRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: ID of the gateway to upgrade
+	// GatewayID: ID of the gateway to upgrade.
 	GatewayID string `json:"-"`
 }
 
-// UpgradeGateway: upgrade a VPC Public Gateway to the latest version
+// UpgradeGateway: upgrade a Public Gateway to the latest version.
+// Upgrade a given Public Gateway to the newest software version. This applies the latest bugfixes and features to your Public Gateway, but its service will be interrupted during the update.
 func (s *API) UpgradeGateway(req *UpgradeGatewayRequest, opts ...scw.RequestOption) (*Gateway, error) {
 	var err error
 
@@ -1094,33 +1002,30 @@ func (s *API) UpgradeGateway(req *UpgradeGatewayRequest, opts ...scw.RequestOpti
 }
 
 type ListGatewayNetworksRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListGatewayNetworksRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number.
 	Page *int32 `json:"-"`
-	// PageSize: gatewayNetworks per page
+	// PageSize: gatewayNetworks per page.
 	PageSize *uint32 `json:"-"`
-	// GatewayID: filter by gateway
+	// GatewayID: filter for GatewayNetworks connected to this gateway.
 	GatewayID *string `json:"-"`
-	// PrivateNetworkID: filter by private network
+	// PrivateNetworkID: filter for GatewayNetworks connected to this Private Network.
 	PrivateNetworkID *string `json:"-"`
-	// EnableMasquerade: filter by masquerade enablement
+	// EnableMasquerade: filter for GatewayNetworks with this `enable_masquerade` setting.
 	EnableMasquerade *bool `json:"-"`
-	// DHCPID: filter by DHCP configuration
+	// DHCPID: filter for GatewayNetworks using this DHCP configuration.
 	DHCPID *string `json:"-"`
-	// Status: filter GatewayNetworks by this status (unknown for any)
-	//
+	// Status: filter for GatewayNetworks with this current status this status. Use `unknown` to include all statuses.
 	// Default value: unknown
 	Status GatewayNetworkStatus `json:"-"`
 }
 
-// ListGatewayNetworks: list gateway connections to Private Networks
+// ListGatewayNetworks: list Public Gateway connections to Private Networks.
+// List the connections between Public Gateways and Private Networks (a connection = a GatewayNetwork). You can choose to filter by `gateway-id` to list all Private Networks attached to the specified Public Gateway, or by `private_network_id` to list all Public Gateways attached to the specified Private Network. Other query parameters are also available. The result is an array of GatewayNetwork objects, each giving details of the connection between a given Public Gateway and a given Private Network.
 func (s *API) ListGatewayNetworks(req *ListGatewayNetworksRequest, opts ...scw.RequestOption) (*ListGatewayNetworksResponse, error) {
 	var err error
 
@@ -1165,15 +1070,14 @@ func (s *API) ListGatewayNetworks(req *ListGatewayNetworksRequest, opts ...scw.R
 }
 
 type GetGatewayNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayNetworkID: ID of the GatewayNetwork to fetch
+	// GatewayNetworkID: ID of the GatewayNetwork to fetch.
 	GatewayNetworkID string `json:"-"`
 }
 
-// GetGatewayNetwork: get a gateway connection to a Private Network
+// GetGatewayNetwork: get a Public Gateway connection to a Private Network.
+// Get details of a given connection between a Public Gateway and a Private Network (this connection = a GatewayNetwork), specified by its `gateway_network_id`. The response object contains details of the connection including the IDs of the Public Gateway and Private Network, the dates the connection was created/updated and its configuration settings.
 func (s *API) GetGatewayNetwork(req *GetGatewayNetworkRequest, opts ...scw.RequestOption) (*GatewayNetwork, error) {
 	var err error
 
@@ -1206,30 +1110,29 @@ func (s *API) GetGatewayNetwork(req *GetGatewayNetworkRequest, opts ...scw.Reque
 }
 
 type CreateGatewayNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: gateway to connect
+	// GatewayID: public Gateway to connect.
 	GatewayID string `json:"gateway_id"`
-	// PrivateNetworkID: private Network to connect
+	// PrivateNetworkID: private Network to connect.
 	PrivateNetworkID string `json:"private_network_id"`
-	// EnableMasquerade: whether to enable masquerade on this network
+	// EnableMasquerade: defines whether to enable masquerade (dynamic NAT) on this network.
 	EnableMasquerade bool `json:"enable_masquerade"`
-	// DHCPID: existing configuration
-	// Precisely one of Address, DHCPID must be set.
+	// DHCPID: ID of an existing DHCP configuration object to use for this GatewayNetwork.
+	// Precisely one of Address, DHCP, DHCPID must be set.
 	DHCPID *string `json:"dhcp_id,omitempty"`
-	// Address: static IP address in CIDR format to to use without DHCP
-	// Precisely one of Address, DHCPID must be set.
+	// DHCP: new DHCP configuration object to use for this GatewayNetwork.
+	// Precisely one of Address, DHCP, DHCPID must be set.
+	DHCP *CreateDHCPRequest `json:"dhcp,omitempty"`
+	// Address: static IP address in CIDR format to to use without DHCP.
+	// Precisely one of Address, DHCP, DHCPID must be set.
 	Address *scw.IPNet `json:"address,omitempty"`
-	// EnableDHCP: whether to enable DHCP on this Private Network
-	//
-	// Whether to enable DHCP on this Private Network. Defaults to `true` if either `dhcp_id` or `dhcp` short: are present. If set to `true`, requires that either `dhcp_id` or `dhcp` to be present.
-	//
+	// EnableDHCP: defines whether to enable DHCP on this Private Network. Defaults to `true` if either `dhcp_id` or `dhcp` are present. If set to `true`, either `dhcp_id` or `dhcp` must be present.
 	EnableDHCP *bool `json:"enable_dhcp"`
 }
 
-// CreateGatewayNetwork: attach a gateway to a Private Network
+// CreateGatewayNetwork: attach a Public Gateway to a Private Network.
+// Attach a specific Public Gateway to a specific Private Network (create a GatewayNetwork). You can configure parameters for the connection including DHCP settings, whether to enable masquerade (dynamic NAT), and more.
 func (s *API) CreateGatewayNetwork(req *CreateGatewayNetworkRequest, opts ...scw.RequestOption) (*GatewayNetwork, error) {
 	var err error
 
@@ -1263,25 +1166,24 @@ func (s *API) CreateGatewayNetwork(req *CreateGatewayNetworkRequest, opts ...scw
 }
 
 type UpdateGatewayNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayNetworkID: ID of the GatewayNetwork to update
+	// GatewayNetworkID: ID of the GatewayNetwork to update.
 	GatewayNetworkID string `json:"-"`
-	// EnableMasquerade: new masquerade enablement
+	// EnableMasquerade: defines whether to enable masquerade (dynamic NAT) on the GatewayNetwork.
 	EnableMasquerade *bool `json:"enable_masquerade"`
-	// DHCPID: new DHCP configuration
+	// DHCPID: ID of the new DHCP configuration object to use with this GatewayNetwork.
 	// Precisely one of Address, DHCPID must be set.
 	DHCPID *string `json:"dhcp_id,omitempty"`
-	// EnableDHCP: whether to enable DHCP on the connected Private Network
+	// EnableDHCP: defines whether to enable DHCP on the connected Private Network.
 	EnableDHCP *bool `json:"enable_dhcp"`
-	// Address: new static IP address
+	// Address: new static IP address.
 	// Precisely one of Address, DHCPID must be set.
 	Address *scw.IPNet `json:"address,omitempty"`
 }
 
-// UpdateGatewayNetwork: update a gateway connection to a Private Network
+// UpdateGatewayNetwork: update a Public Gateway's connection to a Private Network.
+// Update the configuration parameters of a connection between a given Public Gateway and Private Network (the connection = a GatewayNetwork). Updatable parameters include DHCP settings and whether to enable traffic masquerade (dynamic NAT).
 func (s *API) UpdateGatewayNetwork(req *UpdateGatewayNetworkRequest, opts ...scw.RequestOption) (*GatewayNetwork, error) {
 	var err error
 
@@ -1319,20 +1221,16 @@ func (s *API) UpdateGatewayNetwork(req *UpdateGatewayNetworkRequest, opts ...scw
 }
 
 type DeleteGatewayNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayNetworkID: gatewayNetwork to delete
+	// GatewayNetworkID: ID of the GatewayNetwork to delete.
 	GatewayNetworkID string `json:"-"`
-	// CleanupDHCP: whether to cleanup the attached DHCP configuration
-	//
-	// Whether to cleanup the attached DHCP configuration (if any, and if not attached to another gateway_network).
-	//
+	// CleanupDHCP: defines whether to clean up attached DHCP configurations (if any, and if not attached to another Gateway Network).
 	CleanupDHCP bool `json:"-"`
 }
 
-// DeleteGatewayNetwork: detach a gateway from a Private Network
+// DeleteGatewayNetwork: detach a Public Gateway from a Private Network.
+// Detach a given Public Gateway from a given Private Network, i.e. delete a GatewayNetwork specified by a gateway_network_id.
 func (s *API) DeleteGatewayNetwork(req *DeleteGatewayNetworkRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1367,29 +1265,27 @@ func (s *API) DeleteGatewayNetwork(req *DeleteGatewayNetworkRequest, opts ...scw
 }
 
 type ListDHCPsRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListDHCPsRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number.
 	Page *int32 `json:"-"`
-	// PageSize: DHCP configurations per page
+	// PageSize: DHCP configurations per page.
 	PageSize *uint32 `json:"-"`
-	// OrganizationID: include only DHCPs in this organization
+	// OrganizationID: include only DHCP configuration objects in this Organization.
 	OrganizationID *string `json:"-"`
-	// ProjectID: include only DHCPs in this project
+	// ProjectID: include only DHCP configuration objects in this Project.
 	ProjectID *string `json:"-"`
-	// Address: filter on gateway address
+	// Address: filter for DHCP configuration objects with this DHCP server IP address (the gateway's address in the Private Network).
 	Address *net.IP `json:"-"`
-	// HasAddress: filter on subnets containing address
+	// HasAddress: filter for DHCP configuration objects with subnets containing this IP address.
 	HasAddress *net.IP `json:"-"`
 }
 
-// ListDHCPs: list DHCP configurations
+// ListDHCPs: list DHCP configurations.
+// List DHCP configurations, optionally filtering by Organization, Project, Public Gateway IP address or more. The response is an array of DHCP configuration objects, each identified by a DHCP ID and containing configuration settings for the assignment of IP addresses to devices on a Private Network attached to a Public Gateway. Note that the response does not contain the IDs of any Private Network / Public Gateway the configuration is attached to. Use the `List Public Gateway connections to Private Networks` method for that purpose, filtering on DHCP ID.
 func (s *API) ListDHCPs(req *ListDHCPsRequest, opts ...scw.RequestOption) (*ListDHCPsResponse, error) {
 	var err error
 
@@ -1433,15 +1329,14 @@ func (s *API) ListDHCPs(req *ListDHCPsRequest, opts ...scw.RequestOption) (*List
 }
 
 type GetDHCPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPID: ID of the DHCP config to fetch
+	// DHCPID: ID of the DHCP configuration to fetch.
 	DHCPID string `json:"-"`
 }
 
-// GetDHCP: get a DHCP configuration
+// GetDHCP: get a DHCP configuration.
+// Get a DHCP configuration object, identified by its DHCP ID. The response object contains configuration settings for the assignment of IP addresses to devices on a Private Network attached to a Public Gateway. Note that the response does not contain the IDs of any Private Network / Public Gateway the configuration is attached to. Use the `List Public Gateway connections to Private Networks` method for that purpose, filtering on DHCP ID.
 func (s *API) GetDHCP(req *GetDHCPRequest, opts ...scw.RequestOption) (*DHCP, error) {
 	var err error
 
@@ -1474,62 +1369,40 @@ func (s *API) GetDHCP(req *GetDHCPRequest, opts ...scw.RequestOption) (*DHCP, er
 }
 
 type CreateDHCPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ProjectID: project to create the DHCP configuration in
+	// ProjectID: project to create the DHCP configuration in.
 	ProjectID string `json:"project_id"`
-	// Subnet: subnet for the DHCP server
+	// Subnet: subnet for the DHCP server.
 	Subnet scw.IPNet `json:"subnet"`
-	// Address: address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet
+	// Address: IP address of the DHCP server. This will be the gateway's address in the Private Network. Defaults to the first address of the subnet.
 	Address *net.IP `json:"address"`
-	// PoolLow: low IP (included) of the dynamic address pool
-	//
-	// Low IP (included) of the dynamic address pool. Defaults to the second address of the subnet.
+	// PoolLow: low IP (inclusive) of the dynamic address pool. Must be in the config's subnet. Defaults to the second address of the subnet.
 	PoolLow *net.IP `json:"pool_low"`
-	// PoolHigh: high IP (included) of the dynamic address pool
-	//
-	// High IP (included) of the dynamic address pool. Defaults to the last address of the subnet.
+	// PoolHigh: high IP (inclusive) of the dynamic address pool. Must be in the config's subnet. Defaults to the last address of the subnet.
 	PoolHigh *net.IP `json:"pool_high"`
-	// EnableDynamic: whether to enable dynamic pooling of IPs
-	//
-	// Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.
-	//
+	// EnableDynamic: defines whether to enable dynamic pooling of IPs. When false, only pre-existing DHCP reservations will be handed out. Defaults to true.
 	EnableDynamic *bool `json:"enable_dynamic"`
-	// ValidLifetime: for how long will DHCP entries will be valid
-	//
-	// For how long, in seconds, will DHCP entries will be valid. Defaults to 1h (3600s).
+	// ValidLifetime: how long DHCP entries will be valid for. Defaults to 1h (3600s).
 	ValidLifetime *scw.Duration `json:"valid_lifetime"`
-	// RenewTimer: after how long a renew will be attempted
-	//
-	// After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).
-	//
+	// RenewTimer: after how long a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).
 	RenewTimer *scw.Duration `json:"renew_timer"`
-	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail
-	//
-	// After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).
-	//
+	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).
 	RebindTimer *scw.Duration `json:"rebind_timer"`
-	// PushDefaultRoute: whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true
+	// PushDefaultRoute: defines whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true.
 	PushDefaultRoute *bool `json:"push_default_route"`
-	// PushDNSServer: whether the gateway should push custom DNS servers to clients
-	//
-	// Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.
-	//
+	// PushDNSServer: defines whether the gateway should push custom DNS servers to clients. This allows for Instance hostname -> IP resolution. Defaults to true.
 	PushDNSServer *bool `json:"push_dns_server"`
-	// DNSServersOverride: override the DNS server list pushed to DHCP clients, instead of the gateway itself
+	// DNSServersOverride: array of DNS server IP addresses used to override the DNS server list pushed to DHCP clients, instead of the gateway itself.
 	DNSServersOverride *[]string `json:"dns_servers_override"`
-	// DNSSearch: additional DNS search paths
+	// DNSSearch: array of search paths in addition to the pushed DNS configuration.
 	DNSSearch *[]string `json:"dns_search"`
-	// DNSLocalName: tLD given to hosts in the Private Network
-	//
-	// TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.
-	//
+	// DNSLocalName: tLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.
 	DNSLocalName *string `json:"dns_local_name"`
 }
 
-// CreateDHCP: create a DHCP configuration
+// CreateDHCP: create a DHCP configuration.
+// Create a new DHCP configuration object, containing settings for the assignment of IP addresses to devices on a Private Network attached to a Public Gateway. The response object includes the ID of the DHCP configuration object. You can use this ID as part of a call to `Create a Public Gateway connection to a Private Network` or `Update a Public Gateway connection to a Private Network` to directly apply this DHCP configuration.
 func (s *API) CreateDHCP(req *CreateDHCPRequest, opts ...scw.RequestOption) (*DHCP, error) {
 	var err error
 
@@ -1568,54 +1441,40 @@ func (s *API) CreateDHCP(req *CreateDHCPRequest, opts ...scw.RequestOption) (*DH
 }
 
 type UpdateDHCPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPID: DHCP config to update
+	// DHCPID: DHCP configuration to update.
 	DHCPID string `json:"-"`
-	// Subnet: subnet for the DHCP server
+	// Subnet: subnet for the DHCP server.
 	Subnet *scw.IPNet `json:"subnet"`
-	// Address: address of the DHCP server. This will be the gateway's address in the private network
+	// Address: IP address of the DHCP server. This will be the Public Gateway's address in the Private Network. It must be part of config's subnet.
 	Address *net.IP `json:"address"`
-	// PoolLow: low IP (included) of the dynamic address pool
+	// PoolLow: low IP (inclusive) of the dynamic address pool. Must be in the config's subnet.
 	PoolLow *net.IP `json:"pool_low"`
-	// PoolHigh: high IP (included) of the dynamic address pool
+	// PoolHigh: high IP (inclusive) of the dynamic address pool. Must be in the config's subnet.
 	PoolHigh *net.IP `json:"pool_high"`
-	// EnableDynamic: whether to enable dynamic pooling of IPs
-	//
-	// Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.
-	//
+	// EnableDynamic: defines whether to enable dynamic pooling of IPs. When false, only pre-existing DHCP reservations will be handed out. Defaults to true.
 	EnableDynamic *bool `json:"enable_dynamic"`
-	// ValidLifetime: how long, in seconds, DHCP entries will be valid for
+	// ValidLifetime: how long DHCP entries will be valid for.
 	ValidLifetime *scw.Duration `json:"valid_lifetime"`
-	// RenewTimer: after how long a renew will be attempted
-	//
-	// After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`.
+	// RenewTimer: after how long a renew will be attempted. Must be 30s lower than `rebind_timer`.
 	RenewTimer *scw.Duration `json:"renew_timer"`
-	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail
-	//
-	// After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`.
-	//
+	// RebindTimer: after how long a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`.
 	RebindTimer *scw.Duration `json:"rebind_timer"`
-	// PushDefaultRoute: whether the gateway should push a default route to DHCP clients or only hand out IPs
+	// PushDefaultRoute: defines whether the gateway should push a default route to DHCP clients, or only hand out IPs.
 	PushDefaultRoute *bool `json:"push_default_route"`
-	// PushDNSServer: whether the gateway should push custom DNS servers to clients
-	//
-	// Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution.
-	//
+	// PushDNSServer: defines whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution.
 	PushDNSServer *bool `json:"push_dns_server"`
-	// DNSServersOverride: override the DNS server list pushed to DHCP clients, instead of the gateway itself
+	// DNSServersOverride: array of DNS server IP addresses used to override the DNS server list pushed to DHCP clients, instead of the gateway itself.
 	DNSServersOverride *[]string `json:"dns_servers_override"`
-	// DNSSearch: additional DNS search paths
+	// DNSSearch: array of search paths in addition to the pushed DNS configuration.
 	DNSSearch *[]string `json:"dns_search"`
-	// DNSLocalName: tLD given to hosts in the Private Network
-	//
-	// TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`.
+	// DNSLocalName: tLD given to hostnames in the Private Networks. If an instance with hostname `foo` gets a lease, and this is set to `bar`, `foo.bar` will resolve. Allowed characters are `a-z0-9-.`.
 	DNSLocalName *string `json:"dns_local_name"`
 }
 
-// UpdateDHCP: update a DHCP configuration
+// UpdateDHCP: update a DHCP configuration.
+// Update a DHCP configuration object, identified by its DHCP ID.
 func (s *API) UpdateDHCP(req *UpdateDHCPRequest, opts ...scw.RequestOption) (*DHCP, error) {
 	var err error
 
@@ -1653,15 +1512,14 @@ func (s *API) UpdateDHCP(req *UpdateDHCPRequest, opts ...scw.RequestOption) (*DH
 }
 
 type DeleteDHCPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPID: DHCP config id to delete
+	// DHCPID: DHCP configuration ID to delete.
 	DHCPID string `json:"-"`
 }
 
-// DeleteDHCP: delete a DHCP configuration
+// DeleteDHCP: delete a DHCP configuration.
+// Delete a DHCP configuration object, identified by its DHCP ID. Note that you cannot delete a DHCP configuration object that is currently being used by a Gateway Network.
 func (s *API) DeleteDHCP(req *DeleteDHCPRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1692,33 +1550,30 @@ func (s *API) DeleteDHCP(req *DeleteDHCPRequest, opts ...scw.RequestOption) erro
 }
 
 type ListDHCPEntriesRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListDHCPEntriesRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number.
 	Page *int32 `json:"-"`
-	// PageSize: DHCP entries per page
+	// PageSize: DHCP entries per page.
 	PageSize *uint32 `json:"-"`
-	// GatewayNetworkID: filter entries based on the gateway network they are on
+	// GatewayNetworkID: filter for entries on this GatewayNetwork.
 	GatewayNetworkID *string `json:"-"`
-	// MacAddress: filter entries on their MAC address
+	// MacAddress: filter for entries with this MAC address.
 	MacAddress *string `json:"-"`
-	// IPAddress: filter entries on their IP address
+	// IPAddress: filter for entries with this IP address.
 	IPAddress *net.IP `json:"-"`
-	// Hostname: filter entries on their hostname substring
+	// Hostname: filter for entries with this hostname substring.
 	Hostname *string `json:"-"`
-	// Type: filter entries on their type
-	//
+	// Type: filter for entries of this type.
 	// Default value: unknown
 	Type DHCPEntryType `json:"-"`
 }
 
-// ListDHCPEntries: list DHCP entries
+// ListDHCPEntries: list DHCP entries.
+// List DHCP entries, whether dynamically assigned and/or statically reserved. DHCP entries can be filtered by the Gateway Network they are on, their MAC address, IP address, type or hostname.
 func (s *API) ListDHCPEntries(req *ListDHCPEntriesRequest, opts ...scw.RequestOption) (*ListDHCPEntriesResponse, error) {
 	var err error
 
@@ -1763,15 +1618,14 @@ func (s *API) ListDHCPEntries(req *ListDHCPEntriesRequest, opts ...scw.RequestOp
 }
 
 type GetDHCPEntryRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPEntryID: ID of the DHCP entry to fetch
+	// DHCPEntryID: ID of the DHCP entry to fetch.
 	DHCPEntryID string `json:"-"`
 }
 
-// GetDHCPEntry: get DHCP entries
+// GetDHCPEntry: get a DHCP entry.
+// Get a DHCP entry, specified by its DHCP entry ID.
 func (s *API) GetDHCPEntry(req *GetDHCPEntryRequest, opts ...scw.RequestOption) (*DHCPEntry, error) {
 	var err error
 
@@ -1804,19 +1658,18 @@ func (s *API) GetDHCPEntry(req *GetDHCPEntryRequest, opts ...scw.RequestOption) 
 }
 
 type CreateDHCPEntryRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayNetworkID: gatewayNetwork on which to create a DHCP reservation
+	// GatewayNetworkID: gatewayNetwork on which to create a DHCP reservation.
 	GatewayNetworkID string `json:"gateway_network_id"`
-	// MacAddress: mAC address to give a static entry to
+	// MacAddress: mAC address to give a static entry to.
 	MacAddress string `json:"mac_address"`
-	// IPAddress: IP address to give to the machine
+	// IPAddress: IP address to give to the device.
 	IPAddress net.IP `json:"ip_address"`
 }
 
-// CreateDHCPEntry: create a static DHCP reservation
+// CreateDHCPEntry: create a DHCP entry.
+// Create a static DHCP reservation, specifying the Gateway Network for the reservation, the MAC address of the target device and the IP address to assign this device. The response is a DHCP entry object, confirming the ID and configuration details of the static DHCP reservation.
 func (s *API) CreateDHCPEntry(req *CreateDHCPEntryRequest, opts ...scw.RequestOption) (*DHCPEntry, error) {
 	var err error
 
@@ -1850,17 +1703,16 @@ func (s *API) CreateDHCPEntry(req *CreateDHCPEntryRequest, opts ...scw.RequestOp
 }
 
 type UpdateDHCPEntryRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPEntryID: DHCP entry ID to update
+	// DHCPEntryID: ID of the DHCP entry to update.
 	DHCPEntryID string `json:"-"`
-	// IPAddress: new IP address to give to the machine
+	// IPAddress: new IP address to give to the device.
 	IPAddress *net.IP `json:"ip_address"`
 }
 
-// UpdateDHCPEntry: update a DHCP entry
+// UpdateDHCPEntry: update a DHCP entry.
+// Update the IP address for a DHCP entry, specified by its DHCP entry ID. You can update an existing DHCP entry of any type (`reservation` (static), `lease` (dynamic) or `unknown`), but in manually updating the IP address the entry will necessarily be of type `reservation` after the update.
 func (s *API) UpdateDHCPEntry(req *UpdateDHCPEntryRequest, opts ...scw.RequestOption) (*DHCPEntry, error) {
 	var err error
 
@@ -1898,20 +1750,16 @@ func (s *API) UpdateDHCPEntry(req *UpdateDHCPEntryRequest, opts ...scw.RequestOp
 }
 
 type SetDHCPEntriesRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayNetworkID: gateway Network on which to set DHCP reservation list
+	// GatewayNetworkID: ID of the Gateway Network on which to set DHCP reservation list.
 	GatewayNetworkID string `json:"gateway_network_id"`
-	// DHCPEntries: new list of DHCP reservations
+	// DHCPEntries: new list of DHCP reservations.
 	DHCPEntries []*SetDHCPEntriesRequestEntry `json:"dhcp_entries"`
 }
 
-// SetDHCPEntries: set all DHCP reservations on a Gateway Network
-//
-// Set the list of DHCP reservations attached to a Gateway Network. Reservations are identified by their MAC address, and will sync the current DHCP entry list to the given list, creating, updating or deleting DHCP entries.
-//
+// SetDHCPEntries: set all DHCP reservations on a Gateway Network.
+// Set the list of DHCP reservations attached to a Gateway Network. Reservations are identified by their MAC address, and will sync the current DHCP entry list to the given list, creating, updating or deleting DHCP entries accordingly.
 func (s *API) SetDHCPEntries(req *SetDHCPEntriesRequest, opts ...scw.RequestOption) (*SetDHCPEntriesResponse, error) {
 	var err error
 
@@ -1945,15 +1793,14 @@ func (s *API) SetDHCPEntries(req *SetDHCPEntriesRequest, opts ...scw.RequestOpti
 }
 
 type DeleteDHCPEntryRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// DHCPEntryID: DHCP entry ID to delete
+	// DHCPEntryID: ID of the DHCP entry to delete.
 	DHCPEntryID string `json:"-"`
 }
 
-// DeleteDHCPEntry: delete a DHCP reservation
+// DeleteDHCPEntry: delete a DHCP entry.
+// Delete a static DHCP reservation, identified by its DHCP entry ID. Note that you cannot delete DHCP entries of type `lease`, these are deleted automatically when their time-to-live expires.
 func (s *API) DeleteDHCPEntry(req *DeleteDHCPEntryRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1984,29 +1831,26 @@ func (s *API) DeleteDHCPEntry(req *DeleteDHCPEntryRequest, opts ...scw.RequestOp
 }
 
 type ListPATRulesRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListPATRulesRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number.
 	Page *int32 `json:"-"`
-	// PageSize: pAT rules per page
+	// PageSize: pAT rules per page.
 	PageSize *uint32 `json:"-"`
-	// GatewayID: fetch rules for this gateway
+	// GatewayID: filter for PAT rules on this Gateway.
 	GatewayID *string `json:"-"`
-	// PrivateIP: fetch rules targeting this private ip
+	// PrivateIP: filter for PAT rules targeting this private ip.
 	PrivateIP *net.IP `json:"-"`
-	// Protocol: fetch rules for this protocol
-	//
+	// Protocol: filter for PAT rules with this protocol.
 	// Default value: unknown
 	Protocol PATRuleProtocol `json:"-"`
 }
 
-// ListPATRules: list PAT rules
+// ListPATRules: list PAT rules.
+// List PAT rules. You can filter by gateway ID to list all PAT rules for a particular gateway, or filter for PAT rules targeting a specific IP address or using a specific protocol.
 func (s *API) ListPATRules(req *ListPATRulesRequest, opts ...scw.RequestOption) (*ListPATRulesResponse, error) {
 	var err error
 
@@ -2049,15 +1893,14 @@ func (s *API) ListPATRules(req *ListPATRulesRequest, opts ...scw.RequestOption) 
 }
 
 type GetPATRuleRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PatRuleID: pAT rule to get
+	// PatRuleID: ID of the PAT rule to get.
 	PatRuleID string `json:"-"`
 }
 
-// GetPATRule: get a PAT rule
+// GetPATRule: get a PAT rule.
+// Get a PAT rule, specified by its PAT rule ID. The response object gives full details of the PAT rule, including the Public Gateway it belongs to and the configuration settings in terms of public / private ports, private IP and protocol.
 func (s *API) GetPATRule(req *GetPATRuleRequest, opts ...scw.RequestOption) (*PATRule, error) {
 	var err error
 
@@ -2090,25 +1933,23 @@ func (s *API) GetPATRule(req *GetPATRuleRequest, opts ...scw.RequestOption) (*PA
 }
 
 type CreatePATRuleRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: gateway on which to attach the rule to
+	// GatewayID: ID of the Gateway on which to create the rule.
 	GatewayID string `json:"gateway_id"`
-	// PublicPort: public port to listen on
+	// PublicPort: public port to listen on.
 	PublicPort uint32 `json:"public_port"`
-	// PrivateIP: private IP to forward data to
+	// PrivateIP: private IP to forward data to.
 	PrivateIP net.IP `json:"private_ip"`
-	// PrivatePort: private port to translate to
+	// PrivatePort: private port to translate to.
 	PrivatePort uint32 `json:"private_port"`
-	// Protocol: protocol the rule should apply to
-	//
+	// Protocol: protocol the rule should apply to.
 	// Default value: unknown
 	Protocol PATRuleProtocol `json:"protocol"`
 }
 
-// CreatePATRule: create a PAT rule
+// CreatePATRule: create a PAT rule.
+// Create a new PAT rule on a specified Public Gateway, defining the protocol to use, public port to listen on, and private port / IP address to map to.
 func (s *API) CreatePATRule(req *CreatePATRuleRequest, opts ...scw.RequestOption) (*PATRule, error) {
 	var err error
 
@@ -2142,25 +1983,23 @@ func (s *API) CreatePATRule(req *CreatePATRuleRequest, opts ...scw.RequestOption
 }
 
 type UpdatePATRuleRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PatRuleID: pAT rule to update
+	// PatRuleID: ID of the PAT rule to update.
 	PatRuleID string `json:"-"`
-	// PublicPort: public port to listen on
+	// PublicPort: public port to listen on.
 	PublicPort *uint32 `json:"public_port"`
-	// PrivateIP: private IP to forward data to
+	// PrivateIP: private IP to forward data to.
 	PrivateIP *net.IP `json:"private_ip"`
-	// PrivatePort: private port to translate to
+	// PrivatePort: private port to translate to.
 	PrivatePort *uint32 `json:"private_port"`
-	// Protocol: protocol the rule should apply to
-	//
+	// Protocol: protocol the rule should apply to.
 	// Default value: unknown
 	Protocol PATRuleProtocol `json:"protocol"`
 }
 
-// UpdatePATRule: update a PAT rule
+// UpdatePATRule: update a PAT rule.
+// Update a PAT rule, specified by its PAT rule ID. Configuration settings including private/public port, private IP address and protocol can all be updated.
 func (s *API) UpdatePATRule(req *UpdatePATRuleRequest, opts ...scw.RequestOption) (*PATRule, error) {
 	var err error
 
@@ -2198,20 +2037,16 @@ func (s *API) UpdatePATRule(req *UpdatePATRuleRequest, opts ...scw.RequestOption
 }
 
 type SetPATRulesRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// GatewayID: gateway on which to set the PAT rules
+	// GatewayID: ID of the gateway on which to set the PAT rules.
 	GatewayID string `json:"gateway_id"`
-	// PatRules: new list of PAT rules
+	// PatRules: new list of PAT rules.
 	PatRules []*SetPATRulesRequestRule `json:"pat_rules"`
 }
 
-// SetPATRules: set all PAT rules on a Gateway
-//
-// Set the list of PAT rules attached to a Gateway. Rules are identified by their public port and protocol. This will sync the current PAT rule list with the givent list, creating, updating or deleting PAT rules.
-//
+// SetPATRules: set all PAT rules.
+// Set a definitive list of PAT rules attached to a Public Gateway. Each rule is identified by its public port and protocol. This will sync the current PAT rule list on the gateway with the new list, creating, updating or deleting PAT rules accordingly.
 func (s *API) SetPATRules(req *SetPATRulesRequest, opts ...scw.RequestOption) (*SetPATRulesResponse, error) {
 	var err error
 
@@ -2245,15 +2080,14 @@ func (s *API) SetPATRules(req *SetPATRulesRequest, opts ...scw.RequestOption) (*
 }
 
 type DeletePATRuleRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PatRuleID: pAT rule to delete
+	// PatRuleID: ID of the PAT rule to delete.
 	PatRuleID string `json:"-"`
 }
 
-// DeletePATRule: delete a PAT rule
+// DeletePATRule: delete a PAT rule.
+// Delete a PAT rule, identified by its PAT rule ID. This action is irreversible.
 func (s *API) DeletePATRule(req *DeletePATRuleRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2284,13 +2118,12 @@ func (s *API) DeletePATRule(req *DeletePATRuleRequest, opts ...scw.RequestOption
 }
 
 type ListGatewayTypesRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
 }
 
-// ListGatewayTypes: list VPC Public Gateway types
+// ListGatewayTypes: list Public Gateway types.
+// List the different Public Gateway commercial offer types available at Scaleway. The response is an array of objects describing the name and technical details of each available gateway type.
 func (s *API) ListGatewayTypes(req *ListGatewayTypesRequest, opts ...scw.RequestOption) (*ListGatewayTypesResponse, error) {
 	var err error
 
@@ -2319,31 +2152,29 @@ func (s *API) ListGatewayTypes(req *ListGatewayTypesRequest, opts ...scw.Request
 }
 
 type ListIPsRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// OrderBy: order in which to return results
-	//
+	// OrderBy: order in which to return results.
 	// Default value: created_at_asc
 	OrderBy ListIPsRequestOrderBy `json:"-"`
-	// Page: page number
+	// Page: page number.
 	Page *int32 `json:"-"`
-	// PageSize: iPs per page
+	// PageSize: IP addresses per page.
 	PageSize *uint32 `json:"-"`
-	// OrganizationID: include only IPs in this organization
+	// OrganizationID: filter for IP addresses in this Organization.
 	OrganizationID *string `json:"-"`
-	// ProjectID: include only IPs in this project
+	// ProjectID: filter for IP addresses in this Project.
 	ProjectID *string `json:"-"`
-	// Tags: filter IPs with these tags
+	// Tags: filter for IP addresses with these tags.
 	Tags []string `json:"-"`
-	// Reverse: filter by reverse containing this string
+	// Reverse: filter for IP addresses that have a reverse containing this string.
 	Reverse *string `json:"-"`
-	// IsFree: filter whether the IP is attached to a gateway or not
+	// IsFree: filter based on whether the IP is attached to a gateway or not.
 	IsFree *bool `json:"-"`
 }
 
-// ListIPs: list IPs
+// ListIPs: list IPs.
+// List Public Gateway flexible IP addresses. A number of filter options are available for limiting results in the response.
 func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsResponse, error) {
 	var err error
 
@@ -2388,15 +2219,14 @@ func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsR
 }
 
 type GetIPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// IPID: ID of the IP to get
+	// IPID: ID of the IP address to get.
 	IPID string `json:"-"`
 }
 
-// GetIP: get an IP
+// GetIP: get an IP.
+// Get details of a Public Gateway flexible IP address, identified by its IP ID. The response object contains information including which (if any) Public Gateway using this IP address, the reverse and various other metadata.
 func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*IP, error) {
 	var err error
 
@@ -2429,17 +2259,16 @@ func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*IP, error) {
 }
 
 type CreateIPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// ProjectID: project to create the IP into
+	// ProjectID: project to create the IP address in.
 	ProjectID string `json:"project_id"`
-	// Tags: tags to give to the IP
+	// Tags: tags to give to the IP address.
 	Tags []string `json:"tags"`
 }
 
-// CreateIP: reserve an IP
+// CreateIP: reserve an IP.
+// Create (reserve) a new flexible IP address that can be used for a Public Gateway in a specified Scaleway Project.
 func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*IP, error) {
 	var err error
 
@@ -2478,21 +2307,20 @@ func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*IP, er
 }
 
 type UpdateIPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// IPID: ID of the IP to update
+	// IPID: ID of the IP address to update.
 	IPID string `json:"-"`
-	// Tags: tags to give to the IP
+	// Tags: tags to give to the IP address.
 	Tags *[]string `json:"tags"`
-	// Reverse: reverse to set on the IP. Empty string to unset
+	// Reverse: reverse to set on the address. Empty string to unset.
 	Reverse *string `json:"reverse"`
-	// GatewayID: gateway to attach the IP to. Empty string to detach
+	// GatewayID: gateway to attach the IP address to. Empty string to detach.
 	GatewayID *string `json:"gateway_id"`
 }
 
-// UpdateIP: update an IP
+// UpdateIP: update an IP.
+// Update details of an existing flexible IP address, including its tags, reverse and the Public Gateway it is assigned to.
 func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
 	var err error
 
@@ -2530,15 +2358,14 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 }
 
 type DeleteIPRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// IPID: ID of the IP to delete
+	// IPID: ID of the IP address to delete.
 	IPID string `json:"-"`
 }
 
-// DeleteIP: delete an IP
+// DeleteIP: delete an IP.
+// Delete a flexible IP address from your account. This action is irreversible.
 func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2569,14 +2396,14 @@ func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 }
 
 type RefreshSSHKeysRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-
+	// GatewayID: ID of the gateway to refresh SSH keys on.
 	GatewayID string `json:"-"`
 }
 
+// RefreshSSHKeys: refresh a Public Gateway's SSH keys.
+// Refresh the SSH keys of a given Public Gateway, specified by its gateway ID. This adds any new SSH keys in the gateway's Scaleway Project to the gateway itself.
 func (s *API) RefreshSSHKeys(req *RefreshSSHKeysRequest, opts ...scw.RequestOption) (*Gateway, error) {
 	var err error
 
