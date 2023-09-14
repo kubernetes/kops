@@ -17,6 +17,9 @@ If rolling-update does not report that the cluster needs to be updated, you can 
 updated with the --force flag.  Rolling update drains and validates the cluster by default.  A cluster is
 deemed validated when all required nodes are running and all pods with a critical priority are operational.
 
+If the cluster is in a broken state and cannot be validated, rolling-update will get stuck and eventually 
+fail; you can force the update to proceed with the --cloudonly flag, which will skip validation.
+
 Note: terraform users will need to run all of the following commands from the same directory
 `kops update cluster --target=terraform` then `terraform plan` then
 `terraform apply` prior to running `kops rolling-update cluster`.
@@ -57,7 +60,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 
 ```
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
-      --cloudonly                         Perform rolling update without confirming progress with Kubernetes
+      --cloudonly                         Perform rolling update without validating cluster status (will cause downtime)
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
       --drain-timeout duration            Maximum time to wait for a node to drain (default 15m0s)
       --fail-on-drain-error               Fail if draining a node fails (default true)

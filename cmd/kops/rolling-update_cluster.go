@@ -58,6 +58,9 @@ var (
 	updated with the --force flag.  Rolling update drains and validates the cluster by default.  A cluster is
 	deemed validated when all required nodes are running and all pods with a critical priority are operational.
 
+	If the cluster is in a broken state and cannot be validated, rolling-update will get stuck and eventually 
+	fail; you can force the update to proceed with the --cloudonly flag, which will skip validation.
+
 	Note: terraform users will need to run all of the following commands from the same directory
 	` + pretty.Bash("kops update cluster --target=terraform") + ` then ` + pretty.Bash("terraform plan") + ` then
 	` + pretty.Bash("terraform apply") + ` prior to running ` + pretty.Bash("kops rolling-update cluster") + `.`))
@@ -189,7 +192,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately; without --yes rolling-update executes a dry-run")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
-	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with Kubernetes")
+	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without validating cluster status (will cause downtime)")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
 	cmd.Flags().DurationVar(&options.DrainTimeout, "drain-timeout", options.DrainTimeout, "Maximum time to wait for a node to drain")
