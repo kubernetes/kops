@@ -39,7 +39,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API: vPC API
+// API: vPC API.
 type API struct {
 	client *scw.Client
 }
@@ -54,14 +54,10 @@ func NewAPI(client *scw.Client) *API {
 type ListPrivateNetworksRequestOrderBy string
 
 const (
-	// ListPrivateNetworksRequestOrderByCreatedAtAsc is [insert doc].
-	ListPrivateNetworksRequestOrderByCreatedAtAsc = ListPrivateNetworksRequestOrderBy("created_at_asc")
-	// ListPrivateNetworksRequestOrderByCreatedAtDesc is [insert doc].
+	ListPrivateNetworksRequestOrderByCreatedAtAsc  = ListPrivateNetworksRequestOrderBy("created_at_asc")
 	ListPrivateNetworksRequestOrderByCreatedAtDesc = ListPrivateNetworksRequestOrderBy("created_at_desc")
-	// ListPrivateNetworksRequestOrderByNameAsc is [insert doc].
-	ListPrivateNetworksRequestOrderByNameAsc = ListPrivateNetworksRequestOrderBy("name_asc")
-	// ListPrivateNetworksRequestOrderByNameDesc is [insert doc].
-	ListPrivateNetworksRequestOrderByNameDesc = ListPrivateNetworksRequestOrderBy("name_desc")
+	ListPrivateNetworksRequestOrderByNameAsc       = ListPrivateNetworksRequestOrderBy("name_asc")
+	ListPrivateNetworksRequestOrderByNameDesc      = ListPrivateNetworksRequestOrderBy("name_desc")
 )
 
 func (enum ListPrivateNetworksRequestOrderBy) String() string {
@@ -93,54 +89,61 @@ type ListPrivateNetworksResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
-// PrivateNetwork: private network
+// PrivateNetwork: private network.
 type PrivateNetwork struct {
-	// ID: the private network ID
+	// ID: private Network ID.
 	ID string `json:"id"`
-	// Name: the private network name
+	// Name: private Network name.
 	Name string `json:"name"`
-	// OrganizationID: the private network organization
+	// OrganizationID: scaleway Organization the Private Network belongs to.
 	OrganizationID string `json:"organization_id"`
-	// ProjectID: the private network project ID
+	// ProjectID: scaleway Project the Private Network belongs to.
 	ProjectID string `json:"project_id"`
-	// Zone: the zone in which the private network is available
+	// Zone: availability Zone in which the Private Network is available.
 	Zone scw.Zone `json:"zone"`
-	// Tags: the private network tags
+	// Tags: tags of the Private Network.
 	Tags []string `json:"tags"`
-	// CreatedAt: the private network creation date
+	// CreatedAt: date the Private Network was created.
 	CreatedAt *time.Time `json:"created_at"`
-	// UpdatedAt: the last private network modification date
+	// UpdatedAt: date the Private Network was last modified.
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Subnets: private network subnets CIDR
+	// Subnets: private Network subnets CIDR.
 	Subnets []scw.IPNet `json:"subnets"`
 }
 
 // Service API
 
-type ListPrivateNetworksRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
-	Zone scw.Zone `json:"-"`
-	// OrderBy: the sort order of the returned private networks
-	//
-	// Default value: created_at_asc
-	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
-	// Page: the page number for the returned private networks
-	Page *int32 `json:"-"`
-	// PageSize: the maximum number of private networks per page
-	PageSize *uint32 `json:"-"`
-	// Name: filter private networks with names containing this string
-	Name *string `json:"-"`
-	// Tags: filter private networks with one or more matching tags
-	Tags []string `json:"-"`
-	// OrganizationID: the organization ID on which to filter the returned private networks
-	OrganizationID *string `json:"-"`
-	// ProjectID: the project ID on which to filter the returned private networks
-	ProjectID *string `json:"-"`
+// Zones list localities the api is available in
+func (s *API) Zones() []scw.Zone {
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2}
 }
 
-// ListPrivateNetworks: list private networks
+type ListPrivateNetworksRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+	// OrderBy: sort order of the returned Private Networks.
+	// Default value: created_at_asc
+	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
+	// Page: page number to return, from the paginated results.
+	Page *int32 `json:"-"`
+	// PageSize: maximum number of Private Networks to return per page.
+	PageSize *uint32 `json:"-"`
+	// Name: name to filter for. Only Private Networks with names containing this string will be returned.
+	Name *string `json:"-"`
+	// Tags: tags to filter for. Only Private Networks with one or more matching tags will be returned.
+	Tags []string `json:"-"`
+	// OrganizationID: organization ID to filter for. Only Private Networks belonging to this Organization will be returned.
+	OrganizationID *string `json:"-"`
+	// ProjectID: project ID to filter for. Only Private Networks belonging to this Project will be returned.
+	ProjectID *string `json:"-"`
+	// PrivateNetworkIDs: private Network IDs to filter for. Only Private Networks with one of these IDs will be returned.
+	PrivateNetworkIDs []string `json:"-"`
+	// IncludeRegional: defines whether to include regional Private Networks in the response.
+	IncludeRegional *bool `json:"-"`
+}
+
+// ListPrivateNetworks: list Private Networks.
+// List existing Private Networks in a specified Availability Zone. By default, the Private Networks returned in the list are ordered by creation date in ascending order, though this can be modified via the order_by field.
 func (s *API) ListPrivateNetworks(req *ListPrivateNetworksRequest, opts ...scw.RequestOption) (*ListPrivateNetworksResponse, error) {
 	var err error
 
@@ -162,6 +165,8 @@ func (s *API) ListPrivateNetworks(req *ListPrivateNetworksRequest, opts ...scw.R
 	parameter.AddToQuery(query, "tags", req.Tags)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "private_network_ids", req.PrivateNetworkIDs)
+	parameter.AddToQuery(query, "include_regional", req.IncludeRegional)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -184,21 +189,20 @@ func (s *API) ListPrivateNetworks(req *ListPrivateNetworksRequest, opts ...scw.R
 }
 
 type CreatePrivateNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// Name: the name of the private network
+	// Name: name for the Private Network.
 	Name string `json:"name"`
-	// ProjectID: the project ID of the private network
+	// ProjectID: scaleway Project in which to create the Private Network.
 	ProjectID string `json:"project_id"`
-	// Tags: the private networks tags
+	// Tags: tags for the Private Network.
 	Tags []string `json:"tags"`
-	// Subnets: private network subnets CIDR
+	// Subnets: private Network subnets CIDR.
 	Subnets []scw.IPNet `json:"subnets"`
 }
 
-// CreatePrivateNetwork: create a private network
+// CreatePrivateNetwork: create a Private Network.
+// Create a new Private Network. Once created, you can attach Scaleway resources in the same Availability Zone.
 func (s *API) CreatePrivateNetwork(req *CreatePrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
 	var err error
 
@@ -241,15 +245,14 @@ func (s *API) CreatePrivateNetwork(req *CreatePrivateNetworkRequest, opts ...scw
 }
 
 type GetPrivateNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PrivateNetworkID: the private network id
+	// PrivateNetworkID: private Network ID.
 	PrivateNetworkID string `json:"-"`
 }
 
-// GetPrivateNetwork: get a private network
+// GetPrivateNetwork: get a Private Network.
+// Retrieve information about an existing Private Network, specified by its Private Network ID. Its full details are returned in the response object.
 func (s *API) GetPrivateNetwork(req *GetPrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
 	var err error
 
@@ -282,21 +285,20 @@ func (s *API) GetPrivateNetwork(req *GetPrivateNetworkRequest, opts ...scw.Reque
 }
 
 type UpdatePrivateNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PrivateNetworkID: the private network ID
+	// PrivateNetworkID: private Network ID.
 	PrivateNetworkID string `json:"-"`
-	// Name: the name of the private network
+	// Name: name of the private network.
 	Name *string `json:"name"`
-	// Tags: the private networks tags
+	// Tags: tags for the Private Network.
 	Tags *[]string `json:"tags"`
-	// Subnets: private network subnets CIDR
-	Subnets *[]string `json:"subnets"`
+	// Deprecated: Subnets: private Network subnets CIDR (deprecated).
+	Subnets *[]string `json:"subnets,omitempty"`
 }
 
-// UpdatePrivateNetwork: update private network
+// UpdatePrivateNetwork: update Private Network.
+// Update parameters (such as name or tags) of an existing Private Network, specified by its Private Network ID.
 func (s *API) UpdatePrivateNetwork(req *UpdatePrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
 	var err error
 
@@ -334,15 +336,14 @@ func (s *API) UpdatePrivateNetwork(req *UpdatePrivateNetworkRequest, opts ...scw
 }
 
 type DeletePrivateNetworkRequest struct {
-	// Zone:
-	//
-	// Zone to target. If none is passed will use default zone from the config
+	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
-	// PrivateNetworkID: the private network ID
+	// PrivateNetworkID: private Network ID.
 	PrivateNetworkID string `json:"-"`
 }
 
-// DeletePrivateNetwork: delete a private network
+// DeletePrivateNetwork: delete a Private Network.
+// Delete an existing Private Network. Note that you must first detach all resources from the network, in order to delete it.
 func (s *API) DeletePrivateNetwork(req *DeletePrivateNetworkRequest, opts ...scw.RequestOption) error {
 	var err error
 
