@@ -37,6 +37,7 @@
       "Action": [
         "acm:DescribeCertificate",
         "acm:ListCertificates",
+        "cognito-idp:DescribeUserPoolClient",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstances",
