@@ -57,6 +57,8 @@ type KubeletConfigSpec struct {
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	// PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
 	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
+	// SeccompDefault enables the use of `RuntimeDefault` as the default seccomp profile for all workloads.
+	SeccompDefault *bool `json:"seccompDefault,omitempty" flag:"seccomp-default"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot *string `json:"seccompProfileRoot,omitempty" flag:"seccomp-profile-root"`
 	// AllowPrivileged enables containers to request privileged mode (defaults to false)
