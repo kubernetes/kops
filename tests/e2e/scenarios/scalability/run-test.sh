@@ -35,8 +35,6 @@ popd
 
 # Setup our cleanup function; as we allocate resources we set a variable to indicate they should be cleaned up
 function cleanup {
-  # will help us better diagnose failures
-  aws autoscaling describe-scaling-activities --region us-east-2
   # shellcheck disable=SC2153
   if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
       kubetest2 kops "${KUBETEST2_ARGS[@]}" --down || echo "kubetest2 down failed"
@@ -140,7 +138,7 @@ KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
 # More time for bigger clusters
-KUBETEST2_ARGS+=("--validation-wait=30m")
+KUBETEST2_ARGS+=("--validation-wait=45m")
 
 # The caller can set DELETE_CLUSTER=false to stop us deleting the cluster
 if [[ -z "${DELETE_CLUSTER:-}" ]]; then
