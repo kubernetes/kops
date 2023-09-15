@@ -100,6 +100,8 @@ const (
 
 	// VcekGUID is the Versioned Chip Endorsement Key GUID
 	VcekGUID = "63da758d-e664-4564-adc5-f4b93be8accd"
+	// VlekGUID is the Versioned Loaded Endorsement Key GUID
+	VlekGUID = "a8074bc2-a25a-483e-aae6-39c045a0b8a1"
 	// AskGUID is the AMD signing Key GUID
 	AskGUID = "4ab7b379-bbac-4fe4-a02f-05aef327c782"
 	// ArkGUID is the AMD Root Key GUID
@@ -230,7 +232,7 @@ func ParseSnpPlatformInfo(platformInfo uint64) (SnpPlatformInfo, error) {
 // ParseAskCert returns a struct representation of the AMD certificate format from a byte array.
 func ParseAskCert(data []byte) (*AskCert, int, error) {
 	var cert AskCert
-	var minimumSize = 0x40
+	minimumSize := 0x40
 
 	if len(data) < minimumSize {
 		return nil, 0,
@@ -313,6 +315,7 @@ func ReportToSignatureDER(report []byte) ([]byte, error) {
 func ecdsaGetR(signature []byte) []byte {
 	return signature[0x0:0x48]
 }
+
 func ecdsaGetS(signature []byte) []byte {
 	return signature[0x48:0x90]
 }
@@ -355,8 +358,8 @@ func ReportToProto(data []uint8) (*pb.Report, error) {
 	r.PlatformInfo = binary.LittleEndian.Uint64(data[0x40:0x48])
 
 	reservedAuthor := binary.LittleEndian.Uint32(data[0x48:0x4C])
-	if reservedAuthor&0xfffffffe != 0 {
-		return nil, fmt.Errorf("mbz bits at offset 0x48 not zero: 0x%08x", reservedAuthor&0xfffffffe)
+	if reservedAuthor&0xffffffe0 != 0 {
+		return nil, fmt.Errorf("mbz bits at offset 0x48 not zero: 0x%08x", reservedAuthor&0xffffffe0)
 	}
 	r.AuthorKeyEn = reservedAuthor
 	if err := mbz(data, 0x4C, 0x50); err != nil {

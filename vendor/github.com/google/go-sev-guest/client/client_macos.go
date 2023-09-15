@@ -27,7 +27,7 @@ const DefaultSevGuestDevicePath = "unknown"
 type MacOSDevice struct{}
 
 // Open is not supported on MacOS.
-func (_ *MacOSDevice) Open(_ string) error {
+func (*MacOSDevice) Open(_ string) error {
 	return fmt.Errorf("MacOS is unsupported")
 }
 
@@ -37,11 +37,11 @@ func OpenDevice() (*MacOSDevice, error) {
 }
 
 // Close is not supported on MacOS.
-func (_ *MacOSDevice) Close() error {
+func (*MacOSDevice) Close() error {
 	return fmt.Errorf("MacOS is unsupported")
 }
 
 // Ioctl is not supported on MacOS.
-func (_ *MacOSDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
+func (*MacOSDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 	return 0, fmt.Errorf("MacOS is unsupported")
 }

@@ -8,6 +8,17 @@
 //
 // For product documentation, see: https://cloud.google.com/dns/docs
 //
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
+//
 // # Creating a client
 //
 // Usage example:
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	dnsService, err := dns.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	dnsService, err := dns.NewService(ctx, option.WithScopes(dns.NdevClouddnsReadwriteScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	dnsService, err := dns.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	dnsService, err := dns.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package dns // import "google.golang.org/api/dns/v1"
 
 import (
@@ -928,7 +942,7 @@ func (s *GoogleIamV1GetPolicyOptions) MarshalJSON() ([]byte, error) {
 // both. To learn which resources support conditions in their IAM
 // policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
-// **JSON example:** { "bindings": [ { "role":
+// **JSON example:** ``` { "bindings": [ { "role":
 // "roles/resourcemanager.organizationAdmin", "members": [
 // "user:mike@example.com", "group:admins@example.com",
 // "domain:google.com",
@@ -937,17 +951,17 @@ func (s *GoogleIamV1GetPolicyOptions) MarshalJSON() ([]byte, error) {
 // "user:eve@example.com" ], "condition": { "title": "expirable access",
 // "description": "Does not grant access after Sep 2020", "expression":
 // "request.time < timestamp('2020-10-01T00:00:00.000Z')", } } ],
-// "etag": "BwWWja0YfJA=", "version": 3 } **YAML example:** bindings: -
-// members: - user:mike@example.com - group:admins@example.com -
-// domain:google.com -
+// "etag": "BwWWja0YfJA=", "version": 3 } ``` **YAML example:** ```
+// bindings: - members: - user:mike@example.com -
+// group:admins@example.com - domain:google.com -
 // serviceAccount:my-project-id@appspot.gserviceaccount.com role:
 // roles/resourcemanager.organizationAdmin - members: -
 // user:eve@example.com role: roles/resourcemanager.organizationViewer
 // condition: title: expirable access description: Does not grant access
 // after Sep 2020 expression: request.time <
 // timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3
-// For a description of IAM and its features, see the IAM documentation
-// (https://cloud.google.com/iam/docs/).
+// ``` For a description of IAM and its features, see the IAM
+// documentation (https://cloud.google.com/iam/docs/).
 type GoogleIamV1Policy struct {
 	// AuditConfigs: Specifies cloud audit logging configuration for this
 	// policy.
@@ -2376,12 +2390,12 @@ func (s *RRSetRoutingPolicy) MarshalJSON() ([]byte, error) {
 // routes based on the geo location of the querying user.
 type RRSetRoutingPolicyGeoPolicy struct {
 	// EnableFencing: Without fencing, if health check fails for all
-	// configured items in the current geo bucket, we'll failover to the
-	// next nearest geo bucket. With fencing, if health check is enabled, as
-	// long as some targets in the current geo bucket are healthy, we'll
-	// return only the healthy targets. However, if they're all unhealthy,
-	// we won't failover to the next nearest bucket, we'll simply return all
-	// the items in the current bucket even though they're unhealthy.
+	// configured items in the current geo bucket, we failover to the next
+	// nearest geo bucket. With fencing, if health checking is enabled, as
+	// long as some targets in the current geo bucket are healthy, we return
+	// only the healthy targets. However, if all targets are unhealthy, we
+	// don't failover to the next nearest bucket; instead, we return all the
+	// items in the current bucket even when all targets are unhealthy.
 	EnableFencing bool `json:"enableFencing,omitempty"`
 
 	// Items: The primary geo routing configuration. If there are multiple
@@ -2431,8 +2445,8 @@ type RRSetRoutingPolicyGeoPolicyGeoPolicyItem struct {
 	Rrdatas []string `json:"rrdatas,omitempty"`
 
 	// SignatureRrdatas: DNSSEC generated signatures for all the rrdata
-	// within this item. Note that if health checked targets are provided
-	// for DNSSEC enabled zones, there's a restriction of 1 ip per item. .
+	// within this item. If health checked targets are provided for DNSSEC
+	// enabled zones, there's a restriction of 1 IP address per item.
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -2491,11 +2505,15 @@ func (s *RRSetRoutingPolicyHealthCheckTargets) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// RRSetRoutingPolicyLoadBalancerTarget: The configuration for an
+// individual load balancer to health check.
 type RRSetRoutingPolicyLoadBalancerTarget struct {
-	// IpAddress: The frontend IP address of the Load Balancer to health
+	// IpAddress: The frontend IP address of the load balancer to health
 	// check.
 	IpAddress string `json:"ipAddress,omitempty"`
 
+	// IpProtocol: The protocol of the load balancer to health check.
+	//
 	// Possible values:
 	//   "undefined"
 	//   "tcp"
@@ -2504,30 +2522,34 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 
 	Kind string `json:"kind,omitempty"`
 
-	// LoadBalancerType: The type of Load Balancer specified by this target.
-	// Must match the configuration of the Load Balancer located at the
-	// LoadBalancerTarget's IP address/port and region.
+	// LoadBalancerType: The type of load balancer specified by this target.
+	// This value must match the configuration of the load balancer located
+	// at the LoadBalancerTarget's IP address, port, and region. Use the
+	// following: - *regionalL4ilb*: for a regional internal passthrough
+	// Network Load Balancer. - *regionalL7ilb*: for a regional internal
+	// Application Load Balancer. - *globalL7ilb*: for a global internal
+	// Application Load Balancer.
 	//
 	// Possible values:
 	//   "none"
-	//   "globalL7ilb" - Cross-region internal Application Load Balancer
-	//   "regionalL4ilb" - Regional internal passthrough Network Load
-	// Balancer
-	//   "regionalL7ilb" - Regional internal Application Load Balancer
+	//   "globalL7ilb"
+	//   "regionalL4ilb"
+	//   "regionalL7ilb"
 	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 
-	// NetworkUrl: The fully qualified url of the network on which the ILB
-	// is present. This should be formatted like
+	// NetworkUrl: The fully qualified URL of the network that the load
+	// balancer is attached to. This should be formatted like
 	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
+	// .
 	NetworkUrl string `json:"networkUrl,omitempty"`
 
-	// Port: The configured port of the Load Balancer.
+	// Port: The configured port of the load balancer.
 	Port string `json:"port,omitempty"`
 
-	// Project: The project ID in which the ILB exists.
+	// Project: The project ID in which the load balancer is located.
 	Project string `json:"project,omitempty"`
 
-	// Region: The region in which the ILB exists.
+	// Region: The region in which the load balancer is located.
 	Region string `json:"region,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "IpAddress") to
@@ -2565,6 +2587,10 @@ type RRSetRoutingPolicyPrimaryBackupPolicy struct {
 
 	Kind string `json:"kind,omitempty"`
 
+	// PrimaryTargets: Endpoints that are health checked before making the
+	// routing decision. Unhealthy endpoints are omitted from the results.
+	// If all endpoints are unhealthy, we serve a response based on the
+	// backup_geo_targets.
 	PrimaryTargets *RRSetRoutingPolicyHealthCheckTargets `json:"primaryTargets,omitempty"`
 
 	// TrickleTraffic: When serving state is PRIMARY, this field provides
@@ -2643,12 +2669,12 @@ func (s *RRSetRoutingPolicyWrrPolicy) MarshalJSON() ([]byte, error) {
 // RRSetRoutingPolicyWrrPolicyWrrPolicyItem: A routing block which
 // contains the routing information for one WRR item.
 type RRSetRoutingPolicyWrrPolicyWrrPolicyItem struct {
-	// HealthCheckedTargets: endpoints that need to be health checked before
-	// making the routing decision. The unhealthy endpoints will be omitted
-	// from the result. If all endpoints within a buckete are unhealthy,
-	// we'll choose a different bucket (sampled w.r.t. its weight) for
-	// responding. Note that if DNSSEC is enabled for this zone, only one of
-	// rrdata or health_checked_targets can be set.
+	// HealthCheckedTargets: Endpoints that are health checked before making
+	// the routing decision. The unhealthy endpoints are omitted from the
+	// result. If all endpoints within a bucket are unhealthy, we choose a
+	// different bucket (sampled with respect to its weight) for responding.
+	// If DNSSEC is enabled for this zone, only one of rrdata or
+	// health_checked_targets can be set.
 	HealthCheckedTargets *RRSetRoutingPolicyHealthCheckTargets `json:"healthCheckedTargets,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
@@ -2657,14 +2683,15 @@ type RRSetRoutingPolicyWrrPolicyWrrPolicyItem struct {
 
 	// SignatureRrdatas: DNSSEC generated signatures for all the rrdata
 	// within this item. Note that if health checked targets are provided
-	// for DNSSEC enabled zones, there's a restriction of 1 ip per item. .
+	// for DNSSEC enabled zones, there's a restriction of 1 IP address per
+	// item.
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
 
-	// Weight: The weight corresponding to this subset of rrdata. When
-	// multiple WeightedRoundRobinPolicyItems are configured, the
-	// probability of returning an rrset is proportional to its weight
-	// relative to the sum of weights configured for all items. This weight
-	// should be non-negative.
+	// Weight: The weight corresponding to this WrrPolicyItem object. When
+	// multiple WrrPolicyItem objects are configured, the probability of
+	// returning an WrrPolicyItem object's data is proportional to its
+	// weight relative to the sum of weights configured for all items. This
+	// weight must be non-negative.
 	Weight float64 `json:"weight,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -2714,10 +2741,10 @@ type ResourceRecordSet struct {
 	// Name: For example, www.example.com.
 	Name string `json:"name,omitempty"`
 
-	// RoutingPolicy: Configures dynamic query responses based on geo
-	// location of querying user or a weighted round robin based routing
-	// policy. A ResourceRecordSet should only have either rrdata (static)
-	// or routing_policy (dynamic). An error is returned otherwise.
+	// RoutingPolicy: Configures dynamic query responses based on either the
+	// geo location of the querying user or a weighted round robin based
+	// routing policy. A valid ResourceRecordSet contains only rrdata (for
+	// static resolution) or a routing_policy (for dynamic resolution).
 	RoutingPolicy *RRSetRoutingPolicy `json:"routingPolicy,omitempty"`
 
 	// Rrdatas: As defined in RFC 1035 (section 5) and RFC 1034 (section
@@ -2777,12 +2804,12 @@ type ResourceRecordSetsListResponse struct {
 	// NextPageToken: The presence of this field indicates that there exist
 	// more results following your last page of results in pagination order.
 	// To fetch them, make another list request using this value as your
-	// pagination token. This lets you retrieve complete contents of even
-	// larger collections, one page at a time. However, if the contents of
-	// the collection change between the first and last paginated list
-	// request, the set of elements returned are an inconsistent view of the
-	// collection. You cannot retrieve a consistent snapshot of a collection
-	// larger than the maximum page size.
+	// pagination token. This lets you retrieve the complete contents of
+	// even larger collections, one page at a time. However, if the
+	// collection changes between paginated list requests, the set of
+	// elements returned is an inconsistent view of the collection. You
+	// cannot retrieve a consistent snapshot of a collection larger than the
+	// maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// Rrsets: The resource record set resources.

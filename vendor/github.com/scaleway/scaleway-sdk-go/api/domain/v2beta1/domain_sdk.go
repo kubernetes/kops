@@ -659,6 +659,14 @@ const (
 	ListDNSZonesRequestOrderBySubdomainAsc = ListDNSZonesRequestOrderBy("subdomain_asc")
 	// Order by subdomain name (descending).
 	ListDNSZonesRequestOrderBySubdomainDesc = ListDNSZonesRequestOrderBy("subdomain_desc")
+	// Order by created date (ascending).
+	ListDNSZonesRequestOrderByCreatedAtAsc = ListDNSZonesRequestOrderBy("created_at_asc")
+	// Order by created date (descending).
+	ListDNSZonesRequestOrderByCreatedAtDesc = ListDNSZonesRequestOrderBy("created_at_desc")
+	// Order by updated date (ascending).
+	ListDNSZonesRequestOrderByUpdatedAtAsc = ListDNSZonesRequestOrderBy("updated_at_asc")
+	// Order by updated date (descending).
+	ListDNSZonesRequestOrderByUpdatedAtDesc = ListDNSZonesRequestOrderBy("updated_at_desc")
 )
 
 func (enum ListDNSZonesRequestOrderBy) String() string {
@@ -1909,8 +1917,18 @@ type ListDNSZonesRequest struct {
 	PageSize *uint32 `json:"-"`
 	// Domain: domain on which to filter the returned DNS zones.
 	Domain string `json:"-"`
-	// DNSZone: DNS zone on which to filter the returned DNS zones.
-	DNSZone string `json:"-"`
+	// Deprecated: DNSZone: DNS zone on which to filter the returned DNS zones.
+	DNSZone *string `json:"-"`
+	// DNSZones: DNS zones on which to filter the returned DNS zones.
+	DNSZones []string `json:"-"`
+	// CreatedAfter: only list DNS zones created after this date.
+	CreatedAfter *time.Time `json:"-"`
+	// CreatedBefore: only list DNS zones created before this date.
+	CreatedBefore *time.Time `json:"-"`
+	// UpdatedAfter: only list DNS zones updated after this date.
+	UpdatedAfter *time.Time `json:"-"`
+	// UpdatedBefore: only list DNS zones updated before this date.
+	UpdatedBefore *time.Time `json:"-"`
 }
 
 // ListDNSZones: list DNS zones.
@@ -1931,6 +1949,11 @@ func (s *API) ListDNSZones(req *ListDNSZonesRequest, opts ...scw.RequestOption) 
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "domain", req.Domain)
 	parameter.AddToQuery(query, "dns_zone", req.DNSZone)
+	parameter.AddToQuery(query, "dns_zones", req.DNSZones)
+	parameter.AddToQuery(query, "created_after", req.CreatedAfter)
+	parameter.AddToQuery(query, "created_before", req.CreatedBefore)
+	parameter.AddToQuery(query, "updated_after", req.UpdatedAfter)
+	parameter.AddToQuery(query, "updated_before", req.UpdatedBefore)
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",

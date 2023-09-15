@@ -29,6 +29,7 @@ import (
 const (
 	// defaultSevGuestDevicePath is the platform's usual device path to the SEV guest.
 	defaultSevGuestDevicePath = "/dev/sev-guest"
+	installURL                = "https://github.com/google/go-sev-guest/blob/main/INSTALL.md"
 )
 
 // These flags should not be needed for long term health of the project as the Linux kernel
@@ -50,7 +51,7 @@ func (d *LinuxDevice) Open(path string) error {
 	fd, err := unix.Open(path, unix.O_RDWR, 0)
 	if err != nil {
 		d.fd = -1
-		return fmt.Errorf("could not open AMD SEV guest device at %s: %v", path, err)
+		return fmt.Errorf("could not open AMD SEV guest device at %s (see %s): %v", path, installURL, err)
 	}
 	d.fd = fd
 	return nil

@@ -488,12 +488,13 @@ func (enum *SecurityGroupState) UnmarshalJSON(data []byte) error {
 type ServerAction string
 
 const (
-	ServerActionPoweron     = ServerAction("poweron")
-	ServerActionBackup      = ServerAction("backup")
-	ServerActionStopInPlace = ServerAction("stop_in_place")
-	ServerActionPoweroff    = ServerAction("poweroff")
-	ServerActionTerminate   = ServerAction("terminate")
-	ServerActionReboot      = ServerAction("reboot")
+	ServerActionPoweron        = ServerAction("poweron")
+	ServerActionBackup         = ServerAction("backup")
+	ServerActionStopInPlace    = ServerAction("stop_in_place")
+	ServerActionPoweroff       = ServerAction("poweroff")
+	ServerActionTerminate      = ServerAction("terminate")
+	ServerActionReboot         = ServerAction("reboot")
+	ServerActionEnableRoutedIP = ServerAction("enable_routed_ip")
 )
 
 func (enum ServerAction) String() string {
@@ -782,8 +783,10 @@ func (enum *VolumeServerState) UnmarshalJSON(data []byte) error {
 type VolumeServerVolumeType string
 
 const (
-	VolumeServerVolumeTypeLSSD = VolumeServerVolumeType("l_ssd")
-	VolumeServerVolumeTypeBSSD = VolumeServerVolumeType("b_ssd")
+	VolumeServerVolumeTypeLSSD      = VolumeServerVolumeType("l_ssd")
+	VolumeServerVolumeTypeBSSD      = VolumeServerVolumeType("b_ssd")
+	VolumeServerVolumeTypeSbsVolume = VolumeServerVolumeType("sbs_volume")
+	VolumeServerVolumeTypeScratch   = VolumeServerVolumeType("scratch")
 )
 
 func (enum VolumeServerVolumeType) String() string {
@@ -847,9 +850,11 @@ func (enum *VolumeState) UnmarshalJSON(data []byte) error {
 type VolumeVolumeType string
 
 const (
-	VolumeVolumeTypeLSSD    = VolumeVolumeType("l_ssd")
-	VolumeVolumeTypeBSSD    = VolumeVolumeType("b_ssd")
-	VolumeVolumeTypeUnified = VolumeVolumeType("unified")
+	VolumeVolumeTypeLSSD      = VolumeVolumeType("l_ssd")
+	VolumeVolumeTypeBSSD      = VolumeVolumeType("b_ssd")
+	VolumeVolumeTypeUnified   = VolumeVolumeType("unified")
+	VolumeVolumeTypeScratch   = VolumeVolumeType("scratch")
+	VolumeVolumeTypeSbsVolume = VolumeVolumeType("sbs_volume")
 )
 
 func (enum VolumeVolumeType) String() string {
@@ -1199,6 +1204,16 @@ type ListVolumesTypesResponse struct {
 	Volumes map[string]*VolumeType `json:"volumes"`
 }
 
+// MigrationPlan: migration plan.
+type MigrationPlan struct {
+	// Volume: a volume which will be migrated to SBS together with the snapshots, if present.
+	Volume *Volume `json:"volume"`
+	// Snapshots: a list of snapshots which will be migrated to SBS together and with the volume, if present.
+	Snapshots []*Snapshot `json:"snapshots"`
+	// ValidationKey: a value to be passed to ApplyBlockMigrationRequest, to confirm that the execution of the plan is being requested.
+	ValidationKey string `json:"validation_key"`
+}
+
 type NullableStringValue struct {
 	Null bool `json:"null,omitempty"`
 
@@ -1495,7 +1510,7 @@ type ServerType struct {
 	// Capabilities: capabilities.
 	Capabilities *ServerTypeCapabilities `json:"capabilities"`
 	// ScratchStorageMaxSize: maximum available scratch storage.
-	ScratchStorageMaxSize *uint64 `json:"scratch_storage_max_size"`
+	ScratchStorageMaxSize *scw.Size `json:"scratch_storage_max_size"`
 }
 
 // ServerTypeCapabilities: server type. capabilities.
@@ -2004,6 +2019,8 @@ type ListServersRequest struct {
 	Order ListServersRequestOrder `json:"-"`
 	// PrivateNetworks: list Instances from the given Private Networks (use commas to separate them).
 	PrivateNetworks []string `json:"-"`
+	// PrivateNicMacAddress: list Instances associated with the given private NIC MAC address.
+	PrivateNicMacAddress *string `json:"-"`
 }
 
 // ListServers: list all Instances.
@@ -2039,6 +2056,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	if len(req.PrivateNetworks) != 0 {
 		parameter.AddToQuery(query, "private_networks", strings.Join(req.PrivateNetworks, ","))
 	}
+	parameter.AddToQuery(query, "private_nic_mac_address", req.PrivateNicMacAddress)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -5301,6 +5319,96 @@ func (s *API) GetDashboard(req *GetDashboardRequest, opts ...scw.RequestOption) 
 		return nil, err
 	}
 	return &resp, nil
+}
+
+type PlanBlockMigrationRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+	// VolumeID: the volume for which the migration plan will be generated.
+	// Precisely one of SnapshotID, VolumeID must be set.
+	VolumeID *string `json:"volume_id,omitempty"`
+	// SnapshotID: the snapshot for which the migration plan will be generated.
+	// Precisely one of SnapshotID, VolumeID must be set.
+	SnapshotID *string `json:"snapshot_id,omitempty"`
+}
+
+// PlanBlockMigration: get a volume or snapshot's migration plan.
+// Given a volume or snapshot, returns the migration plan for a call to the RPC ApplyBlockMigration. This plan will include zero or one volume, and zero or more snapshots, which will need to be migrated together. This RPC does not perform the actual migration itself, ApplyBlockMigration must be used. The validation_key value returned by this call must be provided to the ApplyBlockMigration call to confirm that all resources listed in the plan should be migrated.
+func (s *API) PlanBlockMigration(req *PlanBlockMigrationRequest, opts ...scw.RequestOption) (*MigrationPlan, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/block-migration/plan",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp MigrationPlan
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ApplyBlockMigrationRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+	// VolumeID: the volume to migrate, along with potentially other resources, according to the migration plan generated with a call to PlanBlockMigration.
+	// Precisely one of SnapshotID, VolumeID must be set.
+	VolumeID *string `json:"volume_id,omitempty"`
+	// SnapshotID: the snapshot to migrate, along with potentially other resources, according to the migration plan generated with a call to PlanBlockMigration.
+	// Precisely one of SnapshotID, VolumeID must be set.
+	SnapshotID *string `json:"snapshot_id,omitempty"`
+	// ValidationKey: a value to be retrieved from a call to PlanBlockMigration, to confirm that the volume and/or snapshots specified in said plan should be migrated.
+	ValidationKey string `json:"validation_key,omitempty"`
+}
+
+// ApplyBlockMigration: migrate a volume and/or snapshots to SBS (Scaleway Block Storage).
+// To be used, this RPC must be preceded by a call to PlanBlockMigration. To migrate all resources mentioned in the MigrationPlan, the validation_key returned in the MigrationPlan must be provided.
+func (s *API) ApplyBlockMigration(req *ApplyBlockMigrationRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/block-migration/apply",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // UnsafeGetTotalCount should not be used
