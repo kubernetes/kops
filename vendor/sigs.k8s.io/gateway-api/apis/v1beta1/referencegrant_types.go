@@ -22,6 +22,7 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:categories=gateway-api,shortName=refgrant
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:storageversion
 
 // ReferenceGrant identifies kinds of resources in other namespaces that are
 // trusted to reference the specified kinds of resources in the same namespace
@@ -39,8 +40,6 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // support ReferenceGrant MUST NOT permit cross-namespace references which have
 // no grant, and MUST respond to the removal of a grant by revoking the access
 // that the grant allowed.
-//
-// Support: Core
 type ReferenceGrant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

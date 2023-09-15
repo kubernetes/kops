@@ -8,6 +8,17 @@
 //
 // For product documentation, see: https://cloud.google.com/container-engine/
 //
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
+//
 // # Creating a client
 //
 // Usage example:
@@ -17,24 +28,26 @@
 //	ctx := context.Background()
 //	containerService, err := container.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	containerService, err := container.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	containerService, err := container.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package container // import "google.golang.org/api/container/v1"
 
 import (
@@ -5638,6 +5651,11 @@ type PlacementPolicy struct {
 	// returned.
 	PolicyName string `json:"policyName,omitempty"`
 
+	// TpuTopology: Optional. TPU placement topology for pod slice node
+	// pool.
+	// https://cloud.google.com/tpu/docs/types-topologies#tpu_topologies
+	TpuTopology string `json:"tpuTopology,omitempty"`
+
 	// Type: The type of placement.
 	//
 	// Possible values:
@@ -7678,6 +7696,18 @@ type UpdateNodePoolRequest struct {
 	// node pool will be Confidential VM once enabled.
 	ConfidentialNodes *ConfidentialNodes `json:"confidentialNodes,omitempty"`
 
+	// DiskSizeGb: Optional. The desired disk size for nodes in the node
+	// pool specified in GB. The smallest allowed disk size is 10GB.
+	// Initiates an upgrade operation that migrates the nodes in the node
+	// pool to the specified disk size.
+	DiskSizeGb int64 `json:"diskSizeGb,omitempty,string"`
+
+	// DiskType: Optional. The desired disk type (e.g. 'pd-standard',
+	// 'pd-ssd' or 'pd-balanced') for nodes in the node pool. Initiates an
+	// upgrade operation that migrates the nodes in the node pool to the
+	// specified disk type.
+	DiskType string `json:"diskType,omitempty"`
+
 	// Etag: The current etag of the node pool. If an etag is provided and
 	// does not match the current etag of the node pool, update will be
 	// blocked and an ABORTED error will be returned.
@@ -7720,6 +7750,12 @@ type UpdateNodePoolRequest struct {
 
 	// LoggingConfig: Logging configuration.
 	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
+
+	// MachineType: Optional. The desired Google Compute Engine machine type
+	// (https://cloud.google.com/compute/docs/machine-types) for nodes in
+	// the node pool. Initiates an upgrade operation that migrates the nodes
+	// in the node pool to the specified machine type.
+	MachineType string `json:"machineType,omitempty"`
 
 	// Name: The name (project, location, cluster, node pool) of the node
 	// pool to update. Specified in the format

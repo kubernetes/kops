@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20230801",
+  "revision": "20230831",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2193,7 +2193,7 @@
       "type": "object"
     },
     "GoogleIamV1Policy": {
-      "description": "An Identity and Access Management (IAM) policy, which specifies access controls for Google Cloud resources. A `Policy` is a collection of `bindings`. A `binding` binds one or more `members`, or principals, to a single `role`. Principals can be user accounts, service accounts, Google groups, and domains (such as G Suite). A `role` is a named list of permissions; each `role` can be an IAM predefined role or a user-created custom role. For some types of Google Cloud resources, a `binding` can also specify a `condition`, which is a logical expression that allows access to a resource only if the expression evaluates to `true`. A condition can add constraints based on attributes of the request, the resource, or both. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies). **JSON example:** { \"bindings\": [ { \"role\": \"roles/resourcemanager.organizationAdmin\", \"members\": [ \"user:mike@example.com\", \"group:admins@example.com\", \"domain:google.com\", \"serviceAccount:my-project-id@appspot.gserviceaccount.com\" ] }, { \"role\": \"roles/resourcemanager.organizationViewer\", \"members\": [ \"user:eve@example.com\" ], \"condition\": { \"title\": \"expirable access\", \"description\": \"Does not grant access after Sep 2020\", \"expression\": \"request.time \u003c timestamp('2020-10-01T00:00:00.000Z')\", } } ], \"etag\": \"BwWWja0YfJA=\", \"version\": 3 } **YAML example:** bindings: - members: - user:mike@example.com - group:admins@example.com - domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com role: roles/resourcemanager.organizationAdmin - members: - user:eve@example.com role: roles/resourcemanager.organizationViewer condition: title: expirable access description: Does not grant access after Sep 2020 expression: request.time \u003c timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3 For a description of IAM and its features, see the [IAM documentation](https://cloud.google.com/iam/docs/).",
+      "description": "An Identity and Access Management (IAM) policy, which specifies access controls for Google Cloud resources. A `Policy` is a collection of `bindings`. A `binding` binds one or more `members`, or principals, to a single `role`. Principals can be user accounts, service accounts, Google groups, and domains (such as G Suite). A `role` is a named list of permissions; each `role` can be an IAM predefined role or a user-created custom role. For some types of Google Cloud resources, a `binding` can also specify a `condition`, which is a logical expression that allows access to a resource only if the expression evaluates to `true`. A condition can add constraints based on attributes of the request, the resource, or both. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies). **JSON example:** ``` { \"bindings\": [ { \"role\": \"roles/resourcemanager.organizationAdmin\", \"members\": [ \"user:mike@example.com\", \"group:admins@example.com\", \"domain:google.com\", \"serviceAccount:my-project-id@appspot.gserviceaccount.com\" ] }, { \"role\": \"roles/resourcemanager.organizationViewer\", \"members\": [ \"user:eve@example.com\" ], \"condition\": { \"title\": \"expirable access\", \"description\": \"Does not grant access after Sep 2020\", \"expression\": \"request.time \u003c timestamp('2020-10-01T00:00:00.000Z')\", } } ], \"etag\": \"BwWWja0YfJA=\", \"version\": 3 } ``` **YAML example:** ``` bindings: - members: - user:mike@example.com - group:admins@example.com - domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com role: roles/resourcemanager.organizationAdmin - members: - user:eve@example.com role: roles/resourcemanager.organizationViewer condition: title: expirable access description: Does not grant access after Sep 2020 expression: request.time \u003c timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3 ``` For a description of IAM and its features, see the [IAM documentation](https://cloud.google.com/iam/docs/).",
       "id": "GoogleIamV1Policy",
       "properties": {
         "auditConfigs": {
@@ -3043,7 +3043,7 @@
       "id": "RRSetRoutingPolicyGeoPolicy",
       "properties": {
         "enableFencing": {
-          "description": "Without fencing, if health check fails for all configured items in the current geo bucket, we'll failover to the next nearest geo bucket. With fencing, if health check is enabled, as long as some targets in the current geo bucket are healthy, we'll return only the healthy targets. However, if they're all unhealthy, we won't failover to the next nearest bucket, we'll simply return all the items in the current bucket even though they're unhealthy.",
+          "description": "Without fencing, if health check fails for all configured items in the current geo bucket, we failover to the next nearest geo bucket. With fencing, if health checking is enabled, as long as some targets in the current geo bucket are healthy, we return only the healthy targets. However, if all targets are unhealthy, we don't failover to the next nearest bucket; instead, we return all the items in the current bucket even when all targets are unhealthy.",
           "type": "boolean"
         },
         "items": {
@@ -3083,7 +3083,7 @@
           "type": "array"
         },
         "signatureRrdatas": {
-          "description": "DNSSEC generated signatures for all the rrdata within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 ip per item. .",
+          "description": "DNSSEC generated signatures for all the rrdata within this item. If health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 IP address per item.",
           "items": {
             "type": "string"
           },
@@ -3106,13 +3106,15 @@
       "type": "object"
     },
     "RRSetRoutingPolicyLoadBalancerTarget": {
+      "description": "The configuration for an individual load balancer to health check.",
       "id": "RRSetRoutingPolicyLoadBalancerTarget",
       "properties": {
         "ipAddress": {
-          "description": "The frontend IP address of the Load Balancer to health check.",
+          "description": "The frontend IP address of the load balancer to health check.",
           "type": "string"
         },
         "ipProtocol": {
+          "description": "The protocol of the load balancer to health check.",
           "enum": [
             "undefined",
             "tcp",
@@ -3130,7 +3132,7 @@
           "type": "string"
         },
         "loadBalancerType": {
-          "description": "The type of Load Balancer specified by this target. Must match the configuration of the Load Balancer located at the LoadBalancerTarget's IP address/port and region.",
+          "description": "The type of load balancer specified by this target. This value must match the configuration of the load balancer located at the LoadBalancerTarget's IP address, port, and region. Use the following: - *regionalL4ilb*: for a regional internal passthrough Network Load Balancer. - *regionalL7ilb*: for a regional internal Application Load Balancer. - *globalL7ilb*: for a global internal Application Load Balancer. ",
           "enum": [
             "none",
             "globalL7ilb",
@@ -3139,26 +3141,26 @@
           ],
           "enumDescriptions": [
             "",
-            "Cross-region internal Application Load Balancer",
-            "Regional internal passthrough Network Load Balancer",
-            "Regional internal Application Load Balancer"
+            "",
+            "",
+            ""
           ],
           "type": "string"
         },
         "networkUrl": {
-          "description": "The fully qualified url of the network on which the ILB is present. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
+          "description": "The fully qualified URL of the network that the load balancer is attached to. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network} .",
           "type": "string"
         },
         "port": {
-          "description": "The configured port of the Load Balancer.",
+          "description": "The configured port of the load balancer.",
           "type": "string"
         },
         "project": {
-          "description": "The project ID in which the ILB exists.",
+          "description": "The project ID in which the load balancer is located.",
           "type": "string"
         },
         "region": {
-          "description": "The region in which the ILB exists.",
+          "description": "The region in which the load balancer is located.",
           "type": "string"
         }
       },
@@ -3177,7 +3179,8 @@
           "type": "string"
         },
         "primaryTargets": {
-          "$ref": "RRSetRoutingPolicyHealthCheckTargets"
+          "$ref": "RRSetRoutingPolicyHealthCheckTargets",
+          "description": "Endpoints that are health checked before making the routing decision. Unhealthy endpoints are omitted from the results. If all endpoints are unhealthy, we serve a response based on the backup_geo_targets."
         },
         "trickleTraffic": {
           "description": "When serving state is PRIMARY, this field provides the option of sending a small percentage of the traffic to the backup targets.",
@@ -3210,7 +3213,7 @@
       "properties": {
         "healthCheckedTargets": {
           "$ref": "RRSetRoutingPolicyHealthCheckTargets",
-          "description": "endpoints that need to be health checked before making the routing decision. The unhealthy endpoints will be omitted from the result. If all endpoints within a buckete are unhealthy, we'll choose a different bucket (sampled w.r.t. its weight) for responding. Note that if DNSSEC is enabled for this zone, only one of rrdata or health_checked_targets can be set."
+          "description": "Endpoints that are health checked before making the routing decision. The unhealthy endpoints are omitted from the result. If all endpoints within a bucket are unhealthy, we choose a different bucket (sampled with respect to its weight) for responding. If DNSSEC is enabled for this zone, only one of rrdata or health_checked_targets can be set."
         },
         "kind": {
           "default": "dns#rRSetRoutingPolicyWrrPolicyWrrPolicyItem",
@@ -3223,14 +3226,14 @@
           "type": "array"
         },
         "signatureRrdatas": {
-          "description": "DNSSEC generated signatures for all the rrdata within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 ip per item. .",
+          "description": "DNSSEC generated signatures for all the rrdata within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 IP address per item.",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "weight": {
-          "description": "The weight corresponding to this subset of rrdata. When multiple WeightedRoundRobinPolicyItems are configured, the probability of returning an rrset is proportional to its weight relative to the sum of weights configured for all items. This weight should be non-negative.",
+          "description": "The weight corresponding to this WrrPolicyItem object. When multiple WrrPolicyItem objects are configured, the probability of returning an WrrPolicyItem object's data is proportional to its weight relative to the sum of weights configured for all items. This weight must be non-negative.",
           "format": "double",
           "type": "number"
         }
@@ -3251,7 +3254,7 @@
         },
         "routingPolicy": {
           "$ref": "RRSetRoutingPolicy",
-          "description": "Configures dynamic query responses based on geo location of querying user or a weighted round robin based routing policy. A ResourceRecordSet should only have either rrdata (static) or routing_policy (dynamic). An error is returned otherwise."
+          "description": "Configures dynamic query responses based on either the geo location of the querying user or a weighted round robin based routing policy. A valid ResourceRecordSet contains only rrdata (for static resolution) or a routing_policy (for dynamic resolution)."
         },
         "rrdatas": {
           "description": "As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1) -- see examples.",
@@ -3296,7 +3299,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. This lets you retrieve complete contents of even larger collections, one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. This lets you retrieve the complete contents of even larger collections, one page at a time. However, if the collection changes between paginated list requests, the set of elements returned is an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         },
         "rrsets": {

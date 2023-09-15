@@ -53,7 +53,7 @@ func (s *API) WaitForDNSZone(
 		Get: func() (interface{}, bool, error) {
 			// listing dns zones and take the first one
 			DNSZones, err := s.ListDNSZones(&ListDNSZonesRequest{
-				DNSZone: req.DNSZone,
+				DNSZones: []string{req.DNSZone},
 			}, opts...)
 
 			if err != nil {

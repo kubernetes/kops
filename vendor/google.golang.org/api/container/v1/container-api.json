@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20230723",
+  "revision": "20230810",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -5812,6 +5812,10 @@
           "description": "If set, refers to the name of a custom resource policy supplied by the user. The resource policy must be in the same project and region as the node pool. If not found, InvalidArgument error is returned.",
           "type": "string"
         },
+        "tpuTopology": {
+          "description": "Optional. TPU placement topology for pod slice node pool. https://cloud.google.com/tpu/docs/types-topologies#tpu_topologies",
+          "type": "string"
+        },
         "type": {
           "description": "The type of placement.",
           "enum": [
@@ -6983,6 +6987,15 @@
           "$ref": "ConfidentialNodes",
           "description": "Confidential nodes config. All the nodes in the node pool will be Confidential VM once enabled."
         },
+        "diskSizeGb": {
+          "description": "Optional. The desired disk size for nodes in the node pool specified in GB. The smallest allowed disk size is 10GB. Initiates an upgrade operation that migrates the nodes in the node pool to the specified disk size.",
+          "format": "int64",
+          "type": "string"
+        },
+        "diskType": {
+          "description": "Optional. The desired disk type (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced') for nodes in the node pool. Initiates an upgrade operation that migrates the nodes in the node pool to the specified disk type.",
+          "type": "string"
+        },
         "etag": {
           "description": "The current etag of the node pool. If an etag is provided and does not match the current etag of the node pool, update will be blocked and an ABORTED error will be returned.",
           "type": "string"
@@ -7025,6 +7038,10 @@
         "loggingConfig": {
           "$ref": "NodePoolLoggingConfig",
           "description": "Logging configuration."
+        },
+        "machineType": {
+          "description": "Optional. The desired [Google Compute Engine machine type](https://cloud.google.com/compute/docs/machine-types) for nodes in the node pool. Initiates an upgrade operation that migrates the nodes in the node pool to the specified machine type.",
+          "type": "string"
         },
         "name": {
           "description": "The name (project, location, cluster, node pool) of the node pool to update. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*`.",
