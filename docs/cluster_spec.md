@@ -803,6 +803,20 @@ spec:
 
 Note that Kubelet will fail to install the shutdown inhibtor on systems where logind is configured with an `InhibitDelayMaxSeconds` lower than `shutdownGracePeriod`. On Ubuntu, this setting is 30 seconds.
 
+### SeccompDefault
+
+[SeccompDefault](https://kubernetes.io/blog/2021/08/25/seccomp-default/) enables the use of `RuntimeDefault` as the default seccomp profile for all workloads. (Default: false)
+
+Note that a feature gate is required to enable the feature, and the feature is turned on using kubelet config.
+
+```yaml
+spec:
+  kubelet:
+    featureGates:
+      SeccompDefault: "true"
+    seccompDefault: true
+```
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/

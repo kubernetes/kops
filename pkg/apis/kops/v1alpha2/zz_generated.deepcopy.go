@@ -3658,6 +3658,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.SeccompDefault != nil {
+		in, out := &in.SeccompDefault, &out.SeccompDefault
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SeccompProfileRoot != nil {
 		in, out := &in.SeccompProfileRoot, &out.SeccompProfileRoot
 		*out = new(string)
