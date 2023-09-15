@@ -214,6 +214,7 @@
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeTags",
+        "cognito-idp:DescribeUserPoolClient",
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",
         "ec2:CreateNetworkInterface",
