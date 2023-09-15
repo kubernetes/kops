@@ -143,7 +143,7 @@ resource "aws_s3_object" "scw-minimal-k8s-local-addons-limit-range-addons-k8s-io
 resource "aws_s3_object" "scw-minimal-k8s-local-addons-networking-cilium-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_scw-minimal.k8s.local-addons-networking.cilium.io-k8s-1.16_content")
-  key                    = "tests/scw-minimal.k8s.local/addons/networking.cilium.io/k8s-1.16-v1.13.yaml"
+  key                    = "tests/scw-minimal.k8s.local/addons/networking.cilium.io/k8s-1.16-v1.14.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
