@@ -960,6 +960,8 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the AWS Load Balancer Controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, enableShield bool) {
 	p.unconditionalAction.Insert(
+		"cognito-idp:DescribeUserPoolClient",
+
 		"acm:DescribeCertificate",
 		"acm:ListCertificates",
 
