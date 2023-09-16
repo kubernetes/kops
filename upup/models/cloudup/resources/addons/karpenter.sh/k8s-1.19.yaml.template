@@ -1526,10 +1526,10 @@ spec:
               port: http
           resources:
             limits:
-              memory: 1Gi
+              memory: {{ or .Karpenter.MemoryLimit "1Gi" }}
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: {{ or .Karpenter.CPURequest "500m" }}
+              memory: {{ or .Karpenter.MemoryRequest "1Gi" }}
       nodeSelector: null
       # The template below patches the .Values.affinity to add a default label selector where not specificed
       affinity:
