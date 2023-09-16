@@ -59,10 +59,13 @@ spec:
     legacy: false
     useServiceAccountExternalPermissions: true
   karpenter:
+    cpuRequest: 100m
     enabled: true
     image: public.ecr.aws/karpenter/controller:v0.28.1
     logEncoding: console
     logLevel: debug
+    memoryLimit: 2Gi
+    memoryRequest: 500Mi
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
