@@ -138,7 +138,7 @@ KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
 # More time for bigger clusters
-KUBETEST2_ARGS+=("--validation-wait=45m")
+KUBETEST2_ARGS+=("--validation-wait=90m")
 
 # The caller can set DELETE_CLUSTER=false to stop us deleting the cluster
 if [[ -z "${DELETE_CLUSTER:-}" ]]; then
