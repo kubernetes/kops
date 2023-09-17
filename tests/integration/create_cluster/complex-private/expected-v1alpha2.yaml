@@ -174,8 +174,6 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  - us-test-1a-1
-  - us-test-1a-4
 
 ---
 
@@ -196,7 +194,6 @@ spec:
   role: Master
   subnets:
   - us-test-1b
-  - us-test-1b-2
 
 ---
 
@@ -217,7 +214,6 @@ spec:
   role: Master
   subnets:
   - us-test-1c
-  - us-test-1c-3
 
 ---
 
@@ -238,7 +234,6 @@ spec:
   minSize: 4
   role: Node
   subnets:
-  - us-test-1a
   - us-test-1a-1
   - us-test-1a-4
 
@@ -261,7 +256,6 @@ spec:
   minSize: 3
   role: Node
   subnets:
-  - us-test-1b
   - us-test-1b-2
 
 ---
@@ -283,5 +277,4 @@ spec:
   minSize: 3
   role: Node
   subnets:
-  - us-test-1c
   - us-test-1c-3

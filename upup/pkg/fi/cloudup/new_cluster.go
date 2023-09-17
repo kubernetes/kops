@@ -897,10 +897,12 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			g.ObjectMeta.Name = "control-plane-" + name
 
 			subnets := zoneToSubnetsMap[zone]
-			if len(subnets) == 0 {
+			switch len(subnets) {
+			case 0:
 				klog.Fatalf("subnet not found in zoneToSubnetsMap")
-			}
-			for _, subnet := range subnets {
+			default:
+				// Use only the main subnet for control-plane nodes
+				subnet := subnets[0]
 				if opt.IPv6 && opt.Topology == api.TopologyPrivate {
 					g.Spec.Subnets = append(g.Spec.Subnets, "dualstack-"+subnet.Name)
 				} else {
@@ -1039,11 +1041,16 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 		g.ObjectMeta.Name = "nodes-" + zone
 
 		subnets := zoneToSubnetsMap[zone]
-		if len(subnets) == 0 {
+		switch len(subnets) {
+		case 0:
 			klog.Fatalf("subnet not found in zoneToSubnetsMap")
-		}
-		for _, subnet := range subnets {
-			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+		case 1:
+			g.Spec.Subnets = append(g.Spec.Subnets, subnets[0].Name)
+		default:
+			// The main subnet may be smaller and should not be used for worker nodes
+			for _, subnet := range subnets[1:] {
+				g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+			}
 		}
 
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
