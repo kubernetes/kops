@@ -489,7 +489,7 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, 
 	}
 	addr = net.JoinHostPort(addr, "22")
 	d := net.Dialer{
-		Timeout: 15 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	conn, err := d.DialContext(ctx, "tcp", addr)
 	if err != nil {
