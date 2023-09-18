@@ -156,8 +156,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	if strings.HasPrefix(image, "registry.k8s.io/kops/kops-controller:") {
-		// To use user-defined DNS Controller:
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/kops-controller:") || strings.HasPrefix(image, "registry.k8s.io/kops/kops-controller:") {
+		// To use user-defined kops Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
 		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
 		// 3. make kops and create/apply cluster
