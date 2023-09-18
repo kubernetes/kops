@@ -72,6 +72,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	loadBalancer := &scalewaytasks.LoadBalancer{
 		Name:                  fi.PtrTo(loadBalancerName),
 		Zone:                  fi.PtrTo(string(zone)),
+		Type:                  scalewaytasks.LbDefaultType,
 		Lifecycle:             b.Lifecycle,
 		Tags:                  lbTags,
 		Description:           "Load-balancer for kops cluster " + b.ClusterName(),

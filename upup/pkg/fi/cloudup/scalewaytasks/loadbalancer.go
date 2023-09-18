@@ -31,9 +31,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const LbDefaultType = "LB-S"
+
 // +kops:fitask
 type LoadBalancer struct {
 	Name      *string
+	Type      string
 	Lifecycle fi.Lifecycle
 
 	Zone                  *string
@@ -173,6 +176,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 		lbCreated, err := lbService.CreateLB(&lb.ZonedAPICreateLBRequest{
 			Zone: scw.Zone(fi.ValueOf(expected.Zone)),
 			Name: fi.ValueOf(expected.Name),
+			Type: LbDefaultType,
 			Tags: expected.Tags,
 		})
 		if err != nil {
@@ -219,7 +223,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, exp
 	}
 
 	tfLB := terraformLoadBalancer{
-		Type:        "LB-S",
+		Type:        LbDefaultType,
 		Name:        expected.Name,
 		Description: expected.Description,
 		Tags:        expected.Tags,

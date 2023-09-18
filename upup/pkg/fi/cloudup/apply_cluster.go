@@ -400,6 +400,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	project := ""
+	scwZone := ""
 
 	var sshPublicKeys [][]byte
 	{
@@ -487,10 +488,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with Scaleway (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
-
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Scaleway; please delete a key using `kops delete secret`")
 			}
+
+			scwCloud := cloud.(scaleway.ScwCloud)
+			scwZone = scwCloud.Zone()
 		}
 
 	default:
@@ -738,16 +741,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return err
 		}
 
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
-			scwCloud := cloud.(scaleway.ScwCloud)
-			err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwCloud.Zone()))
-			if err != nil {
+		if project != "" {
+			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
 				return err
 			}
 		}
-
-		if project != "" {
-			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
+		if scwZone != "" {
+			if err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwZone)); err != nil {
 				return err
 			}
 		}
@@ -760,6 +760,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			shouldPrecreateDNS = true
+		}
 
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
@@ -770,9 +773,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
-			shouldPrecreateDNS = true
-		}
 
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)

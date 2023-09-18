@@ -116,7 +116,7 @@ You can find more information on the dedicated page on [kOps Terraform support](
 
 ## For clusters without load-balancers
 
-This concerns clusters using Scaleway DNS. For this type of clusters, things are pretty simple.
+This concerns clusters using Scaleway DNS.
 
 ```bash
 kops create cluster --cloud=scaleway --name=mycluster.mydomain.com --zones=fr-par-1 --target=terraform --out=$OUTPUT_DIR

@@ -29,6 +29,9 @@ import (
 
 var commercialTypesWithBlockStorageOnly = []string{"PRO", "PLAY", "ENT"}
 
+const defaultNodeRootVolumeSizeGB = 50
+const defaultControlPlaneRootVolumeSizeGB = 20
+
 // InstanceModelBuilder configures instances for the cluster
 type InstanceModelBuilder struct {
 	*ScwModelContext
@@ -82,7 +85,11 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		// block storage volume a big enough size (default size is 10GB)
 		for _, commercialType := range commercialTypesWithBlockStorageOnly {
 			if strings.HasPrefix(ig.Spec.MachineType, commercialType) {
-				instance.VolumeSize = fi.PtrTo(50)
+				if ig.IsControlPlane() {
+					instance.VolumeSize = fi.PtrTo(defaultControlPlaneRootVolumeSizeGB)
+				} else {
+					instance.VolumeSize = fi.PtrTo(defaultNodeRootVolumeSizeGB)
+				}
 				break
 			}
 		}

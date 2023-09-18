@@ -353,8 +353,9 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		return err
 	}
 
-	// Scaleway's Domain API doesn't allow edits to the same record if one request, so we have to check for duplicates
-	// in the upsert category and if there are, treat them as additions instead
+	// Scaleway's Domain API doesn't allow more than one edit with the same record name in one request, which happens
+	// when there are several control-planes, so we have to check for duplicates in the upsert category and if there are,
+	// treat them as additions instead
 	if len(r.upserts) > 0 {
 		for _, rrset := range r.upserts {
 			for i, rrdata := range rrset.Rrdatas() {
