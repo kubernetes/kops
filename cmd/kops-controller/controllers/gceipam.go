@@ -78,7 +78,7 @@ func (r *GCEIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	node := &corev1.Node{}
 	if err := r.client.Get(ctx, req.NamespacedName, node); err != nil {
-		klog.Warningf("unable to fetch node %s: %w", node.Name, err)
+		klog.Warningf("unable to fetch node %s: %v", node.Name, err)
 		if apierrors.IsNotFound(err) {
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification), and we can get them

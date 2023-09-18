@@ -182,7 +182,7 @@ func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 		name := tokens[0]
 		loadedKeyset, err := c.loadKeyset(ctx, baseDir.Join(name))
 		if err != nil {
-			klog.Warningf("ignoring keyset %q: %w", name, err)
+			klog.Warningf("ignoring keyset %q: %v", name, err)
 			continue
 		}
 

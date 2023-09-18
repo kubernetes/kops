@@ -250,7 +250,7 @@ func (r *baseRequest) writeResponse(obj interface{}) error {
 
 	if _, err := r.w.Write(b); err != nil {
 		// Too late to send error response
-		klog.Warningf("error writing http response: %w", err)
+		klog.Warningf("error writing http response: %v", err)
 		return nil
 	}
 	return nil
