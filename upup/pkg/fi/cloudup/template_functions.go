@@ -633,10 +633,6 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 
 	if cluster.Spec.IsIPv6Only() {
 		argv = append(argv, "--internal-ipv6")
-		// We need IPv4 on GCE, because we aren't publishing IPv6 Node IPs on GCE yet
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
-			argv = append(argv, "--internal-ipv4")
-		}
 	} else {
 		argv = append(argv, "--internal-ipv4")
 	}
