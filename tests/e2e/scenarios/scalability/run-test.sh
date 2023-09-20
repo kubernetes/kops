@@ -93,9 +93,8 @@ create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true
 fi
 # INSTANCE_IMAGE configures the image used for control plane and kube nodes
 create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/arm64/hvm/ebs-gp2/ami-id}")
-create_args+=("--etcd-clusters=main")
-create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.etcdClusters[0].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
+create_args+=("--set spec.etcdClusters[1].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
