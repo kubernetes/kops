@@ -63,9 +63,11 @@ KOPS_BIN=${BINDIR}/kops
 wget -qO "${KOPS_BIN}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
 chmod +x "${KOPS_BIN}"
 
-# Default cloud provider to aws
+# Default cloud-provider to 'eks' for now, and not 'aws' because EtcdMetrics scraping relies on SSH feature check here https://github.com/kubernetes/perf-tests/blob/e353d7c97db46f0c96a65e09559a0b011e82f7ba/clusterloader2/pkg/measurement/common/etcd_metrics.go#L66 , 
+# and this SSH feature is by default enabled in `aws` cloudprovider here https://github.com/kubernetes/perf-tests/blob/e353d7c97db46f0c96a65e09559a0b011e82f7ba/clusterloader2/pkg/provider/aws.go#L40
+# and this SSH feature is disabled for eks here https://github.com/kubernetes/perf-tests/blob/e353d7c97db46f0c96a65e09559a0b011e82f7ba/clusterloader2/pkg/provider/eks.go#L32-L39 , so we will use 'eks' as cloud-provider.
 if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
-  CLOUD_PROVIDER="aws"
+  CLOUD_PROVIDER="eks"
 fi
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
