@@ -38,18 +38,24 @@ func (h *HostsFile) Update(snapshot *DNSViewSnapshot) error {
 			klog.Warningf("ignoring unexpected lines in /etc/hosts: %v", badLines)
 		}
 
+		hostsToAddr := make(map[string][]string)
 		zones := snapshot.ListZones()
 		for _, zone := range zones {
 			records := snapshot.RecordsForZone(zone)
 
 			for _, record := range records {
-				if record.RrsType != "A" {
-					klog.Warningf("skipping record of unhandled type: %v", record)
-					continue
-				}
+				switch record.RrsType {
+				case "A", "AAAA":
+					hostsToAddr[record.Name] = append(hostsToAddr[record.Name], record.Rrdatas...)
 
-				hostMap.ReplaceRecords(record.Name, record.Rrdatas)
+				default:
+					klog.Warningf("skipping record of unhandled type: %v", record)
+				}
 			}
+		}
+
+		for host, addresses := range hostsToAddr {
+			hostMap.ReplaceRecords(host, addresses)
 		}
 
 		return hostMap, nil
