@@ -446,6 +446,8 @@ spec:
 
 **Note**: The auditPolicyFile is needed. If the flag is omitted, no events are logged.
 
+**Note2**: For kOps 1.22-1.25 please mind the [change in paths](https://github.com/kubernetes/kops/blob/master/docs/releases/1.22-NOTES.md#control-plane-pods-no-longer-mount-srvkubernetes)
+
 You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets) feature to push an advanced audit policy file on the master nodes.
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
