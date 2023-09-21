@@ -418,10 +418,10 @@ spec:
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
     auditLogPath: /var/log/kube-apiserver-audit.log
-    auditPolicyFile: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml
+    auditPolicyFile: /etc/kubernetes/audit/policy-config.yaml
   fileAssets:
   - name: audit-policy-config
-    path: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml
+    path: /etc/kubernetes/audit/policy-config.yaml
     roles:
     - Master
     content: |
@@ -445,10 +445,10 @@ Webhook backend sends audit events to a remote API, which is assumed to be the s
 spec:
   kubeAPIServer:
     auditWebhookBatchMaxWait: 5s
-    auditWebhookConfigFile: /srv/kubernetes/kube-apiserver/audit-webhook-config.yaml
+    auditWebhookConfigFile: /etc/kubernetes/audit/webhook-config.yaml
   fileAssets:
   - name: audit-webhook-config
-    path: /srv/kubernetes/kube-apiserver/audit-webhook-config.yaml
+    path: /etc/kubernetes/audit/webhook-config.yaml
     roles:
     - Master
     content: |
