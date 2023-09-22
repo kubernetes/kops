@@ -382,6 +382,9 @@ type CiliumNetworkingSpec struct {
 	// EncryptionType specifies Cilium Encryption method ("ipsec", "wireguard").
 	// Default: ipsec
 	EncryptionType CiliumEncryptionType `json:"encryptionType,omitempty"`
+	// NodeEncryption enables encryption for pure node to node traffic.
+	// Default: false
+	NodeEncryption bool `json:"nodeEncryption,omitempty"`
 	// IdentityAllocationMode specifies in which backend identities are stored ("crd", "kvstore").
 	// Default: crd
 	IdentityAllocationMode string `json:"identityAllocationMode,omitempty"`
