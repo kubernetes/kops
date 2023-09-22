@@ -385,6 +385,9 @@ type Bucket struct {
 	// Name: The name of the bucket.
 	Name string `json:"name,omitempty"`
 
+	// ObjectRetention: The bucket's object retention config.
+	ObjectRetention *BucketObjectRetention `json:"objectRetention,omitempty"`
+
 	// Owner: The owner of the bucket. This is always the project team's
 	// owner group.
 	Owner *BucketOwner `json:"owner,omitempty"`
@@ -414,6 +417,11 @@ type Bucket struct {
 
 	// SelfLink: The URI of this bucket.
 	SelfLink string `json:"selfLink,omitempty"`
+
+	// SoftDeletePolicy: The bucket's soft delete policy, which defines the
+	// period of time that soft-deleted objects will be retained, and cannot
+	// be permanently deleted.
+	SoftDeletePolicy *BucketSoftDeletePolicy `json:"softDeletePolicy,omitempty"`
 
 	// StorageClass: The bucket's default storage class, used whenever no
 	// storageClass is specified for a newly-created object. This defines
@@ -469,6 +477,16 @@ func (s *Bucket) MarshalJSON() ([]byte, error) {
 type BucketAutoclass struct {
 	// Enabled: Whether or not Autoclass is enabled on this bucket
 	Enabled bool `json:"enabled,omitempty"`
+
+	// TerminalStorageClass: The storage class that objects in the bucket
+	// eventually transition to if they are not read for a certain length of
+	// time. Valid values are NEARLINE and ARCHIVE.
+	TerminalStorageClass string `json:"terminalStorageClass,omitempty"`
+
+	// TerminalStorageClassUpdateTime: A date and time in RFC 3339 format
+	// representing the time of the most recent update to
+	// "terminalStorageClass".
+	TerminalStorageClassUpdateTime string `json:"terminalStorageClassUpdateTime,omitempty"`
 
 	// ToggleTime: A date and time in RFC 3339 format representing the
 	// instant at which "enabled" was last toggled.
@@ -972,6 +990,34 @@ func (s *BucketLogging) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// BucketObjectRetention: The bucket's object retention config.
+type BucketObjectRetention struct {
+	// Mode: The bucket's object retention mode. Can be Enabled.
+	Mode string `json:"mode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Mode") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Mode") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BucketObjectRetention) MarshalJSON() ([]byte, error) {
+	type NoMethod BucketObjectRetention
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // BucketOwner: The owner of the bucket. This is always the project
 // team's owner group.
 type BucketOwner struct {
@@ -1049,6 +1095,43 @@ type BucketRetentionPolicy struct {
 
 func (s *BucketRetentionPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod BucketRetentionPolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// BucketSoftDeletePolicy: The bucket's soft delete policy, which
+// defines the period of time that soft-deleted objects will be
+// retained, and cannot be permanently deleted.
+type BucketSoftDeletePolicy struct {
+	// EffectiveTime: Server-determined value that indicates the time from
+	// which the policy, or one with a greater retention, was effective.
+	// This value is in RFC 3339 format.
+	EffectiveTime string `json:"effectiveTime,omitempty"`
+
+	// RetentionDurationSeconds: The period of time in seconds, that
+	// soft-deleted objects in the bucket will be retained and cannot be
+	// permanently deleted.
+	RetentionDurationSeconds int64 `json:"retentionDurationSeconds,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "EffectiveTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EffectiveTime") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BucketSoftDeletePolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod BucketSoftDeletePolicy
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2072,6 +2155,9 @@ type Object struct {
 	// the object.
 	Owner *ObjectOwner `json:"owner,omitempty"`
 
+	// Retention: A collection of object level retention parameters.
+	Retention *ObjectRetention `json:"retention,omitempty"`
+
 	// RetentionExpirationTime: A server-determined value that specifies the
 	// earliest time that the object's retention period expires. This value
 	// is in RFC 3339 format. Note 1: This field is not provided for objects
@@ -2209,6 +2295,39 @@ type ObjectOwner struct {
 
 func (s *ObjectOwner) MarshalJSON() ([]byte, error) {
 	type NoMethod ObjectOwner
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ObjectRetention: A collection of object level retention parameters.
+type ObjectRetention struct {
+	// Mode: The bucket's object retention mode, can only be Unlocked or
+	// Locked.
+	Mode string `json:"mode,omitempty"`
+
+	// RetainUntilTime: A time in RFC 3339 format until which object
+	// retention protects this object.
+	RetainUntilTime string `json:"retainUntilTime,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Mode") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Mode") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ObjectRetention) MarshalJSON() ([]byte, error) {
+	type NoMethod ObjectRetention
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -4189,6 +4308,14 @@ func (r *BucketsService) Insert(projectid string, bucket *Bucket) *BucketsInsert
 	return c
 }
 
+// EnableObjectRetention sets the optional parameter
+// "enableObjectRetention": When set to true, object retention is
+// enabled for this bucket.
+func (c *BucketsInsertCall) EnableObjectRetention(enableObjectRetention bool) *BucketsInsertCall {
+	c.urlParams_.Set("enableObjectRetention", fmt.Sprint(enableObjectRetention))
+	return c
+}
+
 // PredefinedAcl sets the optional parameter "predefinedAcl": Apply a
 // predefined set of access controls to this bucket.
 //
@@ -4362,6 +4489,12 @@ func (c *BucketsInsertCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 	//     "project"
 	//   ],
 	//   "parameters": {
+	//     "enableObjectRetention": {
+	//       "default": "false",
+	//       "description": "When set to true, object retention is enabled for this bucket.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "predefinedAcl": {
 	//       "description": "Apply a predefined set of access controls to this bucket.",
 	//       "enum": [
@@ -10976,6 +11109,15 @@ func (c *ObjectsPatchCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch int
 	return c
 }
 
+// OverrideUnlockedRetention sets the optional parameter
+// "overrideUnlockedRetention": Must be true to remove the retention
+// configuration, reduce its unlocked retention period, or change its
+// mode from unlocked to locked.
+func (c *ObjectsPatchCall) OverrideUnlockedRetention(overrideUnlockedRetention bool) *ObjectsPatchCall {
+	c.urlParams_.Set("overrideUnlockedRetention", fmt.Sprint(overrideUnlockedRetention))
+	return c
+}
+
 // PredefinedAcl sets the optional parameter "predefinedAcl": Apply a
 // predefined set of access controls to this object.
 //
@@ -11166,6 +11308,11 @@ func (c *ObjectsPatchCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "overrideUnlockedRetention": {
+	//       "description": "Must be true to remove the retention configuration, reduce its unlocked retention period, or change its mode from unlocked to locked.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     },
 	//     "predefinedAcl": {
 	//       "description": "Apply a predefined set of access controls to this object.",
@@ -12393,6 +12540,15 @@ func (c *ObjectsUpdateCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch in
 	return c
 }
 
+// OverrideUnlockedRetention sets the optional parameter
+// "overrideUnlockedRetention": Must be true to remove the retention
+// configuration, reduce its unlocked retention period, or change its
+// mode from unlocked to locked.
+func (c *ObjectsUpdateCall) OverrideUnlockedRetention(overrideUnlockedRetention bool) *ObjectsUpdateCall {
+	c.urlParams_.Set("overrideUnlockedRetention", fmt.Sprint(overrideUnlockedRetention))
+	return c
+}
+
 // PredefinedAcl sets the optional parameter "predefinedAcl": Apply a
 // predefined set of access controls to this object.
 //
@@ -12583,6 +12739,11 @@ func (c *ObjectsUpdateCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "overrideUnlockedRetention": {
+	//       "description": "Must be true to remove the retention configuration, reduce its unlocked retention period, or change its mode from unlocked to locked.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     },
 	//     "predefinedAcl": {
 	//       "description": "Apply a predefined set of access controls to this object.",

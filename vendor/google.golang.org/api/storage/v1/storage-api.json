@@ -26,7 +26,7 @@
   "description": "Stores and retrieves potentially large, immutable data objects.",
   "discoveryVersion": "v1",
   "documentationLink": "https://developers.google.com/storage/docs/json_api/",
-  "etag": "\"3137393534363837313035303430333138303233\"",
+  "etag": "\"3132363038323634353839373135393539313634\"",
   "icons": {
     "x16": "https://www.google.com/images/icons/product/cloud_storage-16.png",
     "x32": "https://www.google.com/images/icons/product/cloud_storage-32.png"
@@ -446,6 +446,12 @@
             "project"
           ],
           "parameters": {
+            "enableObjectRetention": {
+              "default": "false",
+              "description": "When set to true, object retention is enabled for this bucket.",
+              "location": "query",
+              "type": "boolean"
+            },
             "predefinedAcl": {
               "description": "Apply a predefined set of access controls to this bucket.",
               "enum": [
@@ -2295,6 +2301,11 @@
               "required": true,
               "type": "string"
             },
+            "overrideUnlockedRetention": {
+              "description": "Must be true to remove the retention configuration, reduce its unlocked retention period, or change its mode from unlocked to locked.",
+              "location": "query",
+              "type": "boolean"
+            },
             "predefinedAcl": {
               "description": "Apply a predefined set of access controls to this object.",
               "enum": [
@@ -2737,6 +2748,11 @@
               "location": "path",
               "required": true,
               "type": "string"
+            },
+            "overrideUnlockedRetention": {
+              "description": "Must be true to remove the retention configuration, reduce its unlocked retention period, or change its mode from unlocked to locked.",
+              "location": "query",
+              "type": "boolean"
             },
             "predefinedAcl": {
               "description": "Apply a predefined set of access controls to this object.",
@@ -3242,7 +3258,7 @@
       }
     }
   },
-  "revision": "20230907",
+  "revision": "20230914",
   "rootUrl": "https://storage.googleapis.com/",
   "schemas": {
     "Bucket": {
@@ -3267,6 +3283,15 @@
             "enabled": {
               "description": "Whether or not Autoclass is enabled on this bucket",
               "type": "boolean"
+            },
+            "terminalStorageClass": {
+              "description": "The storage class that objects in the bucket eventually transition to if they are not read for a certain length of time. Valid values are NEARLINE and ARCHIVE.",
+              "type": "string"
+            },
+            "terminalStorageClassUpdateTime": {
+              "description": "A date and time in RFC 3339 format representing the time of the most recent update to \"terminalStorageClass\".",
+              "format": "date-time",
+              "type": "string"
             },
             "toggleTime": {
               "description": "A date and time in RFC 3339 format representing the instant at which \"enabled\" was last toggled.",
@@ -3551,6 +3576,16 @@
           "description": "The name of the bucket.",
           "type": "string"
         },
+        "objectRetention": {
+          "description": "The bucket's object retention config.",
+          "properties": {
+            "mode": {
+              "description": "The bucket's object retention mode. Can be Enabled.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "owner": {
           "description": "The owner of the bucket. This is always the project team's owner group.",
           "properties": {
@@ -3601,6 +3636,22 @@
         "selfLink": {
           "description": "The URI of this bucket.",
           "type": "string"
+        },
+        "softDeletePolicy": {
+          "description": "The bucket's soft delete policy, which defines the period of time that soft-deleted objects will be retained, and cannot be permanently deleted.",
+          "properties": {
+            "effectiveTime": {
+              "description": "Server-determined value that indicates the time from which the policy, or one with a greater retention, was effective. This value is in RFC 3339 format.",
+              "format": "date-time",
+              "type": "string"
+            },
+            "retentionDurationSeconds": {
+              "description": "The period of time in seconds, that soft-deleted objects in the bucket will be retained and cannot be permanently deleted.",
+              "format": "int64",
+              "type": "string"
+            }
+          },
+          "type": "object"
         },
         "storageClass": {
           "description": "The bucket's default storage class, used whenever no storageClass is specified for a newly-created object. This defines how objects in the bucket are stored and determines the SLA and the cost of storage. Values include MULTI_REGIONAL, REGIONAL, STANDARD, NEARLINE, COLDLINE, ARCHIVE, and DURABLE_REDUCED_AVAILABILITY. If this value is not specified when the bucket is created, it will default to STANDARD. For more information, see storage classes.",
@@ -4301,6 +4352,21 @@
             },
             "entityId": {
               "description": "The ID for the entity.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "retention": {
+          "description": "A collection of object level retention parameters.",
+          "properties": {
+            "mode": {
+              "description": "The bucket's object retention mode, can only be Unlocked or Locked.",
+              "type": "string"
+            },
+            "retainUntilTime": {
+              "description": "A time in RFC 3339 format until which object retention protects this object.",
+              "format": "date-time",
               "type": "string"
             }
           },
