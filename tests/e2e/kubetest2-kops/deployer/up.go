@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
+	"k8s.io/utils/strings/slices"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -152,21 +153,31 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	args = appendIfUnset(args, "--master-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
-	args = appendIfUnset(args, "--set", adminAccess)
 	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
 
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
 			args = appendIfUnset(args, "--master-size", "c6g.large")
+			args = appendIfUnset(args, "--node-size", "c6g.large")
 		} else {
 			args = appendIfUnset(args, "--master-size", "c5.large")
 		}
 	case "gce":
-		args = appendIfUnset(args, "--master-size", "e2-standard-2")
+		if isArm {
+			args = appendIfUnset(args, "--master-size", "t2a-standard-2")
+			args = appendIfUnset(args, "--node-size", "t2a-standard-2")
+		} else {
+			args = appendIfUnset(args, "--master-size", "e2-standard-2")
+			args = appendIfUnset(args, "--node-size", "e2-standard-2")
+		}
 		if d.GCPProject != "" {
 			args = appendIfUnset(args, "--project", d.GCPProject)
 		}
+		// set some sane default e2e testing behaviour on gce
+		args = appendIfUnset(args, "--gce-service-account", "default")
+		args = appendIfUnset(args, "--networking", "kubenet")
+
 		// We used to set the --vpc flag to split clusters into different networks, this is now the default.
 		// args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
@@ -178,7 +189,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, "--target", "terraform", "--out", d.terraform.Dir())
 	}
 
-	klog.Info(strings.Join(args, " "))
+	if d.KubernetesFeatureGates != "" {
+		args = appendIfUnset(args, "--kubernetes-feature-gates", d.KubernetesFeatureGates)
+	}
+
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
 
@@ -308,11 +322,19 @@ func (d *deployer) zones() ([]string, error) {
 }
 
 // appendIfUnset will append an argument and its value to args if the arg is not already present
-// This shouldn't be used for arguments that can be specified multiple times like --set
+// This shouldn't be used for arguments that can be specified multiple times except --set
 func appendIfUnset(args []string, arg, value string) []string {
+	setFlags := []string{}
 	for _, existingArg := range args {
-		existingKey := strings.Split(existingArg, "=")
-		if existingKey[0] == arg {
+		existingKey := strings.SplitN(existingArg, "=", 2)
+		if existingKey[0] == "--set" {
+			if len(existingKey) == 3 {
+				setFlags = append(setFlags, existingKey[1])
+			}
+			if slices.Contains(setFlags, arg) {
+				return args
+			}
+		} else if existingKey[0] == arg {
 			return args
 		}
 	}

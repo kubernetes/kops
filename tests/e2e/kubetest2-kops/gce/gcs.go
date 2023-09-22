@@ -17,8 +17,8 @@ limitations under the License.
 package gce
 
 import (
+	"crypto/rand"
 	"encoding/hex"
-	"math/rand"
 	"os"
 	"strings"
 
