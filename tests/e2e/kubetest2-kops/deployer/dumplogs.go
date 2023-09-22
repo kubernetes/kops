@@ -281,8 +281,3 @@ func findControlPlaneIPUser(dump resources.Dump) (string, string, bool) {
 	klog.Warning("ControlPlane instance not found from kops toolbox dump")
 	return "", "", false
 }
-
-func runWithOutput(cmd exec.Cmd) error {
-	exec.InheritOutput(cmd)
-	return cmd.Run()
-}
