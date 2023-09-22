@@ -120,7 +120,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: 83732936b11b5830020d8af7bf0955c4b6334c7a1ba93bf051b40bb79294075d
+    manifestHash: 4d98502de7554ba20b42fd19517a874e79df1db60336e72d9ecfefaa5e980c78
     name: karpenter.sh
     prune:
       kinds:
@@ -168,11 +168,13 @@ spec:
         kind: Role
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
         namespaces:
+        - kube-node-lease
         - kube-system
       - group: rbac.authorization.k8s.io
         kind: RoleBinding
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
         namespaces:
+        - kube-node-lease
         - kube-system
     selector:
       k8s-addon: karpenter.sh
