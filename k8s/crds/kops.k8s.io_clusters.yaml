@@ -3877,6 +3877,10 @@ spec:
                     description: RuntimeRequestTimeout is timeout for runtime requests
                       on - pull, logs, exec and attach
                     type: string
+                  seccompDefault:
+                    description: SeccompDefault enables the use of `RuntimeDefault`
+                      as the default seccomp profile for all workloads.
+                    type: boolean
                   seccompProfileRoot:
                     description: SeccompProfileRoot is the directory path for seccomp
                       profiles.
@@ -4306,6 +4310,10 @@ spec:
                     description: RuntimeRequestTimeout is timeout for runtime requests
                       on - pull, logs, exec and attach
                     type: string
+                  seccompDefault:
+                    description: SeccompDefault enables the use of `RuntimeDefault`
+                      as the default seccomp profile for all workloads.
+                    type: boolean
                   seccompProfileRoot:
                     description: SeccompProfileRoot is the directory path for seccomp
                       profiles.
