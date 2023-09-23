@@ -215,12 +215,7 @@ Use the following instructions: https://github.com/cncf/k8s-conformance/blob/mas
 
 This step is only necessary for a first stable minor release (a ".0").
 
-Create a PR that updates the following documents:
-
-* Rotate the new version into the version matrix in both
-[releases.md](https://github.com/kubernetes/kops/tree/master/docs/welcome/releases.md)
-and [README-ES.md](https://github.com/kubernetes/kops/tree/master/README-ES.md).
-* Remove the "has not been released yet" header in the version's release notes.
+Create a PR that removes the "has not been released yet" header in the version's release notes.
 
 ### Add link to release notes
 
