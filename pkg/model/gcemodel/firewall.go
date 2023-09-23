@@ -156,23 +156,27 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	if b.NetworkingIsIPAlias() || b.NetworkingIsGCERoutes() {
-		// When using IP alias or custom routes, SourceTags for identifying traffic don't work, and we must recognize by CIDR
+		if b.IsIPv6Only() {
+			// We can use tags for IPv6, and this is covered by prior rules
+		} else {
+			// When using IP alias or custom routes, SourceTags for identifying traffic don't work, and we must recognize by CIDR
 
-		if b.Cluster.Spec.Networking.PodCIDR == "" {
-			return fmt.Errorf("expected PodCIDR to be set for IPAlias / kubenet")
-		}
+			if b.Cluster.Spec.Networking.PodCIDR == "" {
+				return fmt.Errorf("expected PodCIDR to be set for IPAlias / kubenet")
+			}
 
-		network, err := b.LinkToNetwork()
-		if err != nil {
-			return err
+			network, err := b.LinkToNetwork()
+			if err != nil {
+				return err
+			}
+			b.AddFirewallRulesTasks(c, "pod-cidrs-to-node", &gcetasks.FirewallRule{
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+				Allowed:      allProtocols,
+			})
 		}
-		b.AddFirewallRulesTasks(c, "pod-cidrs-to-node", &gcetasks.FirewallRule{
-			Lifecycle:    b.Lifecycle,
-			Network:      network,
-			SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:      allProtocols,
-		})
 	}
 
 	return nil
