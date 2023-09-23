@@ -4998,6 +4998,9 @@ func autoConvert_v1alpha3_KarpenterConfig_To_kops_KarpenterConfig(in *KarpenterC
 	out.LogEncoding = in.LogEncoding
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
+	out.MemoryLimit = in.MemoryLimit
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	return nil
 }
 
@@ -5011,6 +5014,9 @@ func autoConvert_kops_KarpenterConfig_To_v1alpha3_KarpenterConfig(in *kops.Karpe
 	out.LogEncoding = in.LogEncoding
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
+	out.MemoryLimit = in.MemoryLimit
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	return nil
 }
 
