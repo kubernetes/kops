@@ -51,9 +51,11 @@ func addKarpenterPermissions(p *iam.Policy) {
 		// Not included because we require Karpenter
 		// use existing kOps instance group launch templates
 		// "ec2:CreateLaunchTemplate",
+		// "ec2:DeleteLaunchTemplate",
 		"ec2:CreateFleet",
 		"ec2:CreateTags",
 		"ec2:DescribeAvailabilityZones",
+		"ec2:DescribeImages",
 		"ec2:DescribeInstanceTypeOfferings",
 		"ec2:DescribeInstanceTypes",
 		"ec2:DescribeInstances",
@@ -61,9 +63,9 @@ func addKarpenterPermissions(p *iam.Policy) {
 		"ec2:DescribeSecurityGroups",
 		"ec2:DescribeSpotPriceHistory",
 		"ec2:DescribeSubnets",
-		"iam:PassRole",
 		"ec2:RunInstances",
 		"ec2:TerminateInstances",
+		"iam:PassRole",
 		"pricing:GetProducts",
 		"ssm:GetParameter",
 	)
