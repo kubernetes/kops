@@ -36,7 +36,7 @@ func (b *KarpenterOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Image == "" {
-		c.Image = "public.ecr.aws/karpenter/controller:v0.28.1"
+		c.Image = "public.ecr.aws/karpenter/controller:v0.30.0"
 	}
 
 	if c.LogEncoding == "" {
