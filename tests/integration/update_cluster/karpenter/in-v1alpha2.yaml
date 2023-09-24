@@ -21,7 +21,10 @@ spec:
   iam:
     useServiceAccountExternalPermissions: true
   karpenter:
+    cpuRequest: 100m
     enabled: true
+    memoryRequest: 500Mi
+    memoryLimit: 2Gi
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.25.0

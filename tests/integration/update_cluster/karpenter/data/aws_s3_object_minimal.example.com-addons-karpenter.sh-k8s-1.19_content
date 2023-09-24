@@ -1744,10 +1744,10 @@ spec:
           timeoutSeconds: 30
         resources:
           limits:
-            memory: 1Gi
+            memory: 2Gi
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 100m
+            memory: 500Mi
         volumeMounts:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
@@ -1998,7 +1998,7 @@ spec:
     operator: In
     values:
     - spot
-    - ondemand
+    - on-demand
   - key: kubernetes.io/arch
     operator: In
     values:
@@ -2049,7 +2049,7 @@ spec:
     operator: In
     values:
     - spot
-    - ondemand
+    - on-demand
   - key: kubernetes.io/arch
     operator: In
     values:
