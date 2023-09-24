@@ -261,14 +261,8 @@ func (d *deployer) updateCluster(yes bool) error {
 func (d *deployer) IsUp() (bool, error) {
 	wait := d.ValidationWait
 	if wait == 0 {
-		if d.TerraformVersion != "" || d.CloudProvider == "digitalocean" {
-			// `--target terraform` doesn't precreate the API DNS records,
-			// so kops is more likely to hit negative TTLs during validation.
-			// Digital Ocean also occasionally takes longer to validate.
-			wait = time.Duration(20) * time.Minute
-		} else {
-			wait = time.Duration(15) * time.Minute
-		}
+		// kOps is more likely to hit negative TTLs for API DNS during validation.
+		wait = time.Duration(20) * time.Minute
 	}
 	args := []string{
 		d.KopsBinaryPath, "validate", "cluster",
