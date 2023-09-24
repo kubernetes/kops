@@ -1365,7 +1365,7 @@ metadata:
 spec:
   dnsNames:
   - snapshot-validation-service.kube-system.svc
-  - snapshot-validation-service.kube-system.svc.minimal.example.com
+  - snapshot-validation-service.kube-system.svc.many-addons.example.com
   issuerRef:
     kind: Issuer
     name: snapshot-controller.addons.k8s.io

@@ -220,9 +220,9 @@ const (
 	metricsServerAddon     = "metrics-server.addons.k8s.io-k8s-1.11"
 )
 
-// TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestMinimal(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal").
+// TestMinimalAWS runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestMinimalAWS(t *testing.T) {
+	newIntegrationTest("minimal-aws.example.com", "minimal-aws").
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
@@ -805,7 +805,7 @@ func TestAWSLBController(t *testing.T) {
 }
 
 func TestManyAddons(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "many-addons").
+	newIntegrationTest("many-addons.example.com", "many-addons").
 		withAddons(
 			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
 			"certmanager.io-k8s-1.16",

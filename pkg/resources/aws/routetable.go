@@ -51,7 +51,7 @@ func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.Ro
 	return routeTables, nil
 }
 
-func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListRouteTables(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	routeTables, err := DescribeRouteTables(cloud, clusterName)
 	if err != nil {
 		return nil, err

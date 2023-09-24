@@ -33,8 +33,8 @@ spec:
       containers:
       - args:
         - --allocate-node-cidrs=true
-        - --cluster-cidr=172.20.128.0/17
-        - --cluster-name=minimal.example.com
+        - --cluster-cidr=100.96.0.0/11
+        - --cluster-name=minimal-aws.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
         - --v=2
@@ -44,7 +44,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.6
+        image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.2
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:

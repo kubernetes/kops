@@ -63,21 +63,20 @@ func DumpENI(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func DescribeENIs(cloud fi.Cloud, clusterName string) (map[string]*ec2.NetworkInterface, error) {
+func DescribeENIs(cloud fi.Cloud, vpcID, clusterName string) (map[string]*ec2.NetworkInterface, error) {
+	if vpcID == "" {
+		return nil, nil
+	}
+
 	c := cloud.(awsup.AWSCloud)
 
-	statusFilter := &ec2.Filter{
-		Name: aws.String("status"),
-		Values: []*string{
-			aws.String(ec2.NetworkInterfaceStatusDetaching),
-			aws.String(ec2.NetworkInterfaceStatusAvailable),
-		},
-	}
+	vpcFilter := awsup.NewEC2Filter("vpc-id", vpcID)
+	statusFilter := awsup.NewEC2Filter("status", ec2.NetworkInterfaceStatusAvailable)
 	enis := make(map[string]*ec2.NetworkInterface)
 	klog.V(2).Info("Listing ENIs")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeNetworkInterfacesInput{
-			Filters: append(filters, statusFilter),
+			Filters: append(filters, vpcFilter, statusFilter),
 		}
 		err := c.EC2().DescribeNetworkInterfacesPages(request, func(dnio *ec2.DescribeNetworkInterfacesOutput, b bool) bool {
 			for _, eni := range dnio.NetworkInterfaces {
@@ -93,8 +92,8 @@ func DescribeENIs(cloud fi.Cloud, clusterName string) (map[string]*ec2.NetworkIn
 	return enis, nil
 }
 
-func ListENIs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	enis, err := DescribeENIs(cloud, clusterName)
+func ListENIs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	enis, err := DescribeENIs(cloud, vpcID, clusterName)
 	if err != nil {
 		return nil, err
 	}

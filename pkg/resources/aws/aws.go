@@ -49,7 +49,7 @@ const (
 	TypeTargetGroup             = "target-group"
 )
 
-type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
+type listFn func(fi.Cloud, string, string) ([]*resources.Resource, error)
 
 func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	clusterName := clusterInfo.Name
@@ -72,18 +72,15 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 		ListEgressOnlyInternetGateways,
 		ListRouteTables,
 		ListSubnets,
-		ListVPCs,
 		ListENIs,
 		// ELBs
 		ListELBs,
 		ListELBV2s,
 		ListTargetGroups,
-
 		// IAM
 		ListIAMInstanceProfiles,
 		ListIAMRoles,
 		ListIAMOIDCProviders,
-
 		// SQS
 		ListSQSQueues,
 		// EventBridge
@@ -100,8 +97,21 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 		listFunctions = append(listFunctions, ListSpotinstResources)
 	}
 
+	var vpcID string
+	{
+		r, err := ListVPCs(cloud, clusterName)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(r) > 0 {
+			vpcID = r[0].ID
+			resourceTrackers[r[0].Type+":"+r[0].ID] = r[0]
+		}
+	}
+
 	for _, fn := range listFunctions {
-		rt, err := fn(cloud, clusterName)
+		rt, err := fn(cloud, vpcID, clusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -328,7 +338,7 @@ func DeleteInstance(cloud fi.Cloud, t *resources.Resource) error {
 	return nil
 }
 
-func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Querying EC2 instances")
@@ -548,7 +558,7 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	volumes, err := DescribeVolumes(cloud)
@@ -659,7 +669,7 @@ func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListKeypairs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	if !strings.Contains(clusterName, ".") {
 		klog.Infof("cluster %q is legacy (kube-up) cluster; won't delete keypairs", clusterName)
 		return nil, nil
@@ -722,7 +732,7 @@ func DeleteSubnet(cloud fi.Cloud, tracker *resources.Resource) error {
 	return nil
 }
 
-func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 	subnets, err := DescribeSubnets(cloud)
 	if err != nil {
@@ -916,7 +926,7 @@ func DeleteDhcpOptions(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListDhcpOptions(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	dhcpOptions, err := DescribeDhcpOptions(cloud)
 	if err != nil {
 		return nil, err
@@ -1022,7 +1032,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListInternetGateways(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	gateways, err := DescribeInternetGateways(cloud)
 	if err != nil {
 		return nil, err
@@ -1117,7 +1127,7 @@ func DeleteEgressOnlyInternetGateway(cloud fi.Cloud, r *resources.Resource) erro
 	return nil
 }
 
-func ListEgressOnlyInternetGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListEgressOnlyInternetGateways(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	gateways, err := DescribeEgressOnlyInternetGateways(cloud)
 	if err != nil {
 		return nil, err
@@ -1186,7 +1196,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListAutoScalingGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	tags := c.Tags()
@@ -1443,7 +1453,7 @@ func DumpELB(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func ListELBs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListELBs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	elbs, elbTags, err := DescribeELBs(cloud)
 	if err != nil {
 		return nil, err
@@ -1538,7 +1548,7 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 }
 
 // For NLBs and ALBs
-func ListELBV2s(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	elbv2s, _, err := DescribeELBV2s(cloud)
 	if err != nil {
 		return nil, err
@@ -1630,7 +1640,7 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 	return elbv2s, elbv2Tags, nil
 }
 
-func ListTargetGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	targetgroups, _, err := DescribeTargetGroups(cloud)
 	if err != nil {
 		return nil, err
@@ -1783,7 +1793,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrac
 	return nil
 }
 
-func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	c := cloud.(awsup.AWSCloud)
@@ -1966,7 +1976,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	var resourceTrackers []*resources.Resource
@@ -2056,7 +2066,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	var getProfileErr error
@@ -2114,7 +2124,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
@@ -2180,7 +2190,7 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListSpotinstResources(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSpotinstResources(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	return spotinst.ListResources(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
 }
 

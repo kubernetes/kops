@@ -66,7 +66,7 @@ func (o *LifecycleTestOptions) AddDefaults() {
 func TestLifecycleMinimalAWS(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
-		SrcDir: "minimal",
+		SrcDir: "minimal-aws",
 	})
 }
 
@@ -173,9 +173,8 @@ func TestLifecyclePrivateSharedIP(t *testing.T) {
 // TestLifecycleManyAddons runs the test on a cluster with requisite resources for NTH Queue Processor and other addons.
 func TestLifecycleManyAddons(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
-		t:           t,
-		SrcDir:      "many-addons",
-		ClusterName: "minimal.example.com",
+		t:      t,
+		SrcDir: "many-addons",
 	})
 }
 

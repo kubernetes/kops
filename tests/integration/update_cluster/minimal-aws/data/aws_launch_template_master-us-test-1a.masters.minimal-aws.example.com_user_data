@@ -124,11 +124,11 @@ ensure-install-dir
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
-ClusterName: minimal.example.com
-ConfigBase: memfs://clusters.example.com/minimal.example.com
+ClusterName: minimal-aws.example.com
+ConfigBase: memfs://clusters.example.com/minimal-aws.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: QagSzGJDRHMhvxCLRpxXO4c5OA7jFPrkYDsQXuX5rcA=
+NodeupConfigHash: L8c5WKC0Pf8LGzpZgOrimSQZM2Fn+T7XOElf2FvcaFc=
 
 __EOF_KUBE_ENV
 
