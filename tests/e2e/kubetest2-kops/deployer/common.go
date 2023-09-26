@@ -256,6 +256,13 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		suffix = "k8s.local"
 	}
 
+	if cloudProvider == "gce" {
+		// jobname must be less than 63 chars, we are prepending 4/6 chars and appending 9 chars
+		// some GCP resources cant be longer than 61/63 characters
+		if len(jobName) > 50 {
+			jobName = jobName[:49]
+		}
+	}
 	if jobType == "presubmit" {
 		return fmt.Sprintf("e2e-pr%s.%s.%s", pullNumber, jobName, suffix), nil
 	}
