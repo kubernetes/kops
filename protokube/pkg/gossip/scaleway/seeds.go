@@ -42,35 +42,19 @@ func NewSeedProvider(scwClient *scw.Client, clusterName string) (*SeedProvider, 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
-	zone, ok := p.scwClient.GetDefaultZone()
-	if !ok {
-		return nil, fmt.Errorf("could not determine default zone from client")
-	}
-	klog.V(4).Infof("Found zone of the running server: %v", zone)
-
-	region, ok := p.scwClient.GetDefaultRegion()
-	if !ok {
-		return nil, fmt.Errorf("could not determine default region from client")
-	}
-	klog.V(4).Infof("Found region of the running server: %v", region)
-
-	scwCloud, err := scaleway.NewScwCloud(map[string]string{
-		"region": region.String(),
-		"zone":   zone.String(),
-	})
+	scwCloud, err := scaleway.NewScwCloud(nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not create Scaleway cloud interface: %w", err)
-	}
 
+	}
 	servers, err := scwCloud.GetClusterServers(p.tag, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get matching servers: %w", err)
+		return nil, fmt.Errorf("failed to get matching servers: %s", err)
 	}
 
 	for _, server := range servers {
-		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		ip, err := scwCloud.GetServerPrivateIP(server.Name, server.Zone)
 		if err != nil {
-			return nil, fmt.Errorf("getting server IP: %w", err)
+			return nil, fmt.Errorf("getting server private IP: %w", err)
 		}
 		klog.V(4).Infof("Appending gossip seed %s(%s): %q", server.Name, server.ID, ip)
 		seeds = append(seeds, ip)

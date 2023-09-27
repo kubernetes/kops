@@ -123,16 +123,6 @@ type scwCloudImplementation struct {
 // SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	//displayEnv()
-
-	region, err := scw.ParseRegion(tags["region"])
-	if err != nil {
-		return nil, err
-	}
-	zone, err := scw.ParseZone(tags["zone"])
-	if err != nil {
-		return nil, err
-	}
-
 	var scwClient *scw.Client
 	var region scw.Region
 	var zone scw.Zone
@@ -310,8 +300,9 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 			return fmt.Errorf("deregistering cloud instance %s of group %q: listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 		}
 		for _, backEnd := range backEnds.Backends {
-			for _, ip := range backEnd.Pool {
-				if ip == serverIP {
+			for _, serverIP := range backEnd.Pool {
+				// TODO(Mia-Cross): replace PrivateIP by IPAM
+				if serverIP == fi.ValueOf(server.Server.PrivateIP) {
 					_, err := s.lbAPI.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
 						Zone:      s.zone,
 						BackendID: backEnd.ID,
@@ -440,9 +431,9 @@ func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*in
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
 		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
-		ip, err := s.GetServerIP(server.ID, server.Zone)
+		ip, err := s.GetServerPrivateIP(server.Name, server.Zone)
 		if err != nil {
-			return nil, fmt.Errorf("getting server IP: %w", err)
+			return nil, fmt.Errorf("getting server private IP: %w", err)
 		}
 		cloudInstance.PrivateIP = ip
 	}
