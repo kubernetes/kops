@@ -95,6 +95,19 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		c.AddTask(&instance)
+
+		//for i := int32(0); i < fi.ValueOf(ig.Spec.MinSize); i++ {
+		//	privateNIC := &scalewaytasks.PrivateNIC{
+		//		ID:             nil,
+		//		Name:           nil,
+		//		Zone:           nil,
+		//		Tags:           nil,
+		//		InstanceID:     nil,
+		//		Lifecycle:      b.Lifecycle,
+		//		PrivateNetwork: ,
+		//	}
+		//	c.AddTask(privateNIC)
+		//}
 	}
 	return nil
 }

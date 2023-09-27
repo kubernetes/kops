@@ -24,7 +24,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/resources"
@@ -33,9 +33,12 @@ import (
 )
 
 const (
+	resourceTypeDHCPConfig     = "dhcp-config"
 	resourceTypeDNSRecord    = "dns-record"
 	resourceTypeGateway      = "gateway"
+	resourceTypeGatewayNetwork = "gateway-network"
 	resourceTypeLoadBalancer = "load-balancer"
+	resourceTypePrivateNetwork = "private-network"
 	resourceTypeServer       = "server"
 	resourceTypeServerIP     = "server-IP"
 	resourceTypeSSHKey       = "ssh-key"
@@ -50,8 +53,11 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 	clusterName := clusterInfo.Name
 
 	listFunctions := []listFn{
+		listDHCPConfigs,
 		listGateways,
+		listGatewayNetworks,
 		listLoadBalancers,
+		listPrivateNetworks,
 		listServers,
 		listServerIPs,
 		listSSHKeys,
@@ -99,6 +105,31 @@ func listDNSRecords(cloud fi.Cloud, clusterName string) ([]*resources.Resource, 
 	return resourceTrackers, nil
 }
 
+func listDHCPConfigs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(scaleway.ScwCloud)
+	dhcpConfigs, err := c.GetClusterDHCPConfigs()
+	if err != nil {
+		return nil, err
+	}
+
+	resourceTrackers := []*resources.Resource(nil)
+	for _, dhcpConfig := range dhcpConfigs {
+		resourceTracker := &resources.Resource{
+			//Name: dhcpConfig.Name,
+			ID:   dhcpConfig.ID,
+			Type: resourceTypeDHCPConfig,
+			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+				return deleteDHCPConfig(cloud, tracker)
+			},
+			Obj: dhcpConfig,
+			//Blocked: []string{resourceTypeGatewayNetwork+":"+dhcpConfig.},
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
 func listGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(scaleway.ScwCloud)
 	gws, err := c.GetClusterGateways(clusterName)
@@ -120,13 +151,47 @@ func listGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 			},
 			Obj: gw,
 		}
-		for _, gwNetwork := range gw.GatewayNetworks {
-			resourceTracker.Blocks = append(resourceTracker.Blocks, resourceTypeVPC+":"+gwNetwork.PrivateNetworkID)
-		}
-
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
+	return resourceTrackers, nil
+}
+
+func listGatewayNetworks(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(scaleway.ScwCloud)
+	pns, err := c.GetClusterPrivateNetworks(clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	resourceTrackers := []*resources.Resource(nil)
+	for _, pn := range pns {
+		gwns, err := c.GetClusterGatewayNetworks(pn.ID)
+		if err != nil {
+			if strings.Contains(err.Error(), "501 Not Implemented") {
+				return nil, nil
+			}
+			return nil, err
+		}
+
+		for _, gwn := range gwns {
+			resourceTracker := &resources.Resource{
+				Name: clusterName,
+				ID:   gwn.ID,
+				Type: resourceTypeGatewayNetwork,
+				Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+					return deleteGatewayNetwork(cloud, tracker)
+				},
+				Obj: gwn,
+				Blocks: []string{
+					resourceTypePrivateNetwork + ":" + gwn.PrivateNetworkID,
+					resourceTypeDHCPConfig + ":" + gwn.DHCP.ID,
+					resourceTypeGateway + ":" + gwn.GatewayID,
+				},
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+	}
 	return resourceTrackers, nil
 }
 
@@ -150,6 +215,35 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 				return deleteLoadBalancer(cloud, tracker)
 			},
 			Obj: loadBalancer,
+			//Blocked: []string{resourceTypePrivateNetwork+loadBalancer. }},
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
+func listPrivateNetworks(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(scaleway.ScwCloud)
+	pns, err := c.GetClusterPrivateNetworks(clusterName)
+	if err != nil {
+		if strings.Contains(err.Error(), "501 Not Implemented") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	resourceTrackers := []*resources.Resource(nil)
+	for _, pn := range pns {
+		resourceTracker := &resources.Resource{
+			Name: pn.Name,
+			ID:   pn.ID,
+			Type: resourceTypePrivateNetwork,
+			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+				return deletePrivateNetwork(cloud, tracker)
+			},
+			Obj:     pn,
+			Blocked: []string{resourceTypeVPC + ":" + pn.VpcID},
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -298,6 +392,13 @@ func deleteDNSRecord(cloud fi.Cloud, tracker *resources.Resource, domainName str
 	return c.DeleteDNSRecord(record, domainName)
 }
 
+func deleteDHCPConfig(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(scaleway.ScwCloud)
+	dhcpConfig := tracker.Obj.(*vpcgw.DHCP)
+
+	return c.DeleteDHCPConfig(dhcpConfig)
+}
+
 func deleteGateway(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(scaleway.ScwCloud)
 	gateway := tracker.Obj.(*vpcgw.Gateway)
@@ -305,11 +406,25 @@ func deleteGateway(cloud fi.Cloud, tracker *resources.Resource) error {
 	return c.DeleteGateway(gateway)
 }
 
+func deleteGatewayNetwork(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(scaleway.ScwCloud)
+	gatewayNetwork := tracker.Obj.(*vpcgw.GatewayNetwork)
+
+	return c.DeleteGatewayNetwork(gatewayNetwork)
+}
+
 func deleteLoadBalancer(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(scaleway.ScwCloud)
 	loadBalancer := tracker.Obj.(*lb.LB)
 
 	return c.DeleteLoadBalancer(loadBalancer)
+}
+
+func deletePrivateNetwork(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(scaleway.ScwCloud)
+	privateNetwork := tracker.Obj.(*vpc.PrivateNetwork)
+
+	return c.DeletePrivateNetwork(privateNetwork)
 }
 
 func deleteServer(cloud fi.Cloud, tracker *resources.Resource) error {
@@ -350,7 +465,7 @@ func deleteVolume(cloud fi.Cloud, tracker *resources.Resource) error {
 
 func deleteVPC(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(scaleway.ScwCloud)
-	privateNetwork := tracker.Obj.(*vpc.PrivateNetwork)
+	v := tracker.Obj.(*vpc.VPC)
 
-	return c.DeleteVPC(privateNetwork)
+	return c.DeleteVPC(v)
 }
