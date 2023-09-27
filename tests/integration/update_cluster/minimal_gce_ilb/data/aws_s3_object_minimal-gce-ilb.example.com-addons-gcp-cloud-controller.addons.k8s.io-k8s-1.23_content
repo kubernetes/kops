@@ -47,7 +47,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: k8scloudprovidergcp/cloud-controller-manager:latest
+        image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v26.2.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
