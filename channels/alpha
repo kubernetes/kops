@@ -58,19 +58,19 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230814
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230918
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230814
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230918
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230728
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230919
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230728
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230919
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.27.0"
@@ -104,16 +104,16 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.28.0"
-    recommendedVersion: 1.28.1
+    recommendedVersion: 1.28.2
     requiredVersion: 1.28.0
   - range: ">=1.27.0"
-    recommendedVersion: 1.27.5
+    recommendedVersion: 1.27.6
     requiredVersion: 1.27.0
   - range: ">=1.26.0"
-    recommendedVersion: 1.26.8
+    recommendedVersion: 1.26.9
     requiredVersion: 1.26.0
   - range: ">=1.25.0"
-    recommendedVersion: 1.25.13
+    recommendedVersion: 1.25.14
     requiredVersion: 1.25.0
   - range: ">=1.24.0"
     recommendedVersion: 1.24.17
@@ -164,15 +164,15 @@ spec:
   - range: ">=1.27.0-alpha.1"
     recommendedVersion: "1.27.0"
     #requiredVersion: 1.27.0
-    kubernetesVersion: 1.27.5
+    kubernetesVersion: 1.27.6
   - range: ">=1.26.0-alpha.1"
     recommendedVersion: "1.27.0"
     #requiredVersion: 1.26.0
-    kubernetesVersion: 1.26.8
+    kubernetesVersion: 1.26.9
   - range: ">=1.25.0-alpha.1"
     recommendedVersion: "1.27.0"
     #requiredVersion: 1.25.0
-    kubernetesVersion: 1.25.13
+    kubernetesVersion: 1.25.14
   - range: ">=1.24.0-alpha.1"
     recommendedVersion: "1.27.0"
     #requiredVersion: 1.24.0
