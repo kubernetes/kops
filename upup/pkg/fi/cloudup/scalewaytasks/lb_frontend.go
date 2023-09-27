@@ -69,17 +69,17 @@ func (l *LBFrontend) Find(context *fi.CloudupContext) (*LBFrontend, error) {
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
-	if l.LoadBalancer.LBID == nil {
+	if l.LoadBalancer.ID == nil {
 		return nil, nil
 	}
 
 	frontendResponse, err := lbService.ListFrontends(&lb.ZonedAPIListFrontendsRequest{
 		Zone: scw.Zone(cloud.Zone()),
-		LBID: fi.ValueOf(l.LoadBalancer.LBID),
+		LBID: fi.ValueOf(l.LoadBalancer.ID),
 		Name: l.Name,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("listing front-ends for load-balancer %s: %w", fi.ValueOf(l.LoadBalancer.LBID), err)
+		return nil, fmt.Errorf("listing front-ends for load-balancer %s: %w", fi.ValueOf(l.LoadBalancer.ID), err)
 	}
 	if frontendResponse.TotalCount != 1 {
 		return nil, nil
@@ -148,7 +148,7 @@ func (l *LBFrontend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 
 		frontendCreated, err := lbService.CreateFrontend(&lb.ZonedAPICreateFrontendRequest{
 			Zone:        scw.Zone(fi.ValueOf(expected.Zone)),
-			LBID:        fi.ValueOf(expected.LoadBalancer.LBID),
+			LBID:        fi.ValueOf(expected.LoadBalancer.ID),
 			Name:        fi.ValueOf(expected.Name),
 			InboundPort: fi.ValueOf(expected.InboundPort),
 			BackendID:   fi.ValueOf(expected.LBBackend.ID),
@@ -162,7 +162,7 @@ func (l *LBFrontend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 	}
 
 	_, err := lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID: fi.ValueOf(expected.LoadBalancer.LBID),
+		LBID: fi.ValueOf(expected.LoadBalancer.ID),
 		Zone: scw.Zone(fi.ValueOf(expected.Zone)),
 	})
 	if err != nil {
