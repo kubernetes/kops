@@ -43,7 +43,7 @@ spec:
         - --use-service-account-credentials=true
         - --cloud-config=/etc/kubernetes/cloud.config
         command:
-        - /usr/local/bin/cloud-controller-manager
+        - /cloud-controller-manager
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1

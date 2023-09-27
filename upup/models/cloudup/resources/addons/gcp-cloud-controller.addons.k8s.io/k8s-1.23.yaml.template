@@ -50,7 +50,7 @@ spec:
       - name: cloud-controller-manager
         image: {{ .ExternalCloudControllerManager.Image }}
         imagePullPolicy: IfNotPresent
-        command: ['/usr/local/bin/cloud-controller-manager']
+        command: ['/cloud-controller-manager']
         args:
 {{- range $arg := CloudControllerConfigArgv }}
           - {{ $arg }}
