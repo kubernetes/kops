@@ -21,6 +21,7 @@ import (
 	"os"
 	"strings"
 
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,14 +37,13 @@ const LbDefaultType = "LB-S"
 
 // +kops:fitask
 type LoadBalancer struct {
-	Name      *string
-	Type      string
-	Lifecycle fi.Lifecycle
+	ID   *string
+	Name *string
+	Zone *string
+	Tags []string
 
-	Zone                  *string
-	LBID                  *string
+	Type                  string
 	LBAddresses           []string
-	Tags                  []string
 	Description           string
 	SslCompatibilityLevel string
 
@@ -52,22 +52,45 @@ type LoadBalancer struct {
 	WellKnownServices []wellknownservices.WellKnownService
 	ForAPIServer          bool
 
-	VPCId *string // set if Cluster.Spec.NetworkID is
-	//VPCName     *string // set if Cluster.Spec.NetworkCIDR is
-	//NetworkCIDR *string // set if Cluster.Spec.NetworkCIDR is
+	Lifecycle      fi.Lifecycle
+	PrivateNetwork *PrivateNetwork
 }
 
+var _ fi.CloudupTask = &LoadBalancer{}
 var _ fi.CompareWithID = &LoadBalancer{}
+var _ fi.CloudupHasDependencies = &LoadBalancer{}
 var _ fi.HasAddress = &LoadBalancer{}
 
 func (l *LoadBalancer) CompareWithID() *string {
-	return l.LBID
+	return l.ID
+}
+
+func (l *LoadBalancer) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*PrivateNetwork); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
 }
 
 // GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
 // It indicates which services we support with this load balancer.
 func (l *LoadBalancer) GetWellKnownServices() []wellknownservices.WellKnownService {
 	return l.WellKnownServices
+}
+
+func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+	// Skip if we're running integration tests
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		return nil, nil
+	}
+	lbFound, err := l.Find(context)
+	if err != nil {
+		return nil, err
+	}
+	return lbFound.LBAddresses, nil
 }
 
 func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
@@ -79,54 +102,41 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 		Name: l.Name,
 	}, scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("getting load-balancer %s: %w", fi.ValueOf(l.LBID), err)
+		return nil, fmt.Errorf("getting load-balancer %s: %w", fi.ValueOf(l.ID), err)
 	}
 	if lbResponse.TotalCount != 1 {
 		return nil, nil
 	}
 	loadBalancer := lbResponse.LBs[0]
 
+	region, err := scw.Zone(fi.ValueOf(l.Zone)).Region()
+	if err != nil {
+		return nil, fmt.Errorf("finding load-balancer's region: %w", err)
+	}
+	ips, err := cloud.IPAMService().ListIPs(&ipam.ListIPsRequest{
+		Region:           region,
+		PrivateNetworkID: l.PrivateNetwork.ID,
+		ResourceID:       &loadBalancer.ID,
+		//ResourceName:     l.Name,
+	}, scw.WithContext(context.Context()), scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing load-balancer's IPs: %w", err)
+	}
 	lbIPs := []string(nil)
-	for _, IP := range loadBalancer.IP {
-		lbIPs = append(lbIPs, IP.IPAddress)
+	for _, ip := range ips.IPs {
+		lbIPs = append(lbIPs, ip.Address.IP.String())
 	}
 
 	return &LoadBalancer{
-		Name:              fi.PtrTo(loadBalancer.Name),
-		LBID:              fi.PtrTo(loadBalancer.ID),
-		Zone:              fi.PtrTo(string(loadBalancer.Zone)),
-		LBAddresses:       lbIPs,
-		Tags:              loadBalancer.Tags,
-		Lifecycle:         l.Lifecycle,
+		Name:         fi.PtrTo(loadBalancer.Name),
+		ID:           fi.PtrTo(loadBalancer.ID),
+		Zone:         fi.PtrTo(string(loadBalancer.Zone)),
+		LBAddresses:  lbIPs,
+		Tags:         loadBalancer.Tags,
+		Lifecycle:    l.Lifecycle,
+		ForAPIServer: l.ForAPIServer,
 		WellKnownServices: l.WellKnownServices,
 	}, nil
-}
-
-func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	// Skip if we're running integration tests
-	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
-		return nil, nil
-	}
-
-	cloud := context.T.Cloud.(scaleway.ScwCloud)
-	lbService := cloud.LBService()
-
-	loadBalancers, err := lbService.ListLBs(&lb.ZonedAPIListLBsRequest{
-		Zone: scw.Zone(cloud.Zone()),
-		Name: l.Name,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	addresses := []string(nil)
-	for _, loadBalancer := range loadBalancers.LBs {
-		for _, address := range loadBalancer.IP {
-			addresses = append(addresses, address.IPAddress)
-		}
-	}
-
-	return addresses, nil
 }
 
 func (l *LoadBalancer) Run(context *fi.CloudupContext) error {
@@ -138,7 +148,7 @@ func (_ *LoadBalancer) CheckChanges(actual, expected, changes *LoadBalancer) err
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if changes.LBID != nil {
+		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
 		if changes.Zone != nil {
@@ -166,7 +176,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 		if changes != nil || len(actual.Tags) != len(expected.Tags) {
 			_, err := lbService.UpdateLB(&lb.ZonedAPIUpdateLBRequest{
 				Zone:                  scw.Zone(fi.ValueOf(actual.Zone)),
-				LBID:                  fi.ValueOf(actual.LBID),
+				LBID:                  fi.ValueOf(actual.ID),
 				Name:                  fi.ValueOf(actual.Name),
 				Description:           expected.Description,
 				SslCompatibilityLevel: lb.SSLCompatibilityLevel(expected.SslCompatibilityLevel),
@@ -177,18 +187,20 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 			}
 		}
 
-		expected.LBID = actual.LBID
+		expected.ID = actual.ID
 		expected.LBAddresses = actual.LBAddresses
 
 	} else {
 
 		klog.Infof("Creating new load-balancer with name %q", fi.ValueOf(expected.Name))
+		zone := scw.Zone(fi.ValueOf(expected.Zone))
 
 		lbCreated, err := lbService.CreateLB(&lb.ZonedAPICreateLBRequest{
-			Zone: scw.Zone(fi.ValueOf(expected.Zone)),
-			Name: fi.ValueOf(expected.Name),
-			Type: LbDefaultType,
-			Tags: expected.Tags,
+			Zone:             zone,
+			Name:             fi.ValueOf(expected.Name),
+			Tags:             expected.Tags,
+			Type:             expected.Type,
+			AssignFlexibleIP: fi.PtrTo(true),
 		})
 		if err != nil {
 			return fmt.Errorf("creating load-balancer: %w", err)
@@ -196,7 +208,24 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 
 		_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			LBID: lbCreated.ID,
-			Zone: scw.Zone(fi.ValueOf(expected.Zone)),
+			Zone: zone,
+		})
+		if err != nil {
+			return fmt.Errorf("waiting for load-balancer %s: %w", lbCreated.ID, err)
+		}
+
+		_, err = lbService.AttachPrivateNetwork(&lb.ZonedAPIAttachPrivateNetworkRequest{
+			Zone:             zone,
+			LBID:             lbCreated.ID,
+			PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
+		})
+		if err != nil {
+			return fmt.Errorf("attaching load-balancer to private network: %w")
+		}
+
+		_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			LBID: lbCreated.ID,
+			Zone: zone,
 		})
 		if err != nil {
 			return fmt.Errorf("waiting for load-balancer %s: %w", lbCreated.ID, err)
@@ -206,9 +235,8 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 		for _, ip := range lbCreated.IP {
 			lbIPs = append(lbIPs, ip.IPAddress)
 		}
-		expected.LBID = &lbCreated.ID
+		expected.ID = &lbCreated.ID
 		expected.LBAddresses = lbIPs
-
 	}
 
 	return nil
@@ -234,7 +262,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, exp
 	}
 
 	tfLB := terraformLoadBalancer{
-		Type:        LbDefaultType,
+		Type:        expected.Type,
 		Name:        expected.Name,
 		Description: expected.Description,
 		Tags:        expected.Tags,
