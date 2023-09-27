@@ -62,7 +62,6 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	if !strings.HasPrefix(token, ScalewayAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
-	serverID := strings.TrimPrefix(token, ScalewayAuthenticationTokenPrefix)
 
 	metadataAPI := instance.NewMetadataAPI()
 	metadata, err := metadataAPI.GetMetadata()
@@ -77,6 +76,7 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine region from zone %s", zone)
 	}
+	serverName := metadata.Name
 
 	profile, err := CreateValidScalewayProfile()
 	if err != nil {
@@ -90,14 +90,16 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		return nil, fmt.Errorf("creating client for Scaleway Verifier: %w", err)
 	}
 
-	serverResponse, err := instance.NewAPI(scwClient).GetServer(&instance.GetServerRequest{
-		ServerID: serverID,
-		Zone:     zone,
-	}, scw.WithContext(ctx))
-	if err != nil || serverResponse == nil || serverResponse.Server == nil {
-		return nil, fmt.Errorf("failed to get server %s: %w", serverID, err)
+	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
+		Region:       region,
+		ResourceName: fi.PtrTo(serverName),
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get IP for server %q: %w", serverName, err)
 	}
-	server := serverResponse.Server
+	if ips.TotalCount == 0 {
+		return nil, fmt.Errorf("no IP found for server %q: %w", serverName, err)
+	}
 
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
 		Region:     region,
@@ -115,13 +117,13 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	addresses := []string(nil)
 	challengeEndPoints := []string(nil)
 	for _, ip := range ips.IPs {
-		addresses = append(addresses, ip.Address.IP.String())
-		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
+		addresses = append(addresses, ip.Address.String())
+		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          server.Name,
-		InstanceGroupName: InstanceGroupNameFromTags(server.Tags),
+		NodeName:          serverName,
+		InstanceGroupName: InstanceGroupNameFromTags(metadata.Tags),
 		CertificateNames:  addresses,
 		ChallengeEndpoint: challengeEndPoints[0],
 	}
