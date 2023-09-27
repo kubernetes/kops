@@ -108,6 +108,7 @@ func (d *deployer) dumpClusterInfo() error {
 	resourceTypes := []string{
 		"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
 		"mutatingwebhookconfigurations", "validatingwebhookconfigurations",
+		"clusterrolebindings", "clusterroles",
 	}
 	if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info"), 0o755); err != nil {
 		return err
@@ -150,6 +151,7 @@ func (d *deployer) dumpClusterInfo() error {
 		"leases",
 		"persistentvolumeclaims",
 		"poddisruptionbudgets",
+		"serviceaccounts",
 	}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
