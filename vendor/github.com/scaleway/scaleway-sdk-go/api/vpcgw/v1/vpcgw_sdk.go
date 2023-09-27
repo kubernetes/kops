@@ -556,6 +556,12 @@ type IP struct {
 	Zone scw.Zone `json:"zone"`
 }
 
+// IpamConfig: ipam config.
+type IpamConfig struct {
+	// PushDefaultRoute: defines whether the default route is enabled on that Gateway Network.
+	PushDefaultRoute bool `json:"push_default_route"`
+}
+
 // ListDHCPEntriesResponse: list dhcp entries response.
 type ListDHCPEntriesResponse struct {
 	// DHCPEntries: DHCP entries in this page.
@@ -1116,19 +1122,26 @@ type CreateGatewayNetworkRequest struct {
 	GatewayID string `json:"gateway_id"`
 	// PrivateNetworkID: private Network to connect.
 	PrivateNetworkID string `json:"private_network_id"`
-	// EnableMasquerade: defines whether to enable masquerade (dynamic NAT) on this network.
+	// EnableMasquerade: defines whether to enable masquerade (dynamic NAT) on the GatewayNetwork.
+	// Note: this setting is ignored when passing `ipam_config`.
 	EnableMasquerade bool `json:"enable_masquerade"`
+	// EnableDHCP: defines whether to enable DHCP on this Private Network.
+	// Defaults to `true` if either `dhcp_id` or `dhcp` are present. If set to `true`, either `dhcp_id` or `dhcp` must be present.
+	// Note: this setting is ignored when passing `ipam_config`.
+	EnableDHCP *bool `json:"enable_dhcp"`
 	// DHCPID: ID of an existing DHCP configuration object to use for this GatewayNetwork.
-	// Precisely one of Address, DHCP, DHCPID must be set.
+	// Precisely one of Address, DHCP, DHCPID, IpamConfig must be set.
 	DHCPID *string `json:"dhcp_id,omitempty"`
 	// DHCP: new DHCP configuration object to use for this GatewayNetwork.
-	// Precisely one of Address, DHCP, DHCPID must be set.
+	// Precisely one of Address, DHCP, DHCPID, IpamConfig must be set.
 	DHCP *CreateDHCPRequest `json:"dhcp,omitempty"`
 	// Address: static IP address in CIDR format to to use without DHCP.
-	// Precisely one of Address, DHCP, DHCPID must be set.
+	// Precisely one of Address, DHCP, DHCPID, IpamConfig must be set.
 	Address *scw.IPNet `json:"address,omitempty"`
-	// EnableDHCP: defines whether to enable DHCP on this Private Network. Defaults to `true` if either `dhcp_id` or `dhcp` are present. If set to `true`, either `dhcp_id` or `dhcp` must be present.
-	EnableDHCP *bool `json:"enable_dhcp"`
+	// IpamConfig: auto-configure the GatewayNetwork using Scaleway's IPAM (IP address management service).
+	// Note: all or none of the GatewayNetworks for a single gateway can use the IPAM. DHCP and IPAM configurations cannot be mixed. Some products may require that the Public Gateway uses the IPAM, to ensure correct functionality.
+	// Precisely one of Address, DHCP, DHCPID, IpamConfig must be set.
+	IpamConfig *IpamConfig `json:"ipam_config,omitempty"`
 }
 
 // CreateGatewayNetwork: attach a Public Gateway to a Private Network.
@@ -1171,15 +1184,22 @@ type UpdateGatewayNetworkRequest struct {
 	// GatewayNetworkID: ID of the GatewayNetwork to update.
 	GatewayNetworkID string `json:"-"`
 	// EnableMasquerade: defines whether to enable masquerade (dynamic NAT) on the GatewayNetwork.
+	// Note: this setting is ignored when passing `ipam_config`.
 	EnableMasquerade *bool `json:"enable_masquerade"`
-	// DHCPID: ID of the new DHCP configuration object to use with this GatewayNetwork.
-	// Precisely one of Address, DHCPID must be set.
-	DHCPID *string `json:"dhcp_id,omitempty"`
-	// EnableDHCP: defines whether to enable DHCP on the connected Private Network.
+	// EnableDHCP: defines whether to enable DHCP on this Private Network.
+	// Defaults to `true` if `dhcp_id` is present. If set to `true`, `dhcp_id` must be present.
+	// Note: this setting is ignored when passing `ipam_config`.
 	EnableDHCP *bool `json:"enable_dhcp"`
+	// DHCPID: ID of the new DHCP configuration object to use with this GatewayNetwork.
+	// Precisely one of Address, DHCPID, IpamConfig must be set.
+	DHCPID *string `json:"dhcp_id,omitempty"`
 	// Address: new static IP address.
-	// Precisely one of Address, DHCPID must be set.
+	// Precisely one of Address, DHCPID, IpamConfig must be set.
 	Address *scw.IPNet `json:"address,omitempty"`
+	// IpamConfig: auto-configure the GatewayNetwork using Scaleway's IPAM (IP address management service).
+	// Note: all or none of the GatewayNetworks for a single gateway can use the IPAM. DHCP and IPAM configurations cannot be mixed. Some products may require that the Public Gateway uses the IPAM, to ensure correct functionality.
+	// Precisely one of Address, DHCPID, IpamConfig must be set.
+	IpamConfig *IpamConfig `json:"ipam_config,omitempty"`
 }
 
 // UpdateGatewayNetwork: update a Public Gateway's connection to a Private Network.
