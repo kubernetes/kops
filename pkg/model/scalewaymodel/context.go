@@ -25,7 +25,7 @@ type ScwModelContext struct {
 	*model.KopsModelContext
 }
 
-func (b *ScwModelContext) LinkToNetwork() *scalewaytasks.Network {
+func (b *ScwModelContext) LinkToNetwork() *scalewaytasks.PrivateNetwork {
 	name := b.ClusterName()
-	return &scalewaytasks.Network{Name: &name}
+	return &scalewaytasks.PrivateNetwork{Name: &name}
 }
