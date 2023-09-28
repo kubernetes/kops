@@ -695,6 +695,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 			l.Builders = append(l.Builders,
 				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
+				&scalewaymodel.DNSModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
@@ -760,9 +761,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
-			shouldPrecreateDNS = true
-		}
 
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
