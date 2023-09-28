@@ -62,7 +62,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: 447139a03ae68fa785c155f0ec4bb0bc38cdb657fda9687039013d3e2353ab6d
+    manifestHash: f6318f9f355302147958c18f744391cb59d0642d3002451b7ca84d1e1210f49a
     name: gcp-cloud-controller.addons.k8s.io
     prune:
       kinds:

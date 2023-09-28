@@ -37,6 +37,7 @@ spec:
         - --cidr-allocator-type=CloudAllocator
         - --cluster-cidr=100.96.0.0/11
         - --cluster-name=minimal-gce-example-com
+        - --controllers=*,-gkenetworkparamset
         - --leader-elect=true
         - --v=2
         - --cloud-provider=gce
@@ -148,6 +149,13 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
   - coordination.k8s.io
   resources:
   - leases
@@ -252,6 +260,8 @@ rules:
   resources:
   - configmaps
   verbs:
+  - create
+  - patch
   - get
   - update
 
@@ -350,8 +360,7 @@ roleRef:
   kind: ClusterRole
   name: system:cloud-controller-manager
 subjects:
-- apiGroup: ""
-  kind: ServiceAccount
+- kind: ServiceAccount
   name: cloud-controller-manager
   namespace: kube-system
 
