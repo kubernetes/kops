@@ -124,6 +124,13 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
   - coordination.k8s.io
   resources:
   - leases
@@ -222,6 +229,8 @@ rules:
   resourceNames:
   - cloud-controller-manager
   verbs:
+  - create
+  - patch
   - get
   - update
 ---
@@ -306,7 +315,6 @@ roleRef:
   name: system:cloud-controller-manager
 subjects:
 - kind: ServiceAccount
-  apiGroup: ""
   name: cloud-controller-manager
   namespace: kube-system
 ---

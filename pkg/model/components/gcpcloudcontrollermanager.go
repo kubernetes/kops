@@ -61,21 +61,14 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	}
 
 	if ccmConfig.Controllers == nil {
-		var changes []string
-
-		// Don't run gkenetworkparamset controller, looks for some CRDs (GKENetworkParamSet and Network) which are only installed on GKE
-		// However, the version we're current running doesn't support this controller anyway, so we need to introduce this later,
-		// possibly based on the image version.
-		// changes = append(ccmConfig.Controllers, "-gkenetworkparams")
+		changes := []string{"*,-gkenetworkparamset"}
 
 		// Turn off some controllers if kops-controller is running them
 		if clusterSpec.IsKopsControllerIPAM() {
-			changes = append(ccmConfig.Controllers, "-nodeipam", "-route")
+			changes = append(changes, "-nodeipam", "-route")
 		}
 
-		if len(changes) != 0 {
-			ccmConfig.Controllers = append([]string{"*"}, changes...)
-		}
+		ccmConfig.Controllers = changes
 	}
 
 	if ccmConfig.Image == "" {
