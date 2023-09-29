@@ -42379,6 +42379,9 @@ const (
 
 	// ReplicationStatusReplica is a ReplicationStatus enum value
 	ReplicationStatusReplica = "REPLICA"
+
+	// ReplicationStatusCompleted is a ReplicationStatus enum value
+	ReplicationStatusCompleted = "COMPLETED"
 )
 
 // ReplicationStatus_Values returns all elements of the ReplicationStatus enum
@@ -42388,6 +42391,7 @@ func ReplicationStatus_Values() []string {
 		ReplicationStatusPending,
 		ReplicationStatusFailed,
 		ReplicationStatusReplica,
+		ReplicationStatusCompleted,
 	}
 }
 
