@@ -27,7 +27,6 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -221,13 +220,30 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	}
 
 	// We get the private network to associate it with new instances
-	pn, err := cloud.GetClusterPrivateNetworks(clusterName)
-	if err != nil {
-		return fmt.Errorf("error listing private networks: %v", err)
-	}
-	if len(pn) != 1 {
-		return fmt.Errorf("more than 1 private network named %s found", clusterName)
-	}
+	//pn, err := cloud.GetClusterPrivateNetworks(clusterName)
+	//if err != nil {
+	//	return fmt.Errorf("rendering server group %q: %v", fi.ValueOf(expected.Name), err)
+	//}
+	//if len(pn) != 1 {
+	//	return fmt.Errorf("more than 1 private network named %s found", clusterName)
+	//}
+	//privateNetwork := pn[0]
+
+	// We get the gateway to set up PAT rules in order to be able to connect to our instances via SSH
+	// TODO(Mia-Cross): This part is for dev purposes only, remove when done or make it optional
+	//createNATRules := true
+	//gw, err := cloud.GetClusterGateways(clusterName)
+	//if err != nil {
+	//	return fmt.Errorf("rendering server group %q: %v", fi.ValueOf(expected.Name), err)
+	//}
+	//if len(gw) == 0 {
+	//	klog.V(4).Infof("Could not find any gateway connexion, skipping NAT rules creation")
+	//	createNATRules = false
+	//} else if len(gw) > 1 {
+	//	return fmt.Errorf("more than 1 gateway found for the cluster")
+	//}
+	//publicGateway := gw[0]
+	//patPublicPort := uint32(2022)
 
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
@@ -265,63 +281,87 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 			}
 			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
+		server := srv.Server
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: srv.Server.ID,
+			ServerID: server.ID,
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We load the cloud-init script in the instance user data
 		err = instanceService.SetServerUserData(&instance.SetServerUserDataRequest{
-			ServerID: srv.Server.ID,
-			Zone:     srv.Server.Zone,
+			ServerID: server.ID,
+			Zone:     server.Zone,
 			Key:      "cloud-init",
 			Content:  bytes.NewBuffer(userData),
 		})
 		if err != nil {
-			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We start the instance
 		_, err = instanceService.ServerAction(&instance.ServerActionRequest{
 			Zone:     zone,
-			ServerID: srv.Server.ID,
+			ServerID: server.ID,
 			Action:   instance.ServerActionPoweron,
 		})
 		if err != nil {
-			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error powering on instance %s of group %q: %w", server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We wait for the instance to be ready
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: srv.Server.ID,
+			ServerID: server.ID,
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We put the instance inside the private network
-		pNIC, err := instanceService.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
-			Zone:             zone,
-			ServerID:         srv.Server.ID,
-			PrivateNetworkID: pn[0].ID,
-		})
-		if err != nil {
-			return fmt.Errorf("error linking instance to private network: %v", err)
-		}
+		//pNIC, err := instanceService.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+		//	Zone:             zone,
+		//	ServerID:         server.ID,
+		//	PrivateNetworkID: privateNetwork.ID,
+		//	Tags:             server.Tags,
+		//	//IPIDs:
+		//})
+		//if err != nil {
+		//	return fmt.Errorf("error linking instance to private network: %v", err)
+		//}
+		//
+		//// We wait for the private nic to be ready before proceeding
+		//_, err = instanceService.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		//	ServerID:     server.ID,
+		//	PrivateNicID: pNIC.PrivateNic.ID,
+		//	Zone:         zone,
+		//})
+		//if err != nil {
+		//	return fmt.Errorf("error waiting for private nic: %v", err)
+		//}
 
-		// We wait for the private nic to be ready before proceeding
-		_, err = instanceService.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-			ServerID:     srv.Server.ID,
-			PrivateNicID: pNIC.PrivateNic.ID,
-			Zone:         zone,
-		})
-		if err != nil {
-			return fmt.Errorf("error waiting for private nic: %v", err)
-		}
+		// We create NAT rules linking the gateway to our instances in order to be able to connect via SSH
+		//if createNATRules {
+		//	privateIP, err := cloud.GetServerPrivateIP(server.Name, zone)
+		//	if err != nil {
+		//		return err
+		//	}
+		//
+		//	_, err = cloud.GatewayService().CreatePATRule(&vpcgw.CreatePATRuleRequest{
+		//		Zone:        zone,
+		//		GatewayID:   publicGateway.ID,
+		//		PublicPort:  patPublicPort,
+		//		PrivateIP:   net.ParseIP(privateIP),
+		//		PrivatePort: 22,
+		//		Protocol:    "both",
+		//	})
+		//	if err != nil {
+		//		return err
+		//	}
+		//	patPublicPort += 1
+		//}
 	}
 
 	// If newInstanceCount < 0, we need to delete instances of this group
@@ -339,47 +379,6 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
 			}
 		}
-	}
-
-	// We create NAT rules linking the gateway to our instances in order to be able to connect via SSH
-	// TODO(Mia-Cross): This part is for dev purposes only, remove when done
-	gwService := cloud.GatewayService()
-	rules := []*vpcgw.SetPATRulesRequestRule(nil)
-	port := uint32(2022)
-	gwNetwork, err := cloud.GetClusterGatewayNetworks(pn[0].ID)
-	if err != nil {
-		return err
-	}
-	if len(gwNetwork) < 1 {
-		klog.V(4).Infof("Could not find any gateway connexion, skipping NAT rules creation")
-	} else {
-		entries, err := gwService.ListDHCPEntries(&vpcgw.ListDHCPEntriesRequest{
-			Zone:             zone,
-			GatewayNetworkID: scw.StringPtr(gwNetwork[0].ID),
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing DHCP entries")
-		}
-		klog.V(4).Infof("=== DHCP entries are %v", entries.DHCPEntries)
-		for _, entry := range entries.DHCPEntries {
-			rules = append(rules, &vpcgw.SetPATRulesRequestRule{
-				PublicPort:  port,
-				PrivateIP:   entry.IPAddress,
-				PrivatePort: 22,
-				Protocol:    "both",
-			})
-			port += 1
-		}
-
-		_, err = gwService.SetPATRules(&vpcgw.SetPATRulesRequest{
-			Zone:      zone,
-			GatewayID: gwNetwork[0].GatewayID,
-			PatRules:  rules,
-		})
-		if err != nil {
-			return fmt.Errorf("error setting PAT rules for gateway")
-		}
-		klog.V(4).Infof("=== rules set")
 	}
 
 	return nil

@@ -96,18 +96,23 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		c.AddTask(&instance)
 
-		//for i := int32(0); i < fi.ValueOf(ig.Spec.MinSize); i++ {
-		//	privateNIC := &scalewaytasks.PrivateNIC{
-		//		ID:             nil,
-		//		Name:           nil,
-		//		Zone:           nil,
-		//		Tags:           nil,
-		//		InstanceID:     nil,
-		//		Lifecycle:      b.Lifecycle,
-		//		PrivateNetwork: ,
-		//	}
-		//	c.AddTask(privateNIC)
-		//}
+		isForAPIServer := false
+		if *instance.Role == scaleway.TagRoleControlPlane {
+			isForAPIServer = true
+		}
+
+		for i := int32(0); i < fi.ValueOf(ig.Spec.MinSize); i++ {
+			privateNIC := &scalewaytasks.PrivateNIC{
+				Name:           fi.PtrTo(fmt.Sprintf("%s-%d", name, i)),
+				Zone:           fi.PtrTo(string(zone)),
+				Tags:           instanceTags,
+				ForAPIServer:   isForAPIServer,
+				Lifecycle:      b.Lifecycle,
+				InstanceGroup:  &instance,
+				PrivateNetwork: b.LinkToNetwork(),
+			}
+			c.AddTask(privateNIC)
+		}
 	}
 	return nil
 }
