@@ -47,9 +47,7 @@ func newClusterVFS(vfsContext *vfs.VFSContext, basePath vfs.Path) *ClusterVFS {
 	return c
 }
 
-func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, error) {
-	ctx := context.TODO()
-
+func (c *ClusterVFS) Get(ctx context.Context, name string, options metav1.GetOptions) (*api.Cluster, error) {
 	if options.ResourceVersion != "" {
 		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
 	}
@@ -72,9 +70,7 @@ func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 	return configPath, nil
 }
 
-func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
-	ctx := context.TODO()
-
+func (c *ClusterVFS) List(ctx context.Context, options metav1.ListOptions) (*api.ClusterList, error) {
 	names, err := c.listNames(ctx)
 	if err != nil {
 		return nil, err
@@ -134,7 +130,7 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 		return nil, field.Required(field.NewPath("objectMeta", "name"), "clusterName is required")
 	}
 
-	old, err := r.Get(clusterName, metav1.GetOptions{})
+	old, err := r.Get(ctx, clusterName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

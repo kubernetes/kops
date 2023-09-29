@@ -50,7 +50,10 @@ func (c *VFSClientset) clusters() *ClusterVFS {
 
 // GetCluster implements the GetCluster method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) GetCluster(ctx context.Context, name string) (*kops.Cluster, error) {
-	return c.clusters().Get(name, metav1.GetOptions{})
+	ctx, span := tracer.Start(ctx, "VFSClientset::GetCluster")
+	defer span.End()
+
+	return c.clusters().Get(ctx, name, metav1.GetOptions{})
 }
 
 // UpdateCluster implements the UpdateCluster method of simple.Clientset for a VFS-backed state store
@@ -65,7 +68,10 @@ func (c *VFSClientset) CreateCluster(ctx context.Context, cluster *kops.Cluster)
 
 // ListClusters implements the ListClusters method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ListClusters(ctx context.Context, options metav1.ListOptions) (*kops.ClusterList, error) {
-	return c.clusters().List(options)
+	ctx, span := tracer.Start(ctx, "VFSClientset::ListClusters")
+	defer span.End()
+
+	return c.clusters().List(ctx, options)
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of simple.Clientset for a VFS-backed state store

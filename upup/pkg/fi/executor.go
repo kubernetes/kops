@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -53,7 +54,7 @@ func (o *RunTasksOptions) InitDefaults() {
 
 // RunTasks executes all the tasks, considering their dependencies
 // It will perform some re-execution on error, retrying as long as progress is still being made
-func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
+func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) error {
 	dependencies := FindTaskDependencies(taskMap)
 
 	for _, task := range taskMap {
@@ -119,7 +120,7 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 		var tasks []*taskState[T]
 		tasks = append(tasks, canRun...)
 
-		taskErrors := e.forkJoin(tasks)
+		taskErrors := e.forkJoin(ctx, tasks)
 		var errs []error
 		for i, err := range taskErrors {
 			ts := tasks[i]
@@ -189,7 +190,7 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 	return nil
 }
 
-func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
+func (e *executor[T]) forkJoin(ctx context.Context, tasks []*taskState[T]) []error {
 	if len(tasks) == 0 {
 		return nil
 	}
@@ -202,6 +203,9 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 		wg.Add(1)
 		go func(ts *taskState[T], index int) {
 			defer wg.Done()
+
+			_, span := tracer.Start(ctx, "task-"+ts.key)
+			defer span.End()
 
 			resultsMutex.Lock()
 			results[index] = fmt.Errorf("function panic")

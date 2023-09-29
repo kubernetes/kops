@@ -31,6 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -286,6 +288,9 @@ func (p *S3Path) getRequestACL(aclObj ACL) (*string, error) {
 }
 
 func (p *S3Path) WriteFile(ctx context.Context, data io.ReadSeeker, aclObj ACL) error {
+	ctx, span := tracer.Start(ctx, "S3Path::WriteFile", trace.WithAttributes(attribute.String("path", p.String())))
+	defer span.End()
+
 	client, err := p.client(ctx)
 	if err != nil {
 		return err
@@ -346,8 +351,11 @@ func (p *S3Path) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 
 // ReadFile implements Path::ReadFile
 func (p *S3Path) ReadFile(ctx context.Context) ([]byte, error) {
+	ctx, span := tracer.Start(ctx, "S3Path::ReadFile", trace.WithAttributes(attribute.String("path", p.String())))
+	defer span.End()
+
 	var b bytes.Buffer
-	_, err := p.WriteTo(&b)
+	_, err := p.WriteToWithContext(ctx, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -357,6 +365,11 @@ func (p *S3Path) ReadFile(ctx context.Context) ([]byte, error) {
 // WriteTo implements io.WriterTo
 func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
 	ctx := context.TODO()
+	return p.WriteToWithContext(ctx, out)
+}
+
+// WriteToWithContext implements io.WriterTo, but adds a context
+func (p *S3Path) WriteToWithContext(ctx context.Context, out io.Writer) (int64, error) {
 	client, err := p.client(ctx)
 	if err != nil {
 		return 0, err
@@ -433,6 +446,9 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 }
 
 func (p *S3Path) ReadTree(ctx context.Context) ([]Path, error) {
+	ctx, span := tracer.Start(ctx, "S3Path::ReadTree")
+	defer span.End()
+
 	client, err := p.client(ctx)
 	if err != nil {
 		return nil, err
@@ -484,7 +500,7 @@ func (p *S3Path) client(ctx context.Context) (*s3.S3, error) {
 		return nil, err
 	}
 
-	client, err := p.s3Context.getClient(bucketDetails.region)
+	client, err := p.s3Context.getClient(ctx, bucketDetails.region)
 	if err != nil {
 		return nil, err
 	}

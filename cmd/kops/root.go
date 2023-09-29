@@ -28,6 +28,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -89,12 +91,13 @@ var rootCommand = RootCmd{
 	},
 }
 
-func Execute(ctx context.Context) {
+func Execute(ctx context.Context) error {
+	ctx, span := tracer.Start(ctx, "kops", trace.WithAttributes(attribute.StringSlice("args", os.Args)))
+	defer span.End()
+
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
-	if err := rootCommand.cobraCommand.ExecuteContext(ctx); err != nil {
-		os.Exit(1)
-	}
+	return rootCommand.cobraCommand.ExecuteContext(ctx)
 }
 
 func init() {

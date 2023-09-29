@@ -118,7 +118,7 @@ func (c *Context[T]) RunTasks(options RunTasksOptions) error {
 		context: c,
 		options: options,
 	}
-	return e.RunTasks(c.tasks)
+	return e.RunTasks(c.ctx, c.tasks)
 }
 
 // Render dispatches the creation of an object to the appropriate handler defined on the Task,
