@@ -55,21 +55,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(privateNetwork)
 
-	dhcpConfig := &scalewaytasks.DHCPConfig{
-		Name:           fi.PtrTo(resourceName),
-		Zone:           fi.PtrTo(zone.String()),
-		Subnet:         fi.PtrTo(ipRange),
-		Lifecycle:      b.Lifecycle,
-		Gateway:        gateway,
-		PrivateNetwork: privateNetwork,
-	}
-	c.AddTask(dhcpConfig)
-
 	gatewayNetwork := &scalewaytasks.GatewayNetwork{
 		Name:           fi.PtrTo(resourceName),
 		Zone:           fi.PtrTo(zone.String()),
 		Lifecycle:      b.Lifecycle,
-		DHCPConfig:     dhcpConfig,
 		Gateway:        gateway,
 		PrivateNetwork: privateNetwork,
 	}

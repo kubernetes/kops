@@ -3,6 +3,9 @@ package scaleway
 import (
 	"os"
 	"testing"
+
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestGetServerPrivateIP(t *testing.T) {
@@ -11,7 +14,6 @@ func TestGetServerPrivateIP(t *testing.T) {
 		t.Errorf("setting env: %v", err)
 	}
 	scwCloud, err := NewScwCloud(nil)
-	//scwCloud, err := NewScwCloud(map[string]string{"zone": "fr-par-1", "region": "fr-par"})
 	if err != nil {
 		t.Error(err)
 	}
@@ -21,5 +23,34 @@ func TestGetServerPrivateIP(t *testing.T) {
 	}
 	if ip != "10.76.76.41" {
 		t.Errorf("expected 10.76.76.41, got %s", ip)
+	}
+
+	ips, err := scwCloud.IPAMService().ListIPs(&ipam.ListIPsRequest{
+		Region:           "",
+		Page:             nil,
+		PageSize:         nil,
+		OrderBy:          "",
+		ProjectID:        nil,
+		OrganizationID:   nil,
+		Zonal:            nil,
+		ZonalNat:         nil,
+		Regional:         nil,
+		PrivateNetworkID: nil,
+		SubnetID:         nil,
+		Attached:         nil,
+		ResourceID:       nil,
+		ResourceType:     "",
+		MacAddress:       nil,
+		Tags:             nil,
+		IsIPv6:           nil,
+		ResourceName:     fi.PtrTo("api.paris.nonedns"),
+		ResourceIDs:      nil,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	if ips.TotalCount != 1 {
+
+		t.Error(err)
 	}
 }

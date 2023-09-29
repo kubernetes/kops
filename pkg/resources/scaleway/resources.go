@@ -33,17 +33,16 @@ import (
 )
 
 const (
-	resourceTypeDHCPConfig     = "dhcp-config"
-	resourceTypeDNSRecord    = "dns-record"
-	resourceTypeGateway      = "gateway"
+	resourceTypeDNSRecord      = "dns-record"
+	resourceTypeGateway        = "gateway"
 	resourceTypeGatewayNetwork = "gateway-network"
-	resourceTypeLoadBalancer = "load-balancer"
+	resourceTypeLoadBalancer   = "load-balancer"
 	resourceTypePrivateNetwork = "private-network"
-	resourceTypeServer       = "server"
-	resourceTypeServerIP     = "server-IP"
-	resourceTypeSSHKey       = "ssh-key"
-	resourceTypeVolume       = "volume"
-	resourceTypeVPC          = "vpc"
+	resourceTypeServer         = "server"
+	resourceTypeServerIP       = "server-IP"
+	resourceTypeSSHKey         = "ssh-key"
+	resourceTypeVolume         = "volume"
+	resourceTypeVPC            = "vpc"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -53,7 +52,6 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 	clusterName := clusterInfo.Name
 
 	listFunctions := []listFn{
-		listDHCPConfigs,
 		listGateways,
 		listGatewayNetworks,
 		listLoadBalancers,
@@ -98,31 +96,6 @@ func listDNSRecords(cloud fi.Cloud, clusterName string) ([]*resources.Resource, 
 				return deleteDNSRecord(cloud, tracker, clusterName)
 			},
 			Obj: record,
-		}
-		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-
-	return resourceTrackers, nil
-}
-
-func listDHCPConfigs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	c := cloud.(scaleway.ScwCloud)
-	dhcpConfigs, err := c.GetClusterDHCPConfigs()
-	if err != nil {
-		return nil, err
-	}
-
-	resourceTrackers := []*resources.Resource(nil)
-	for _, dhcpConfig := range dhcpConfigs {
-		resourceTracker := &resources.Resource{
-			//Name: dhcpConfig.Name,
-			ID:   dhcpConfig.ID,
-			Type: resourceTypeDHCPConfig,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteDHCPConfig(cloud, tracker)
-			},
-			Obj: dhcpConfig,
-			//Blocked: []string{resourceTypeGatewayNetwork+":"+dhcpConfig.},
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -185,7 +158,6 @@ func listGatewayNetworks(cloud fi.Cloud, clusterName string) ([]*resources.Resou
 				Obj: gwn,
 				Blocks: []string{
 					resourceTypePrivateNetwork + ":" + gwn.PrivateNetworkID,
-					resourceTypeDHCPConfig + ":" + gwn.DHCP.ID,
 					resourceTypeGateway + ":" + gwn.GatewayID,
 				},
 			}
@@ -390,13 +362,6 @@ func deleteDNSRecord(cloud fi.Cloud, tracker *resources.Resource, domainName str
 	record := tracker.Obj.(*domain.Record)
 
 	return c.DeleteDNSRecord(record, domainName)
-}
-
-func deleteDHCPConfig(cloud fi.Cloud, tracker *resources.Resource) error {
-	c := cloud.(scaleway.ScwCloud)
-	dhcpConfig := tracker.Obj.(*vpcgw.DHCP)
-
-	return c.DeleteDHCPConfig(dhcpConfig)
 }
 
 func deleteGateway(cloud fi.Cloud, tracker *resources.Resource) error {

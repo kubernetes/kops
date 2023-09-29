@@ -80,7 +80,6 @@ type ScwCloud interface {
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
 	GetClusterDNSRecords(clusterName string) ([]*domain.Record, error)
-	GetClusterDHCPConfigs() ([]*vpcgw.DHCP, error)
 	GetClusterGatewayNetworks(clusterName string) ([]*vpcgw.GatewayNetwork, error)
 	GetClusterGateways(clusterName string) ([]*vpcgw.Gateway, error)
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
@@ -92,7 +91,6 @@ type ScwCloud interface {
 	GetServerPrivateIP(serverName string, zone scw.Zone) (string, error)
 
 	DeleteDNSRecord(record *domain.Record, clusterName string) error
-	DeleteDHCPConfig(dhcpConfig *vpcgw.DHCP) error
 	DeleteGateway(gateway *vpcgw.Gateway) error
 	DeleteGatewayNetwork(gatewayNetwork *vpcgw.GatewayNetwork) error
 	DeleteLoadBalancer(loadBalancer *lb.LB) error
@@ -457,18 +455,6 @@ func (s *scwCloudImplementation) GetClusterDNSRecords(clusterName string) ([]*do
 	return clusterDNSRecords, nil
 }
 
-func (s *scwCloudImplementation) GetClusterDHCPConfigs() ([]*vpcgw.DHCP, error) {
-	dhcpConfigs, err := s.gatewayAPI.ListDHCPs(&vpcgw.ListDHCPsRequest{
-		Zone: s.zone,
-		//Address:        nil,
-		//HasAddress:     nil,
-	}, scw.WithAllPages())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list DHCP configs: %w", err)
-	}
-	return dhcpConfigs.Dhcps, nil
-}
-
 func (s *scwCloudImplementation) GetClusterGatewayNetworks(privateNetworkID string) ([]*vpcgw.GatewayNetwork, error) {
 	gwNetworks, err := s.gatewayAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
 		Zone:             s.zone,
@@ -635,21 +621,6 @@ func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterN
 			return nil
 		}
 		return fmt.Errorf("failed to delete record %s: %w", record.Name, err)
-	}
-	return nil
-}
-
-func (s *scwCloudImplementation) DeleteDHCPConfig(dhcpConfig *vpcgw.DHCP) error {
-	err := s.gatewayAPI.DeleteDHCP(&vpcgw.DeleteDHCPRequest{
-		Zone:   s.zone,
-		DHCPID: dhcpConfig.ID,
-	})
-	if err != nil {
-		if is404Error(err) {
-			klog.V(8).Infof("DHCP config %s was already deleted", dhcpConfig.ID)
-			return nil
-		}
-		return fmt.Errorf("failed to delete DHCP config: %w", err)
 	}
 	return nil
 }
