@@ -32,7 +32,7 @@ github.com/coreos/go-systemd/v22,https://github.com/coreos/go-systemd/blob/v22.5
 github.com/cpu/goacmedns,https://github.com/cpu/goacmedns/blob/v0.1.1/LICENSE,MIT
 github.com/davecgh/go-spew/spew,https://github.com/davecgh/go-spew/blob/d8f796af33cc/LICENSE,ISC
 github.com/digitalocean/godo,https://github.com/digitalocean/godo/blob/v1.102.1/LICENSE.txt,MIT
-github.com/emicklei/go-restful/v3,https://github.com/emicklei/go-restful/blob/v3.10.2/LICENSE,MIT
+github.com/emicklei/go-restful/v3,https://github.com/emicklei/go-restful/blob/v3.11.0/LICENSE,MIT
 github.com/evanphx/json-patch,https://github.com/evanphx/json-patch/blob/v5.6.0/LICENSE,BSD-3-Clause
 github.com/evanphx/json-patch/v5,https://github.com/evanphx/json-patch/blob/v5.6.0/v5/LICENSE,BSD-3-Clause
 github.com/felixge/httpsnoop,https://github.com/felixge/httpsnoop/blob/v1.0.3/LICENSE.txt,MIT

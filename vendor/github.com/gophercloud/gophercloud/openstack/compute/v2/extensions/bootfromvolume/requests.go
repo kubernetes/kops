@@ -79,6 +79,12 @@ type BlockDevice struct {
 	// VolumeType is the volume type of the block device.
 	// This requires Compute API microversion 2.67 or later.
 	VolumeType string `json:"volume_type,omitempty"`
+
+	// Tag is an arbitrary string that can be applied to a block device.
+	// Information about the device tags can be obtained from the metadata API
+	// and the config drive, allowing devices to be easily identified.
+	// This requires Compute API microversion 2.42 or later.
+	Tag string `json:"tag,omitempty"`
 }
 
 // CreateOptsExt is a structure that extends the server `CreateOpts` structure
