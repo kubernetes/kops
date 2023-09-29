@@ -15,20 +15,28 @@ type GatewayNetwork struct {
 	Name *string
 	Zone *string
 
+	//Address *string
+	//IsForAPIServer bool
+
 	Lifecycle      fi.Lifecycle
-	DHCPConfig     *DHCPConfig
 	Gateway        *Gateway
 	PrivateNetwork *PrivateNetwork
 }
 
-//	func (g *GatewayNetwork) GetName() *string {
-//		return g.Name
-//	}
-//
-// var _ fi.HasName = &GatewayNetwork{}
+//func (g *GatewayNetwork) IsForAPIServer() bool {
+//	return g.
+//}
+
+//func (g *GatewayNetwork) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+//	//TODO implement me
+//	panic("implement me")
+//}
+
 var _ fi.CloudupTask = &GatewayNetwork{}
 var _ fi.CompareWithID = &GatewayNetwork{}
 var _ fi.CloudupHasDependencies = &GatewayNetwork{}
+
+//var _ fi.HasAddress = &GatewayNetwork{}
 
 func (g *GatewayNetwork) CompareWithID() *string {
 	return g.ID
@@ -37,9 +45,6 @@ func (g *GatewayNetwork) CompareWithID() *string {
 func (g *GatewayNetwork) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask
 	for _, task := range tasks {
-		if _, ok := task.(*DHCPConfig); ok {
-			deps = append(deps, task)
-		}
 		if _, ok := task.(*PrivateNetwork); ok {
 			deps = append(deps, task)
 		}
@@ -53,7 +58,6 @@ func (g *GatewayNetwork) Find(context *fi.CloudupContext) (*GatewayNetwork, erro
 		Zone:             scw.Zone(cloud.Zone()),
 		GatewayID:        g.Gateway.ID,
 		PrivateNetworkID: g.PrivateNetwork.ID,
-		DHCPID:           g.DHCPConfig.ID,
 	}, scw.WithContext(context.Context()), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("listing gateway networks: %w", err)
@@ -68,10 +72,10 @@ func (g *GatewayNetwork) Find(context *fi.CloudupContext) (*GatewayNetwork, erro
 	gwnFound := gwns.GatewayNetworks[0]
 
 	return &GatewayNetwork{
-		ID:             fi.PtrTo(gwnFound.ID),
-		Zone:           fi.PtrTo(gwnFound.Zone.String()),
+		ID:   fi.PtrTo(gwnFound.ID),
+		Zone: fi.PtrTo(gwnFound.Zone.String()),
+		//Address:        fi.PtrTo(gwnFound.Address.IP.String()),
 		Lifecycle:      g.Lifecycle,
-		DHCPConfig:     g.DHCPConfig,
 		Gateway:        g.Gateway,
 		PrivateNetwork: g.PrivateNetwork,
 	}, nil
@@ -113,10 +117,11 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 		EnableMasquerade: true,
 		//EnableMasquerade: false,
 		EnableDHCP: scw.BoolPtr(true),
-		DHCPID:     expected.DHCPConfig.ID,
 		DHCP:       nil,
 		Address:    nil,
-		IpamConfig: nil,
+		IpamConfig: &vpcgw.IpamConfig{
+			PushDefaultRoute: true,
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("creating gateway network: %w", err)
