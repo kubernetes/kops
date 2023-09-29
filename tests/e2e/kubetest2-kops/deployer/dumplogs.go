@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -47,23 +48,29 @@ func (d *deployer) DumpClusterLogs() error {
 	cmd.SetEnv(d.env()...)
 	cmd.SetStdout(yamlFile)
 	cmd.SetStderr(os.Stderr)
+
+	var dumpErr error
 	if err := cmd.Run(); err != nil {
-		return err
+		klog.Warningf("kops toolbox dump failed: %v", err)
+		dumpErr = errors.Join(dumpErr, err)
 	}
 
 	if err := d.dumpClusterManifest(); err != nil {
-		return err
+		klog.Warningf("cluster manifest dump failed: %v", err)
+		dumpErr = errors.Join(dumpErr, err)
 	}
 
 	if err := d.dumpClusterInfo(); err != nil {
-		return err
+		klog.Warningf("cluster info dump failed: %v", err)
+		dumpErr = errors.Join(dumpErr, err)
 	}
 
-	return nil
+	return dumpErr
 }
 
 func (d *deployer) dumpClusterManifest() error {
 	resourceTypes := []string{"cluster", "instancegroups"}
+	var dumpErr error
 	for _, rt := range resourceTypes {
 		yamlFile, err := os.Create(path.Join(d.ArtifactsDir, fmt.Sprintf("%v.yaml", rt)))
 		if err != nil {
@@ -82,10 +89,10 @@ func (d *deployer) dumpClusterManifest() error {
 		cmd.SetStdout(yamlFile)
 		cmd.SetEnv(d.env()...)
 		if err := cmd.Run(); err != nil {
-			return err
+			dumpErr = errors.Join(err, dumpErr)
 		}
 	}
-	return nil
+	return dumpErr
 }
 
 func (d *deployer) dumpClusterInfo() error {
@@ -99,9 +106,11 @@ func (d *deployer) dumpClusterInfo() error {
 
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
+	var dumpErr error
+
 	if err := cmd.Run(); err != nil {
 		if err = d.dumpClusterInfoSSH(); err != nil {
-			return err
+			dumpErr = errors.Join(dumpErr, err)
 		}
 	}
 
@@ -133,6 +142,7 @@ func (d *deployer) dumpClusterInfo() error {
 		cmd.SetStdout(yamlFile)
 		if err := cmd.Run(); err != nil {
 			klog.Warningf("Failed to get %v: %v", resType, err)
+			dumpErr = errors.Join(dumpErr, err)
 		}
 	}
 
@@ -141,7 +151,8 @@ func (d *deployer) dumpClusterInfo() error {
 	)
 	namespaces, err := exec.OutputLines(nsCmd)
 	if err != nil {
-		return fmt.Errorf("failed to get namespaces: %s", err)
+		dumpErr = errors.Join(dumpErr, err)
+		klog.Warningf("failed to get namespaces: %v", err)
 	}
 
 	namespacedResourceTypes := []string{
@@ -156,12 +167,12 @@ func (d *deployer) dumpClusterInfo() error {
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
 		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0o755); err != nil {
-			return err
+			dumpErr = errors.Join(dumpErr, err)
 		}
 		for _, resType := range namespacedResourceTypes {
 			yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "cluster-info", namespace, fmt.Sprintf("%v.yaml", resType)))
 			if err != nil {
-				return err
+				dumpErr = errors.Join(dumpErr, err)
 			}
 			defer yamlFile.Close()
 
@@ -179,11 +190,12 @@ func (d *deployer) dumpClusterInfo() error {
 			if err := cmd.Run(); err != nil {
 				if err = d.dumpClusterInfoSSH(); err != nil {
 					klog.Warningf("Failed to get %v: %v", resType, err)
+					dumpErr = errors.Join(dumpErr, err)
 				}
 			}
 		}
 	}
-	return nil
+	return dumpErr
 }
 
 // dumpClusterInfoSSH runs `kubectl cluster-info dump` on a control plane host via SSH
