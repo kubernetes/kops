@@ -11,14 +11,10 @@
   * Instance size (also called commercial type)
 * Migrating from single to multi-master
 
-### Coming soon
-
-* [Terraform](https://github.com/scaleway/terraform-provider-scaleway) support
-* Private network
-
 ### Next features to implement
 
 * [Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/scaleway) support
+* Private network
 * BareMetal servers
 
 ## Requirements
@@ -111,3 +107,69 @@ kops update cluster mycluster.k8s.local --yes
 ```bash
 kops delete cluster mycluster.k8s.local --yes
 ```
+
+# Terraform support
+
+kOps offers the possibility to generate a Terraform configuration corresponding to the cluster that would have been created directly otherwise.
+
+You can find more information on the dedicated page on [kOps Terraform support](../terraform.md) or [Scaleway's Terraform provider's documentation](https://github.com/scaleway/terraform-provider-scaleway).
+
+## For clusters without load-balancers
+
+This concerns clusters using Scaleway DNS.
+
+```bash
+kops create cluster --cloud=scaleway --name=mycluster.mydomain.com --zones=fr-par-1 --target=terraform --out=$OUTPUT_DIR
+cd $OUTPUT_DIR
+terraform init
+terraform apply
+```
+kOps will generate a `kubernetes.tf` file in the output directory of your choice, you just have to initialize Terraform and apply the configuration.
+NB: keep in mind that every new call to kOps with the flags `--target=terraform --out=$OUTPUT_DIR` will overwrite `kubernetes.tf` so any changes that you made to it will be lost.
+
+## For clusters with load-balancers
+
+This concerns clusters using no DNS and gossip DNS. For these types of cluster, a small trick is needed because kOps doesn't know the IPs of the load-balancer at the time of writing the instances' cloud-init configuration, so we will have to run an update, then a rolling-update.
+
+### Creating a valid cluster
+
+```bash
+kops create cluster --cloud=scaleway --name=my.cluster --zones=fr-par-1 --target=terraform --out=$OUTPUT_DIR
+cd $OUTPUT_DIR
+terraform init
+terraform apply
+# Now that the load-balancer is up, we update the cluster to integrate its IP to the instances' configuration
+kops update cluster my.cluster --target=terraform --out=$OUTPUT_DIR
+# Then we replace the instances's for them to reboot with the new configuration (the --cloudonly flag is needed because the cluster can't be validated at this point)
+kops rolling-update cluster my.cluster --cloudonly --yes
+```
+
+### Keeping the Terraform state consistent after a rolling-update
+
+Now that the instances have been replaced by the rolling-update, your cluster can now be validated.
+However, since resources have changed outside of Terraform, the state is now invalid. If you need to keep the state consistent with the cluster, you should import the new instances. This can be achieved with this script:
+
+```bash
+# First we need to retrieve the names of the instances
+cd "$OUTPUT_DIR" || exit
+TF_SERVERS=($(grep 'resource "scaleway_instance_server"' < kubernetes.tf | awk '{print $3}' | cut -d'"' -f 2))
+# Then we get the zone for the import
+ZONE=$(terraform output zone | cut -d '"' -f2)
+# And for each instance:
+for SERVER in "${TF_SERVERS[@]}"; do
+  # We remove the stale instance from the state
+  terraform state rm scaleway_instance_server.$SERVER
+  # We fetch its new ID
+  NEW_SERVER_ID=$(scw instance server list zone=$ZONE name=$SERVER -o template="{{ .ID }}")
+  if [ "$NEW_SERVER_ID" == "" ]; then
+    echo "could not find new ID of the server $SERVER"
+  fi
+  # We import the new instance in the state
+  terraform import scaleway_instance_server.$SERVER $ZONE/$NEW_SERVER_ID
+done
+```
+
+NB: for the script to run, you will need to have the [Scaleway CLI](https://github.com/scaleway/scaleway-cli) installed. You can also fetch the IDs of the new instances manually in the [Scaleway Console](https://console.scaleway.com) but if you have a lot of them this may not be practical.
+If you need help with the CLI, these resources might help:
+* [Installing the CLI](https://github.com/scaleway/scaleway-cli#readme)
+* [Tutorial for setting up the CLI and managing instances with it](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/) 

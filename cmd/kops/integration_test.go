@@ -1768,8 +1768,8 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
 		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
 		"aws_s3_object_"+i.clusterName+"-addons-networking.cilium.io-k8s-1.16_content",
-		"scaleway_instance_server_control-plane-fr-par-1_user_data",
-		"scaleway_instance_server_nodes-fr-par-1_user_data",
+		"scaleway_instance_server_control-plane-fr-par-1-0_user_data",
+		"scaleway_instance_server_nodes-fr-par-1-0_user_data",
 	)
 
 	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)

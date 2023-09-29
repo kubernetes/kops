@@ -400,6 +400,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	project := ""
+	scwZone := ""
 
 	var sshPublicKeys [][]byte
 	{
@@ -487,10 +488,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with Scaleway (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
-
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Scaleway; please delete a key using `kops delete secret`")
 			}
+
+			scwCloud := cloud.(scaleway.ScwCloud)
+			scwZone = scwCloud.Zone()
 		}
 
 	default:
@@ -692,6 +695,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 			l.Builders = append(l.Builders,
 				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
+				&scalewaymodel.DNSModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
@@ -740,6 +744,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		if project != "" {
 			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
+				return err
+			}
+		}
+		if scwZone != "" {
+			if err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwZone)); err != nil {
 				return err
 			}
 		}

@@ -21,10 +21,10 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
@@ -32,8 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
-
-var commercialTypesWithBlockStorageOnly = []string{"PRO", "PLAY", "ENT"}
 
 // +kops:fitask
 type Instance struct {
@@ -46,6 +44,7 @@ type Instance struct {
 	Image          *string
 	Tags           []string
 	Count          int
+	VolumeSize     *int
 	NeedsUpdate    []string
 
 	UserData     *fi.Resource
@@ -57,6 +56,18 @@ var _ fi.CompareWithID = &Instance{}
 
 func (s *Instance) CompareWithID() *string {
 	return s.Name
+}
+
+var _ fi.CloudupHasDependencies = &Instance{}
+
+func (s *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*Volume); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
 }
 
 func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
@@ -112,20 +123,8 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	}
 
 	server := servers[0]
-
-	igName := ""
-	for _, tag := range server.Tags {
-		if strings.HasPrefix(tag, scaleway.TagInstanceGroup) {
-			igName = strings.TrimPrefix(tag, scaleway.TagInstanceGroup+"=")
-		}
-	}
-
-	role := scaleway.TagRoleWorker
-	for _, tag := range server.Tags {
-		if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
-			role = scaleway.TagRoleControlPlane
-		}
-	}
+	igName := scaleway.InstanceGroupNameFromTags(server.Tags)
+	role := scaleway.InstanceRoleFromTags(server.Tags)
 
 	imageLabel, err := imageLabelFromID(c, cloud, server.Image.ID)
 	if err != nil {
@@ -179,7 +178,6 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	cloud := t.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
-	controlPlanePrivateIPs := []string(nil)
 
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
@@ -218,30 +216,25 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 		// We create a unique name for each server
-		actualCount := 0
-		if actual != nil {
-			actualCount = actual.Count
+		uniqueName, err := uniqueName(cloud, scaleway.ClusterNameFromTags(expected.Tags), fi.ValueOf(expected.Name))
+		if err != nil {
+			return fmt.Errorf("error rendering server group %s: computing unique name for server: %w", fi.ValueOf(expected.Name), err)
 		}
-		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i+actualCount)
 
-		// If the instance's commercial type is one that has no local storage, we have to specify for the
-		// block storage volume a big enough size (default size is 10GB)
-		commercialType := fi.ValueOf(expected.CommercialType)
 		createServerRequest := instance.CreateServerRequest{
 			Zone:           zone,
 			Name:           uniqueName,
-			CommercialType: commercialType,
+			CommercialType: fi.ValueOf(expected.CommercialType),
 			Image:          fi.ValueOf(expected.Image),
 			Tags:           expected.Tags,
 		}
-		for _, ct := range commercialTypesWithBlockStorageOnly {
-			if strings.HasPrefix(commercialType, ct) {
-				continue
-			}
+
+		// We resize the root volume if needed (for instance types with no local storage)
+		if expected.VolumeSize != nil {
 			createServerRequest.Volumes = map[string]*instance.VolumeServerTemplate{
 				"0": {
 					Boot:       fi.PtrTo(true),
-					Size:       fi.PtrTo(scw.GB * 50),
+					Size:       fi.PtrTo(scw.Size(fi.ValueOf(expected.VolumeSize)) * scw.GB),
 					VolumeType: instance.VolumeVolumeTypeBSSD,
 				},
 			}
@@ -289,20 +282,6 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		if err != nil {
 			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
-
-		// If instance has control-plane role, we add its private IP to the list to add it to the lb's backend
-		if fi.ValueOf(expected.Role) == scaleway.TagRoleControlPlane {
-
-			// We update the server's infos (to get its IP)
-			server, err := instanceService.GetServer(&instance.GetServerRequest{
-				Zone:     zone,
-				ServerID: srv.Server.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("getting server %s: %s", srv.Server.ID, err)
-			}
-			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
-		}
 	}
 
 	// If newInstanceCount < 0, we need to delete instances of this group
@@ -315,11 +294,6 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 
 		for i := 0; i > newInstanceCount; i-- {
 			toDelete := igInstances[i*-1]
-
-			if fi.ValueOf(actual.Role) == scaleway.TagRoleControlPlane {
-				controlPlanePrivateIPs = append(controlPlanePrivateIPs, *toDelete.PrivateIP)
-			}
-
 			err = cloud.DeleteServer(toDelete)
 			if err != nil {
 				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
@@ -327,104 +301,97 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		}
 	}
 
-	// If IG is control-plane, we need to update the load-balancer's back-end
-	if len(controlPlanePrivateIPs) > 0 {
-		lbService := cloud.LBService()
-		zone := scw.Zone(cloud.Zone())
-
-		lbs, err := cloud.GetClusterLoadBalancers(cloud.ClusterName(expected.Tags))
-		if err != nil {
-			return fmt.Errorf("listing load-balancers for instance creation: %w", err)
-		}
-
-		for _, loadBalancer := range lbs {
-			backEnds, err := lbService.ListBackends(&lb.ZonedAPIListBackendsRequest{
-				Zone: zone,
-				LBID: loadBalancer.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
-			}
-
-			for _, backEnd := range backEnds.Backends {
-				// If we are adding instances, we also need to add them to the load-balancer's backend
-				if newInstanceCount > 0 {
-					_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
-						Zone:      zone,
-						BackendID: backEnd.ID,
-						ServerIP:  controlPlanePrivateIPs,
-					})
-					if err != nil {
-						return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
-					}
-
-				} else {
-					// If we are deleting instances, we also need to delete them from the load-balancer's backend
-					_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
-						Zone:      zone,
-						BackendID: backEnd.ID,
-						ServerIP:  controlPlanePrivateIPs,
-					})
-					if err != nil {
-						return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
-					}
-				}
-				_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-					LBID: loadBalancer.ID,
-					Zone: zone,
-				})
-				if err != nil {
-					return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
-				}
-			}
-		}
-	}
-
 	return nil
 }
 
-type terraformInstanceIP struct{}
+type terraformInstanceIP struct {
+	Tags []string `cty:"tags"`
+}
 
 type terraformInstance struct {
-	Name     *string                             `cty:"name"`
-	IPID     *terraformWriter.Literal            `cty:"ip_id"`
-	Type     *string                             `cty:"type"`
-	Tags     []string                            `cty:"tags"`
-	Image    *string                             `cty:"image"`
-	UserData map[string]*terraformWriter.Literal `cty:"user_data"`
+	Name                *string                             `cty:"name"`
+	IPID                *terraformWriter.Literal            `cty:"ip_id"`
+	Type                *string                             `cty:"type"`
+	Tags                []string                            `cty:"tags"`
+	Image               *string                             `cty:"image"`
+	UserData            map[string]*terraformWriter.Literal `cty:"user_data"`
+	RootVolume          []terraformVolume                   `cty:"root_volume"`
+	EnableDynamicIP     *bool                               `cty:"enable_dynamic_ip"`
+	ReplaceOnTypeChange *bool                               `cty:"replace_on_type_change"`
+	Lifecycle           *terraform.Lifecycle                `cty:"lifecycle"`
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Instance) error {
-	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+	for i := 0; i < expected.Count; i++ {
+		// We create a unique name for each server
+		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i)
+		tfName := strings.ReplaceAll(uniqueName, ".", "-")
 
-	tfInstanceIP := terraformInstanceIP{}
-	err := t.RenderResource("scaleway_instance_ip", tfName, tfInstanceIP)
-	if err != nil {
-		return err
-	}
-
-	tfInstance := terraformInstance{
-		Name:  expected.Name,
-		IPID:  terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
-		Type:  expected.CommercialType,
-		Tags:  expected.Tags,
-		Image: expected.Image,
-	}
-	if expected.UserData != nil {
-		userDataBytes, err := fi.ResourceAsBytes(fi.ValueOf(expected.UserData))
-		if err != nil {
-			return err
+		tfInstance := terraformInstance{
+			Name:                &uniqueName,
+			IPID:                terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
+			Type:                expected.CommercialType,
+			Tags:                expected.Tags,
+			Image:               expected.Image,
+			EnableDynamicIP:     fi.PtrTo(true),
+			ReplaceOnTypeChange: fi.PtrTo(false),
+			Lifecycle:           nil,
 		}
-		if userDataBytes != nil {
-			tfUserData, err := t.AddFileBytes("scaleway_instance_server", tfName, "user_data", userDataBytes, true)
+
+		// We load the cloud-init script in the instance user data
+		if expected.UserData != nil {
+			userDataBytes, err := fi.ResourceAsBytes(fi.ValueOf(expected.UserData))
 			if err != nil {
 				return err
 			}
-			tfInstance.UserData = map[string]*terraformWriter.Literal{
-				"cloud-init": tfUserData}
+			if userDataBytes != nil {
+				tfUserData, err := t.AddFileBytes("scaleway_instance_server", tfName, "user_data", userDataBytes, false)
+				if err != nil {
+					return err
+				}
+				tfInstance.UserData = map[string]*terraformWriter.Literal{
+					"cloud-init": tfUserData,
+				}
+			}
+		}
+
+		// We resize the root volume if needed (for instance types with no local storage)
+		if expected.VolumeSize != nil {
+			tfInstance.RootVolume = []terraformVolume{
+				{
+					SizeInGB: expected.VolumeSize,
+					Boot:     fi.PtrTo(true),
+				},
+			}
+		}
+
+		// For control-plane instances, we want to ignore changes to additional volumes since the etcd-manager will
+		// attach etcd volumes outside of Terraform
+		if scaleway.InstanceRoleFromTags(expected.Tags) == scaleway.TagRoleControlPlane {
+			tfInstance.Lifecycle = &terraform.Lifecycle{
+				IgnoreChanges: []*terraformWriter.Literal{{String: "additional_volume_ids"}},
+			}
+		}
+
+		// We create an IP for the server (we only render it now to avoid duplicates if Instance task fails)
+		tfInstanceIP := terraformInstanceIP{}
+		for _, tag := range expected.Tags {
+			if strings.HasPrefix(tag, scaleway.TagClusterName) {
+				tfInstanceIP.Tags = []string{tag}
+				break
+			}
+		}
+		err := t.RenderResource("scaleway_instance_ip", tfName, tfInstanceIP)
+		if err != nil {
+			return err
+		}
+
+		err = t.RenderResource("scaleway_instance_server", tfName, tfInstance)
+		if err != nil {
+			return err
 		}
 	}
-	return t.RenderResource("scaleway_instance_server", tfName, tfInstance)
+	return nil
 }
 
 func checkImageDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, actualServer *instance.Server, expectedImage string) (bool, error) {
@@ -476,4 +443,31 @@ func imageLabelFromID(c *fi.CloudupContext, cloud scaleway.ScwCloud, id string) 
 		return "", fmt.Errorf("getting image from the marketplace: %w", err)
 	}
 	return localImage.Label, nil
+}
+
+func findFirstFreeIndex(existing []*instance.Server) int {
+	index := 0
+	for {
+		found := false
+		for _, server := range existing {
+			if strings.HasSuffix(server.Name, strconv.Itoa(index)) {
+				found = true
+				index++
+				break
+			}
+		}
+		if found == false {
+			return index
+		}
+	}
+}
+
+func uniqueName(cloud scaleway.ScwCloud, clusterName, igName string) (string, error) {
+	existing, err := cloud.GetClusterServers(clusterName, &igName)
+	if err != nil {
+		return "", err
+	}
+	index := findFirstFreeIndex(existing)
+
+	return fmt.Sprintf("%s-%d", igName, index), nil
 }

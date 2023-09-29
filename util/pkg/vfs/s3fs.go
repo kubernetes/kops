@@ -638,6 +638,12 @@ type terraformDOFile struct {
 	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
 }
 
+type terraformScwFile struct {
+	Bucket  string                   `json:"bucket" cty:"bucket"`
+	Key     string                   `json:"key" cty:"key"`
+	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+}
+
 func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
 	ctx := context.TODO()
 
@@ -668,6 +674,21 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 			Content: content,
 		}
 		return w.RenderResource("digitalocean_spaces_bucket_object", name, tf)
+
+		// render Scaleway's Terraform objects
+	} else if p.scheme == "scw" {
+
+		content, err := w.AddFileBytes("scaleway_object", name, "content", bytes, false)
+		if err != nil {
+			return fmt.Errorf("error rendering Scaleway file: %w", err)
+		}
+
+		tf := terraformScwFile{
+			Bucket:  p.Bucket(),
+			Key:     p.Key(),
+			Content: content,
+		}
+		return w.RenderResource("scaleway_object", name, tf)
 
 	} else {
 		bucketDetails, err := p.getBucketDetails(ctx)

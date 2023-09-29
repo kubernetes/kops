@@ -72,6 +72,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	loadBalancer := &scalewaytasks.LoadBalancer{
 		Name:                  fi.PtrTo(loadBalancerName),
 		Zone:                  fi.PtrTo(string(zone)),
+		Type:                  scalewaytasks.LbDefaultType,
 		Lifecycle:             b.Lifecycle,
 		Tags:                  lbTags,
 		Description:           "Load-balancer for kops cluster " + b.ClusterName(),
@@ -109,7 +110,7 @@ func createLbBackendAndFrontend(name string, port int, zone scw.Zone, loadBalanc
 		ForwardPort:          fi.PtrTo(int32(port)),
 		ForwardPortAlgorithm: fi.PtrTo(string(lb.ForwardPortAlgorithmRoundrobin)),
 		StickySessions:       fi.PtrTo(string(lb.StickySessionsTypeNone)),
-		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolUnknown)),
+		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolNone)),
 		LoadBalancer:         loadBalancer,
 	}
 
