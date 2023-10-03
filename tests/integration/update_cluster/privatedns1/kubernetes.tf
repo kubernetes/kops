@@ -884,9 +884,10 @@ resource "aws_lb_target_group" "bastion-privatedns1-examp-mbgbef" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privatedns1-examp-mbgbef"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privatedns1-examp-mbgbef"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "bastion-privatedns1-examp-mbgbef"

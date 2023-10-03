@@ -803,9 +803,10 @@ resource "aws_lb_target_group" "bastion-bastionuserdata-e-4grhsv" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-bastionuserdata-e-4grhsv"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-bastionuserdata-e-4grhsv"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                                 = "bastionuserdata.example.com"
     "Name"                                              = "bastion-bastionuserdata-e-4grhsv"

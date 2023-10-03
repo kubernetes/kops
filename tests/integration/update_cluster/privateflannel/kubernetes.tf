@@ -802,9 +802,10 @@ resource "aws_lb_target_group" "bastion-privateflannel-ex-753531" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privateflannel-ex-753531"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privateflannel-ex-753531"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                                = "privateflannel.example.com"
     "Name"                                             = "bastion-privateflannel-ex-753531"

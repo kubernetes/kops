@@ -612,9 +612,10 @@ resource "aws_lb_target_group" "kops-controller-minimal-e-uvauf3" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "kops-controller-minimal-e-uvauf3"
-  port     = 3988
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "kops-controller-minimal-e-uvauf3"
+  port            = 3988
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "kops-controller-minimal-e-uvauf3"
@@ -632,9 +633,10 @@ resource "aws_lb_target_group" "tcp-minimal-example-com-5905t8" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "tcp-minimal-example-com-5905t8"
-  port     = 443
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "tcp-minimal-example-com-5905t8"
+  port            = 443
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "tcp-minimal-example-com-5905t8"

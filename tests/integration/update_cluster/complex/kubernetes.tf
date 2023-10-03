@@ -683,9 +683,10 @@ resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "tcp-complex-example-com-vpjolq"
-  port     = 443
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "tcp-complex-example-com-vpjolq"
+  port            = 443
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "tcp-complex-example-com-vpjolq"
@@ -705,9 +706,10 @@ resource "aws_lb_target_group" "tls-complex-example-com-5nursn" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "tls-complex-example-com-5nursn"
-  port     = 443
-  protocol = "TLS"
+  ip_address_type = "ipv4"
+  name            = "tls-complex-example-com-5nursn"
+  port            = 443
+  protocol        = "TLS"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "tls-complex-example-com-5nursn"

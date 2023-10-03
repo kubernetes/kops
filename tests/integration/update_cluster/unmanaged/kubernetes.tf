@@ -787,9 +787,10 @@ resource "aws_lb_target_group" "bastion-unmanaged-example-d7bn3d" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-unmanaged-example-d7bn3d"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-unmanaged-example-d7bn3d"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                           = "unmanaged.example.com"
     "Name"                                        = "bastion-unmanaged-example-d7bn3d"

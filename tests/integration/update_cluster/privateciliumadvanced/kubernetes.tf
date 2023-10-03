@@ -819,9 +819,10 @@ resource "aws_lb_target_group" "bastion-privateciliumadva-0jni40" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privateciliumadva-0jni40"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privateciliumadva-0jni40"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
     "Name"                                                    = "bastion-privateciliumadva-0jni40"

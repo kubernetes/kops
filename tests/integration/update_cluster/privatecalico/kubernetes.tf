@@ -798,9 +798,10 @@ resource "aws_lb_target_group" "bastion-privatecalico-exa-hocohm" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privatecalico-exa-hocohm"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privatecalico-exa-hocohm"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                               = "privatecalico.example.com"
     "Name"                                            = "bastion-privatecalico-exa-hocohm"

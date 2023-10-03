@@ -652,9 +652,10 @@ resource "aws_lb_target_group" "tcp-minimal-ipv6-example--bne5ih" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "tcp-minimal-ipv6-example--bne5ih"
-  port     = 443
-  protocol = "TCP"
+  ip_address_type = "ipv6"
+  name            = "tcp-minimal-ipv6-example--bne5ih"
+  port            = 443
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "tcp-minimal-ipv6-example--bne5ih"
@@ -1195,24 +1196,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "icmp-pmtu-cp-to-elb" {
-  from_port                = 3
-  protocol                 = "icmp"
-  security_group_id        = aws_security_group.api-elb-minimal-ipv6-example-com.id
-  source_security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
-  to_port                  = 4
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-elb-to-cp" {
-  from_port                = 3
-  protocol                 = "icmp"
-  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
-  source_security_group_id = aws_security_group.api-elb-minimal-ipv6-example-com.id
-  to_port                  = 4
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   from_port         = -1
   ipv6_cidr_blocks  = ["::/0"]
@@ -1220,6 +1203,24 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   security_group_id = aws_security_group.api-elb-minimal-ipv6-example-com.id
   to_port           = -1
   type              = "ingress"
+}
+
+resource "aws_security_group_rule" "icmpv6-pmtu-cp-to-elb" {
+  from_port                = -1
+  protocol                 = "icmpv6"
+  security_group_id        = aws_security_group.api-elb-minimal-ipv6-example-com.id
+  source_security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
+  to_port                  = -1
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "icmpv6-pmtu-elb-to-cp" {
+  from_port                = -1
+  protocol                 = "icmpv6"
+  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
+  source_security_group_id = aws_security_group.api-elb-minimal-ipv6-example-com.id
+  to_port                  = -1
+  type                     = "ingress"
 }
 
 resource "aws_sqs_queue" "minimal-ipv6-example-com-nth" {

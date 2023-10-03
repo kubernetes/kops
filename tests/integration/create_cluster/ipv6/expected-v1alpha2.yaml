@@ -87,7 +87,7 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - dualstack-us-test-1a
+  - us-test-1a
 
 ---
 

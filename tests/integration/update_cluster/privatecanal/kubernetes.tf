@@ -802,9 +802,10 @@ resource "aws_lb_target_group" "bastion-privatecanal-exam-hmhsp5" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privatecanal-exam-hmhsp5"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privatecanal-exam-hmhsp5"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                              = "privatecanal.example.com"
     "Name"                                           = "bastion-privatecanal-exam-hmhsp5"

@@ -811,9 +811,10 @@ resource "aws_lb_target_group" "bastion-privatekopeio-exa-d8ef8e" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-privatekopeio-exa-d8ef8e"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-privatekopeio-exa-d8ef8e"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "bastion-privatekopeio-exa-d8ef8e"

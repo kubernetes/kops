@@ -779,9 +779,10 @@ resource "aws_lb_target_group" "bastion-private-shared-su-5ol32q" {
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "bastion-private-shared-su-5ol32q"
-  port     = 22
-  protocol = "TCP"
+  ip_address_type = "ipv4"
+  name            = "bastion-private-shared-su-5ol32q"
+  port            = 22
+  protocol        = "TCP"
   tags = {
     "KubernetesCluster"                                       = "private-shared-subnet.example.com"
     "Name"                                                    = "bastion-private-shared-su-5ol32q"
