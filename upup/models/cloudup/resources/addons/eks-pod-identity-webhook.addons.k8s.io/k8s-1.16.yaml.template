@@ -192,6 +192,9 @@ spec:
   - port: 443
     targetPort: 443
     protocol: TCP
+  - port: 9999
+    targetPort: 9999
+    protocol: TCP
   selector:
     app: pod-identity-webhook
 ---
