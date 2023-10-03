@@ -134,6 +134,23 @@ func setType(v reflect.Value, newValue string) error {
 
 	t := v.Type().String()
 
+	if v.Type().Kind() == reflect.Map {
+		if v.IsNil() {
+			v.Set(reflect.MakeMap(v.Type()))
+		}
+
+		switch t {
+		case "map[string]string":
+			name, value, _ := strings.Cut(newValue, "=")
+			v.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(value))
+
+		default:
+			return fmt.Errorf("unhandled type %q", t)
+		}
+
+		return nil
+	}
+
 	var newV reflect.Value
 
 	switch t {
@@ -168,6 +185,7 @@ func setType(v reflect.Value, newValue string) error {
 		default:
 			panic("missing case in int switch")
 		}
+
 	case "uint64", "uint32", "uint16", "uint":
 		v, err := strconv.Atoi(newValue)
 		if err != nil {
@@ -189,6 +207,7 @@ func setType(v reflect.Value, newValue string) error {
 		default:
 			panic("missing case in uint switch")
 		}
+
 	case "intstr.IntOrString":
 		newV = reflect.ValueOf(intstr.Parse(newValue))
 
