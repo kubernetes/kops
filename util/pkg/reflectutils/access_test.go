@@ -65,6 +65,8 @@ type fakeObjectContainers struct {
 
 	Enum      fakeEnum   `json:"enum"`
 	EnumSlice []fakeEnum `json:"enumSlice"`
+
+	StringMap map[string]string `json:"stringMap"`
 }
 
 type fakeObjectPolicy struct {
@@ -196,6 +198,27 @@ func TestSet(t *testing.T) {
 			Expected: "{ 'spec': { 'containers': [ { 'duration': '500ms' } ] } }",
 			Path:     "spec.containers[0].duration",
 			Value:    "500ms",
+		},
+		{
+			Name:     "set new map key",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'stringMap': { 'ABC': '' } } ] } }",
+			Path:     "spec.containers[0].stringMap",
+			Value:    "ABC",
+		},
+		{
+			Name:     "set new map key with val",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'stringMap': { 'ABC': 'DEF' } } ] } }",
+			Path:     "spec.containers[0].stringMap",
+			Value:    "ABC=DEF",
+		},
+		{
+			Name:     "set existing map key with val",
+			Input:    "{ 'spec': { 'containers': [ { 'stringMap': { 'ABC': 'DEF' } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'stringMap': { 'ABC': 'DEF', 'GHI': 'JKL' } } ] } }",
+			Path:     "spec.containers[0].stringMap",
+			Value:    "GHI=JKL",
 		},
 		// Not sure if we should do this...
 		// {

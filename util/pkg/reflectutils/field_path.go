@@ -95,8 +95,7 @@ func ParseFieldPath(s string) (*FieldPath, error) {
 				token: field,
 			})
 
-		case '.':
-			// TODO: Validate that we don't have two dots?
+		case '.', '/':
 			// Skip
 
 		case '[':
