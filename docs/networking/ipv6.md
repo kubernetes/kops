@@ -23,7 +23,7 @@ For example, if the VPC's CIDR is `2001:db8::/56` then the syntax `/64#a` would 
 
 Public and utility subnets are expected to be dual-stack. Subnets of type `Private` are expected to be IPv6-only.
 There is a new type of subnet `DualStack` which is like `Private` but is dual-stack.
-The `DualStack` subnets are used by default for the control plane and APIServer nodes.
+Prior to kOps 1.29, `DualStack` subnets are used by default for bastion servers, the control plane, and APIServer nodes.
 
 IPv6-only subnets require Kubernetes 1.22 or later. For this reason, private topology on an IPv6 cluster also
 requires Kubernetes 1.22 or later.

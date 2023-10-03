@@ -157,14 +157,6 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if len(ig.Spec.Subnets) == 0 {
 			return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
-	} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
-		if len(ig.Spec.Subnets) == 0 {
-			for _, subnet := range cluster.Spec.Networking.Subnets {
-				if subnet.Type != kops.SubnetTypePrivate && subnet.Type != kops.SubnetTypeUtility {
-					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
-				}
-			}
-		}
 	} else {
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Networking.Subnets {

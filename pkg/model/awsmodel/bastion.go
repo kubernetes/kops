@@ -288,31 +288,60 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			AddDirectionalGroupRule(c, t)
 		}
-		{
-			suffix := bastionGroup.Suffix
-			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("icmp-to-bastion%s", suffix)),
-				Lifecycle:     b.SecurityLifecycle,
-				SecurityGroup: bastionGroup.Task,
-				SourceGroup:   lbSG,
-				Protocol:      fi.PtrTo("icmp"),
-				FromPort:      fi.PtrTo(int64(3)),
-				ToPort:        fi.PtrTo(int64(4)),
+		if useIPv6ForBastion(b) {
+			{
+				suffix := bastionGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmpv6-to-bastion%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					SecurityGroup: bastionGroup.Task,
+					SourceGroup:   lbSG,
+					Protocol:      fi.PtrTo("icmpv6"),
+					FromPort:      fi.PtrTo(int64(-1)),
+					ToPort:        fi.PtrTo(int64(-1)),
+				}
+				AddDirectionalGroupRule(c, t)
 			}
-			AddDirectionalGroupRule(c, t)
-		}
-		{
-			suffix := bastionGroup.Suffix
-			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("icmp-from-bastion%s", suffix)),
-				Lifecycle:     b.SecurityLifecycle,
-				SecurityGroup: lbSG,
-				SourceGroup:   bastionGroup.Task,
-				Protocol:      fi.PtrTo("icmp"),
-				FromPort:      fi.PtrTo(int64(3)),
-				ToPort:        fi.PtrTo(int64(4)),
+			{
+				suffix := bastionGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmpv6-from-bastion%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					SecurityGroup: lbSG,
+					SourceGroup:   bastionGroup.Task,
+					Protocol:      fi.PtrTo("icmpv6"),
+					FromPort:      fi.PtrTo(int64(-1)),
+					ToPort:        fi.PtrTo(int64(-1)),
+				}
+				AddDirectionalGroupRule(c, t)
 			}
-			AddDirectionalGroupRule(c, t)
+		} else {
+			{
+				suffix := bastionGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmp-to-bastion%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					SecurityGroup: bastionGroup.Task,
+					SourceGroup:   lbSG,
+					Protocol:      fi.PtrTo("icmp"),
+					FromPort:      fi.PtrTo(int64(3)),
+					ToPort:        fi.PtrTo(int64(4)),
+				}
+				AddDirectionalGroupRule(c, t)
+			}
+			{
+				suffix := bastionGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmp-from-bastion%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					SecurityGroup: lbSG,
+					SourceGroup:   bastionGroup.Task,
+					Protocol:      fi.PtrTo("icmp"),
+					FromPort:      fi.PtrTo(int64(3)),
+					ToPort:        fi.PtrTo(int64(4)),
+				}
+				AddDirectionalGroupRule(c, t)
+			}
 		}
 	}
 
@@ -381,6 +410,7 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle:          b.Lifecycle,
 			VPC:                b.LinkToVPC(),
 			Tags:               sshGroupTags,
+			IPAddressType:      fi.PtrTo("ipv4"),
 			Protocol:           fi.PtrTo("TCP"),
 			Port:               fi.PtrTo(int64(22)),
 			Attributes:         groupAttrs,
@@ -388,6 +418,9 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			HealthyThreshold:   fi.PtrTo(int64(2)),
 			UnhealthyThreshold: fi.PtrTo(int64(2)),
 			Shared:             fi.PtrTo(false),
+		}
+		if useIPv6ForBastion(b) {
+			tg.IPAddressType = fi.PtrTo("ipv6")
 		}
 
 		c.AddTask(tg)

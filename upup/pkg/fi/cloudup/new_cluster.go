@@ -493,14 +493,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			if len(ig.Spec.Subnets) == 0 {
 				return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 			}
-		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
-			if len(ig.Spec.Subnets) == 0 {
-				for _, subnet := range cluster.Spec.Networking.Subnets {
-					if subnet.Type != api.SubnetTypePrivate && subnet.Type != api.SubnetTypeUtility {
-						ig.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
-					}
-				}
-			}
 		} else {
 			if len(ig.Spec.Subnets) == 0 {
 				for _, subnet := range cluster.Spec.Networking.Subnets {
@@ -903,11 +895,7 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			default:
 				// Use only the main subnet for control-plane nodes
 				subnet := subnets[0]
-				if opt.IPv6 && opt.Topology == api.TopologyPrivate {
-					g.Spec.Subnets = append(g.Spec.Subnets, "dualstack-"+subnet.Name)
-				} else {
-					g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
-				}
+				g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 			}
 
 			if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {

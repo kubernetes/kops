@@ -41,12 +41,13 @@ const (
 
 // +kops:fitask
 type TargetGroup struct {
-	Name      *string
-	Lifecycle fi.Lifecycle
-	VPC       *VPC
-	Tags      map[string]string
-	Port      *int64
-	Protocol  *string
+	Name          *string
+	Lifecycle     fi.Lifecycle
+	VPC           *VPC
+	Tags          map[string]string
+	IPAddressType *string
+	Port          *int64
+	Protocol      *string
 
 	// ARN is the Amazon Resource Name for the Target Group
 	ARN *string
@@ -97,6 +98,7 @@ func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 
 	actual := &TargetGroup{
 		Name:               tg.TargetGroupName,
+		IPAddressType:      tg.IpAddressType,
 		Port:               tg.Port,
 		Protocol:           tg.Protocol,
 		ARN:                tg.TargetGroupArn,
@@ -168,6 +170,9 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		return nil
 	}
 
+	// TODO: To fix the IPAddressType we need to recreate the TargetGroup.
+	// We can't delete the existing TargetGroup until it's unreferenced by the listener.
+
 	// You register targets for your Network Load Balancer with a target group. By default, the load balancer sends requests
 	// to registered targets using the port and protocol that you specified for the target group. You can override this port
 	// when you register each target with the target group.
@@ -175,6 +180,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	if a == nil {
 		request := &elbv2.CreateTargetGroupInput{
 			Name:                       e.Name,
+			IpAddressType:              e.IPAddressType,
 			Port:                       e.Port,
 			Protocol:                   e.Protocol,
 			VpcId:                      e.VPC.ID,
@@ -239,6 +245,7 @@ func (a OrderTargetGroupsByName) Less(i, j int) bool {
 
 type terraformTargetGroup struct {
 	Name                  string                          `cty:"name"`
+	IPAddressType         string                          `cty:"ip_address_type"`
 	Port                  int64                           `cty:"port"`
 	Protocol              string                          `cty:"protocol"`
 	VPCID                 *terraformWriter.Literal        `cty:"vpc_id"`
@@ -266,11 +273,12 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	}
 
 	tf := &terraformTargetGroup{
-		Name:     *e.Name,
-		Port:     *e.Port,
-		Protocol: *e.Protocol,
-		VPCID:    e.VPC.TerraformLink(),
-		Tags:     e.Tags,
+		Name:          *e.Name,
+		IPAddressType: *e.IPAddressType,
+		Port:          *e.Port,
+		Protocol:      *e.Protocol,
+		VPCID:         e.VPC.TerraformLink(),
+		Tags:          e.Tags,
 		HealthCheck: terraformTargetGroupHealthCheck{
 			Interval:           *e.Interval,
 			HealthyThreshold:   *e.HealthyThreshold,

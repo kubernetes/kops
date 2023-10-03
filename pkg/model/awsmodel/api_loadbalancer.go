@@ -270,6 +270,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 		}
 
+		ipAddressType := "ipv4"
+		if b.Cluster.Spec.IsIPv6Only() {
+			ipAddressType = "ipv6"
+		}
+
 		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
@@ -290,6 +295,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               groupTags,
+					IPAddressType:      fi.PtrTo(ipAddressType),
 					Protocol:           fi.PtrTo("TCP"),
 					Port:               fi.PtrTo(int64(443)),
 					Attributes:         groupAttrs,
@@ -316,6 +322,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               groupTags,
+					IPAddressType:      fi.PtrTo(ipAddressType),
 					Protocol:           fi.PtrTo("TCP"),
 					Port:               fi.PtrTo(int64(wellknownports.KopsControllerPort)),
 					Attributes:         groupAttrs,
@@ -341,6 +348,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               tlsGroupTags,
+					IPAddressType:      fi.PtrTo(ipAddressType),
 					Protocol:           fi.PtrTo("TLS"),
 					Port:               fi.PtrTo(int64(443)),
 					Attributes:         groupAttrs,
@@ -517,24 +525,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SourceGroup:   lbSG,
 				ToPort:        fi.PtrTo(int64(443)),
 			})
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-elb-to-cp%s", suffix)),
-				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(3)),
-				Protocol:      fi.PtrTo("icmp"),
-				SecurityGroup: masterGroup.Task,
-				SourceGroup:   lbSG,
-				ToPort:        fi.PtrTo(int64(4)),
-			})
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-cp%s-to-elb", suffix)),
-				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(3)),
-				Protocol:      fi.PtrTo("icmp"),
-				SecurityGroup: lbSG,
-				SourceGroup:   masterGroup.Task,
-				ToPort:        fi.PtrTo(int64(4)),
-			})
 			if b.Cluster.UsesNoneDNS() {
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
@@ -544,6 +534,45 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
 					SourceGroup:   lbSG,
+				})
+			}
+			if b.Cluster.Spec.IsIPv6Only() {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmpv6-pmtu-elb-to-cp%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(-1)),
+					Protocol:      fi.PtrTo("icmpv6"),
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   lbSG,
+					ToPort:        fi.PtrTo(int64(-1)),
+				})
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmpv6-pmtu-cp%s-to-elb", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(-1)),
+					Protocol:      fi.PtrTo("icmpv6"),
+					SecurityGroup: lbSG,
+					SourceGroup:   masterGroup.Task,
+					ToPort:        fi.PtrTo(int64(-1)),
+				})
+			} else {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-elb-to-cp%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(3)),
+					Protocol:      fi.PtrTo("icmp"),
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   lbSG,
+					ToPort:        fi.PtrTo(int64(4)),
+				})
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-cp%s-to-elb", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(3)),
+					Protocol:      fi.PtrTo("icmp"),
+					SecurityGroup: lbSG,
+					SourceGroup:   masterGroup.Task,
+					ToPort:        fi.PtrTo(int64(4)),
 				})
 			}
 		}

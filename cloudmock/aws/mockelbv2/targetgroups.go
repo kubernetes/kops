@@ -95,6 +95,7 @@ func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*e
 
 	tg := elbv2.TargetGroup{
 		TargetGroupName:         request.Name,
+		IpAddressType:           request.IpAddressType,
 		Port:                    request.Port,
 		Protocol:                request.Protocol,
 		VpcId:                   request.VpcId,

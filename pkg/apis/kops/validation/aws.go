@@ -47,6 +47,9 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
 			allErrs = append(allErrs, field.Forbidden(lbPath.Child("useForInternalAPI"), "useForInternalAPI cannot be used with internal NLB due lack of hairpinning support"))
 		}
+		if lbSpec.Class == kops.LoadBalancerClassClassic && c.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(lbPath.Child("class"), "IPv6 clusters do not support classic load balancers"))
+		}
 		if lbSpec.SSLCertificate != "" && lbSpec.Class != kops.LoadBalancerClassNetwork {
 			allErrs = append(allErrs, field.Forbidden(lbPath.Child("sslCertificate"), "sslCertificate requires a network load balancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
 		}

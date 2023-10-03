@@ -38,6 +38,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		return err
 	}
 
+	primaryIPv6 := false
+	if fi.ValueOf(t.IPv6AddressCount) > 0 {
+		primaryIPv6 = true
+	}
+
 	// @step: lets build the launch template data
 	data := &ec2.RequestLaunchTemplateData{
 		DisableApiTermination: fi.PtrTo(false),
@@ -55,6 +60,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 				DeleteOnTermination:      aws.Bool(true),
 				DeviceIndex:              fi.PtrTo(int64(0)),
 				Ipv6AddressCount:         t.IPv6AddressCount,
+				PrimaryIpv6:              fi.PtrTo(primaryIPv6),
 			},
 		},
 	}

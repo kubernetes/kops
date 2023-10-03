@@ -37,7 +37,7 @@ NAT64 range `64:ff9b::/96` is typically routed to a NAT64 device, such as an AWS
 
 A subnet of type `DualStack` is like `Private`, but supports both IPv4 and IPv6.
 
-On AWS, this subnet type is used for nodes, such as control plane nodes and bastions,
+On AWS prior to kOps 1.29, this subnet type is used for nodes, such as control plane nodes and bastions,
 which need to be instance targets of a load balancer.
 
 ## Utility Subnet
