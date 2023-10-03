@@ -196,10 +196,6 @@ func Parse(specifier string) (specs.Platform, error) {
 				p.Variant = cpuVariant()
 			}
 
-			if p.OS == "windows" {
-				p.OSVersion = GetWindowsOsVersion()
-			}
-
 			return p, nil
 		}
 
@@ -222,10 +218,6 @@ func Parse(specifier string) (specs.Platform, error) {
 			p.Variant = ""
 		}
 
-		if p.OS == "windows" {
-			p.OSVersion = GetWindowsOsVersion()
-		}
-
 		return p, nil
 	case 3:
 		// we have a fully specified variant, this is rare
@@ -233,10 +225,6 @@ func Parse(specifier string) (specs.Platform, error) {
 		p.Architecture, p.Variant = normalizeArch(parts[1], parts[2])
 		if p.Architecture == "arm64" && p.Variant == "" {
 			p.Variant = "v8"
-		}
-
-		if p.OS == "windows" {
-			p.OSVersion = GetWindowsOsVersion()
 		}
 
 		return p, nil

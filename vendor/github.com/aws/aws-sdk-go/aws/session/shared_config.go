@@ -398,15 +398,8 @@ func (cfg *sharedConfig) setFromIniFile(profile string, file sharedConfigFile, e
 		updateString(&cfg.Region, section, regionKey)
 		updateString(&cfg.CustomCABundle, section, customCABundleKey)
 
-		// we're retaining a behavioral quirk with this field that existed before
-		// the removal of literal parsing for (aws-sdk-go-v2/#2276):
-		//   - if the key is missing, the config field will not be set
-		//   - if the key is set to a non-numeric, the config field will be set to 0
 		if section.Has(roleDurationSecondsKey) {
-			var d time.Duration
-			if v, ok := section.Int(roleDurationSecondsKey); ok {
-				d = time.Duration(v) * time.Second
-			}
+			d := time.Duration(section.Int(roleDurationSecondsKey)) * time.Second
 			cfg.AssumeRoleDuration = &d
 		}
 
@@ -685,10 +678,7 @@ func updateBool(dst *bool, section ini.Section, key string) {
 	if !section.Has(key) {
 		return
 	}
-
-	// retains pre-(aws-sdk-go-v2#2276) behavior where non-bool value would resolve to false
-	v, _ := section.Bool(key)
-	*dst = v
+	*dst = section.Bool(key)
 }
 
 // updateBoolPtr will only update the dst with the value in the section key,
@@ -697,11 +687,8 @@ func updateBoolPtr(dst **bool, section ini.Section, key string) {
 	if !section.Has(key) {
 		return
 	}
-
-	// retains pre-(aws-sdk-go-v2#2276) behavior where non-bool value would resolve to false
-	v, _ := section.Bool(key)
 	*dst = new(bool)
-	**dst = v
+	**dst = section.Bool(key)
 }
 
 // SharedConfigLoadError is an error for the shared config file failed to load.
@@ -828,8 +815,7 @@ func updateUseDualStackEndpoint(dst *endpoints.DualStackEndpointState, section i
 		return
 	}
 
-	// retains pre-(aws-sdk-go-v2/#2276) behavior where non-bool value would resolve to false
-	if v, _ := section.Bool(key); v {
+	if section.Bool(key) {
 		*dst = endpoints.DualStackEndpointStateEnabled
 	} else {
 		*dst = endpoints.DualStackEndpointStateDisabled
@@ -845,8 +831,7 @@ func updateUseFIPSEndpoint(dst *endpoints.FIPSEndpointState, section ini.Section
 		return
 	}
 
-	// retains pre-(aws-sdk-go-v2/#2276) behavior where non-bool value would resolve to false
-	if v, _ := section.Bool(key); v {
+	if section.Bool(key) {
 		*dst = endpoints.FIPSEndpointStateEnabled
 	} else {
 		*dst = endpoints.FIPSEndpointStateDisabled

@@ -1,4 +1,3 @@
-//go:build fuzz
 // +build fuzz
 
 package dns

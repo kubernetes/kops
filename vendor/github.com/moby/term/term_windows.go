@@ -1,7 +1,6 @@
 package term
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -10,15 +9,22 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// terminalState holds the platform-specific state / console mode for the terminal.
-type terminalState struct {
+// State holds the console mode for the terminal.
+type State struct {
 	mode uint32
+}
+
+// Winsize is used for window size.
+type Winsize struct {
+	Height uint16
+	Width  uint16
 }
 
 // vtInputSupported is true if winterm.ENABLE_VIRTUAL_TERMINAL_INPUT is supported by the console
 var vtInputSupported bool
 
-func stdStreams() (stdIn io.ReadCloser, stdOut, stdErr io.Writer) {
+// StdStreams returns the standard streams (stdin, stdout, stderr).
+func StdStreams() (stdIn io.ReadCloser, stdOut, stdErr io.Writer) {
 	// Turn on VT handling on all std handles, if possible. This might
 	// fail, in which case we will fall back to terminal emulation.
 	var (
@@ -81,14 +87,16 @@ func stdStreams() (stdIn io.ReadCloser, stdOut, stdErr io.Writer) {
 		stdErr = os.Stderr
 	}
 
-	return stdIn, stdOut, stdErr
+	return
 }
 
-func getFdInfo(in interface{}) (uintptr, bool) {
+// GetFdInfo returns the file descriptor for an os.File and indicates whether the file represents a terminal.
+func GetFdInfo(in interface{}) (uintptr, bool) {
 	return windowsconsole.GetHandleInfo(in)
 }
 
-func getWinsize(fd uintptr) (*Winsize, error) {
+// GetWinsize returns the window size based on the specified file descriptor.
+func GetWinsize(fd uintptr) (*Winsize, error) {
 	var info windows.ConsoleScreenBufferInfo
 	if err := windows.GetConsoleScreenBufferInfo(windows.Handle(fd), &info); err != nil {
 		return nil, err
@@ -102,21 +110,21 @@ func getWinsize(fd uintptr) (*Winsize, error) {
 	return winsize, nil
 }
 
-func setWinsize(fd uintptr, ws *Winsize) error {
-	return fmt.Errorf("not implemented on Windows")
-}
-
-func isTerminal(fd uintptr) bool {
+// IsTerminal returns true if the given file descriptor is a terminal.
+func IsTerminal(fd uintptr) bool {
 	var mode uint32
 	err := windows.GetConsoleMode(windows.Handle(fd), &mode)
 	return err == nil
 }
 
-func restoreTerminal(fd uintptr, state *State) error {
+// RestoreTerminal restores the terminal connected to the given file descriptor
+// to a previous state.
+func RestoreTerminal(fd uintptr, state *State) error {
 	return windows.SetConsoleMode(windows.Handle(fd), state.mode)
 }
 
-func saveState(fd uintptr) (*State, error) {
+// SaveState saves the state of the terminal connected to the given file descriptor.
+func SaveState(fd uintptr) (*State, error) {
 	var mode uint32
 
 	if err := windows.GetConsoleMode(windows.Handle(fd), &mode); err != nil {
@@ -126,8 +134,9 @@ func saveState(fd uintptr) (*State, error) {
 	return &State{mode: mode}, nil
 }
 
-func disableEcho(fd uintptr, state *State) error {
-	// See https://msdn.microsoft.com/en-us/library/windows/desktop/ms683462(v=vs.85).aspx
+// DisableEcho disables echo for the terminal connected to the given file descriptor.
+// -- See https://msdn.microsoft.com/en-us/library/windows/desktop/ms683462(v=vs.85).aspx
+func DisableEcho(fd uintptr, state *State) error {
 	mode := state.mode
 	mode &^= windows.ENABLE_ECHO_INPUT
 	mode |= windows.ENABLE_PROCESSED_INPUT | windows.ENABLE_LINE_INPUT
@@ -141,27 +150,69 @@ func disableEcho(fd uintptr, state *State) error {
 	return nil
 }
 
-func setRawTerminal(fd uintptr) (*State, error) {
-	oldState, err := MakeRaw(fd)
+// SetRawTerminal puts the terminal connected to the given file descriptor into
+// raw mode and returns the previous state. On UNIX, this puts both the input
+// and output into raw mode. On Windows, it only puts the input into raw mode.
+func SetRawTerminal(fd uintptr) (*State, error) {
+	state, err := MakeRaw(fd)
 	if err != nil {
 		return nil, err
 	}
 
 	// Register an interrupt handler to catch and restore prior state
-	restoreAtInterrupt(fd, oldState)
-	return oldState, err
+	restoreAtInterrupt(fd, state)
+	return state, err
 }
 
-func setRawTerminalOutput(fd uintptr) (*State, error) {
-	oldState, err := saveState(fd)
+// SetRawTerminalOutput puts the output of terminal connected to the given file
+// descriptor into raw mode. On UNIX, this does nothing and returns nil for the
+// state. On Windows, it disables LF -> CRLF translation.
+func SetRawTerminalOutput(fd uintptr) (*State, error) {
+	state, err := SaveState(fd)
 	if err != nil {
 		return nil, err
 	}
 
 	// Ignore failures, since winterm.DISABLE_NEWLINE_AUTO_RETURN might not be supported on this
 	// version of Windows.
-	_ = windows.SetConsoleMode(windows.Handle(fd), oldState.mode|windows.DISABLE_NEWLINE_AUTO_RETURN)
-	return oldState, err
+	_ = windows.SetConsoleMode(windows.Handle(fd), state.mode|windows.DISABLE_NEWLINE_AUTO_RETURN)
+	return state, err
+}
+
+// MakeRaw puts the terminal (Windows Console) connected to the given file descriptor into raw
+// mode and returns the previous state of the terminal so that it can be restored.
+func MakeRaw(fd uintptr) (*State, error) {
+	state, err := SaveState(fd)
+	if err != nil {
+		return nil, err
+	}
+
+	mode := state.mode
+
+	// See
+	// -- https://msdn.microsoft.com/en-us/library/windows/desktop/ms686033(v=vs.85).aspx
+	// -- https://msdn.microsoft.com/en-us/library/windows/desktop/ms683462(v=vs.85).aspx
+
+	// Disable these modes
+	mode &^= windows.ENABLE_ECHO_INPUT
+	mode &^= windows.ENABLE_LINE_INPUT
+	mode &^= windows.ENABLE_MOUSE_INPUT
+	mode &^= windows.ENABLE_WINDOW_INPUT
+	mode &^= windows.ENABLE_PROCESSED_INPUT
+
+	// Enable these modes
+	mode |= windows.ENABLE_EXTENDED_FLAGS
+	mode |= windows.ENABLE_INSERT_MODE
+	mode |= windows.ENABLE_QUICK_EDIT_MODE
+	if vtInputSupported {
+		mode |= windows.ENABLE_VIRTUAL_TERMINAL_INPUT
+	}
+
+	err = windows.SetConsoleMode(windows.Handle(fd), mode)
+	if err != nil {
+		return nil, err
+	}
+	return state, nil
 }
 
 func restoreAtInterrupt(fd uintptr, state *State) {

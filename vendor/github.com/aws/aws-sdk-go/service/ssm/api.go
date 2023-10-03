@@ -23018,11 +23018,7 @@ type CreateOpsItemInput struct {
 	// Specify a category to assign to an OpsItem.
 	Category *string `min:"1" type:"string"`
 
-	// User-defined text that contains information about the OpsItem, in Markdown
-	// format.
-	//
-	// Provide enough information so that users viewing this OpsItem for the first
-	// time understand the issue.
+	// Information about the OpsItem.
 	//
 	// Description is a required field
 	Description *string `min:"1" type:"string" required:"true"`
@@ -23063,7 +23059,7 @@ type CreateOpsItemInput struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -45587,7 +45583,7 @@ type OpsItem struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -46878,7 +46874,7 @@ type OpsItemSummary struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -59320,8 +59316,8 @@ type UpdateOpsItemInput struct {
 	// Specify a new category for an OpsItem.
 	Category *string `min:"1" type:"string"`
 
-	// User-defined text that contains information about the OpsItem, in Markdown
-	// format.
+	// Update the information about the OpsItem. Provide enough information so that
+	// users reading this OpsItem for the first time understand the issue.
 	Description *string `min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of an SNS topic where notifications are sent
@@ -60893,17 +60889,17 @@ func ComplianceUploadType_Values() []string {
 
 const (
 	// ConnectionStatusConnected is a ConnectionStatus enum value
-	ConnectionStatusConnected = "connected"
+	ConnectionStatusConnected = "Connected"
 
-	// ConnectionStatusNotconnected is a ConnectionStatus enum value
-	ConnectionStatusNotconnected = "notconnected"
+	// ConnectionStatusNotConnected is a ConnectionStatus enum value
+	ConnectionStatusNotConnected = "NotConnected"
 )
 
 // ConnectionStatus_Values returns all elements of the ConnectionStatus enum
 func ConnectionStatus_Values() []string {
 	return []string{
 		ConnectionStatusConnected,
-		ConnectionStatusNotconnected,
+		ConnectionStatusNotConnected,
 	}
 }
 
@@ -62308,6 +62304,9 @@ const (
 	// ResourceTypeManagedInstance is a ResourceType enum value
 	ResourceTypeManagedInstance = "ManagedInstance"
 
+	// ResourceTypeDocument is a ResourceType enum value
+	ResourceTypeDocument = "Document"
+
 	// ResourceTypeEc2instance is a ResourceType enum value
 	ResourceTypeEc2instance = "EC2Instance"
 )
@@ -62316,6 +62315,7 @@ const (
 func ResourceType_Values() []string {
 	return []string{
 		ResourceTypeManagedInstance,
+		ResourceTypeDocument,
 		ResourceTypeEc2instance,
 	}
 }
