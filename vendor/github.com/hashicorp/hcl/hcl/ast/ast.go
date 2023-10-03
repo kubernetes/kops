@@ -25,8 +25,6 @@ func (ObjectType) node()   {}
 func (LiteralType) node()  {}
 func (ListType) node()     {}
 
-var unknownPos token.Pos
-
 // File represents a single HCL file
 type File struct {
 	Node     Node            // usually a *ObjectList
@@ -110,12 +108,7 @@ func (o *ObjectList) Elem() *ObjectList {
 }
 
 func (o *ObjectList) Pos() token.Pos {
-	// If an Object has no members, it won't have a first item
-	// to use as position
-	if len(o.Items) == 0 {
-		return unknownPos
-	}
-	// Return the uninitialized position
+	// always returns the uninitiliazed position
 	return o.Items[0].Pos()
 }
 
@@ -140,10 +133,10 @@ type ObjectItem struct {
 }
 
 func (o *ObjectItem) Pos() token.Pos {
-	// If a parsed object has no keys, there is no position
-	// for its first element.
+	// I'm not entirely sure what causes this, but removing this causes
+	// a test failure. We should investigate at some point.
 	if len(o.Keys) == 0 {
-		return unknownPos
+		return token.Pos{}
 	}
 
 	return o.Keys[0].Pos()
