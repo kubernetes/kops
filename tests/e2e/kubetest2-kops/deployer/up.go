@@ -178,6 +178,16 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--gce-service-account", "default")
 		args = appendIfUnset(args, "--networking", "kubenet")
 
+		// kubeapi server config https://github.com/kubernetes/kubernetes/blob/622509830c1038535e539f7d364f5cd7c3b38791/cluster/gce/gci/configure-kubeapiserver.sh#L106
+		for _, v := range strings.Split(d.KubeAPIServerAdmissionPlugins, ",") {
+			args = append(args, "--set", fmt.Sprintf("spec.kubeAPIServer.enableAdmissionPlugins=%s", v))
+		}
+		if strings.Contains(d.KubernetesFeatureGates, "AllAlpha") {
+			d.KubeAPIServerRuntimeConfig = "api/all=true"
+		}
+		for _, v := range strings.Split(d.KubeAPIServerRuntimeConfig, ",") {
+			args = append(args, "--set", fmt.Sprintf("spec.kubeAPIServer.runtimeConfig=%s", v))
+		}
 		// We used to set the --vpc flag to split clusters into different networks, this is now the default.
 		// args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
