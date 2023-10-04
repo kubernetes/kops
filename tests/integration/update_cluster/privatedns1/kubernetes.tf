@@ -852,6 +852,7 @@ resource "aws_lb" "bastion-privatedns1-example-com" {
   internal                         = false
   load_balancer_type               = "network"
   name                             = "bastion-privatedns1-examp-mbgbef"
+  security_groups                  = [aws_security_group.bastion-elb-privatedns1-example-com.id]
   subnet_mapping {
     subnet_id = aws_subnet.utility-us-test-1a-privatedns1-example-com.id
   }
@@ -1152,6 +1153,19 @@ resource "aws_security_group" "api-elb-privatedns1-example-com" {
   vpc_id = aws_vpc.privatedns1-example-com.id
 }
 
+resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "bastion-elb.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
+}
+
 resource "aws_security_group" "bastion-privatedns1-example-com" {
   description = "Security group for bastion"
   name        = "bastion.privatedns1.example.com"
@@ -1191,11 +1205,11 @@ resource "aws_security_group" "nodes-privatedns1-example-com" {
   vpc_id = aws_vpc.privatedns1-example-com.id
 }
 
-resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-privatedns1-example-com" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatedns1-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.bastion-privatedns1-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
   to_port           = 22
   type              = "ingress"
 }
@@ -1209,11 +1223,11 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-api-elb
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "from-172-20-4-0--22-ingress-tcp-22to22-bastion-privatedns1-example-com" {
+resource "aws_security_group_rule" "from-172-20-4-0--22-ingress-tcp-22to22-bastion-elb-privatedns1-example-com" {
   cidr_blocks       = ["172.20.4.0/22"]
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.bastion-privatedns1-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
   to_port           = 22
   type              = "ingress"
 }
@@ -1236,6 +1250,42 @@ resource "aws_security_group_rule" "from-api-elb-privatedns1-example-com-egress-
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-bastion-elb-privatedns1-example-com-egress-all-0to0-0-0-0-0--0" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatedns1-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatedns1-example-com-ingress-icmp-3to4-bastion-privatedns1-example-com" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.bastion-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatedns1-example-com-ingress-tcp-22to22-bastion-privatedns1-example-com" {
+  from_port                = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.bastion-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
+  to_port                  = 22
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "from-bastion-privatedns1-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -1252,6 +1302,15 @@ resource "aws_security_group_rule" "from-bastion-privatedns1-example-com-egress-
   security_group_id = aws_security_group.bastion-privatedns1-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-privatedns1-example-com-ingress-icmp-3to4-bastion-elb-privatedns1-example-com" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.bastion-elb-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.bastion-privatedns1-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-privatedns1-example-com-ingress-tcp-22to22-masters-privatedns1-example-com" {
@@ -1389,11 +1448,29 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "icmp-pmtu-cp-to-elb" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.api-elb-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.masters-privatedns1-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-elb-to-cp" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.masters-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.api-elb-privatedns1-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.bastion-privatedns1-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
   to_port           = 4
   type              = "ingress"
 }
@@ -1402,7 +1479,7 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
   cidr_blocks       = ["172.20.4.0/22"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.bastion-privatedns1-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatedns1-example-com.id
   to_port           = 4
   type              = "ingress"
 }
