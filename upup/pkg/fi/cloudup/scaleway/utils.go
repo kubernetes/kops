@@ -42,8 +42,8 @@ func isHTTPCodeError(err error, statusCode int) bool {
 	return false
 }
 
-// is404Error returns true if err is an HTTP 404 error
-func is404Error(err error) bool {
+// Is404Error returns true if err is an HTTP 404 error
+func Is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
 	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
 }
