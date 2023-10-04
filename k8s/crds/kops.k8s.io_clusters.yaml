@@ -821,6 +821,21 @@ spec:
                     description: LogLevel controls the logging details [trace, debug,
                       info, warn, error, fatal, panic] (default "info").
                     type: string
+                  nri:
+                    description: NRI configures the Node Resource Interface.
+                    properties:
+                      enabled:
+                        description: Enable NRI support in containerd
+                        type: boolean
+                      pluginRegistrationTimeout:
+                        description: PluginRegistrationTimeout is the timeout for
+                          plugin registration
+                        type: string
+                      pluginRequestTimeout:
+                        description: PluginRequestTimeout is the timeout for a plugin
+                          to handle a request
+                        type: string
+                    type: object
                   nvidiaGPU:
                     description: NvidiaGPU configures the Nvidia GPU runtime.
                     properties:

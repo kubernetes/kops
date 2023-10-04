@@ -16,6 +16,10 @@ limitations under the License.
 
 package kops
 
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // NvidiaDefaultDriverPackage is the nvidia driver default version
 const NvidiaDefaultDriverPackage = "nvidia-headless-515-server"
 
@@ -45,6 +49,17 @@ type ContainerdConfig struct {
 	Runc *Runc `json:"runc,omitempty"`
 	// SelinuxEnabled enables SELinux support
 	SeLinuxEnabled bool `json:"selinuxEnabled,omitempty"`
+	// NRI configures the Node Resource Interface.
+	NRI *NRIConfig `json:"nri,omitempty"`
+}
+
+type NRIConfig struct {
+	// Enable NRI support in containerd
+	Enabled *bool `json:"enabled,omitempty"`
+	// PluginRegistrationTimeout is the timeout for plugin registration
+	PluginRegistrationTimeout *metav1.Duration `json:"pluginRegistrationTimeout,omitempty"`
+	// PluginRequestTimeout is the timeout for a plugin to handle a request
+	PluginRequestTimeout *metav1.Duration `json:"pluginRequestTimeout,omitempty"`
 }
 
 type NvidiaGPUConfig struct {

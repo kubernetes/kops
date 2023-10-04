@@ -1532,3 +1532,70 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func Test_Validate_NriConfig(t *testing.T) {
+	unsupportedContainerdVersion := "1.6.0"
+	supportedContainerdVersion := "1.7.0"
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled: fi.PtrTo(true),
+					},
+					Version: &unsupportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.nri"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI:     &kops.NRIConfig{},
+					Version: &unsupportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled: nil,
+					},
+					Version: &unsupportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled: fi.PtrTo(false),
+					},
+					Version: &unsupportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled: fi.PtrTo(true),
+					},
+					Version: &supportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+	}
+	for _, g := range grid {
+		errs := validateNriConfig(g.Input.Containerd, field.NewPath("containerd", "nri"))
+		testErrors(t, g.Input.Containerd, errs, g.ExpectedErrors)
+	}
+}
