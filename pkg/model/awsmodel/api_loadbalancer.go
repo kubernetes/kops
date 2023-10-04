@@ -19,7 +19,6 @@ package awsmodel
 import (
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -28,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // LoadBalancerDefaultIdleTimeout is the default idle time for the ELB
@@ -182,9 +180,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			LoadBalancerName: fi.PtrTo(loadBalancerName),
 			CLBName:          fi.PtrTo("api." + b.ClusterName()),
-			SubnetMappings:   nlbSubnetMappings,
-			Listeners:        nlbListeners,
-			TargetGroups:     make([]*awstasks.TargetGroup, 0),
+			SecurityGroups: []*awstasks.SecurityGroup{
+				b.LinkToELBSecurityGroup("api"),
+			},
+			SubnetMappings: nlbSubnetMappings,
+			Listeners:      nlbListeners,
+			TargetGroups:   make([]*awstasks.TargetGroup, 0),
 
 			Tags:         tags,
 			ForAPIServer: true,
@@ -377,7 +378,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	// Allow traffic from ELB to egress freely
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
+	{
 		{
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo("ipv4-api-elb-egress"),
@@ -401,7 +402,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
+	{
 		for _, cidr := range b.Cluster.Spec.API.Access {
 			{
 				t := &awstasks.SecurityGroupRule{
@@ -417,26 +418,33 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 
 			// Allow ICMP traffic required for PMTU discovery
-			if utils.IsIPv6CIDR(cidr) {
-				c.AddTask(&awstasks.SecurityGroupRule{
+			{
+				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("icmpv6-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					IPv6CIDR:      fi.PtrTo(cidr),
 					FromPort:      fi.PtrTo(int64(-1)),
 					Protocol:      fi.PtrTo("icmpv6"),
 					SecurityGroup: lbSG,
 					ToPort:        fi.PtrTo(int64(-1)),
-				})
-			} else {
-				c.AddTask(&awstasks.SecurityGroupRule{
+				}
+				t.SetCidrOrPrefix(cidr)
+				if t.CIDR == nil {
+					c.AddTask(t)
+				}
+			}
+			{
+				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("icmp-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					CIDR:          fi.PtrTo(cidr),
 					FromPort:      fi.PtrTo(int64(3)),
 					Protocol:      fi.PtrTo("icmp"),
 					SecurityGroup: lbSG,
 					ToPort:        fi.PtrTo(int64(4)),
-				})
+				}
+				t.SetCidrOrPrefix(cidr)
+				if t.IPv6CIDR == nil {
+					c.AddTask(t)
+				}
 			}
 		}
 	}
@@ -446,69 +454,25 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return err
 	}
 
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-		for _, cidr := range b.Cluster.Spec.API.Access {
-			for _, masterGroup := range masterGroups {
-				{
-					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo(fmt.Sprintf("https-api-elb-%s", cidr)),
-						Lifecycle:     b.SecurityLifecycle,
-						FromPort:      fi.PtrTo(int64(443)),
-						Protocol:      fi.PtrTo("tcp"),
-						SecurityGroup: masterGroup.Task,
-						ToPort:        fi.PtrTo(int64(443)),
-					}
-					t.SetCidrOrPrefix(cidr)
-					AddDirectionalGroupRule(c, t)
-				}
-
-				if strings.HasPrefix(cidr, "pl-") {
-					// In case of a prefix list we do not add a rule for ICMP traffic for PMTU discovery.
-					// This would require calling out to AWS to check whether the prefix list is IPv4 or IPv6.
-				} else if utils.IsIPv6CIDR(cidr) {
-					// Allow ICMP traffic required for PMTU discovery
-					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo("icmpv6-pmtu-api-elb-" + cidr),
-						Lifecycle:     b.SecurityLifecycle,
-						FromPort:      fi.PtrTo(int64(-1)),
-						Protocol:      fi.PtrTo("icmpv6"),
-						SecurityGroup: masterGroup.Task,
-						ToPort:        fi.PtrTo(int64(-1)),
-					}
-					t.SetCidrOrPrefix(cidr)
-					c.AddTask(t)
-				} else {
-					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo("icmp-pmtu-api-elb-" + cidr),
-						Lifecycle:     b.SecurityLifecycle,
-						FromPort:      fi.PtrTo(int64(3)),
-						Protocol:      fi.PtrTo("icmp"),
-						SecurityGroup: masterGroup.Task,
-						ToPort:        fi.PtrTo(int64(4)),
-					}
-					t.SetCidrOrPrefix(cidr)
-					c.AddTask(t)
-				}
-
-				if b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
-					// Allow access to masters on secondary port through NLB
-					t := &awstasks.SecurityGroupRule{
-						Name:          fi.PtrTo(fmt.Sprintf("tcp-api-%s", cidr)),
-						Lifecycle:     b.SecurityLifecycle,
-						FromPort:      fi.PtrTo(int64(8443)),
-						Protocol:      fi.PtrTo("tcp"),
-						SecurityGroup: masterGroup.Task,
-						ToPort:        fi.PtrTo(int64(8443)),
-					}
-					t.SetCidrOrPrefix(cidr)
-					c.AddTask(t)
-				}
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
+			// Allow access to control plane on secondary port through NLB
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.PtrTo(fmt.Sprintf("tcp-api-cp%s", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				FromPort:      fi.PtrTo(int64(8443)),
+				Protocol:      fi.PtrTo("tcp"),
+				SecurityGroup: masterGroup.Task,
+				SourceGroup:   lbSG,
+				ToPort:        fi.PtrTo(int64(8443)),
 			}
+			c.AddTask(t)
 		}
 	}
 
 	// Add precreated additional security groups to the ELB
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
+	{
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			t := &awstasks.SecurityGroup{
 				Name:      fi.PtrTo(id),
@@ -518,11 +482,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			c.EnsureTask(t)
 			clb.SecurityGroups = append(clb.SecurityGroups, t)
+			nlb.SecurityGroups = append(nlb.SecurityGroups, t)
 		}
 	}
 
-	// Allow HTTPS to the master instances from the ELB
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
+	// Allow HTTPS to the control-plane instances from the ELB
+	{
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
@@ -534,57 +499,24 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SourceGroup:   lbSG,
 				ToPort:        fi.PtrTo(int64(443)),
 			})
-		}
-	} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-		for _, masterGroup := range masterGroups {
-			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("https-elb-to-master%s", suffix)),
+				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-elb-to-cp%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(443)),
-				Protocol:      fi.PtrTo("tcp"),
+				FromPort:      fi.PtrTo(int64(3)),
+				Protocol:      fi.PtrTo("icmp"),
 				SecurityGroup: masterGroup.Task,
-				ToPort:        fi.PtrTo(int64(443)),
-				CIDR:          fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
+				SourceGroup:   lbSG,
+				ToPort:        fi.PtrTo(int64(4)),
 			})
-			for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
-				c.AddTask(&awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("https-lb-to-master%s-%s", suffix, cidr)),
-					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(443)),
-					Protocol:      fi.PtrTo("tcp"),
-					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.PtrTo(int64(443)),
-					CIDR:          fi.PtrTo(cidr),
-				})
-			}
-		}
-	}
-
-	// Allow kops-controller to the master instances from the ELB
-	if b.Cluster.UsesNoneDNS() && b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-		for _, masterGroup := range masterGroups {
-			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo(fmt.Sprintf("kops-controller-lb-to-master%s", suffix)),
+				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-cp%s-to-elb", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(wellknownports.KopsControllerPort)),
-				Protocol:      fi.PtrTo("tcp"),
-				SecurityGroup: masterGroup.Task,
-				ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
-				CIDR:          fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
+				FromPort:      fi.PtrTo(int64(3)),
+				Protocol:      fi.PtrTo("icmp"),
+				SecurityGroup: lbSG,
+				SourceGroup:   masterGroup.Task,
+				ToPort:        fi.PtrTo(int64(4)),
 			})
-			for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
-				c.AddTask(&awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-lb-to-master%s-%s", suffix, cidr)),
-					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(wellknownports.KopsControllerPort)),
-					Protocol:      fi.PtrTo("tcp"),
-					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
-					CIDR:          fi.PtrTo(cidr),
-				})
-			}
 		}
 	}
 

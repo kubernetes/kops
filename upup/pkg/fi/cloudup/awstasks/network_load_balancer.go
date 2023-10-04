@@ -54,6 +54,7 @@ type NetworkLoadBalancer struct {
 	HostedZoneId *string
 
 	SubnetMappings []*SubnetMapping
+	SecurityGroups []*SecurityGroup
 
 	Listeners []*NetworkLoadBalancerListener
 
@@ -296,6 +297,10 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 			}
 		}
 		actual.SubnetMappings = append(actual.SubnetMappings, sm)
+	}
+
+	for _, sg := range lb.SecurityGroups {
+		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: sg})
 	}
 
 	{
@@ -580,6 +585,10 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				})
 			}
 
+			for _, sg := range e.SecurityGroups {
+				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
+			}
+
 			klog.V(2).Infof("Creating NLB %q", loadBalancerName)
 
 			response, err := t.Cloud.ELBV2().CreateLoadBalancer(request)
@@ -686,6 +695,20 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 		}
 
+		if changes.SecurityGroups != nil {
+			request := &elbv2.SetSecurityGroupsInput{
+				LoadBalancerArn: lb.LoadBalancerArn,
+			}
+			for _, sg := range e.SecurityGroups {
+				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
+			}
+
+			klog.V(2).Infof("Updating Load Balancer Security Groups")
+			if _, err := t.Cloud.ELBV2().SetSecurityGroups(request); err != nil {
+				return fmt.Errorf("Error updating security groups on Load Balancer: %v", err)
+			}
+		}
+
 		if changes.Listeners != nil {
 
 			if lb != nil {
@@ -744,6 +767,7 @@ type terraformNetworkLoadBalancer struct {
 	Internal               bool                                        `cty:"internal"`
 	Type                   string                                      `cty:"load_balancer_type"`
 	IPAddressType          *string                                     `cty:"ip_address_type"`
+	SecurityGroups         []*terraformWriter.Literal                  `cty:"security_groups"`
 	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `cty:"enable_cross_zone_load_balancing"`
 	AccessLog              *terraformNetworkLoadBalancerAccessLog      `cty:"access_logs"`
@@ -790,6 +814,11 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
 		})
 	}
+
+	for _, sg := range e.SecurityGroups {
+		nlbTF.SecurityGroups = append(nlbTF.SecurityGroups, sg.TerraformLink())
+	}
+	terraformWriter.SortLiterals(nlbTF.SecurityGroups)
 
 	if e.AccessLog != nil && fi.ValueOf(e.AccessLog.Enabled) {
 		nlbTF.AccessLog = &terraformNetworkLoadBalancerAccessLog{
