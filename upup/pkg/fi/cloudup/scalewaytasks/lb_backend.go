@@ -253,7 +253,7 @@ func getControlPlanesIPs(scwCloud scaleway.ScwCloud, lb *LoadBalancer, zone scw.
 		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleWorker {
 			continue
 		}
-		ip, err := scwCloud.GetServerPrivateIP(server.Name, server.Zone)
+		ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
 		if err != nil {
 			return nil, fmt.Errorf("getting IP of server %s for load-balancer's back-end: %w", server.Name, err)
 		}

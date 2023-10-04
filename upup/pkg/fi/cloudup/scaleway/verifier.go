@@ -62,6 +62,7 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	if !strings.HasPrefix(token, ScalewayAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
+	serverID := strings.TrimPrefix(token, ScalewayAuthenticationTokenPrefix)
 
 	metadataAPI := instance.NewMetadataAPI()
 	metadata, err := metadataAPI.GetMetadata()
@@ -76,7 +77,6 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine region from zone %s", zone)
 	}
-	serverName := metadata.Name
 
 	profile, err := CreateValidScalewayProfile()
 	if err != nil {
@@ -90,15 +90,30 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		return nil, fmt.Errorf("creating client for Scaleway Verifier: %w", err)
 	}
 
+	serverResponse, err := instance.NewAPI(scwClient).GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+	server := serverResponse.Server
+	if len(server.PrivateNics) < 0 {
+		return nil, fmt.Errorf("could not find any private NIC for server %q", server.Name)
+	}
+
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
-		Region:       region,
-		ResourceName: fi.PtrTo(serverName),
+		Region:           region,
+		PrivateNetworkID: fi.PtrTo(server.PrivateNics[0].PrivateNetworkID),
+		ResourceID:       fi.PtrTo(server.PrivateNics[0].ID),
+		//ResourceName: fi.PtrTo(serverName),
+		IsIPv6: fi.PtrTo(false),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("failed to get IP for server %q: %w", serverName, err)
+		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)
 	}
 	if ips.TotalCount == 0 {
-		return nil, fmt.Errorf("no IP found for server %q: %w", serverName, err)
+		return nil, fmt.Errorf("no IP found for server %q: %w", server.Name, err)
 	}
 
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
@@ -117,13 +132,13 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	addresses := []string(nil)
 	challengeEndPoints := []string(nil)
 	for _, ip := range ips.IPs {
-		addresses = append(addresses, ip.Address.String())
-		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
+		addresses = append(addresses, ip.Address.IP.String())
+		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          serverName,
-		InstanceGroupName: InstanceGroupNameFromTags(metadata.Tags),
+		NodeName:          server.Name,
+		InstanceGroupName: InstanceGroupNameFromTags(server.Tags),
 		CertificateNames:  addresses,
 		ChallengeEndpoint: challengeEndPoints[0],
 	}

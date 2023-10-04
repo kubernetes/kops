@@ -424,7 +424,7 @@ func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*in
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
 		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
-		ip, err := s.GetServerPrivateIP(server.Name, server.Zone)
+		ip, err := s.GetServerPrivateIP(server.ID, server.Zone)
 		if err != nil {
 			return nil, fmt.Errorf("getting server private IP: %w", err)
 		}
@@ -556,50 +556,55 @@ func (s *scwCloudImplementation) GetClusterPrivateNetworks(clusterName string) (
 	return pns.PrivateNetworks, nil
 }
 
-func (s *scwCloudImplementation) GetServerPrivateIP(serverName string, zone scw.Zone) (string, error) {
+func (s *scwCloudImplementation) GetServerPrivateIP(serverID string, zone scw.Zone) (string, error) {
 	region, err := zone.Region()
 	if err != nil {
 		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
 	}
-	//resourceType := "instance_server"
-	ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
-		Region:       region,
-		IsIPv6:       fi.PtrTo(false),
-		ResourceName: fi.PtrTo(serverName),
-		//ProjectID:        nil,
-		//OrganizationID:   nil,
-		//Zonal:            nil,
-		//ZonalNat:         nil,
-		//Regional: fi.PtrTo(false),
-		//PrivateNetworkID: fi.PtrTo("fbd5db06-cc23-40b2-b117-5c05af970545"),
-		//SubnetID:         nil,
-		//Attached:         nil,
-		//ResourceID: fi.PtrTo("4de70e77-af3c-4680-8a8e-0bf4c5b1f3e2"),
-		//ResourceType: ipam.ResourceType(resourceType),
-		//MacAddress:       nil,
-		//Tags:             nil,
-		//ResourceIDs:      nil,
+
+	privateNICs, err := s.instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
+		Zone:     zone,
+		ServerID: serverID,
 	}, scw.WithAllPages())
 	if err != nil {
-		return "", fmt.Errorf("listing IPs for server %q: %w", serverName, err)
-		//return "", fmt.Errorf("listing IPs for %s %s: %w", resourceType, serverID, err)
-	}
-	if ips.TotalCount < 1 {
-		return "", fmt.Errorf("could not find IP for server %q", serverName)
-		//return "", fmt.Errorf("could not find IP for %s %s", resourceType, serverID)
+		return "", err
 	}
 
-	ipNet := ips.IPs[0].Address
-	ip := ipNet.String()
-	if ipNet.Mask != nil {
-		ip = ipNet.IP.String()
+	var privateIPs []string
+	for _, privateNIC := range privateNICs.PrivateNics {
+		//resourceType := "instance_server"
+		ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
+			Region:           region,
+			PrivateNetworkID: fi.PtrTo(privateNIC.PrivateNetworkID),
+			ResourceID:       fi.PtrTo(privateNIC.ID),
+			IsIPv6:           fi.PtrTo(false),
+			//ResourceName: fi.PtrTo(serverName),
+			//Zonal:            nil,
+			//ZonalNat:         nil,
+			//Regional: fi.PtrTo(false),
+			//SubnetID:         nil,
+			//Attached:         nil,
+			//ResourceType: ipam.ResourceType(resourceType),
+			//MacAddress:       nil,
+			//Tags:             nil,
+			//ResourceIDs:      nil,
+		}, scw.WithAllPages())
+		if err != nil {
+			return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
+		}
+		for _, ip := range ips.IPs {
+			privateIPs = append(privateIPs, ip.Address.IP.String())
+		}
 	}
 
-	if ips.TotalCount > 1 {
-		klog.Infof("Found more than 1 IP for server %q, using %s", serverName, ip)
-		//klog.Infof("Found more than 1 IP for %s %s, using %s", resourceType, serverID, ips.IPs[0].Address.String())
+	if len(privateIPs) < 1 {
+		return "", fmt.Errorf("could not find IP for server %s", serverID)
 	}
-	return ip, nil
+
+	if len(privateIPs) > 1 {
+		klog.Infof("Found more than 1 IP for server %s, using %s", serverID, privateIPs[0])
+	}
+	return privateIPs[0], nil
 }
 
 func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {
