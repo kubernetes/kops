@@ -132,6 +132,14 @@ func (c *GCEModelContext) NameForFirewallRule(id string) string {
 	return gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
 }
 
+func (c *GCEModelContext) NetworkIPAliasRange() string {
+	if c.Cluster.Spec.CloudConfig.GCPAliasRange != "" {
+		return c.Cluster.Spec.CloudConfig.GCPAliasRange
+	}
+
+	return "/24"
+}
+
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
 	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.GCE != nil
 }

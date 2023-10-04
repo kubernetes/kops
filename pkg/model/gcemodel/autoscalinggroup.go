@@ -152,8 +152,12 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			if gce.UsesIPAliases(b.Cluster) {
 				t.CanIPForward = fi.Bool(false)
 
+				ipAliasRange := fi.StringValue(ig.Spec.GCPAliasRange)
+				if ipAliasRange == "" {
+					ipAliasRange = b.NetworkIPAliasRange()
+				}
 				t.AliasIPRanges = map[string]string{
-					b.NameForIPAliasRange("pods"): "/24",
+					b.NameForIPAliasRange("pods"): ipAliasRange,
 				}
 			} else {
 				t.CanIPForward = fi.Bool(true)

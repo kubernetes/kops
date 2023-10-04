@@ -2758,6 +2758,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.GCPAliasRange != nil {
+		in, out := &in.GCPAliasRange, &out.GCPAliasRange
+		*out = new(string)
+		**out = **in
+	}
 	if in.GCPProvisioningModel != nil {
 		in, out := &in.GCPProvisioningModel, &out.GCPProvisioningModel
 		*out = new(string)

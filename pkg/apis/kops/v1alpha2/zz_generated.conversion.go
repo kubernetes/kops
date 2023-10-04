@@ -2179,6 +2179,7 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	} else {
 		out.GCPPDCSIDriver = nil
 	}
+	out.GCPAliasRange = in.GCPAliasRange
 	return nil
 }
 
@@ -2216,6 +2217,7 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops
 	} else {
 		out.GCPPDCSIDriver = nil
 	}
+	out.GCPAliasRange = in.GCPAliasRange
 	return nil
 }
 
@@ -4514,6 +4516,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.GuestAccelerators = nil
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
+	out.GCPAliasRange = in.GCPAliasRange
 	out.GCPProvisioningModel = in.GCPProvisioningModel
 	return nil
 }
@@ -4699,6 +4702,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 		out.GuestAccelerators = nil
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
+	out.GCPAliasRange = in.GCPAliasRange
 	out.GCPProvisioningModel = in.GCPProvisioningModel
 	return nil
 }
