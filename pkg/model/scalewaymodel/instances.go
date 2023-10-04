@@ -50,11 +50,6 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)
 		}
 
-		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
-		if err != nil {
-			return fmt.Errorf("error building bootstrap script for %q: %w", name, err)
-		}
-
 		instanceTags := []string{
 			scaleway.TagClusterName + "=" + b.Cluster.Name,
 			scaleway.TagInstanceGroup + "=" + ig.Name,
@@ -70,7 +65,6 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Zone:           fi.PtrTo(string(zone)),
 			CommercialType: fi.PtrTo(ig.Spec.MachineType),
 			Image:          fi.PtrTo(ig.Spec.Image),
-			UserData:       &userData,
 			Tags:           instanceTags,
 		}
 
@@ -113,6 +107,19 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			c.AddTask(privateNIC)
 		}
+
+		// For each individual server of the instance group, we add a BootstrapInstance task to build the bootstrapscript that will set the server up.
+		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+		if err != nil {
+			return fmt.Errorf("building bootstrap script for %q: %w", ig.Name, err)
+		}
+		script := &scalewaytasks.BootstrapInstance{
+			Name:      &name,
+			Lifecycle: b.Lifecycle,
+			Instance:  instance,
+			UserData:  &userData,
+		}
+		c.AddTask(script)
 	}
 	return nil
 }
