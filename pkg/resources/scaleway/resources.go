@@ -214,8 +214,8 @@ func listPrivateNetworks(cloud fi.Cloud, clusterName string) ([]*resources.Resou
 			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
 				return deletePrivateNetwork(cloud, tracker)
 			},
-			Obj:     pn,
-			Blocked: []string{resourceTypeVPC + ":" + pn.VpcID},
+			Obj:    pn,
+			Blocks: []string{resourceTypeVPC + ":" + pn.VpcID},
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -242,7 +242,7 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Obj: server,
 		}
 		for _, privateNic := range server.PrivateNics {
-			resourceTracker.Blocks = append(resourceTracker.Blocks, resourceTypeVPC+":"+privateNic.PrivateNetworkID)
+			resourceTracker.Blocks = append(resourceTracker.Blocks, resourceTypePrivateNetwork+":"+privateNic.PrivateNetworkID)
 		}
 
 		resourceTrackers = append(resourceTrackers, resourceTracker)

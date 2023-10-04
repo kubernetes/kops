@@ -255,7 +255,7 @@ func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 		ServerID: i.ID,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(4).Infof("deleting cloud instance %s of group %s: instance was already deleted", i.ID, i.CloudInstanceGroup.HumanName)
 			return nil
 		}
@@ -616,7 +616,7 @@ func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterN
 	}
 	_, err := s.domainAPI.UpdateDNSZoneRecords(recordDeleteRequest)
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("DNS record %q (%s) was already deleted", record.Name, record.ID)
 			return nil
 		}
@@ -632,7 +632,7 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 		Zone:      s.zone,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("Gateway %q (%s) was already deleted", gateway.Name, gateway.ID)
 			return nil
 		}
@@ -689,7 +689,7 @@ func (s *scwCloudImplementation) DeleteGatewayNetwork(gatewayNetwork *vpcgw.Gate
 	// We look for gateway connexions to private networks and detach them before deleting the gateway
 	//connexions, err := s.GetClusterGatewayNetworks(gatewayN.ID)
 	//if err != nil {
-	//	if is404Error(err) {
+	//	if Is404Error(err) {
 	//		klog.V(8).Infof("Gateway %q (%s) was already deleted", gateway.Name, gateway.ID)
 	//		return nil
 	//	}
@@ -716,7 +716,7 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		Zone: s.zone,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("Load-balancer %q (%s) was already deleted", loadBalancer.Name, loadBalancer.ID)
 			return nil
 		}
@@ -735,7 +735,7 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		LBID: loadBalancer.ID,
 		Zone: s.zone,
 	})
-	if !is404Error(err) {
+	if !Is404Error(err) {
 		return fmt.Errorf("waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
 	}
 	for _, ip := range ipsToRelease {
@@ -756,7 +756,7 @@ func (s *scwCloudImplementation) DeletePrivateNetwork(privateNetwork *vpc.Privat
 		Region:           s.region,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("Private network %q (%s) was already deleted", privateNetwork.Name, privateNetwork.ID)
 			return nil
 		}
@@ -771,7 +771,7 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		ServerID: server.ID,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(4).Infof("delete server %s: instance %q was already deleted", server.ID, server.Name)
 			return nil
 		}
@@ -841,15 +841,23 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		ServerID: server.ID,
 		Action:   instance.ServerActionTerminate,
 	})
-	if err != nil && !is404Error(err) {
-		return fmt.Errorf("delete server %s: terminating instance: %w", server.ID, err)
+	if err != nil {
+		if strings.Contains(err.Error(), "server should be running") {
+			err = s.instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+				Zone:     s.zone,
+				ServerID: server.ID,
+			})
+		}
+		if err != nil && !Is404Error(err) {
+			return fmt.Errorf("delete server %s: terminating instance: %w", server.ID, err)
+		}
 	}
 
 	_, err = s.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		ServerID: server.ID,
 		Zone:     s.zone,
 	})
-	if err != nil && !is404Error(err) {
+	if err != nil && !Is404Error(err) {
 		return fmt.Errorf("delete server %s: waiting for instance after termination: %w", server.ID, err)
 	}
 
@@ -861,7 +869,7 @@ func (s *scwCloudImplementation) DeleteSSHKey(sshkey *iam.SSHKey) error {
 		SSHKeyID: sshkey.ID,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("SSH key %q (%s) was already deleted", sshkey.Name, sshkey.ID)
 			return nil
 		}
@@ -876,7 +884,7 @@ func (s *scwCloudImplementation) DeleteVolume(volume *instance.Volume) error {
 		Zone:     s.zone,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("Volume %q (%s) was already deleted", volume.Name, volume.ID)
 			return nil
 		}
@@ -887,7 +895,7 @@ func (s *scwCloudImplementation) DeleteVolume(volume *instance.Volume) error {
 		VolumeID: volume.ID,
 		Zone:     s.zone,
 	})
-	if !is404Error(err) {
+	if !Is404Error(err) {
 		return fmt.Errorf("delete volume %s: waiting for volume after deletion: %w", volume.ID, err)
 	}
 
@@ -900,7 +908,7 @@ func (s *scwCloudImplementation) DeleteVPC(v *vpc.VPC) error {
 		VpcID:  v.ID,
 	})
 	if err != nil {
-		if is404Error(err) {
+		if Is404Error(err) {
 			klog.V(8).Infof("VPC %q (%s) was already deleted", v.Name, v.ID)
 			return nil
 		}
