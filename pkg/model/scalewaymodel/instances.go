@@ -58,7 +58,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			instanceTags = append(instanceTags, fmt.Sprintf("%s=%s", k, v))
 		}
 
-		instance := scalewaytasks.Instance{
+		instance := &scalewaytasks.Instance{
 			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
 			Name:           fi.PtrTo(name),
 			Lifecycle:      b.Lifecycle,
@@ -66,6 +66,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			CommercialType: fi.PtrTo(ig.Spec.MachineType),
 			Image:          fi.PtrTo(ig.Spec.Image),
 			Tags:           instanceTags,
+			PrivateNetwork: b.LinkToNetwork(),
 		}
 
 		if ig.IsControlPlane() {
@@ -88,21 +89,21 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 		}
 
-		c.AddTask(&instance)
+		c.AddTask(instance)
 
+		// For each individual server of the instance group, we add a PrivateNIC task to link the server to the private network.
 		isForAPIServer := false
 		if *instance.Role == scaleway.TagRoleControlPlane {
 			isForAPIServer = true
 		}
-
 		for i := int32(0); i < fi.ValueOf(ig.Spec.MinSize); i++ {
 			privateNIC := &scalewaytasks.PrivateNIC{
-				Name:           fi.PtrTo(fmt.Sprintf("%s-%d", name, i)),
+				Name:           &name,
 				Zone:           fi.PtrTo(string(zone)),
 				Tags:           instanceTags,
 				ForAPIServer:   isForAPIServer,
 				Lifecycle:      b.Lifecycle,
-				InstanceGroup:  &instance,
+				Instance:       instance,
 				PrivateNetwork: b.LinkToNetwork(),
 			}
 			c.AddTask(privateNIC)

@@ -279,7 +279,7 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		//pNIC, err := instanceService.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 		//	Zone:             zone,
 		//	ServerID:         server.ID,
-		//	PrivateNetworkID: privateNetwork.ID,
+		//	PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
 		//	Tags:             server.Tags,
 		//	//IPIDs:
 		//})
