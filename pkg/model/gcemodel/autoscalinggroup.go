@@ -154,7 +154,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 
 				ipAliasRange := fi.StringValue(ig.Spec.GCPAliasRange)
 				if ipAliasRange == "" {
-					ipAliasRange = b.NetworkIPAliasRange()
+					ipAliasRange = fi.StringValue(b.NetworkIPAliasRange())
 				}
 				t.AliasIPRanges = map[string]string{
 					b.NameForIPAliasRange("pods"): ipAliasRange,
