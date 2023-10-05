@@ -460,14 +460,14 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 		bareHostname := strings.Split(fullyQualified, ".")[0]
 		return bareHostname, nil
 	case api.CloudProviderDO:
-		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
+		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/hostname")
 		if err != nil {
-			return "", fmt.Errorf("error reading droplet private IP from DigitalOcean metadata: %v", err)
+			return "", fmt.Errorf("error reading droplet hostname from DigitalOcean metadata: %v", err)
 		}
 
 		hostname := string(vBytes)
 		if hostname == "" {
-			return "", errors.New("private IP for digitalocean droplet was empty")
+			return "", errors.New("hostname for digitalocean droplet was empty")
 		}
 
 		return hostname, nil
