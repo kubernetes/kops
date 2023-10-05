@@ -88,35 +88,29 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	server := serverResponse.Server
 	klog.V(4).Infof("Found the running server: %q", server.Name)
 
-	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
-		Region:     region,
-		ResourceID: fi.PtrTo(serverID),
-		IsIPv6:     fi.PtrTo(false),
-		Zonal:      fi.PtrTo(zone.String()),
-	}, scw.WithAllPages())
-	if err != nil {
-		return nil, fmt.Errorf("listing server's IPs: %w", err)
-	}
-	if ips.TotalCount < 1 {
-		return nil, fmt.Errorf("expected at least 1 IP attached to the server %s", server.ID)
+	if len(server.PrivateNics) == 0 {
+		return nil, fmt.Errorf("the server was not linked to the private network")
 	}
 
-	var ipToReturn string
-	for _, ipFound := range ips.IPs {
-		if ipFound.Address.IP.IsPrivate() == true {
-			ipToReturn = ipFound.Address.IP.String()
-			break
-		}
+	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
+		Region:           region,
+		ResourceID:       &server.PrivateNics[0].ID,
+		PrivateNetworkID: &server.PrivateNics[0].PrivateNetworkID,
+		IsIPv6:           fi.PtrTo(false),
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing public gateway's IPs: %w", err)
 	}
-	if ipToReturn == "" {
-		ipToReturn = ips.IPs[0].Address.IP.String()
+	if ips.TotalCount != 1 {
+		return nil, fmt.Errorf("expected exactly 1 IP attached to the private NIC of server %s, got %d", server.ID, ips.TotalCount)
 	}
-	klog.V(4).Infof("Found first private net IP of the running server: %q", ipToReturn)
+	ip := ips.IPs[0].Address.IP.String()
+	klog.V(4).Infof("Found first private net IP of the running server: %q", ip)
 
 	s := &ScwCloudProvider{
 		scwClient: scwClient,
 		server:    server,
-		serverIP:  net.IP(ipToReturn),
+		serverIP:  net.IP(ip),
 	}
 
 	return s, nil
