@@ -32,14 +32,6 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(vpc)
 
-	gateway := &scalewaytasks.Gateway{
-		Name:      fi.PtrTo(resourceName),
-		Zone:      fi.PtrTo(zone.String()),
-		Tags:      []string{clusterNameTag},
-		Lifecycle: b.Lifecycle,
-	}
-	c.AddTask(gateway)
-
 	ipRange := b.Cluster.Spec.Networking.NetworkCIDR
 	if ipRange == "" {
 		ipRange = "192.168.1.0/24"
@@ -54,6 +46,15 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		VPC:       vpc,
 	}
 	c.AddTask(privateNetwork)
+
+	gateway := &scalewaytasks.Gateway{
+		Name:      fi.PtrTo(resourceName),
+		Zone:      fi.PtrTo(zone.String()),
+		Tags:      []string{clusterNameTag},
+		Lifecycle: b.Lifecycle,
+		//PrivateNetwork: privateNetwork,
+	}
+	c.AddTask(gateway)
 
 	gatewayNetwork := &scalewaytasks.GatewayNetwork{
 		Name:           fi.PtrTo(resourceName),

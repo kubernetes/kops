@@ -29,12 +29,14 @@ import (
 
 // +kops:fitask
 type DNSRecord struct {
-	ID        *string
-	Name      *string
-	Data      *string
-	DNSZone   *string
-	Type      *string
-	TTL       *uint32
+	ID   *string
+	Name *string
+
+	Data    *string
+	DNSZone *string
+	Type    *string
+	TTL     *uint32
+
 	Lifecycle fi.Lifecycle
 }
 
