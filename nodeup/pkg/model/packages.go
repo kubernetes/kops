@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -55,6 +56,11 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		for _, additionalPackage := range b.NodeupConfig.Packages {
 			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})
 		}
+		// Add packages required for Kubernetes E2E testing to work
+		if featureflag.KubernetesE2ETesting.Enabled() {
+			c.AddTask(&nodetasks.Package{Name: "nfs-common"})
+			c.AddTask(&nodetasks.Package{Name: "net-tools"})
+		}
 	} else if b.Distribution.IsRHELFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
 		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
@@ -78,6 +84,11 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
 			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})
+		}
+		// Add packages required for Kubernetes E2E testing to work
+		if featureflag.KubernetesE2ETesting.Enabled() {
+			c.AddTask(&nodetasks.Package{Name: "nfs-utils"})
+			c.AddTask(&nodetasks.Package{Name: "net-tools"})
 		}
 	} else {
 		// Hopefully they are already installed

@@ -94,6 +94,8 @@ var (
 	SELinuxMount = new("SELinuxMount", Bool(false))
 	// DO Terraform toggles the DO terraform support.
 	DOTerraform = new("DOTerraform", Bool(false))
+	// KubernetesE2ETesting enables cluster configuration that is useful for e2e testing upstream kubernetes.
+	KubernetesE2ETesting = new("KubernetesE2ETesting", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
