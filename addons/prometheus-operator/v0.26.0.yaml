@@ -15373,18 +15373,6 @@ spec:
       for: 15m
       labels:
         severity: critical
-    - alert: KubeDaemonSetRolloutStuck
-      annotations:
-        message: Only {{ $value }}% of the desired Pods of DaemonSet {{ $labels.namespace
-          }}/{{ $labels.daemonset }} are scheduled and ready.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck
-      expr: |
-        kube_daemonset_status_number_ready{job="kube-state-metrics"}
-          /
-        kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"} * 100 < 100
-      for: 15m
-      labels:
-        severity: critical
     - alert: KubeDaemonSetNotScheduled
       annotations:
         message: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset
