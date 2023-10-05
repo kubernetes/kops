@@ -182,7 +182,13 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 }
 
 func (s *scwCloudImplementation) ClusterName(tags []string) string {
-	return ClusterNameFromTags(tags)
+	if tags != nil {
+		return ClusterNameFromTags(tags)
+	}
+	if clusterName, ok := s.tags[TagClusterName]; ok {
+		return clusterName
+	}
+	return ""
 }
 
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {

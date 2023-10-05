@@ -222,6 +222,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		scwCloud := tf.cloud.(scaleway.ScwCloud)
 		return scwCloud.Zone()
 	}
+	dest["SCW_KOPS_CLUSTER_NAME"] = func() string {
+		scwCloud := tf.cloud.(scaleway.ScwCloud)
+		return scwCloud.ClusterName(nil)
+	}
 
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {

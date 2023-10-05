@@ -48,6 +48,9 @@ func (g *GatewayNetwork) GetDependencies(tasks map[string]fi.CloudupTask) []fi.C
 		if _, ok := task.(*PrivateNetwork); ok {
 			deps = append(deps, task)
 		}
+		if _, ok := task.(*Gateway); ok {
+			deps = append(deps, task)
+		}
 	}
 	return deps
 }

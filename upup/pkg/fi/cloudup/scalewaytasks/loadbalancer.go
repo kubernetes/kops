@@ -108,6 +108,7 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 		return nil, nil
 	}
 	loadBalancer := lbResponse.LBs[0]
+	// TODO(Mia-Cross): What if several lbs ?
 
 	region, err := scw.Zone(fi.ValueOf(l.Zone)).Region()
 	if err != nil {

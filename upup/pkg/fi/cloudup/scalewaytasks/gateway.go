@@ -19,10 +19,53 @@ type Gateway struct {
 	Tags []string
 
 	Lifecycle fi.Lifecycle
+	//PrivateNetwork *PrivateNetwork
 }
+
+//func (g *Gateway) IsForAPIServer() bool {
+//	return true
+//}
+//
+//func (g *Gateway) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+//	if g.ID == nil {
+//		return nil, nil
+//	}
+//
+//	cloud := context.T.Cloud.(scaleway.ScwCloud)
+//	//gwFound, err := cloud.GetClusterGateways(scaleway.ClusterNameFromTags(g.Tags))
+//	//if err != nil {
+//	//	return nil, err
+//	//}
+//
+//	var gatewayAddresses []string
+//	region, err := scw.Zone(fi.ValueOf(g.Zone)).Region()
+//	if err != nil {
+//		return nil, fmt.Errorf("finding public gateway's region: %w", err)
+//	}
+//
+//	//for _, gw := range gwFound {
+//	ips, err := cloud.IPAMService().ListIPs(&ipam.ListIPsRequest{
+//		Region: region,
+//		//Zonal:  g.Zone,
+//		//ResourceID:       &gw.ID,
+//		PrivateNetworkID: g.PrivateNetwork.ID,
+//		ResourceName:     g.Name,
+//		ResourceType:     ipam.ResourceTypeVpcGateway,
+//	}, scw.WithContext(context.Context()), scw.WithAllPages())
+//	if err != nil {
+//		return nil, fmt.Errorf("listing public gateway's IPs: %w", err)
+//	}
+//	for _, ip := range ips.IPs {
+//		gatewayAddresses = append(gatewayAddresses, ip.Address.IP.String())
+//	}
+//	//}
+//	return gatewayAddresses, nil
+//}
 
 var _ fi.CloudupTask = &Gateway{}
 var _ fi.CompareWithID = &Gateway{}
+
+//var _ fi.HasAddress = &Gateway{}
 
 func (g *Gateway) CompareWithID() *string {
 	return g.ID
