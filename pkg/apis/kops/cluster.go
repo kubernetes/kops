@@ -114,6 +114,8 @@ type ClusterSpec struct {
 	CloudConfig         *CloudConfiguration `json:"cloudConfig,omitempty"`
 	ExternalDNS         *ExternalDNSConfig  `json:"externalDNS,omitempty"`
 	NTP                 *NTPConfig          `json:"ntp,omitempty"`
+	// Packages specifies additional packages to be installed.
+	Packages []string `json:"packages,omitempty"`
 
 	// NodeProblemDetector determines the node problem detector configuration.
 	NodeProblemDetector *NodeProblemDetectorConfig `json:"nodeProblemDetector,omitempty"`

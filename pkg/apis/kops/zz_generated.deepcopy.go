@@ -1261,6 +1261,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(NTPConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Packages != nil {
+		in, out := &in.Packages, &out.Packages
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.NodeProblemDetector != nil {
 		in, out := &in.NodeProblemDetector, &out.NodeProblemDetector
 		*out = new(NodeProblemDetectorConfig)

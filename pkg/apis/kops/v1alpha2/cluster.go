@@ -186,6 +186,8 @@ type ClusterSpec struct {
 	CloudConfig         *CloudConfiguration `json:"cloudConfig,omitempty"`
 	ExternalDNS         *ExternalDNSConfig  `json:"externalDns,omitempty"`
 	NTP                 *NTPConfig          `json:"ntp,omitempty"`
+	// Packages specifies additional packages to be installed.
+	Packages []string `json:"packages,omitempty"`
 
 	// NodeTerminationHandler determines the cluster autoscaler configuration.
 	// +k8s:conversion-gen=false
