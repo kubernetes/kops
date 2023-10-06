@@ -49,7 +49,7 @@ func (d *deployer) Up() error {
 	}
 
 	if d.CloudProvider == "gce" && d.createBucket {
-		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject); err != nil {
+		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
 			return err
 		}
 	}

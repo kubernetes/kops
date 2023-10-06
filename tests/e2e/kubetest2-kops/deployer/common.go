@@ -41,11 +41,6 @@ func (d *deployer) init() error {
 
 // initialize should only be called by init(), behind a sync.Once
 func (d *deployer) initialize() error {
-	if d.commonOptions.ShouldBuild() {
-		if err := d.verifyBuildFlags(); err != nil {
-			return fmt.Errorf("init failed to check build flags: %v", err)
-		}
-	}
 	if d.commonOptions.ShouldUp() || d.commonOptions.ShouldDown() {
 		if err := d.verifyKopsFlags(); err != nil {
 			return fmt.Errorf("init failed to check kops flags: %v", err)
@@ -115,6 +110,12 @@ func (d *deployer) initialize() error {
 				d.SSHPublicKeyPath = publicKey
 			}
 			d.createBucket = true
+		}
+	}
+
+	if d.commonOptions.ShouldBuild() {
+		if err := d.verifyBuildFlags(); err != nil {
+			return fmt.Errorf("init failed to check build flags: %v", err)
 		}
 	}
 
@@ -272,12 +273,24 @@ func (d *deployer) stateStore() string {
 			ss = "s3://k8s-kops-prow"
 		case "gce":
 			d.createBucket = true
-			ss = "gs://" + gce.GCSBucketName(d.GCPProject)
+			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
 		case "digitalocean":
 			ss = "do://e2e-kops-space"
 		}
 	}
 	return ss
+}
+
+func (d *deployer) stagingStore() string {
+	sb := os.Getenv("KOPS_STAGING_BUCKET")
+	if sb == "" {
+		switch d.CloudProvider {
+		case "gce":
+			d.createBucket = true
+			sb = "gs://" + gce.GCSBucketName(d.GCPProject, "staging")
+		}
+	}
+	return sb
 }
 
 // the default is $ARTIFACTS if set, otherwise ./_artifacts
