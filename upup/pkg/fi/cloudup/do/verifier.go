@@ -103,7 +103,7 @@ func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          droplet.Name,
+		NodeName:          strconv.Itoa(droplet.ID),
 		CertificateNames:  addresses,
 		ChallengeEndpoint: challengeEndpoints[0],
 	}

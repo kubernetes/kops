@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -426,6 +425,10 @@ func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID
 
 	nodeupConfig.KubeletConfig.HostnameOverride = hostnameOverride
 
+	if cloudProvider == api.CloudProviderDO {
+		nodeupConfig.KubeletConfig.ProviderID = "digitalocean://" + hostnameOverride
+	}
+
 	if nodeupConfig.KubeProxy != nil {
 		nodeupConfig.KubeProxy.HostnameOverride = hostnameOverride
 		nodeupConfig.KubeProxy.BindAddress, err = evaluateBindAddress(nodeupConfig.KubeProxy.BindAddress)
@@ -460,17 +463,12 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 		bareHostname := strings.Split(fullyQualified, ".")[0]
 		return bareHostname, nil
 	case api.CloudProviderDO:
-		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/hostname")
+		dropletIDBytes, err := vfs.Context.ReadFile("metadata://digitalocean/id")
 		if err != nil {
-			return "", fmt.Errorf("error reading droplet hostname from DigitalOcean metadata: %v", err)
+			return "", fmt.Errorf("error reading droplet ID from DigitalOcean metadata: %v", err)
 		}
 
-		hostname := string(vBytes)
-		if hostname == "" {
-			return "", errors.New("hostname for digitalocean droplet was empty")
-		}
-
-		return hostname, nil
+		return string(dropletIDBytes), nil
 	}
 
 	return "", nil
