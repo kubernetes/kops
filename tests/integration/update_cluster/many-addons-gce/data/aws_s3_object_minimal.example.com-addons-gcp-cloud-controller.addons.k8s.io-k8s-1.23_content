@@ -37,18 +37,16 @@ spec:
         - --cidr-allocator-type=CloudAllocator
         - --cluster-cidr=100.96.0.0/11
         - --cluster-name=minimal-example-com
-        - --controllers=*,-gkenetworkparamset
+        - --controllers=*
         - --leader-elect=true
         - --v=2
         - --cloud-provider=gce
         - --use-service-account-credentials=true
         - --cloud-config=/etc/kubernetes/cloud.config
-        command:
-        - /cloud-controller-manager
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v26.2.4
+        image: gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -414,3 +412,155 @@ rules:
   verbs:
   - list
   - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: gce:cloud-provider
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: gce:cloud-provider
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - patch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    kubernetes.io/deprecation: cloud-provider role is DEPRECATED in the concern of
+      potential collisions and will be removed in 1.16. Do not use this role.
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: cloud-provider
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    kubernetes.io/deprecation: cloud-provider clusterrole is DEPRECATED in the concern
+      of potential collisions and will be removed in 1.16. Do not use this role.
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: cloud-provider
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: gce:cloud-provider
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gce:cloud-provider
+subjects:
+- kind: ServiceAccount
+  name: cloud-provider
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: gce:cloud-provider
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gce:cloud-provider
+subjects:
+- kind: ServiceAccount
+  name: cloud-provider
+  namespace: kube-system

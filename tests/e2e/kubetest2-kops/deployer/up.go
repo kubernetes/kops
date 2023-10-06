@@ -150,11 +150,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneCount))
 	}
 
-	args = appendIfUnset(args, "--master-volume-size", "48")
-	args = appendIfUnset(args, "--node-count", "4")
-	args = appendIfUnset(args, "--node-volume-size", "48")
-	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
-
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
@@ -177,6 +172,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		// set some sane default e2e testing behaviour on gce
 		args = appendIfUnset(args, "--gce-service-account", "default")
 		args = appendIfUnset(args, "--networking", "kubenet")
+		args = appendIfUnset(args, "--node-volume-size", "100")
 
 		// We used to set the --vpc flag to split clusters into different networks, this is now the default.
 		// args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
@@ -184,6 +180,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--master-size", "c2-16vcpu-32gb")
 		args = appendIfUnset(args, "--node-size", "c2-16vcpu-32gb")
 	}
+
+	args = appendIfUnset(args, "--master-volume-size", "48")
+	args = appendIfUnset(args, "--node-count", "4")
+	args = appendIfUnset(args, "--node-volume-size", "48")
+	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
 
 	if d.terraform != nil {
 		args = append(args, "--target", "terraform", "--out", d.terraform.Dir())

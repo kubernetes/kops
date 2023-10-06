@@ -152,6 +152,8 @@ func (d *deployer) dumpClusterInfo() error {
 		"persistentvolumeclaims",
 		"poddisruptionbudgets",
 		"serviceaccounts",
+		"rolebindings",
+		"roles",
 	}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)

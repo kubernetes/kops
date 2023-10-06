@@ -25,8 +25,8 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
     controllers:
-    - '*,-gkenetworkparamset'
-    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v26.2.4
+    - '*'
+    image: gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master
     leaderElection:
       leaderElect: true
   cloudProvider: gce
