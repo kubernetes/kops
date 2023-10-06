@@ -1,4 +1,4 @@
-# Copyright 2022 DigitalOcean
+# Copyright 2023 DigitalOcean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -689,7 +689,7 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Copyright 2022 DigitalOcean
+# Copyright 2023 DigitalOcean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -801,7 +801,7 @@ spec:
       serviceAccount: csi-do-controller-sa
       containers:
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--default-fstype=ext4"
@@ -814,7 +814,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.5.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.3.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -828,7 +828,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -840,7 +840,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.5.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.8.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=30s"
@@ -855,7 +855,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.2.0
+          image: digitalocean/do-csi-plugin:v4.7.1
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--token=$(DIGITALOCEAN_ACCESS_TOKEN)"
@@ -1088,15 +1088,11 @@ spec:
               mountPath: /etc/udev/rules.d/
       containers:
         - name: csi-node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "rm -rf /registration/dobs.csi.digitalocean.com /registration/dobs.csi.digitalocean.com-reg.sock"]
           env:
             - name: ADDRESS
               value: /csi/csi.sock
@@ -1112,7 +1108,7 @@ spec:
             - name: registration-dir
               mountPath: /registration/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.2.0
+          image: digitalocean/do-csi-plugin:v4.7.1
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--url=$(DIGITALOCEAN_API_URL)"
@@ -1190,8 +1186,9 @@ roleRef:
   kind: ClusterRole
   name: csi-do-node-driver-registrar-role
   apiGroup: rbac.authorization.k8s.io
+
 ---
-# Copyright 2022 DigitalOcean
+# Copyright 2023 DigitalOcean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -1230,7 +1227,7 @@ spec:
       serviceAccountName: snapshot-controller
       containers:
         - name: snapshot-controller
-          image: registry.k8s.io/sig-storage/snapshot-controller:v6.0.1
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.2.2
           args:
             - "--v=5"
           imagePullPolicy: IfNotPresent
