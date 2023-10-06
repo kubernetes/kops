@@ -56,6 +56,7 @@ func (d *deployer) Down() error {
 
 	if d.CloudProvider == "gce" && d.createBucket {
 		gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
+		gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
 	}
 
 	if d.boskos != nil {
