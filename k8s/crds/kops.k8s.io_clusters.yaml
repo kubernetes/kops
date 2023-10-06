@@ -5611,6 +5611,11 @@ spec:
                       to false.
                     type: boolean
                 type: object
+              packages:
+                description: Packages specifies additional packages to be installed.
+                items:
+                  type: string
+                type: array
               podCIDR:
                 description: PodCIDR is the CIDR from which we allocate IPs for pods
                 type: string

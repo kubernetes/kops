@@ -2593,6 +2593,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.NTP = nil
 	}
+	out.Packages = in.Packages
 	// INFO: in.NodeTerminationHandler opted out of conversion generation
 	if in.NodeProblemDetector != nil {
 		in, out := &in.NodeProblemDetector, &out.NodeProblemDetector
@@ -2932,6 +2933,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.NTP = nil
 	}
+	out.Packages = in.Packages
 	if in.NodeProblemDetector != nil {
 		in, out := &in.NodeProblemDetector, &out.NodeProblemDetector
 		*out = new(NodeProblemDetectorConfig)
