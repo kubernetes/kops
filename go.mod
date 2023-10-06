@@ -1,6 +1,8 @@
 module k8s.io/kops
 
-go 1.20
+go 1.21
+
+toolchain go1.21.1
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
@@ -14,10 +16,10 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-	github.com/aws/aws-sdk-go v1.45.19
+	github.com/aws/aws-sdk-go v1.45.23
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.13.1
-	github.com/digitalocean/godo v1.102.1
+	github.com/digitalocean/godo v1.103.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.4
 	github.com/gogo/protobuf v1.3.2
@@ -27,7 +29,7 @@ require (
 	github.com/google/go-tpm-tools v0.4.1
 	github.com/google/uuid v1.3.1
 	github.com/gophercloud/gophercloud v1.7.0
-	github.com/hetznercloud/hcloud-go v1.50.0
+	github.com/hetznercloud/hcloud-go v1.51.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
@@ -42,13 +44,13 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.11.0
-	golang.org/x/crypto v0.13.0
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
-	golang.org/x/net v0.15.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/exp v0.0.0-20231005195138-3e424a577f31
+	golang.org/x/net v0.16.0
 	golang.org/x/oauth2 v0.12.0
-	golang.org/x/sync v0.3.0
-	golang.org/x/sys v0.12.0
-	google.golang.org/api v0.143.0
+	golang.org/x/sync v0.4.0
+	golang.org/x/sys v0.13.0
+	google.golang.org/api v0.145.0
 	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/gcfg.v1 v1.2.3
@@ -211,7 +213,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.15.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
