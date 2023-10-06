@@ -57,7 +57,7 @@ spec:
           operator: Exists
           tolerationSeconds: 300
       containers:
-      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.36
+      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.45
         name: digitalocean-cloud-controller-manager
         command:
           - "/bin/digitalocean-cloud-controller-manager"
@@ -91,6 +91,17 @@ metadata:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   name: system:cloud-controller-manager
 rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - watch
+  - list
+  - create
+  - update
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -154,17 +165,6 @@ rules:
   - list
   - watch
   - update
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - get
-  - watch
-  - list
-  - create
-  - update
-  - delete
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
