@@ -24,13 +24,14 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
 const (
 	defaultJobName = "pull-kops-e2e-kubernetes-aws"
-	defaultGCSPath = "gs://kops-ci/pulls/%v/pull-%v"
+	defaultGCSPath = "gs://k8s-staging-kops/pulls/%v/pull-%v"
 )
 
 func (d *deployer) Build() error {
@@ -65,6 +66,12 @@ func (d *deployer) verifyBuildFlags() error {
 	if d.StageLocation != "" {
 		if !strings.HasPrefix(d.StageLocation, "gs://") {
 			return errors.New("stage-location must be a gs:// path")
+		}
+	} else if d.boskos != nil {
+		d.StageLocation = d.stagingStore()
+		klog.Infof("creating staging bucket %s to hold kops build artifacts", d.StageLocation)
+		if err := gce.EnsureGCSBucket(d.StageLocation, d.GCPProject, true); err != nil {
+			return err
 		}
 	} else {
 		stageLocation, err := defaultStageLocation(d.KopsRoot)

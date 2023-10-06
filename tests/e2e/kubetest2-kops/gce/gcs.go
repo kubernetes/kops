@@ -21,25 +21,26 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
-func GCSBucketName(projectID string) string {
+func GCSBucketName(projectID, prefix string) string {
 	var s string
-	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 2 {
-		s = jobID[:2]
+	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 4 {
+		s = jobID[:4]
 	} else {
 		b := make([]byte, 2)
 		rand.Read(b)
 		s = hex.EncodeToString(b)
 	}
-	bucket := strings.Join([]string{projectID, "state", s}, "-")
+	bucket := strings.Join([]string{projectID, prefix, s}, "-")
 	return bucket
 }
 
-func EnsureGCSBucket(bucketPath, projectID string) error {
+func EnsureGCSBucket(bucketPath, projectID string, public bool) error {
 	lsArgs := []string{
 		"gsutil", "ls", "-b",
 	}
@@ -74,6 +75,22 @@ func EnsureGCSBucket(bucketPath, projectID string) error {
 	err = cmd.Run()
 	if err != nil {
 		return err
+	}
+
+	if public {
+		iamArgs := []string{
+			"gsutil", "iam", "ch", "allUsers:objectViewer",
+		}
+		iamArgs = append(iamArgs, bucketPath)
+		klog.Info(strings.Join(iamArgs, " "))
+		// GCS APIs are strongly consistent but this should help with flakes
+		time.Sleep(10 * time.Second)
+		cmd = exec.Command(iamArgs[0], iamArgs[1:]...)
+		exec.InheritOutput(cmd)
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
