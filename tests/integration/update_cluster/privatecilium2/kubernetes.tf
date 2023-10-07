@@ -772,6 +772,7 @@ resource "aws_lb" "bastion-privatecilium-example-com" {
   internal                         = false
   load_balancer_type               = "network"
   name                             = "bastion-privatecilium-exa-l2ms01"
+  security_groups                  = [aws_security_group.bastion-elb-privatecilium-example-com.id]
   subnet_mapping {
     subnet_id = aws_subnet.utility-us-test-1a-privatecilium-example-com.id
   }
@@ -1079,6 +1080,17 @@ resource "aws_security_group" "api-elb-privatecilium-example-com" {
   vpc_id = aws_vpc.privatecilium-example-com.id
 }
 
+resource "aws_security_group" "bastion-elb-privatecilium-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatecilium.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "bastion-elb.privatecilium.example.com"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecilium-example-com.id
+}
+
 resource "aws_security_group" "bastion-privatecilium-example-com" {
   description = "Security group for bastion"
   name        = "bastion.privatecilium.example.com"
@@ -1112,11 +1124,11 @@ resource "aws_security_group" "nodes-privatecilium-example-com" {
   vpc_id = aws_vpc.privatecilium-example-com.id
 }
 
-resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-privatecilium-example-com" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatecilium-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.bastion-privatecilium-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
   to_port           = 22
   type              = "ingress"
 }
@@ -1130,11 +1142,11 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-api-elb
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "from-172-20-4-0--22-ingress-tcp-22to22-bastion-privatecilium-example-com" {
+resource "aws_security_group_rule" "from-172-20-4-0--22-ingress-tcp-22to22-bastion-elb-privatecilium-example-com" {
   cidr_blocks       = ["172.20.4.0/22"]
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.bastion-privatecilium-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
   to_port           = 22
   type              = "ingress"
 }
@@ -1157,6 +1169,42 @@ resource "aws_security_group_rule" "from-api-elb-privatecilium-example-com-egres
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-bastion-elb-privatecilium-example-com-egress-all-0to0-0-0-0-0--0" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatecilium-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatecilium-example-com-ingress-icmp-3to4-bastion-privatecilium-example-com" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.bastion-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatecilium-example-com-ingress-tcp-22to22-bastion-privatecilium-example-com" {
+  from_port                = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.bastion-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
+  to_port                  = 22
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "from-bastion-privatecilium-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -1173,6 +1221,15 @@ resource "aws_security_group_rule" "from-bastion-privatecilium-example-com-egres
   security_group_id = aws_security_group.bastion-privatecilium-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-privatecilium-example-com-ingress-icmp-3to4-bastion-elb-privatecilium-example-com" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.bastion-elb-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.bastion-privatecilium-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-privatecilium-example-com-ingress-tcp-22to22-masters-privatecilium-example-com" {
@@ -1310,11 +1367,29 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "icmp-pmtu-cp-to-elb" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.api-elb-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.masters-privatecilium-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-elb-to-cp" {
+  from_port                = 3
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.masters-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.api-elb-privatecilium-example-com.id
+  to_port                  = 4
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.bastion-privatecilium-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
   to_port           = 4
   type              = "ingress"
 }
@@ -1323,7 +1398,7 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
   cidr_blocks       = ["172.20.4.0/22"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.bastion-privatecilium-example-com.id
+  security_group_id = aws_security_group.bastion-elb-privatecilium-example-com.id
   to_port           = 4
   type              = "ingress"
 }

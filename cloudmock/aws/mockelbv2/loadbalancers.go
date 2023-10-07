@@ -83,6 +83,7 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 	lb := elbv2.LoadBalancer{
 		LoadBalancerName:      request.Name,
 		Scheme:                request.Scheme,
+		SecurityGroups:        request.SecurityGroups,
 		Type:                  request.Type,
 		IpAddressType:         request.IpAddressType,
 		DNSName:               aws.String(fmt.Sprintf("%v.amazonaws.com", aws.StringValue(request.Name))),
@@ -189,6 +190,19 @@ func (m *MockELBV2) ModifyLoadBalancerAttributes(request *elbv2.ModifyLoadBalanc
 		}
 		return &elbv2.ModifyLoadBalancerAttributesOutput{
 			Attributes: m.LBAttributes[arn],
+		}, nil
+	}
+	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.StringValue(request.LoadBalancerArn))
+}
+
+func (m *MockELBV2) SetSecurityGroups(request *elbv2.SetSecurityGroupsInput) (*elbv2.SetSecurityGroupsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	arn := aws.StringValue(request.LoadBalancerArn)
+	if lb, ok := m.LoadBalancers[arn]; ok {
+		lb.description.SecurityGroups = request.SecurityGroups
+		return &elbv2.SetSecurityGroupsOutput{
+			SecurityGroupIds: request.SecurityGroups,
 		}, nil
 	}
 	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.StringValue(request.LoadBalancerArn))

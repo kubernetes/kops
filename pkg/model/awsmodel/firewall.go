@@ -303,8 +303,9 @@ type SecurityGroupInfo struct {
 
 func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
 	var baseGroup *awstasks.SecurityGroup
-	if role == kops.InstanceGroupRoleControlPlane {
-		name := b.SecurityGroupName(role)
+	name := b.SecurityGroupName(role)
+	switch role {
+	case kops.InstanceGroupRoleControlPlane:
 		baseGroup = &awstasks.SecurityGroup{
 			Name:        fi.PtrTo(name),
 			VPC:         b.LinkToVPC(),
@@ -319,13 +320,15 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 				"port=4789", // VXLAN
 				"port=179",  // Calico
 				"port=8443", // k8s api secondary listener
+				"port=3:4",  // ICMP
+				"port=-1",   // ICMPv6
 
-				// TODO: UDP vs TCP
+				// TODO: UDP vs TCP vs ICMP vs ICMPv6
 				// TODO: Protocol 4 for calico
 			},
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
-	} else if role == kops.InstanceGroupRoleNode {
+	case kops.InstanceGroupRoleNode:
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:             fi.PtrTo(name),
@@ -334,19 +337,22 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			RemoveExtraRules: []string{"port=22"},
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
-	} else if role == kops.InstanceGroupRoleBastion {
+	case kops.InstanceGroupRoleBastion:
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
-			Name:             fi.PtrTo(name),
-			VPC:              b.LinkToVPC(),
-			Description:      fi.PtrTo("Security group for bastion"),
-			RemoveExtraRules: []string{"port=22"},
+			Name:        fi.PtrTo(name),
+			VPC:         b.LinkToVPC(),
+			Description: fi.PtrTo("Security group for bastion"),
+			RemoveExtraRules: []string{
+				"port=22",  // SSH
+				"port=3:4", // ICMP
+				"port=-1",  // ICMPv6
+			},
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
-	} else {
+	default:
 		return nil, fmt.Errorf("not a supported security group type")
 	}
-
 	var groups []SecurityGroupInfo
 
 	done := make(map[string]bool)

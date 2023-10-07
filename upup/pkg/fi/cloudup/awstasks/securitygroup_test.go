@@ -34,8 +34,10 @@ func TestParseRemovalRule(t *testing.T) {
 	testNotParse(t, "port=a")
 	testNotParse(t, "port=22-23")
 
-	testParsesAsPort(t, "port=22", 22)
-	testParsesAsPort(t, "port=443", 443)
+	testParsesAsPort(t, "port=22", 22, 22)
+	testParsesAsPort(t, "port=443", 443, 443)
+	testParsesAsPort(t, "port=22:23", 22, 23)
+	testParsesAsPort(t, "port=-1", -1, -1)
 }
 
 func testNotParse(t *testing.T, rule string) {
@@ -45,7 +47,7 @@ func testNotParse(t *testing.T, rule string) {
 	}
 }
 
-func testParsesAsPort(t *testing.T, rule string, port int) {
+func testParsesAsPort(t *testing.T, rule string, fromPort int, toPort int) {
 	r, err := ParseRemovalRule(rule)
 	if err != nil {
 		t.Fatalf("unexpected failure to parse rule %q: %v", rule, err)
@@ -54,26 +56,33 @@ func testParsesAsPort(t *testing.T, rule string, port int) {
 	if !ok {
 		t.Fatalf("unexpected rule type for rule %q: %T", r, err)
 	}
-	if portRemovalRule.Port != port {
-		t.Fatalf("unexpected port for %q, expecting %d, got %q", rule, port, r)
+	if portRemovalRule.FromPort != fromPort {
+		t.Fatalf("unexpected fromPort for %q, expecting %d, got %q", rule, fromPort, r)
+	}
+	if portRemovalRule.ToPort != toPort {
+		t.Fatalf("unexpected toPort for %q, expecting %d, got %q", rule, toPort, r)
 	}
 }
 
 func TestPortRemovalRule(t *testing.T) {
-	r := &PortRemovalRule{Port: 22}
-	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(22)})
+	r := &PortRemovalRule{FromPort: 22, ToPort: 23}
+	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(23)})
 
 	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(22)})
 	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(23), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(20), ToPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(22)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(20), ToPort: aws.Int64(23)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(24)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(23)})
 	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22)})
 	testNotMatches(t, r, &ec2.SecurityGroupRule{})
+
+	r = &PortRemovalRule{FromPort: -1, ToPort: -1}
+	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(-1), ToPort: aws.Int64(-1)})
 }
 
 func TestPortRemovalRule_Zero(t *testing.T) {
-	r := &PortRemovalRule{Port: 0}
+	r := &PortRemovalRule{FromPort: 0, ToPort: 0}
 	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
 
 	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(20)})
