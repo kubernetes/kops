@@ -1063,6 +1063,24 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "kops-controller-elb-to-cp" {
+  from_port                = 3988
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-minimal-example-com.id
+  source_security_group_id = aws_security_group.api-elb-minimal-example-com.id
+  to_port                  = 3988
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "node-to-elb" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.api-elb-minimal-example-com.id
+  source_security_group_id = aws_security_group.nodes-minimal-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
 resource "aws_sqs_queue" "minimal-example-com-nth" {
   message_retention_seconds = 300
   name                      = "minimal-example-com-nth"
