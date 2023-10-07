@@ -474,8 +474,8 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 //   - DELETE: Deletes an existing resource record set that has the specified
 //     values.
 //
-//   - UPSERT: If a resource set exists Route 53 updates it with the values
-//     in the request.
+//   - UPSERT: If a resource set doesn't exist, Route 53 creates it. If a resource
+//     set exists Route 53 updates it with the values in the request.
 //
 // # Syntaxes for Creating, Updating, and Deleting Resource Record Sets
 //
@@ -1727,6 +1727,13 @@ func (c *Route53) CreateTrafficPolicyInstanceRequest(input *CreateTrafficPolicyI
 // example.com) or subdomain name (such as www.example.com). Amazon Route 53
 // responds to DNS queries for the domain or subdomain name by using the resource
 // record sets that CreateTrafficPolicyInstance created.
+//
+// After you submit an CreateTrafficPolicyInstance request, there's a brief
+// delay while Amazon Route 53 creates the resource record sets that are specified
+// in the traffic policy definition. Use GetTrafficPolicyInstance with the id
+// of new traffic policy instance to confirm that the CreateTrafficPolicyInstance
+// request completed successfully. For more information, see the State response
+// element.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4780,10 +4787,10 @@ func (c *Route53) GetTrafficPolicyInstanceRequest(input *GetTrafficPolicyInstanc
 //
 // Gets information about a specified traffic policy instance.
 //
-// After you submit a CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance
-// request, there's a brief delay while Amazon Route 53 creates the resource
-// record sets that are specified in the traffic policy definition. For more
-// information, see the State response element.
+// Use GetTrafficPolicyInstance with the id of new traffic policy instance to
+// confirm that the CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance
+// request completed successfully. For more information, see the State response
+// element.
 //
 // In the Route 53 console, traffic policy instances are known as policy records.
 //
@@ -7505,6 +7512,12 @@ func (c *Route53) UpdateTrafficPolicyInstanceRequest(input *UpdateTrafficPolicyI
 
 // UpdateTrafficPolicyInstance API operation for Amazon Route 53.
 //
+// After you submit a UpdateTrafficPolicyInstance request, there's a brief delay
+// while Route 53 creates the resource record sets that are specified in the
+// traffic policy definition. Use GetTrafficPolicyInstance with the id of updated
+// traffic policy instance confirm that the UpdateTrafficPolicyInstance request
+// completed successfully. For more information, see the State response element.
+//
 // Updates the resource record sets in a specified hosted zone that were created
 // based on the settings in a specified traffic policy version.
 //
@@ -9452,6 +9465,10 @@ type CreateHealthCheckInput struct {
 	//    * If you send a CreateHealthCheck request with a unique CallerReference
 	//    but settings identical to an existing health check, Route 53 creates the
 	//    health check.
+	//
+	// Route 53 does not store the CallerReference for a deleted health check indefinitely.
+	// The CallerReference for a deleted health check will be deleted after a number
+	// of days.
 	//
 	// CallerReference is a required field
 	CallerReference *string `min:"1" type:"string" required:"true"`
@@ -12045,6 +12062,8 @@ type GeoLocation struct {
 	//
 	// Amazon Route 53 uses the two-letter country codes that are specified in ISO
 	// standard 3166-1 alpha-2 (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+	//
+	// Route 53 also supports the contry code UA forr Ukraine.
 	CountryCode *string `min:"1" type:"string"`
 
 	// For geolocation resource record sets, the two-letter code for a state of
@@ -12577,6 +12596,8 @@ type GetGeoLocationInput struct {
 
 	// Amazon Route 53 uses the two-letter country codes that are specified in ISO
 	// standard 3166-1 alpha-2 (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+	//
+	// Route 53 also supports the contry code UA forr Ukraine.
 	CountryCode *string `location:"querystring" locationName:"countrycode" min:"1" type:"string"`
 
 	// The code for the subdivision, such as a particular state within the United
@@ -15579,8 +15600,8 @@ type ListHealthChecksInput struct {
 
 	// The maximum number of health checks that you want ListHealthChecks to return
 	// in response to the current request. Amazon Route 53 returns a maximum of
-	// 100 items. If you set MaxItems to a value greater than 100, Route 53 returns
-	// only the first 100 health checks.
+	// 1000 items. If you set MaxItems to a value greater than 1000, Route 53 returns
+	// only the first 1000 health checks.
 	MaxItems *string `location:"querystring" locationName:"maxitems" type:"string"`
 }
 
@@ -16040,6 +16061,9 @@ type ListHostedZonesInput struct {
 	// the ID of that reusable delegation set.
 	DelegationSetId *string `location:"querystring" locationName:"delegationsetid" type:"string"`
 
+	// (Optional) Specifies if the hosted zone is private.
+	HostedZoneType *string `location:"querystring" locationName:"hostedzonetype" type:"string" enum:"HostedZoneType"`
+
 	// If the value of IsTruncated in the previous response was true, you have more
 	// hosted zones. To get more hosted zones, submit another ListHostedZones request.
 	//
@@ -16080,6 +16104,12 @@ func (s ListHostedZonesInput) GoString() string {
 // SetDelegationSetId sets the DelegationSetId field's value.
 func (s *ListHostedZonesInput) SetDelegationSetId(v string) *ListHostedZonesInput {
 	s.DelegationSetId = &v
+	return s
+}
+
+// SetHostedZoneType sets the HostedZoneType field's value.
+func (s *ListHostedZonesInput) SetHostedZoneType(v string) *ListHostedZonesInput {
+	s.HostedZoneType = &v
 	return s
 }
 
@@ -20600,6 +20630,18 @@ func HostedZoneLimitType_Values() []string {
 	return []string{
 		HostedZoneLimitTypeMaxRrsetsByZone,
 		HostedZoneLimitTypeMaxVpcsAssociatedByZone,
+	}
+}
+
+const (
+	// HostedZoneTypePrivateHostedZone is a HostedZoneType enum value
+	HostedZoneTypePrivateHostedZone = "PrivateHostedZone"
+)
+
+// HostedZoneType_Values returns all elements of the HostedZoneType enum
+func HostedZoneType_Values() []string {
+	return []string{
+		HostedZoneTypePrivateHostedZone,
 	}
 }
 

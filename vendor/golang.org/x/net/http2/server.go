@@ -1892,9 +1892,11 @@ func (st *stream) copyTrailersToHandlerRequest() {
 // onReadTimeout is run on its own goroutine (from time.AfterFunc)
 // when the stream's ReadTimeout has fired.
 func (st *stream) onReadTimeout() {
-	// Wrap the ErrDeadlineExceeded to avoid callers depending on us
-	// returning the bare error.
-	st.body.CloseWithError(fmt.Errorf("%w", os.ErrDeadlineExceeded))
+	if st.body != nil {
+		// Wrap the ErrDeadlineExceeded to avoid callers depending on us
+		// returning the bare error.
+		st.body.CloseWithError(fmt.Errorf("%w", os.ErrDeadlineExceeded))
+	}
 }
 
 // onWriteTimeout is run on its own goroutine (from time.AfterFunc)
@@ -2012,9 +2014,7 @@ func (sc *serverConn) processHeaders(f *MetaHeadersFrame) error {
 	// (in Go 1.8), though. That's a more sane option anyway.
 	if sc.hs.ReadTimeout != 0 {
 		sc.conn.SetReadDeadline(time.Time{})
-		if st.body != nil {
-			st.readDeadline = time.AfterFunc(sc.hs.ReadTimeout, st.onReadTimeout)
-		}
+		st.readDeadline = time.AfterFunc(sc.hs.ReadTimeout, st.onReadTimeout)
 	}
 
 	go sc.runHandler(rw, req, handler)

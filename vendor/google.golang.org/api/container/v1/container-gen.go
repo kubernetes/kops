@@ -1499,6 +1499,12 @@ type Cluster struct {
 	// NotificationConfig: Notification configuration of the cluster.
 	NotificationConfig *NotificationConfig `json:"notificationConfig,omitempty"`
 
+	// ParentProductConfig: The configuration of the parent product of the
+	// cluster. This field is used by Google internal products that are
+	// built on top of the GKE cluster and take the ownership of the
+	// cluster.
+	ParentProductConfig *ParentProductConfig `json:"parentProductConfig,omitempty"`
+
 	// PrivateClusterConfig: Configuration for private cluster.
 	PrivateClusterConfig *PrivateClusterConfig `json:"privateClusterConfig,omitempty"`
 
@@ -1888,6 +1894,10 @@ type ClusterUpdate struct {
 
 	// DesiredNotificationConfig: The desired notification configuration.
 	DesiredNotificationConfig *NotificationConfig `json:"desiredNotificationConfig,omitempty"`
+
+	// DesiredParentProductConfig: The desired parent product config for the
+	// cluster.
+	DesiredParentProductConfig *ParentProductConfig `json:"desiredParentProductConfig,omitempty"`
 
 	// DesiredPrivateClusterConfig: The desired private cluster
 	// configuration.
@@ -2451,15 +2461,24 @@ type Empty struct {
 
 // EphemeralStorageLocalSsdConfig: EphemeralStorageLocalSsdConfig
 // contains configuration for the node ephemeral storage using Local
-// SSD.
+// SSDs.
 type EphemeralStorageLocalSsdConfig struct {
 	// LocalSsdCount: Number of local SSDs to use to back ephemeral storage.
-	// Uses NVMe interfaces. Each local SSD is 375 GB in size. If zero, it
-	// means to disable using local SSDs as ephemeral storage. The limit for
-	// this value is dependent upon the maximum number of disks available on
-	// a machine per zone. See:
+	// Uses NVMe interfaces. A zero (or unset) value has different meanings
+	// depending on machine type being used: 1. For pre-Gen3 machines, which
+	// support flexible numbers of local ssds, zero (or unset) means to
+	// disable using local SSDs as ephemeral storage. The limit for this
+	// value is dependent upon the maximum number of disk available on a
+	// machine per zone. See:
 	// https://cloud.google.com/compute/docs/disks/local-ssd for more
-	// information.
+	// information. 2. For Gen3 machines which dictate a specific number of
+	// local ssds, zero (or unset) means to use the default number of local
+	// ssds that goes with that machine type. For example, for a
+	// c3-standard-8-lssd machine, 2 local ssds would be provisioned. For
+	// c3-standard-8 (which doesn't support local ssds), 0 will be
+	// provisioned. See
+	// https://cloud.google.com/compute/docs/disks/local-ssd#choose_number_local_ssds
+	// for more info.
 	LocalSsdCount int64 `json:"localSsdCount,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "LocalSsdCount") to
@@ -2675,8 +2694,6 @@ type GatewayAPIConfig struct {
 	// Possible values:
 	//   "CHANNEL_UNSPECIFIED" - Default value.
 	//   "CHANNEL_DISABLED" - Gateway API support is disabled
-	//   "CHANNEL_EXPERIMENTAL" - Gateway API support is enabled,
-	// experimental CRDs are installed
 	//   "CHANNEL_STANDARD" - Gateway API support is enabled, standard CRDs
 	// are installed
 	Channel string `json:"channel,omitempty"`
@@ -3661,15 +3678,23 @@ func (s *ListUsableSubnetworksResponse) MarshalJSON() ([]byte, error) {
 }
 
 // LocalNvmeSsdBlockConfig: LocalNvmeSsdBlockConfig contains
-// configuration for using raw-block local NVMe SSD.
+// configuration for using raw-block local NVMe SSDs
 type LocalNvmeSsdBlockConfig struct {
-	// LocalSsdCount: The number of raw-block local NVMe SSD disks to be
-	// attached to the node. Each local SSD is 375 GB in size. If zero, it
-	// means no raw-block local NVMe SSD disks to be attached to the node.
-	// The limit for this value is dependent upon the maximum number of
-	// disks available on a machine per zone. See:
+	// LocalSsdCount: Number of local NVMe SSDs to use. The limit for this
+	// value is dependent upon the maximum number of disk available on a
+	// machine per zone. See:
 	// https://cloud.google.com/compute/docs/disks/local-ssd for more
-	// information.
+	// information. A zero (or unset) value has different meanings depending
+	// on machine type being used: 1. For pre-Gen3 machines, which support
+	// flexible numbers of local ssds, zero (or unset) means to disable
+	// using local SSDs as ephemeral storage. 2. For Gen3 machines which
+	// dictate a specific number of local ssds, zero (or unset) means to use
+	// the default number of local ssds that goes with that machine type.
+	// For example, for a c3-standard-8-lssd machine, 2 local ssds would be
+	// provisioned. For c3-standard-8 (which doesn't support local ssds), 0
+	// will be provisioned. See
+	// https://cloud.google.com/compute/docs/disks/local-ssd#choose_number_local_ssds
+	// for more info.
 	LocalSsdCount int64 `json:"localSsdCount,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "LocalSsdCount") to
@@ -5638,6 +5663,40 @@ type OperationProgress struct {
 
 func (s *OperationProgress) MarshalJSON() ([]byte, error) {
 	type NoMethod OperationProgress
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ParentProductConfig: ParentProductConfig is the configuration of the
+// parent product of the cluster. This field is used by Google internal
+// products that are built on top of a GKE cluster and take the
+// ownership of the cluster.
+type ParentProductConfig struct {
+	// Labels: Labels contain the configuration of the parent product.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// ProductName: Name of the parent product associated with the cluster.
+	ProductName string `json:"productName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Labels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Labels") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ParentProductConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod ParentProductConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
