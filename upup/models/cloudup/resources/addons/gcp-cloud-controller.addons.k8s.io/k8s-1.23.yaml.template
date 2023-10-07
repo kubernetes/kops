@@ -50,7 +50,6 @@ spec:
       - name: cloud-controller-manager
         image: {{ .ExternalCloudControllerManager.Image }}
         imagePullPolicy: IfNotPresent
-        command: ['/cloud-controller-manager']
         args:
 {{- range $arg := CloudControllerConfigArgv }}
           - {{ $arg }}
@@ -358,3 +357,126 @@ rules:
   verbs:
   - list
   - watch
+---
+
+## This relies on deprecated behaviour, pls verify if the ccm still does this.
+# https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/addons/loadbalancing/cloud-provider-role.yaml
+# https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/addons/loadbalancing/cloud-provider-binding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: gce:cloud-provider
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: gce:cloud-provider
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: cloud-provider
+  namespace: kube-system
+  annotations:
+    kubernetes.io/deprecation: 'cloud-provider role is DEPRECATED in the
+      concern of potential collisions and will be removed in 1.16. Do not use
+      this role.'
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: cloud-provider
+  annotations:
+    kubernetes.io/deprecation: 'cloud-provider clusterrole is DEPRECATED in the
+      concern of potential collisions and will be removed in 1.16. Do not use
+      this role.'
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: gce:cloud-provider
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gce:cloud-provider
+subjects:
+- kind: ServiceAccount
+  name: cloud-provider
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: gce:cloud-provider
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gce:cloud-provider
+subjects:
+- kind: ServiceAccount
+  name: cloud-provider
+  namespace: kube-system

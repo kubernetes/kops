@@ -61,11 +61,11 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	}
 
 	if ccmConfig.Controllers == nil {
-		changes := []string{"*,-gkenetworkparamset"}
+		changes := []string{"*"}
 
 		// Turn off some controllers if kops-controller is running them
 		if clusterSpec.IsKopsControllerIPAM() {
-			changes = append(changes, "-nodeipam", "-route")
+			changes = append(changes, "-node-ipam-controller", "-node-route-controller")
 		}
 
 		ccmConfig.Controllers = changes
@@ -75,7 +75,7 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 		// TODO: Implement CCM image publishing
 		switch b.KubernetesVersion.Minor {
 		default:
-			ccmConfig.Image = "registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v26.2.4"
+			ccmConfig.Image = "gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master"
 		}
 	}
 
