@@ -386,12 +386,23 @@ func ParseRemovalRule(rule string) (RemovalRule, error) {
 
 	if len(tokens) == 2 {
 		if tokens[0] == "port" {
-			port, err := strconv.Atoi(tokens[1])
+			ports := strings.SplitN(tokens[1], ":", 2)
+			fromPort, err := strconv.Atoi(ports[0])
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse rule %q", rule)
 			}
+			toPort := fromPort
+			if len(ports) > 1 {
+				toPort, err = strconv.Atoi(ports[1])
+				if err != nil {
+					return nil, fmt.Errorf("cannot parse rule %q", rule)
+				}
+			}
 
-			return &PortRemovalRule{Port: port}, nil
+			return &PortRemovalRule{
+				FromPort: fromPort,
+				ToPort:   toPort,
+			}, nil
 		} else {
 			return nil, fmt.Errorf("cannot parse rule %q", rule)
 		}
@@ -400,7 +411,8 @@ func ParseRemovalRule(rule string) (RemovalRule, error) {
 }
 
 type PortRemovalRule struct {
-	Port int
+	FromPort int
+	ToPort   int
 }
 
 var _ RemovalRule = &PortRemovalRule{}
@@ -411,10 +423,10 @@ func (r *PortRemovalRule) String() string {
 
 func (r *PortRemovalRule) Matches(permission *ec2.SecurityGroupRule) bool {
 	// Check if port matches
-	if permission.FromPort == nil || *permission.FromPort != int64(r.Port) {
+	if permission.FromPort == nil || *permission.FromPort != int64(r.FromPort) {
 		return false
 	}
-	if permission.ToPort == nil || *permission.ToPort != int64(r.Port) {
+	if permission.ToPort == nil || *permission.ToPort != int64(r.ToPort) {
 		return false
 	}
 	return true
