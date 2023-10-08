@@ -315,6 +315,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 				"port=443",  // k8s api
 				"port=2380", // etcd main peer
 				"port=2381", // etcd events peer
+				"port=3988", // kops-controller
 				"port=4001", // etcd main
 				"port=4002", // etcd events
 				"port=4789", // VXLAN

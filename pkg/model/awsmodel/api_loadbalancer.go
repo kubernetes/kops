@@ -449,6 +449,24 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 	}
 
+	if b.Cluster.UsesNoneDNS() {
+		nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+		if err != nil {
+			return err
+		}
+
+		for _, nodeGroup := range nodeGroups {
+			suffix := nodeGroup.Suffix
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.PtrTo(fmt.Sprintf("node%s-to-elb", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				SecurityGroup: lbSG,
+				SourceGroup:   nodeGroup.Task,
+			}
+			c.AddTask(t)
+		}
+	}
+
 	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
 	if err != nil {
 		return err
@@ -517,6 +535,17 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SourceGroup:   masterGroup.Task,
 				ToPort:        fi.PtrTo(int64(4)),
 			})
+			if b.Cluster.UsesNoneDNS() {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					Protocol:      fi.PtrTo("tcp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					SourceGroup:   lbSG,
+				})
+			}
 		}
 	}
 
