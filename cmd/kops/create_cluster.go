@@ -68,7 +68,6 @@ type CreateClusterOptions struct {
 	ContainerRuntime           string
 	OutDir                     string
 	DisableSubnetTags          bool
-	DNSZone                    string
 	NodeSecurityGroups         []string
 	ControlPlaneSecurityGroups []string
 	AssociatePublicIP          *bool

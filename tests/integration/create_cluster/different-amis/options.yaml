@@ -9,4 +9,5 @@ ControlPlaneImage: ami-control-plane
 NodeImage: ami-worker-image
 Bastion: true
 Topology: private
+DNSType: public
 APIServerCount: 1

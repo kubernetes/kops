@@ -42,7 +42,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.22.0
-  masterPublicName: api.ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     calico: {}
@@ -67,7 +66,7 @@ spec:
     zone: us-test-1a
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 

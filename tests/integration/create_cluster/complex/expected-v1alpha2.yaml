@@ -10,7 +10,9 @@ spec:
   - 10.3.0.0/16
   - 10.4.0.0/16
   api:
-    dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -56,7 +58,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.26.0
-  masterPublicName: api.complex.example.com
   networkCIDR: 10.0.0.0/16
   networking:
     cni: {}
@@ -94,7 +95,7 @@ spec:
     zone: us-test-1a
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 
