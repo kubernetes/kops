@@ -54,7 +54,7 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 	// but there's a 5 IP alias range limit per subnet anwyay, so
 	// this is rather pointless and in practice we just use a
 	// separate subnet per cluster
-	return c.SafeObjectName(key)
+	return c.SafeSuffixedObjectName(key)
 }
 
 // LinkToSubnet returns a link to the GCE subnet object
