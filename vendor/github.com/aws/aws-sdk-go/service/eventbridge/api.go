@@ -6361,7 +6361,11 @@ type ConnectionBodyParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionBodyParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6412,7 +6416,11 @@ type ConnectionHeaderParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionHeaderParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6609,7 +6617,11 @@ type ConnectionQueryStringParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key for the query string parameter.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionQueryStringParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6989,8 +7001,12 @@ type CreateConnectionApiKeyAuthRequestParameters struct {
 
 	// The value for the API key to use for authorization.
 	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// ApiKeyValue is a required field
-	ApiKeyValue *string `min:"1" type:"string" required:"true"`
+	ApiKeyValue *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -7141,8 +7157,12 @@ type CreateConnectionBasicAuthRequestParameters struct {
 
 	// The password associated with the user name to use for Basic authorization.
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"1" type:"string" required:"true"`
+	Password *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	//
@@ -7308,8 +7328,12 @@ type CreateConnectionOAuthClientRequestParameters struct {
 	// The client secret associated with the client ID to use for OAuth authorization
 	// for the connection.
 	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	//
 	// ClientSecret is a required field
-	ClientSecret *string `min:"1" type:"string" required:"true"`
+	ClientSecret *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -17108,7 +17132,11 @@ type UpdateConnectionApiKeyAuthRequestParameters struct {
 	ApiKeyName *string `min:"1" type:"string"`
 
 	// The value associated with teh API key to use for authorization.
-	ApiKeyValue *string `min:"1" type:"string"`
+	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	ApiKeyValue *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -17250,7 +17278,11 @@ type UpdateConnectionBasicAuthRequestParameters struct {
 	_ struct{} `type:"structure"`
 
 	// The password associated with the user name to use for Basic authorization.
-	Password *string `min:"1" type:"string"`
+	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	Password *string `min:"1" type:"string" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	Username *string `min:"1" type:"string"`
@@ -17391,7 +17423,11 @@ type UpdateConnectionOAuthClientRequestParameters struct {
 	ClientID *string `min:"1" type:"string"`
 
 	// The client secret assciated with the client ID to use for OAuth authorization.
-	ClientSecret *string `min:"1" type:"string"`
+	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	ClientSecret *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.

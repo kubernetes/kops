@@ -151,6 +151,10 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 	var records []dns.Record
 
+	for i, a := range node.Status.Addresses {
+		klog.Infof(" Address %d = %s", i, a.String())
+	}
+
 	// Alias targets
 
 	// node/<name>/internal -> InternalIP

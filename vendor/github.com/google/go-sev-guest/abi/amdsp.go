@@ -18,7 +18,7 @@ import "fmt"
 
 // SevFirmwareStatus is the type of all AMD-SP firmware status codes, as documented in the SEV API
 // https://www.amd.com/system/files/TechDocs/55766_SEV-KM_API_Specification.pdf
-type SevFirmwareStatus int
+type SevFirmwareStatus int64
 
 // Unexported errors are not expected to leave the kernel.
 const (
