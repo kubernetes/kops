@@ -84,7 +84,7 @@ spec:
     zone: us-test1
   topology:
     dns:
-      type: Private
+      type: None
 
 ---
 
