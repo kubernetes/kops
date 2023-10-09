@@ -26,6 +26,7 @@ const (
 	// might want to set this (with a value of 'true') to any other Secrets
 	// that cert-manager controller needs to read, such as issuer
 	// credentials Secrets.
+	// fao = 'for attention of'
 	// See https://github.com/cert-manager/cert-manager/blob/master/design/20221205-memory-management.md#risks-and-mitigations
 	PartOfCertManagerControllerLabelKey = "controller.cert-manager.io/fao"
 
