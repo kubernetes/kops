@@ -24,6 +24,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -61,6 +62,7 @@ type ScwCloud interface {
 	DomainService() *domain.API
 	IamService() *iam.API
 	InstanceService() *instance.API
+	IPAMService() *ipam.API
 	LBService() *lb.ZonedAPI
 	MarketplaceService() *marketplace.API
 
@@ -100,6 +102,7 @@ type scwCloudImplementation struct {
 	domainAPI      *domain.API
 	iamAPI         *iam.API
 	instanceAPI    *instance.API
+	ipamAPI        *ipam.API
 	lbAPI          *lb.ZonedAPI
 	marketplaceAPI *marketplace.API
 }
@@ -146,6 +149,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		domainAPI:      domain.NewAPI(scwClient),
 		iamAPI:         iam.NewAPI(scwClient),
 		instanceAPI:    instance.NewAPI(scwClient),
+		ipamAPI:        ipam.NewAPI(scwClient),
 		lbAPI:          lb.NewZonedAPI(scwClient),
 		marketplaceAPI: marketplace.NewAPI(scwClient),
 	}, nil
@@ -185,6 +189,10 @@ func (s *scwCloudImplementation) IamService() *iam.API {
 
 func (s *scwCloudImplementation) InstanceService() *instance.API {
 	return s.instanceAPI
+}
+
+func (s *scwCloudImplementation) IPAMService() *ipam.API {
+	return s.ipamAPI
 }
 
 func (s *scwCloudImplementation) LBService() *lb.ZonedAPI {
