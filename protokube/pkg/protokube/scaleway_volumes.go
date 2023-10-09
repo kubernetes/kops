@@ -21,11 +21,13 @@ import (
 	"net"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipscw "k8s.io/kops/protokube/pkg/gossip/scaleway"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
@@ -43,27 +45,23 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	metadataAPI := instance.NewMetadataAPI()
 	metadata, err := metadataAPI.GetMetadata()
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve server metadata: %s", err)
+		return nil, fmt.Errorf("failed to retrieve server metadata: %w", err)
 	}
 
 	serverID := metadata.ID
 	klog.V(4).Infof("Found ID of the running server: %v", serverID)
 
-	zoneID := metadata.Location.ZoneID
-	zone, err := scw.ParseZone(zoneID)
+	zone, err := scw.ParseZone(metadata.Location.ZoneID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse Scaleway zone: %s", err)
+		return nil, fmt.Errorf("unable to parse Scaleway zone: %w", err)
 	}
 	klog.V(4).Infof("Found zone of the running server: %v", zone)
 
-	region, err := scaleway.ParseRegionFromZone(zone)
+	region, err := zone.Region()
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse Scaleway region: %s", err)
+		return nil, fmt.Errorf("unable to parse Scaleway region: %w", err)
 	}
 	klog.V(4).Infof("Found region of the running server: %v", region)
-
-	privateIP := metadata.PrivateIP
-	klog.V(4).Infof("Found first private net IP of the running server: %q", privateIP)
 
 	profile, err := scaleway.CreateValidScalewayProfile()
 	if err != nil {
@@ -76,23 +74,49 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 		scw.WithDefaultRegion(region),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating client for Protokube: %w", err)
+		return nil, fmt.Errorf("creating client for Protokube: %w", err)
 	}
 
 	instanceAPI := instance.NewAPI(scwClient)
-	server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+	serverResponse, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		ServerID: serverID,
 		Zone:     zone,
 	})
-	if err != nil || server == nil {
-		return nil, fmt.Errorf("failed to get the running server: %s", err)
+	if err != nil || serverResponse.Server == nil {
+		return nil, fmt.Errorf("failed to get the running server: %w", err)
 	}
-	klog.V(4).Infof("Found the running server: %q", server.Server.Name)
+	server := serverResponse.Server
+	klog.V(4).Infof("Found the running server: %q", server.Name)
+
+	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		ResourceID: fi.PtrTo(serverID),
+		IsIPv6:     fi.PtrTo(false),
+		Zonal:      fi.PtrTo(zone.String()),
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing server's IPs: %w", err)
+	}
+	if ips.TotalCount < 1 {
+		return nil, fmt.Errorf("expected at least 1 IP attached to the server %s", server.ID)
+	}
+
+	var ipToReturn string
+	for _, ipFound := range ips.IPs {
+		if ipFound.Address.IP.IsPrivate() == true {
+			ipToReturn = ipFound.Address.IP.String()
+			break
+		}
+	}
+	if ipToReturn == "" {
+		ipToReturn = ips.IPs[0].Address.IP.String()
+	}
+	klog.V(4).Infof("Found first private net IP of the running server: %q", ipToReturn)
 
 	s := &ScwCloudProvider{
 		scwClient: scwClient,
-		server:    server.Server,
-		serverIP:  net.IP(privateIP),
+		server:    server,
+		serverIP:  net.IP(ipToReturn),
 	}
 
 	return s, nil

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
@@ -243,7 +242,6 @@ func (l *LBBackend) TerraformLink() *terraformWriter.Literal {
 
 func getControlPlanesIPs(scwCloud scaleway.ScwCloud, lb *LoadBalancer, zone scw.Zone) ([]string, error) {
 	var controlPlanePrivateIPs []string
-	instanceService := scwCloud.InstanceService()
 
 	servers, err := scwCloud.GetClusterServers(scwCloud.ClusterName(lb.Tags), nil)
 	if err != nil {
@@ -251,17 +249,14 @@ func getControlPlanesIPs(scwCloud scaleway.ScwCloud, lb *LoadBalancer, zone scw.
 	}
 
 	for _, server := range servers {
-		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleControlPlane {
-			// We update the server's infos (to get its IP)
-			srv, err := instanceService.GetServer(&instance.GetServerRequest{
-				Zone:     zone,
-				ServerID: server.ID,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("getting server %s for load-balancer's back-end: %w", srv.Server.ID, err)
-			}
-			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *srv.Server.PrivateIP)
+		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleWorker {
+			continue
 		}
+		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting IP of server %s for load-balancer's back-end: %w", server.Name, err)
+		}
+		controlPlanePrivateIPs = append(controlPlanePrivateIPs, ip)
 	}
 
 	return controlPlanePrivateIPs, nil

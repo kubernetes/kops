@@ -80,6 +80,7 @@ type ScwCloud interface {
 	GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
+	GetServerIP(serverID string, zone scw.Zone) (string, error)
 
 	DeleteDNSRecord(record *domain.Record, clusterName string) error
 	DeleteLoadBalancer(loadBalancer *lb.LB) error
@@ -110,16 +111,11 @@ type scwCloudImplementation struct {
 // NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_PROFILE or
 // SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
-	region, err := scw.ParseRegion(tags["region"])
-	if err != nil {
-		return nil, err
-	}
-	zone, err := scw.ParseZone(tags["zone"])
-	if err != nil {
-		return nil, err
-	}
-
 	var scwClient *scw.Client
+	var region scw.Region
+	var zone scw.Zone
+	var err error
+
 	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
 		// If the profile is REDACTED, we're running integration tests so no need for authentication
 		scwClient, err = scw.NewClient(scw.WithoutAuth())
@@ -137,6 +133,19 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		)
 		if err != nil {
 			return nil, fmt.Errorf("creating client for Scaleway Cloud: %w", err)
+		}
+		region = scw.Region(fi.ValueOf(profile.DefaultRegion))
+		zone = scw.Zone(fi.ValueOf(profile.DefaultZone))
+	}
+
+	if tags != nil {
+		region, err = scw.ParseRegion(tags["region"])
+		if err != nil {
+			return nil, err
+		}
+		zone, err = scw.ParseZone(tags["zone"])
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -156,7 +165,13 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 }
 
 func (s *scwCloudImplementation) ClusterName(tags []string) string {
-	return ClusterNameFromTags(tags)
+	if tags != nil {
+		return ClusterNameFromTags(tags)
+	}
+	if clusterName, ok := s.tags[TagClusterName]; ok {
+		return clusterName
+	}
+	return ""
 }
 
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {
@@ -243,6 +258,10 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 	if err != nil {
 		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
+	serverIP, err := s.GetServerIP(server.Server.ID, server.Server.Zone)
+	if err != nil {
+		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+	}
 
 	// We remove the instance's IP from load-balancers
 	lbs, err := s.GetClusterLoadBalancers(s.ClusterName(server.Server.Tags))
@@ -258,8 +277,8 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 			return fmt.Errorf("deregistering cloud instance %s of group %q: listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 		}
 		for _, backEnd := range backEnds.Backends {
-			for _, serverIP := range backEnd.Pool {
-				if serverIP == fi.ValueOf(server.Server.PrivateIP) {
+			for _, ip := range backEnd.Pool {
+				if ip == serverIP {
 					_, err := s.lbAPI.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
 						Zone:      s.zone,
 						BackendID: backEnd.ID,
@@ -340,7 +359,7 @@ func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 			continue
 		}
 
-		groups[ig.Name], err = buildCloudGroup(ig, serverGroup, nodeMap)
+		groups[ig.Name], err = buildCloudGroup(s, ig, serverGroup, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build cloud group for instance group %q: %w", ig.Name, err)
 		}
@@ -364,7 +383,7 @@ func findServerGroups(s *scwCloudImplementation, clusterName string) (map[string
 	return serverGroups, nil
 }
 
-func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	cloudInstanceGroup := &cloudinstances.CloudInstanceGroup{
 		HumanName:     ig.Name,
 		InstanceGroup: ig,
@@ -388,9 +407,11 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
 		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
-		if server.PrivateIP != nil {
-			cloudInstance.PrivateIP = *server.PrivateIP
+		ip, err := s.GetServerIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting server IP: %w", err)
 		}
+		cloudInstance.PrivateIP = ip
 	}
 
 	return cloudInstanceGroup, nil
@@ -472,6 +493,32 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 		return nil, fmt.Errorf("failed to list cluster volumes: %w", err)
 	}
 	return volumes.Volumes, nil
+}
+
+func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (string, error) {
+	region, err := zone.Region()
+	if err != nil {
+		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
+	}
+
+	ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		IsIPv6:     fi.PtrTo(false),
+		ResourceID: &serverID,
+		Zonal:      fi.PtrTo(zone.String()),
+	}, scw.WithAllPages())
+	if err != nil {
+		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
+	}
+
+	if len(ips.IPs) < 1 {
+		return "", fmt.Errorf("could not find IP for server %s", serverID)
+	}
+	if len(ips.IPs) > 1 {
+		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
+	}
+
+	return ips.IPs[0].Address.IP.String(), nil
 }
 
 func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {

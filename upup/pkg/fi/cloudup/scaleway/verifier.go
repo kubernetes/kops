@@ -25,10 +25,12 @@ import (
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type ScalewayVerifierOptions struct{}
@@ -71,6 +73,10 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse Scaleway zone %q: %w", metadata.Location.ZoneID, err)
 	}
+	region, err := zone.Region()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine region from zone %s", zone)
+	}
 
 	profile, err := CreateValidScalewayProfile()
 	if err != nil {
@@ -84,25 +90,33 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		return nil, fmt.Errorf("creating client for Scaleway Verifier: %w", err)
 	}
 
-	instanceAPI := instance.NewAPI(scwClient)
-	serverResponse, err := instanceAPI.GetServer(&instance.GetServerRequest{
+	serverResponse, err := instance.NewAPI(scwClient).GetServer(&instance.GetServerRequest{
 		ServerID: serverID,
 		Zone:     zone,
 	}, scw.WithContext(ctx))
-	if err != nil || serverResponse == nil {
+	if err != nil || serverResponse == nil || serverResponse.Server == nil {
 		return nil, fmt.Errorf("failed to get server %s: %w", serverID, err)
 	}
 	server := serverResponse.Server
 
+	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		ResourceID: fi.PtrTo(server.ID),
+		IsIPv6:     fi.PtrTo(false),
+		Zonal:      fi.PtrTo(zone.String()),
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)
+	}
+	if ips.TotalCount == 0 {
+		return nil, fmt.Errorf("no IP found for server %q: %w", server.Name, err)
+	}
+
 	addresses := []string(nil)
 	challengeEndPoints := []string(nil)
-	if server.PrivateIP != nil {
-		addresses = append(addresses, *server.PrivateIP)
-		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(*server.PrivateIP, strconv.Itoa(wellknownports.NodeupChallenge)))
-	}
-	if server.IPv6 != nil {
-		addresses = append(addresses, server.IPv6.Address.String())
-		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(server.IPv6.Address.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
+	for _, ip := range ips.IPs {
+		addresses = append(addresses, ip.Address.IP.String())
+		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 	}
 
 	result := &bootstrap.VerifyResult{

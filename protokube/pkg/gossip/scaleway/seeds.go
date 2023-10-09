@@ -19,7 +19,6 @@ package scaleway
 import (
 	"fmt"
 
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
@@ -43,27 +42,38 @@ func NewSeedProvider(scwClient *scw.Client, clusterName string) (*SeedProvider, 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
-	instanceAPI := instance.NewAPI(p.scwClient)
 	zone, ok := p.scwClient.GetDefaultZone()
+	if !ok {
+		return nil, fmt.Errorf("could not determine default zone from client")
+	}
+	klog.V(4).Infof("Found zone of the running server: %v", zone)
+
+	region, ok := p.scwClient.GetDefaultRegion()
 	if !ok {
 		return nil, fmt.Errorf("could not determine default region from client")
 	}
-	servers, err := instanceAPI.ListServers(&instance.ListServersRequest{
-		Zone: zone,
-		Tags: []string{fmt.Sprintf("%s=%s", scaleway.TagClusterName, p.tag)},
-	}, scw.WithAllPages())
+	klog.V(4).Infof("Found region of the running server: %v", region)
+
+	scwCloud, err := scaleway.NewScwCloud(map[string]string{
+		"region": region.String(),
+		"zone":   zone.String(),
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get matching servers: %s", err)
+		return nil, fmt.Errorf("could not create Scaleway cloud interface: %w", err)
 	}
 
-	for _, server := range servers.Servers {
-		if server.PrivateIP == nil || *server.PrivateIP == "" {
-			klog.Warningf("failed to find private ip of the server %s(%s)", server.Name, server.ID)
-			continue
-		}
+	servers, err := scwCloud.GetClusterServers(p.tag, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get matching servers: %w", err)
+	}
 
-		klog.V(4).Infof("Appending gossip seed %s(%s): %q", server.Name, server.ID, *server.PrivateIP)
-		seeds = append(seeds, *server.PrivateIP)
+	for _, server := range servers {
+		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting server IP: %w", err)
+		}
+		klog.V(4).Infof("Appending gossip seed %s(%s): %q", server.Name, server.ID, ip)
+		seeds = append(seeds, ip)
 	}
 
 	klog.V(4).Infof("Get seeds function done now")
