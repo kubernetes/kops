@@ -157,20 +157,25 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	klog.Infof("We verify the token")
 	id, err := s.verifier.VerifyToken(ctx, r, r.Header.Get("Authorization"), body)
 	if err != nil {
+		klog.Infof("There was an error")
 		// means that we should exit nodeup gracefully
 		if err == bootstrap.ErrAlreadyExists {
+			klog.Infof("That the node already exists")
 			w.WriteHeader(http.StatusConflict)
 			klog.Infof("%s: %v", r.RemoteAddr, err)
 			return
 		}
+		klog.Infof("That was something else")
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)
 		// don't return the error; this allows us to have richer errors without security implications
 		_, _ = w.Write([]byte("failed to verify token"))
 		return
 	}
+	klog.Infof("There was NO error")
 
 	// Once the node is registered, we don't allow further registrations, this protects against a pod or escaped workload attempting to impersonate the node.
 	{

@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
@@ -135,6 +136,7 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		addresses = append(addresses, ip.Address.IP.String())
 		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
 	}
+	klog.Infof("Challenge endpoints = %#+v", challengeEndPoints)
 
 	result := &bootstrap.VerifyResult{
 		NodeName:          server.Name,

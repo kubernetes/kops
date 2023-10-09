@@ -108,7 +108,7 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 
 	// if we receive StatusConflict it means that we should exit gracefully
 	if response.StatusCode == http.StatusConflict {
-		klog.Infof("kops-controller returned status code %d", response.StatusCode)
+		klog.Infof("kops-controller returned status code %d\n\n=====%#+v=======\n\n", response.StatusCode, response.Body)
 		os.Exit(0)
 	}
 

@@ -301,7 +301,8 @@ func (m *mapper) fetchGroupVersionResourcesLocked(groupName string, versions ...
 	}
 
 	if len(failedGroups) > 0 {
-		return nil, &discovery.ErrGroupDiscoveryFailed{Groups: failedGroups}
+		err := ErrResourceDiscoveryFailed(failedGroups)
+		return nil, &err
 	}
 
 	return groupVersionResources, nil
