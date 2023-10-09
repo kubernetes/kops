@@ -391,8 +391,8 @@ spec:
                       which the GCE VM runs
                     type: string
                   gcpAliasRange:
-                    description: GCPAliasRange: Alias range from the pods CIDR that will be 
-                      assigned to the instances, defaults to /24
+                    description: GCPAliasRange is the alias range from the pods CIDR
+                      to assign instances
                     type: string
                   gcpPDCSIDriver:
                     description: GCPPDCSIDriver is the config for the GCP PD CSI driver

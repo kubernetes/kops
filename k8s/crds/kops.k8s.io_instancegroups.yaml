@@ -250,8 +250,8 @@ spec:
                   type: object
                 type: array
               gcpAliasRange:
-                description: GCPAliasRange: Specifies the alias range from the pods CIDR that will be 
-                  assigned to the instances within the instanceGroup, defaults to /24
+                description: GCPAliasRange is the alias range from the pods CIDR to
+                  assign instances in the instanceGroup
                 type: string
               gcpProvisioningModel:
                 description: 'GCPProvisioningModel: Specifies the provisioning model
