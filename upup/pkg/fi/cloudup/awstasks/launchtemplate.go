@@ -41,6 +41,12 @@ type LaunchTemplate struct {
 	BlockDeviceMappings []*BlockDeviceMapping
 	// CPUCredits is the credit option for CPU Usage on some instance types
 	CPUCredits *string
+	// CoreCount is the number of CPU cores for the instance
+	CoreCount *int64
+	// ThreadsPerCore is the number of threads per CPU core
+	ThreadsPerCore *int64
+	// AmdSevSnp enables AMD SEV-SNP for confidential computing (M6a, R6a, and C6a instance types only)
+	AmdSevSnp *string
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
 	HTTPPutResponseHopLimit *int64
 	// HTTPTokens is the state of token usage for your instance metadata requests.

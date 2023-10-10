@@ -127,6 +127,12 @@ type terraformLaunchTemplateInstanceMetadata struct {
 	HTTPProtocolIPv6 *string `cty:"http_protocol_ipv6"`
 }
 
+type terraformLaunchTemplateCPUOptions struct {
+	CoreCount      *int64  `cty:"core_count"`
+	ThreadsPerCore *int64  `cty:"threads_per_core"`
+	AmdSevSnp      *string `cty:"amd_sev_snp"`
+}
+
 type terraformLaunchTemplate struct {
 	// Name is the name of the launch template
 	Name *string `cty:"name"`
@@ -137,6 +143,8 @@ type terraformLaunchTemplate struct {
 	BlockDeviceMappings []*terraformLaunchTemplateBlockDevice `cty:"block_device_mappings"`
 	// CreditSpecification is the credit option for CPU Usage on some instance types
 	CreditSpecification *terraformLaunchTemplateCreditSpecification `cty:"credit_specification"`
+	// CPUOptions specifies core count, threads per core, or AMD SEV-SNP option for CPU
+	CPUOptions *terraformLaunchTemplateCPUOptions `cty:"cpu_options"`
 	// EBSOptimized indicates if the root device is ebs optimized
 	EBSOptimized *bool `cty:"ebs_optimized"`
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
@@ -202,6 +210,11 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			HTTPTokens:              e.HTTPTokens,
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
 			HTTPProtocolIPv6:        e.HTTPProtocolIPv6,
+		},
+		CPUOptions: &terraformLaunchTemplateCPUOptions{
+			CoreCount:      e.CoreCount,
+			ThreadsPerCore: e.ThreadsPerCore,
+			AmdSevSnp:      e.AmdSevSnp,
 		},
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{

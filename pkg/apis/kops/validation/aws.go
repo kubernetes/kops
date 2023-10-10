@@ -96,6 +96,10 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 		allErrs = append(allErrs, awsValidateCPUCredits(field.NewPath("spec"), &ig.Spec, cloud)...)
 	}
 
+	if ig.Spec.CPUOptions != nil {
+		allErrs = append(allErrs, awsValidateCPUOptions(field.NewPath("spec", "cpuOptions"), ig.Spec.CPUOptions)...)
+	}
+
 	if ig.Spec.MaxInstanceLifetime != nil {
 		allErrs = append(allErrs, awsValidateMaximumInstanceLifetime(field.NewPath(ig.GetName(), "spec"), ig.Spec.MaxInstanceLifetime)...)
 	}
@@ -374,6 +378,20 @@ func awsValidateCPUCredits(fieldPath *field.Path, spec *kops.InstanceGroupSpec, 
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, IsValidValue(fieldPath.Child("cpuCredits"), spec.CPUCredits, []string{"standard", "unlimited"})...)
+	return allErrs
+}
+
+func awsValidateCPUOptions(fieldPath *field.Path, spec *kops.CPUOptionsSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if spec.CoreCount != nil && spec.ThreadsPerCore == nil {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("threadsPerCore"), "threadsPerCore must also be set"))
+	}
+
+	if spec.CoreCount == nil && spec.ThreadsPerCore != nil {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("coreCount"), "coreCount must also be set"))
+	}
+
 	return allErrs
 }
 

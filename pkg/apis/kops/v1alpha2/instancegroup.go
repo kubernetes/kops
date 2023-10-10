@@ -114,6 +114,8 @@ type InstanceGroupSpec struct {
 	SpotDurationInMinutes *int64 `json:"spotDurationInMinutes,omitempty"`
 	// CPUCredits is the credit option for CPU Usage on burstable instance types (AWS only)
 	CPUCredits *string `json:"cpuCredits,omitempty"`
+	// CPUOptions specifies CPU options (e.g., core count, threads per core, AMD SEV-SNP) for EC2 instances (AWS only)
+	CPUOptions *CPUOptionsSpec `json:"cpuOptions,omitempty"`
 	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
@@ -297,4 +299,12 @@ type LoadBalancerSpec struct {
 type AcceleratorConfig struct {
 	AcceleratorCount int64  `json:"acceleratorCount,omitempty"`
 	AcceleratorType  string `json:"acceleratorType,omitempty"`
+}
+
+// CPUOptionsSpec defines CPU options for EC2 instances
+type CPUOptionsSpec struct {
+	CoreCount      *int64 `json:"coreCount,omitempty"`
+	ThreadsPerCore *int64 `json:"threadsPerCore,omitempty"`
+	// Indicates whether to enable the instance for AMD SEV-SNP (M6a, R6a, and C6a instance types only).
+	AmdSevSnp *string `json:"amdSevSnp,omitempty"`
 }

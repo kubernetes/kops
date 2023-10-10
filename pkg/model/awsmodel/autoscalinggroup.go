@@ -289,6 +289,18 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		lt.InstanceMonitoring = ig.Spec.DetailedInstanceMonitoring
 	}
 
+	if ig.Spec.CPUOptions != nil && ig.Spec.CPUOptions.AmdSevSnp != nil {
+		lt.AmdSevSnp = ig.Spec.CPUOptions.AmdSevSnp
+	}
+
+	if ig.Spec.CPUOptions != nil && ig.Spec.CPUOptions.CoreCount != nil {
+		lt.CoreCount = ig.Spec.CPUOptions.CoreCount
+	}
+
+	if ig.Spec.CPUOptions != nil && ig.Spec.CPUOptions.ThreadsPerCore != nil {
+		lt.ThreadsPerCore = ig.Spec.CPUOptions.ThreadsPerCore
+	}
+
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
 		lt.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}

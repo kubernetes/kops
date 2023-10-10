@@ -51,12 +51,16 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				Tenancy:                 fi.PtrTo("dedicated"),
 				HTTPTokens:              fi.PtrTo("optional"),
 				HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+				AmdSevSnp:               fi.PtrTo("enabled"),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"
 }
 
 resource "aws_launch_template" "test" {
+  cpu_options {
+    amd_sev_snp = "enabled"
+  }
   ebs_optimized = true
   iam_instance_profile {
     name = aws_iam_instance_profile.nodes.id
@@ -136,6 +140,8 @@ terraform {
 				Tenancy:                 fi.PtrTo("dedicated"),
 				HTTPTokens:              fi.PtrTo("required"),
 				HTTPPutResponseHopLimit: fi.PtrTo(int64(5)),
+				CoreCount:               fi.PtrTo(int64(4)),
+				ThreadsPerCore:          fi.PtrTo(int64(1)),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"
@@ -150,6 +156,10 @@ resource "aws_launch_template" "test" {
       volume_size           = 100
       volume_type           = "gp2"
     }
+  }
+  cpu_options {
+    core_count       = 4
+    threads_per_core = 1
   }
   ebs_optimized = true
   iam_instance_profile {

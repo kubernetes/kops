@@ -218,6 +218,21 @@ spec:
                 description: CPUCredits is the credit option for CPU Usage on burstable
                   instance types (AWS only)
                 type: string
+              cpuOptions:
+                description: CPUOptions specifies CPU options (e.g., core count, threads
+                  per core, AMD SEV-SNP) for EC2 instances (AWS only)
+                properties:
+                  amdSevSnp:
+                    description: Indicates whether to enable the instance for AMD
+                      SEV-SNP (M6a, R6a, and C6a instance types only).
+                    type: string
+                  coreCount:
+                    format: int64
+                    type: integer
+                  threadsPerCore:
+                    format: int64
+                    type: integer
+                type: object
               detailedInstanceMonitoring:
                 description: DetailedInstanceMonitoring defines if detailed-monitoring
                   is enabled (AWS only)

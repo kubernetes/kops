@@ -887,3 +887,73 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		})
 	}
 }
+
+func TestCPUOptions(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "a")
+
+	tests := []struct {
+		ig       *kops.InstanceGroup
+		expected []string
+	}{
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "ig-with-core-count",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					CPUOptions: &kops.CPUOptionsSpec{
+						CoreCount: fi.PtrTo(int64(2)),
+					},
+				},
+			},
+			expected: []string{"Required value::spec.cpuOptions.threadsPerCore"},
+		},
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "ig-with-threads-per-core",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					CPUOptions: &kops.CPUOptionsSpec{
+						ThreadsPerCore: fi.PtrTo(int64(1)),
+					},
+				},
+			},
+			expected: []string{"Required value::spec.cpuOptions.coreCount"},
+		},
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "ig-with-core-count-and-threads",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					CPUOptions: &kops.CPUOptionsSpec{
+						CoreCount:      fi.PtrTo(int64(2)),
+						ThreadsPerCore: fi.PtrTo(int64(1)),
+					},
+				},
+			},
+		},
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "ig-with-amd-sev-snp",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					CPUOptions: &kops.CPUOptionsSpec{
+						AmdSevSnp: fi.PtrTo("enabled"),
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		errs := ValidateInstanceGroup(test.ig, cloud, false)
+		testErrors(t, test.ig.ObjectMeta.Name, errs, test.expected)
+	}
+}

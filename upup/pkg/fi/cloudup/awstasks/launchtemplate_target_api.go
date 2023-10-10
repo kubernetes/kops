@@ -49,6 +49,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			HttpTokens:              t.HTTPTokens,
 			HttpProtocolIpv6:        t.HTTPProtocolIPv6,
 		},
+		CpuOptions: &ec2.LaunchTemplateCpuOptionsRequest{
+			CoreCount:      t.CoreCount,
+			ThreadsPerCore: t.ThreadsPerCore,
+			AmdSevSnp:      t.AmdSevSnp,
+		},
 		NetworkInterfaces: []*ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
 			{
 				AssociatePublicIpAddress: t.AssociatePublicIP,
@@ -318,6 +323,13 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 		actual.HTTPPutResponseHopLimit = options.HttpPutResponseHopLimit
 		actual.HTTPTokens = options.HttpTokens
 		actual.HTTPProtocolIPv6 = options.HttpProtocolIpv6
+	}
+
+	// @step: add cpu options
+	if options := lt.LaunchTemplateData.CpuOptions; options != nil {
+		actual.CoreCount = options.CoreCount
+		actual.ThreadsPerCore = options.ThreadsPerCore
+		actual.AmdSevSnp = options.AmdSevSnp
 	}
 
 	// @step: to avoid spurious changes on ImageId
