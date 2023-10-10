@@ -225,7 +225,7 @@ type AWSSpec struct {
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 
 	// BinariesLocation is the location of the AWS cloud provider binaries.
-	BinariesLocation *string `json:"binaryLocation,omitempty"`
+	BinariesLocation *string `json:"binariesLocation,omitempty"`
 }
 
 // DOSpec configures the Digital Ocean cloud provider.
@@ -242,6 +242,9 @@ type GCESpec struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// PDCSIDriver is the config for the PD CSI driver.
 	PDCSIDriver *PDCSIDriver `json:"pdCSIDriver,omitempty"`
+
+	// BinariesLocation is the location of the GCE cloud provider binaries.
+	BinariesLocation *string `json:"binariesLocation,omitempty"`
 }
 
 // HetznerSpec configures the Hetzner cloud provider.
