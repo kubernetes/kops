@@ -96,7 +96,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// @TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
 		}
 		if asset == nil {
 			return fmt.Errorf("unable to locate asset %q", assetName)
@@ -158,9 +158,16 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return err
 	}
 
-	if b.UseExternalECRCredentialsProvider() {
-		if err := b.addECRCP(c); err != nil {
-			return fmt.Errorf("failed to add ECR credential provider: %w", err)
+	if b.UseExternalKubeletCredentialProvider() {
+		switch b.CloudProvider() {
+		case kops.CloudProviderGCE:
+			if err := b.addGCPCredentialProvider(c); err != nil {
+				return fmt.Errorf("failed to add the %s kubelet credential provider: %w", b.CloudProvider(), err)
+			}
+		case kops.CloudProviderAWS:
+			if err := b.addECRCredentialProvider(c); err != nil {
+				return fmt.Errorf("failed to add the %s kubelet credential provider: %w", b.CloudProvider(), err)
+			}
 		}
 	}
 
@@ -265,9 +272,14 @@ func (b *KubeletBuilder) kubeletPath() string {
 	return b.binaryPath() + "/kubelet"
 }
 
-// ecrcpPath returns the path of the ECR credentials provider based on distro and archiecture
-func (b *KubeletBuilder) ecrcpPath() string {
+// getECRCredentialProviderPath returns the path of the ECR Credentials Provider based on distro and archiecture
+func (b *KubeletBuilder) getECRCredentialProviderPath() string {
 	return b.binaryPath() + "/ecr-credential-provider"
+}
+
+// getGCPCredentialProviderPath returns the path of the GCP Credentials Provider based on distro and archiecture
+func (b *KubeletBuilder) getGCPCredentialProviderPath() string {
+	return b.binaryPath() + "/gcp-credential-provider"
 }
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
@@ -328,7 +340,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	flags += " --config=" + kubeletConfigFilePath
 
-	if b.UseExternalECRCredentialsProvider() {
+	if b.UseExternalKubeletCredentialProvider() {
 		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
 		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
 	}
@@ -403,21 +415,21 @@ func (b *KubeletBuilder) usesContainerizedMounter() bool {
 	}
 }
 
-// addECRCP installs the ECR credential provider
-func (b *KubeletBuilder) addECRCP(c *fi.NodeupModelBuilderContext) error {
+// addECRCredentialProvider installs the ECR Kubelet Credential Provider
+func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContext) error {
 	{
 		assetName := "ecr-credential-provider-linux-" + string(b.Architecture)
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
 		}
 		if asset == nil {
 			return fmt.Errorf("unable to locate asset %q", assetName)
 		}
 
 		t := &nodetasks.File{
-			Path:     b.ecrcpPath(),
+			Path:     b.getECRCredentialProviderPath(),
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
@@ -453,6 +465,56 @@ providers:
 	return nil
 }
 
+// addGCPCredentialProvider installs the GCP Kubelet Credential Provider
+func (b *KubeletBuilder) addGCPCredentialProvider(c *fi.NodeupModelBuilderContext) error {
+	{
+		assetName := "v20231005-providersv0.27.1-65-g8fbe8d27"
+		assetPath := ""
+		asset, err := b.Assets.Find(assetName, assetPath)
+		if err != nil {
+			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
+		}
+		if asset == nil {
+			return fmt.Errorf("unable to locate asset %q", assetName)
+		}
+
+		t := &nodetasks.File{
+			Path:     b.getGCPCredentialProviderPath(),
+			Contents: asset,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		}
+		c.AddTask(t)
+	}
+
+	{
+		configContent := `apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - apiVersion: credentialprovider.kubelet.k8s.io/v1
+    name: gcp-credential-provider
+    matchImages:
+      - "gcr.io"
+      - "*.gcr.io"
+      - "container.cloud.google.com"
+      - "*.pkg.dev"
+    defaultCacheDuration: "1m"
+    args:
+      - get-credentials
+      - --v=3
+`
+
+		t := &nodetasks.File{
+			Path:     credentialProviderConfigFilePath,
+			Contents: fi.NewStringResource(configContent),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+		}
+		c.AddTask(t)
+	}
+	return nil
+}
+
 // addContainerizedMounter downloads and installs the containerized mounter, that we need on ContainerOS
 func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext) error {
 	if !b.usesContainerizedMounter() {
@@ -472,7 +534,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
 		}
 		if asset == nil {
 			return fmt.Errorf("unable to locate asset %q", assetName)

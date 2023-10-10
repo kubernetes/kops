@@ -72,6 +72,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -1055,21 +1056,52 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 
 		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
-		if apiModel.UseExternalECRCredentialsProvider(*kubernetesVersion, c.Cluster.Spec.GetCloudProvider()) {
-			binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
-			if binaryLocation == nil {
-				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
-			}
 
-			k, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
-			if err != nil {
-				return err
+		cloudProvider := c.Cluster.Spec.GetCloudProvider()
+		if ok := apiModel.UseExternalKubeletCredentialProvider(*kubernetesVersion, cloudProvider); ok {
+			switch cloudProvider {
+			case kops.CloudProviderGCE:
+				binaryLocation := c.Cluster.Spec.CloudProvider.GCE.BinariesLocation
+				if binaryLocation == nil {
+					binaryLocation = fi.PtrTo("https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp")
+				}
+				// VALID FOR 60 DAYS WE REALLY NEED TO MERGE https://github.com/kubernetes/cloud-provider-gcp/pull/601 and CUT A RELEASE
+				k, err := url.Parse(fmt.Sprintf("%s/linux-%s/v20231005-providersv0.27.1-65-g8fbe8d27", *binaryLocation, arch))
+				if err != nil {
+					return err
+				}
+
+				hashes := map[architectures.Architecture]string{
+					"amd64": "827d558953d861b81a35c3b599191a73f53c1f63bce42c61e7a3fee21a717a89",
+					"arm64": "f1617c0ef77f3718e12a3efc6f650375d5b5e96eebdbcbad3e465e89e781bdfa",
+				}
+				hash, err := hashing.FromString(hashes[arch])
+				if err != nil {
+					return fmt.Errorf("unable to parse auth-provider-gcp binary asset hash %q: %v", hashes[arch], err)
+				}
+				u, err := assetBuilder.RemapFileAndSHAValue(k, hashes[arch])
+				if err != nil {
+					return err
+				}
+
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
+			case kops.CloudProviderAWS:
+				binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
+				if binaryLocation == nil {
+					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
+				}
+
+				k, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
+				if err != nil {
+					return err
+				}
+				u, hash, err := assetBuilder.RemapFileAndSHA(k)
+				if err != nil {
+					return err
+				}
+
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 			}
-			u, hash, err := assetBuilder.RemapFileAndSHA(k)
-			if err != nil {
-				return err
-			}
-			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
 		{

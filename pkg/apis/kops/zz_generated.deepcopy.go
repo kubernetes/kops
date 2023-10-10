@@ -2222,6 +2222,11 @@ func (in *GCESpec) DeepCopyInto(out *GCESpec) {
 		*out = new(PDCSIDriver)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.BinariesLocation != nil {
+		in, out := &in.BinariesLocation, &out.BinariesLocation
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

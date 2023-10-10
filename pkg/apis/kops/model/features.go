@@ -69,6 +69,14 @@ func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	return false
 }
 
-func UseExternalECRCredentialsProvider(k8sVersion semver.Version, cloudProvider kops.CloudProviderID) bool {
-	return util.IsKubernetesGTE("1.27", k8sVersion) && cloudProvider == kops.CloudProviderAWS
+// Configures a Kubelet Credential Provider if Kubernetes is newer than a specific version
+func UseExternalKubeletCredentialProvider(k8sVersion semver.Version, cloudProvider kops.CloudProviderID) bool {
+	switch cloudProvider {
+	case kops.CloudProviderGCE:
+		return util.IsKubernetesGTE("1.29", k8sVersion)
+	case kops.CloudProviderAWS:
+		return util.IsKubernetesGTE("1.27", k8sVersion)
+	default:
+		return false
+	}
 }
