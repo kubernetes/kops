@@ -40,7 +40,7 @@ type CloudInstance struct {
 	Node *v1.Node
 	// CloudInstanceGroup is the managing CloudInstanceGroup
 	CloudInstanceGroup *CloudInstanceGroup
-	// Status indicates if the instance has joined the cluster and if it needs any updates.
+	// Status indicates the state of instance is in as reported by the Cloud APIs
 	Status string
 	// Roles are the roles the instance have.
 	Roles []string
@@ -48,6 +48,8 @@ type CloudInstance struct {
 	MachineType string
 	// Private IP is the private ip address of the instance.
 	PrivateIP string
-	// State is in which state the instance is in
+	// External IP is the public ip address of the instance.
+	ExternalIP string
+	// State indicates if the instance has joined the cluster and if it needs any updates.
 	State State
 }

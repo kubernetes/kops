@@ -70,18 +70,6 @@ func parseKubeconfig(jsonPath string) (string, error) {
 	return s, nil
 }
 
-// The --host flag was required in the kubernetes e2e tests, until https://github.com/kubernetes/kubernetes/pull/87030
-// We can likely drop this when we drop support / testing for k8s 1.17
-func (t *Tester) addHostFlag() error {
-	server, err := parseKubeconfig(".clusters[0].cluster.server")
-	if err != nil {
-		return err
-	}
-	klog.Infof("Adding --host=%s", server)
-	t.TestArgs += " --host=" + server
-	return nil
-}
-
 // hasFlag detects if the specified flag has been passed in the args
 func hasFlag(args string, flag string) bool {
 	for _, arg := range strings.Split(args, " ") {
@@ -139,6 +127,30 @@ func (t *Tester) getKopsInstanceGroups() ([]*api.InstanceGroup, error) {
 	t.kopsInstanceGroups = igs
 
 	return igs, nil
+}
+
+// k/k tests assume the API Server in the kubeconfig is the IP of the control plane node instead of a Loadbalancer.
+// Some tests try to SSH to the API Server IP which fails for kops as the LB doesn't expose port 22
+func (t *Tester) addKubeBastion() error {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+	if cluster.Spec.LegacyCloudProvider == "gce" {
+		instances, err := kops.GetInstances("kops", cluster.Name, nil)
+		if err != nil {
+			return err
+		}
+		for _, instance := range instances {
+			for _, role := range instance.Roles {
+				if role == "control-plane" && instance.ExternalIP != "" {
+					t.Env = append(t.Env, fmt.Sprintf("KUBE_SSH_BASTION=%s", instance.ExternalIP))
+					break
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (t *Tester) addProviderFlag() error {
@@ -422,7 +434,7 @@ func (t *Tester) execute() error {
 		return err
 	}
 
-	if err := t.addHostFlag(); err != nil {
+	if err := t.addKubeBastion(); err != nil {
 		return err
 	}
 

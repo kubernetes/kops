@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/cloudinstances"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -59,6 +60,28 @@ func GetCluster(kopsBinary, clusterName string, env []string) (*api.Cluster, err
 		return nil, fmt.Errorf("error parsing cluster json: %w", err)
 	}
 	return cluster, nil
+}
+
+// GetCluster will retrieve the specified Cluster from the state store.
+func GetInstances(kopsBinary, clusterName string, env []string) ([]*cloudinstances.CloudInstance, error) {
+	args := []string{
+		kopsBinary, "get", "instances", "--name", clusterName, "-ojson",
+	}
+	c := exec.Command(args[0], args[1:]...)
+	c.SetEnv(env...)
+	var stdout bytes.Buffer
+	c.SetStdout(&stdout)
+	var stderr bytes.Buffer
+	c.SetStderr(&stderr)
+	if err := c.Run(); err != nil {
+		klog.Warningf("failed to run %s; stderr=%s", strings.Join(args, " "), stderr.String())
+		return nil, fmt.Errorf("error querying instances from %s: %w", strings.Join(args, " "), err)
+	}
+	var instances []*cloudinstances.CloudInstance
+	if err := json.Unmarshal(stdout.Bytes(), &instances); err != nil {
+		return nil, fmt.Errorf("error parsing instance groups json: %w", err)
+	}
+	return instances, nil
 }
 
 // GetInstanceGroups will retrieve the instance groups for the specified Cluster from the state store.
