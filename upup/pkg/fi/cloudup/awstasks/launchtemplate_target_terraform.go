@@ -211,11 +211,6 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
 			HTTPProtocolIPv6:        e.HTTPProtocolIPv6,
 		},
-		CPUOptions: &terraformLaunchTemplateCPUOptions{
-			CoreCount:      e.CoreCount,
-			ThreadsPerCore: e.ThreadsPerCore,
-			AmdSevSnp:      e.AmdSevSnp,
-		},
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
@@ -243,6 +238,13 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	if fi.ValueOf(e.CPUCredits) != "" {
 		tf.CreditSpecification = &terraformLaunchTemplateCreditSpecification{
 			CPUCredits: e.CPUCredits,
+		}
+	}
+	if e.CoreCount != nil || e.ThreadsPerCore != nil || e.AmdSevSnp != nil {
+		tf.CPUOptions = &terraformLaunchTemplateCPUOptions{
+			CoreCount:      e.CoreCount,
+			ThreadsPerCore: e.ThreadsPerCore,
+			AmdSevSnp:      e.AmdSevSnp,
 		}
 	}
 	for _, x := range e.SecurityGroups {

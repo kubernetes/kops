@@ -228,6 +228,7 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 		resp.CpuOptions = &ec2.LaunchTemplateCpuOptions{
 			CoreCount:      req.CpuOptions.CoreCount,
 			ThreadsPerCore: req.CpuOptions.ThreadsPerCore,
+			AmdSevSnp:      req.CpuOptions.AmdSevSnp,
 		}
 	}
 	if len(req.BlockDeviceMappings) > 0 {
