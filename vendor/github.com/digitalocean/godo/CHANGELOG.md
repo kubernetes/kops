@@ -1,5 +1,18 @@
 # Change Log
 
+## [v1.104.0] - 2023-10-10
+
+- #637 - @mikesmithgh - chore: change uptime alert comparison type
+- #638 - @markusthoemmes - APPS-7700 Add ability to specify digest for an image
+
+## [v1.103.0] - 2023-10-03
+
+- #635 - @andrewsomething - Bump github.com/stretchr/testify to v1.8.4
+- #634 - @andrewsomething - Bump Go version to v1.21.0
+- #632 - @danaelhe - Make Retrys by Default for NewFromToken()
+- #633 - @dwilsondo - Add DBaaS engine Kafka
+- #621 - @testwill - chore:  use fmt.Fprintf instead of fmt.Fprint(fmt.Sprintf(...))
+
 ## [v1.102.1] - 2023-08-17
 
 - #629 - @andrewsomething - Provide a custom retryablehttp.ErrorHandler for more consistent returns using retries.

@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	libraryVersion = "1.102.1"
+	libraryVersion = "1.103.0"
 	defaultBaseURL = "https://api.digitalocean.com/"
 	userAgent      = "godo/" + libraryVersion
 	mediaType      = "application/json"
@@ -31,6 +31,10 @@ const (
 	headerRateReset             = "RateLimit-Reset"
 	headerRequestID             = "x-request-id"
 	internalHeaderRetryAttempts = "X-Godo-Retry-Attempts"
+
+	defaultRetryMax     = 4
+	defaultRetryWaitMax = 30
+	defaultRetryWaitMin = 1
 )
 
 // Client manages communication with DigitalOcean V2 API.
@@ -229,7 +233,20 @@ func NewFromToken(token string) *Client {
 	cleanToken := strings.Trim(strings.TrimSpace(token), "'")
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cleanToken})
-	return NewClient(oauth2.NewClient(ctx, ts))
+
+	oauthClient := oauth2.NewClient(ctx, ts)
+	client, err := New(oauthClient, WithRetryAndBackoffs(
+		RetryConfig{
+			RetryMax:     defaultRetryMax,
+			RetryWaitMin: PtrTo(float64(defaultRetryWaitMin)),
+			RetryWaitMax: PtrTo(float64(defaultRetryWaitMax)),
+		},
+	))
+	if err != nil {
+		panic(err)
+	}
+
+	return client
 }
 
 // NewClient returns a new DigitalOcean API client, using the given
