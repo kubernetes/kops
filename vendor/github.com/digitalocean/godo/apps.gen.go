@@ -975,14 +975,16 @@ type ImageSourceSpec struct {
 	Registry string `json:"registry,omitempty"`
 	// The repository name.
 	Repository string `json:"repository,omitempty"`
-	// The repository tag. Defaults to `latest` if not provided.
-	Tag          string                       `json:"tag,omitempty"`
+	// The repository tag. Defaults to `latest` if not provided and no digest is provided. Cannot be specified if digest is provided.
+	Tag string `json:"tag,omitempty"`
+	// The image digest. Cannot be specified if tag is provided.
+	Digest       string                       `json:"digest,omitempty"`
 	DeployOnPush *ImageSourceSpecDeployOnPush `json:"deploy_on_push,omitempty"`
 }
 
 // ImageSourceSpecDeployOnPush struct for ImageSourceSpecDeployOnPush
 type ImageSourceSpecDeployOnPush struct {
-	// Automatically deploy new images. Only for DOCR images.
+	// Automatically deploy new images. Only for DOCR images. Can't be enabled when a specific digest is specified.
 	Enabled bool `json:"enabled,omitempty"`
 }
 

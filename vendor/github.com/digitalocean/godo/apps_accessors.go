@@ -3094,6 +3094,14 @@ func (i *ImageSourceSpec) GetDeployOnPush() *ImageSourceSpecDeployOnPush {
 	return i.DeployOnPush
 }
 
+// GetDigest returns the Digest field.
+func (i *ImageSourceSpec) GetDigest() string {
+	if i == nil {
+		return ""
+	}
+	return i.Digest
+}
+
 // GetRegistry returns the Registry field.
 func (i *ImageSourceSpec) GetRegistry() string {
 	if i == nil {
