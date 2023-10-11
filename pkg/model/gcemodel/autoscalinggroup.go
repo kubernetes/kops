@@ -102,6 +102,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 					"compute-rw",
 					"monitoring",
 					"logging-write",
+					"cloud-platform",
 				},
 				Metadata: map[string]fi.Resource{
 					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),

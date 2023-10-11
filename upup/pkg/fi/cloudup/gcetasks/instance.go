@@ -166,6 +166,7 @@ func init() {
 		"monitoring":       "https://www.googleapis.com/auth/monitoring",
 		"monitoring-write": "https://www.googleapis.com/auth/monitoring.write",
 		"logging-write":    "https://www.googleapis.com/auth/logging.write",
+		"cloud-platform":   "https://www.googleapis.com/auth/cloud-platform",
 	}
 }
 
