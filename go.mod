@@ -1,6 +1,6 @@
 module k8s.io/kops
 
-go 1.20
+go 1.21
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
