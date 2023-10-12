@@ -46,10 +46,12 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
-	gcpAliasRange := c.Spec.CloudConfig.GCPAliasRange
-	if !gceValidateAliasRange(gcpAliasRange) {
-		f := fieldSpec.Child("CloudConfig")
-		allErrs = append(allErrs, field.Invalid(f.Child("gcpAliasRange"), gcpAliasRange, "must match /2[4-8]"))
+	if gce.UsesIPAliases(c) {
+		gcpAliasRange := c.Spec.CloudConfig.GCPAliasRange
+		if !gceValidateAliasRange(gcpAliasRange) {
+			f := fieldSpec.Child("CloudConfig")
+			allErrs = append(allErrs, field.Invalid(f.Child("gcpAliasRange"), gcpAliasRange, "must match /2[4-8]"))
+		}
 	}
 
 	return allErrs
@@ -64,10 +66,6 @@ func gceValidateInstanceGroup(ig *kops.InstanceGroup, cloud gce.GCECloud) field.
 		allErrs = append(allErrs, IsValidValue(fieldSpec.Child("gcpProvisioningModel"), ig.Spec.GCPProvisioningModel, []string{"STANDARD", "SPOT"})...)
 	}
 
-	gcpAliasRange := ig.Spec.GCPAliasRange
-	if !gceValidateAliasRange(gcpAliasRange) {
-		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("gcpAliasRange"), gcpAliasRange, "must match /2[4-8]"))
-	}
 	return allErrs
 }
 

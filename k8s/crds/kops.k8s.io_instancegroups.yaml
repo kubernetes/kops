@@ -249,10 +249,6 @@ spec:
                       type: array
                   type: object
                 type: array
-              gcpAliasRange:
-                description: GCPAliasRange is the alias range from the pods CIDR to
-                  assign instances in the instanceGroup
-                type: string
               gcpProvisioningModel:
                 description: 'GCPProvisioningModel: Specifies the provisioning model
                   of the GCP instance. Valid values:   ''STANDARD'': (default) standard

@@ -55,7 +55,6 @@ type InstanceTemplate struct {
 	Tags                 []string
 	Labels               map[string]string
 	Preemptible          *bool
-	GCPAliasRange        *string
 	GCPProvisioningModel *string
 
 	BootDiskImage  *string

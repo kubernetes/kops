@@ -4516,7 +4516,6 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.GuestAccelerators = nil
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
-	out.GCPAliasRange = in.GCPAliasRange
 	out.GCPProvisioningModel = in.GCPProvisioningModel
 	return nil
 }
@@ -4702,7 +4701,6 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 		out.GuestAccelerators = nil
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
-	out.GCPAliasRange = in.GCPAliasRange
 	out.GCPProvisioningModel = in.GCPProvisioningModel
 	return nil
 }
