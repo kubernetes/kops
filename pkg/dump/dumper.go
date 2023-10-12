@@ -137,10 +137,6 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 			dumped = append(dumped, node)
 		}
 	}
-	// If none of the special nodes was successfully dumped, there is no value in dumping the rest
-	if len(dumped) == 0 {
-		return fmt.Errorf("could not dump any special node")
-	}
 
 	for i := range regular {
 		if len(dumped) >= MaxNodesToDump {
