@@ -61,6 +61,9 @@ func (l *LBBackend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudu
 		if _, ok := task.(*Instance); ok {
 			deps = append(deps, task)
 		}
+		if _, ok := task.(*PrivateNIC); ok {
+			deps = append(deps, task)
+		}
 	}
 	return deps
 }

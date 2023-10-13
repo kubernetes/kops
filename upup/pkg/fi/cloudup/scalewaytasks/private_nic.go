@@ -18,6 +18,7 @@ type PrivateNIC struct {
 	Tags []string
 
 	ForAPIServer bool
+	Count        int
 
 	Lifecycle      fi.Lifecycle
 	Instance       *Instance
@@ -129,11 +130,11 @@ func (p *PrivateNIC) Find(context *fi.CloudupContext) (*PrivateNIC, error) {
 
 	return &PrivateNIC{
 		//ID:             fi.PtrTo(pNICFound.ID),
-		Name: p.Name,
-		Zone: p.Zone,
-		Tags: pNICFound.Tags,
-		//InstanceID:     fi.PtrTo(pNICFound.ServerID),
+		Name:           p.Name,
+		Zone:           p.Zone,
+		Tags:           pNICFound.Tags,
 		ForAPIServer:   forAPIServer,
+		Count:          len(privateNICsFound),
 		Lifecycle:      p.Lifecycle,
 		Instance:       p.Instance,
 		PrivateNetwork: p.PrivateNetwork,
@@ -172,32 +173,57 @@ func (_ *PrivateNIC) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 	clusterName := scaleway.ClusterNameFromTags(expected.Instance.Tags)
 	igName := fi.ValueOf(expected.Name)
 
-	if actual != nil {
-		//TODO(Mia-Cross): handle changes to tags
-		return nil
-	}
-
+	var serversNeedUpdate []string
+	var serversNeedPNIC []string
 	servers, err := cloud.GetClusterServers(clusterName, &igName)
 	if err != nil {
 		return fmt.Errorf("rendering private NIC for instance group %q: getting servers: %w", igName, err)
 	}
-
 	for _, server := range servers {
+		if len(server.PrivateNics) > 0 {
+			serversNeedUpdate = append(serversNeedUpdate, server.ID)
+		} else {
+			serversNeedPNIC = append(serversNeedPNIC, server.ID)
+		}
+	}
 
+	if actual != nil {
+
+		for _, serverID := range serversNeedUpdate {
+			pNICs, err := cloud.InstanceService().ListPrivateNICs(&instance.ListPrivateNICsRequest{
+				Zone:     zone,
+				ServerID: serverID,
+			}, scw.WithAllPages())
+
+			for _, pNIC := range pNICs.PrivateNics {
+				_, err = cloud.InstanceService().UpdatePrivateNIC(&instance.UpdatePrivateNICRequest{
+					Zone:         zone,
+					ServerID:     serverID,
+					PrivateNicID: pNIC.ID,
+					Tags:         fi.PtrTo(expected.Tags),
+				})
+				if err != nil {
+					return fmt.Errorf("updating Private NIC %s for server %q: %w", pNIC.ID, serverID, err)
+				}
+			}
+		}
+	}
+
+	for _, serverID := range serversNeedPNIC {
 		pNICCreated, err := cloud.InstanceService().CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 			Zone:             zone,
-			ServerID:         server.ID,
+			ServerID:         serverID,
 			PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
 			Tags:             expected.Tags,
 			//IPIDs:
 		})
 		if err != nil {
-			return fmt.Errorf("creating private NIC between instance %s and private network %s: %w", server.ID, fi.ValueOf(expected.PrivateNetwork.ID), err)
+			return fmt.Errorf("creating private NIC between instance %s and private network %s: %w", serverID, fi.ValueOf(expected.PrivateNetwork.ID), err)
 		}
 
-		// We wait for the private nic to be ready before proceeding
+		// We wait for the private nic to be ready
 		_, err = cloud.InstanceService().WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-			ServerID:     server.ID,
+			ServerID:     serverID,
 			PrivateNicID: pNICCreated.PrivateNic.ID,
 			Zone:         zone,
 		})
@@ -205,15 +231,6 @@ func (_ *PrivateNIC) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 			return fmt.Errorf("waiting for private NIC %s: %w", pNICCreated.PrivateNic.ID, err)
 		}
 
-		//expected.ID = &pNICCreated.PrivateNic.ID
-		//expected.InstanceID = &pNICCreated.PrivateNic.ServerID
-
-		//instanceRole := scaleway.InstanceRoleFromTags(expected.Tags)
-		//if instanceRole == scaleway.TagRoleControlPlane {
-		//	expected.ForAPIServer = true
-		//} else {
-		//	expected.ForAPIServer = false
-		//}
 	}
 
 	return nil

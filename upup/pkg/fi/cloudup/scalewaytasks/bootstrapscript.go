@@ -13,9 +13,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+const userDataKey = "cloud-init"
+
 // +kops:fitask
 type BootstrapInstance struct {
 	Name *string
+
+	Count int
 
 	Lifecycle fi.Lifecycle
 	Instance  *Instance
@@ -68,6 +72,7 @@ func (b *BootstrapInstance) Find(c *fi.CloudupContext) (*BootstrapInstance, erro
 
 	return &BootstrapInstance{
 		Name:      b.Name,
+		Count:     len(servers),
 		Instance:  b.Instance,
 		Lifecycle: b.Lifecycle,
 		// server.user-data plutot non ??
@@ -91,46 +96,66 @@ func (_ *BootstrapInstance) RenderScw(t *scaleway.ScwAPITarget, actual, expected
 	zone := scw.Zone(fi.ValueOf(expected.Instance.Zone))
 	igName := fi.ValueOf(expected.Name)
 
+	var serversNeedUpdate []string
+	var serversNeedBootstrapscript []string
+	servers, err := cloud.GetClusterServers(clusterName, &igName)
+	if err != nil {
+		return fmt.Errorf("creating bootstrapscript for instance group %q: getting servers: %w", igName, err)
+	}
+	for _, server := range servers {
+		_, err := instanceService.GetServerUserData(&instance.GetServerUserDataRequest{
+			Zone:     zone,
+			ServerID: server.ID,
+			Key:      userDataKey,
+		})
+		if err != nil {
+			if scaleway.Is404Error(err) {
+				serversNeedBootstrapscript = append(serversNeedBootstrapscript, server.ID)
+				continue
+			}
+			return fmt.Errorf("creating bootstrapscript for instance group %q: getting user-data: %w", igName, err)
+		}
+		serversNeedUpdate = append(serversNeedUpdate, server.ID)
+	}
+
+	if actual != nil {
+		//TODO(Mia-Cross): do something with serversNeedUpdate
+	}
+
 	// We load the cloud-init script in the instance user data
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
-		return fmt.Errorf("rendering bootstrapscript for instance group %q: %w", igName, err)
+		return fmt.Errorf("creating bootstrapscript for instance group %q: %w", igName, err)
 	}
 
-	servers, err := cloud.GetClusterServers(clusterName, &igName)
-	if err != nil {
-		return fmt.Errorf("rendering bootstrapscript for instance group %q: getting servers: %w", igName, err)
-	}
-
-	for _, server := range servers {
-
+	for _, serverID := range serversNeedBootstrapscript {
 		err = instanceService.SetServerUserData(&instance.SetServerUserDataRequest{
-			ServerID: server.ID,
-			Zone:     server.Zone,
-			Key:      "cloud-init",
+			ServerID: serverID,
+			Zone:     zone,
+			Key:      userDataKey,
 			Content:  bytes.NewBuffer(userData),
 		})
 		if err != nil {
-			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", server.ID, igName, err)
+			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", serverID, igName, err)
 		}
 
 		// We start the instance
 		_, err = instanceService.ServerAction(&instance.ServerActionRequest{
 			Zone:     zone,
-			ServerID: server.ID,
+			ServerID: serverID,
 			Action:   instance.ServerActionPoweron,
 		})
 		if err != nil {
-			return fmt.Errorf("error powering on instance %s of group %q: %w", server.ID, igName, err)
+			return fmt.Errorf("error powering on instance %s of group %q: %w", serverID, igName, err)
 		}
 
 		// We wait for the instance to be ready
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: server.ID,
+			ServerID: serverID,
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", server.ID, igName, err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", serverID, igName, err)
 		}
 	}
 	return nil

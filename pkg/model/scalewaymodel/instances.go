@@ -45,6 +45,7 @@ var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := ig.Name
+		count := int(fi.ValueOf(ig.Spec.MinSize))
 		zone, err := scw.ParseZone(ig.Spec.Subnets[0])
 		if err != nil {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)
@@ -59,7 +60,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		instance := &scalewaytasks.Instance{
-			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
+			Count:          count,
 			Name:           fi.PtrTo(name),
 			Lifecycle:      b.Lifecycle,
 			Zone:           fi.PtrTo(string(zone)),
@@ -96,18 +97,17 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if *instance.Role == scaleway.TagRoleControlPlane {
 			isForAPIServer = true
 		}
-		for i := int32(0); i < fi.ValueOf(ig.Spec.MinSize); i++ {
-			privateNIC := &scalewaytasks.PrivateNIC{
-				Name:           &name,
-				Zone:           fi.PtrTo(string(zone)),
-				Tags:           instanceTags,
-				ForAPIServer:   isForAPIServer,
-				Lifecycle:      b.Lifecycle,
-				Instance:       instance,
-				PrivateNetwork: b.LinkToNetwork(),
-			}
-			c.AddTask(privateNIC)
+		privateNIC := &scalewaytasks.PrivateNIC{
+			Name:           &name,
+			Zone:           fi.PtrTo(string(zone)),
+			Tags:           instanceTags,
+			ForAPIServer:   isForAPIServer,
+			Count:          count,
+			Lifecycle:      b.Lifecycle,
+			Instance:       instance,
+			PrivateNetwork: b.LinkToNetwork(),
 		}
+		c.AddTask(privateNIC)
 
 		// For each individual server of the instance group, we add a BootstrapInstance task to build the bootstrapscript that will set the server up.
 		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
@@ -116,6 +116,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		script := &scalewaytasks.BootstrapInstance{
 			Name:      &name,
+			Count:     count,
 			Lifecycle: b.Lifecycle,
 			Instance:  instance,
 			UserData:  &userData,
