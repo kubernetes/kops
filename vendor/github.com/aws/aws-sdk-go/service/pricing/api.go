@@ -1707,7 +1707,9 @@ type ListPriceListsInput struct {
 	// and Reserved Instance (RI) pricing, use the DescribeServices (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_DescribeServices.html#awscostmanagement-pricing_DescribeServices-request-FormatVersion)
 	// API.
 	//
-	// To retrieve the Compute Savings Plan price lists, use ComputeSavingsPlans.
+	// To retrieve the Reserved Instance and Compute Savings Plan price lists, use
+	// ComputeSavingsPlans.
+	//
 	// To retrieve Machine Learning Savings Plans price lists, use MachineLearningSavingsPlans.
 	//
 	// ServiceCode is a required field

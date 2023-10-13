@@ -124,6 +124,9 @@ func ISOFromSchema(s schema.ISO) *ISO {
 		Description: s.Description,
 		Type:        ISOType(s.Type),
 		Deprecated:  s.Deprecated,
+		DeprecatableResource: DeprecatableResource{
+			DeprecationFromSchema(s.Deprecation),
+		},
 	}
 	if s.Architecture != nil {
 		iso.Architecture = Ptr(Architecture(*s.Architecture))

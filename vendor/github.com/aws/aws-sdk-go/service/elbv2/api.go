@@ -3384,12 +3384,12 @@ func (c *ELBV2) SetSubnetsRequest(input *SetSubnetsInput) (req *request.Request,
 // SetSubnets API operation for Elastic Load Balancing.
 //
 // Enables the Availability Zones for the specified public subnets for the specified
-// Application Load Balancer or Network Load Balancer. The specified subnets
-// replace the previously enabled subnets.
+// Application Load Balancer, Network Load Balancer or Gateway Load Balancer.
+// The specified subnets replace the previously enabled subnets.
 //
-// When you specify subnets for a Network Load Balancer, you must include all
-// subnets that were enabled previously, with their existing configurations,
-// plus any additional subnets.
+// When you specify subnets for a Network Load Balancer, or Gateway Load Balancer
+// you must include all subnets that were enabled previously, with their existing
+// configurations, plus any additional subnets.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7348,6 +7348,14 @@ type LoadBalancerAttribute struct {
 	//    balancer to route requests to targets if it is unable to forward the request
 	//    to Amazon Web Services WAF. The possible values are true and false. The
 	//    default is false.
+	//
+	// The following attributes are supported by only Network Load Balancers:
+	//
+	//    * dns_record.client_routing_policy - Indicates how traffic is distributed
+	//    among the load balancer Availability Zones. The possible values are availability_zone_affinity
+	//    with 100 percent zonal affinity, partial_availability_zone_affinity with
+	//    85 percent zonal affinity, and any_availability_zone with 0 percent zonal
+	//    affinity.
 	Key *string `type:"string"`
 
 	// The value of the attribute.
@@ -9212,6 +9220,10 @@ type SetSubnetsInput struct {
 	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
 	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for
 	// a load balancer with a UDP or TCP_UDP listener.
+	//
+	// [Gateway Load Balancers] The type of IP addresses used by the subnets for
+	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
+	// dualstack (for IPv4 and IPv6 addresses).
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 
 	// The Amazon Resource Name (ARN) of the load balancer.
@@ -9236,6 +9248,9 @@ type SetSubnetsInput struct {
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
 	// per subnet.
+	//
+	// [Gateway Load Balancers] You can specify subnets from one or more Availability
+	// Zones.
 	SubnetMappings []*SubnetMapping `type:"list"`
 
 	// The IDs of the public subnets. You can specify only one subnet per Availability
@@ -9250,6 +9265,9 @@ type SetSubnetsInput struct {
 	// one or more Local Zones.
 	//
 	// [Network Load Balancers] You can specify subnets from one or more Availability
+	// Zones.
+	//
+	// [Gateway Load Balancers] You can specify subnets from one or more Availability
 	// Zones.
 	Subnets []*string `type:"list"`
 }
@@ -9316,6 +9334,8 @@ type SetSubnetsOutput struct {
 	AvailabilityZones []*AvailabilityZone `type:"list"`
 
 	// [Network Load Balancers] The IP address type.
+	//
+	// [Gateway Load Balancers] The IP address type.
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 }
 

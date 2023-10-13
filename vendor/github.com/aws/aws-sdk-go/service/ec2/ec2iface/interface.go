@@ -1885,6 +1885,10 @@ type EC2API interface {
 	DisableFastSnapshotRestoresWithContext(aws.Context, *ec2.DisableFastSnapshotRestoresInput, ...request.Option) (*ec2.DisableFastSnapshotRestoresOutput, error)
 	DisableFastSnapshotRestoresRequest(*ec2.DisableFastSnapshotRestoresInput) (*request.Request, *ec2.DisableFastSnapshotRestoresOutput)
 
+	DisableImage(*ec2.DisableImageInput) (*ec2.DisableImageOutput, error)
+	DisableImageWithContext(aws.Context, *ec2.DisableImageInput, ...request.Option) (*ec2.DisableImageOutput, error)
+	DisableImageRequest(*ec2.DisableImageInput) (*request.Request, *ec2.DisableImageOutput)
+
 	DisableImageBlockPublicAccess(*ec2.DisableImageBlockPublicAccessInput) (*ec2.DisableImageBlockPublicAccessOutput, error)
 	DisableImageBlockPublicAccessWithContext(aws.Context, *ec2.DisableImageBlockPublicAccessInput, ...request.Option) (*ec2.DisableImageBlockPublicAccessOutput, error)
 	DisableImageBlockPublicAccessRequest(*ec2.DisableImageBlockPublicAccessInput) (*request.Request, *ec2.DisableImageBlockPublicAccessOutput)
@@ -1992,6 +1996,10 @@ type EC2API interface {
 	EnableFastSnapshotRestores(*ec2.EnableFastSnapshotRestoresInput) (*ec2.EnableFastSnapshotRestoresOutput, error)
 	EnableFastSnapshotRestoresWithContext(aws.Context, *ec2.EnableFastSnapshotRestoresInput, ...request.Option) (*ec2.EnableFastSnapshotRestoresOutput, error)
 	EnableFastSnapshotRestoresRequest(*ec2.EnableFastSnapshotRestoresInput) (*request.Request, *ec2.EnableFastSnapshotRestoresOutput)
+
+	EnableImage(*ec2.EnableImageInput) (*ec2.EnableImageOutput, error)
+	EnableImageWithContext(aws.Context, *ec2.EnableImageInput, ...request.Option) (*ec2.EnableImageOutput, error)
+	EnableImageRequest(*ec2.EnableImageInput) (*request.Request, *ec2.EnableImageOutput)
 
 	EnableImageBlockPublicAccess(*ec2.EnableImageBlockPublicAccessInput) (*ec2.EnableImageBlockPublicAccessOutput, error)
 	EnableImageBlockPublicAccessWithContext(aws.Context, *ec2.EnableImageBlockPublicAccessInput, ...request.Option) (*ec2.EnableImageBlockPublicAccessOutput, error)

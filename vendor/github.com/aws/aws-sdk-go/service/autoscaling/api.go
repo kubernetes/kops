@@ -2411,6 +2411,12 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 		Name:       opDescribeInstanceRefreshes,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2475,6 +2481,57 @@ func (c *AutoScaling) DescribeInstanceRefreshesWithContext(ctx aws.Context, inpu
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeInstanceRefreshesPages iterates over the pages of a DescribeInstanceRefreshes operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeInstanceRefreshes method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeInstanceRefreshes operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceRefreshesPages(params,
+//	    func(page *autoscaling.DescribeInstanceRefreshesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeInstanceRefreshesPages(input *DescribeInstanceRefreshesInput, fn func(*DescribeInstanceRefreshesOutput, bool) bool) error {
+	return c.DescribeInstanceRefreshesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeInstanceRefreshesPagesWithContext same as DescribeInstanceRefreshesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeInstanceRefreshesPagesWithContext(ctx aws.Context, input *DescribeInstanceRefreshesInput, fn func(*DescribeInstanceRefreshesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeInstanceRefreshesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeInstanceRefreshesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstanceRefreshesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeLaunchConfigurations = "DescribeLaunchConfigurations"
@@ -2812,6 +2869,12 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 		Name:       opDescribeLoadBalancerTargetGroups,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2899,6 +2962,57 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsWithContext(ctx aws.Contex
 	return out, req.Send()
 }
 
+// DescribeLoadBalancerTargetGroupsPages iterates over the pages of a DescribeLoadBalancerTargetGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeLoadBalancerTargetGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeLoadBalancerTargetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeLoadBalancerTargetGroupsPages(params,
+//	    func(page *autoscaling.DescribeLoadBalancerTargetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeLoadBalancerTargetGroupsPages(input *DescribeLoadBalancerTargetGroupsInput, fn func(*DescribeLoadBalancerTargetGroupsOutput, bool) bool) error {
+	return c.DescribeLoadBalancerTargetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeLoadBalancerTargetGroupsPagesWithContext same as DescribeLoadBalancerTargetGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeLoadBalancerTargetGroupsPagesWithContext(ctx aws.Context, input *DescribeLoadBalancerTargetGroupsInput, fn func(*DescribeLoadBalancerTargetGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeLoadBalancerTargetGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeLoadBalancerTargetGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLoadBalancerTargetGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeLoadBalancers = "DescribeLoadBalancers"
 
 // DescribeLoadBalancersRequest generates a "aws/request.Request" representing the
@@ -2929,6 +3043,12 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 		Name:       opDescribeLoadBalancers,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -3014,6 +3134,57 @@ func (c *AutoScaling) DescribeLoadBalancersWithContext(ctx aws.Context, input *D
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeLoadBalancersPages iterates over the pages of a DescribeLoadBalancers operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeLoadBalancers method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeLoadBalancers operation.
+//	pageNum := 0
+//	err := client.DescribeLoadBalancersPages(params,
+//	    func(page *autoscaling.DescribeLoadBalancersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeLoadBalancersPages(input *DescribeLoadBalancersInput, fn func(*DescribeLoadBalancersOutput, bool) bool) error {
+	return c.DescribeLoadBalancersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeLoadBalancersPagesWithContext same as DescribeLoadBalancersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeLoadBalancersPagesWithContext(ctx aws.Context, input *DescribeLoadBalancersInput, fn func(*DescribeLoadBalancersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeLoadBalancersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeLoadBalancersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLoadBalancersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeMetricCollectionTypes = "DescribeMetricCollectionTypes"

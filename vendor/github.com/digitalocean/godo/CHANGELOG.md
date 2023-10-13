@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.104.1] - 2023-10-10
+
+* #640 - @andrewsomething - Drop required Go version to 1.20 and document policy.
+* #640 - @andrewsomething - Fix library version.
+
 ## [v1.104.0] - 2023-10-10
 
 - #637 - @mikesmithgh - chore: change uptime alert comparison type
