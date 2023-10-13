@@ -111,6 +111,8 @@ func (_ *PrivateNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 	if actual != nil {
 		//TODO(Mia-Cross): update tags
 		//TODO(Mia-Cross): update IPRange ??
+		expected.ID = actual.ID
+
 		return nil
 	}
 
