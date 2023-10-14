@@ -204,7 +204,7 @@ func (c *commonVFS) update(ctx context.Context, cluster *kops.Cluster, i runtime
 
 func (c *commonVFS) delete(ctx context.Context, name string, options metav1.DeleteOptions) error {
 	p := c.basePath.Join(name)
-	err := p.Remove()
+	err := p.Remove(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil

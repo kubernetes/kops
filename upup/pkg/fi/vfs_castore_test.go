@@ -91,7 +91,7 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		}
 	}
 
-	paths, err := basePath.ReadTree()
+	paths, err := basePath.ReadTree(ctx)
 	if err != nil {
 		t.Fatalf("error from ReadTree: %v", err)
 	}

@@ -97,16 +97,16 @@ func (p *AssetPath) ReadDir() ([]vfs.Path, error) {
 	return paths, nil
 }
 
-func (p *AssetPath) ReadTree() ([]vfs.Path, error) {
+func (p *AssetPath) ReadTree(ctx context.Context) ([]vfs.Path, error) {
 	var paths []vfs.Path
-	err := readTree(p.location, &paths)
+	err := readTree(ctx, p.location, &paths)
 	if err != nil {
 		return nil, err
 	}
 	return paths, nil
 }
 
-func readTree(base string, dest *[]vfs.Path) error {
+func readTree(ctx context.Context, base string, dest *[]vfs.Path) error {
 	files, err := content.ReadDir(base)
 	if err != nil {
 		if _, ok := err.(*fs.PathError); ok {
@@ -117,7 +117,7 @@ func readTree(base string, dest *[]vfs.Path) error {
 	for _, f := range files {
 		p := path.Join(base, f.Name())
 		if f.IsDir() {
-			childFiles, err := NewAssetPath(p).ReadTree()
+			childFiles, err := NewAssetPath(p).ReadTree(ctx)
 			if err != nil {
 				return err
 			}
@@ -141,14 +141,14 @@ func (p *AssetPath) String() string {
 	return p.Path()
 }
 
-func (p *AssetPath) Remove() error {
+func (p *AssetPath) Remove(ctx context.Context) error {
 	return ReadOnlyError
 }
 
-func (p *AssetPath) RemoveAll() error {
+func (p *AssetPath) RemoveAll(ctx context.Context) error {
 	return ReadOnlyError
 }
 
-func (p *AssetPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *AssetPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }

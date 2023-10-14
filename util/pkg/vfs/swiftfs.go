@@ -281,9 +281,7 @@ func (p *SwiftPath) getClient(ctx context.Context) (*gophercloud.ServiceClient, 
 	return p.vfsContext.getSwiftClient(ctx)
 }
 
-func (p *SwiftPath) Remove() error {
-	ctx := context.TODO()
-
+func (p *SwiftPath) Remove(ctx context.Context) error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
@@ -308,10 +306,8 @@ func (p *SwiftPath) Remove() error {
 	}
 }
 
-func (p *SwiftPath) RemoveAll() error {
-	ctx := context.TODO()
-
-	tree, err := p.ReadTree()
+func (p *SwiftPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
@@ -362,8 +358,8 @@ func (p *SwiftPath) RemoveAll() error {
 	return nil
 }
 
-func (p *SwiftPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *SwiftPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *SwiftPath) Join(relativePath ...string) Path {
@@ -587,7 +583,7 @@ func (p *SwiftPath) ReadDir() ([]Path, error) {
 }
 
 // ReadTree implements Path::ReadTree.
-func (p *SwiftPath) ReadTree() ([]Path, error) {
+func (p *SwiftPath) ReadTree(ctx context.Context) ([]Path, error) {
 	prefix := p.key
 	if prefix != "" && !strings.HasSuffix(prefix, "/") {
 		prefix += "/"

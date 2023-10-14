@@ -89,8 +89,10 @@ func (c *VFSSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 
 // DeleteSecret implements fi.SecretStore DeleteSecret
 func (c *VFSSecretStore) DeleteSecret(name string) error {
+	ctx := context.TODO()
+
 	p := c.buildSecretPath(name)
-	return p.Remove()
+	return p.Remove(ctx)
 }
 
 func (c *VFSSecretStore) ListSecrets() ([]string, error) {

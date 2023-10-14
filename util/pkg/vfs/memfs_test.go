@@ -117,6 +117,8 @@ func TestMemFsReadDir(t *testing.T) {
 }
 
 func TestMemFsReadTree(t *testing.T) {
+	ctx := testcontext.ForTest(t)
+
 	tests := []struct {
 		path     string
 		subpaths []string
@@ -146,7 +148,7 @@ func TestMemFsReadTree(t *testing.T) {
 		}
 
 		// Read dir tree
-		paths, err := memfspath.ReadTree()
+		paths, err := memfspath.ReadTree(ctx)
 		if err != nil {
 			t.Errorf("Failed reading dir tree %s, error: %v", test.path, err)
 			continue

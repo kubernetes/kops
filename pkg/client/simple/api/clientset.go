@@ -131,7 +131,7 @@ func (c *RESTClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster
 		return err
 	}
 
-	err = vfsclientset.DeleteAllClusterState(configBase)
+	err = vfsclientset.DeleteAllClusterState(ctx, configBase)
 	if err != nil {
 		return err
 	}

@@ -149,7 +149,7 @@ func (p *FSPath) ReadDir() ([]Path, error) {
 	return paths, nil
 }
 
-func (p *FSPath) ReadTree() ([]Path, error) {
+func (p *FSPath) ReadTree(ctx context.Context) ([]Path, error) {
 	var paths []Path
 	err := readTree(p.location, &paths)
 	if err != nil {
@@ -191,18 +191,18 @@ func (p *FSPath) String() string {
 	return p.Path()
 }
 
-func (p *FSPath) Remove() error {
+func (p *FSPath) Remove(ctx context.Context) error {
 	return os.Remove(p.location)
 }
 
-func (p *FSPath) RemoveAll() error {
-	tree, err := p.ReadTree()
+func (p *FSPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, filePath := range tree {
-		err := filePath.Remove()
+		err := filePath.Remove(ctx)
 		if err != nil {
 			return fmt.Errorf("error removing file %s: %w", filePath, err)
 		}
@@ -211,8 +211,8 @@ func (p *FSPath) RemoveAll() error {
 	return nil
 }
 
-func (p *FSPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *FSPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *FSPath) PreferredHash() (*hashing.Hash, error) {

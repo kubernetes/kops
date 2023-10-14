@@ -131,8 +131,8 @@ func (c *VFSClientset) pkiPath(cluster *kops.Cluster) (vfs.Path, error) {
 	}
 }
 
-func DeleteAllClusterState(basePath vfs.Path) error {
-	paths, err := basePath.ReadTree()
+func DeleteAllClusterState(ctx context.Context, basePath vfs.Path) error {
+	paths, err := basePath.ReadTree(ctx)
 	if err != nil {
 		return fmt.Errorf("error listing files in state store: %v", err)
 	}
@@ -180,7 +180,7 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		return fmt.Errorf("refusing to delete: unknown file found: %s", path)
 	}
 
-	err = basePath.RemoveAll()
+	err = basePath.RemoveAll(ctx)
 	if err != nil {
 		return fmt.Errorf("error deleting cluster files in %s: %w", basePath, err)
 	}
@@ -197,11 +197,11 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 				return err
 			}
 
-			err = path.Join("openid/v1/jwks").Remove()
+			err = path.Join("openid/v1/jwks").Remove(ctx)
 			if err != nil {
 				return err
 			}
-			err = path.Join(".well-known/openid-configuration").Remove()
+			err = path.Join(".well-known/openid-configuration").Remove(ctx)
 			if err != nil {
 				return err
 			}
@@ -214,7 +214,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		if err != nil {
 			return err
 		}
-		err = path.RemoveAll()
+		err = path.RemoveAll(ctx)
 		if err != nil {
 			return err
 		}
@@ -226,7 +226,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		if err != nil {
 			return err
 		}
-		err = path.RemoveAll()
+		err = path.RemoveAll(ctx)
 		if err != nil {
 			return err
 		}
@@ -237,7 +237,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		return err
 	}
 
-	return DeleteAllClusterState(configBase)
+	return DeleteAllClusterState(ctx, configBase)
 }
 
 func NewVFSClientset(vfsContext *vfs.VFSContext, basePath vfs.Path) simple.Clientset {

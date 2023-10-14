@@ -55,7 +55,7 @@ func (t *Templates) Find(key string) fi.Resource {
 }
 
 func (t *Templates) loadFrom(ctx context.Context, base vfs.Path) error {
-	files, err := base.ReadTree()
+	files, err := base.ReadTree(ctx)
 	if err != nil {
 		return fmt.Errorf("error reading from %s", base)
 	}

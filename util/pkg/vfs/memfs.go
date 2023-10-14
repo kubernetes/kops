@@ -153,7 +153,7 @@ func (p *MemFSPath) ReadDir() ([]Path, error) {
 	return paths, nil
 }
 
-func (p *MemFSPath) ReadTree() ([]Path, error) {
+func (p *MemFSPath) ReadTree(ctx context.Context) ([]Path, error) {
 	var paths []Path
 	p.readTree(&paths)
 	return paths, nil
@@ -183,19 +183,19 @@ func (p *MemFSPath) String() string {
 	return p.Path()
 }
 
-func (p *MemFSPath) Remove() error {
+func (p *MemFSPath) Remove(ctx context.Context) error {
 	p.contents = nil
 	return nil
 }
 
-func (p *MemFSPath) RemoveAll() error {
-	tree, err := p.ReadTree()
+func (p *MemFSPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, filePath := range tree {
-		err := filePath.Remove()
+		err := filePath.Remove(ctx)
 		if err != nil {
 			return fmt.Errorf("error removing file %s: %w", filePath, err)
 		}
@@ -204,8 +204,8 @@ func (p *MemFSPath) RemoveAll() error {
 	return nil
 }
 
-func (p *MemFSPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *MemFSPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *MemFSPath) Location() string {
