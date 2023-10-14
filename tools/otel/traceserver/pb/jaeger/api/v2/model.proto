@@ -1,0 +1,118 @@
+// Copyright (c) 2018 Uber Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax="proto3";
+
+package jaeger.api_v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// TODO: document all types and fields
+
+// TODO: once this moves to jaeger-idl repo, we may want to change Go pkg to api_v2
+// and rewrite it to model only in this repo. That should make it easier to generate
+// classes in other languages.
+option go_package="k8s.io/kops/tools/otel/traceserver/pb/jaeger/api/v2"; // = "model";
+option java_package = "io.jaegertracing.api_v2";
+
+// Enable custom Marshal method.
+// Enable custom Unmarshal method.
+// Enable custom Size method (Required by Marshal and Unmarshal).
+
+enum ValueType {
+  STRING  = 0;
+  BOOL    = 1;
+  INT64   = 2;
+  FLOAT64 = 3;
+  BINARY  = 4;
+};
+
+message KeyValue {
+
+  string    key      = 1;
+  ValueType v_type    = 2;
+  string    v_str     = 3;
+  bool      v_bool    = 4;
+  int64     v_int64   = 5;
+  double    v_float64 = 6;
+  bytes     v_binary  = 7;
+}
+
+message Log {
+  google.protobuf.Timestamp timestamp = 1 ;
+  repeated KeyValue fields = 2 ;
+}
+
+enum SpanRefType {
+  CHILD_OF = 0;
+  FOLLOWS_FROM = 1;
+};
+
+message SpanRef {
+  bytes trace_id = 1 ;
+  bytes span_id = 2 ;
+  SpanRefType ref_type = 3;
+}
+
+message Process {
+  string service_name = 1;
+  repeated KeyValue tags = 2 ;
+}
+
+message Span {
+  bytes trace_id = 1 ;
+  bytes span_id = 2 ;
+  string operation_name = 3;
+  repeated SpanRef references = 4 ;
+  uint32 flags = 5 ;
+  google.protobuf.Timestamp start_time = 6 ;
+  google.protobuf.Duration duration = 7 ;
+  repeated KeyValue tags = 8 ;
+  repeated Log logs = 9 ;
+  Process process = 10;
+  string process_id = 11 ;
+  repeated string warnings = 12;
+}
+
+message Trace {
+  message ProcessMapping {
+      string process_id = 1 ;
+      Process process = 2 ;
+  }
+  repeated Span spans = 1;
+  repeated ProcessMapping process_map = 2 ;
+  repeated string warnings = 3;
+}
+
+// Note that both Span and Batch may contain a Process.
+// This is different from the Thrift model which was only used
+// for transport, because Proto model is also used by the backend
+// as the domain model, where once a batch is received it is split
+// into individual spans which are all processed independently,
+// and therefore they all need a Process. As far as on-the-wire
+// semantics, both Batch and Spans in the same message may contain
+// their own instances of Process, with span.Process taking priority
+// over batch.Process.
+message Batch {
+    repeated Span spans = 1;
+    Process process = 2 ;
+}
+
+message DependencyLink {
+  string parent = 1;
+  string child = 2;
+  uint64 call_count = 3;
+  string source = 4;
+}
