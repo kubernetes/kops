@@ -604,22 +604,26 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 }
 
 func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
-	grp := g.Raw.(*servergroups.ServerGroup)
-
-	for _, id := range grp.Members {
-		err := c.DeleteInstanceWithID(id)
+	instances, err := c.ListInstances(servers.ListOpts{
+		Name: fmt.Sprintf("^%s", g.InstanceGroup.Name),
+	})
+	if err != nil {
+		return err
+	}
+	for _, instance := range instances {
+		err := c.DeleteInstanceWithID(instance.ID)
 		if err != nil {
-			return fmt.Errorf("could not delete instance %q: %v", id, err)
+			return fmt.Errorf("could not delete instance %q: %v", instance.ID, err)
 		}
 	}
 
 	ports, err := c.ListPorts(ports.ListOpts{})
 	if err != nil {
-		return fmt.Errorf("Could not list ports %v", err)
+		return fmt.Errorf("could not list ports %v", err)
 	}
 
 	for _, port := range ports {
-		if strings.Contains(port.Name, grp.Name) {
+		if strings.HasPrefix(port.Name, fmt.Sprintf("port-%s", g.InstanceGroup.Name)) {
 			err := c.DeletePort(port.ID)
 			if err != nil {
 				return fmt.Errorf("could not delete port %q: %v", port.ID, err)
@@ -627,11 +631,29 @@ func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
 		}
 	}
 
-	err = c.DeleteServerGroup(grp.ID)
+	sgName := g.InstanceGroup.Name
+	if name, ok := g.InstanceGroup.Annotations[OS_ANNOTATION+SERVER_GROUP_NAME]; ok {
+		sgName = name
+	}
+	sgs, err := c.ListServerGroups(servergroups.ListOpts{})
 	if err != nil {
-		return fmt.Errorf("could not server group %q: %v", grp.ID, err)
+		return fmt.Errorf("could not list server groups %v", err)
 	}
 
+	cluster := g.Raw.(*kops.Cluster)
+	for _, sg := range sgs {
+		if fmt.Sprintf("%s-%s", cluster.Name, sgName) == sg.Name {
+			if len(sg.Members) == 0 {
+				err = c.DeleteServerGroup(sg.ID)
+				if err != nil {
+					return fmt.Errorf("could not delete server group %q: %v", sg.ID, err)
+				}
+			} else {
+				klog.Infof("Server group %q still has members (IDs: %s), delete not executed", sg.ID, strings.Join(sg.Members, ", "))
+			}
+			break
+		}
+	}
 	return nil
 }
 
@@ -642,27 +664,11 @@ func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []
 func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-
-	serverGrps, err := c.ListServerGroups(servergroups.ListOpts{})
-	if err != nil {
-		return nil, fmt.Errorf("unable to list servergroups: %v", err)
-	}
-
-	for _, grp := range serverGrps {
-		name := grp.Name
-		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+	for _, ig := range instancegroups {
+		var err error
+		groups[ig.ObjectMeta.Name], err = osBuildCloudInstanceGroup(c, cluster, ig, nodeMap)
 		if err != nil {
-			return nil, fmt.Errorf("error getting instance group for servergroup %q", name)
-		}
-		if instancegroup == nil {
-			if warnUnmatched {
-				klog.Warningf("Found servergrp with no corresponding instance group %q", name)
-			}
-			continue
-		}
-		groups[instancegroup.ObjectMeta.Name], err = osBuildCloudInstanceGroup(c, cluster, instancegroup, grp, nodeMap)
-		if err != nil {
-			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", ig.ObjectMeta.Name, err)
 		}
 	}
 	return groups, nil
