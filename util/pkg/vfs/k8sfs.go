@@ -67,16 +67,16 @@ func (p *KubernetesPath) String() string {
 	return p.Path()
 }
 
-func (p *KubernetesPath) Remove() error {
+func (p *KubernetesPath) Remove(ctx context.Context) error {
 	return fmt.Errorf("KubernetesPath::Remove not supported")
 }
 
-func (p *KubernetesPath) RemoveAll() error {
+func (p *KubernetesPath) RemoveAll(ctx context.Context) error {
 	return fmt.Errorf("KubernetesPath::RemoveAll not supported")
 }
 
-func (p *KubernetesPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *KubernetesPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *KubernetesPath) Join(relativePath ...string) Path {
@@ -117,7 +117,7 @@ func (p *KubernetesPath) ReadDir() ([]Path, error) {
 	return nil, fmt.Errorf("KubernetesPath::ReadDir not supported")
 }
 
-func (p *KubernetesPath) ReadTree() ([]Path, error) {
+func (p *KubernetesPath) ReadTree(ctx context.Context) ([]Path, error) {
 	return nil, fmt.Errorf("KubernetesPath::ReadTree not supported")
 }
 

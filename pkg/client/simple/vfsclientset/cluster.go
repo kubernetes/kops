@@ -75,7 +75,7 @@ func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
 	ctx := context.TODO()
 
-	names, err := c.listNames()
+	names, err := c.listNames(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -163,8 +163,8 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 
 // List returns a slice containing all the cluster names
 // It skips directories that don't look like clusters
-func (r *ClusterVFS) listNames() ([]string, error) {
-	paths, err := r.basePath.ReadTree()
+func (r *ClusterVFS) listNames(ctx context.Context) ([]string, error) {
+	paths, err := r.basePath.ReadTree(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error reading state store: %v", err)
 	}

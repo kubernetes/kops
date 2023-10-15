@@ -118,8 +118,7 @@ func (p *GSPath) String() string {
 	return p.Path()
 }
 
-func (p *GSPath) Remove() error {
-	ctx := context.TODO()
+func (p *GSPath) Remove(ctx context.Context) error {
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		client, err := p.getStorageClient(ctx)
 		if err != nil {
@@ -142,14 +141,14 @@ func (p *GSPath) Remove() error {
 	}
 }
 
-func (p *GSPath) RemoveAll() error {
-	tree, err := p.ReadTree()
+func (p *GSPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, objectPath := range tree {
-		err := objectPath.Remove()
+		err := objectPath.Remove(ctx)
 		if err != nil {
 			return fmt.Errorf("error removing file %s: %w", objectPath, err)
 		}
@@ -158,8 +157,8 @@ func (p *GSPath) RemoveAll() error {
 	return nil
 }
 
-func (p *GSPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *GSPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *GSPath) Join(relativePath ...string) Path {
@@ -346,9 +345,7 @@ func (p *GSPath) ReadDir() ([]Path, error) {
 }
 
 // ReadTree implements Path::ReadTree
-func (p *GSPath) ReadTree() ([]Path, error) {
-	ctx := context.TODO()
-
+func (p *GSPath) ReadTree(ctx context.Context) ([]Path, error) {
 	var ret []Path
 	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		// No delimiter for recursive search

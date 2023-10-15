@@ -90,9 +90,7 @@ func (p *S3Path) String() string {
 	return p.Path()
 }
 
-func (p *S3Path) Remove() error {
-	ctx := context.TODO()
-
+func (p *S3Path) Remove(ctx context.Context) error {
 	client, err := p.client(ctx)
 	if err != nil {
 		return err
@@ -114,15 +112,13 @@ func (p *S3Path) Remove() error {
 	return nil
 }
 
-func (p *S3Path) RemoveAll() error {
-	ctx := context.TODO()
-
+func (p *S3Path) RemoveAll(ctx context.Context) error {
 	client, err := p.client(ctx)
 	if err != nil {
 		return err
 	}
 
-	tree, err := p.ReadTree()
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
@@ -165,9 +161,7 @@ func (p *S3Path) RemoveAll() error {
 	return nil
 }
 
-func (p *S3Path) RemoveAllVersions() error {
-	ctx := context.TODO()
-
+func (p *S3Path) RemoveAllVersions(ctx context.Context) error {
 	client, err := p.client(ctx)
 	if err != nil {
 		return err
@@ -438,8 +432,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	return paths, nil
 }
 
-func (p *S3Path) ReadTree() ([]Path, error) {
-	ctx := context.TODO()
+func (p *S3Path) ReadTree(ctx context.Context) ([]Path, error) {
 	client, err := p.client(ctx)
 	if err != nil {
 		return nil, err

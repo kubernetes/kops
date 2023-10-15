@@ -202,9 +202,7 @@ func (p *AzureBlobPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl A
 }
 
 // Remove deletes the blob.
-func (p *AzureBlobPath) Remove() error {
-	ctx := context.TODO()
-
+func (p *AzureBlobPath) Remove(ctx context.Context) error {
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return err
@@ -219,14 +217,14 @@ func (p *AzureBlobPath) Remove() error {
 	return err
 }
 
-func (p *AzureBlobPath) RemoveAll() error {
-	tree, err := p.ReadTree()
+func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, blobPath := range tree {
-		err := blobPath.Remove()
+		err := blobPath.Remove(ctx)
 		if err != nil {
 			return fmt.Errorf("error removing file %s: %w", blobPath, err)
 		}
@@ -235,9 +233,7 @@ func (p *AzureBlobPath) RemoveAll() error {
 	return nil
 }
 
-func (p *AzureBlobPath) RemoveAllVersions() error {
-	ctx := context.TODO()
-
+func (p *AzureBlobPath) RemoveAllVersions(ctx context.Context) error {
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return err
@@ -317,9 +313,7 @@ func (p *AzureBlobPath) ReadDir() ([]Path, error) {
 }
 
 // ReadTree lists all blobs (recursively) in the subtree rooted at the current Path.
-func (p *AzureBlobPath) ReadTree() ([]Path, error) {
-	ctx := context.TODO()
-
+func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return nil, err

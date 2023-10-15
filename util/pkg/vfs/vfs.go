@@ -55,13 +55,13 @@ type Path interface {
 	CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error
 
 	// Remove deletes the file
-	Remove() error
+	Remove(ctx context.Context) error
 
 	// RemoveAll deletes all files recursively, deletes only files as returned per ReadTree
-	RemoveAll() error
+	RemoveAll(ctx context.Context) error
 
 	// RemoveAllVersions completely deletes the file (with all its versions and markers).
-	RemoveAllVersions() error
+	RemoveAllVersions(ctx context.Context) error
 
 	// Base returns the base name (last element)
 	Base() string
@@ -74,7 +74,7 @@ type Path interface {
 
 	// ReadTree lists all files (recursively) in the subtree rooted at the current Path
 	/// Note: returns only files, not directories
-	ReadTree() ([]Path, error)
+	ReadTree(ctx context.Context) ([]Path, error)
 }
 
 // TerraformPath is a Path that can render to Terraform.

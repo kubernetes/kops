@@ -96,9 +96,7 @@ func (p *SSHPath) String() string {
 	return p.Path()
 }
 
-func (p *SSHPath) Remove() error {
-	ctx := context.TODO()
-
+func (p *SSHPath) Remove(ctx context.Context) error {
 	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return err
@@ -116,14 +114,14 @@ func (p *SSHPath) Remove() error {
 	return nil
 }
 
-func (p *SSHPath) RemoveAll() error {
-	tree, err := p.ReadTree()
+func (p *SSHPath) RemoveAll(ctx context.Context) error {
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, filePath := range tree {
-		err := filePath.Remove()
+		err := filePath.Remove(ctx)
 		if err != nil {
 			return fmt.Errorf("error removing file %s: %w", filePath, err)
 		}
@@ -132,8 +130,8 @@ func (p *SSHPath) RemoveAll() error {
 	return nil
 }
 
-func (p *SSHPath) RemoveAllVersions() error {
-	return p.Remove()
+func (p *SSHPath) RemoveAllVersions(ctx context.Context) error {
+	return p.Remove(ctx)
 }
 
 func (p *SSHPath) Join(relativePath ...string) Path {
@@ -327,9 +325,7 @@ func (p *SSHPath) ReadDir() ([]Path, error) {
 	return children, nil
 }
 
-func (p *SSHPath) ReadTree() ([]Path, error) {
-	ctx := context.TODO()
-
+func (p *SSHPath) ReadTree(ctx context.Context) ([]Path, error) {
 	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return nil, err
