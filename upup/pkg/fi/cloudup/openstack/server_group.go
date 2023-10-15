@@ -84,80 +84,53 @@ func listServerGroups(c OpenstackCloud, opts servergroups.ListOptsBuilder) ([]se
 	}
 }
 
-// matchInstanceGroup filters a list of instancegroups for recognized cloud groups
-func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
-	var instancegroup *kops.InstanceGroup
-	for _, g := range instancegroups {
-		var groupName string
-
-		switch g.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
-			groupName = clusterName + "-" + g.ObjectMeta.Name
-		default:
-			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
-			continue
-		}
-
-		if name == groupName {
-			if instancegroup != nil {
-				return nil, fmt.Errorf("found multiple instance groups matching servergrp %q", groupName)
-			}
-			instancegroup = g
-		}
-	}
-
-	return instancegroup, nil
-}
-
-func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g servergroups.ServerGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	newLaunchConfigName := g.Name
+func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	cg := &cloudinstances.CloudInstanceGroup{
-		HumanName:     newLaunchConfigName,
+		HumanName:     ig.Name,
 		InstanceGroup: ig,
 		MinSize:       int(fi.ValueOf(ig.Spec.MinSize)),
-		TargetSize:    int(fi.ValueOf(ig.Spec.MinSize)), // TODO: Retrieve the target size from OpenStack?
+		TargetSize:    int(fi.ValueOf(ig.Spec.MinSize)),
 		MaxSize:       int(fi.ValueOf(ig.Spec.MaxSize)),
-		Raw:           &g,
+		Raw:           cluster,
 	}
-	for _, i := range g.Members {
-		instanceId := i
-		if instanceId == "" {
-			klog.Warningf("ignoring instance with no instance id: %s", i)
+
+	instances, err := c.ListInstances(servers.ListOpts{
+		Name: fmt.Sprintf("^%s", ig.Name),
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, instance := range instances {
+		value, ok := instance.Metadata[TagKopsInstanceGroup]
+		if !ok || value != ig.Name {
 			continue
 		}
-		server, err := servers.Get(c.ComputeClient(), instanceId).Extract()
-		if err != nil {
-			return nil, fmt.Errorf("Failed to get instance group member: %v", err)
-		}
-		igObservedGeneration := server.Metadata[INSTANCE_GROUP_GENERATION]
-		clusterObservedGeneration := server.Metadata[CLUSTER_GENERATION]
+		igObservedGeneration := instance.Metadata[INSTANCE_GROUP_GENERATION]
+		clusterObservedGeneration := instance.Metadata[CLUSTER_GENERATION]
 		observedName := fmt.Sprintf("%s-%s", clusterObservedGeneration, igObservedGeneration)
 		generationName := fmt.Sprintf("%d-%d", cluster.GetGeneration(), ig.Generation)
 
 		status := cloudinstances.CloudInstanceStatusUpToDate
-		if generationName != observedName || server.Status == errorStatus {
+		if generationName != observedName || instance.Status == errorStatus {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
-		cm, err := cg.NewCloudInstance(instanceId, status, nodeMap[instanceId])
+		cm, err := cg.NewCloudInstance(instance.ID, status, nodeMap[instance.ID])
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 
-		if server.Flavor["original_name"] != nil {
-			cm.MachineType = server.Flavor["original_name"].(string)
+		if instance.Flavor["original_name"] != nil {
+			cm.MachineType = instance.Flavor["original_name"].(string)
 		}
 
-		ip, err := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
+		ip, err := GetServerFixedIP(&instance, instance.Metadata[TagKopsNetwork])
 		if err != nil {
-			klog.Warningf("Unable to find fixed ip for %s: %v", server.Name, err)
+			klog.Warningf("Unable to find fixed ip for %s: %v", instance.Name, err)
 		}
 
 		cm.PrivateIP = ip
-
-		cm.Roles = []string{server.Metadata["KopsRole"]}
-
-		cm.State = cloudinstances.State(server.Status)
-
+		cm.Roles = []string{instance.Metadata["KopsRole"]}
+		cm.State = cloudinstances.State(instance.Status)
 	}
 	return cg, nil
 }
