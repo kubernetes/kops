@@ -1864,6 +1864,18 @@ spec:
     - key: node.cloudprovider.kubernetes.io/uninitialized
       effect: NoSchedule
 {{ end }}
+{{ if $spec.TTLSecondsUntilExpired }}
+  ttlSecondsUntilExpired: {{ $spec.TTLSecondsUntilExpired }}
+{{ end }}
+{{ if $spec.TTLSecondsAfterEmpty }}
+  ttlSecondsAfterEmpty: {{ $spec.TTLSecondsAfterEmpty }}
+{{ end }}
+{{ if and $spec.CpuLimit $spec.MemoryLimit }}
+  limits:
+    resources:
+      cpu: "{{ $spec.CpuLimit }}"
+      memory: "{{ $spec.MemoryLimit }}"
+{{ end }}
 {{ with $spec.NodeLabels }}
   labels:
   {{ range $key, $value := . }}
