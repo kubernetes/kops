@@ -226,6 +226,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		scwCloud := tf.cloud.(scaleway.ScwCloud)
 		return scwCloud.ClusterName(nil)
 	}
+	dest["SCW_PN_ID"] = func() string {
+		if cluster.Spec.Networking.NetworkID != "" {
+			return cluster.Spec.Networking.NetworkID
+		}
+		return cluster.Name
+	}
 
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
