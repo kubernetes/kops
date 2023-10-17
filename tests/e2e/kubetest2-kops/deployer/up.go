@@ -203,8 +203,8 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--master-size", "c2-16vcpu-32gb")
 		args = appendIfUnset(args, "--node-size", "c2-16vcpu-32gb")
 	case "scaleway":
-		args = appendIfUnset(args, "--master-size", "DEV1-M")
-		args = appendIfUnset(args, "--node-size", "DEV1-M")
+		args = appendIfUnset(args, "--master-size", "PRO2-S")
+		args = appendIfUnset(args, "--node-size", "PRO2-S")
 	}
 
 	args = appendIfUnset(args, "--master-volume-size", "48")

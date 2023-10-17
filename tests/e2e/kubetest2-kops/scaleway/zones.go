@@ -23,6 +23,7 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -45,10 +46,13 @@ func RandomZones(count int) ([]string, error) {
 	instanceAPIZones := instanceAPI.Zones()
 	lbAPI := &lb.ZonedAPI{}
 	lbAPIZones := lbAPI.Zones()
+	vpcgwAPI := vpcgw.API{}
+	vpcgwAPIZones := vpcgwAPI.Zones()
 
 	allAvailableZones := []scw.Zone(nil)
 	for _, zone := range append(instanceAPIZones, lbAPIZones...) {
-		if !zoneIsInZones(zone, allAvailableZones) && zoneIsInZones(zone, instanceAPIZones) && zoneIsInZones(zone, lbAPIZones) {
+		if !zoneIsInZones(zone, allAvailableZones) && zoneIsInZones(zone, instanceAPIZones) &&
+			zoneIsInZones(zone, lbAPIZones) && zoneIsInZones(zone, vpcgwAPIZones) {
 			allAvailableZones = append(allAvailableZones, zone)
 		}
 	}
