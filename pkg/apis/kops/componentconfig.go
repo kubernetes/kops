@@ -877,6 +877,8 @@ type CloudConfiguration struct {
 	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver
 	GCPPDCSIDriver *GCPPDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
+	// GCPAliasRange specifies the alias range from the pods CIDR to assign instances
+	GCPAliasRange *string `json:"gcpAliasRange,omitempty"`
 }
 
 // AWSEBSCSIDriver is the config for the AWS EBS CSI driver

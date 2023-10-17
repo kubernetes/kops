@@ -17,6 +17,8 @@ limitations under the License.
 package validation
 
 import (
+	"regexp"
+
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -44,15 +46,30 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
+	if gce.UsesIPAliases(c) {
+		gcpAliasRange := c.Spec.CloudConfig.GCPAliasRange
+		if !gceValidateAliasRange(gcpAliasRange) {
+			f := fieldSpec.Child("CloudConfig")
+			allErrs = append(allErrs, field.Invalid(f.Child("gcpAliasRange"), gcpAliasRange, "must match /2[4-8]"))
+		}
+	}
+
 	return allErrs
 }
 
 func gceValidateInstanceGroup(ig *kops.InstanceGroup, cloud gce.GCECloud) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	fieldSpec := field.NewPath("spec")
+
 	if ig.Spec.GCPProvisioningModel != nil {
-		fieldSpec := field.NewPath("spec")
 		allErrs = append(allErrs, IsValidValue(fieldSpec.Child("gcpProvisioningModel"), ig.Spec.GCPProvisioningModel, []string{"STANDARD", "SPOT"})...)
 	}
+
 	return allErrs
+}
+
+func gceValidateAliasRange(cidr *string) bool {
+	cidrRegex := regexp.MustCompile(`\/2[4-8]`)
+	return cidrRegex.Match([]byte(*cidr))
 }

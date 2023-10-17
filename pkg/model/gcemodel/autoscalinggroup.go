@@ -153,7 +153,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				t.CanIPForward = fi.Bool(false)
 
 				t.AliasIPRanges = map[string]string{
-					b.NameForIPAliasRange("pods"): "/24",
+					b.NameForIPAliasRange("pods"): fi.StringValue(b.NetworkIPAliasRange()),
 				}
 			} else {
 				t.CanIPForward = fi.Bool(true)

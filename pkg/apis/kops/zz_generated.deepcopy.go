@@ -823,6 +823,11 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = new(GCPPDCSIDriver)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.GCPAliasRange != nil {
+		in, out := &in.GCPAliasRange, &out.GCPAliasRange
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

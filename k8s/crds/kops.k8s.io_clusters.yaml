@@ -390,6 +390,10 @@ spec:
                     description: GCEServiceAccount specifies the service account with
                       which the GCE VM runs
                     type: string
+                  gcpAliasRange:
+                    description: GCPAliasRange is the alias range from the pods CIDR
+                      to assign instances
+                    type: string
                   gcpPDCSIDriver:
                     description: GCPPDCSIDriver is the config for the GCP PD CSI driver
                     properties:
