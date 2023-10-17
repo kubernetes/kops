@@ -115,7 +115,7 @@ create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
-create_args+=("--node-count=500")
+create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=t3a.large,c7a.large,m7a.large,m6a.large,r7a.large,r6a.large")
@@ -158,10 +158,9 @@ kops get instances
 
 # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
 export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
-export PROMETHEUS_SCRAPE_KUBE_PROXY=false
-export CL2_ENABLE_DNS_PROGRAMMING=false
+export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 printenv
-export PROMETHEUS_SCRAPE_KUBE_PROXY=false kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
   -- \
@@ -169,9 +168,6 @@ export PROMETHEUS_SCRAPE_KUBE_PROXY=false kubetest2 kops "${KUBETEST2_ARGS[@]}" 
   --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
   --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
   --kube-config="${KUBECONFIG}"
-
-
-printenv
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
   kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
