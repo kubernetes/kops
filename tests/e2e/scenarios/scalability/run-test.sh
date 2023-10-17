@@ -115,12 +115,14 @@ create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
+# this is required for prometheus to scrape kube-proxy metrics endpoint
+create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=t3a.large,c7a.large,m7a.large,m6a.large,r7a.large,r6a.large")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=c5.4xlarge")
+create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
@@ -158,8 +160,10 @@ kops get instances
 
 # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
 export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
+# this is used as a label to select kube-proxy pods on kops for kube-proxy service 
+# used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
-printenv
+
 kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
   --kubernetes-version="${K8S_VERSION}" \
