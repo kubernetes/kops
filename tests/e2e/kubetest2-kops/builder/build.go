@@ -21,20 +21,26 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
+	krel "k8s.io/release/pkg/build"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
 type BuildOptions struct {
-	KopsRoot      string `flag:"-"`
-	StageLocation string `flag:"-"`
+	KopsRoot        string `flag:"-"`
+	KubeRoot        string `flag:"-"`
+	StageLocation   string `flag:"-"`
+	TargetBuildArch string `flag:"~target-build-arch" desc:"CPU architecture to test against"`
+	BuildKubernetes bool   `flag:"~build-kubernetes" desc:"Set this flag to true to build kubernetes"`
 }
 
 // BuildResults describes the outcome of a successful build.
 type BuildResults struct {
-	KopsBaseURL string
+	KopsBaseURL       string
+	KubernetesBaseURL string
 }
 
 // Build will build the kops artifacts and publish them to the stage location
@@ -44,6 +50,39 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	if !strings.HasSuffix(gcsLocation, "/") {
 		gcsLocation += "/"
 	}
+
+	results := &BuildResults{}
+
+	if b.BuildKubernetes {
+		// Build k/k
+		re := regexp.MustCompile(`^gs://([\w-]+)/(devel|ci)(/.*)?`)
+
+		// StageLocation is often just the root of the bucket. the leading slash has been stripped
+		kubeStageLocation := b.StageLocation + "/ci/kubernetes"
+		mat := re.FindStringSubmatch(kubeStageLocation)
+		if mat == nil || len(mat) < 4 {
+			return nil, fmt.Errorf("invalid stage location: %v. Use gs://<bucket>/<ci|devel>/<optional-suffix>", kubeStageLocation)
+		}
+
+		if err := krel.NewInstance(&krel.Options{
+			Bucket:             mat[1],
+			GCSRoot:            "kubernetes",
+			AllowDup:           true,
+			CI:                 true,
+			NoUpdateLatest:     false,
+			RepoRoot:           b.KubeRoot,
+			KubeBuildPlatforms: b.TargetBuildArch,
+		}).Build(); err != nil {
+			return nil, fmt.Errorf("stage via krel push: %w", err)
+		}
+		kubeBaseURL := "https://storage.googleapis.com/" + mat[1] + "/kubernetes/latest.txt"
+
+		results = &BuildResults{
+			KubernetesBaseURL: kubeBaseURL,
+		}
+		return results, nil
+	}
+
 	cmd := exec.Command("make", "gcs-publish-ci")
 	cmd.SetEnv(
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
@@ -69,7 +108,7 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return nil, fmt.Errorf("failed to parse url %q from file %q: %w", string(kopsBaseURL), latestPath, err)
 	}
 	u.Path = strings.ReplaceAll(u.Path, "//", "/")
-	results := &BuildResults{
+	results = &BuildResults{
 		KopsBaseURL: u.String(),
 	}
 

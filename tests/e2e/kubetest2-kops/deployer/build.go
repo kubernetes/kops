@@ -26,6 +26,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
+	"k8s.io/kops/tests/e2e/pkg/version"
+	"sigs.k8s.io/kubetest2/pkg/build"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -47,8 +49,20 @@ func (d *deployer) Build() error {
 		d.KopsBaseURL = results.KopsBaseURL
 	}
 
+	if results.KubernetesBaseURL != "" {
+		klog.Infof("setting kubernetes base url to %q from build results", results.KubernetesBaseURL)
+		v, err := version.ParseKubernetesVersion(results.KubernetesBaseURL)
+		if err != nil {
+			return err
+		}
+		d.KubernetesVersion = v
+	}
+
+	if d.BuildOptions.BuildKubernetes {
+		build.StoreCommonBinaries(d.BuildOptions.KubeRoot, d.commonOptions.RunDir())
+	}
 	// Copy the kops binary into the test's RunDir to be included in the tester's PATH
-	if d.KopsBinaryPath != "" {
+	if d.KopsBinaryPath != "" && !d.BuildOptions.BuildKubernetes {
 		return util.Copy(d.KopsBinaryPath, path.Join(d.commonOptions.RunDir(), "kops"))
 	} else {
 		return nil
@@ -56,12 +70,41 @@ func (d *deployer) Build() error {
 }
 
 func (d *deployer) verifyBuildFlags() error {
-	if d.KopsRoot == "" {
+	if d.BuildOptions.TargetBuildArch != "" {
+		if !strings.HasPrefix(d.BuildOptions.TargetBuildArch, "linux/") {
+			return errors.New("--target-build-arch supports linux/amd64 and linux/arm64 only")
+		}
+	}
+
+	if d.KopsBinaryPath != "" {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
 			d.KopsRoot = path.Join(goPath, "src", "k8s.io", "kops")
 		} else {
 			return errors.New("required --kops-root when building from source")
 		}
+		fi, err := os.Stat(d.KopsRoot)
+		if err != nil {
+			return err
+		}
+		if !fi.Mode().IsDir() {
+			return errors.New("--kops-root must be a directory")
+		}
+	}
+	if d.BuildOptions.BuildKubernetes {
+		var KubeRoot string
+		if goPath := os.Getenv("GOPATH"); goPath != "" {
+			KubeRoot = path.Join(goPath, "src", "k8s.io", "kubernetes")
+		} else {
+			return errors.New("$GOPATH is not set, please set this variable")
+		}
+		fi, err := os.Stat(KubeRoot)
+		if err != nil {
+			return err
+		}
+		if !fi.Mode().IsDir() {
+			return errors.New("unable to find kubernetes at $GOPATH/src/k8s.io/kubernetes")
+		}
+		d.BuildOptions.KubeRoot = KubeRoot
 	}
 	if d.StageLocation != "" {
 		if !strings.HasPrefix(d.StageLocation, "gs://") {
@@ -69,7 +112,7 @@ func (d *deployer) verifyBuildFlags() error {
 		}
 	} else if d.boskos != nil {
 		d.StageLocation = d.stagingStore()
-		klog.Infof("creating staging bucket %s to hold kops build artifacts", d.StageLocation)
+		klog.Infof("creating staging bucket %s to hold kops/kubernetes build artifacts", d.StageLocation)
 		if err := gce.EnsureGCSBucket(d.StageLocation, d.GCPProject, true); err != nil {
 			return err
 		}
@@ -84,14 +127,7 @@ func (d *deployer) verifyBuildFlags() error {
 		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
 	}
 
-	fi, err := os.Stat(d.KopsRoot)
-	if err != nil {
-		return err
-	}
-	if !fi.Mode().IsDir() {
-		return errors.New("--kops-root must be a directory")
-	}
-	if d.KopsVersionMarker != "" {
+	if d.KopsVersionMarker != "" && !d.BuildOptions.BuildKubernetes {
 		return errors.New("cannot use --kops-version-marker with --build")
 	}
 

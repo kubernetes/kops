@@ -41,11 +41,13 @@ type deployer struct {
 	// doInit helps to make sure the initialization is performed only once
 	doInit sync.Once
 
-	KopsRoot      string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
+	KopsRoot string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
+
 	StageLocation string `flag:"stage-location" desc:"Storage location for kops artifacts. Only gs:// paths are supported."`
 
 	KopsVersionMarker    string `flag:"kops-version-marker" desc:"The URL to the kops version marker. Conflicts with --build and --kops-binary-path"`
 	KopsBaseURL          string `flag:"-"`
+	KubernetesBaseURL    string `flag:"-"`
 	PublishVersionMarker string `flag:"publish-version-marker" desc:"The GCS path to which the --kops-version-marker is uploaded if the tests pass"`
 
 	ClusterName            string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
@@ -109,8 +111,11 @@ func (d *deployer) Provider() string {
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	// create a deployer object and set fields that are not flag controlled
 	d := &deployer{
-		commonOptions:        opts,
-		BuildOptions:         &builder.BuildOptions{},
+		commonOptions: opts,
+		BuildOptions: &builder.BuildOptions{
+			TargetBuildArch: "linux/amd64",
+			BuildKubernetes: false,
+		},
 		boskosHeartbeatClose: make(chan struct{}),
 	}
 
@@ -127,7 +132,6 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	fs.MarkDeprecated("control-plane-size", "use --control-plane-count instead")
 
 	// register flags for klog
-	klog.InitFlags(nil)
 	fs.AddGoFlagSet(flag.CommandLine)
 
 	return d, fs
