@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.105.0] - 2023-10-16
+
+- #643 - @dweinshenker - Add support for scalable storage on database clusters
+- #641 - @dweinshenker - Fix Kafka Partition Count
+- #645 - @gregmankes - APPS-7325 - update app godo spec
+- #642 - @dependabot[bot] - Bump golang.org/x/net from 0.7.0 to 0.17.0
+
 ## [v1.104.1] - 2023-10-10
 
 * #640 - @andrewsomething - Drop required Go version to 1.20 and document policy.
