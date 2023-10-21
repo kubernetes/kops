@@ -614,9 +614,11 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
-	// ExperimentalClusterSigningDuration is the duration that determines
-	// the length of duration that the signed certificates will be given. (default 8760h0m0s)
+	// ExperimentalClusterSigningDuration is the max length of duration that the signed certificates will be given. (default 365*24h)
+	// Deprecated - use cluster-signing-duration instead
 	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
+	// ClusterSigningDuration is the max length of duration that the signed certificates will be given. (default 365*24h)
+	ClusterSigningDuration *metav1.Duration `json:"ClusterSigningDuration,omitempty" flag:"cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// TLSCertFile is the file containing the TLS server certificate.
