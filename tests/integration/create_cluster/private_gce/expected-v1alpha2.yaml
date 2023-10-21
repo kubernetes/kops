@@ -73,7 +73,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230715
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230918
   machineType: e2-micro
   maxSize: 1
   minSize: 1
@@ -96,7 +96,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid3
   - sg-exampleid4
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230715
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230918
   machineType: e2-standard-2
   maxSize: 1
   minSize: 1
@@ -119,7 +119,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid
   - sg-exampleid2
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230715
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20230918
   machineType: e2-medium
   maxSize: 1
   minSize: 1
