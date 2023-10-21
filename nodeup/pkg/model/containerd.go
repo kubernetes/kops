@@ -479,6 +479,16 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(2))
+
+	if containerd.NRI != nil && (containerd.NRI.Enabled == nil || fi.ValueOf(containerd.NRI.Enabled)) {
+		config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "disable"}, false)
+		if containerd.NRI.PluginRequestTimeout != nil {
+			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_request_timeout"}, containerd.NRI.PluginRequestTimeout)
+		}
+		if containerd.NRI.PluginRegistrationTimeout != nil {
+			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_registration_timeout"}, containerd.NRI.PluginRegistrationTimeout)
+		}
+	}
 	if containerd.SeLinuxEnabled {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "enable_selinux"}, true)
 	}

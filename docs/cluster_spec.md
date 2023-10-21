@@ -1300,6 +1300,25 @@ spec:
       - http://HostIP2:Port2
 ```
 
+### NRI configuration
+
+Using kOps, you can activate the [Node Resource Interface](https://github.com/containerd/nri) (NRI) feature in containerd. It's important to have a at least containerd version of [1.7.0](https://github.com/containerd/containerd/releases/tag/v1.7.0) or later. The available NRI parameters for containerd in kOps include: `enabled`, `pluginRegistrationTimeout` and `pluginRequestTimeout`. By default, NRI options are unset in kOps, which means we rely on containerd's default behavior (i.e., disabled).
+
+```yaml
+spec:
+  containerd:
+    version: 1.7.0
+    nri:
+      # Enable NRI support in containerd.
+      enabled: true
+      # pluginRegistrationTimeout is the timeout for a plugin to register after connection.
+      pluginRegistrationTimeout: "5s"
+      # pluginRequestTimeout is the timeout for a plugin to handle an event/request.
+      pluginRequestTimeout: "2s"
+```
+
+If you have NRI disabled (i.e., `nri.enabled = false`), please note that settings for `pluginRegistrationTimeout`, and `pluginRequestTimeout` won't take effect. These settings are only applicable when NRI is enabled. It is valid configuration to enable NRI without specifying custom values for `pluginRegistrationTimeout`, and `pluginRequestTimeout`, as these fields will inherit their default values from containerd. If you need to configure additional NRI parameters, you can do so by providing your complete containerd configuration using `configOverride`.
+
 ## Docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.

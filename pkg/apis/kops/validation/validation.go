@@ -1686,6 +1686,10 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 		}
 	}
 
+	if config.NRI != nil {
+		allErrs = append(allErrs, validateNriConfig(config, fldPath.Child("nri"))...)
+	}
+
 	if config.Packages != nil {
 		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
 			u := fi.ValueOf(config.Packages.UrlAmd64)
@@ -1732,6 +1736,26 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 		allErrs = append(allErrs, validateNvidiaConfig(spec, config.NvidiaGPU, fldPath.Child("nvidia"), inClusterConfig)...)
 	}
 
+	return allErrs
+}
+
+func validateNriConfig(containerd *kops.ContainerdConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if containerd.NRI.Enabled == nil || !fi.ValueOf(containerd.NRI.Enabled) {
+		return allErrs
+	}
+	v, err := semver.Parse(*containerd.Version)
+	if err != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), containerd.Version,
+			fmt.Sprintf("unable to parse version string: %s", err.Error())))
+	}
+	expectedRange, err := semver.ParseRange(">=1.7.0")
+	if err != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), containerd.Version,
+			fmt.Sprintf("unable to parse version range: %s", err.Error())))
+	}
+	if !expectedRange(v) {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "NRI is available starting from version 1.7.0 and above"))
+	}
 	return allErrs
 }
 
