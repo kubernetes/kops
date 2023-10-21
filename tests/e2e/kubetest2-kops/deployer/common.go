@@ -181,6 +181,7 @@ func (d *deployer) env() []string {
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
 		fmt.Sprintf("KOPS_STATE_STORE=%v", d.stateStore()),
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
+		fmt.Sprintf("KOPS_ARCH=%s", strings.Trim(d.BuildOptions.TargetBuildArch, "linux/")),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
 

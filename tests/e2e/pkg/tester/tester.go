@@ -29,6 +29,7 @@ import (
 	unversioned "k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
+	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
 )
 
@@ -38,14 +39,6 @@ type Tester struct {
 
 	kopsCluster        *api.Cluster
 	kopsInstanceGroups []*api.InstanceGroup
-}
-
-func (t *Tester) pretestSetup() error {
-	err := t.AcquireKubectl()
-	if err != nil {
-		return fmt.Errorf("failed to get kubectl package from published releases: %s", err)
-	}
-	return nil
 }
 
 // parseKubeconfig will get the current kubeconfig, and extract the specified field by jsonpath.
@@ -407,6 +400,7 @@ func (t *Tester) execute() error {
 		return fmt.Errorf("failed to initialize tester: %v", err)
 	}
 
+	t.SetRunDir(artifacts.RunDir())
 	help := fs.BoolP("help", "h", false, "")
 	if err := fs.Parse(os.Args); err != nil {
 		return fmt.Errorf("failed to parse flags: %v", err)
@@ -416,10 +410,6 @@ func (t *Tester) execute() error {
 		fs.SetOutput(os.Stdout)
 		fs.PrintDefaults()
 		return nil
-	}
-
-	if err := t.pretestSetup(); err != nil {
-		return err
 	}
 
 	if err := t.addHostFlag(); err != nil {

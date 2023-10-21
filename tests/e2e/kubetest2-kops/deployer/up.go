@@ -291,6 +291,9 @@ func (d *deployer) IsUp() (bool, error) {
 
 // verifyUpFlags ensures fields are set for creation of the cluster
 func (d *deployer) verifyUpFlags() error {
+	if d.BuildOptions.BuildKubernetes {
+		return nil
+	}
 	if d.KubernetesVersion == "" {
 		return errors.New("missing required --kubernetes-version flag")
 	}
