@@ -3344,6 +3344,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.ClusterSigningDuration != nil {
+		in, out := &in.ClusterSigningDuration, &out.ClusterSigningDuration
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.FeatureGates != nil {
 		in, out := &in.FeatureGates, &out.FeatureGates
 		*out = make(map[string]string, len(*in))
