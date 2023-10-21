@@ -342,6 +342,8 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 
 // findAllLaunchTemplates returns all the launch templates for us
 func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.CloudupContext) ([]*ec2.LaunchTemplate, error) {
+	ctx := c.Context()
+
 	cloud, ok := c.T.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.T.Cloud, "awsup.AWSCloud")
@@ -357,7 +359,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.CloudupContext) ([]*ec2.La
 	}
 
 	var list []*ec2.LaunchTemplate
-	err := cloud.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.EC2().DescribeLaunchTemplatesPagesWithContext(ctx, input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
 		list = append(list, p.LaunchTemplates...)
 		return true
 	})
@@ -370,6 +372,8 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.CloudupContext) ([]*ec2.La
 
 // findLatestLaunchTemplateVersion returns the latest template version
 func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudupContext) (*ec2.LaunchTemplateVersion, error) {
+	ctx := c.Context()
+
 	cloud, ok := c.T.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.T.Cloud)
@@ -380,7 +384,7 @@ func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudupContext) (
 		Versions:           []*string{aws.String("$Latest")},
 	}
 
-	output, err := cloud.EC2().DescribeLaunchTemplateVersions(input)
+	output, err := cloud.EC2().DescribeLaunchTemplateVersionsWithContext(ctx, input)
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "InvalidLaunchTemplateName.NotFoundException" {
 			klog.V(4).Infof("Got InvalidLaunchTemplateName.NotFoundException error describing latest launch template version: %q", aws.StringValue(t.Name))

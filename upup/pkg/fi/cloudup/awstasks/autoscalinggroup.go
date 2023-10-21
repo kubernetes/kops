@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -137,9 +138,11 @@ func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi
 
 // Find is used to discover the ASG in the cloud provider
 func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error) {
+	ctx := c.Context()
+
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
-	g, err := findAutoscalingGroup(cloud, fi.ValueOf(e.Name))
+	g, err := findAutoscalingGroup(ctx, cloud, fi.ValueOf(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -305,13 +308,13 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 }
 
 // findAutoscalingGroup is responsible for finding all the autoscaling groups for us
-func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
+func findAutoscalingGroup(ctx context.Context, cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
 	request := &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{&name},
 	}
 
 	var found []*autoscaling.Group
-	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.Autoscaling().DescribeAutoScalingGroupsPagesWithContext(ctx, request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
 			// Check for "Delete in progress" (the only use .Status). We won't be able to update or create while
 			// this is true, but filtering it out here makes the messages slightly clearer.
@@ -368,6 +371,8 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 
 // RenderAWS is responsible for building the autoscaling group via AWS API
 func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
+	ctx := context.TODO()
+
 	// @step: did we find an autoscaling group?
 	if a == nil {
 		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.ValueOf(e.Name))
@@ -445,7 +450,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		// @step: attempt to create the autoscaling group for us
-		if _, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request); err != nil {
+		if _, err := t.Cloud.Autoscaling().CreateAutoScalingGroupWithContext(ctx, request); err != nil {
 			code := awsup.AWSErrorCode(err)
 			message := awsup.AWSErrorMessage(err)
 			if code == "ValidationError" && strings.Contains(message, "Invalid IAM Instance Profile name") {
@@ -456,7 +461,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		// @step: attempt to enable the metrics for us
-		if _, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+		if _, err := t.Cloud.Autoscaling().EnableMetricsCollectionWithContext(ctx, &autoscaling.EnableMetricsCollectionInput{
 			AutoScalingGroupName: e.Name,
 			Granularity:          e.Granularity,
 			Metrics:              aws.StringSlice(e.Metrics),
@@ -474,7 +479,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			processQuery.AutoScalingGroupName = e.Name
 			processQuery.ScalingProcesses = toSuspend
 
-			if _, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery); err != nil {
+			if _, err := t.Cloud.Autoscaling().SuspendProcessesWithContext(ctx, processQuery); err != nil {
 				return fmt.Errorf("error suspending processes: %v", err)
 			}
 		}
@@ -632,7 +637,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if changes.Metrics != nil || changes.Granularity != nil {
 			// TODO: Support disabling metrics?
 			if len(e.Metrics) != 0 {
-				_, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+				_, err := t.Cloud.Autoscaling().EnableMetricsCollectionWithContext(ctx, &autoscaling.EnableMetricsCollectionInput{
 					AutoScalingGroupName: e.Name,
 					Granularity:          e.Granularity,
 					Metrics:              aws.StringSlice(e.Metrics),
@@ -654,7 +659,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				suspendProcessQuery.AutoScalingGroupName = e.Name
 				suspendProcessQuery.ScalingProcesses = toSuspend
 
-				_, err := t.Cloud.Autoscaling().SuspendProcesses(suspendProcessQuery)
+				_, err := t.Cloud.Autoscaling().SuspendProcessesWithContext(ctx, suspendProcessQuery)
 				if err != nil {
 					return fmt.Errorf("error suspending processes: %v", err)
 				}
@@ -664,7 +669,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				resumeProcessQuery.AutoScalingGroupName = e.Name
 				resumeProcessQuery.ScalingProcesses = toResume
 
-				_, err := t.Cloud.Autoscaling().ResumeProcesses(resumeProcessQuery)
+				_, err := t.Cloud.Autoscaling().ResumeProcessesWithContext(ctx, resumeProcessQuery)
 				if err != nil {
 					return fmt.Errorf("error resuming processes: %v", err)
 				}
@@ -689,41 +694,41 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		klog.V(2).Infof("Updating autoscaling group %s", fi.ValueOf(e.Name))
 
-		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
+		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroupWithContext(ctx, request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
 		}
 
 		if deleteTagsRequest != nil && len(deleteTagsRequest.Tags) > 0 {
-			if _, err := t.Cloud.Autoscaling().DeleteTags(deleteTagsRequest); err != nil {
+			if _, err := t.Cloud.Autoscaling().DeleteTagsWithContext(ctx, deleteTagsRequest); err != nil {
 				return fmt.Errorf("error deleting old AutoscalingGroup tags: %v", err)
 			}
 		}
 		if updateTagsRequest != nil {
-			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
+			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTagsWithContext(ctx, updateTagsRequest); err != nil {
 				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
 			}
 		}
 
 		if detachLBRequest != nil {
-			if _, err := t.Cloud.Autoscaling().DetachLoadBalancers(detachLBRequest); err != nil {
+			if _, err := t.Cloud.Autoscaling().DetachLoadBalancersWithContext(ctx, detachLBRequest); err != nil {
 				return fmt.Errorf("error detatching LoadBalancers: %v", err)
 			}
 		}
 		if attachLBRequest != nil {
-			if _, err := t.Cloud.Autoscaling().AttachLoadBalancers(attachLBRequest); err != nil {
+			if _, err := t.Cloud.Autoscaling().AttachLoadBalancersWithContext(ctx, attachLBRequest); err != nil {
 				return fmt.Errorf("error attaching LoadBalancers: %v", err)
 			}
 		}
 		if len(detachTGRequests) > 0 {
 			for _, detachTGRequest := range detachTGRequests {
-				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
+				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroupsWithContext(ctx, detachTGRequest); err != nil {
 					return fmt.Errorf("failed to detach target groups: %v", err)
 				}
 			}
 		}
 		if len(attachTGRequests) > 0 {
 			for _, attachTGRequest := range attachTGRequests {
-				if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
+				if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroupsWithContext(ctx, attachTGRequest); err != nil {
 					return fmt.Errorf("failed to attach target groups: %v", err)
 				}
 			}

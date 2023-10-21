@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -53,6 +54,7 @@ func (h *AutoscalingLifecycleHook) CompareWithID() *string {
 }
 
 func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifecycleHook, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &autoscaling.DescribeLifecycleHooksInput{
@@ -60,7 +62,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifec
 		LifecycleHookNames:   []*string{h.GetHookName()},
 	}
 
-	response, err := cloud.Autoscaling().DescribeLifecycleHooks(request)
+	response, err := cloud.Autoscaling().DescribeLifecycleHooksWithContext(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ASG Lifecycle Hooks: %v", err)
 	}
@@ -109,6 +111,8 @@ func (_ *AutoscalingLifecycleHook) CheckChanges(a, e, changes *AutoscalingLifecy
 }
 
 func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
+	ctx := context.TODO()
+
 	if changes != nil {
 		if fi.ValueOf(e.Enabled) {
 			request := &autoscaling.PutLifecycleHookInput{
@@ -118,7 +122,7 @@ func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 				LifecycleHookName:    e.GetHookName(),
 				LifecycleTransition:  e.LifecycleTransition,
 			}
-			_, err := t.Cloud.Autoscaling().PutLifecycleHook(request)
+			_, err := t.Cloud.Autoscaling().PutLifecycleHookWithContext(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -127,7 +131,7 @@ func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				LifecycleHookName:    e.GetHookName(),
 			}
-			_, err := t.Cloud.Autoscaling().DeleteLifecycleHook(request)
+			_, err := t.Cloud.Autoscaling().DeleteLifecycleHookWithContext(ctx, request)
 			if err != nil {
 				return err
 			}

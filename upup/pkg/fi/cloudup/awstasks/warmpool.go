@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -45,9 +46,10 @@ type WarmPool struct {
 
 // Find is used to discover the ASG in the cloud provider.
 func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	svc := cloud.Autoscaling()
-	warmPool, err := svc.DescribeWarmPool(&autoscaling.DescribeWarmPoolInput{
+	warmPool, err := svc.DescribeWarmPoolWithContext(ctx, &autoscaling.DescribeWarmPoolInput{
 		AutoScalingGroupName: e.AutoscalingGroup.Name,
 	})
 	if err != nil {
@@ -85,6 +87,7 @@ func (*WarmPool) CheckChanges(a, e, changes *WarmPool) error {
 }
 
 func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error {
+	ctx := context.TODO()
 	svc := t.Cloud.Autoscaling()
 	if changes != nil {
 		if fi.ValueOf(e.Enabled) {
@@ -99,7 +102,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				MinSize:                  fi.PtrTo(minSize),
 			}
 
-			_, err := svc.PutWarmPool(request)
+			_, err := svc.PutWarmPoolWithContext(ctx, request)
 			if err != nil {
 				if awsup.AWSErrorCode(err) == "ValidationError" {
 					return fi.NewTryAgainLaterError("waiting for ASG to become ready").WithError(err)
@@ -107,7 +110,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				return fmt.Errorf("error modifying warm pool: %w", err)
 			}
 		} else if a != nil {
-			_, err := svc.DeleteWarmPool(&autoscaling.DeleteWarmPoolInput{
+			_, err := svc.DeleteWarmPoolWithContext(ctx, &autoscaling.DeleteWarmPoolInput{
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				// We don't need to do any cleanup so, the faster the better
 				ForceDelete: fi.PtrTo(true),
