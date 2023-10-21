@@ -5110,6 +5110,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.HorizontalPodAutoscalerTolerance = in.HorizontalPodAutoscalerTolerance
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
+	out.ClusterSigningDuration = in.ClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSCipherSuites = in.TLSCipherSuites
@@ -5183,6 +5184,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.HorizontalPodAutoscalerTolerance = in.HorizontalPodAutoscalerTolerance
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
+	out.ClusterSigningDuration = in.ClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSCipherSuites = in.TLSCipherSuites

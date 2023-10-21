@@ -2061,6 +2061,10 @@ spec:
                 description: KubeControllerManagerConfig is the configuration for
                   the controller
                 properties:
+                  ClusterSigningDuration:
+                    description: ClusterSigningDuration is the max length of duration
+                      that the signed certificates will be given. (default 365*24h)
+                    type: string
                   allocateNodeCIDRs:
                     description: AllocateNodeCIDRs enables CIDRs for Pods to be allocated
                       and, if ConfigureCloudRoutes is true, to be set on the cloud
@@ -2181,9 +2185,9 @@ spec:
                       latency, but lower number of endpoints revision generated
                     type: string
                   experimentalClusterSigningDuration:
-                    description: ExperimentalClusterSigningDuration is the duration
-                      that determines the length of duration that the signed certificates
-                      will be given. (default 8760h0m0s)
+                    description: ExperimentalClusterSigningDuration is the max length
+                      of duration that the signed certificates will be given. (default
+                      365*24h) Deprecated - use cluster-signing-duration instead
                     type: string
                   externalCloudVolumePlugin:
                     description: ExternalCloudVolumePlugin is a fallback mechanism
