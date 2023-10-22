@@ -17,10 +17,12 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 )
@@ -41,6 +43,11 @@ func (m *MockEC2) DescribeLaunchTemplatesPages(request *ec2.DescribeLaunchTempla
 	callback(page, false)
 
 	return nil
+}
+
+// DescribeLaunchTemplatesPagesWithContext mocks the describing the launch templates
+func (m *MockEC2) DescribeLaunchTemplatesPagesWithContext(ctx context.Context, request *ec2.DescribeLaunchTemplatesInput, callback func(*ec2.DescribeLaunchTemplatesOutput, bool) bool, option ...request.Option) error {
+	return m.DescribeLaunchTemplatesPages(request, callback)
 }
 
 // DescribeLaunchTemplates mocks the describing the launch templates
@@ -114,6 +121,11 @@ func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemp
 		})
 	}
 	return o, nil
+}
+
+// DescribeLaunchTemplateVersionsWithContext mocks the retrieval of launch template versions - we don't use this at the moment so we can just return the template
+func (m *MockEC2) DescribeLaunchTemplateVersionsWithContext(ctx context.Context, request *ec2.DescribeLaunchTemplateVersionsInput, option ...request.Option) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	return m.DescribeLaunchTemplateVersions(request)
 }
 
 // CreateLaunchTemplate mocks the ec2 create launch template

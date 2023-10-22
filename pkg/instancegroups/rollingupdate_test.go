@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -947,6 +948,10 @@ func (m *disabledSurgeTest) DetachInstances(input *autoscaling.DetachInstancesIn
 		m.numDetached++
 	}
 	return &autoscaling.DetachInstancesOutput{}, nil
+}
+
+func (m *disabledSurgeTest) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+	return m.DetachInstances(input)
 }
 
 func TestRollingUpdateDisabledSurge(t *testing.T) {
