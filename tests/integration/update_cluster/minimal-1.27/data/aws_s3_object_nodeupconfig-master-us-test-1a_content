@@ -62,8 +62,8 @@ Assets:
   - 4f38ee903f35b300d3b005a9c6bfb9a46a57f92e89ae602ef9c129b91dc6c5a5@https://dl.k8s.io/release/v1.27.2/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.27.2/bin/linux/amd64/kubectl
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
   - f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
-  - 2755c70152ab40856510b4549c2dd530e15f5355eb7bf82868e813c9380e22a7@https://github.com/containerd/containerd/releases/download/v1.7.2/containerd-1.7.2-linux-amd64.tar.gz
-  - c3aadb419e5872af49504b6de894055251d2e685fddddb981a79703e7f895cbd@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
+  - 371de359d6102c51f6ee2361d08297948d134ce7379e01cb965ceeffa4365fba@https://github.com/containerd/containerd/releases/download/v1.7.7/containerd-1.7.7-linux-amd64.tar.gz
+  - b9bfdd4cb27cddbb6172a442df165a80bfc0538a676fbca1a6a6c8f4c6933b43@https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.amd64
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
@@ -71,8 +71,8 @@ Assets:
   - 1b0966692e398efe71fe59f913eaec44ffd4468cc1acd00bf91c29fa8ff8f578@https://dl.k8s.io/release/v1.27.2/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.27.2/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
   - 525e2b62ba92a1b6f3dc9612449a84aa61652e680f7ebf4eff579795fe464b57@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz
-  - d75a4ca53d9addd0b2c50172d168b12957e18b2d8b802db2658f2767f15889a6@https://github.com/containerd/containerd/releases/download/v1.7.2/containerd-1.7.2-linux-arm64.tar.gz
-  - 1b309c4d5aa4cc7b888b2f79c385ecee26ca3d55dae0852e7c4a692196d5faab@https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.arm64
+  - 0a104f487193665d2681fcb5ed83f2baa5f97849fe2661188da835c9d4eaf9e3@https://github.com/containerd/containerd/releases/download/v1.7.7/containerd-1.7.7-linux-arm64.tar.gz
+  - b43e9f561e85906f469eef5a7b7992fc586f750f44a0e011da4467e7008c33a0@https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.arm64
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
 CAs:
@@ -317,8 +317,8 @@ configStore:
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.7
-  version: 1.7.2
+    version: 1.1.9
+  version: 1.7.7
 etcdManifests:
 - memfs://tests/minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://tests/minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml
