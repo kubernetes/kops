@@ -113,7 +113,6 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
 		commonOptions: opts,
 		BuildOptions: &builder.BuildOptions{
-			TargetBuildArch: "linux/amd64",
 			BuildKubernetes: false,
 		},
 		boskosHeartbeatClose: make(chan struct{}),

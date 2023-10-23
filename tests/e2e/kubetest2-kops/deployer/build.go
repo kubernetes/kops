@@ -73,6 +73,8 @@ func (d *deployer) verifyBuildFlags() error {
 	if d.BuildOptions.TargetBuildArch != "" {
 		if !strings.HasPrefix(d.BuildOptions.TargetBuildArch, "linux/") {
 			return errors.New("--target-build-arch supports linux/amd64 and linux/arm64 only")
+		} else if d.BuildOptions.BuildKubernetes {
+			d.BuildOptions.TargetBuildArch = "linux/amd64"
 		}
 	}
 
