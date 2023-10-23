@@ -404,11 +404,11 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) (string, erro
 		buffer.WriteString(`echo "NO_PROXY=` + ps.ProxyExcludes + `" >> /etc/environment` + "\n")
 
 		// Load the proxy environment variables
-		buffer.WriteString("while read in; do export $in; done < /etc/environment\n")
+		buffer.WriteString("while read -r in; do export \"${in?}\"; done < /etc/environment\n")
 
 		// Set env variables for package manager depending on OS Distribution (N/A for Flatcar)
 		// Note: Nodeup will source the `/etc/environment` file within docker config in the correct location
-		buffer.WriteString("case `cat /proc/version` in\n")
+		buffer.WriteString("case $(cat /proc/version) in\n")
 		buffer.WriteString("*[Dd]ebian*)\n")
 		buffer.WriteString(`  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
 		buffer.WriteString("*[Uu]buntu*)\n")
