@@ -220,6 +220,8 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 				if strings.Contains(base.Bucket(), ".") {
 					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "Bucket name cannot contain dots"))
 				}
+			case *vfs.GSPath:
+				// No known restrictions currently. Added here to avoid falling into the default catch all below.
 			case *vfs.MemFSPath:
 				// memfs is ok for tests; not OK otherwise
 				if !base.IsClusterReadable() {

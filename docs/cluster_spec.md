@@ -1568,7 +1568,7 @@ spec:
 ```
 
 The `discoveryStore` option causes kOps to publish an OIDC-compatible discovery document
-to a path in an S3 bucket. This would ordinarily be a different bucket than the state store.
+to a path in an object storage bucket (such as S3 or GCS). This would ordinarily be a different bucket than the state store.
 kOps will automatically configure `spec.kubeAPIServer.serviceAccountIssuer` and default
 `spec.kubeAPIServer.serviceAccountJWKSURI` to the corresponding
 HTTPS URL.

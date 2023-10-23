@@ -417,6 +417,46 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
 }
 
+func (p *GSPath) GetHTTPsUrl() (string, error) {
+	url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", p.bucket, p.key)
+	return strings.TrimSuffix(url, "/"), nil
+}
+
+func (p *GSPath) IsBucketPublic(ctx context.Context) (bool, error) {
+	client, err := p.Client(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	bucket, err := client.Buckets.Get(p.bucket).Do()
+	if err != nil {
+		return false, err
+	}
+
+	// Check bucket has uniform bucket-level IAM
+	if !bucket.IamConfiguration.BucketPolicyOnly.Enabled {
+		return false, nil
+	}
+
+	// Check `allUsers` IAM has `roles/storage.objectViewer` permission
+	policy, err := client.Buckets.GetIamPolicy(p.bucket).Do()
+	if err != nil {
+		return false, err
+	}
+
+	for _, binding := range policy.Bindings {
+		if binding.Role == "roles/storage.objectViewer" {
+			for _, member := range binding.Members {
+				if member == "allUsers" {
+					return true, nil
+				}
+			}
+		}
+	}
+
+	return false, nil
+}
+
 type terraformGSObject struct {
 	Bucket   string                   `json:"bucket" cty:"bucket"`
 	Name     string                   `json:"name" cty:"name"`
