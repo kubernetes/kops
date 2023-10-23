@@ -64,6 +64,7 @@ function ensure-install-dir() {
 
 # Retry a download until we get it. args: name, sha, urls
 download-or-bust() {
+  echo "Downloading \"$1\" from \"$3\" with hash \"$2\""
   local -r file="$1"
   local -r hash="$2"
   local -r urls=( $(split-commas "$3") )
@@ -79,10 +80,10 @@ download-or-bust() {
   while true; do
     for url in "${urls[@]}"; do
       commands=(
-        "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f --compressed -Lo \"${file}\" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --compression=auto -O \"${file}\" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f -Lo \"${file}\" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget -O \"${file}\" --connect-timeout=20 --tries=6 --wait=10"
       )
       for cmd in "${commands[@]}"; do
         echo "Attempting download with: ${cmd} {url}"
@@ -110,7 +111,7 @@ validate-hash() {
   local -r expected="$2"
   local actual
 
-  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
+  actual=$(sha256sum "${file}" | awk '{ print $1 }') || true
   if [[ "${actual}" != "${expected}" ]]; then
     echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
     return 1
@@ -118,7 +119,7 @@ validate-hash() {
 }
 
 function split-commas() {
-  echo $1 | tr "," "\n"
+  echo "$1" | tr "," "\n"
 }
 
 function download-release() {

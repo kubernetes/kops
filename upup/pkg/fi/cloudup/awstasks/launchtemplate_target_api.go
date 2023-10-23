@@ -125,6 +125,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		if err != nil {
 			return fmt.Errorf("error rendering LaunchTemplate UserData: %v", err)
 		}
+		klog.Infof("== USERDATA ==:\n%s", string(d))
 		data.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
 	}
 	// @step: add market options
