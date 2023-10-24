@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
+	"k8s.io/kops/tests/e2e/pkg/kops"
 	"sigs.k8s.io/kubetest2/pkg/boskos"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -30,6 +31,13 @@ func (d *deployer) Down() error {
 	if err := d.init(); err != nil {
 		return err
 	}
+
+	// There is no point running the rest of this function if the cluster doesn't exist
+	cluster, _ := kops.GetCluster(d.KopsBinaryPath, d.ClusterName, nil)
+	if cluster == nil {
+		return nil
+	}
+
 	if err := d.DumpClusterLogs(); err != nil {
 		klog.Warningf("Dumping cluster logs at the start of Down() failed: %s", err)
 	}

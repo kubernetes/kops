@@ -133,6 +133,7 @@ func (d *deployer) dumpClusterInfo() error {
 			"kubectl", "--request-timeout", "5s", "get", resType,
 			"--all-namespaces",
 			"--show-managed-fields",
+			"--ignore-not-found=true",
 			"-o", "yaml",
 		}
 		klog.Info(strings.Join(args, " "))
@@ -182,6 +183,7 @@ func (d *deployer) dumpClusterInfo() error {
 				"kubectl", "get", resType,
 				"-n", namespace,
 				"--show-managed-fields",
+				"--ignore-not-found=true",
 				"-o", "yaml",
 			}
 			klog.Info(strings.Join(args, " "))
