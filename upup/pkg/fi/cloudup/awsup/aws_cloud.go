@@ -501,6 +501,10 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	if g.InstanceGroup != nil && g.InstanceGroup.Spec.Manager == kops.InstanceManagerKarpenter {
+		return nil
+	}
+
 	if c.spotinst != nil {
 		if featureflag.SpotinstHybrid.Enabled() {
 			if _, ok := g.Raw.(*autoscaling.Group); ok {
