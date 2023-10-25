@@ -138,6 +138,8 @@ func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationClus
 }
 
 func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient kubernetes.Interface, cloud awsup.AWSCloud, name string, role kopsapi.InstanceGroupRole, count int, needUpdate int) {
+	ctx := context.TODO()
+
 	fakeClient := k8sClient.(*fake.Clientset)
 
 	group := &cloudinstances.CloudInstanceGroup{
@@ -154,7 +156,7 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 	}
 	groups[name] = group
 
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
+	cloud.Autoscaling().CreateAutoScalingGroupWithContext(ctx, &autoscaling.CreateAutoScalingGroupInput{
 		AutoScalingGroupName: aws.String(name),
 		DesiredCapacity:      aws.Int64(int64(count)),
 		MinSize:              aws.Int64(1),
@@ -939,7 +941,7 @@ type disabledSurgeTest struct {
 	numDetached int
 }
 
-func (m *disabledSurgeTest) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+func (m *disabledSurgeTest) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -948,10 +950,6 @@ func (m *disabledSurgeTest) DetachInstances(input *autoscaling.DetachInstancesIn
 		m.numDetached++
 	}
 	return &autoscaling.DetachInstancesOutput{}, nil
-}
-
-func (m *disabledSurgeTest) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
-	return m.DetachInstances(input)
 }
 
 func TestRollingUpdateDisabledSurge(t *testing.T) {
@@ -1238,7 +1236,7 @@ type concurrentTestAutoscaling struct {
 	ConcurrentTest *concurrentTest
 }
 
-func (m *concurrentTestAutoscaling) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+func (m *concurrentTestAutoscaling) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
 	m.ConcurrentTest.mutex.Lock()
 	defer m.ConcurrentTest.mutex.Unlock()
 
@@ -1320,7 +1318,7 @@ type countDetach struct {
 	Count int
 }
 
-func (c *countDetach) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+func (c *countDetach) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
 	c.Count += len(input.InstanceIds)
 	return &autoscaling.DetachInstancesOutput{}, nil
 }
@@ -1350,7 +1348,7 @@ type failDetachAutoscaling struct {
 	autoscalingiface.AutoScalingAPI
 }
 
-func (m *failDetachAutoscaling) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+func (m *failDetachAutoscaling) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
 	return nil, fmt.Errorf("testing error")
 }
 
@@ -1458,7 +1456,7 @@ type alreadyDetachedTestAutoscaling struct {
 	AlreadyDetachedTest *alreadyDetachedTest
 }
 
-func (m *alreadyDetachedTestAutoscaling) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+func (m *alreadyDetachedTestAutoscaling) DetachInstancesWithContext(ctx aws.Context, input *autoscaling.DetachInstancesInput, options ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
 	m.AlreadyDetachedTest.mutex.Lock()
 	defer m.AlreadyDetachedTest.mutex.Unlock()
 

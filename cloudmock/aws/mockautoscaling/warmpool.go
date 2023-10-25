@@ -16,9 +16,13 @@ limitations under the License.
 
 package mockautoscaling
 
-import "github.com/aws/aws-sdk-go/service/autoscaling"
+import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+)
 
-func (m *MockAutoscaling) DescribeWarmPool(input *autoscaling.DescribeWarmPoolInput) (*autoscaling.DescribeWarmPoolOutput, error) {
+func (m *MockAutoscaling) DescribeWarmPoolWithContext(ctx aws.Context, input *autoscaling.DescribeWarmPoolInput, options ...request.Option) (*autoscaling.DescribeWarmPoolOutput, error) {
 	instances, found := m.WarmPoolInstances[*input.AutoScalingGroupName]
 	if !found {
 		return &autoscaling.DescribeWarmPoolOutput{}, nil

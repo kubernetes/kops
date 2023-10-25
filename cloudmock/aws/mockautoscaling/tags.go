@@ -72,7 +72,7 @@ func (m *MockAutoscaling) DescribeTagsRequest(*autoscaling.DescribeTagsInput) (*
 	return nil, nil
 }
 
-func (m *MockAutoscaling) DescribeTagsPages(request *autoscaling.DescribeTagsInput, callback func(*autoscaling.DescribeTagsOutput, bool) bool) error {
+func (m *MockAutoscaling) DescribeTagsPagesWithContext(ctx aws.Context, request *autoscaling.DescribeTagsInput, callback func(*autoscaling.DescribeTagsOutput, bool) bool, options ...request.Option) error {
 	// For the mock, we just send everything in one page
 	page, err := m.DescribeTags(request)
 	if err != nil {
@@ -81,10 +81,5 @@ func (m *MockAutoscaling) DescribeTagsPages(request *autoscaling.DescribeTagsInp
 
 	callback(page, false)
 
-	return nil
-}
-
-func (m *MockAutoscaling) DescribeTagsPagesWithContext(aws.Context, *autoscaling.DescribeTagsInput, func(*autoscaling.DescribeTagsOutput, bool) bool, ...request.Option) error {
-	klog.Fatalf("Not implemented")
 	return nil
 }

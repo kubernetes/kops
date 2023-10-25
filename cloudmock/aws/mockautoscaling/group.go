@@ -17,6 +17,7 @@ limitations under the License.
 package mockautoscaling
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -44,7 +45,7 @@ func (m *MockAutoscaling) AttachInstances(input *autoscaling.AttachInstancesInpu
 	return &autoscaling.AttachInstancesOutput{}, nil
 }
 
-func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoScalingGroupInput) (*autoscaling.CreateAutoScalingGroupOutput, error) {
+func (m *MockAutoscaling) CreateAutoScalingGroupWithContext(ctx aws.Context, input *autoscaling.CreateAutoScalingGroupInput, options ...request.Option) (*autoscaling.CreateAutoScalingGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -102,7 +103,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return &autoscaling.CreateAutoScalingGroupOutput{}, nil
 }
 
-func (m *MockAutoscaling) UpdateAutoScalingGroup(request *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
+func (m *MockAutoscaling) UpdateAutoScalingGroupWithContext(ctx context.Context, request *autoscaling.UpdateAutoScalingGroupInput, opts ...request.Option) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	klog.V(2).Infof("Mock UpdateAutoScalingGroup %v", request)
@@ -163,7 +164,7 @@ func (m *MockAutoscaling) UpdateAutoScalingGroup(request *autoscaling.UpdateAuto
 	return &autoscaling.UpdateAutoScalingGroupOutput{}, nil
 }
 
-func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMetricsCollectionInput) (*autoscaling.EnableMetricsCollectionOutput, error) {
+func (m *MockAutoscaling) EnableMetricsCollectionWithContext(ctx aws.Context, request *autoscaling.EnableMetricsCollectionInput, opts ...request.Option) (*autoscaling.EnableMetricsCollectionOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -195,7 +196,7 @@ func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMet
 	return response, nil
 }
 
-func (m *MockAutoscaling) SuspendProcesses(input *autoscaling.ScalingProcessQuery) (*autoscaling.SuspendProcessesOutput, error) {
+func (m *MockAutoscaling) SuspendProcessesWithContext(ctx aws.Context, input *autoscaling.ScalingProcessQuery, opts ...request.Option) (*autoscaling.SuspendProcessesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -290,7 +291,7 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsRequest(*autoscaling.Describe
 	return nil, nil
 }
 
-func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.DescribeAutoScalingGroupsInput, callback func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error {
+func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(ctx aws.Context, request *autoscaling.DescribeAutoScalingGroupsInput, callback func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, options ...request.Option) error {
 	if request.MaxRecords != nil {
 		klog.Fatalf("MaxRecords not implemented")
 	}
@@ -309,12 +310,11 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.De
 	return nil
 }
 
-func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, ...request.Option) error {
-	klog.Fatalf("Not implemented")
-	return nil
+func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.DescribeAutoScalingGroupsInput, callback func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error {
+	return m.DescribeAutoScalingGroupsPagesWithContext(context.TODO(), request, callback)
 }
 
-func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAutoScalingGroupInput) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
+func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(ctx aws.Context, request *autoscaling.DeleteAutoScalingGroupInput, options ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -330,17 +330,12 @@ func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAuto
 	return &autoscaling.DeleteAutoScalingGroupOutput{}, nil
 }
 
-func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autoscaling.DeleteAutoScalingGroupInput, ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
-	klog.Fatalf("Not implemented")
-	return nil, nil
-}
-
 func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 
-func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookInput) (*autoscaling.PutLifecycleHookOutput, error) {
+func (m *MockAutoscaling) PutLifecycleHookWithContext(ctx aws.Context, input *autoscaling.PutLifecycleHookInput, options ...request.Option) (*autoscaling.PutLifecycleHookOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	hook := &autoscaling.LifecycleHook{
@@ -364,7 +359,7 @@ func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookIn
 	return &autoscaling.PutLifecycleHookOutput{}, nil
 }
 
-func (m *MockAutoscaling) DescribeLifecycleHooks(input *autoscaling.DescribeLifecycleHooksInput) (*autoscaling.DescribeLifecycleHooksOutput, error) {
+func (m *MockAutoscaling) DescribeLifecycleHooksWithContext(ctx aws.Context, input *autoscaling.DescribeLifecycleHooksInput, options ...request.Option) (*autoscaling.DescribeLifecycleHooksOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
