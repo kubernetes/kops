@@ -1,11 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.5.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.13.0
   name: instancegroups.kops.k8s.io
 spec:
   group: kops.k8s.io
@@ -286,8 +284,8 @@ spec:
                 type: array
               gcpProvisioningModel:
                 description: 'GCPProvisioningModel: Specifies the provisioning model
-                  of the GCP instance. Valid values:   ''STANDARD'': (default) standard
-                  provisioning with user controlled run time, no discounts   ''SPOT'':
+                  of the GCP instance. Valid values: ''STANDARD'': (default) standard
+                  provisioning with user controlled run time, no discounts ''SPOT'':
                   heavily discounted, no guaranteed run time.'
                 type: string
               guestAccelerators:
@@ -573,9 +571,9 @@ spec:
                     description: 'How should the kubelet configure the container bridge
                       for hairpin packets. Setting this flag allows endpoints in a
                       Service to loadbalance back to themselves if they should try
-                      to access their own Service. Values:   "promiscuous-bridge":
-                      make the container bridge promiscuous.   "hairpin-veth":       set
-                      the hairpin flag on container veth interfaces.   "none":               do
+                      to access their own Service. Values: "promiscuous-bridge": make
+                      the container bridge promiscuous. "hairpin-veth":       set
+                      the hairpin flag on container veth interfaces. "none":               do
                       nothing. Setting --configure-cbr0 to false implies that to achieve
                       hairpin NAT one must set --hairpin-mode=veth-flag, because bridge
                       assumes the existence of a container bridge named cbr0.'
@@ -1052,9 +1050,9 @@ spec:
               updatePolicy:
                 description: 'UpdatePolicy determines the policy for applying upgrades
                   automatically. If specified, this value overrides a value specified
-                  in the Cluster''s "spec.updatePolicy" field. Valid values:   ''automatic''
+                  in the Cluster''s "spec.updatePolicy" field. Valid values: ''automatic''
                   (default): apply updates automatically (apply OS security upgrades,
-                  avoiding rebooting when possible)   ''external'': do not apply updates
+                  avoiding rebooting when possible) ''external'': do not apply updates
                   automatically; they are applied manually or by an external system'
                 type: string
               volumeMounts:
@@ -1162,9 +1160,3 @@ spec:
     served: true
     storage: true
     subresources: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
