@@ -23,19 +23,24 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-// SanitizeString iterated a strings and removes any characters not in the allow list
+// SanitizeString iterated a strings, removes any characters not in the allow list and returns at most 200 characters
 func SanitizeString(s string) string {
-	var out bytes.Buffer
+	var buf bytes.Buffer
 	allowed := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
 	for _, c := range s {
 		if strings.ContainsRune(allowed, c) {
-			out.WriteRune(c)
+			buf.WriteRune(c)
 		} else {
-			out.WriteRune('_')
+			buf.WriteRune('_')
 		}
 	}
 
-	return out.String()
+	out := buf.String()
+	if len(out) > 200 {
+		out = out[len(out)-200:]
+	}
+
+	return out
 }
 
 // ExpandPath replaces common path aliases: ~ -> $HOME
