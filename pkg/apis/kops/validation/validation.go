@@ -130,6 +130,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"), strict)...)
 	}
 
+	if spec.KubeControllerManager != nil {
+		allErrs = append(allErrs, validateKubeControllerManager(spec.KubeControllerManager, c, fieldPath.Child("kubeControllerManager"), strict)...)
+	}
+
 	if spec.KubeProxy != nil {
 		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
@@ -818,6 +822,20 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 	if v.ServiceClusterIPRange != c.Spec.Networking.ServiceClusterIPRange {
 		if strict || v.ServiceClusterIPRange != "" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), "kubeAPIServer serviceClusterIPRange did not match cluster serviceClusterIPRange"))
+		}
+	}
+
+	return allErrs
+}
+
+func validateKubeControllerManager(v *kops.KubeControllerManagerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// We aren't aiming to do comprehensive validation, but we can add some best-effort validation where it helps guide users
+	// Users reported encountered this in #15909
+	if v.ExperimentalClusterSigningDuration != nil {
+		if c.IsKubernetesGTE("1.25") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("experimentalClusterSigningDuration"), "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25"))
 		}
 	}
 

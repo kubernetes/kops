@@ -19,7 +19,9 @@ package validation
 import (
 	"net"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -318,6 +320,64 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			}
 		}
 		errs := validateKubeAPIServer(&g.Input, g.Cluster, field.NewPath("KubeAPIServer"), true)
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range errs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range errs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
+	}
+}
+
+func TestValidateKubeControllermanager(t *testing.T) {
+	grid := []struct {
+		Input          kops.KubeControllerManagerConfig
+		Cluster        *kops.Cluster
+		ExpectedErrors []string
+		ExpectedDetail string
+	}{
+		{
+			Input: kops.KubeControllerManagerConfig{
+				ExperimentalClusterSigningDuration: &metav1.Duration{Duration: time.Hour},
+			},
+			ExpectedErrors: []string{
+				"Forbidden::kubeControllerManager.experimentalClusterSigningDuration",
+			},
+			ExpectedDetail: "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25",
+		},
+		{
+			Input: kops.KubeControllerManagerConfig{
+				ExperimentalClusterSigningDuration: &metav1.Duration{Duration: time.Hour},
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.24.0",
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+	}
+	for _, g := range grid {
+		if g.Cluster == nil {
+			g.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.28.0",
+				},
+			}
+		}
+		errs := validateKubeControllerManager(&g.Input, g.Cluster, field.NewPath("kubeControllerManager"), true)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
