@@ -164,7 +164,7 @@ export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
 # used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
-export CL2_PROMETHEUS_NODE_SELECTOR="node-role.kubernetes.io/control-plane: "
+export CL2_PROMETHEUS_TOLERATE_MASTER="true"
 
 kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --test=clusterloader2 \
