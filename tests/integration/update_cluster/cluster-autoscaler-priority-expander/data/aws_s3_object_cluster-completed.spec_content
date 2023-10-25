@@ -37,6 +37,7 @@ spec:
     scaleDownUnneededTime: 10m0s
     scaleDownUnreadyTime: 20m0s
     scaleDownUtilizationThreshold: "0.5"
+    skipNodesWithCustomControllerPods: true
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local

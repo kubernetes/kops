@@ -2308,6 +2308,7 @@ func autoConvert_v1alpha2_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
 	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
+	out.SkipNodesWithCustomControllerPods = in.SkipNodesWithCustomControllerPods
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay
@@ -2337,6 +2338,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha2_ClusterAutoscalerConfi
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
 	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
+	out.SkipNodesWithCustomControllerPods = in.SkipNodesWithCustomControllerPods
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay

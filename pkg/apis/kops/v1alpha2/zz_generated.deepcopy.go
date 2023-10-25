@@ -938,6 +938,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SkipNodesWithCustomControllerPods != nil {
+		in, out := &in.SkipNodesWithCustomControllerPods, &out.SkipNodesWithCustomControllerPods
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SkipNodesWithSystemPods != nil {
 		in, out := &in.SkipNodesWithSystemPods, &out.SkipNodesWithSystemPods
 		*out = new(bool)

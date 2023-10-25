@@ -780,6 +780,11 @@ spec:
                     description: 'ScaleDownUtilizationThreshold determines the utilization
                       threshold for node scale-down. Default: 0.5'
                     type: string
+                  skipNodesWithCustomControllerPods:
+                    description: 'SkipNodesWithCustomControllerPods makes the cluster
+                      autoscaler skip scale-down of nodes with pods owned by custom
+                      controllers. Default: true'
+                    type: boolean
                   skipNodesWithLocalStorage:
                     description: 'SkipNodesWithLocalStorage makes the cluster autoscaler
                       skip scale-down of nodes with local storage. Default: true'
