@@ -40,7 +40,7 @@ GOBIN := $(shell go env GOPATH)/bin
 endif
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
-CODEGEN_VERSION=v0.24.0
+CODEGEN_VERSION=v0.28.3
 
 KO=go run github.com/google/ko@v0.14.1
 
