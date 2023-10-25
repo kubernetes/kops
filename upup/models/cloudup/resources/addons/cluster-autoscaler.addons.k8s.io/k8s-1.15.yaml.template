@@ -344,6 +344,9 @@ spec:
             {{ end }}
             - --ignore-daemonsets-utilization={{ .IgnoreDaemonSetsUtilization }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
+            {{ if IsKubernetesGTE "1.27.0" }}
+            - --skip-nodes-with-custom-controller-pods={{ .SkipNodesWithCustomControllerPods }}
+            {{ end }}
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
             - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
             - --scale-down-delay-after-add={{ .ScaleDownDelayAfterAdd }}

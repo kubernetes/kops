@@ -69,6 +69,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.ScaleDownUtilizationThreshold == nil {
 		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")
 	}
+	if cas.SkipNodesWithCustomControllerPods == nil {
+		cas.SkipNodesWithCustomControllerPods = fi.PtrTo(true)
+	}
 	if cas.SkipNodesWithLocalStorage == nil {
 		cas.SkipNodesWithLocalStorage = fi.PtrTo(true)
 	}

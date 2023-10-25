@@ -1091,6 +1091,9 @@ type ClusterAutoscalerConfig struct {
 	// ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down.
 	// Default: 0.5
 	ScaleDownUtilizationThreshold *string `json:"scaleDownUtilizationThreshold,omitempty"`
+	// SkipNodesWithCustomControllerPods makes the cluster autoscaler skip scale-down of nodes with pods owned by custom controllers.
+	// Default: true
+	SkipNodesWithCustomControllerPods *bool `json:"skipNodesWithCustomControllerPods,omitempty"`
 	// SkipNodesWithSystemPods makes the cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
 	// Default: true
 	SkipNodesWithSystemPods *bool `json:"skipNodesWithSystemPods,omitempty"`
