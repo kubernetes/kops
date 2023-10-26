@@ -29,6 +29,7 @@ import (
 	unversioned "k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
 )
@@ -176,6 +177,35 @@ func (t *Tester) addZoneFlag() error {
 	t.TestArgs += " --gce-zone=" + zone
 
 	// TODO: Pass the new gce-zones flag for 1.21 with all zones?
+
+	return nil
+}
+
+func (t *Tester) addNodeIG() error {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+
+	// Skip this function for non gce clusters
+	if cluster.Spec.LegacyCloudProvider != "gce" {
+		return nil
+	}
+
+	igs, err := kops.GetInstanceGroups("kops", cluster.Name, nil)
+	if err != nil {
+		return err
+	}
+
+	var ig *api.InstanceGroup
+	for _, v := range igs {
+		if unversioned.InstanceGroupRole(v.Spec.Role) == unversioned.InstanceGroupRoleNode {
+			ig = v
+		}
+	}
+	igName := gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, ig.Spec.Zones[0])
+	klog.Infof("Setting --node-instance-group=%s", igName)
+	t.TestArgs += " --node-instance-group=" + igName
 
 	return nil
 }
@@ -421,6 +451,10 @@ func (t *Tester) execute() error {
 	}
 
 	if err := t.addZoneFlag(); err != nil {
+		return err
+	}
+
+	if err := t.addNodeIG(); err != nil {
 		return err
 	}
 

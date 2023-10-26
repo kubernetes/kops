@@ -298,7 +298,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 		}
 
 		for zone, targetSize := range instanceCountByZone {
-			name := gce.NameForInstanceGroupManager(b.Cluster, ig, zone)
+			name := gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),

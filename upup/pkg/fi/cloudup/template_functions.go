@@ -943,7 +943,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 			if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
 				cloud := tf.cloud.(gce.GCECloud)
 				format := "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroups/%s"
-				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gce.NameForInstanceGroupManager(cluster, ig, ig.Spec.Zones[0]))
+				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, ig.Spec.Zones[0]))
 			} else {
 				group.Other = ig.Name + "." + cluster.Name
 			}
