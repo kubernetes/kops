@@ -173,7 +173,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 
 	consecutive := 0
 	for {
-		if options.wait > 0 && time.Now().After(timeout) {
+		if options.wait > 0 && time.Now().After(timeout) && consecutive == 0 {
 			return nil, fmt.Errorf("wait time exceeded during validation")
 		}
 
