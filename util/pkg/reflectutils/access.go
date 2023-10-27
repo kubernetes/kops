@@ -144,6 +144,10 @@ func setType(v reflect.Value, newValue string) error {
 			name, value, _ := strings.Cut(newValue, "=")
 			v.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(value))
 
+		case "map[string]intstr.IntOrString":
+			name, value, _ := strings.Cut(newValue, "=")
+			v.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(intstr.Parse(value)))
+
 		default:
 			return fmt.Errorf("unhandled type %q", t)
 		}

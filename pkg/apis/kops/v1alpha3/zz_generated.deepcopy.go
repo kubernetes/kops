@@ -1333,6 +1333,13 @@ func (in *ContainerdConfig) DeepCopyInto(out *ContainerdConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ConfigAdditions != nil {
+		in, out := &in.ConfigAdditions, &out.ConfigAdditions
+		*out = make(map[string]intstr.IntOrString, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.ConfigOverride != nil {
 		in, out := &in.ConfigOverride, &out.ConfigOverride
 		*out = new(string)

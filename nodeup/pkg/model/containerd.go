@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -25,8 +26,8 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/pelletier/go-toml"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -513,6 +514,28 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 			return "", err
 		}
 	}
+
+	for k, v := range containerd.ConfigAdditions {
+		r := csv.NewReader(strings.NewReader(k))
+		r.Comma = '.'
+		path, err := r.Read()
+		if err != nil {
+			return "", fmt.Errorf("parsing additional containerd config entry: %w", err)
+		}
+
+		if v.Type == intstr.Int {
+			config.SetPath(path, int64(v.IntValue()))
+		} else {
+			if v.String() == "true" {
+				config.SetPath(path, true)
+			} else if v.String() == "false" {
+				config.SetPath(path, false)
+			} else {
+				config.SetPath(path, v.String())
+			}
+		}
+	}
+
 	return config.String(), nil
 }
 

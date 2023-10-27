@@ -816,6 +816,15 @@ spec:
                   address:
                     description: Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
                     type: string
+                  configAdditions:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      x-kubernetes-int-or-string: true
+                    description: ConfigAdditions adds additional config entries to
+                      the generated config file.
+                    type: object
                   configOverride:
                     description: ConfigOverride is the complete containerd config
                       file provided by the user.

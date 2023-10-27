@@ -44,6 +44,10 @@ func TestContainerdBuilder_SkipInstall(t *testing.T) {
 	runContainerdBuilderTest(t, "skipinstall", distributions.DistributionUbuntu2004)
 }
 
+func TestContainerdBuilder_Complex(t *testing.T) {
+	runContainerdBuilderTest(t, "complex", distributions.DistributionUbuntu2004)
+}
+
 func TestContainerdBuilder_BuildFlags(t *testing.T) {
 	grid := []struct {
 		config   kops.ContainerdConfig

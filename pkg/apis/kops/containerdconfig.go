@@ -18,6 +18,7 @@ package kops
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // NvidiaDefaultDriverPackage is the nvidia driver default version
@@ -27,6 +28,8 @@ const NvidiaDefaultDriverPackage = "nvidia-headless-515-server"
 type ContainerdConfig struct {
 	// Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
 	Address *string `json:"address,omitempty" flag:"address"`
+	// ConfigAdditions adds additional config entries to the generated config file.
+	ConfigAdditions map[string]intstr.IntOrString `json:"configAdditions,omitempty"`
 	// ConfigOverride is the complete containerd config file provided by the user.
 	ConfigOverride *string `json:"configOverride,omitempty"`
 	// LogLevel controls the logging details [trace, debug, info, warn, error, fatal, panic] (default "info").
