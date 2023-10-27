@@ -169,7 +169,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			return fmt.Errorf("instance group %q must specify exactly one zone", ig.GetName())
 		}
 		zone := ig.Spec.Zones[0]
-		igms = append(igms, &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster, ig, zone)), Zone: s(zone)})
+		igms = append(igms, &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)), Zone: s(zone)})
 	}
 	bs := &gcetasks.BackendService{
 		Name:                  s(b.NameForBackendService("api")),

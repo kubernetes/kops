@@ -201,13 +201,13 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 }
 
 // NameForInstanceGroupManager builds a name for an InstanceGroupManager in the specified zone
-func NameForInstanceGroupManager(c *kops.Cluster, ig *kops.InstanceGroup, zone string) string {
+func NameForInstanceGroupManager(clusterName, instanceGroupName, zone string) string {
 	shortZone := zone
 	lastDash := strings.LastIndex(shortZone, "-")
 	if lastDash != -1 {
 		shortZone = shortZone[lastDash+1:]
 	}
-	name := SafeObjectName(shortZone+"."+ig.ObjectMeta.Name, c.ObjectMeta.Name)
+	name := SafeObjectName(shortZone+"."+instanceGroupName, clusterName)
 	name = LimitedLengthName(name, 63)
 	return name
 }
@@ -243,7 +243,7 @@ func matchInstanceGroup(mig *compute.InstanceGroupManager, c *kops.Cluster, inst
 	migName := LastComponent(mig.Name)
 	var matches []*kops.InstanceGroup
 	for _, ig := range instancegroups {
-		name := NameForInstanceGroupManager(c, ig, LastComponent(mig.Zone))
+		name := NameForInstanceGroupManager(c.ObjectMeta.Name, ig.ObjectMeta.Name, LastComponent(mig.Zone))
 		if name == migName {
 			matches = append(matches, ig)
 		}
