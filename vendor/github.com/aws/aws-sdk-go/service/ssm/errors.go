@@ -586,6 +586,12 @@ const (
 	// The OpsItem already exists.
 	ErrCodeOpsItemAlreadyExistsException = "OpsItemAlreadyExistsException"
 
+	// ErrCodeOpsItemConflictException for service response error code
+	// "OpsItemConflictException".
+	//
+	// The specified OpsItem is in the process of being deleted.
+	ErrCodeOpsItemConflictException = "OpsItemConflictException"
+
 	// ErrCodeOpsItemInvalidParameterException for service response error code
 	// "OpsItemInvalidParameterException".
 	//
@@ -995,6 +1001,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"MaxDocumentSizeExceeded":                        newErrorMaxDocumentSizeExceeded,
 	"OpsItemAccessDeniedException":                   newErrorOpsItemAccessDeniedException,
 	"OpsItemAlreadyExistsException":                  newErrorOpsItemAlreadyExistsException,
+	"OpsItemConflictException":                       newErrorOpsItemConflictException,
 	"OpsItemInvalidParameterException":               newErrorOpsItemInvalidParameterException,
 	"OpsItemLimitExceededException":                  newErrorOpsItemLimitExceededException,
 	"OpsItemNotFoundException":                       newErrorOpsItemNotFoundException,

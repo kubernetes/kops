@@ -2212,6 +2212,13 @@ type EC2API interface {
 	GetReservedInstancesExchangeQuoteWithContext(aws.Context, *ec2.GetReservedInstancesExchangeQuoteInput, ...request.Option) (*ec2.GetReservedInstancesExchangeQuoteOutput, error)
 	GetReservedInstancesExchangeQuoteRequest(*ec2.GetReservedInstancesExchangeQuoteInput) (*request.Request, *ec2.GetReservedInstancesExchangeQuoteOutput)
 
+	GetSecurityGroupsForVpc(*ec2.GetSecurityGroupsForVpcInput) (*ec2.GetSecurityGroupsForVpcOutput, error)
+	GetSecurityGroupsForVpcWithContext(aws.Context, *ec2.GetSecurityGroupsForVpcInput, ...request.Option) (*ec2.GetSecurityGroupsForVpcOutput, error)
+	GetSecurityGroupsForVpcRequest(*ec2.GetSecurityGroupsForVpcInput) (*request.Request, *ec2.GetSecurityGroupsForVpcOutput)
+
+	GetSecurityGroupsForVpcPages(*ec2.GetSecurityGroupsForVpcInput, func(*ec2.GetSecurityGroupsForVpcOutput, bool) bool) error
+	GetSecurityGroupsForVpcPagesWithContext(aws.Context, *ec2.GetSecurityGroupsForVpcInput, func(*ec2.GetSecurityGroupsForVpcOutput, bool) bool, ...request.Option) error
+
 	GetSerialConsoleAccessStatus(*ec2.GetSerialConsoleAccessStatusInput) (*ec2.GetSerialConsoleAccessStatusOutput, error)
 	GetSerialConsoleAccessStatusWithContext(aws.Context, *ec2.GetSerialConsoleAccessStatusInput, ...request.Option) (*ec2.GetSerialConsoleAccessStatusOutput, error)
 	GetSerialConsoleAccessStatusRequest(*ec2.GetSerialConsoleAccessStatusInput) (*request.Request, *ec2.GetSerialConsoleAccessStatusOutput)
