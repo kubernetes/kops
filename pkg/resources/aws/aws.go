@@ -143,6 +143,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
 						Type:    "internet-gateway",
+						Dumper:  DumpInternetGateway,
 						Deleter: DeleteInternetGateway,
 						Shared:  vpc.Shared, // Shared iff the VPC is shared
 					}
@@ -1032,6 +1033,15 @@ func DeleteInternetGateway(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
+func DumpInternetGateway(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+	return nil
+}
+
 func ListInternetGateways(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	gateways, err := DescribeInternetGateways(cloud)
 	if err != nil {
@@ -1101,6 +1111,15 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 	return gateways, nil
 }
 
+func DumpEgressOnlyInternetGateway(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+	return nil
+}
+
 func DeleteEgressOnlyInternetGateway(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
@@ -1140,6 +1159,7 @@ func ListEgressOnlyInternetGateways(cloud fi.Cloud, vpcID, clusterName string) (
 			Name:    FindName(o.Tags),
 			ID:      aws.StringValue(o.EgressOnlyInternetGatewayId),
 			Type:    "egress-only-internet-gateway",
+			Dumper:  DumpEgressOnlyInternetGateway,
 			Deleter: DeleteEgressOnlyInternetGateway,
 			Shared:  HasSharedTag(ec2.ResourceTypeEgressOnlyInternetGateway+":"+aws.StringValue(o.EgressOnlyInternetGatewayId), o.Tags, clusterName),
 		}

@@ -23,6 +23,15 @@ import (
 	"k8s.io/kops/pkg/resources"
 )
 
+func DumpNatGateway(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+	return nil
+}
+
 func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName string) *resources.Resource {
 	id := aws.StringValue(ngw.NatGatewayId)
 
@@ -30,6 +39,7 @@ func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName 
 		Name:    id,
 		ID:      id,
 		Type:    TypeNatGateway,
+		Dumper:  DumpNatGateway,
 		Deleter: DeleteNatGateway,
 		Shared:  forceShared,
 	}
