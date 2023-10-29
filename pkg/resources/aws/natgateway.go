@@ -38,6 +38,7 @@ func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName 
 	r := &resources.Resource{
 		Name:    id,
 		ID:      id,
+		Obj:     ngw,
 		Type:    TypeNatGateway,
 		Dumper:  DumpNatGateway,
 		Deleter: DeleteNatGateway,
