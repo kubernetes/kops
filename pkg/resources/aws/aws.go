@@ -142,6 +142,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 					resourceTrackers["internet-gateway:"+igwID] = &resources.Resource{
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
+						Obj:     igw,
 						Type:    "internet-gateway",
 						Dumper:  DumpInternetGateway,
 						Deleter: DeleteInternetGateway,
@@ -1159,6 +1160,7 @@ func ListEgressOnlyInternetGateways(cloud fi.Cloud, vpcID, clusterName string) (
 			Name:    FindName(o.Tags),
 			ID:      aws.StringValue(o.EgressOnlyInternetGatewayId),
 			Type:    "egress-only-internet-gateway",
+			Obj:     o,
 			Dumper:  DumpEgressOnlyInternetGateway,
 			Deleter: DeleteEgressOnlyInternetGateway,
 			Shared:  HasSharedTag(ec2.ResourceTypeEgressOnlyInternetGateway+":"+aws.StringValue(o.EgressOnlyInternetGatewayId), o.Tags, clusterName),
