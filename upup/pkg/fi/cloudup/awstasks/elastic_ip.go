@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -59,18 +60,19 @@ func (e *ElasticIP) CompareWithID() *string {
 }
 
 // Find returns the actual ElasticIP state, or nil if not found
-func (e *ElasticIP) Find(context *fi.CloudupContext) (*ElasticIP, error) {
-	return e.find(context.T.Cloud.(awsup.AWSCloud))
+func (e *ElasticIP) Find(c *fi.CloudupContext) (*ElasticIP, error) {
+	ctx := c.Context()
+	return e.find(ctx, c.T.Cloud.(awsup.AWSCloud))
 }
 
 // find will attempt to look up the elastic IP from AWS
-func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
+func (e *ElasticIP) find(ctx context.Context, cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
 
 	// Find via RouteTable -> NatGateway -> ElasticIP
 	if allocationID == nil && publicIP == nil && e.AssociatedNatGatewayRouteTable != nil {
-		ngw, err := findNatGatewayFromRouteTable(cloud, e.AssociatedNatGatewayRouteTable)
+		ngw, err := findNatGatewayFromRouteTable(ctx, cloud, e.AssociatedNatGatewayRouteTable)
 		if err != nil {
 			return nil, fmt.Errorf("error finding AssociatedNatGatewayRouteTable: %v", err)
 		}

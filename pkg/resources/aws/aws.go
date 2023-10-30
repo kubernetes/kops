@@ -728,6 +728,8 @@ func DeleteSubnet(cloud fi.Cloud, tracker *resources.Resource) error {
 }
 
 func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
+
 	c := cloud.(awsup.AWSCloud)
 	subnets, err := DescribeSubnets(cloud)
 	if err != nil {
@@ -826,20 +828,20 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 
 		klog.V(2).Infof("Querying Nat Gateways")
 		request := &ec2.DescribeNatGatewaysInput{}
-		response, err := c.EC2().DescribeNatGateways(request)
-		if err != nil {
-			return nil, fmt.Errorf("error describing NatGateways: %v", err)
-		}
+		if err := c.EC2().DescribeNatGatewaysPagesWithContext(ctx, request, func(page *ec2.DescribeNatGatewaysOutput, lastPage bool) bool {
+			for _, ngw := range page.NatGateways {
+				id := aws.StringValue(ngw.NatGatewayId)
+				if !natGatewayIds.Has(id) {
+					continue
+				}
 
-		for _, ngw := range response.NatGateways {
-			id := aws.StringValue(ngw.NatGatewayId)
-			if !natGatewayIds.Has(id) {
-				continue
+				forceShared := sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id)
+				r := buildNatGatewayResource(ngw, forceShared, clusterName)
+				resourceTrackers = append(resourceTrackers, r)
 			}
-
-			forceShared := sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id)
-			r := buildNatGatewayResource(ngw, forceShared, clusterName)
-			resourceTrackers = append(resourceTrackers, r)
+			return true
+		}); err != nil {
+			return nil, fmt.Errorf("listing NatGateways: %w", err)
 		}
 	}
 
@@ -1291,6 +1293,8 @@ func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*reso
 }
 
 func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
+
 	if len(routeTables) == 0 {
 		return nil, nil
 	}
@@ -1344,7 +1348,7 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 		request := &ec2.DescribeNatGatewaysInput{
 			NatGatewayIds: []*string{aws.String(natGatewayId)},
 		}
-		response, err := c.EC2().DescribeNatGateways(request)
+		response, err := c.EC2().DescribeNatGatewaysWithContext(ctx, request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "NatGatewayNotFound" {
 				klog.V(2).Infof("Got NatGatewayNotFound describing NatGateway %s; will treat as already-deleted", natGatewayId)
@@ -1684,6 +1688,8 @@ func DeleteElasticIP(cloud fi.Cloud, t *resources.Resource) error {
 }
 
 func DeleteNatGateway(cloud fi.Cloud, t *resources.Resource) error {
+	ctx := context.TODO()
+
 	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
@@ -1692,12 +1698,12 @@ func DeleteNatGateway(cloud fi.Cloud, t *resources.Resource) error {
 	request := &ec2.DeleteNatGatewayInput{
 		NatGatewayId: &id,
 	}
-	_, err := c.EC2().DeleteNatGateway(request)
+	_, err := c.EC2().DeleteNatGatewayWithContext(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting ngw %q: %v", t.Name, err)
+		return fmt.Errorf("error deleting nat gateway %q: %v", t.Name, err)
 	}
 	return nil
 }

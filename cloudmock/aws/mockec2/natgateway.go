@@ -38,6 +38,9 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 		Tags:         tags,
 	}
 
+	// Immediately mark it ready
+	ngw.State = aws.String("available")
+
 	if request.AllocationId != nil {
 		var eip *ec2.Address
 		for _, address := range m.Addresses {
@@ -71,10 +74,7 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 }
 
 func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
-	klog.Infof("CreateNatGateway: %v", request)
-
-	id := m.allocateId("nat")
-	return m.CreateNatGatewayWithId(request, id)
+	panic("Not implemented")
 }
 
 func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysInput) error {
@@ -93,7 +93,7 @@ func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysI
 	}
 
 	// We just immediately mark it ready
-	ngw.State = aws.String("Available")
+	ngw.State = aws.String("available")
 
 	return nil
 }
@@ -102,19 +102,50 @@ func (m *MockEC2) WaitUntilNatGatewayAvailableWithContext(aws.Context, *ec2.Desc
 	panic("Not implemented")
 }
 
-func (m *MockEC2) CreateNatGatewayWithContext(aws.Context, *ec2.CreateNatGatewayInput, ...request.Option) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
+func (m *MockEC2) CreateNatGatewayWithContext(ctx aws.Context, request *ec2.CreateNatGatewayInput, options ...request.Option) (*ec2.CreateNatGatewayOutput, error) {
+	klog.Infof("CreateNatGateway: %v", request)
+
+	id := m.allocateId("nat")
+	return m.CreateNatGatewayWithId(request, id)
 }
 
 func (m *MockEC2) CreateNatGatewayRequest(*ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput) {
 	panic("Not implemented")
 }
 
-func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
+func (m *MockEC2) DescribeNatGateways(*ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
+	panic("Not implemented")
+}
+
+func (m *MockEC2) DescribeNatGatewaysWithContext(ctx aws.Context, request *ec2.DescribeNatGatewaysInput, options ...request.Option) (*ec2.DescribeNatGatewaysOutput, error) {
+	var pages []*ec2.DescribeNatGatewaysOutput
+	callback := func(page *ec2.DescribeNatGatewaysOutput, lastPage bool) bool {
+		pages = append(pages, page)
+		return true
+	}
+
+	if err := m.DescribeNatGatewaysPagesWithContext(ctx, request, callback, options...); err != nil {
+		return nil, err
+	}
+	if len(pages) == 0 {
+		return nil, fmt.Errorf("DescribeNatGatewaysPagesWithContext did not return any pages")
+	}
+	return pages[0], nil
+}
+
+func (m *MockEC2) DescribeNatGatewaysRequest(*ec2.DescribeNatGatewaysInput) (*request.Request, *ec2.DescribeNatGatewaysOutput) {
+	panic("Not implemented")
+}
+
+func (m *MockEC2) DescribeNatGatewaysPages(*ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool) error {
+	panic("Not implemented")
+}
+
+func (m *MockEC2) DescribeNatGatewaysPagesWithContext(ctx aws.Context, request *ec2.DescribeNatGatewaysInput, callback func(*ec2.DescribeNatGatewaysOutput, bool) bool, options ...request.Option) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DescribeNatGateways: %v", request)
+	klog.Infof("DescribeNatGatewaysPagesWithContext: %v", request)
 
 	var ngws []*ec2.NatGateway
 
@@ -137,7 +168,7 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 				if strings.HasPrefix(*filter.Name, "tag:") {
 					match = m.hasTag(ec2.ResourceTypeNatgateway, *ngw.NatGatewayId, filter)
 				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
+					return fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
 			}
 
@@ -160,26 +191,15 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 		NatGateways: ngws,
 	}
 
-	return response, nil
-}
-
-func (m *MockEC2) DescribeNatGatewaysWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.Option) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysRequest(*ec2.DescribeNatGatewaysInput) (*request.Request, *ec2.DescribeNatGatewaysOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysPages(*ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysPagesWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
+	callback(response, false)
+	return nil
 }
 
 func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error) {
+	panic("Not implemented")
+}
+
+func (m *MockEC2) DeleteNatGatewayWithContext(ctx aws.Context, request *ec2.DeleteNatGatewayInput, options ...request.Option) (*ec2.DeleteNatGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -193,10 +213,6 @@ func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.Del
 	delete(m.NatGateways, id)
 
 	return &ec2.DeleteNatGatewayOutput{}, nil
-}
-
-func (m *MockEC2) DeleteNatGatewayWithContext(aws.Context, *ec2.DeleteNatGatewayInput, ...request.Option) (*ec2.DeleteNatGatewayOutput, error) {
-	panic("Not implemented")
 }
 
 func (m *MockEC2) DeleteNatGatewayRequest(*ec2.DeleteNatGatewayInput) (*request.Request, *ec2.DeleteNatGatewayOutput) {

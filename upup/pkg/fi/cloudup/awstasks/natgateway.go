@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	raws "k8s.io/kops/pkg/resources/aws"
@@ -59,32 +61,21 @@ func (e *NatGateway) CompareWithID() *string {
 }
 
 func (e *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
+	ctx := c.Context()
+
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	var ngw *ec2.NatGateway
 	actual := &NatGateway{}
 
 	if fi.ValueOf(e.ID) != "" {
-		// We have an existing NGW, lets look up the EIP
-		var ngwIds []*string
-		ngwIds = append(ngwIds, e.ID)
-
-		request := &ec2.DescribeNatGatewaysInput{
-			NatGatewayIds: ngwIds,
-		}
-
-		response, err := cloud.EC2().DescribeNatGateways(request)
+		found, err := findNatGatewayByID(ctx, cloud, fi.ValueOf(e.ID))
 		if err != nil {
-			return nil, fmt.Errorf("error listing Nat Gateways %v", err)
+			return nil, err
 		}
-
-		if len(response.NatGateways) != 1 {
-			return nil, fmt.Errorf("found %d Nat Gateways with ID %q, expected 1", len(response.NatGateways), fi.ValueOf(e.ID))
-		}
-		ngw = response.NatGateways[0]
-
-		if len(ngw.NatGatewayAddresses) != 1 {
+		if len(found.NatGatewayAddresses) != 1 {
 			return nil, fmt.Errorf("found %d EIP Addresses for 1 NATGateway, expected 1", len(ngw.NatGatewayAddresses))
 		}
+		ngw = found
 	} else {
 		// This is the normal/default path
 		var err error
@@ -127,13 +118,15 @@ func (e *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 }
 
 func (e *NatGateway) findNatGateway(c *fi.CloudupContext) (*ec2.NatGateway, error) {
+	ctx := c.Context()
+
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	id := e.ID
 
 	// Find via route on private route table
 	if id == nil && e.AssociatedRouteTable != nil {
-		ngw, err := findNatGatewayFromRouteTable(cloud, e.AssociatedRouteTable)
+		ngw, err := findNatGatewayFromRouteTable(ctx, cloud, e.AssociatedRouteTable)
 		if err != nil {
 			return nil, err
 		}
@@ -175,31 +168,29 @@ func (e *NatGateway) findNatGateway(c *fi.CloudupContext) (*ec2.NatGateway, erro
 	}
 
 	if id != nil {
-		return findNatGatewayById(cloud, id)
+		return findNatGatewayByID(ctx, cloud, *id)
 	}
 
 	return nil, nil
 }
 
-func findNatGatewayById(cloud awsup.AWSCloud, id *string) (*ec2.NatGateway, error) {
-	request := &ec2.DescribeNatGatewaysInput{}
-	request.NatGatewayIds = []*string{id}
-	response, err := cloud.EC2().DescribeNatGateways(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing NatGateway %q: %v", aws.StringValue(id), err)
+func findNatGatewayByID(ctx context.Context, cloud awsup.AWSCloud, id string) (*ec2.NatGateway, error) {
+	request := &ec2.DescribeNatGatewaysInput{
+		NatGatewayIds: []*string{&id},
 	}
 
-	if response == nil || len(response.NatGateways) == 0 {
-		klog.V(2).Infof("Unable to find NatGateway %q", aws.StringValue(id))
-		return nil, nil
+	response, err := cloud.EC2().DescribeNatGatewaysWithContext(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("finding NatGateway with id %q: %w", id, err)
 	}
+
 	if len(response.NatGateways) != 1 {
-		return nil, fmt.Errorf("found multiple NatGateways with id %q", aws.StringValue(id))
+		return nil, fmt.Errorf("found multiple NatGateways with ID %q (got %d, expected 1)", id, len(response.NatGateways))
 	}
 	return response.NatGateways[0], nil
 }
 
-func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) (*ec2.NatGateway, error) {
+func findNatGatewayFromRouteTable(ctx context.Context, cloud awsup.AWSCloud, routeTable *RouteTable) (*ec2.NatGateway, error) {
 	// Find via route on private route table
 	if routeTable.ID != nil {
 		klog.V(2).Infof("trying to match NatGateway via RouteTable %s", *routeTable.ID)
@@ -209,14 +200,14 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 		}
 
 		if rt != nil {
-			var natGatewayIDs []*string
-			natGatewayIDsSeen := map[string]bool{}
+			natGatewayIDsSeen := sets.New[string]()
 			for _, route := range rt.Routes {
-				if route.NatGatewayId != nil && !natGatewayIDsSeen[*route.NatGatewayId] {
-					natGatewayIDs = append(natGatewayIDs, route.NatGatewayId)
-					natGatewayIDsSeen[*route.NatGatewayId] = true
+				if route.NatGatewayId != nil {
+					natGatewayIDsSeen.Insert(*route.NatGatewayId)
 				}
 			}
+
+			natGatewayIDs := natGatewayIDsSeen.UnsortedList()
 
 			if len(natGatewayIDs) == 0 {
 				klog.V(2).Infof("no NatGateway found in route table %s", *rt.RouteTableId)
@@ -227,12 +218,12 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 				}
 				filteredNatGateways := []*ec2.NatGateway{}
 				for _, natGatewayID := range natGatewayIDs {
-					gw, err := findNatGatewayById(cloud, natGatewayID)
+					gw, err := findNatGatewayByID(ctx, cloud, natGatewayID)
 					if err != nil {
 						return nil, err
 					}
 
-					if raws.HasOwnedTag(ec2.ResourceTypeNatgateway+":"+fi.ValueOf(natGatewayID), gw.Tags, clusterName) {
+					if raws.HasOwnedTag(ec2.ResourceTypeNatgateway+":"+natGatewayID, gw.Tags, clusterName) {
 						filteredNatGateways = append(filteredNatGateways, gw)
 					}
 				}
@@ -244,7 +235,7 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 					return filteredNatGateways[0], nil
 				}
 			} else {
-				return findNatGatewayById(cloud, natGatewayIDs[0])
+				return findNatGatewayByID(ctx, cloud, natGatewayIDs[0])
 			}
 		}
 	}
@@ -296,11 +287,11 @@ func (e *NatGateway) Run(c *fi.CloudupContext) error {
 }
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
-	// New NGW
+	ctx := context.TODO()
 
 	var id *string
 	if a == nil {
-
+		// New NGW
 		if fi.ValueOf(e.Shared) {
 			return fmt.Errorf("NAT gateway %q not found", fi.ValueOf(e.ID))
 		}
@@ -312,7 +303,7 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		}
 		request.AllocationId = e.ElasticIP.ID
 		request.SubnetId = e.Subnet.ID
-		response, err := t.Cloud.EC2().CreateNatGateway(request)
+		response, err := t.Cloud.EC2().CreateNatGatewayWithContext(ctx, request)
 		if err != nil {
 			return fmt.Errorf("Error creating Nat Gateway: %v", err)
 		}
@@ -320,6 +311,34 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		id = e.ID
 	} else {
 		id = a.ID
+	}
+
+	// Ensure the nat gateway is ready
+	{
+		found, err := findNatGatewayByID(ctx, t.Cloud, *e.ID)
+		if err != nil {
+			return fmt.Errorf("reading created nat gateway: %w", err)
+		}
+
+		switch state := aws.StringValue(found.State); state {
+		case "pending":
+			// The NAT gateway is being created and is not ready to process traffic.
+			return fi.NewTryAgainLaterError("waiting for the NAT gateway to be ready")
+
+		case "failed":
+			// The NAT gateway could not be created.
+			message := fmt.Sprintf("the NAT gateway failed in AWS; AWS failureCode=%q; AWS failureMessage=%q", aws.StringValue(found.FailureCode), aws.StringValue(found.FailureMessage))
+			return fi.NewTryAgainLaterError(message)
+
+		case "available":
+			// The NAT gateway is able to process traffic.
+			break
+
+		case "deleting", "deleted":
+			return fmt.Errorf("the NAT gateway is being deleted (state=%q)", state)
+		default:
+			return fmt.Errorf("the NAT gateway is in an unknown state %q", state)
+		}
 	}
 
 	err := t.AddAWSTags(*e.ID, e.Tags)
