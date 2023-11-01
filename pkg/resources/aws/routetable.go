@@ -67,11 +67,22 @@ func ListRouteTables(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Re
 	return resourceTrackers, nil
 }
 
+func dumpRouteTable(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+	return nil
+}
+
 func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resources.Resource {
 	resourceTracker := &resources.Resource{
 		Name:    FindName(rt.Tags),
 		ID:      aws.StringValue(rt.RouteTableId),
 		Type:    ec2.ResourceTypeRouteTable,
+		Obj:     rt,
+		Dumper:  dumpRouteTable,
 		Deleter: DeleteRouteTable,
 		Shared:  !HasOwnedTag(ec2.ResourceTypeRouteTable+":"+*rt.RouteTableId, rt.Tags, clusterName),
 	}
