@@ -17,7 +17,10 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -42,4 +45,22 @@ func stringSetFromPointers(in []*string) sets.String {
 		out.Insert(aws.StringValue(in[i]))
 	}
 	return out
+}
+
+// GetSourceAccount constructs source acct and return them for use
+func GetSourceAccount(roleARN string) (string, error) {
+	// ARN format (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html)
+	// arn:partition:service:region:account-id:resource-type/resource-id
+	// IAM format, region is always blank
+	// arn:aws:iam::account:role/role-name-with-path
+	if !arn.IsARN(roleARN) {
+		return "", fmt.Errorf("incorrect ARN format for role %s", roleARN)
+	}
+
+	parsedArn, err := arn.Parse(roleARN)
+	if err != nil {
+		return "", err
+	}
+
+	return parsedArn.AccountID, nil
 }
