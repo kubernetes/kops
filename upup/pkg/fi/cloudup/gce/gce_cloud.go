@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
@@ -86,6 +87,7 @@ func (c *gceCloudImplementation) ProviderID() kops.CloudProviderID {
 }
 
 var gceCloudInstances map[string]GCECloud = make(map[string]GCECloud)
+var gceCloudInstancesMapMutex = sync.RWMutex{}
 
 // DefaultProject returns the current project configured in the gcloud SDK, ("", nil) if no project was set
 func DefaultProject() (string, error) {
@@ -179,6 +181,8 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 }
 
 func CacheGCECloudInstance(region string, project string, c GCECloud) {
+	gceCloudInstancesMapMutex.Lock()
+	defer gceCloudInstancesMapMutex.Unlock()
 	gceCloudInstances[region+"::"+project] = c
 }
 
