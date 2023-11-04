@@ -134,7 +134,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		case kops.InstanceGroupRoleAPIServer:
 			labels[nodelabels.RoleLabelAPIServer16] = ""
 		default:
-			klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
+			klog.Warningf("Unknown node role %q for server %s(%s)", value, server.Name, server.ID)
 		}
 	}
 

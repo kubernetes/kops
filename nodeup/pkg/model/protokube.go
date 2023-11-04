@@ -200,7 +200,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	}
 
 	if t.UsesLegacyGossip() {
-		klog.Warningf("using (legacy) gossip DNS", t.NodeupConfig.ClusterName)
+		klog.Warningf("using (legacy) gossip DNS")
 		f.Gossip = fi.PtrTo(true)
 		if t.NodeupConfig.GossipConfig != nil {
 			f.GossipProtocol = t.NodeupConfig.GossipConfig.Protocol

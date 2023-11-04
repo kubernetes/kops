@@ -154,7 +154,7 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 
 func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
 	if e.RolePolicyDocument == nil {
-		klog.V(2).Infof("Deleting IAM role %q", a.Name)
+		klog.V(2).Infof("Deleting IAM role %q", fi.ValueOf(a.Name))
 
 		var attachedPolicies []*iam.AttachedPolicy
 		var policyNames []string
