@@ -322,10 +322,6 @@ func (c *Cloud) TagResource(resourceID string, tags map[string]string) error {
 	output, err := c.ec2.CreateTags(request)
 
 	if err != nil {
-		if isAWSErrorInstanceNotFound(err) {
-			klog.Infof("Couldn't find resource when trying to tag it hence skipping it, %v", err)
-			return nil
-		}
 		klog.Errorf("Error occurred trying to tag resources, %v", err)
 		return err
 	}
@@ -346,6 +342,8 @@ func (c *Cloud) UntagResource(resourceID string, tags map[string]string) error {
 	output, err := c.ec2.DeleteTags(request)
 
 	if err != nil {
+		// An instance not found should not fail the untagging workflow as it
+		// would for tagging, since the target state is already reached.
 		if isAWSErrorInstanceNotFound(err) {
 			klog.Infof("Couldn't find resource when trying to untag it hence skipping it, %v", err)
 			return nil

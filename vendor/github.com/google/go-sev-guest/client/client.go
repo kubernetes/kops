@@ -29,9 +29,14 @@ var sevGuestPath = flag.String("sev_guest_device_path", "default",
 
 // Device encapsulates the possible commands to the AMD SEV guest device.
 type Device interface {
+	// Open prepares the Device from the given path.
 	Open(path string) error
+	// Close releases the device resource.
 	Close() error
+	// Ioctl performs the given command with the given argument.
 	Ioctl(command uintptr, argument any) (uintptr, error)
+	// Product returns AMD SEV-related CPU information of the calling CPU.
+	Product() *pb.SevProduct
 }
 
 // UseDefaultSevGuest returns true iff -sev_guest_device_path=default.
@@ -169,7 +174,11 @@ func GetExtendedReportAtVmpl(d Device, reportData [64]byte, vmpl int) (*pb.Attes
 	if err := certs.Unmarshal(certBytes); err != nil {
 		return nil, err
 	}
-	return &pb.Attestation{Report: report, CertificateChain: certs.Proto()}, nil
+	return &pb.Attestation{
+		Report:           report,
+		CertificateChain: certs.Proto(),
+		Product:          d.Product(),
+	}, nil
 }
 
 // GetExtendedReport gets an extended attestation report at VMPL0 into a structured type.

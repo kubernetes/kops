@@ -15,6 +15,11 @@ import (
 	"k8s.io/klog/v2/internal/serialize"
 )
 
+const (
+	// nameKey is used to log the `WithName` values as an additional attribute.
+	nameKey = "logger"
+)
+
 // Option is a functional option that reconfigures the logger created with New.
 type Option func(*klogger)
 
@@ -23,7 +28,7 @@ type Format string
 
 const (
 	// FormatSerialize tells klogr to turn key/value pairs into text itself
-	// before invoking klog.
+	// before invoking klog. Key/value pairs are sorted by key.
 	FormatSerialize Format = "Serialize"
 
 	// FormatKlog tells klogr to pass all text messages and key/value pairs
@@ -41,6 +46,8 @@ func WithFormat(format Format) Option {
 
 // New returns a logr.Logger which serializes output itself
 // and writes it via klog.
+//
+// Deprecated: this uses a custom, out-dated output format. Use textlogger.NewLogger instead.
 func New() logr.Logger {
 	return NewWithOptions(WithFormat(FormatSerialize))
 }
@@ -48,10 +55,11 @@ func New() logr.Logger {
 // NewWithOptions returns a logr.Logger which serializes as determined
 // by the WithFormat option and writes via klog. The default is
 // FormatKlog.
+//
+// Deprecated: FormatSerialize is out-dated. For FormatKlog, use textlogger.NewLogger instead.
 func NewWithOptions(options ...Option) logr.Logger {
 	l := klogger{
 		level:  0,
-		prefix: "",
 		values: nil,
 		format: FormatKlog,
 	}
@@ -64,9 +72,14 @@ func NewWithOptions(options ...Option) logr.Logger {
 type klogger struct {
 	level     int
 	callDepth int
-	prefix    string
-	values    []interface{}
-	format    Format
+
+	// hasPrefix is true if the first entry in values is the special
+	// nameKey key/value. Such an entry gets added and later updated in
+	// WithName.
+	hasPrefix bool
+
+	values []interface{}
+	format Format
 }
 
 func (l *klogger) Init(info logr.RuntimeInfo) {
@@ -115,8 +128,10 @@ func pretty(value interface{}) string {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
-	encoder.Encode(value)
-	return strings.TrimSpace(string(buffer.Bytes()))
+	if err := encoder.Encode(value); err != nil {
+		return fmt.Sprintf("<<error: %v>>", err)
+	}
+	return strings.TrimSpace(buffer.String())
 }
 
 func (l *klogger) Info(level int, msg string, kvList ...interface{}) {
@@ -125,19 +140,15 @@ func (l *klogger) Info(level int, msg string, kvList ...interface{}) {
 		msgStr := flatten("msg", msg)
 		merged := serialize.MergeKVs(l.values, kvList)
 		kvStr := flatten(merged...)
-		klog.VDepth(l.callDepth+1, klog.Level(level)).InfoDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", kvStr)
+		klog.VDepth(l.callDepth+1, klog.Level(level)).InfoDepth(l.callDepth+1, msgStr, " ", kvStr)
 	case FormatKlog:
 		merged := serialize.MergeKVs(l.values, kvList)
-		if l.prefix != "" {
-			msg = l.prefix + ": " + msg
-		}
 		klog.VDepth(l.callDepth+1, klog.Level(level)).InfoSDepth(l.callDepth+1, msg, merged...)
 	}
 }
 
 func (l *klogger) Enabled(level int) bool {
-	// Skip this function and logr.Logger.Info where Enabled is called.
-	return klog.VDepth(l.callDepth+2, klog.Level(level)).Enabled()
+	return klog.VDepth(l.callDepth+1, klog.Level(level)).Enabled()
 }
 
 func (l *klogger) Error(err error, msg string, kvList ...interface{}) {
@@ -151,24 +162,35 @@ func (l *klogger) Error(err error, msg string, kvList ...interface{}) {
 		errStr := flatten("error", loggableErr)
 		merged := serialize.MergeKVs(l.values, kvList)
 		kvStr := flatten(merged...)
-		klog.ErrorDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", errStr, " ", kvStr)
+		klog.ErrorDepth(l.callDepth+1, msgStr, " ", errStr, " ", kvStr)
 	case FormatKlog:
 		merged := serialize.MergeKVs(l.values, kvList)
-		if l.prefix != "" {
-			msg = l.prefix + ": " + msg
-		}
 		klog.ErrorSDepth(l.callDepth+1, err, msg, merged...)
 	}
 }
 
 // WithName returns a new logr.Logger with the specified name appended.  klogr
-// uses '/' characters to separate name elements.  Callers should not pass '/'
+// uses '.' characters to separate name elements.  Callers should not pass '.'
 // in the provided name string, but this library does not actually enforce that.
 func (l klogger) WithName(name string) logr.LogSink {
-	if len(l.prefix) > 0 {
-		l.prefix = l.prefix + "/"
+	if l.hasPrefix {
+		// Copy slice and modify value. No length checks and type
+		// assertions are needed because hasPrefix is only true if the
+		// first two elements exist and are key/value strings.
+		v := make([]interface{}, 0, len(l.values))
+		v = append(v, l.values...)
+		prefix, _ := v[1].(string)
+		prefix = prefix + "." + name
+		v[1] = prefix
+		l.values = v
+	} else {
+		// Preprend new key/value pair.
+		v := make([]interface{}, 0, 2+len(l.values))
+		v = append(v, nameKey, name)
+		v = append(v, l.values...)
+		l.values = v
+		l.hasPrefix = true
 	}
-	l.prefix += name
 	return &l
 }
 

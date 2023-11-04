@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package gce defines logic specific to verification of GCE-specific attestations.
-package gce
+//+build amd64,!gccgo
 
-// FirmwareCertGUID is the extended report GUID table GUID for a firmware certificate on GCE.
-const FirmwareCertGUID = "9f4116cd-c503-4f5a-8f6f-fb68882f4ce2"
+// func asmCpuid(op uint32) (eax, ebx, ecx, edx uint32)
+TEXT ·asmCpuid(SB), 7, $0
+	XORQ CX, CX
+	MOVL op+0(FP), AX
+	CPUID
+	MOVL AX, eax+8(FP)
+	MOVL BX, ebx+12(FP)
+	MOVL CX, ecx+16(FP)
+	MOVL DX, edx+20(FP)
+	RET

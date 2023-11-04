@@ -976,6 +976,13 @@ type EC2API interface {
 	DescribeByoipCidrsPages(*ec2.DescribeByoipCidrsInput, func(*ec2.DescribeByoipCidrsOutput, bool) bool) error
 	DescribeByoipCidrsPagesWithContext(aws.Context, *ec2.DescribeByoipCidrsInput, func(*ec2.DescribeByoipCidrsOutput, bool) bool, ...request.Option) error
 
+	DescribeCapacityBlockOfferings(*ec2.DescribeCapacityBlockOfferingsInput) (*ec2.DescribeCapacityBlockOfferingsOutput, error)
+	DescribeCapacityBlockOfferingsWithContext(aws.Context, *ec2.DescribeCapacityBlockOfferingsInput, ...request.Option) (*ec2.DescribeCapacityBlockOfferingsOutput, error)
+	DescribeCapacityBlockOfferingsRequest(*ec2.DescribeCapacityBlockOfferingsInput) (*request.Request, *ec2.DescribeCapacityBlockOfferingsOutput)
+
+	DescribeCapacityBlockOfferingsPages(*ec2.DescribeCapacityBlockOfferingsInput, func(*ec2.DescribeCapacityBlockOfferingsOutput, bool) bool) error
+	DescribeCapacityBlockOfferingsPagesWithContext(aws.Context, *ec2.DescribeCapacityBlockOfferingsInput, func(*ec2.DescribeCapacityBlockOfferingsOutput, bool) bool, ...request.Option) error
+
 	DescribeCapacityReservationFleets(*ec2.DescribeCapacityReservationFleetsInput) (*ec2.DescribeCapacityReservationFleetsOutput, error)
 	DescribeCapacityReservationFleetsWithContext(aws.Context, *ec2.DescribeCapacityReservationFleetsInput, ...request.Option) (*ec2.DescribeCapacityReservationFleetsOutput, error)
 	DescribeCapacityReservationFleetsRequest(*ec2.DescribeCapacityReservationFleetsInput) (*request.Request, *ec2.DescribeCapacityReservationFleetsOutput)
@@ -2620,6 +2627,10 @@ type EC2API interface {
 	ProvisionPublicIpv4PoolCidr(*ec2.ProvisionPublicIpv4PoolCidrInput) (*ec2.ProvisionPublicIpv4PoolCidrOutput, error)
 	ProvisionPublicIpv4PoolCidrWithContext(aws.Context, *ec2.ProvisionPublicIpv4PoolCidrInput, ...request.Option) (*ec2.ProvisionPublicIpv4PoolCidrOutput, error)
 	ProvisionPublicIpv4PoolCidrRequest(*ec2.ProvisionPublicIpv4PoolCidrInput) (*request.Request, *ec2.ProvisionPublicIpv4PoolCidrOutput)
+
+	PurchaseCapacityBlock(*ec2.PurchaseCapacityBlockInput) (*ec2.PurchaseCapacityBlockOutput, error)
+	PurchaseCapacityBlockWithContext(aws.Context, *ec2.PurchaseCapacityBlockInput, ...request.Option) (*ec2.PurchaseCapacityBlockOutput, error)
+	PurchaseCapacityBlockRequest(*ec2.PurchaseCapacityBlockInput) (*request.Request, *ec2.PurchaseCapacityBlockOutput)
 
 	PurchaseHostReservation(*ec2.PurchaseHostReservationInput) (*ec2.PurchaseHostReservationOutput, error)
 	PurchaseHostReservationWithContext(aws.Context, *ec2.PurchaseHostReservationInput, ...request.Option) (*ec2.PurchaseHostReservationOutput, error)
