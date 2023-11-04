@@ -22,7 +22,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/go-sev-guest/abi"
 	labi "github.com/google/go-sev-guest/client/linuxabi"
+	spb "github.com/google/go-sev-guest/proto/sevsnp"
 	"golang.org/x/sys/unix"
 )
 
@@ -115,4 +117,9 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 		return result, nil
 	}
 	return 0, fmt.Errorf("unexpected request value: %v", req)
+}
+
+// Product returns the current CPU's associated AMD SEV product information.
+func (d *LinuxDevice) Product() *spb.SevProduct {
+	return abi.SevProduct()
 }

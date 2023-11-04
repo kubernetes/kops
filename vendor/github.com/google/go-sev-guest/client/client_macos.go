@@ -18,6 +18,8 @@ package client
 
 import (
 	"fmt"
+
+	spb "github.com/google/go-sev-guest/proto/sevsnp"
 )
 
 // DefaultSevGuestDevicePath is the platform's usual device path to the SEV guest.
@@ -44,4 +46,9 @@ func (*MacOSDevice) Close() error {
 // Ioctl is not supported on MacOS.
 func (*MacOSDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 	return 0, fmt.Errorf("MacOS is unsupported")
+}
+
+// Product is not supported on MacOS.
+func (*MacOSDevice) Product() *spb.SevProduct {
+	return &spb.SevProduct{}
 }
