@@ -189,20 +189,20 @@ func run() error {
 		gossipName := cloudProvider.InstanceID()
 		gossipSeeds, err := cloudProvider.GossipSeeds()
 		if err != nil {
-			klog.Errorf("error finding gossip seeds: %w", err)
+			klog.Errorf("error finding gossip seeds: %v", err)
 		}
 
 		channelName := "dns"
 		gossipState, err := gossiputils.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
-			klog.Errorf("error initializing gossip: %w", err)
+			klog.Errorf("error initializing gossip: %v", err)
 			os.Exit(1)
 		}
 
 		if gossipProtocolSecondary != "" {
 			secondaryGossipState, err := gossiputils.GetGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
 			if err != nil {
-				klog.Errorf("error initializing secondary gossip: %w", err)
+				klog.Errorf("error initializing secondary gossip: %v", err)
 				os.Exit(1)
 			}
 			gossipState = &gossiputils.MultiGossipState{

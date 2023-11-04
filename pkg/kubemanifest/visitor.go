@@ -41,7 +41,7 @@ func (m *visitorBase) VisitFloat64(path []string, v float64, mutator func(float6
 }
 
 func (m *visitorBase) VisitMap(path []string, v map[string]interface{}) error {
-	klog.V(10).Infof("object value at %s: %f", strings.Join(path, "."), v)
+	klog.V(10).Infof("object value at %s: %v", strings.Join(path, "."), v)
 	return nil
 }
 

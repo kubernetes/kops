@@ -105,7 +105,7 @@ func (b *KubectlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	users, err := b.Distribution.DefaultUsers()
 	if err != nil {
-		klog.Warningf("won't write kubeconfig to homedir for distribution %s: %v", b.Distribution, err)
+		klog.Warningf("won't write kubeconfig to homedir for distribution %v: %v", b.Distribution, err)
 		return nil, nil, nil
 	}
 

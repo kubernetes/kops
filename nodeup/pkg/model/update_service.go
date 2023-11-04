@@ -59,7 +59,7 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.NodeupModelBuild
 		}
 	}
 
-	klog.Infof("Detected OS %s; building %s service to disable update scheduler", b.Distribution, flatcarServiceName)
+	klog.Infof("Detected OS %v; building %s service to disable update scheduler", b.Distribution, flatcarServiceName)
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Disable OS Update Scheduler")
