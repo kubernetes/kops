@@ -970,6 +970,7 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 				status = cloudinstances.CloudInstanceStatusUpToDate
 			} else {
 				status = cloudinstances.CloudInstanceStatusNeedsUpdate
+				fmt.Printf("InstanceGroup %s node %s launch configuration is behind\n", karpenterGroup.HumanName, id)
 			}
 			cloudInstance, _ := karpenterGroup.NewCloudInstance(id, status, nodeMap[id])
 			addCloudInstanceData(cloudInstance, instance)
@@ -1256,6 +1257,7 @@ func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Insta
 	status := cloudinstances.CloudInstanceStatusUpToDate
 	if newConfigName != currentConfigName {
 		status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		fmt.Printf("InstanceGroup %s node %s launch configuration is behind\n", cg.HumanName, id)
 	}
 	cm, err := cg.NewCloudInstance(id, status, nodeMap[id])
 	if err != nil {

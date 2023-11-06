@@ -371,6 +371,7 @@ func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*hcloud.Server, nodeMa
 		status := cloudinstances.CloudInstanceStatusUpToDate
 		if _, ok := server.Labels[TagKubernetesInstanceNeedsUpdate]; ok {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			fmt.Printf("InstanceGroup %s node %s has %s label\n", cloudInstanceGroup.HumanName, server.Name, server.Labels[TagKubernetesInstanceNeedsUpdate])
 		}
 
 		id := strconv.Itoa(server.ID)

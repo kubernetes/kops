@@ -189,8 +189,10 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 				if i.Version != nil && latestInstanceTemplate == i.Version.InstanceTemplate {
 					g.Ready = append(g.Ready, cm)
+					fmt.Printf("InstanceGroup %s nodes launch templates are NOT behind\n", cm.CloudInstanceGroup.HumanName)
 				} else {
 					g.NeedUpdate = append(g.NeedUpdate, cm)
+					fmt.Printf("InstanceGroup %s nodes launch templates are behind\n", cm.CloudInstanceGroup.HumanName)
 				}
 			}
 

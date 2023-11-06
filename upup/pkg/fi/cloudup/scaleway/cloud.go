@@ -398,6 +398,7 @@ func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*in
 		for _, tag := range server.Tags {
 			if tag == TagNeedsUpdate {
 				status = cloudinstances.CloudInstanceStatusNeedsUpdate
+				fmt.Printf("InstanceGroup %s node %s has tag %s\n", cloudInstanceGroup.HumanName, server.Name, tag)
 			}
 		}
 		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(server.ID, status, nodeMap[server.ID])
