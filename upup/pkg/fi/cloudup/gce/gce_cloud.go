@@ -121,7 +121,9 @@ func DefaultProject() (string, error) {
 }
 
 func NewGCECloud(region string, project string, labels map[string]string) (GCECloud, error) {
+	gceCloudInstancesMapMutex.RLock()
 	i := gceCloudInstances[region+"::"+project]
+	gceCloudInstancesMapMutex.RUnlock()
 	if i != nil {
 		return i.(gceCloudInternal).WithLabels(labels), nil
 	}
