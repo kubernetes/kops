@@ -42,30 +42,31 @@ type Ocean struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	MinSize                  *int64
-	MaxSize                  *int64
-	UtilizeReservedInstances *bool
-	UtilizeCommitments       *bool
-	FallbackToOnDemand       *bool
-	DrainingTimeout          *int64
-	GracePeriod              *int64
-	InstanceTypesWhitelist   []string
-	InstanceTypesBlacklist   []string
-	Tags                     map[string]string
-	UserData                 fi.Resource
-	ImageID                  *string
-	IAMInstanceProfile       *awstasks.IAMInstanceProfile
-	SSHKey                   *awstasks.SSHKey
-	Subnets                  []*awstasks.Subnet
-	SecurityGroups           []*awstasks.SecurityGroup
-	Monitoring               *bool
-	AssociatePublicIPAddress *bool
-	UseAsTemplateOnly        *bool
-	RootVolumeOpts           *RootVolumeOpts
-	AutoScalerOpts           *AutoScalerOpts
-	InstanceMetadataOptions  *InstanceMetadataOptions
-	SpreadNodesBy            *string
-	AvailabilityVsCost       *string
+	MinSize                         *int64
+	MaxSize                         *int64
+	UtilizeReservedInstances        *bool
+	UtilizeCommitments              *bool
+	FallbackToOnDemand              *bool
+	DrainingTimeout                 *int64
+	GracePeriod                     *int64
+	InstanceTypesWhitelist          []string
+	InstanceTypesBlacklist          []string
+	Tags                            map[string]string
+	UserData                        fi.Resource
+	ImageID                         *string
+	IAMInstanceProfile              *awstasks.IAMInstanceProfile
+	SSHKey                          *awstasks.SSHKey
+	Subnets                         []*awstasks.Subnet
+	SecurityGroups                  []*awstasks.SecurityGroup
+	Monitoring                      *bool
+	AssociatePublicIPAddress        *bool
+	UseAsTemplateOnly               *bool
+	RootVolumeOpts                  *RootVolumeOpts
+	AutoScalerOpts                  *AutoScalerOpts
+	InstanceMetadataOptions         *InstanceMetadataOptions
+	SpreadNodesBy                   *string
+	AvailabilityVsCost              *string
+	ResourceTagSpecificationVolumes *bool
 }
 
 var (
@@ -304,6 +305,11 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 			actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(lc.InstanceMetadataOptions.HTTPTokens))
 			actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(lc.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
 		}
+
+		//
+		if lc.ResourceTagSpecification != nil {
+			actual.ResourceTagSpecificationVolumes = fi.PtrTo(fi.ValueOf(lc.ResourceTagSpecification.Volumes.ShouldTag))
+		}
 	}
 
 	// Auto Scaler.
@@ -481,6 +487,16 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
 					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
 					ocean.Compute.LaunchSpecification.SetInstanceMetadataOptions(opt)
+				}
+			}
+			//
+			{
+				if e.ResourceTagSpecificationVolumes != nil {
+					opt := new(aws.ResourceTagSpecification)
+					vol := new(aws.Volumes)
+					vol.SetShouldTag(fi.PtrTo(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
+					opt.SetVolumes(vol)
+					ocean.Compute.LaunchSpecification.SetResourceTagSpecification(opt)
 				}
 			}
 			if !fi.ValueOf(e.UseAsTemplateOnly) {
@@ -830,7 +846,22 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					changed = true
 				}
 			}
-
+			// ResourceTagSpecificationVolumes.
+			{
+				if changes.ResourceTagSpecificationVolumes != nil {
+					if ocean.Compute == nil {
+						ocean.Compute = new(aws.Compute)
+					}
+					if ocean.Compute.LaunchSpecification == nil {
+						ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+					}
+					opt := new(aws.ResourceTagSpecification)
+					opt.Volumes.SetShouldTag(fi.PtrTo(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
+					ocean.Compute.LaunchSpecification.SetResourceTagSpecification(opt)
+					changes.ResourceTagSpecificationVolumes = nil
+					changed = true
+				}
+			}
 			// Template.
 			{
 				if changes.UseAsTemplateOnly != nil {
@@ -1108,34 +1139,36 @@ type terraformOcean struct {
 	DrainingTimeout          *int64 `cty:"draining_timeout"`
 	GracePeriod              *int64 `cty:"grace_period"`
 
-	UseAsTemplateOnly        *bool                      `cty:"use_as_template_only"`
-	Monitoring               *bool                      `cty:"monitoring"`
-	EBSOptimized             *bool                      `cty:"ebs_optimized"`
-	ImageID                  *string                    `cty:"image_id"`
-	AssociatePublicIPAddress *bool                      `cty:"associate_public_ip_address"`
-	RootVolumeSize           *int64                     `cty:"root_volume_size"`
-	UserData                 *terraformWriter.Literal   `cty:"user_data"`
-	IAMInstanceProfile       *terraformWriter.Literal   `cty:"iam_instance_profile"`
-	KeyName                  *terraformWriter.Literal   `cty:"key_name"`
-	SecurityGroups           []*terraformWriter.Literal `cty:"security_groups"`
-	SpreadNodesBy            *string                    `cty:"spread_nodes_by"`
-	AvailabilityVsCost       *string                    `cty:"availability_vs_cost"`
+	UseAsTemplateOnly               *bool                      `cty:"use_as_template_only"`
+	Monitoring                      *bool                      `cty:"monitoring"`
+	EBSOptimized                    *bool                      `cty:"ebs_optimized"`
+	ImageID                         *string                    `cty:"image_id"`
+	AssociatePublicIPAddress        *bool                      `cty:"associate_public_ip_address"`
+	RootVolumeSize                  *int64                     `cty:"root_volume_size"`
+	UserData                        *terraformWriter.Literal   `cty:"user_data"`
+	IAMInstanceProfile              *terraformWriter.Literal   `cty:"iam_instance_profile"`
+	KeyName                         *terraformWriter.Literal   `cty:"key_name"`
+	SecurityGroups                  []*terraformWriter.Literal `cty:"security_groups"`
+	SpreadNodesBy                   *string                    `cty:"spread_nodes_by"`
+	AvailabilityVsCost              *string                    `cty:"availability_vs_cost"`
+	ResourceTagSpecificationVolumes *bool                      `cty:"resource_tag_specification_volumes"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformOcean{
-		Name:                     e.Name,
-		Region:                   fi.PtrTo(cloud.Region()),
-		UseAsTemplateOnly:        e.UseAsTemplateOnly,
-		FallbackToOnDemand:       e.FallbackToOnDemand,
-		UtilizeReservedInstances: e.UtilizeReservedInstances,
-		UtilizeCommitments:       e.UtilizeCommitments,
-		DrainingTimeout:          e.DrainingTimeout,
-		GracePeriod:              e.GracePeriod,
-		SpreadNodesBy:            e.SpreadNodesBy,
-		AvailabilityVsCost:       e.AvailabilityVsCost,
+		Name:                            e.Name,
+		Region:                          fi.PtrTo(cloud.Region()),
+		UseAsTemplateOnly:               e.UseAsTemplateOnly,
+		FallbackToOnDemand:              e.FallbackToOnDemand,
+		UtilizeReservedInstances:        e.UtilizeReservedInstances,
+		UtilizeCommitments:              e.UtilizeCommitments,
+		DrainingTimeout:                 e.DrainingTimeout,
+		GracePeriod:                     e.GracePeriod,
+		SpreadNodesBy:                   e.SpreadNodesBy,
+		AvailabilityVsCost:              e.AvailabilityVsCost,
+		ResourceTagSpecificationVolumes: e.ResourceTagSpecificationVolumes,
 	}
 
 	// Image.

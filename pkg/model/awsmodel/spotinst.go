@@ -135,6 +135,10 @@ const (
 	// SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost is the metadata label used on the
 	// instance group to specify how to optimize towards  continuity and/or cost-effective infrastructure
 	SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost = "spotinst.io/strategy-cluster-orientation-availability-vs-cost"
+
+	// SpotClusterLabelResourceTagSpecificationVolumes
+	// Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags.
+	SpotClusterLabelResourceTagSpecificationVolumes = "spotinst.io/resource-tag-specification-volumes"
 )
 
 // SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
@@ -387,6 +391,11 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 			ocean.SpreadNodesBy = fi.PtrTo(v)
 		case SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost:
 			ocean.AvailabilityVsCost = fi.PtrTo(string(spotinsttasks.NormalizeClusterOrientation(&v)))
+		case SpotClusterLabelResourceTagSpecificationVolumes:
+			ocean.ResourceTagSpecificationVolumes, err = parseBool(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
