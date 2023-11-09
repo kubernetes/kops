@@ -19,7 +19,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
         with:
-          go-version: '1.21.3'
+          go-version: '1.21.4'
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
@@ -36,7 +36,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
       with:
-        go-version: '1.21.3'
+        go-version: '1.21.4'
 
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       with:
@@ -53,7 +53,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
       with:
-        go-version: '1.21.3'
+        go-version: '1.21.4'
 
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       with:
@@ -70,7 +70,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
         with:
-          go-version: '1.21.3'
+          go-version: '1.21.4'
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
