@@ -825,7 +825,7 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/spotinst/spotinst-sdk-go v1.145.0
+# github.com/spotinst/spotinst-sdk-go v1.171.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
@@ -835,6 +835,7 @@ github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gcp
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/azure
+github.com/spotinst/spotinst-sdk-go/service/ocean/providers/azure_np
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
 github.com/spotinst/spotinst-sdk-go/service/ocean/spark
 github.com/spotinst/spotinst-sdk-go/spotinst
