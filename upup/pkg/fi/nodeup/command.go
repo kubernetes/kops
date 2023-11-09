@@ -244,7 +244,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 		modelContext.InstanceID = string(instanceIDBytes)
 
-		modelContext.ConfigurationMode, err = getAWSConfigurationMode(modelContext)
+		modelContext.ConfigurationMode, err = getAWSConfigurationMode(ctx, modelContext)
 		if err != nil {
 			return err
 		}
@@ -364,7 +364,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if nodeupConfig.EnableLifecycleHook {
 		if bootConfig.CloudProvider == api.CloudProviderAWS {
-			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
+			err := completeWarmingLifecycleAction(ctx, cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
 				return fmt.Errorf("failed to complete lifecylce action: %w", err)
 			}
@@ -388,11 +388,11 @@ func getMachineType() (string, error) {
 	return instanceTypeName, err
 }
 
-func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
+func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
 	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
 	svc := cloud.Autoscaling()
-	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
+	hooks, err := svc.DescribeLifecycleHooksWithContext(ctx, &autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: &asgName,
 		LifecycleHookNames:   []*string{&hookName},
 	})
@@ -402,7 +402,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 
 	if len(hooks.LifecycleHooks) > 0 {
 		klog.Info("Found ASG lifecycle hook")
-		_, err := svc.CompleteLifecycleAction(&autoscaling.CompleteLifecycleActionInput{
+		_, err := svc.CompleteLifecycleActionWithContext(ctx, &autoscaling.CompleteLifecycleActionInput{
 			AutoScalingGroupName:  &asgName,
 			InstanceId:            &modelContext.InstanceID,
 			LifecycleHookName:     &hookName,
@@ -710,7 +710,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 	return nil, merr
 }
 
-func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
+func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (string, error) {
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
 	role := c.BootConfig.InstanceGroupRole
@@ -720,7 +720,7 @@ func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
 
 	svc := c.Cloud.(awsup.AWSCloud).Autoscaling()
 
-	result, err := svc.DescribeAutoScalingInstances(&autoscaling.DescribeAutoScalingInstancesInput{
+	result, err := svc.DescribeAutoScalingInstancesWithContext(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: []*string{&c.InstanceID},
 	})
 	if err != nil {

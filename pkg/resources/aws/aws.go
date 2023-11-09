@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -1199,6 +1200,8 @@ func DescribeEgressOnlyInternetGateways(cloud fi.Cloud) ([]*ec2.EgressOnlyIntern
 }
 
 func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
+
 	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
@@ -1208,7 +1211,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {
 		AutoScalingGroupName: &id,
 		ForceDelete:          aws.Bool(true),
 	}
-	_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
+	_, err := c.Autoscaling().DeleteAutoScalingGroupWithContext(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err

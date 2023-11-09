@@ -17,6 +17,7 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -90,7 +91,9 @@ type MockCloud struct {
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return deleteGroup(c, g)
+	ctx := context.TODO()
+
+	return deleteGroup(ctx, c, g)
 }
 
 func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
@@ -102,11 +105,14 @@ func (c *MockAWSCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error
 }
 
 func (c *MockAWSCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
-	return detachInstance(c, i)
+	ctx := context.TODO()
+
+	return detachInstance(ctx, c, i)
 }
 
 func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+	ctx := context.TODO()
+	return getCloudGroups(ctx, c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
