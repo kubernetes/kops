@@ -14,7 +14,7 @@ In order to deploy a kops-managed cluster on OpenStack, you need the following O
 In addition, kOps can make use of the following services:
 
 * Swift (object store)
-* Dvelve (dns)
+* Designate (dns)
 * Octavia (loadbalancer)
 
 The OpenStack version should be Ocata or newer.
