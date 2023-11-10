@@ -42,6 +42,7 @@ import (
 	"k8s.io/klog/v2"
 	v2 "k8s.io/kops/tools/otel/traceserver/pb/jaeger/api/v2"
 	storagev1 "k8s.io/kops/tools/otel/traceserver/pb/jaeger/storage/v1"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func main() {
@@ -82,10 +83,26 @@ func run(ctx context.Context) error {
 		}
 	}
 
-	traceFilePath := src
-	traceFile, err := ReadTraceFile(traceFilePath)
+	vfsContext := vfs.NewVFSContext()
+	srcPath, err := vfsContext.BuildVfsPath(src)
 	if err != nil {
-		return fmt.Errorf("reading %q: %w", traceFilePath, err)
+		return fmt.Errorf("parsing path %q: %w", src, err)
+	}
+
+	klog.Infof("listing files under %v", srcPath)
+	srcFiles, err := srcPath.ReadTree()
+	if err != nil {
+		return fmt.Errorf("reading tree %q: %w", srcFiles, err)
+	}
+
+	var traceFiles []*TraceFile
+
+	for _, srcFile := range srcFiles {
+		traceFile, err := ReadTraceFile(ctx, srcFile)
+		if err != nil {
+			return fmt.Errorf("reading %q: %w", srcFile, err)
+		}
+		traceFiles = append(traceFiles, traceFile)
 	}
 
 	lis, err := net.Listen("tcp", listen)
@@ -94,7 +111,7 @@ func run(ctx context.Context) error {
 	}
 
 	s := &Server{
-		traceFiles: []*TraceFile{traceFile},
+		traceFiles: traceFiles,
 	}
 	grpcServer := grpc.NewServer()
 	storagev1.RegisterPluginCapabilitiesServer(grpcServer, s)
@@ -314,14 +331,17 @@ func (f *TraceFile) visitSpans(ctx context.Context, opt FilterOptions, callback 
 	return nil
 }
 
-func ReadTraceFile(p string) (*TraceFile, error) {
+func ReadTraceFile(ctx context.Context, p vfs.Path) (*TraceFile, error) {
 	out := &TraceFile{}
 
-	r, err := os.Open(p)
+	klog.Infof("reading file %v", p)
+	// TODO: Caching & streaming
+	b, err := p.ReadFile(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("opening: %w", err)
+		return nil, fmt.Errorf("reading %v: %w", p, err)
 	}
-	defer r.Close()
+
+	r := bytes.NewReader(b)
 
 	for {
 		header := make([]byte, 16)
