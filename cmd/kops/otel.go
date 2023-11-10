@@ -19,8 +19,11 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -88,15 +91,46 @@ func newResource(serviceName, serviceVersion string) (*resource.Resource, error)
 }
 
 func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
-	s := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_FILE")
-	if s == "" {
-		s = os.Getenv("OTEL_EXPORTER_OTLP_FILE")
+	destIsDirectory := false
+
+	dest := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_FILE")
+	if dest == "" {
+		dest = os.Getenv("OTEL_EXPORTER_OTLP_FILE")
 	}
-	if s == "" {
+	if dest == "" {
+		dest = os.Getenv("OTEL_EXPORTER_OTLP_TRACES_DIR")
+		if dest != "" {
+			destIsDirectory = true
+		}
+	}
+	if dest == "" {
+		dest = os.Getenv("OTEL_EXPORTER_OTLP_DIR")
+		if dest != "" {
+			destIsDirectory = true
+		}
+	}
+	if dest == "" {
 		return nil, nil
 	}
 
-	traceExporter, err := otlptracefile.New(ctx, otlptracefile.WithPath(s))
+	// If we are writing to a directory, construct a (likely) unique name
+	if destIsDirectory {
+		if err := os.MkdirAll(dest, 0755); err != nil {
+			return nil, fmt.Errorf("creating directories %q: %w", dest, err)
+		}
+		processName, err := os.Executable()
+		if err != nil {
+			return nil, fmt.Errorf("getting process name: %w", err)
+		}
+		processName = filepath.Base(processName)
+		processName = strings.TrimSuffix(processName, ".exe")
+		pid := os.Getpid()
+		timestamp := time.Now().UTC().Format(time.RFC3339)
+		filename := fmt.Sprintf("%s-%d-%s.otel", processName, pid, timestamp)
+		dest = filepath.Join(dest, filename)
+	}
+
+	traceExporter, err := otlptracefile.New(ctx, otlptracefile.WithPath(dest))
 	if err != nil {
 		return nil, err
 	}
