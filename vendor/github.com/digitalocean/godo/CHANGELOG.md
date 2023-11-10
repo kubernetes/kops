@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.105.1] - 2023-11-07
+
+- #652 - @andrewsomething - Retry on HTTP/2 internal errors.
+- #648 - @alexandear - test: use fmt.Fprintf instead of fmt.Fprintf(fmt.Sprintf(...))
+- #651 - @alexandear - test: Replace deprecated io/ioutil with io
+- #647 - @alexandear - test: add missing error check
+
 ## [v1.105.0] - 2023-10-16
 
 - #643 - @dweinshenker - Add support for scalable storage on database clusters
