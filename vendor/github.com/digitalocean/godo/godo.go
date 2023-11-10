@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	libraryVersion = "1.105.0"
+	libraryVersion = "1.105.1"
 	defaultBaseURL = "https://api.digitalocean.com/"
 	userAgent      = "godo/" + libraryVersion
 	mediaType      = "application/json"
@@ -346,6 +346,16 @@ func New(httpClient *http.Client, opts ...ClientOpt) (*Client, error) {
 			}
 
 			return resp, err
+		}
+
+		retryableClient.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+			// In addition to the default retry policy, we also retry HTTP/2 INTERNAL_ERROR errors.
+			// See: https://github.com/golang/go/issues/51323
+			if err != nil && strings.Contains(err.Error(), "INTERNAL_ERROR") && strings.Contains(reflect.TypeOf(err).String(), "http2") {
+				return true, nil
+			}
+
+			return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 		}
 
 		var source *oauth2.Transport

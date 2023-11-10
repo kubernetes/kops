@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20231012",
+  "revision": "20231024",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3172,6 +3172,10 @@
         "endpoint": {
           "description": "[Output only] The IP address of this cluster's master endpoint. The endpoint can be accessed from the internet at `https://username:password@endpoint/`. See the `masterAuth` property of this resource for username and password information.",
           "type": "string"
+        },
+        "enterpriseConfig": {
+          "$ref": "EnterpriseConfig",
+          "description": "GKE Enterprise Configuration."
         },
         "etag": {
           "description": "This checksum is computed by the server based on the value of cluster fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
@@ -3948,6 +3952,28 @@
       "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance: service Foo { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }",
       "id": "Empty",
       "properties": {},
+      "type": "object"
+    },
+    "EnterpriseConfig": {
+      "description": "EnterpriseConfig is the cluster enterprise configuration.",
+      "id": "EnterpriseConfig",
+      "properties": {
+        "clusterTier": {
+          "description": "Output only. [Output only] cluster_tier specifies the premium tier of the cluster.",
+          "enum": [
+            "CLUSTER_TIER_UNSPECIFIED",
+            "STANDARD",
+            "ENTERPRISE"
+          ],
+          "enumDescriptions": [
+            "CLUSTER_TIER_UNSPECIFIED is when cluster_tier is not set.",
+            "STANDARD indicates a standard GKE cluster.",
+            "ENTERPRISE indicates a GKE Enterprise cluster."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "EphemeralStorageLocalSsdConfig": {

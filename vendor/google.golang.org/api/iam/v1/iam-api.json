@@ -2850,9 +2850,27 @@
       }
     }
   },
-  "revision": "20230914",
+  "revision": "20231026",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
+    "AccessRestrictions": {
+      "description": "Access related restrictions on the workforce pool.",
+      "id": "AccessRestrictions",
+      "properties": {
+        "allowedServices": {
+          "description": "Optional. Immutable. Services allowed for web sign-in with the workforce pool. If not set by default there are no restrictions.",
+          "items": {
+            "$ref": "ServiceConfig"
+          },
+          "type": "array"
+        },
+        "disableProgrammaticSignin": {
+          "description": "Optional. Disable programmatic sign-in by disabling token issue via the Security Token API endpoint. See [Security Token Service API] (https://cloud.google.com/iam/docs/reference/sts/rest).",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "AdminAuditData": {
       "description": "Audit log information specific to Cloud IAM admin APIs. This message is serialized as an `Any` type in the `ServiceData` message of an `AuditLog` message.",
       "id": "AdminAuditData",
@@ -4105,6 +4123,17 @@
       },
       "type": "object"
     },
+    "ServiceConfig": {
+      "description": "Configuration for a service.",
+      "id": "ServiceConfig",
+      "properties": {
+        "domain": {
+          "description": "Optional. Domain name of the service. Example: console.cloud.google",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "SetIamPolicyRequest": {
       "description": "Request message for `SetIamPolicy` method.",
       "id": "SetIamPolicyRequest",
@@ -4322,6 +4351,10 @@
       "description": "Represents a collection of external workforces. Provides namespaces for federated users that can be referenced in IAM policies.",
       "id": "WorkforcePool",
       "properties": {
+        "accessRestrictions": {
+          "$ref": "AccessRestrictions",
+          "description": "Optional. Configure access restrictions on the workforce pool users. This is an optional field. If specified web sign-in can be restricted to given set of services or programmatic sign-in can be disabled for pool users."
+        },
         "description": {
           "description": "A user-specified description of the pool. Cannot exceed 256 characters.",
           "type": "string"

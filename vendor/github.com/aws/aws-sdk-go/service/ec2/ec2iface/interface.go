@@ -1912,6 +1912,10 @@ type EC2API interface {
 	DisableSerialConsoleAccessWithContext(aws.Context, *ec2.DisableSerialConsoleAccessInput, ...request.Option) (*ec2.DisableSerialConsoleAccessOutput, error)
 	DisableSerialConsoleAccessRequest(*ec2.DisableSerialConsoleAccessInput) (*request.Request, *ec2.DisableSerialConsoleAccessOutput)
 
+	DisableSnapshotBlockPublicAccess(*ec2.DisableSnapshotBlockPublicAccessInput) (*ec2.DisableSnapshotBlockPublicAccessOutput, error)
+	DisableSnapshotBlockPublicAccessWithContext(aws.Context, *ec2.DisableSnapshotBlockPublicAccessInput, ...request.Option) (*ec2.DisableSnapshotBlockPublicAccessOutput, error)
+	DisableSnapshotBlockPublicAccessRequest(*ec2.DisableSnapshotBlockPublicAccessInput) (*request.Request, *ec2.DisableSnapshotBlockPublicAccessOutput)
+
 	DisableTransitGatewayRouteTablePropagation(*ec2.DisableTransitGatewayRouteTablePropagationInput) (*ec2.DisableTransitGatewayRouteTablePropagationOutput, error)
 	DisableTransitGatewayRouteTablePropagationWithContext(aws.Context, *ec2.DisableTransitGatewayRouteTablePropagationInput, ...request.Option) (*ec2.DisableTransitGatewayRouteTablePropagationOutput, error)
 	DisableTransitGatewayRouteTablePropagationRequest(*ec2.DisableTransitGatewayRouteTablePropagationInput) (*request.Request, *ec2.DisableTransitGatewayRouteTablePropagationOutput)
@@ -2027,6 +2031,10 @@ type EC2API interface {
 	EnableSerialConsoleAccess(*ec2.EnableSerialConsoleAccessInput) (*ec2.EnableSerialConsoleAccessOutput, error)
 	EnableSerialConsoleAccessWithContext(aws.Context, *ec2.EnableSerialConsoleAccessInput, ...request.Option) (*ec2.EnableSerialConsoleAccessOutput, error)
 	EnableSerialConsoleAccessRequest(*ec2.EnableSerialConsoleAccessInput) (*request.Request, *ec2.EnableSerialConsoleAccessOutput)
+
+	EnableSnapshotBlockPublicAccess(*ec2.EnableSnapshotBlockPublicAccessInput) (*ec2.EnableSnapshotBlockPublicAccessOutput, error)
+	EnableSnapshotBlockPublicAccessWithContext(aws.Context, *ec2.EnableSnapshotBlockPublicAccessInput, ...request.Option) (*ec2.EnableSnapshotBlockPublicAccessOutput, error)
+	EnableSnapshotBlockPublicAccessRequest(*ec2.EnableSnapshotBlockPublicAccessInput) (*request.Request, *ec2.EnableSnapshotBlockPublicAccessOutput)
 
 	EnableTransitGatewayRouteTablePropagation(*ec2.EnableTransitGatewayRouteTablePropagationInput) (*ec2.EnableTransitGatewayRouteTablePropagationOutput, error)
 	EnableTransitGatewayRouteTablePropagationWithContext(aws.Context, *ec2.EnableTransitGatewayRouteTablePropagationInput, ...request.Option) (*ec2.EnableTransitGatewayRouteTablePropagationOutput, error)
@@ -2229,6 +2237,10 @@ type EC2API interface {
 	GetSerialConsoleAccessStatus(*ec2.GetSerialConsoleAccessStatusInput) (*ec2.GetSerialConsoleAccessStatusOutput, error)
 	GetSerialConsoleAccessStatusWithContext(aws.Context, *ec2.GetSerialConsoleAccessStatusInput, ...request.Option) (*ec2.GetSerialConsoleAccessStatusOutput, error)
 	GetSerialConsoleAccessStatusRequest(*ec2.GetSerialConsoleAccessStatusInput) (*request.Request, *ec2.GetSerialConsoleAccessStatusOutput)
+
+	GetSnapshotBlockPublicAccessState(*ec2.GetSnapshotBlockPublicAccessStateInput) (*ec2.GetSnapshotBlockPublicAccessStateOutput, error)
+	GetSnapshotBlockPublicAccessStateWithContext(aws.Context, *ec2.GetSnapshotBlockPublicAccessStateInput, ...request.Option) (*ec2.GetSnapshotBlockPublicAccessStateOutput, error)
+	GetSnapshotBlockPublicAccessStateRequest(*ec2.GetSnapshotBlockPublicAccessStateInput) (*request.Request, *ec2.GetSnapshotBlockPublicAccessStateOutput)
 
 	GetSpotPlacementScores(*ec2.GetSpotPlacementScoresInput) (*ec2.GetSpotPlacementScoresOutput, error)
 	GetSpotPlacementScoresWithContext(aws.Context, *ec2.GetSpotPlacementScoresInput, ...request.Option) (*ec2.GetSpotPlacementScoresOutput, error)
