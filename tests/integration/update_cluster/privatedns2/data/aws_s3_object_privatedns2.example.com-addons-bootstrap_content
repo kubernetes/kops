@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 1143acabbdec60ac712e475c2612f2896e04e80cf25500e87d31f9b254957135
+    manifestHash: 32300dda780191b9543ab20597aa8fe3413f0aa6a2515dc9cbb4b3ea30dee102
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -34,7 +34,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 31a5c123e98699faa1a19e594fe9b092d3d04ac4b84292a02046bdbf3e605e29
+    manifestHash: a9a8403fe6f227463e8201ec0c2907af0f6a091baeada0a2379126cfc3d403ec
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
