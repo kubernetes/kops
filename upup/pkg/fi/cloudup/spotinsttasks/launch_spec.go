@@ -55,6 +55,7 @@ type LaunchSpec struct {
 	MinSize                  *int64
 	MaxSize                  *int64
 	InstanceMetadataOptions  *InstanceMetadataOptions
+	OtherArchitectureImages  []string
 
 	Ocean *Ocean
 }
@@ -157,8 +158,12 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 
 	// Image.
 	{
+		//		convert spec from api that reply for multi arch data only in spec.images
+		if spec.Images != nil && len(spec.Images) > 1 {
+			spec.SetImageId(fi.PtrTo(fi.ValueOf(spec.Images[0].ImageId)))
+			actual.OtherArchitectureImages = append(actual.OtherArchitectureImages, fi.ValueOf(spec.Images[1].ImageId))
+		}
 		actual.ImageID = spec.ImageID
-
 		if o.ImageID != nil && actual.ImageID != nil &&
 			fi.ValueOf(actual.ImageID) != fi.ValueOf(o.ImageID) {
 			image, err := resolveImage(cloud, fi.ValueOf(o.ImageID))
@@ -167,6 +172,16 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 			}
 			if fi.ValueOf(image.ImageId) == fi.ValueOf(spec.ImageID) {
 				actual.ImageID = o.ImageID
+			}
+		}
+		if o.OtherArchitectureImages != nil && actual.OtherArchitectureImages != nil &&
+			(actual.OtherArchitectureImages[0] != o.OtherArchitectureImages[0]) {
+			image, err := resolveImage(cloud, o.OtherArchitectureImages[0])
+			if err != nil {
+				return nil, err
+			}
+			if fi.ValueOf(image.ImageId) == actual.OtherArchitectureImages[0] {
+				actual.OtherArchitectureImages[0] = o.OtherArchitectureImages[0]
 			}
 		}
 	}
@@ -395,12 +410,21 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if e.ImageID != nil {
+		if e.ImageID != nil && len(e.OtherArchitectureImages) == 0 { //old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
 			}
 			spec.SetImageId(image.ImageId)
+		} else {
+			if e.ImageID != nil && len(e.OtherArchitectureImages) == 1 {
+				images, err := buildImages(cloud, e.ImageID, e.OtherArchitectureImages)
+				if err != nil {
+					return err
+				}
+				spec.SetImageId(nil)
+				spec.SetImages(images)
+			}
 		}
 	}
 
@@ -610,7 +634,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if changes.ImageID != nil {
+		if changes.ImageID != nil { //old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
@@ -619,10 +643,21 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 			if fi.ValueOf(actual.ImageID) != fi.ValueOf(image.ImageId) {
 				spec.SetImageId(image.ImageId)
 			}
-
 			changes.ImageID = nil
 			changed = true
 		}
+		if changes.OtherArchitectureImages != nil {
+			images, err := buildImages(cloud, spec.ImageID, e.OtherArchitectureImages)
+			if err != nil {
+				return err
+			}
+			spec.SetImageId(nil)
+			spec.SetImages(images)
+			changes.OtherArchitectureImages = nil
+			changed = true
+
+		}
+
 	}
 
 	// User data.
@@ -1138,4 +1173,27 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 	}
 
 	return out
+}
+func buildImages(cloud awsup.AWSCloud, ImageID *string, OtherArchitectureImages []string) ([]*aws.Images, error) {
+	var imagesSlice []*aws.Images
+	var imageIndex = 0
+	if ImageID != nil {
+		image, err := resolveImage(cloud, fi.ValueOf(ImageID))
+		if err != nil {
+			return nil, err
+		}
+		imagesSlice = append(imagesSlice, &aws.Images{})
+		imagesSlice[imageIndex].SetImageId(image.ImageId)
+		imageIndex++
+	}
+	if len(OtherArchitectureImages) == 1 {
+		image2, err := resolveImage(cloud, OtherArchitectureImages[0])
+		if err != nil {
+			return nil, err
+		}
+		imagesSlice = append(imagesSlice, &aws.Images{})
+		imagesSlice[imageIndex].SetImageId(image2.ImageId)
+	}
+
+	return imagesSlice, nil
 }
