@@ -114,6 +114,10 @@ const (
 	// instance group to specify the cooldown period (in seconds) for scaling actions.
 	SpotInstanceGroupLabelAutoScalerCooldown = "spotinst.io/autoscaler-cooldown"
 
+	// SpotInstanceGroupLabelOtherArchitectureImages  Identifier of other architecture image in AWS.
+	//For each architecture type (amd64, arm64) only one AMI is allowed,first image is from  config.InstanceGroup.spec.image
+	SpotInstanceGroupLabelOtherArchitectureImages = "spotinst.io/other-architecture-images"
+
 	// SpotInstanceGroupLabelAutoScalerScaleDown* are the metadata labels used on the
 	// instance group to specify the scale down configuration used by the auto scaler.
 	SpotInstanceGroupLabelAutoScalerScaleDownMaxPercentage     = "spotinst.io/autoscaler-scale-down-max-percentage"
@@ -533,7 +537,7 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 
 	klog.V(4).Infof("Adding task: Ocean/%s", fi.ValueOf(ocean.Name))
 	c.AddTask(ocean)
-
+	klog.V(4).Infof("Finish task: Ocean/%s", fi.ValueOf(ocean.Name))
 	return nil
 }
 
@@ -564,6 +568,12 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 
 		case SpotInstanceGroupLabelRestrictScaleDown:
 			launchSpec.RestrictScaleDown, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
+		case SpotInstanceGroupLabelOtherArchitectureImages:
+			launchSpec.OtherArchitectureImages, err = parseStringSlice(v)
 			if err != nil {
 				return err
 			}
