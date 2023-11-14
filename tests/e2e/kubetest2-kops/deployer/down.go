@@ -33,7 +33,7 @@ func (d *deployer) Down() error {
 	}
 
 	// There is no point running the rest of this function if the cluster doesn't exist
-	cluster, _ := kops.GetCluster(d.KopsBinaryPath, d.ClusterName, nil)
+	cluster, _ := kops.GetCluster(d.KopsBinaryPath, d.ClusterName, nil, false)
 	if cluster == nil {
 		return nil
 	}
