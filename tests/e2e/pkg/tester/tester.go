@@ -107,7 +107,7 @@ func (t *Tester) getKopsCluster() (*api.Cluster, error) {
 
 	kopsClusterName := currentContext
 
-	cluster, err := kops.GetCluster("kops", kopsClusterName, nil)
+	cluster, err := kops.GetCluster("kops", kopsClusterName, nil, true)
 	if err != nil {
 		return nil, err
 	}

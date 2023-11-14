@@ -29,9 +29,12 @@ import (
 )
 
 // GetCluster will retrieve the specified Cluster from the state store.
-func GetCluster(kopsBinary, clusterName string, env []string) (*api.Cluster, error) {
+func GetCluster(kopsBinary, clusterName string, env []string, full bool) (*api.Cluster, error) {
 	args := []string{
-		kopsBinary, "get", "cluster", clusterName, "-ojson", "--full",
+		kopsBinary, "get", "cluster", clusterName, "-ojson",
+	}
+	if full {
+		args = append(args, "--full")
 	}
 	c := exec.Command(args[0], args[1:]...)
 	c.SetEnv(env...)
