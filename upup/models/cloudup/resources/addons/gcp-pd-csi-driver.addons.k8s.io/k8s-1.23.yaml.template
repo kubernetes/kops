@@ -6,7 +6,7 @@ kind: StorageClass
 metadata:
   name: standard-csi
   annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "false"
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-addon: gcp-pd-csi-driver.addons.k8s.io
@@ -15,6 +15,41 @@ parameters:
   type: pd-standard
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: balanced-csi
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  labels:
+    kubernetes.io/cluster-service: "true"
+    k8s-addon: gcp-pd-csi-driver.addons.k8s.io
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Delete
+parameters:
+  type: pd-balanced
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    k8s-addon: gcp-pd-csi-driver.addons.k8s.io
+  name: ssd-csi
+parameters:
+  type: pd-ssd
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
 {{ end }}
 
 ---
