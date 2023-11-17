@@ -1234,6 +1234,13 @@ type EC2API interface {
 	DescribeInstanceStatusPages(*ec2.DescribeInstanceStatusInput, func(*ec2.DescribeInstanceStatusOutput, bool) bool) error
 	DescribeInstanceStatusPagesWithContext(aws.Context, *ec2.DescribeInstanceStatusInput, func(*ec2.DescribeInstanceStatusOutput, bool) bool, ...request.Option) error
 
+	DescribeInstanceTopology(*ec2.DescribeInstanceTopologyInput) (*ec2.DescribeInstanceTopologyOutput, error)
+	DescribeInstanceTopologyWithContext(aws.Context, *ec2.DescribeInstanceTopologyInput, ...request.Option) (*ec2.DescribeInstanceTopologyOutput, error)
+	DescribeInstanceTopologyRequest(*ec2.DescribeInstanceTopologyInput) (*request.Request, *ec2.DescribeInstanceTopologyOutput)
+
+	DescribeInstanceTopologyPages(*ec2.DescribeInstanceTopologyInput, func(*ec2.DescribeInstanceTopologyOutput, bool) bool) error
+	DescribeInstanceTopologyPagesWithContext(aws.Context, *ec2.DescribeInstanceTopologyInput, func(*ec2.DescribeInstanceTopologyOutput, bool) bool, ...request.Option) error
+
 	DescribeInstanceTypeOfferings(*ec2.DescribeInstanceTypeOfferingsInput) (*ec2.DescribeInstanceTypeOfferingsOutput, error)
 	DescribeInstanceTypeOfferingsWithContext(aws.Context, *ec2.DescribeInstanceTypeOfferingsInput, ...request.Option) (*ec2.DescribeInstanceTypeOfferingsOutput, error)
 	DescribeInstanceTypeOfferingsRequest(*ec2.DescribeInstanceTypeOfferingsInput) (*request.Request, *ec2.DescribeInstanceTypeOfferingsOutput)
@@ -1363,6 +1370,10 @@ type EC2API interface {
 
 	DescribeLocalGatewaysPages(*ec2.DescribeLocalGatewaysInput, func(*ec2.DescribeLocalGatewaysOutput, bool) bool) error
 	DescribeLocalGatewaysPagesWithContext(aws.Context, *ec2.DescribeLocalGatewaysInput, func(*ec2.DescribeLocalGatewaysOutput, bool) bool, ...request.Option) error
+
+	DescribeLockedSnapshots(*ec2.DescribeLockedSnapshotsInput) (*ec2.DescribeLockedSnapshotsOutput, error)
+	DescribeLockedSnapshotsWithContext(aws.Context, *ec2.DescribeLockedSnapshotsInput, ...request.Option) (*ec2.DescribeLockedSnapshotsOutput, error)
+	DescribeLockedSnapshotsRequest(*ec2.DescribeLockedSnapshotsInput) (*request.Request, *ec2.DescribeLockedSnapshotsOutput)
 
 	DescribeManagedPrefixLists(*ec2.DescribeManagedPrefixListsInput) (*ec2.DescribeManagedPrefixListsOutput, error)
 	DescribeManagedPrefixListsWithContext(aws.Context, *ec2.DescribeManagedPrefixListsInput, ...request.Option) (*ec2.DescribeManagedPrefixListsOutput, error)
@@ -2360,6 +2371,10 @@ type EC2API interface {
 	ListSnapshotsInRecycleBinPages(*ec2.ListSnapshotsInRecycleBinInput, func(*ec2.ListSnapshotsInRecycleBinOutput, bool) bool) error
 	ListSnapshotsInRecycleBinPagesWithContext(aws.Context, *ec2.ListSnapshotsInRecycleBinInput, func(*ec2.ListSnapshotsInRecycleBinOutput, bool) bool, ...request.Option) error
 
+	LockSnapshot(*ec2.LockSnapshotInput) (*ec2.LockSnapshotOutput, error)
+	LockSnapshotWithContext(aws.Context, *ec2.LockSnapshotInput, ...request.Option) (*ec2.LockSnapshotOutput, error)
+	LockSnapshotRequest(*ec2.LockSnapshotInput) (*request.Request, *ec2.LockSnapshotOutput)
+
 	ModifyAddressAttribute(*ec2.ModifyAddressAttributeInput) (*ec2.ModifyAddressAttributeOutput, error)
 	ModifyAddressAttributeWithContext(aws.Context, *ec2.ModifyAddressAttributeInput, ...request.Option) (*ec2.ModifyAddressAttributeOutput, error)
 	ModifyAddressAttributeRequest(*ec2.ModifyAddressAttributeInput) (*request.Request, *ec2.ModifyAddressAttributeOutput)
@@ -2877,6 +2892,10 @@ type EC2API interface {
 	UnassignPrivateNatGatewayAddress(*ec2.UnassignPrivateNatGatewayAddressInput) (*ec2.UnassignPrivateNatGatewayAddressOutput, error)
 	UnassignPrivateNatGatewayAddressWithContext(aws.Context, *ec2.UnassignPrivateNatGatewayAddressInput, ...request.Option) (*ec2.UnassignPrivateNatGatewayAddressOutput, error)
 	UnassignPrivateNatGatewayAddressRequest(*ec2.UnassignPrivateNatGatewayAddressInput) (*request.Request, *ec2.UnassignPrivateNatGatewayAddressOutput)
+
+	UnlockSnapshot(*ec2.UnlockSnapshotInput) (*ec2.UnlockSnapshotOutput, error)
+	UnlockSnapshotWithContext(aws.Context, *ec2.UnlockSnapshotInput, ...request.Option) (*ec2.UnlockSnapshotOutput, error)
+	UnlockSnapshotRequest(*ec2.UnlockSnapshotInput) (*request.Request, *ec2.UnlockSnapshotOutput)
 
 	UnmonitorInstances(*ec2.UnmonitorInstancesInput) (*ec2.UnmonitorInstancesOutput, error)
 	UnmonitorInstancesWithContext(aws.Context, *ec2.UnmonitorInstancesInput, ...request.Option) (*ec2.UnmonitorInstancesOutput, error)

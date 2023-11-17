@@ -18828,6 +18828,9 @@ type AutomationExecution struct {
 
 	// The CloudWatch alarm that was invoked by the automation.
 	TriggeredAlarms []*AlarmStateInformation `min:"1" type:"list"`
+
+	// Variables defined for the automation.
+	Variables map[string][]*string `min:"1" type:"map"`
 }
 
 // String returns the string representation.
@@ -19043,6 +19046,12 @@ func (s *AutomationExecution) SetTargets(v []*Target) *AutomationExecution {
 // SetTriggeredAlarms sets the TriggeredAlarms field's value.
 func (s *AutomationExecution) SetTriggeredAlarms(v []*AlarmStateInformation) *AutomationExecution {
 	s.TriggeredAlarms = v
+	return s
+}
+
+// SetVariables sets the Variables field's value.
+func (s *AutomationExecution) SetVariables(v map[string][]*string) *AutomationExecution {
+	s.Variables = v
 	return s
 }
 
@@ -22968,7 +22977,7 @@ type CreateOpsItemInput struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -27178,6 +27187,9 @@ type DescribeInstancePatchesInput struct {
 	//    * Severity Sample values: Important | Medium | Low
 	//
 	//    * State Sample values: Installed | InstalledOther | InstalledPendingReboot
+	//    For lists of all State values, see Understanding patch compliance state
+	//    values (https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-compliance-states.html)
+	//    in the Amazon Web Services Systems Manager User Guide.
 	Filters []*PatchOrchestratorFilter `type:"list"`
 
 	// The ID of the managed node whose patch state information should be retrieved.
@@ -45492,7 +45504,7 @@ type OpsItem struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -46783,7 +46795,7 @@ type OpsItemSummary struct {
 	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
 	//    reviewing and approving or rejecting change requests.
 	//
-	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    * /aws/insight This type of OpsItem is used by OpsCenter for aggregating
 	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
@@ -48630,6 +48642,74 @@ func (s *ParametersFilter) SetKey(v string) *ParametersFilter {
 // SetValues sets the Values field's value.
 func (s *ParametersFilter) SetValues(v []*string) *ParametersFilter {
 	s.Values = v
+	return s
+}
+
+// A detailed status of the parent step.
+type ParentStepDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the automation action.
+	Action *string `type:"string"`
+
+	// The current repetition of the loop represented by an integer.
+	Iteration *int64 `type:"integer"`
+
+	// The current value of the specified iterator in the loop.
+	IteratorValue *string `type:"string"`
+
+	// The unique ID of a step execution.
+	StepExecutionId *string `type:"string"`
+
+	// The name of the step.
+	StepName *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ParentStepDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ParentStepDetails) GoString() string {
+	return s.String()
+}
+
+// SetAction sets the Action field's value.
+func (s *ParentStepDetails) SetAction(v string) *ParentStepDetails {
+	s.Action = &v
+	return s
+}
+
+// SetIteration sets the Iteration field's value.
+func (s *ParentStepDetails) SetIteration(v int64) *ParentStepDetails {
+	s.Iteration = &v
+	return s
+}
+
+// SetIteratorValue sets the IteratorValue field's value.
+func (s *ParentStepDetails) SetIteratorValue(v string) *ParentStepDetails {
+	s.IteratorValue = &v
+	return s
+}
+
+// SetStepExecutionId sets the StepExecutionId field's value.
+func (s *ParentStepDetails) SetStepExecutionId(v string) *ParentStepDetails {
+	s.StepExecutionId = &v
+	return s
+}
+
+// SetStepName sets the StepName field's value.
+func (s *ParentStepDetails) SetStepName(v string) *ParentStepDetails {
+	s.StepName = &v
 	return s
 }
 
@@ -55401,6 +55481,9 @@ type StepExecution struct {
 	// A user-specified list of parameters to override when running a step.
 	OverriddenParameters map[string][]*string `min:"1" type:"map"`
 
+	// Information about the parent step.
+	ParentStepDetails *ParentStepDetails `type:"structure"`
+
 	// A message associated with the response code for an execution.
 	Response *string `type:"string"`
 
@@ -55533,6 +55616,12 @@ func (s *StepExecution) SetOverriddenParameters(v map[string][]*string) *StepExe
 	return s
 }
 
+// SetParentStepDetails sets the ParentStepDetails field's value.
+func (s *StepExecution) SetParentStepDetails(v *ParentStepDetails) *StepExecution {
+	s.ParentStepDetails = v
+	return s
+}
+
 // SetResponse sets the Response field's value.
 func (s *StepExecution) SetResponse(v string) *StepExecution {
 	s.Response = &v
@@ -55598,9 +55687,7 @@ func (s *StepExecution) SetValidNextSteps(v []*string) *StepExecution {
 type StepExecutionFilter struct {
 	_ struct{} `type:"structure"`
 
-	// One or more keys to limit the results. Valid filter keys include the following:
-	// StepName, Action, StepExecutionId, StepExecutionStatus, StartTimeBefore,
-	// StartTimeAfter.
+	// One or more keys to limit the results.
 	//
 	// Key is a required field
 	Key *string `type:"string" required:"true" enum:"StepExecutionFilterKey"`
@@ -59984,23 +60071,25 @@ type UpdateServiceSettingInput struct {
 	// The new value to specify for the service setting. The following list specifies
 	// the available values for each setting.
 	//
-	//    * /ssm/managed-instance/default-ec2-instance-management-role: The name
-	//    of an IAM role
+	//    * For /ssm/managed-instance/default-ec2-instance-management-role, enter
+	//    the name of an IAM role.
 	//
-	//    * /ssm/automation/customer-script-log-destination: CloudWatch
+	//    * For /ssm/automation/customer-script-log-destination, enter CloudWatch.
 	//
-	//    * /ssm/automation/customer-script-log-group-name: The name of an Amazon
-	//    CloudWatch Logs log group
+	//    * For /ssm/automation/customer-script-log-group-name, enter the name of
+	//    an Amazon CloudWatch Logs log group.
 	//
-	//    * /ssm/documents/console/public-sharing-permission: Enable or Disable
+	//    * For /ssm/documents/console/public-sharing-permission, enter Enable or
+	//    Disable.
 	//
-	//    * /ssm/managed-instance/activation-tier: standard or advanced
+	//    * For /ssm/managed-instance/activation-tier, enter standard or advanced.
 	//
-	//    * /ssm/opsinsights/opscenter: Enabled or Disabled
+	//    * For /ssm/opsinsights/opscenter, enter Enabled or Disabled.
 	//
-	//    * /ssm/parameter-store/default-parameter-tier: Standard, Advanced, Intelligent-Tiering
+	//    * For /ssm/parameter-store/default-parameter-tier, enter Standard, Advanced,
+	//    or Intelligent-Tiering
 	//
-	//    * /ssm/parameter-store/high-throughput-enabled: true or false
+	//    * For /ssm/parameter-store/high-throughput-enabled, enter true or false.
 	//
 	// SettingValue is a required field
 	SettingValue *string `min:"1" type:"string" required:"true"`
@@ -60387,6 +60476,9 @@ const (
 
 	// AutomationExecutionStatusCompletedWithFailure is a AutomationExecutionStatus enum value
 	AutomationExecutionStatusCompletedWithFailure = "CompletedWithFailure"
+
+	// AutomationExecutionStatusExited is a AutomationExecutionStatus enum value
+	AutomationExecutionStatusExited = "Exited"
 )
 
 // AutomationExecutionStatus_Values returns all elements of the AutomationExecutionStatus enum
@@ -60410,6 +60502,7 @@ func AutomationExecutionStatus_Values() []string {
 		AutomationExecutionStatusChangeCalendarOverrideRejected,
 		AutomationExecutionStatusCompletedWithSuccess,
 		AutomationExecutionStatusCompletedWithFailure,
+		AutomationExecutionStatusExited,
 	}
 }
 
@@ -62328,6 +62421,15 @@ const (
 
 	// StepExecutionFilterKeyAction is a StepExecutionFilterKey enum value
 	StepExecutionFilterKeyAction = "Action"
+
+	// StepExecutionFilterKeyParentStepExecutionId is a StepExecutionFilterKey enum value
+	StepExecutionFilterKeyParentStepExecutionId = "ParentStepExecutionId"
+
+	// StepExecutionFilterKeyParentStepIteration is a StepExecutionFilterKey enum value
+	StepExecutionFilterKeyParentStepIteration = "ParentStepIteration"
+
+	// StepExecutionFilterKeyParentStepIteratorValue is a StepExecutionFilterKey enum value
+	StepExecutionFilterKeyParentStepIteratorValue = "ParentStepIteratorValue"
 )
 
 // StepExecutionFilterKey_Values returns all elements of the StepExecutionFilterKey enum
@@ -62339,6 +62441,9 @@ func StepExecutionFilterKey_Values() []string {
 		StepExecutionFilterKeyStepExecutionId,
 		StepExecutionFilterKeyStepName,
 		StepExecutionFilterKeyAction,
+		StepExecutionFilterKeyParentStepExecutionId,
+		StepExecutionFilterKeyParentStepIteration,
+		StepExecutionFilterKeyParentStepIteratorValue,
 	}
 }
 

@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20231024",
+  "revision": "20231030",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -5465,6 +5465,10 @@
           "format": "int32",
           "type": "integer"
         },
+        "queuedProvisioning": {
+          "$ref": "QueuedProvisioning",
+          "description": "Specifies the configuration of queued provisioning."
+        },
         "selfLink": {
           "description": "[Output only] Server-defined URL for the resource.",
           "type": "string"
@@ -5974,6 +5978,17 @@
         "topic": {
           "description": "The desired Pub/Sub topic to which notifications will be sent by GKE. Format is `projects/{project}/topics/{topic}`.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "QueuedProvisioning": {
+      "description": "QueuedProvisioning defines the queued provisioning used by the node pool.",
+      "id": "QueuedProvisioning",
+      "properties": {
+        "enabled": {
+          "description": "Denotes that this nodepool is QRM specific, meaning nodes can be only obtained through queuing via the Cluster Autoscaler ProvisioningRequest API.",
+          "type": "boolean"
         }
       },
       "type": "object"

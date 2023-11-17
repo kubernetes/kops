@@ -347,7 +347,6 @@ type TopicConfig struct {
 	SegmentIndexBytes               *uint64  `json:"segment_index_bytes,omitempty"`
 	SegmentJitterMS                 *uint64  `json:"segment_jitter_ms,omitempty"`
 	SegmentMS                       *uint64  `json:"segment_ms,omitempty"`
-	UncleanLeaderElectionEnable     *bool    `json:"unclean_leader_election_enable,omitempty"`
 }
 
 // DatabaseCreateTopicRequest is used to create a new topic within a kafka cluster
