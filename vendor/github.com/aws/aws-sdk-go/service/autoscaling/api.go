@@ -6512,10 +6512,7 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 
 // StartInstanceRefresh API operation for Auto Scaling.
 //
-// Starts an instance refresh. During an instance refresh, Amazon EC2 Auto Scaling
-// performs a rolling update of instances in an Auto Scaling group. Instances
-// are terminated first and then replaced, which temporarily reduces the capacity
-// available within your Auto Scaling group.
+// Starts an instance refresh.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
@@ -8302,6 +8299,11 @@ type CreateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceId *string `min:"1" type:"string"`
 
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The name of the launch configuration to use to launch instances.
 	//
 	// Conditional: You must specify either a launch template (LaunchTemplate or
@@ -8480,6 +8482,11 @@ func (s *CreateAutoScalingGroupInput) Validate() error {
 	if s.VPCZoneIdentifier != nil && len(*s.VPCZoneIdentifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("VPCZoneIdentifier", 1))
 	}
+	if s.InstanceMaintenancePolicy != nil {
+		if err := s.InstanceMaintenancePolicy.Validate(); err != nil {
+			invalidParams.AddNested("InstanceMaintenancePolicy", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.LaunchTemplate != nil {
 		if err := s.LaunchTemplate.Validate(); err != nil {
 			invalidParams.AddNested("LaunchTemplate", err.(request.ErrInvalidParams))
@@ -8590,6 +8597,12 @@ func (s *CreateAutoScalingGroupInput) SetHealthCheckType(v string) *CreateAutoSc
 // SetInstanceId sets the InstanceId field's value.
 func (s *CreateAutoScalingGroupInput) SetInstanceId(v string) *CreateAutoScalingGroupInput {
 	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *CreateAutoScalingGroupInput) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *CreateAutoScalingGroupInput {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 
@@ -13605,6 +13618,9 @@ type Group struct {
 	// HealthCheckType is a required field
 	HealthCheckType *string `min:"1" type:"string" required:"true"`
 
+	// An instance maintenance policy.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The EC2 instances associated with the group.
 	Instances []*Instance `type:"list"`
 
@@ -13771,6 +13787,12 @@ func (s *Group) SetHealthCheckGracePeriod(v int64) *Group {
 // SetHealthCheckType sets the HealthCheckType field's value.
 func (s *Group) SetHealthCheckType(v string) *Group {
 	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *Group) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *Group {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 
@@ -14161,6 +14183,78 @@ func (s *InstanceDetails) SetProtectedFromScaleIn(v bool) *InstanceDetails {
 // SetWeightedCapacity sets the WeightedCapacity field's value.
 func (s *InstanceDetails) SetWeightedCapacity(v string) *InstanceDetails {
 	s.WeightedCapacity = &v
+	return s
+}
+
+// Describes an instance maintenance policy.
+//
+// For more information, see Set instance maintenance policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+// in the Amazon EC2 Auto Scaling User Guide.
+type InstanceMaintenancePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the upper threshold as a percentage of the desired capacity of
+	// the Auto Scaling group. It represents the maximum percentage of the group
+	// that can be in service and healthy, or pending, to support your workload
+	// when replacing instances. Value range is 100 to 200. After it's set, a value
+	// of -1 will clear the previously set value.
+	//
+	// Both MinHealthyPercentage and MaxHealthyPercentage must be specified, and
+	// the difference between them cannot be greater than 100. A large range increases
+	// the number of instances that can be replaced at the same time.
+	MaxHealthyPercentage *int64 `type:"integer"`
+
+	// Specifies the lower threshold as a percentage of the desired capacity of
+	// the Auto Scaling group. It represents the minimum percentage of the group
+	// to keep in service, healthy, and ready to use to support your workload when
+	// replacing instances. Value range is 0 to 100. After it's set, a value of
+	// -1 will clear the previously set value.
+	MinHealthyPercentage *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceMaintenancePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceMaintenancePolicy) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstanceMaintenancePolicy) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstanceMaintenancePolicy"}
+	if s.MaxHealthyPercentage != nil && *s.MaxHealthyPercentage < -1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxHealthyPercentage", -1))
+	}
+	if s.MinHealthyPercentage != nil && *s.MinHealthyPercentage < -1 {
+		invalidParams.Add(request.NewErrParamMinValue("MinHealthyPercentage", -1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxHealthyPercentage sets the MaxHealthyPercentage field's value.
+func (s *InstanceMaintenancePolicy) SetMaxHealthyPercentage(v int64) *InstanceMaintenancePolicy {
+	s.MaxHealthyPercentage = &v
+	return s
+}
+
+// SetMinHealthyPercentage sets the MinHealthyPercentage field's value.
+func (s *InstanceMaintenancePolicy) SetMinHealthyPercentage(v int64) *InstanceMaintenancePolicy {
+	s.MinHealthyPercentage = &v
 	return s
 }
 
@@ -19000,14 +19094,26 @@ type RefreshPreferences struct {
 	// in all cases), or the HealthCheckGracePeriod property otherwise.
 	InstanceWarmup *int64 `type:"integer"`
 
-	// The amount of capacity in the Auto Scaling group that must pass your group's
-	// health checks to allow the operation to continue. The value is expressed
-	// as a percentage of the desired capacity of the Auto Scaling group (rounded
-	// up to the nearest integer). The default is 90.
+	// Specifies the maximum percentage of the group that can be in service and
+	// healthy, or pending, to support your workload when replacing instances. The
+	// value is expressed as a percentage of the desired capacity of the Auto Scaling
+	// group. Value range is 100 to 200.
 	//
-	// Setting the minimum healthy percentage to 100 percent limits the rate of
-	// replacement to one instance at a time. In contrast, setting it to 0 percent
-	// has the effect of replacing all instances at the same time.
+	// If you specify MaxHealthyPercentage, you must also specify MinHealthyPercentage,
+	// and the difference between them cannot be greater than 100. A larger range
+	// increases the number of instances that can be replaced at the same time.
+	//
+	// If you do not specify this property, the default is 100 percent, or the percentage
+	// set in the instance maintenance policy for the Auto Scaling group, if defined.
+	MaxHealthyPercentage *int64 `min:"100" type:"integer"`
+
+	// Specifies the minimum percentage of the group to keep in service, healthy,
+	// and ready to use to support your workload to allow the operation to continue.
+	// The value is expressed as a percentage of the desired capacity of the Auto
+	// Scaling group. Value range is 0 to 100.
+	//
+	// If you do not specify this property, the default is 90 percent, or the percentage
+	// set in the instance maintenance policy for the Auto Scaling group, if defined.
 	MinHealthyPercentage *int64 `type:"integer"`
 
 	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
@@ -19081,6 +19187,19 @@ func (s RefreshPreferences) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RefreshPreferences) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RefreshPreferences"}
+	if s.MaxHealthyPercentage != nil && *s.MaxHealthyPercentage < 100 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxHealthyPercentage", 100))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // SetAlarmSpecification sets the AlarmSpecification field's value.
 func (s *RefreshPreferences) SetAlarmSpecification(v *AlarmSpecification) *RefreshPreferences {
 	s.AlarmSpecification = v
@@ -19108,6 +19227,12 @@ func (s *RefreshPreferences) SetCheckpointPercentages(v []*int64) *RefreshPrefer
 // SetInstanceWarmup sets the InstanceWarmup field's value.
 func (s *RefreshPreferences) SetInstanceWarmup(v int64) *RefreshPreferences {
 	s.InstanceWarmup = &v
+	return s
+}
+
+// SetMaxHealthyPercentage sets the MaxHealthyPercentage field's value.
+func (s *RefreshPreferences) SetMaxHealthyPercentage(v int64) *RefreshPreferences {
+	s.MaxHealthyPercentage = &v
 	return s
 }
 
@@ -20170,10 +20295,11 @@ type StartInstanceRefreshInput struct {
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
 	// Sets your preferences for the instance refresh so that it performs as expected
-	// when you start it. Includes the instance warmup time, the minimum healthy
-	// percentage, and the behaviors that you want Amazon EC2 Auto Scaling to use
-	// if instances that are in Standby state or protected from scale in are found.
-	// You can also choose to enable additional features, such as the following:
+	// when you start it. Includes the instance warmup time, the minimum and maximum
+	// healthy percentages, and the behaviors that you want Amazon EC2 Auto Scaling
+	// to use if instances that are in Standby state or protected from scale in
+	// are found. You can also choose to enable additional features, such as the
+	// following:
 	//
 	//    * Auto rollback
 	//
@@ -20218,6 +20344,11 @@ func (s *StartInstanceRefreshInput) Validate() error {
 	if s.DesiredConfiguration != nil {
 		if err := s.DesiredConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("DesiredConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Preferences != nil {
+		if err := s.Preferences.Validate(); err != nil {
+			invalidParams.AddNested("Preferences", err.(request.ErrInvalidParams))
 		}
 	}
 
@@ -21326,6 +21457,11 @@ type UpdateAutoScalingGroupInput struct {
 	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The name of the launch configuration. If you specify LaunchConfigurationName
 	// in your update request, you can't specify LaunchTemplate or MixedInstancesPolicy.
 	LaunchConfigurationName *string `min:"1" type:"string"`
@@ -21443,6 +21579,11 @@ func (s *UpdateAutoScalingGroupInput) Validate() error {
 	if s.VPCZoneIdentifier != nil && len(*s.VPCZoneIdentifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("VPCZoneIdentifier", 1))
 	}
+	if s.InstanceMaintenancePolicy != nil {
+		if err := s.InstanceMaintenancePolicy.Validate(); err != nil {
+			invalidParams.AddNested("InstanceMaintenancePolicy", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.LaunchTemplate != nil {
 		if err := s.LaunchTemplate.Validate(); err != nil {
 			invalidParams.AddNested("LaunchTemplate", err.(request.ErrInvalidParams))
@@ -21517,6 +21658,12 @@ func (s *UpdateAutoScalingGroupInput) SetHealthCheckGracePeriod(v int64) *Update
 // SetHealthCheckType sets the HealthCheckType field's value.
 func (s *UpdateAutoScalingGroupInput) SetHealthCheckType(v string) *UpdateAutoScalingGroupInput {
 	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *UpdateAutoScalingGroupInput) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *UpdateAutoScalingGroupInput {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 

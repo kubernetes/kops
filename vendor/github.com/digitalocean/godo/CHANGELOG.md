@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.106.0] - 2023-11-14
+
+- #654 - @dweinshenker - Remove unclean_leader_election_enable for topic configuration
+
 ## [v1.105.1] - 2023-11-07
 
 - #652 - @andrewsomething - Retry on HTTP/2 internal errors.
