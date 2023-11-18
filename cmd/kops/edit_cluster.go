@@ -66,6 +66,9 @@ var (
 	editClusterExample = templates.Examples(i18n.T(`
 	# Edit a cluster configuration in AWS.
 	kops edit cluster k8s.cluster.site --state=s3://my-state-store
+
+	# Set Values in the spec.
+	kops edit cluster testcluster.k8s.local --set spec.kubernetesVersion=1.28.4
 	`))
 )
 
