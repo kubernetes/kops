@@ -1,0 +1,19 @@
+// To regenerate the go code, run make protobuf
+syntax = 'proto3';
+
+package otlptracefile;
+
+option go_package = "k8s.io/kops/pkg/otel/otlptracefile/pb";
+
+// ObjectType is used to identify the type of objects in the file.
+// Each object has a header, and there is a type_code value in the header.
+// Before an object is written, the type information must have been recorded with an ObjectType record.
+message ObjectType {
+    uint32 type_code = 1; 
+    string type_name = 2;
+}
+
+enum WellKnownTypeCode {
+    WellKnownTypeCode_Unknown = 0;
+    WellKnownTypeCode_ObjectType = 1;
+}

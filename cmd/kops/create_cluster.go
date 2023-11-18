@@ -474,6 +474,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
+	ctx, span := tracer.Start(ctx, "RunCreateCluster")
+	defer span.End()
+
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
 	targetName := c.Target

@@ -74,12 +74,15 @@ func NewS3Context() *S3Context {
 	}
 }
 
-func (s *S3Context) getClient(region string) (*s3.S3, error) {
+func (s *S3Context) getClient(ctx context.Context, region string) (*s3.S3, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	s3Client := s.clients[region]
 	if s3Client == nil {
+		_, span := tracer.Start(ctx, "S3Context::getClient")
+		defer span.End()
+
 		var config *aws.Config
 		var err error
 		endpoint := os.Getenv("S3_ENDPOINT")
@@ -102,6 +105,7 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error starting new AWS session: %v", err)
 		}
+
 		s3Client = s3.New(sess, config)
 		s.clients[region] = s3Client
 	}
@@ -139,6 +143,9 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 		return bucketDetails, nil
 	}
 
+	ctx, span := tracer.Start(ctx, "S3Path::getDetailsForBucket")
+	defer span.End()
+
 	bucketDetails = &S3BucketDetails{
 		context: s,
 		region:  "",
@@ -158,9 +165,9 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
-		isEC2, err := isRunningOnEC2()
+		isEC2, err := isRunningOnEC2(ctx)
 		if isEC2 || err != nil {
-			region, err := getRegionFromMetadata()
+			region, err := getRegionFromMetadata(ctx)
 			if err != nil {
 				klog.V(2).Infof("unable to get region from metadata:%v", err)
 			} else {
@@ -180,7 +187,7 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 	}
 	var response *s3.GetBucketLocationOutput
 
-	s3Client, err := s.getClient(awsRegion)
+	s3Client, err := s.getClient(ctx, awsRegion)
 	if err != nil {
 		return bucketDetails, fmt.Errorf("error connecting to S3: %s", err)
 	}
@@ -225,12 +232,15 @@ func (b *S3BucketDetails) hasServerSideEncryptionByDefault(ctx context.Context) 
 		return *b.applyServerSideEncryptionByDefault
 	}
 
+	ctx, span := tracer.Start(ctx, "S3BucketDetails::hasServerSideEncryptionByDefault")
+	defer span.End()
+
 	applyServerSideEncryptionByDefault := false
 
 	// We only make one attempt to find the SSE policy (even if there's an error)
 	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
 
-	client, err := b.context.getClient(b.region)
+	client, err := b.context.getClient(ctx, b.region)
 	if err != nil {
 		klog.Warningf("Unable to read bucket encryption policy for %q in region %q: will encrypt using AES256", b.name, b.region)
 		return false
@@ -279,6 +289,9 @@ out the first result.
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
 func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+	ctx, span := tracer.Start(ctx, "bruteforceBucketLocation")
+	defer span.End()
+
 	config := &aws.Config{Region: region}
 	config = config.WithCredentialsChainVerboseErrors(true)
 
@@ -287,12 +300,12 @@ func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.G
 		SharedConfigState: session.SharedConfigEnable,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error creating aws session: %v", err)
+		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
 
 	regions, err := ec2.New(session).DescribeRegions(nil)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to list AWS regions: %v", err)
+		return nil, fmt.Errorf("listing AWS regions: %w", err)
 	}
 
 	klog.V(2).Infof("Querying S3 for bucket location for %s", *request.Bucket)
@@ -321,13 +334,13 @@ func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.G
 // isRunningOnEC2 determines if we could be running on EC2.
 // It is used to avoid a call to the metadata service to get the current region,
 // because that call is slow if not running on EC2
-func isRunningOnEC2() (bool, error) {
+func isRunningOnEC2(ctx context.Context) (bool, error) {
 	if runtime.GOOS == "linux" {
 		// Approach based on https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html
 		productUUID, err := os.ReadFile("/sys/devices/virtual/dmi/id/product_uuid")
 		if err != nil {
 			klog.V(2).Infof("unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running on EC2: %v", err)
-			return false, err
+			return false, nil
 		}
 
 		s := strings.ToLower(strings.TrimSpace(string(productUUID)))
@@ -343,7 +356,10 @@ func isRunningOnEC2() (bool, error) {
 }
 
 // getRegionFromMetadata queries the metadata service for the current region, if running in EC2
-func getRegionFromMetadata() (string, error) {
+func getRegionFromMetadata(ctx context.Context) (string, error) {
+	ctx, span := tracer.Start(ctx, "getRegionFromMetadata")
+	defer span.End()
+
 	// Use an even shorter timeout, to minimize impact when not running on EC2
 	// Note that we still retry a few times, this works out a little under a 1s delay
 	shortTimeout := &aws.Config{
@@ -354,13 +370,13 @@ func getRegionFromMetadata() (string, error) {
 
 	metadataSession, err := session.NewSession(shortTimeout)
 	if err != nil {
-		return "", fmt.Errorf("unable to build session: %v", err)
+		return "", fmt.Errorf("building AWS metadata session: %w", err)
 	}
 
 	metadata := ec2metadata.New(metadataSession)
-	metadataRegion, err := metadata.Region()
+	metadataRegion, err := metadata.RegionWithContext(ctx)
 	if err != nil {
-		return "", fmt.Errorf("unable to get region from metadata: %v", err)
+		return "", fmt.Errorf("getting AWS region from metadata: %w", err)
 	}
 
 	return metadataRegion, nil

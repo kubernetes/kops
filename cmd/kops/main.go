@@ -16,9 +16,45 @@ limitations under the License.
 
 package main // import "k8s.io/kops/cmd/kops"
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"k8s.io/kops"
+)
 
 func main() {
 	ctx := context.Background()
-	Execute(ctx)
+	if err := run(ctx); err != nil {
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context) error {
+	// Set up OpenTelemetry.
+	serviceName := "kops"
+	serviceVersion := kops.Version
+	if kops.GitVersion != "" {
+		serviceVersion += ".git-" + kops.GitVersion
+	}
+
+	otelShutdown, err := setupOTelSDK(ctx, serviceName, serviceVersion)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return err
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		// We use a background context because the main context has probably been shut down.
+		if err := otelShutdown(context.Background()); err != nil {
+			fmt.Fprintf(os.Stderr, "error shutting down otel: %v\n", err)
+		}
+	}()
+
+	if err := Execute(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }

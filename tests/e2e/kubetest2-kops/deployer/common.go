@@ -222,6 +222,29 @@ func (d *deployer) env() []string {
 	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
 		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", os.Getenv("KOPS_BASE_URL")))
 	}
+
+	// Pass through OpenTelemetry flags
+	{
+		foundOTEL := false
+		for _, k := range []string{
+			"OTEL_EXPORTER_OTLP_TRACES_FILE", "OTEL_EXPORTER_OTLP_FILE",
+			"OTEL_EXPORTER_OTLP_TRACES_DIR", "OTEL_EXPORTER_OTLP_DIR",
+		} {
+			v := os.Getenv(k)
+			if v != "" {
+				foundOTEL = true
+				vars = append(vars, k+"="+v)
+			}
+		}
+
+		// If no otel flags were explicitly specified, and we have artifacts, log under the artifacts directory
+		if !foundOTEL {
+			artifacts := d.ArtifactsDir
+			if artifacts != "" {
+				vars = append(vars, "OTEL_EXPORTER_OTLP_TRACES_DIR="+filepath.Join(artifacts, "otlp"))
+			}
+		}
+	}
 	return vars
 }
 
