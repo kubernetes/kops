@@ -609,11 +609,7 @@ func InstanceInClusterAndIG(instance servers.Server, clusterName string, instanc
 	if !ok || value != instanceGroupName {
 		return false
 	}
-	cName, clusterok := instance.Metadata[TagClusterName]
-	if clusterok && cName != clusterName {
-		return false
-	}
-	cName, clusterok = instance.Metadata["k8s"]
+	cName, clusterok := instance.Metadata["k8s"]
 	if !clusterok || cName != clusterName {
 		return false
 	}
