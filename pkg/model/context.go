@@ -200,7 +200,7 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 func (b *KopsModelContext) CloudTagsForServiceAccount(name string, sa types.NamespacedName) map[string]string {
 	tags := b.CloudTags(name, false)
 	tags[awstasks.CloudTagServiceAccountName] = sa.Name
-	tags[awstasks.CloudTagServiceAccountNamespace] = sa.Namespace
+	tags[awstasks.CloudTagServiceAccountNamespace] = strings.ReplaceAll(sa.Namespace, "*", "wildcard")
 	return tags
 }
 
