@@ -603,12 +603,34 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 	return deleteGroup(c, g)
 }
 
+// InstanceInClusterAndIG checks if instance is in current cluster and instancegroup
+func InstanceInClusterAndIG(instance servers.Server, clusterName string, instanceGroupName string) bool {
+	value, ok := instance.Metadata[TagKopsInstanceGroup]
+	if !ok || value != instanceGroupName {
+		return false
+	}
+	cName, clusterok := instance.Metadata["k8s"]
+	if !clusterok || cName != clusterName {
+		return false
+	}
+	return true
+}
+
 func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
-	instances, err := c.ListInstances(servers.ListOpts{
+	cluster := g.Raw.(*kops.Cluster)
+	allInstances, err := c.ListInstances(servers.ListOpts{
 		Name: fmt.Sprintf("^%s", g.InstanceGroup.Name),
 	})
 	if err != nil {
 		return err
+	}
+
+	instances := []servers.Server{}
+	for _, instance := range allInstances {
+		if !InstanceInClusterAndIG(instance, cluster.Name, g.InstanceGroup.Name) {
+			continue
+		}
+		instances = append(instances, instance)
 	}
 	for _, instance := range instances {
 		err := c.DeleteInstanceWithID(instance.ID)
@@ -616,14 +638,13 @@ func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
 			return fmt.Errorf("could not delete instance %q: %v", instance.ID, err)
 		}
 	}
-
 	ports, err := c.ListPorts(ports.ListOpts{})
 	if err != nil {
 		return fmt.Errorf("could not list ports %v", err)
 	}
 
 	for _, port := range ports {
-		if strings.HasPrefix(port.Name, fmt.Sprintf("port-%s", g.InstanceGroup.Name)) {
+		if strings.HasPrefix(port.Name, fmt.Sprintf("port-%s", g.InstanceGroup.Name)) && fi.ArrayContains(port.Tags, fmt.Sprintf("%s=%s", TagClusterName, cluster.Name)) {
 			err := c.DeletePort(port.ID)
 			if err != nil {
 				return fmt.Errorf("could not delete port %q: %v", port.ID, err)
@@ -640,7 +661,6 @@ func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
 		return fmt.Errorf("could not list server groups %v", err)
 	}
 
-	cluster := g.Raw.(*kops.Cluster)
 	for _, sg := range sgs {
 		if fmt.Sprintf("%s-%s", cluster.Name, sgName) == sg.Name {
 			if len(sg.Members) == 0 {
