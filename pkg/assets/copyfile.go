@@ -179,7 +179,7 @@ func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []by
 // buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the object
 // store prefix.
 func buildVFSPath(target string) (string, error) {
-	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") {
+	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") || strings.HasPrefix(target, "file://") {
 		return target, nil
 	}
 
