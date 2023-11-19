@@ -101,10 +101,10 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		return nil, err
 	}
 	for _, instance := range instances {
-		value, ok := instance.Metadata[TagKopsInstanceGroup]
-		if !ok || value != ig.Name {
+		if !InstanceInClusterAndIG(instance, cluster.Name, ig.Name) {
 			continue
 		}
+
 		igObservedGeneration := instance.Metadata[INSTANCE_GROUP_GENERATION]
 		clusterObservedGeneration := instance.Metadata[CLUSTER_GENERATION]
 		observedName := fmt.Sprintf("%s-%s", clusterObservedGeneration, igObservedGeneration)
