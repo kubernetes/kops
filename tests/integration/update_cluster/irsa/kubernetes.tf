@@ -433,7 +433,7 @@ resource "aws_iam_role" "myserviceaccount-test-wildcard-sa-minimal-example-com" 
     "Name"                                      = "myserviceaccount.test-wildcard.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
     "service-account.kops.k8s.io/name"          = "myserviceaccount"
-    "service-account.kops.k8s.io/namespace"     = "test-*"
+    "service-account.kops.k8s.io/namespace"     = "test-wildcard"
   }
 }
 
