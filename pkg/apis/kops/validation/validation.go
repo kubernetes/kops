@@ -1144,9 +1144,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		if cluster.IsKubernetesGTE("1.28") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router is not supported for Kubernetes >= 1.28"))
-		} else if cluster.Spec.IsIPv6Only() {
+		if cluster.Spec.IsIPv6Only() {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router does not support IPv6"))
 		}
 	}
