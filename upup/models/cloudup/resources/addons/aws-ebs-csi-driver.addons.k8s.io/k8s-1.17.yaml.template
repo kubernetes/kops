@@ -1,5 +1,23 @@
 {{ with .CloudProvider.AWS.EBSCSIDriver }}
-# Latest Images Source: aws-ebs-csi-driver/values.yaml#L7-L34
+---
+# Source: aws-ebs-csi-driver/templates/poddisruptionbudget-controller.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ebs-csi-controller
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+spec:
+  selector:
+    matchLabels:
+      app: ebs-csi-controller
+      app.kubernetes.io/name: aws-ebs-csi-driver
+      app.kubernetes.io/instance: aws-ebs-csi-driver
+  maxUnavailable: 1
 ---
 # Source: aws-ebs-csi-driver/templates/serviceaccount-csi-controller.yaml
 apiVersion: v1
@@ -11,6 +29,21 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+automountServiceAccountToken: true
+---
+# Source: aws-ebs-csi-driver/templates/serviceaccount-csi-node.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ebs-csi-node-sa
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+automountServiceAccountToken: true
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-attacher.yaml
 kind: ClusterRole
@@ -21,22 +54,41 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["csi.storage.k8s.io"]
-    resources: ["csinodeinfos"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [ "" ]
+    resources: [ "persistentvolumes" ]
+    verbs: [ "get", "list", "watch", "update", "patch" ]
+  - apiGroups: [ "" ]
+    resources: [ "nodes" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "csi.storage.k8s.io" ]
+    resources: [ "csinodeinfos" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "storage.k8s.io" ]
+    resources: [ "volumeattachments" ]
+    verbs: [ "get", "list", "watch", "update", "patch" ]
   - apiGroups: [ "storage.k8s.io" ]
     resources: [ "volumeattachments/status" ]
     verbs: [ "patch" ]
+---
+# Source: aws-ebs-csi-driver/templates/clusterrole-csi-node.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ebs-csi-node-role
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["list"]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-provisioner.yaml
 kind: ClusterRole
@@ -47,6 +99,7 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 rules:
   - apiGroups: [ "" ]
     resources: [ "persistentvolumes" ]
@@ -72,9 +125,6 @@ rules:
   - apiGroups: [ "" ]
     resources: [ "nodes" ]
     verbs: [ "get", "list", "watch" ]
-  - apiGroups: [ "coordination.k8s.io" ]
-    resources: [ "leases" ]
-    verbs: [ "get", "watch", "list", "delete", "update", "create" ]
   - apiGroups: [ "storage.k8s.io" ]
     resources: [ "volumeattachments" ]
     verbs: [ "get", "list", "watch" ]
@@ -88,30 +138,31 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 rules:
   # The following rule should be uncommented for plugins that require secrets
   # for provisioning.
   # - apiGroups: [""]
   #   resources: ["secrets"]
   #   verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["update", "patch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "" ]
+    resources: [ "persistentvolumes" ]
+    verbs: [ "get", "list", "watch", "update", "patch" ]
+  - apiGroups: [ "" ]
+    resources: [ "persistentvolumeclaims" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "persistentvolumeclaims/status" ]
+    verbs: [ "update", "patch" ]
+  - apiGroups: [ "storage.k8s.io" ]
+    resources: [ "storageclasses" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "events" ]
+    verbs: [ "list", "watch", "create", "update", "patch" ]
+  - apiGroups: [ "" ]
+    resources: [ "pods" ]
+    verbs: [ "get", "list", "watch" ]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-snapshotter.yaml
 kind: ClusterRole
@@ -122,22 +173,27 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 rules:
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotcontents/status"]
-    verbs: ["update"]
+  - apiGroups: [ "" ]
+    resources: [ "events" ]
+    verbs: [ "list", "watch", "create", "update", "patch" ]
+  # Secret permission is optional.
+  # Enable it if your driver needs secret.
+  # For example, `csi.storage.k8s.io/snapshotter-secret-name` is set in VolumeSnapshotClass.
+  # See https://kubernetes-csi.github.io/docs/secrets-and-credentials.html for more details.
+  # - apiGroups: [ "" ]
+  #   resources: [ "secrets" ]
+  #   verbs: [ "get", "list" ]
+  - apiGroups: [ "snapshot.storage.k8s.io" ]
+    resources: [ "volumesnapshotclasses" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "snapshot.storage.k8s.io" ]
+    resources: [ "volumesnapshotcontents" ]
+    verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
+  - apiGroups: [ "snapshot.storage.k8s.io" ]
+    resources: [ "volumesnapshotcontents/status" ]
+    verbs: [ "update" ]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrolebinding-attacher.yaml
 kind: ClusterRoleBinding
@@ -148,6 +204,7 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
     name: ebs-csi-controller-sa
@@ -155,6 +212,25 @@ subjects:
 roleRef:
   kind: ClusterRole
   name: ebs-external-attacher-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: aws-ebs-csi-driver/templates/clusterrolebinding-csi-node.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ebs-csi-node-getter-binding
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+subjects:
+  - kind: ServiceAccount
+    name: ebs-csi-node-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: ebs-csi-node-role
   apiGroup: rbac.authorization.k8s.io
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrolebinding-provisioner.yaml
@@ -166,6 +242,7 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
     name: ebs-csi-controller-sa
@@ -184,6 +261,7 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
     name: ebs-csi-controller-sa
@@ -202,6 +280,7 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
     name: ebs-csi-controller-sa
@@ -211,47 +290,55 @@ roleRef:
   name: ebs-external-snapshotter-role
   apiGroup: rbac.authorization.k8s.io
 ---
-# Source: aws-ebs-csi-driver/templates/clusterrolebinding-csi-node.yaml
-kind: ClusterRoleBinding
+# Source: aws-ebs-csi-driver/templates/role-leases.yaml
+kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: ebs-csi-node-getter-binding
-  labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-subjects:
-  - kind: ServiceAccount
-    name: ebs-csi-node-sa
-    namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: ebs-csi-node-role
-  apiGroup: rbac.authorization.k8s.io
----
-# Source: aws-ebs-csi-driver/templates/clusterrole-csi-node.yaml
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: ebs-csi-node-role
-  labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
+  namespace: kube-system
+  name: ebs-csi-leases-role
 rules:
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
 ---
-# Source: aws-ebs-csi-driver/templates/serviceaccount-csi-node.yaml
-apiVersion: v1
-kind: ServiceAccount
+# Source: aws-ebs-csi-driver/templates/rolebinding-leases.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: ebs-csi-node-sa
+  name: ebs-csi-leases-rolebinding
   namespace: kube-system
   labels:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
+subjects:
+- kind: ServiceAccount
+  name: ebs-csi-controller-sa
+  namespace: kube-system
+roleRef:
+  kind: Role
+  name: ebs-csi-leases-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: aws-ebs-csi-driver/templates/metrics.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ebs-csi-controller
+  namespace: kube-system
+  labels:
+    app: ebs-csi-controller
+spec:
+  selector:
+    app: ebs-csi-controller
+  ports:
+    - name: metrics
+      port: 3301
+      targetPort: 3301
+  type: ClusterIP
 ---
 # Source: aws-ebs-csi-driver/templates/node.yaml
-# Node Service
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -261,12 +348,17 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 spec:
   selector:
     matchLabels:
       app: ebs-csi-node
       app.kubernetes.io/name: aws-ebs-csi-driver
       app.kubernetes.io/instance: aws-ebs-csi-driver
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 10%
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -274,28 +366,44 @@ spec:
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
+        app.kubernetes.io/component: csi-driver
       annotations:
         {{- range $key, $value := .PodAnnotations }}
         {{ $key }}: "{{ $value }}"
         {{- end }}
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: eks.amazonaws.com/compute-type
+                operator: NotIn
+                values:
+                - fargate
+              - key: node.kubernetes.io/instance-type
+                operator: NotIn
+                values:
+                - a1.medium
+                - a1.large
+                - a1.xlarge
+                - a1.2xlarge
+                - a1.4xlarge
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: ebs-csi-node-sa
       priorityClassName: system-node-critical
-      securityContext:
-        runAsNonRoot: false
-        runAsUser: 0
-        runAsGroup: 0
-        fsGroup: 0
       tolerations:
         - operator: Exists
+      hostNetwork: false
+      securityContext:
+        fsGroup: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        runAsUser: 0
       containers:
         - name: ebs-plugin
-          securityContext:
-            privileged: true
-            readOnlyRootFilesystem: true
-          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
           imagePullPolicy: IfNotPresent
           args:
             - node
@@ -304,6 +412,7 @@ spec:
             - --volume-attach-limit={{ .VolumeAttachLimit }}
             {{- end }}
             - --logtostderr
+            - --logging-format=text
             - --v=2
           env:
             {{- if IsIPv6Only }}
@@ -342,8 +451,21 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 10
             failureThreshold: 5
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
+          securityContext:
+            privileged: true
+            readOnlyRootFilesystem: true
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/aws-ebs-csi-driver", "pre-stop-hook"]
         - name: node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.9.1-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
@@ -354,25 +476,48 @@ spec:
               value: /csi/csi.sock
             - name: DRIVER_REG_SOCK_PATH
               value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
+          livenessProbe:
+            exec:
+              command:
+              - /csi-node-driver-registrar
+              - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+              - --mode=kubelet-registration-probe
+            initialDelaySeconds: 30
+            periodSeconds: 90
+            timeoutSeconds: 15
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
+            - name: probe-dir
+              mountPath: /var/lib/kubelet/plugins/ebs.csi.aws.com/
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
+          image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.11.0-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
       volumes:
         - name: kubelet-dir
           hostPath:
@@ -400,6 +545,8 @@ spec:
             path: /sys/fs
             type: Directory
 {{ end }}
+        - name: probe-dir
+          emptyDir: {}
 ---
 # Source: aws-ebs-csi-driver/templates/controller.yaml
 # Controller Service
@@ -412,8 +559,13 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 spec:
   replicas: {{ ControlPlaneControllerReplicas true }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   selector:
     matchLabels:
       app: ebs-csi-controller
@@ -426,11 +578,16 @@ spec:
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
+        app.kubernetes.io/component: csi-driver
       annotations:
         {{- range $key, $value := .PodAnnotations }}
         {{ $key }}: "{{ $value }}"
         {{- end }}
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: ebs-csi-controller-sa
+      priorityClassName: system-cluster-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -453,6 +610,25 @@ spec:
                 operator: In
                 values:
                 - linux
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: eks.amazonaws.com/compute-type
+                operator: NotIn
+                values:
+                - fargate
+            weight: 1
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - ebs-csi-controller
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
@@ -471,21 +647,25 @@ spec:
             app.kubernetes.io/name: aws-ebs-csi-driver
             app.kubernetes.io/instance: aws-ebs-csi-driver
       securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
         runAsNonRoot: true
         runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-      serviceAccountName: ebs-csi-controller-sa
-      priorityClassName: system-cluster-critical
-      nodeSelector: null
       {{ if not UseServiceAccountExternalPermissions }}
       hostNetwork: true
       tolerations:
         - operator: Exists
+      {{ else }}
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+          tolerationSeconds: 300
       {{ end }}
       containers:
         - name: ebs-plugin
-          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
           imagePullPolicy: IfNotPresent
           args:
             - controller
@@ -494,6 +674,8 @@ spec:
             - --k8s-tag-cluster-id={{ ClusterName }}
             - "--extra-tags={{ CloudLabels }}"
             - --http-endpoint=0.0.0.0:3301
+            - --batching=true
+            - --logging-format=text
             - --v=5
           env:
             {{- if IsIPv6Only }}
@@ -518,6 +700,12 @@ spec:
                 secretKeyRef:
                   name: aws-secret
                   key: access_key
+                  optional: true
+            - name: AWS_EC2_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-meta
+                  key: endpoint
                   optional: true
           volumeMounts:
             - name: socket-dir
@@ -545,84 +733,141 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 10
             failureThreshold: 5
-          securityContext:   
-            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
+          securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.1.0
+          image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v3.6.2-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
+            - --timeout=60s
             - --csi-address=$(ADDRESS)
             - --v=5
             - --feature-gates=Topology=true
             - --extra-create-metadata
             - --leader-election=true
             - --default-fstype=ext4
+            - --kube-api-qps=20
+            - --kube-api-burst=100
+            - --worker-threads=100
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
+          image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.4.2-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
+            - --timeout=60s
             - --csi-address=$(ADDRESS)
             - --v=5
             - --leader-election=true
+            - --kube-api-qps=20
+            - --kube-api-burst=100
+            - --worker-threads=100
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
+          image: public.ecr.aws/eks-distro/kubernetes-csi/external-snapshotter/csi-snapshotter:v6.3.2-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --leader-election=true
+            - --extra-create-metadata
+            - --kube-api-qps=20
+            - --kube-api-burst=100
+            - --worker-threads=100
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
         {{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
+          image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.9.2-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
+            - --timeout=60s
             - --csi-address=$(ADDRESS)
             - --v=5
+            - --handle-volume-inuse-error=false
+            - --leader-election=true
+            - --kube-api-qps=20
+            - --kube-api-burst=100
+            - --workers=100
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
+          image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.11.0-eks-1-28-9
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 10m
+              memory: 40Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
       volumes:
         - name: socket-dir
           emptyDir: {}
@@ -636,26 +881,13 @@ metadata:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
+    app.kubernetes.io/component: csi-driver
 spec:
   attachRequired: true
   podInfoOnMount: false
 {{ if KopsFeatureEnabled "SELinuxMount" }}
   seLinuxMount: true
 {{ end }}
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: ebs-csi-controller
-  namespace: kube-system
-  labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
-    app.kubernetes.io/version: {{ .Version }}
-spec:
-  selector:
-    matchLabels:
-      app: ebs-csi-controller
-      app.kubernetes.io/instance: aws-ebs-csi-driver
-  maxUnavailable: 1
+  {{- /* Disabled because the field is immutable and kOps doesn't have a way to delete and recreate the resource */}}
+  # fsGroupPolicy: File
 {{ end }}
