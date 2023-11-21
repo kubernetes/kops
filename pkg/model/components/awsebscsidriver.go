@@ -43,7 +43,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	c := aws.EBSCSIDriver
 
 	if c.Version == nil {
-		version := "v1.14.1"
+		version := "v1.25.0"
 		c.Version = &version
 	}
 
