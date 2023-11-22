@@ -955,6 +955,37 @@ spec:
         - --timeout=60s
         - --csi-address=$(ADDRESS)
         - --v=5
+        - --leader-election=true
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.1.3
+        imagePullPolicy: IfNotPresent
+        name: volumemodifier
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy/
+          name: socket-dir
+      - args:
+        - --timeout=60s
+        - --csi-address=$(ADDRESS)
+        - --v=5
         - --handle-volume-inuse-error=false
         - --leader-election=true
         - --kube-api-qps=20
