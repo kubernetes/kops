@@ -38,7 +38,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
-	github.com/spotinst/spotinst-sdk-go v1.145.0
+	github.com/spotinst/spotinst-sdk-go v1.171.0
 	github.com/stretchr/testify v1.8.4
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0

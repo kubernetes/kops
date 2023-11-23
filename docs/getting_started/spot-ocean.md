@@ -161,30 +161,31 @@ metadata:
 
 | Label | Description | Default |
 |---|---|---|
-| `spotinst.io/spot-percentage` | Specify the percentage of Spot instances that should spin up from the target capacity. | `100` |
-| `spotinst.io/utilize-reserved-instances` | Specify whether reserved instances should be utilized. | `true` |
-| `spotinst.io/utilize-commitments` | Specify whether reserved instance commitments should be utilized. | none |
-| `spotinst.io/fallback-to-ondemand` | Specify whether fallback to on-demand instances should be enabled. | `true` |
+| `spotinst.io/spot-percentage` | Specify the percentage of Spot instances that should spin up from the target capacity.                                    | `100` |
+| `spotinst.io/utilize-reserved-instances` | Specify whether reserved instances should be utilized.                                                                    | `true` |
+| `spotinst.io/utilize-commitments` | Specify whether reserved instance commitments should be utilized.                                                         | none |
+| `spotinst.io/fallback-to-ondemand` | Specify whether fallback to on-demand instances should be enabled.                                                        | `true` |
 | `spotinst.io/draining-timeout` | Specify a period of time, in seconds, after a node is marked for termination during which on running pods remains active. | none |
-| `spotinst.io/grace-period` | Specify a period of time, in seconds, that Ocean should wait before applying instance health checks. | none |
-| `spotinst.io/ocean-default-launchspec` | Specify whether to use the InstanceGroup's spec as the default Launch Spec for the Ocean cluster. | none |
-| `spotinst.io/ocean-instance-types-whitelist` | Specify whether to whitelist specific instance types. | none |
-| `spotinst.io/ocean-instance-types-blacklist` | Specify whether to blacklist specific instance types. | none |
-| `spotinst.io/ocean-instance-types` | Specify a list of instance types that should be used by the Ocean Launch Spec. | none |
-| `spotinst.io/autoscaler-disabled` | Specify whether the auto scaler should be disabled. | `false` |
-| `spotinst.io/autoscaler-default-node-labels` | Specify whether default node labels should be set for the auto scaler. | `false` |
-| `spotinst.io/autoscaler-auto-config` | Specify whether headroom resources should be automatically configured and optimized. | `true` |
-| `spotinst.io/autoscaler-auto-headroom-percentage` | Specify the auto headroom percentage (a number in the range [0, 200]) which controls the percentage of headroom. | none |
-| `spotinst.io/autoscaler-headroom-cpu-per-unit` | Specify the number of CPUs to allocate for headroom. CPUs are denoted in millicores, where 1000 millicores = 1 vCPU. | none |
-| `spotinst.io/autoscaler-headroom-gpu-per-unit` | Specify the number of GPUs to allocate for headroom. | none |
-| `spotinst.io/autoscaler-headroom-mem-per-unit` | Specify the amount of memory (MB) to allocate for headroom. | none |
-| `spotinst.io/autoscaler-headroom-num-of-units` | Specify the number of units to retain as headroom, where each unit has the defined CPU and memory. | none |
-| `spotinst.io/autoscaler-cooldown` | Specify a period of time, in seconds, that Ocean should wait between scaling actions. | `300` |
-| `spotinst.io/autoscaler-scale-down-max-percentage` | Specify the maximum scale down percentage. | none |
-| `spotinst.io/autoscaler-scale-down-evaluation-periods` | Specify the number of evaluation periods that should accumulate before a scale down action takes place. | `5` |
-| `spotinst.io/autoscaler-resource-limits-max-vcpu` | Specify the maximum number of virtual CPUs that can be allocated to the cluster. | none |
-| `spotinst.io/autoscaler-resource-limits-max-memory` | Specify the maximum amount of total physical memory (in GiB units) that can be allocated to the cluster. | none |
-| `spotinst.io/restrict-scale-down` | Specify whether the scale-down activities should be restricted. | none |
+| `spotinst.io/grace-period` | Specify a period of time, in seconds, that Ocean should wait before applying instance health checks.                      | none |
+| `spotinst.io/ocean-default-launchspec` | Specify whether to use the InstanceGroup's spec as the default Launch Spec for the Ocean cluster.                         | none |
+| `spotinst.io/ocean-instance-types-whitelist` | Specify whether to whitelist specific instance types.                                                                     | none |
+| `spotinst.io/ocean-instance-types-blacklist` | Specify whether to blacklist specific instance types.                                                                     | none |
+| `spotinst.io/ocean-instance-types` | Specify a list of instance types that should be used by the Ocean Launch Spec.                                            | none |
+| `spotinst.io/autoscaler-disabled` | Specify whether the auto scaler should be disabled.                                                                       | `false` |
+| `spotinst.io/autoscaler-default-node-labels` | Specify whether default node labels should be set for the auto scaler.                                                    | `false` |
+| `spotinst.io/autoscaler-auto-config` | Specify whether headroom resources should be automatically configured and optimized.                                      | `true` |
+| `spotinst.io/autoscaler-auto-headroom-percentage` | Specify the auto headroom percentage (a number in the range [0, 200]) which controls the percentage of headroom.          | none |
+| `spotinst.io/autoscaler-headroom-cpu-per-unit` | Specify the number of CPUs to allocate for headroom. CPUs are denoted in millicores, where 1000 millicores = 1 vCPU.      | none |
+| `spotinst.io/autoscaler-headroom-gpu-per-unit` | Specify the number of GPUs to allocate for headroom.                                                                      | none |
+| `spotinst.io/autoscaler-headroom-mem-per-unit` | Specify the amount of memory (MB) to allocate for headroom.                                                               | none |
+| `spotinst.io/autoscaler-headroom-num-of-units` | Specify the number of units to retain as headroom, where each unit has the defined CPU and memory.                        | none |
+| `spotinst.io/autoscaler-cooldown` | Specify a period of time, in seconds, that Ocean should wait between scaling actions.                                     | `300` |
+| `spotinst.io/autoscaler-scale-down-max-percentage` | Specify the maximum scale down percentage.                                                                                | none |
+| `spotinst.io/autoscaler-scale-down-evaluation-periods` | Specify the number of evaluation periods that should accumulate before a scale down action takes place.                   | `5` |
+| `spotinst.io/autoscaler-resource-limits-max-vcpu` | Specify the maximum number of virtual CPUs that can be allocated to the cluster.                                          | none |
+| `spotinst.io/autoscaler-resource-limits-max-memory` | Specify the maximum amount of total physical memory (in GiB units) that can be allocated to the cluster.                  | none |
+| `spotinst.io/restrict-scale-down` | Specify whether the scale-down activities should be restricted.                                                           | none |
+| `spotinst.io/other-architecture-images` | Specify other architecture images. | none |
 
 ## Cluster Metadata Labels
 ```yaml
@@ -198,15 +199,16 @@ metadata:
   labels:
     spotinst.io/strategy-cluster-spread-nodes-by: "count"
     spotinst.io/strategy-cluster-orientation-availability-vs-cost: "balanced"    
+    spotinst.io/resource-tag-specification-volumes: "true"
   ...
 ```
 
 
-| Label | Description                                                                        | Default |
-|---|---|---|
-| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count]. | `count` |
-| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.  | `balanced` |
-
+|| Label | Description                                                                            | Default |
+|---|----------------------------------------------------------------------------------------|---|
+| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count].     | `count` |
+| `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.      | `balanced` |
+| `spotinst.io/resource-tag-specification-volumes` | Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags. | `false` |
 ## Documentation
 
 If you're new to [Spot](https://spot.io/) and want to get started, please checkout our [Getting Started](https://docs.spot.io/connect-your-cloud-provider/) guide, available on the [Spot Documentation](https://docs.spot.io/) website.

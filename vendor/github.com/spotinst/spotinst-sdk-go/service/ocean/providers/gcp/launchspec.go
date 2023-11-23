@@ -13,25 +13,26 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                     *string                  `json:"id,omitempty"`
-	Name                   *string                  `json:"name,omitempty"`
-	OceanID                *string                  `json:"oceanId,omitempty"`
-	SourceImage            *string                  `json:"sourceImage,omitempty"`
-	Metadata               []*Metadata              `json:"metadata,omitempty"`
-	Labels                 []*Label                 `json:"labels,omitempty"`
-	Taints                 []*Taint                 `json:"taints,omitempty"`
-	AutoScale              *AutoScale               `json:"autoScale,omitempty"`
-	RestrictScaleDown      *bool                    `json:"restrictScaleDown,omitempty"`
-	Strategy               *LaunchSpecStrategy      `json:"strategy,omitempty"`
-	RootVolumeSizeInGB     *int                     `json:"rootVolumeSizeInGb,omitempty"`
-	RootVolumeType         *string                  `json:"rootVolumeType,omitempty"`
-	ShieldedInstanceConfig *ShieldedInstanceConfig  `json:"shieldedInstanceConfig,omitempty"`
-	ServiceAccount         *string                  `json:"serviceAccount,omitempty"`
-	InstanceTypes          []string                 `json:"instanceTypes,omitempty"`
-	Storage                *Storage                 `json:"storage,omitempty"`
-	ResourceLimits         *ResourceLimits          `json:"resourceLimits,omitempty"`
-	LaunchSpecScheduling   *GKELaunchSpecScheduling `json:"scheduling,omitempty"`
-	LaunchSpecTags         []string                 `json:"tags,omitempty"`
+	ID                          *string                        `json:"id,omitempty"`
+	Name                        *string                        `json:"name,omitempty"`
+	OceanID                     *string                        `json:"oceanId,omitempty"`
+	SourceImage                 *string                        `json:"sourceImage,omitempty"`
+	Metadata                    []*Metadata                    `json:"metadata,omitempty"`
+	Labels                      []*Label                       `json:"labels,omitempty"`
+	Taints                      []*Taint                       `json:"taints,omitempty"`
+	AutoScale                   *AutoScale                     `json:"autoScale,omitempty"`
+	RestrictScaleDown           *bool                          `json:"restrictScaleDown,omitempty"`
+	Strategy                    *LaunchSpecStrategy            `json:"strategy,omitempty"`
+	RootVolumeSizeInGB          *int                           `json:"rootVolumeSizeInGb,omitempty"`
+	RootVolumeType              *string                        `json:"rootVolumeType,omitempty"`
+	ShieldedInstanceConfig      *ShieldedInstanceConfig        `json:"shieldedInstanceConfig,omitempty"`
+	ServiceAccount              *string                        `json:"serviceAccount,omitempty"`
+	InstanceTypes               []string                       `json:"instanceTypes,omitempty"`
+	Storage                     *Storage                       `json:"storage,omitempty"`
+	ResourceLimits              *ResourceLimits                `json:"resourceLimits,omitempty"`
+	LaunchSpecScheduling        *GKELaunchSpecScheduling       `json:"scheduling,omitempty"`
+	LaunchSpecTags              []string                       `json:"tags,omitempty"`
+	LaunchSpecNetworkInterfaces []*LaunchSpecNetworkInterfaces `json:"networkInterfaces,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -144,6 +145,31 @@ type GKELaunchSpecTaskHeadroom struct {
 	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
 	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
 	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecNetworkInterfaces struct {
+	LaunchSpecAccessConfigs []*LaunchSpecAccessConfigs `json:"accessConfigs,omitempty"`
+	LaunchSpecAliasIPRanges []*LaunchSpecAliasIPRanges `json:"aliasIpRanges,omitempty"`
+	Network                 *string                    `json:"network,omitempty"`
+	ProjectID               *string                    `json:"projectId,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecAccessConfigs struct {
+	LaunchSpecAccessConfigsName *string `json:"name,omitempty"`
+	Type                        *string `json:"type,omitempty"`
+	forceSendFields             []string
+	nullFields                  []string
+}
+
+type LaunchSpecAliasIPRanges struct {
+	IPCidrRange         *string `json:"ipCidrRange,omitempty"`
+	SubnetworkRangeName *string `json:"subnetworkRangeName,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -836,6 +862,99 @@ func (o *GKELaunchSpecTaskHeadroom) SetMemoryPerUnit(v *int) *GKELaunchSpecTaskH
 func (o *GKELaunchSpecTaskHeadroom) SetNumOfUnits(v *int) *GKELaunchSpecTaskHeadroom {
 	if o.NumOfUnits = v; o.NumOfUnits == nil {
 		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+// endregion
+
+// region NetworkInterface
+
+func (o *LaunchSpec) SetLaunchSpecNetworkInterfaces(v []*LaunchSpecNetworkInterfaces) *LaunchSpec {
+	if o.LaunchSpecNetworkInterfaces = v; o.LaunchSpecNetworkInterfaces == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecNetworkInterfaces")
+	}
+	return o
+}
+
+func (o LaunchSpecNetworkInterfaces) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecNetworkInterfaces
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecNetworkInterfaces) SetLaunchSpecAccessConfigs(v []*LaunchSpecAccessConfigs) *LaunchSpecNetworkInterfaces {
+	if o.LaunchSpecAccessConfigs = v; o.LaunchSpecAccessConfigs == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecAccessConfigs")
+	}
+	return o
+}
+
+func (o *LaunchSpecNetworkInterfaces) SetLaunchSpecAliasIPRanges(v []*LaunchSpecAliasIPRanges) *LaunchSpecNetworkInterfaces {
+	if o.LaunchSpecAliasIPRanges = v; o.LaunchSpecAliasIPRanges == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecAliasIPRanges")
+	}
+	return o
+}
+
+func (o *LaunchSpecNetworkInterfaces) SetNetwork(v *string) *LaunchSpecNetworkInterfaces {
+	if o.Network = v; o.Network == nil {
+		o.nullFields = append(o.nullFields, "Network")
+	}
+	return o
+}
+
+func (o *LaunchSpecNetworkInterfaces) SetProjectId(v *string) *LaunchSpecNetworkInterfaces {
+	if o.ProjectID = v; o.ProjectID == nil {
+		o.nullFields = append(o.nullFields, "ProjectID")
+	}
+	return o
+}
+
+// endregion
+
+// region AliasIPRange
+
+func (o LaunchSpecAliasIPRanges) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecAliasIPRanges
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecAliasIPRanges) SetIPCidrRange(v *string) *LaunchSpecAliasIPRanges {
+	if o.IPCidrRange = v; o.IPCidrRange == nil {
+		o.nullFields = append(o.nullFields, "IPCIDRRange")
+	}
+	return o
+}
+
+func (o *LaunchSpecAliasIPRanges) SetSubnetworkRangeName(v *string) *LaunchSpecAliasIPRanges {
+	if o.SubnetworkRangeName = v; o.SubnetworkRangeName == nil {
+		o.nullFields = append(o.nullFields, "SubnetworkRangeName")
+	}
+	return o
+}
+
+// endregion
+
+// region AccessConfig
+
+func (o LaunchSpecAccessConfigs) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecAccessConfigs
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecAccessConfigs) SetLaunchSpecAccessConfigsName(v *string) *LaunchSpecAccessConfigs {
+	if o.LaunchSpecAccessConfigsName = v; o.LaunchSpecAccessConfigsName == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecAccessConfigsName")
+	}
+	return o
+}
+
+func (o *LaunchSpecAccessConfigs) SetType(v *string) *LaunchSpecAccessConfigs {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
 	}
 	return o
 }
