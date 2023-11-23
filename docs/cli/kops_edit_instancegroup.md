@@ -31,7 +31,7 @@ kops edit instancegroup INSTANCE_GROUP [flags]
 
 ```
   -h, --help            help for instancegroup
-      --set strings     Directly set values in the spec
+      --set strings     Directly set values in the spec (default [])
       --unset strings   Directly unset values in the spec
 ```
 
