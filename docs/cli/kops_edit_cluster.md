@@ -30,9 +30,9 @@ kops edit cluster [CLUSTER] [flags]
 ### Options
 
 ```
-  -h, --help            help for cluster
-      --set strings     Directly set values in the spec
-      --unset strings   Directly unset values in the spec
+  -h, --help              help for cluster
+      --set stringArray   Directly set values in the spec
+      --unset strings     Directly unset values in the spec
 ```
 
 ### Options inherited from parent commands

@@ -408,9 +408,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 	})
 
-	cmd.Flags().StringSliceVar(&options.Sets, "override", options.Sets, "Directly set values in the spec")
+	cmd.Flags().StringArrayVar(&options.Sets, "override", options.Sets, "Directly set values in the spec")
 	cmd.Flags().MarkDeprecated("override", "use --set instead")
-	cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+	cmd.Flags().StringArrayVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
 	cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})

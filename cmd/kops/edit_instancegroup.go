@@ -107,7 +107,7 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+	cmd.Flags().StringArrayVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
 	cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
