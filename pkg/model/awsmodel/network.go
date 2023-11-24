@@ -290,7 +290,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			subnet.ResourceBasedNaming = fi.PtrTo(true)
+			subnet.ResourceBasedNaming = subnetSpec.ResourceBasedNaming
 		}
 
 		if subnetSpec.CIDR != "" {

@@ -777,6 +777,8 @@ type ClusterSubnetSpec struct {
 	PublicIP string `json:"publicIP,omitempty"`
 	// AdditionalRoutes to attach to the subnet's route table
 	AdditionalRoutes []RouteSpec `json:"additionalRoutes,omitempty"`
+	// ResourceBasedNaming is used to enable/disable resource based naming for this subnet
+	ResourceBasedNaming *bool `json:"resourceBasedNaming,omitempty"`
 }
 
 type RouteSpec struct {
