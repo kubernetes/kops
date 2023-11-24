@@ -144,6 +144,10 @@ type EC2API interface {
 	AssociateInstanceEventWindowWithContext(aws.Context, *ec2.AssociateInstanceEventWindowInput, ...request.Option) (*ec2.AssociateInstanceEventWindowOutput, error)
 	AssociateInstanceEventWindowRequest(*ec2.AssociateInstanceEventWindowInput) (*request.Request, *ec2.AssociateInstanceEventWindowOutput)
 
+	AssociateIpamByoasn(*ec2.AssociateIpamByoasnInput) (*ec2.AssociateIpamByoasnOutput, error)
+	AssociateIpamByoasnWithContext(aws.Context, *ec2.AssociateIpamByoasnInput, ...request.Option) (*ec2.AssociateIpamByoasnOutput, error)
+	AssociateIpamByoasnRequest(*ec2.AssociateIpamByoasnInput) (*request.Request, *ec2.AssociateIpamByoasnOutput)
+
 	AssociateIpamResourceDiscovery(*ec2.AssociateIpamResourceDiscoveryInput) (*ec2.AssociateIpamResourceDiscoveryOutput, error)
 	AssociateIpamResourceDiscoveryWithContext(aws.Context, *ec2.AssociateIpamResourceDiscoveryInput, ...request.Option) (*ec2.AssociateIpamResourceDiscoveryOutput, error)
 	AssociateIpamResourceDiscoveryRequest(*ec2.AssociateIpamResourceDiscoveryInput) (*request.Request, *ec2.AssociateIpamResourceDiscoveryOutput)
@@ -904,6 +908,10 @@ type EC2API interface {
 	DeprovisionByoipCidrWithContext(aws.Context, *ec2.DeprovisionByoipCidrInput, ...request.Option) (*ec2.DeprovisionByoipCidrOutput, error)
 	DeprovisionByoipCidrRequest(*ec2.DeprovisionByoipCidrInput) (*request.Request, *ec2.DeprovisionByoipCidrOutput)
 
+	DeprovisionIpamByoasn(*ec2.DeprovisionIpamByoasnInput) (*ec2.DeprovisionIpamByoasnOutput, error)
+	DeprovisionIpamByoasnWithContext(aws.Context, *ec2.DeprovisionIpamByoasnInput, ...request.Option) (*ec2.DeprovisionIpamByoasnOutput, error)
+	DeprovisionIpamByoasnRequest(*ec2.DeprovisionIpamByoasnInput) (*request.Request, *ec2.DeprovisionIpamByoasnOutput)
+
 	DeprovisionIpamPoolCidr(*ec2.DeprovisionIpamPoolCidrInput) (*ec2.DeprovisionIpamPoolCidrOutput, error)
 	DeprovisionIpamPoolCidrWithContext(aws.Context, *ec2.DeprovisionIpamPoolCidrInput, ...request.Option) (*ec2.DeprovisionIpamPoolCidrOutput, error)
 	DeprovisionIpamPoolCidrRequest(*ec2.DeprovisionIpamPoolCidrInput) (*request.Request, *ec2.DeprovisionIpamPoolCidrOutput)
@@ -1268,6 +1276,10 @@ type EC2API interface {
 
 	DescribeInternetGatewaysPages(*ec2.DescribeInternetGatewaysInput, func(*ec2.DescribeInternetGatewaysOutput, bool) bool) error
 	DescribeInternetGatewaysPagesWithContext(aws.Context, *ec2.DescribeInternetGatewaysInput, func(*ec2.DescribeInternetGatewaysOutput, bool) bool, ...request.Option) error
+
+	DescribeIpamByoasn(*ec2.DescribeIpamByoasnInput) (*ec2.DescribeIpamByoasnOutput, error)
+	DescribeIpamByoasnWithContext(aws.Context, *ec2.DescribeIpamByoasnInput, ...request.Option) (*ec2.DescribeIpamByoasnOutput, error)
+	DescribeIpamByoasnRequest(*ec2.DescribeIpamByoasnInput) (*request.Request, *ec2.DescribeIpamByoasnOutput)
 
 	DescribeIpamPools(*ec2.DescribeIpamPoolsInput) (*ec2.DescribeIpamPoolsOutput, error)
 	DescribeIpamPoolsWithContext(aws.Context, *ec2.DescribeIpamPoolsInput, ...request.Option) (*ec2.DescribeIpamPoolsOutput, error)
@@ -1963,6 +1975,10 @@ type EC2API interface {
 	DisassociateInstanceEventWindowWithContext(aws.Context, *ec2.DisassociateInstanceEventWindowInput, ...request.Option) (*ec2.DisassociateInstanceEventWindowOutput, error)
 	DisassociateInstanceEventWindowRequest(*ec2.DisassociateInstanceEventWindowInput) (*request.Request, *ec2.DisassociateInstanceEventWindowOutput)
 
+	DisassociateIpamByoasn(*ec2.DisassociateIpamByoasnInput) (*ec2.DisassociateIpamByoasnOutput, error)
+	DisassociateIpamByoasnWithContext(aws.Context, *ec2.DisassociateIpamByoasnInput, ...request.Option) (*ec2.DisassociateIpamByoasnOutput, error)
+	DisassociateIpamByoasnRequest(*ec2.DisassociateIpamByoasnInput) (*request.Request, *ec2.DisassociateIpamByoasnOutput)
+
 	DisassociateIpamResourceDiscovery(*ec2.DisassociateIpamResourceDiscoveryInput) (*ec2.DisassociateIpamResourceDiscoveryOutput, error)
 	DisassociateIpamResourceDiscoveryWithContext(aws.Context, *ec2.DisassociateIpamResourceDiscoveryInput, ...request.Option) (*ec2.DisassociateIpamResourceDiscoveryOutput, error)
 	DisassociateIpamResourceDiscoveryRequest(*ec2.DisassociateIpamResourceDiscoveryInput) (*request.Request, *ec2.DisassociateIpamResourceDiscoveryOutput)
@@ -2172,6 +2188,10 @@ type EC2API interface {
 
 	GetIpamDiscoveredAccountsPages(*ec2.GetIpamDiscoveredAccountsInput, func(*ec2.GetIpamDiscoveredAccountsOutput, bool) bool) error
 	GetIpamDiscoveredAccountsPagesWithContext(aws.Context, *ec2.GetIpamDiscoveredAccountsInput, func(*ec2.GetIpamDiscoveredAccountsOutput, bool) bool, ...request.Option) error
+
+	GetIpamDiscoveredPublicAddresses(*ec2.GetIpamDiscoveredPublicAddressesInput) (*ec2.GetIpamDiscoveredPublicAddressesOutput, error)
+	GetIpamDiscoveredPublicAddressesWithContext(aws.Context, *ec2.GetIpamDiscoveredPublicAddressesInput, ...request.Option) (*ec2.GetIpamDiscoveredPublicAddressesOutput, error)
+	GetIpamDiscoveredPublicAddressesRequest(*ec2.GetIpamDiscoveredPublicAddressesInput) (*request.Request, *ec2.GetIpamDiscoveredPublicAddressesOutput)
 
 	GetIpamDiscoveredResourceCidrs(*ec2.GetIpamDiscoveredResourceCidrsInput) (*ec2.GetIpamDiscoveredResourceCidrsOutput, error)
 	GetIpamDiscoveredResourceCidrsWithContext(aws.Context, *ec2.GetIpamDiscoveredResourceCidrsInput, ...request.Option) (*ec2.GetIpamDiscoveredResourceCidrsOutput, error)
@@ -2646,6 +2666,10 @@ type EC2API interface {
 	ProvisionByoipCidr(*ec2.ProvisionByoipCidrInput) (*ec2.ProvisionByoipCidrOutput, error)
 	ProvisionByoipCidrWithContext(aws.Context, *ec2.ProvisionByoipCidrInput, ...request.Option) (*ec2.ProvisionByoipCidrOutput, error)
 	ProvisionByoipCidrRequest(*ec2.ProvisionByoipCidrInput) (*request.Request, *ec2.ProvisionByoipCidrOutput)
+
+	ProvisionIpamByoasn(*ec2.ProvisionIpamByoasnInput) (*ec2.ProvisionIpamByoasnOutput, error)
+	ProvisionIpamByoasnWithContext(aws.Context, *ec2.ProvisionIpamByoasnInput, ...request.Option) (*ec2.ProvisionIpamByoasnOutput, error)
+	ProvisionIpamByoasnRequest(*ec2.ProvisionIpamByoasnInput) (*request.Request, *ec2.ProvisionIpamByoasnOutput)
 
 	ProvisionIpamPoolCidr(*ec2.ProvisionIpamPoolCidrInput) (*ec2.ProvisionIpamPoolCidrOutput, error)
 	ProvisionIpamPoolCidrWithContext(aws.Context, *ec2.ProvisionIpamPoolCidrInput, ...request.Option) (*ec2.ProvisionIpamPoolCidrOutput, error)

@@ -4690,6 +4690,10 @@ func (c *S3) GetObjectRequest(input *GetObjectInput) (req *request.Request, outp
 //     as if the object was deleted and includes x-amz-delete-marker: true in
 //     the response.
 //
+//   - If the specified version is a delete marker, the response returns a
+//     405 (Method Not Allowed) error and the Last-Modified: timestamp response
+//     header.
+//
 // For more information about versioning, see PutBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketVersioning.html).
 //
 // # Overriding Response Header Values
@@ -5710,9 +5714,10 @@ func (c *S3) HeadObjectRequest(input *HeadObjectInput) (req *request.Request, ou
 //
 // A HEAD request has the same options as a GET action on an object. The response
 // is identical to the GET response except that there is no response body. Because
-// of this, if the HEAD request generates an error, it returns a generic 400
-// Bad Request, 403 Forbidden or 404 Not Found code. It is not possible to retrieve
-// the exact exception beyond these error codes.
+// of this, if the HEAD request generates an error, it returns a generic code,
+// such as 400 Bad Request, 403 Forbidden, 404 Not Found, 405 Method Not Allowed,
+// 412 Precondition Failed, or 304 Not Modified. It's not possible to retrieve
+// the exact exception of these error codes.
 //
 // If you encrypt an object by using server-side encryption with customer-provided
 // encryption keys (SSE-C) when you store the object in Amazon S3, then when
@@ -5767,6 +5772,16 @@ func (c *S3) HeadObjectRequest(input *HeadObjectInput) (req *request.Request, ou
 //
 //   - If you don’t have the s3:ListBucket permission, Amazon S3 returns
 //     an HTTP status code 403 error.
+//
+// Versioning
+//
+//   - If the current version of the object is a delete marker, Amazon S3 behaves
+//     as if the object was deleted and includes x-amz-delete-marker: true in
+//     the response.
+//
+//   - If the specified version is a delete marker, the response returns a
+//     405 (Method Not Allowed) error and the Last-Modified: timestamp response
+//     header.
 //
 // The following actions are related to HeadObject:
 //
@@ -6501,8 +6516,6 @@ func (c *S3) ListObjectVersionsRequest(input *ListObjectVersionsInput) (req *req
 // application to parse the contents of the response and handle it appropriately.
 //
 // To use this operation, you must have READ access to the bucket.
-//
-// This action is not supported by Amazon S3 on Outposts.
 //
 // The following operations are related to ListObjectVersions:
 //
@@ -10246,7 +10259,7 @@ func (c *S3) PutPublicAccessBlockRequest(input *PutPublicAccessBlockInput) (req 
 // or an object, it checks the PublicAccessBlock configuration for both the
 // bucket (or the bucket that contains the object) and the bucket owner's account.
 // If the PublicAccessBlock configurations are different between the bucket
-// and the account, S3 uses the most restrictive combination of the bucket-level
+// and the account, Amazon S3 uses the most restrictive combination of the bucket-level
 // and account-level settings.
 //
 // For more information about when Amazon S3 considers a bucket or an object
@@ -12834,8 +12847,9 @@ type CompleteMultipartUploadInput struct {
 	RequestPayer *string `location:"header" locationName:"x-amz-request-payer" type:"string" enum:"RequestPayer"`
 
 	// The server-side encryption (SSE) algorithm used to encrypt the object. This
-	// parameter is needed only when the object was created using a checksum algorithm.
-	// For more information, see Protecting data using SSE-C keys (https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html)
+	// parameter is required only when the object was created using a checksum algorithm
+	// or if your bucket policy requires the use of SSE-C. For more information,
+	// see Protecting data using SSE-C keys (https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html#ssec-require-condition-key)
 	// in the Amazon S3 User Guide.
 	SSECustomerAlgorithm *string `location:"header" locationName:"x-amz-server-side-encryption-customer-algorithm" type:"string"`
 
@@ -13672,7 +13686,8 @@ type CopyObjectInput struct {
 
 	// Specifies the Amazon Web Services KMS Encryption Context to use for object
 	// encryption. The value of this header is a base64-encoded UTF-8 string holding
-	// JSON with the encryption context key-value pairs.
+	// JSON with the encryption context key-value pairs. This value must be explicitly
+	// added to specify encryption context for CopyObject requests.
 	//
 	// SSEKMSEncryptionContext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CopyObjectInput's
@@ -16930,7 +16945,7 @@ type DeleteMarkerEntry struct {
 	// The object key.
 	Key *string `min:"1" type:"string"`
 
-	// Date and time the object was last modified.
+	// Date and time when the object was last modified.
 	LastModified *time.Time `type:"timestamp"`
 
 	// The account that created the delete marker.>
@@ -22841,7 +22856,7 @@ type GetObjectOutput struct {
 	// The date and time at which the object is no longer cacheable.
 	Expires *string `location:"header" locationName:"Expires" type:"string"`
 
-	// Creation date of the object.
+	// Date and time when the object was last modified.
 	LastModified *time.Time `location:"header" locationName:"Last-Modified" type:"timestamp"`
 
 	// A map of metadata to store with the object in S3.
@@ -24514,7 +24529,7 @@ type HeadObjectOutput struct {
 	// The date and time at which the object is no longer cacheable.
 	Expires *string `location:"header" locationName:"Expires" type:"string"`
 
-	// Creation date of the object.
+	// Date and time when the object was last modified.
 	LastModified *time.Time `location:"header" locationName:"Last-Modified" type:"timestamp"`
 
 	// A map of metadata to store with the object in S3.
@@ -29102,6 +29117,9 @@ type LoggingEnabled struct {
 	// in the Amazon S3 User Guide.
 	TargetGrants []*TargetGrant `locationNameList:"Grant" type:"list"`
 
+	// Amazon S3 key format for log objects.
+	TargetObjectKeyFormat *TargetObjectKeyFormat `type:"structure"`
+
 	// A prefix for all log object keys. If you store log files from multiple Amazon
 	// S3 buckets in a single bucket, you can use a prefix to distinguish which
 	// log files came from which bucket.
@@ -29163,6 +29181,12 @@ func (s *LoggingEnabled) SetTargetBucket(v string) *LoggingEnabled {
 // SetTargetGrants sets the TargetGrants field's value.
 func (s *LoggingEnabled) SetTargetGrants(v []*TargetGrant) *LoggingEnabled {
 	s.TargetGrants = v
+	return s
+}
+
+// SetTargetObjectKeyFormat sets the TargetObjectKeyFormat field's value.
+func (s *LoggingEnabled) SetTargetObjectKeyFormat(v *TargetObjectKeyFormat) *LoggingEnabled {
+	s.TargetObjectKeyFormat = v
 	return s
 }
 
@@ -29590,9 +29614,10 @@ func (s *MultipartUpload) SetUploadId(v string) *MultipartUpload {
 type NoncurrentVersionExpiration struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies how many noncurrent versions Amazon S3 will retain. If there are
-	// this many more recent noncurrent versions, Amazon S3 will take the associated
-	// action. For more information about noncurrent versions, see Lifecycle configuration
+	// Specifies how many newer noncurrent versions must exist before Amazon S3
+	// can perform the associated action on a given version. If there are this many
+	// more recent noncurrent versions, Amazon S3 will take the associated action.
+	// For more information about noncurrent versions, see Lifecycle configuration
 	// elements (https://docs.aws.amazon.com/AmazonS3/latest/userguide/intro-lifecycle-rules.html)
 	// in the Amazon S3 User Guide.
 	NewerNoncurrentVersions *int64 `type:"integer"`
@@ -29645,9 +29670,10 @@ func (s *NoncurrentVersionExpiration) SetNoncurrentDays(v int64) *NoncurrentVers
 type NoncurrentVersionTransition struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies how many noncurrent versions Amazon S3 will retain. If there are
-	// this many more recent noncurrent versions, Amazon S3 will take the associated
-	// action. For more information about noncurrent versions, see Lifecycle configuration
+	// Specifies how many newer noncurrent versions must exist before Amazon S3
+	// can perform the associated action on a given version. If there are this many
+	// more recent noncurrent versions, Amazon S3 will take the associated action.
+	// For more information about noncurrent versions, see Lifecycle configuration
 	// elements (https://docs.aws.amazon.com/AmazonS3/latest/userguide/intro-lifecycle-rules.html)
 	// in the Amazon S3 User Guide.
 	NewerNoncurrentVersions *int64 `type:"integer"`
@@ -30339,7 +30365,7 @@ type ObjectVersion struct {
 	// The object key.
 	Key *string `min:"1" type:"string"`
 
-	// Date and time the object was last modified.
+	// Date and time when the object was last modified.
 	LastModified *time.Time `type:"timestamp"`
 
 	// Specifies the owner of the object.
@@ -30837,6 +30863,44 @@ func (s *Part) SetPartNumber(v int64) *Part {
 // SetSize sets the Size field's value.
 func (s *Part) SetSize(v int64) *Part {
 	s.Size = &v
+	return s
+}
+
+// Amazon S3 keys for log objects are partitioned in the following format:
+//
+// [DestinationPrefix][SourceAccountId]/[SourceRegion]/[SourceBucket]/[YYYY]/[MM]/[DD]/[YYYY]-[MM]-[DD]-[hh]-[mm]-[ss]-[UniqueString]
+//
+// PartitionedPrefix defaults to EventTime delivery when server access logs
+// are delivered.
+type PartitionedPrefix struct {
+	_ struct{} `locationName:"PartitionedPrefix" type:"structure"`
+
+	// Specifies the partition date source for the partitioned prefix. PartitionDateSource
+	// can be EventTime or DeliveryTime.
+	PartitionDateSource *string `type:"string" enum:"PartitionDateSource"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PartitionedPrefix) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PartitionedPrefix) GoString() string {
+	return s.String()
+}
+
+// SetPartitionDateSource sets the PartitionDateSource field's value.
+func (s *PartitionedPrefix) SetPartitionDateSource(v string) *PartitionedPrefix {
+	s.PartitionDateSource = &v
 	return s
 }
 
@@ -34771,7 +34835,8 @@ type PutObjectInput struct {
 	// encryption. The value of this header is a base64-encoded UTF-8 string holding
 	// JSON with the encryption context key-value pairs. This value is stored as
 	// object metadata and automatically gets passed on to Amazon Web Services KMS
-	// for future GetObject or CopyObject operations on this object.
+	// for future GetObject or CopyObject operations on this object. This value
+	// must be explicitly added during CopyObject operations.
 	//
 	// SSEKMSEncryptionContext is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by PutObjectInput's
@@ -38828,6 +38893,32 @@ func (s *ServerSideEncryptionRule) SetBucketKeyEnabled(v bool) *ServerSideEncryp
 	return s
 }
 
+// To use simple format for S3 keys for log objects, set SimplePrefix to an
+// empty object.
+//
+// [DestinationPrefix][YYYY]-[MM]-[DD]-[hh]-[mm]-[ss]-[UniqueString]
+type SimplePrefix struct {
+	_ struct{} `locationName:"SimplePrefix" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SimplePrefix) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SimplePrefix) GoString() string {
+	return s.String()
+}
+
 // A container that describes additional filters for identifying the source
 // objects that you want to replicate. You can choose to enable or disable the
 // replication of these objects. Currently, Amazon S3 supports only the filter
@@ -39361,6 +39452,49 @@ func (s *TargetGrant) SetGrantee(v *Grantee) *TargetGrant {
 // SetPermission sets the Permission field's value.
 func (s *TargetGrant) SetPermission(v string) *TargetGrant {
 	s.Permission = &v
+	return s
+}
+
+// Amazon S3 key format for log objects. Only one format, PartitionedPrefix
+// or SimplePrefix, is allowed.
+type TargetObjectKeyFormat struct {
+	_ struct{} `type:"structure"`
+
+	// Partitioned S3 key for log objects.
+	PartitionedPrefix *PartitionedPrefix `locationName:"PartitionedPrefix" type:"structure"`
+
+	// To use the simple format for S3 keys for log objects. To specify SimplePrefix
+	// format, set SimplePrefix to {}.
+	SimplePrefix *SimplePrefix `locationName:"SimplePrefix" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetObjectKeyFormat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetObjectKeyFormat) GoString() string {
+	return s.String()
+}
+
+// SetPartitionedPrefix sets the PartitionedPrefix field's value.
+func (s *TargetObjectKeyFormat) SetPartitionedPrefix(v *PartitionedPrefix) *TargetObjectKeyFormat {
+	s.PartitionedPrefix = v
+	return s
+}
+
+// SetSimplePrefix sets the SimplePrefix field's value.
+func (s *TargetObjectKeyFormat) SetSimplePrefix(v *SimplePrefix) *TargetObjectKeyFormat {
+	s.SimplePrefix = v
 	return s
 }
 
@@ -42256,6 +42390,22 @@ const (
 func OwnerOverride_Values() []string {
 	return []string{
 		OwnerOverrideDestination,
+	}
+}
+
+const (
+	// PartitionDateSourceEventTime is a PartitionDateSource enum value
+	PartitionDateSourceEventTime = "EventTime"
+
+	// PartitionDateSourceDeliveryTime is a PartitionDateSource enum value
+	PartitionDateSourceDeliveryTime = "DeliveryTime"
+)
+
+// PartitionDateSource_Values returns all elements of the PartitionDateSource enum
+func PartitionDateSource_Values() []string {
+	return []string{
+		PartitionDateSourceEventTime,
+		PartitionDateSourceDeliveryTime,
 	}
 }
 
