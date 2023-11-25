@@ -5801,6 +5801,10 @@ spec:
                       description: Region is the region the subnet is in, set for
                         subnets that are regionally scoped
                       type: string
+                    resourceBasedNaming:
+                      description: ResourceBasedNaming is used to enable/disable resource
+                        based naming for this subnet
+                      type: boolean
                     type:
                       description: SubnetType string describes subnet types (public,
                         private, utility)
