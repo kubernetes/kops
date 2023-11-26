@@ -250,14 +250,15 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
 
-		normalizedFileURL, err := a.remapURL(fileURL)
+		normalizedFile, err := a.remapURL(fileURL)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		fileAsset.DownloadURL = normalizedFileURL
-
-		klog.V(4).Infof("adding remapped file: %+v", fileAsset)
+		if fileURL.Host != normalizedFile.Host {
+			fileAsset.DownloadURL = normalizedFile
+			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
+		}
 	}
 
 	h, err := a.findHash(fileAsset)
@@ -289,9 +290,10 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 		if err != nil {
 			return nil, err
 		}
-
-		fileAsset.DownloadURL = normalizedFile
-		klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
+		if fileURL.Host != normalizedFile.Host {
+			fileAsset.DownloadURL = normalizedFile
+			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
+		}
 	}
 
 	klog.V(8).Infof("adding file: %+v", fileAsset)
