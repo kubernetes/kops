@@ -34,7 +34,7 @@ kops edit cluster [CLUSTER] [flags]
 
 ```
   -h, --help            help for cluster
-      --set strings     Directly set values in the spec
+      --set strings     Directly set values in the spec (default [])
       --unset strings   Directly unset values in the spec
 ```
 

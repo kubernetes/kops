@@ -118,7 +118,7 @@ kops create cluster [CLUSTER] [flags]
       --out string                              Path to write any local output
   -o, --output string                           Output format. One of json or yaml. Used with the --dry-run flag.
       --project string                          Project to use (must be set on GCE)
-      --set strings                             Directly set values in the spec
+      --set strings                             Directly set values in the spec (default [])
       --ssh-access strings                      Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
       --ssh-public-key string                   SSH public key to use
       --subnets strings                         Shared subnets to use
