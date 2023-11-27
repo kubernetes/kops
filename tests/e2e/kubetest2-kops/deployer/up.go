@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	osexec "os/exec"
+	"path"
 	"strings"
 	"time"
 
@@ -39,6 +40,17 @@ import (
 func (d *deployer) Up() error {
 	if err := d.init(); err != nil {
 		return err
+	}
+
+	// kops is fetched when --up is called instead of init to support a scenario where k/k is being built
+	// and a kops build is not ready yet
+	if d.KopsVersionMarker != "" {
+		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
+		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
+		if err != nil {
+			return fmt.Errorf("init failed to download kops from url: %v", err)
+		}
+		d.KopsBaseURL = baseURL
 	}
 
 	if d.terraform == nil {
@@ -118,6 +130,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--set", "cluster.spec.nodePortAccess=0.0.0.0/0",
+		"--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
 	}
 	if yes {
 		args = append(args, "--yes")

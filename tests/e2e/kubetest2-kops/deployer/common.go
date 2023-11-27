@@ -20,14 +20,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
-	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/boskos"
@@ -50,14 +48,6 @@ func (d *deployer) initialize() error {
 		if err := d.verifyUpFlags(); err != nil {
 			return fmt.Errorf("init failed to check up flags: %v", err)
 		}
-	}
-	if d.KopsVersionMarker != "" {
-		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
-		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
-		if err != nil {
-			return fmt.Errorf("init failed to download kops from url: %v", err)
-		}
-		d.KopsBaseURL = baseURL
 	}
 
 	switch d.CloudProvider {
