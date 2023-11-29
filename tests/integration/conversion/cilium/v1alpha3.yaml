@@ -38,7 +38,7 @@ spec:
   networking:
     cilium:
       installIptablesRules: false
-      masquerade: false
+      masquerade: true
     networkCIDR: 172.20.0.0/16
     nonMasqueradeCIDR: 100.64.0.0/10
     subnets:

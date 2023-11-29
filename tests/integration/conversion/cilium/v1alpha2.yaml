@@ -38,7 +38,7 @@ spec:
   networking:
     cilium:
       IPTablesRulesNoinstall: true
-      disableMasquerade: true
+      disableMasquerade: false
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

@@ -202,8 +202,8 @@ spec:
       clusterName: default
       cpuRequest: 25m
       disableCNPStatusUpdates: true
-      disableMasquerade: false
-      enableBPFMasquerade: true
+      disableMasquerade: true
+      enableBPFMasquerade: false
       enableEndpointHealthChecking: true
       enableL7Proxy: true
       enableRemoteNodeIdentity: true
