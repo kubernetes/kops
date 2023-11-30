@@ -50,6 +50,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -682,6 +683,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			CABasePath:            pkiDir,
 			SigningCAs:            signingCAs,
 			CertNames:             certNames,
+		}
+
+		if featureflag.Metal.Enabled() {
+			config.Server.PKI = &pkibootstrap.Options{}
 		}
 
 		switch cluster.Spec.GetCloudProvider() {
