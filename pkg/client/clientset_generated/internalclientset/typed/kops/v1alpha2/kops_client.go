@@ -29,6 +29,7 @@ import (
 type KopsV1alpha2Interface interface {
 	RESTClient() rest.Interface
 	ClustersGetter
+	HostsGetter
 	InstanceGroupsGetter
 	KeysetsGetter
 	SSHCredentialsGetter
@@ -41,6 +42,10 @@ type KopsV1alpha2Client struct {
 
 func (c *KopsV1alpha2Client) Clusters(namespace string) ClusterInterface {
 	return newClusters(c, namespace)
+}
+
+func (c *KopsV1alpha2Client) Hosts(namespace string) HostInterface {
+	return newHosts(c, namespace)
 }
 
 func (c *KopsV1alpha2Client) InstanceGroups(namespace string) InstanceGroupInterface {

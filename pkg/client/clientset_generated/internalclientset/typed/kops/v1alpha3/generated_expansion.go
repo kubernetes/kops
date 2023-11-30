@@ -20,6 +20,8 @@ package v1alpha3
 
 type ClusterExpansion interface{}
 
+type HostExpansion interface{}
+
 type InstanceGroupExpansion interface{}
 
 type KeysetExpansion interface{}
