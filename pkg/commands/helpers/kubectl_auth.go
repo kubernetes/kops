@@ -71,7 +71,7 @@ func NewCmdHelperKubectlAuth(f *util.Factory, out io.Writer) *cobra.Command {
 		Use:   "kubectl-auth",
 		Short: kubectlAuthShort,
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
+			ctx := cmd.Context()
 
 			err := RunKubectlAuthHelper(ctx, f, out, options)
 			if err != nil {
