@@ -154,6 +154,18 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		if err != nil {
 			return err
 		}
+
+		if strings.Contains(d.CreateArgs, "cilium-eni") {
+			for i, arg := range createArgs {
+				if strings.Contains(arg, "ubuntu-jammy-22.04-arm64") {
+					createArgs[i] = "--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231127"
+				}
+				if strings.Contains(arg, "t4g.large") {
+					createArgs[i] = strings.ReplaceAll(arg, "t4g.large", "t3.large")
+				}
+			}
+		}
+
 		args = append(args, createArgs...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
@@ -175,7 +187,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
-			args = appendIfUnset(args, "--master-size", "c6g.large")
+			args = appendIfUnset(args, "--master-size", "c5.large")
 			args = appendIfUnset(args, "--node-size", "c6g.large")
 		} else {
 			args = appendIfUnset(args, "--master-size", "c5.large")
@@ -216,6 +228,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--kubernetes-feature-gates", d.KubernetesFeatureGates)
 	}
 
+	klog.Infof("Command: %v", args)
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
 
