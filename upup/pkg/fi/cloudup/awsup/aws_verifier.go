@@ -123,7 +123,7 @@ type ResponseMetadata struct {
 
 func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, AWSAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefix)
 

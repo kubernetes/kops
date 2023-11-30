@@ -59,7 +59,7 @@ func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error)
 
 func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, HetznerAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 	token = strings.TrimPrefix(token, HetznerAuthenticationTokenPrefix)
 

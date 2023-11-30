@@ -60,7 +60,7 @@ func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (boo
 
 func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, ScalewayAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 	serverID := strings.TrimPrefix(token, ScalewayAuthenticationTokenPrefix)
 

@@ -60,7 +60,7 @@ func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap
 
 func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, AzureAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 
 	v := strings.Split(strings.TrimPrefix(token, AzureAuthenticationTokenPrefix), " ")

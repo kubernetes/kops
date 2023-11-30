@@ -71,7 +71,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
 
 	if !strings.HasPrefix(authToken, gcetpm.GCETPMAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 	authToken = strings.TrimPrefix(authToken, gcetpm.GCETPMAuthenticationTokenPrefix)
 
