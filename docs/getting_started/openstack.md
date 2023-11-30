@@ -56,10 +56,10 @@ kops create cluster \
   --zones nova \
   --network-cidr 10.0.0.0/24 \
   --image <imagename> \
-  --master-count=3 \
+  --control-plane-count=3 \
   --node-count=1 \
   --node-size <flavorname> \
-  --master-size <flavorname> \
+  --control-plane-size <flavorname> \
   --etcd-storage-type <volumetype> \
   --api-loadbalancer-type public \
   --topology private \
@@ -191,10 +191,10 @@ kops create cluster \
   --zones zone-1 \
   --network-cidr 10.1.0.0/16 \
   --image debian-10-160819-devops \
-  --master-count=3 \
+  --control-plane-count=3 \
   --node-count=2 \
   --node-size m1.small \
-  --master-size m1.small \
+  --control-plane-size m1.small \
   --etcd-storage-type default \
   --topology private \
   --bastion \
