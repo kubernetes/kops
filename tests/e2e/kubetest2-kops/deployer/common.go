@@ -274,6 +274,9 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		suffix = "k8s.local"
 	}
 
+	if len(jobName) > 79 { // SNS has char limit of 80
+		jobName = jobName[:79]
+	}
 	if jobType == "presubmit" {
 		return fmt.Sprintf("e2e-pr%s.%s.%s", pullNumber, jobName, suffix), nil
 	}
