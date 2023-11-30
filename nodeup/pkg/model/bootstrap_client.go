@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
@@ -96,6 +97,13 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		authenticator = a
 	case kops.CloudProviderAzure:
 		a, err := azure.NewAzureAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+
+	case "metal":
+		a, err := pkibootstrap.NewAuthenticatorFromFile("/etc/kubernetes/kops/pki/machine/private.pem")
 		if err != nil {
 			return err
 		}

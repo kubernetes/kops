@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -50,6 +51,9 @@ type ServerOptions struct {
 
 	// Provider is the cloud provider.
 	Provider ServerProviderOptions `json:"provider"`
+
+	// PKI configures private/public key node authentication.
+	PKI *pkibootstrap.Options `json:"pki,omitempty"`
 
 	// ServerKeyPath is the path to our TLS serving private key.
 	ServerKeyPath string `json:"serverKeyPath,omitempty"`
