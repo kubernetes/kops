@@ -61,7 +61,7 @@ func NewVerifier(ctx context.Context, opt *DigitalOceanVerifierOptions) (bootstr
 
 func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, DOAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+		return nil, bootstrap.ErrNotThisVerifier
 	}
 	serverIDString := strings.TrimPrefix(token, DOAuthenticationTokenPrefix)
 

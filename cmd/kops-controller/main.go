@@ -124,52 +124,67 @@ func main() {
 	vfsContext := vfs.NewVFSContext()
 
 	if opt.Server != nil {
-		var verifier bootstrap.Verifier
+		var verifiers []bootstrap.Verifier
 		var err error
 		if opt.Server.Provider.AWS != nil {
-			verifier, err = awsup.NewAWSVerifier(opt.Server.Provider.AWS)
+			verifier, err := awsup.NewAWSVerifier(opt.Server.Provider.AWS)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.GCE != nil {
-			verifier, err = gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.GCE != nil {
+			verifier, err := gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.Hetzner != nil {
-			verifier, err = hetzner.NewHetznerVerifier(opt.Server.Provider.Hetzner)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.Hetzner != nil {
+			verifier, err := hetzner.NewHetznerVerifier(opt.Server.Provider.Hetzner)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.OpenStack != nil {
-			verifier, err = openstack.NewOpenstackVerifier(opt.Server.Provider.OpenStack)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.OpenStack != nil {
+			verifier, err := openstack.NewOpenstackVerifier(opt.Server.Provider.OpenStack)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.DigitalOcean != nil {
-			verifier, err = do.NewVerifier(ctx, opt.Server.Provider.DigitalOcean)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.DigitalOcean != nil {
+			verifier, err := do.NewVerifier(ctx, opt.Server.Provider.DigitalOcean)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.Scaleway != nil {
-			verifier, err = scaleway.NewScalewayVerifier(ctx, opt.Server.Provider.Scaleway)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.Scaleway != nil {
+			verifier, err := scaleway.NewScalewayVerifier(ctx, opt.Server.Provider.Scaleway)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.Azure != nil {
-			verifier, err = azure.NewAzureVerifier(ctx, opt.Server.Provider.Azure)
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.Azure != nil {
+			verifier, err := azure.NewAzureVerifier(ctx, opt.Server.Provider.Azure)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else {
-			klog.Fatalf("server cloud provider config not provided")
+			verifiers = append(verifiers, verifier)
+		}
+
+		if len(verifiers) == 0 {
+			klog.Fatalf("server verifiers not provided")
 		}
 
 		uncachedClient, err := client.New(mgr.GetConfig(), client.Options{
@@ -180,6 +195,8 @@ func main() {
 			setupLog.Error(err, "error creating uncached client")
 			os.Exit(1)
 		}
+
+		verifier := bootstrap.NewChainVerifier(verifiers...)
 
 		srv, err := server.NewServer(vfsContext, &opt, verifier, uncachedClient)
 		if err != nil {

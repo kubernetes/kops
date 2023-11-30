@@ -49,5 +49,12 @@ type VerifyResult struct {
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
+	// VerifyToken performs full validation of the provided token, often making cloud API calls to verify the caller.
+	// It should return either an error or a validated VerifyResult.
+	// If the token looks like it is intended for a different verifier
+	// (for example it has the wrong prefix), we should return ErrNotThisVerifier
 	VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*VerifyResult, error)
 }
+
+// ErrNotThisVerifier is returned when a verifier receives a token that is not intended for it.
+var ErrNotThisVerifier = errors.New("token not valid for this verifier")
