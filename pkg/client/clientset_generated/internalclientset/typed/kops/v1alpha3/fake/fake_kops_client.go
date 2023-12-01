@@ -32,6 +32,10 @@ func (c *FakeKopsV1alpha3) Clusters(namespace string) v1alpha3.ClusterInterface 
 	return &FakeClusters{c, namespace}
 }
 
+func (c *FakeKopsV1alpha3) Hosts(namespace string) v1alpha3.HostInterface {
+	return &FakeHosts{c, namespace}
+}
+
 func (c *FakeKopsV1alpha3) InstanceGroups(namespace string) v1alpha3.InstanceGroupInterface {
 	return &FakeInstanceGroups{c, namespace}
 }

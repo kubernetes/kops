@@ -32,7 +32,9 @@ import (
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
@@ -58,7 +60,6 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 )
 
@@ -100,7 +101,8 @@ func main() {
 
 	ctrl.SetLogger(klogr.New())
 
-	if err := buildScheme(); err != nil {
+	scheme, err := buildScheme()
+	if err != nil {
 		setupLog.Error(err, "error building scheme")
 		os.Exit(1)
 	}
@@ -108,6 +110,7 @@ func main() {
 	kubeConfig := ctrl.GetConfigOrDie()
 	kubeConfig.Burst = 200
 	kubeConfig.QPS = 100
+
 	mgr, err := ctrl.NewManager(kubeConfig, ctrl.Options{
 		Scheme: scheme,
 		Metrics: metricsserver.Options{
@@ -183,6 +186,15 @@ func main() {
 			verifiers = append(verifiers, verifier)
 		}
 
+		if opt.Server.PKI != nil {
+			verifier, err := pkibootstrap.NewVerifier(opt.Server.PKI, mgr.GetClient())
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+			verifiers = append(verifiers, verifier)
+		}
+
 		if len(verifiers) == 0 {
 			klog.Fatalf("server verifiers not provided")
 		}
@@ -233,15 +245,19 @@ func main() {
 	}
 }
 
-func buildScheme() error {
+func buildScheme() (*runtime.Scheme, error) {
+	scheme := runtime.NewScheme()
 	if err := corev1.AddToScheme(scheme); err != nil {
-		return fmt.Errorf("error registering corev1: %v", err)
+		return nil, fmt.Errorf("error registering corev1: %v", err)
+	}
+	if err := v1alpha2.AddToScheme(scheme); err != nil {
+		return nil, fmt.Errorf("error registering kops/v1alpha2 API: %v", err)
 	}
 	// Needed so that the leader-election system can post events
 	if err := coordinationv1.AddToScheme(scheme); err != nil {
-		return fmt.Errorf("error registering coordinationv1: %v", err)
+		return nil, fmt.Errorf("error registering coordinationv1: %v", err)
 	}
-	return nil
+	return scheme, nil
 }
 
 func addNodeController(mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {

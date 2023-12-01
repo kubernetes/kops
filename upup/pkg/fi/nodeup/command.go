@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
@@ -654,6 +655,14 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			return nil, err
 		}
 		authenticator = a
+
+	case "metal":
+		a, err := pkibootstrap.NewAuthenticatorFromFile("/etc/kubernetes/kops/pki/machine/private.pem")
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}
