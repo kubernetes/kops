@@ -1468,7 +1468,7 @@ type AssumeRoleInput struct {
 	// trusted context assertion and the ARN of the context provider from which
 	// the trusted context assertion was generated.
 	//
-	// [{"ProviderArn":"arn:aws:iam::aws:contextProvider/identitycenter","ContextAssertion":"trusted-context-assertion"}]
+	// [{"ProviderArn":"arn:aws:iam::aws:contextProvider/IdentityCenter","ContextAssertion":"trusted-context-assertion"}]
 	ProvidedContexts []*ProvidedContext `type:"list"`
 
 	// The Amazon Resource Name (ARN) of the role to assume.
