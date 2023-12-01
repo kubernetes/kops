@@ -3,7 +3,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   annotations:
-    storageclass.kubernetes.io/is-default-class: "false"
+    storageclass.kubernetes.io/is-default-class: "true"
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: gcp-pd-csi-driver.addons.k8s.io
@@ -22,8 +22,6 @@ allowVolumeExpansion: true
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: gcp-pd-csi-driver.addons.k8s.io
