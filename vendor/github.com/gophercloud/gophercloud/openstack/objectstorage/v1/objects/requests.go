@@ -612,7 +612,7 @@ func CreateTempURL(c *gophercloud.ServiceClient, containerName, objectName strin
 	}
 
 	secretKey := []byte(tempURLKey)
-	splitPath := strings.Split(url, opts.Split)
+	splitPath := strings.SplitN(url, opts.Split, 2)
 	baseURL, objectPath := splitPath[0], splitPath[1]
 	objectPath = opts.Split + objectPath
 	body := fmt.Sprintf("%s\n%d\n%s", opts.Method, expiry, objectPath)

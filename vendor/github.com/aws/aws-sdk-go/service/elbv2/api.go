@@ -152,7 +152,7 @@ func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, outpu
 //
 // Adds the specified tags to the specified Elastic Load Balancing resource.
 // You can tag your Application Load Balancers, Network Load Balancers, Gateway
-// Load Balancers, target groups, listeners, and rules.
+// Load Balancers, target groups, trust stores, listeners, and rules.
 //
 // Each tag consists of a key and an optional value. If a resource already has
 // a tag with the same key, AddTags updates its value.
@@ -170,7 +170,7 @@ func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, outpu
 //     A tag key was specified more than once.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
 //
 //   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
 //     The specified load balancer does not exist.
@@ -183,6 +183,9 @@ func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, outpu
 //
 //   - ErrCodeRuleNotFoundException "RuleNotFound"
 //     The specified rule does not exist.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTags
 func (c *ELBV2) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
@@ -201,6 +204,94 @@ func (c *ELBV2) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
 // for more information on using Contexts.
 func (c *ELBV2) AddTagsWithContext(ctx aws.Context, input *AddTagsInput, opts ...request.Option) (*AddTagsOutput, error) {
 	req, out := c.AddTagsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAddTrustStoreRevocations = "AddTrustStoreRevocations"
+
+// AddTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the AddTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AddTrustStoreRevocations for more information on using the AddTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AddTrustStoreRevocationsRequest method.
+//	req, resp := client.AddTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTrustStoreRevocations
+func (c *ELBV2) AddTrustStoreRevocationsRequest(input *AddTrustStoreRevocationsInput) (req *request.Request, output *AddTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opAddTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AddTrustStoreRevocationsInput{}
+	}
+
+	output = &AddTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AddTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Adds the specified revocation file to the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation AddTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeInvalidRevocationContentException "InvalidRevocationContent"
+//     The provided revocation file is an invalid format, or uses an incorrect algorithm.
+//
+//   - ErrCodeTooManyTrustStoreRevocationEntriesException "TooManyTrustStoreRevocationEntries"
+//     The specified trust store has too many revocation entries.
+//
+//   - ErrCodeRevocationContentNotFoundException "RevocationContentNotFound"
+//     The specified revocation file does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTrustStoreRevocations
+func (c *ELBV2) AddTrustStoreRevocations(input *AddTrustStoreRevocationsInput) (*AddTrustStoreRevocationsOutput, error) {
+	req, out := c.AddTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// AddTrustStoreRevocationsWithContext is the same as AddTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AddTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) AddTrustStoreRevocationsWithContext(ctx aws.Context, input *AddTrustStoreRevocationsInput, opts ...request.Option) (*AddTrustStoreRevocationsOutput, error) {
+	req, out := c.AddTrustStoreRevocationsRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -328,7 +419,13 @@ func (c *ELBV2) CreateListenerRequest(input *CreateListenerInput) (req *request.
 //     The specified ALPN policy is not supported.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreNotReadyException "TrustStoreNotReady"
+//     The specified trust store is not active.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateListener
 func (c *ELBV2) CreateListener(input *CreateListenerInput) (*CreateListenerOutput, error) {
@@ -442,7 +539,7 @@ func (c *ELBV2) CreateLoadBalancerRequest(input *CreateLoadBalancerInput) (req *
 //     The requested scheme is not valid.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
 //
 //   - ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
 //     A tag key was specified more than once.
@@ -590,7 +687,7 @@ func (c *ELBV2) CreateRuleRequest(input *CreateRuleInput) (req *request.Request,
 //     load balancer, it is counted as only one use.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateRule
 func (c *ELBV2) CreateRule(input *CreateRuleInput) (*CreateRuleOutput, error) {
@@ -691,7 +788,7 @@ func (c *ELBV2) CreateTargetGroupRequest(input *CreateTargetGroupInput) (req *re
 //     The requested configuration is not valid.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTargetGroup
 func (c *ELBV2) CreateTargetGroup(input *CreateTargetGroupInput) (*CreateTargetGroupOutput, error) {
@@ -710,6 +807,101 @@ func (c *ELBV2) CreateTargetGroup(input *CreateTargetGroupInput) (*CreateTargetG
 // for more information on using Contexts.
 func (c *ELBV2) CreateTargetGroupWithContext(ctx aws.Context, input *CreateTargetGroupInput, opts ...request.Option) (*CreateTargetGroupOutput, error) {
 	req, out := c.CreateTargetGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateTrustStore = "CreateTrustStore"
+
+// CreateTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the CreateTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateTrustStore for more information on using the CreateTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateTrustStoreRequest method.
+//	req, resp := client.CreateTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTrustStore
+func (c *ELBV2) CreateTrustStoreRequest(input *CreateTrustStoreInput) (req *request.Request, output *CreateTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opCreateTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateTrustStoreInput{}
+	}
+
+	output = &CreateTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateTrustStore API operation for Elastic Load Balancing.
+//
+// Creates a trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation CreateTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeDuplicateTrustStoreNameException "DuplicateTrustStoreName"
+//     A trust store with the specified name already exists.
+//
+//   - ErrCodeTooManyTrustStoresException "TooManyTrustStores"
+//     You've reached the limit on the number of trust stores for your Amazon Web
+//     Services account.
+//
+//   - ErrCodeInvalidCaCertificatesBundleException "InvalidCaCertificatesBundle"
+//     The specified ca certificate bundle is in an invalid format, or corrupt.
+//
+//   - ErrCodeCaCertificatesBundleNotFoundException "CaCertificatesBundleNotFound"
+//     The specified ca certificate bundle does not exist.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
+//     A tag key was specified more than once.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTrustStore
+func (c *ELBV2) CreateTrustStore(input *CreateTrustStoreInput) (*CreateTrustStoreOutput, error) {
+	req, out := c.CreateTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// CreateTrustStoreWithContext is the same as CreateTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) CreateTrustStoreWithContext(ctx aws.Context, input *CreateTrustStoreInput, opts ...request.Option) (*CreateTrustStoreOutput, error) {
+	req, out := c.CreateTrustStoreRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1060,6 +1252,89 @@ func (c *ELBV2) DeleteTargetGroup(input *DeleteTargetGroupInput) (*DeleteTargetG
 // for more information on using Contexts.
 func (c *ELBV2) DeleteTargetGroupWithContext(ctx aws.Context, input *DeleteTargetGroupInput, opts ...request.Option) (*DeleteTargetGroupOutput, error) {
 	req, out := c.DeleteTargetGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteTrustStore = "DeleteTrustStore"
+
+// DeleteTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteTrustStore for more information on using the DeleteTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteTrustStoreRequest method.
+//	req, resp := client.DeleteTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTrustStore
+func (c *ELBV2) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (req *request.Request, output *DeleteTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opDeleteTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteTrustStoreInput{}
+	}
+
+	output = &DeleteTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteTrustStore API operation for Elastic Load Balancing.
+//
+// Deletes a trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DeleteTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreInUseException "TrustStoreInUse"
+//     The specified trust store is currently in use.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTrustStore
+func (c *ELBV2) DeleteTrustStore(input *DeleteTrustStoreInput) (*DeleteTrustStoreOutput, error) {
+	req, out := c.DeleteTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// DeleteTrustStoreWithContext is the same as DeleteTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DeleteTrustStoreWithContext(ctx aws.Context, input *DeleteTrustStoreInput, opts ...request.Option) (*DeleteTrustStoreOutput, error) {
+	req, out := c.DeleteTrustStoreRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1943,6 +2218,9 @@ func (c *ELBV2) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Requ
 //   - ErrCodeRuleNotFoundException "RuleNotFound"
 //     The specified rule does not exist.
 //
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTags
 func (c *ELBV2) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
@@ -2283,6 +2561,581 @@ func (c *ELBV2) DescribeTargetHealthWithContext(ctx aws.Context, input *Describe
 	return out, req.Send()
 }
 
+const opDescribeTrustStoreAssociations = "DescribeTrustStoreAssociations"
+
+// DescribeTrustStoreAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStoreAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStoreAssociations for more information on using the DescribeTrustStoreAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoreAssociationsRequest method.
+//	req, resp := client.DescribeTrustStoreAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreAssociations
+func (c *ELBV2) DescribeTrustStoreAssociationsRequest(input *DescribeTrustStoreAssociationsInput) (req *request.Request, output *DescribeTrustStoreAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStoreAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoreAssociationsInput{}
+	}
+
+	output = &DescribeTrustStoreAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStoreAssociations API operation for Elastic Load Balancing.
+//
+// Describes all resources associated with the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStoreAssociations for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreAssociations
+func (c *ELBV2) DescribeTrustStoreAssociations(input *DescribeTrustStoreAssociationsInput) (*DescribeTrustStoreAssociationsOutput, error) {
+	req, out := c.DescribeTrustStoreAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreAssociationsWithContext is the same as DescribeTrustStoreAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStoreAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreAssociationsWithContext(ctx aws.Context, input *DescribeTrustStoreAssociationsInput, opts ...request.Option) (*DescribeTrustStoreAssociationsOutput, error) {
+	req, out := c.DescribeTrustStoreAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreAssociationsPages iterates over the pages of a DescribeTrustStoreAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStoreAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStoreAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoreAssociationsPages(params,
+//	    func(page *elbv2.DescribeTrustStoreAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoreAssociationsPages(input *DescribeTrustStoreAssociationsInput, fn func(*DescribeTrustStoreAssociationsOutput, bool) bool) error {
+	return c.DescribeTrustStoreAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoreAssociationsPagesWithContext same as DescribeTrustStoreAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreAssociationsPagesWithContext(ctx aws.Context, input *DescribeTrustStoreAssociationsInput, fn func(*DescribeTrustStoreAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoreAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoreAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoreAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeTrustStoreRevocations = "DescribeTrustStoreRevocations"
+
+// DescribeTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStoreRevocations for more information on using the DescribeTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoreRevocationsRequest method.
+//	req, resp := client.DescribeTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreRevocations
+func (c *ELBV2) DescribeTrustStoreRevocationsRequest(input *DescribeTrustStoreRevocationsInput) (req *request.Request, output *DescribeTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoreRevocationsInput{}
+	}
+
+	output = &DescribeTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Describes the revocation files in use by the specified trust store arn, or
+// revocation ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreRevocations
+func (c *ELBV2) DescribeTrustStoreRevocations(input *DescribeTrustStoreRevocationsInput) (*DescribeTrustStoreRevocationsOutput, error) {
+	req, out := c.DescribeTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreRevocationsWithContext is the same as DescribeTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreRevocationsWithContext(ctx aws.Context, input *DescribeTrustStoreRevocationsInput, opts ...request.Option) (*DescribeTrustStoreRevocationsOutput, error) {
+	req, out := c.DescribeTrustStoreRevocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreRevocationsPages iterates over the pages of a DescribeTrustStoreRevocations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStoreRevocations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStoreRevocations operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoreRevocationsPages(params,
+//	    func(page *elbv2.DescribeTrustStoreRevocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoreRevocationsPages(input *DescribeTrustStoreRevocationsInput, fn func(*DescribeTrustStoreRevocationsOutput, bool) bool) error {
+	return c.DescribeTrustStoreRevocationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoreRevocationsPagesWithContext same as DescribeTrustStoreRevocationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreRevocationsPagesWithContext(ctx aws.Context, input *DescribeTrustStoreRevocationsInput, fn func(*DescribeTrustStoreRevocationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoreRevocationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoreRevocationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoreRevocationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeTrustStores = "DescribeTrustStores"
+
+// DescribeTrustStoresRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStores operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStores for more information on using the DescribeTrustStores
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoresRequest method.
+//	req, resp := client.DescribeTrustStoresRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStores
+func (c *ELBV2) DescribeTrustStoresRequest(input *DescribeTrustStoresInput) (req *request.Request, output *DescribeTrustStoresOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStores,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoresInput{}
+	}
+
+	output = &DescribeTrustStoresOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStores API operation for Elastic Load Balancing.
+//
+// Describes all trust stores for a given account by trust store arn’s or
+// name.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStores for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStores
+func (c *ELBV2) DescribeTrustStores(input *DescribeTrustStoresInput) (*DescribeTrustStoresOutput, error) {
+	req, out := c.DescribeTrustStoresRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoresWithContext is the same as DescribeTrustStores with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStores for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoresWithContext(ctx aws.Context, input *DescribeTrustStoresInput, opts ...request.Option) (*DescribeTrustStoresOutput, error) {
+	req, out := c.DescribeTrustStoresRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoresPages iterates over the pages of a DescribeTrustStores operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStores method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStores operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoresPages(params,
+//	    func(page *elbv2.DescribeTrustStoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoresPages(input *DescribeTrustStoresInput, fn func(*DescribeTrustStoresOutput, bool) bool) error {
+	return c.DescribeTrustStoresPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoresPagesWithContext same as DescribeTrustStoresPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoresPagesWithContext(ctx aws.Context, input *DescribeTrustStoresInput, fn func(*DescribeTrustStoresOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoresInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoresRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoresOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opGetTrustStoreCaCertificatesBundle = "GetTrustStoreCaCertificatesBundle"
+
+// GetTrustStoreCaCertificatesBundleRequest generates a "aws/request.Request" representing the
+// client's request for the GetTrustStoreCaCertificatesBundle operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetTrustStoreCaCertificatesBundle for more information on using the GetTrustStoreCaCertificatesBundle
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetTrustStoreCaCertificatesBundleRequest method.
+//	req, resp := client.GetTrustStoreCaCertificatesBundleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreCaCertificatesBundle
+func (c *ELBV2) GetTrustStoreCaCertificatesBundleRequest(input *GetTrustStoreCaCertificatesBundleInput) (req *request.Request, output *GetTrustStoreCaCertificatesBundleOutput) {
+	op := &request.Operation{
+		Name:       opGetTrustStoreCaCertificatesBundle,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetTrustStoreCaCertificatesBundleInput{}
+	}
+
+	output = &GetTrustStoreCaCertificatesBundleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetTrustStoreCaCertificatesBundle API operation for Elastic Load Balancing.
+//
+// Retrieves the ca certificate bundle.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation GetTrustStoreCaCertificatesBundle for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreCaCertificatesBundle
+func (c *ELBV2) GetTrustStoreCaCertificatesBundle(input *GetTrustStoreCaCertificatesBundleInput) (*GetTrustStoreCaCertificatesBundleOutput, error) {
+	req, out := c.GetTrustStoreCaCertificatesBundleRequest(input)
+	return out, req.Send()
+}
+
+// GetTrustStoreCaCertificatesBundleWithContext is the same as GetTrustStoreCaCertificatesBundle with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetTrustStoreCaCertificatesBundle for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) GetTrustStoreCaCertificatesBundleWithContext(ctx aws.Context, input *GetTrustStoreCaCertificatesBundleInput, opts ...request.Option) (*GetTrustStoreCaCertificatesBundleOutput, error) {
+	req, out := c.GetTrustStoreCaCertificatesBundleRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetTrustStoreRevocationContent = "GetTrustStoreRevocationContent"
+
+// GetTrustStoreRevocationContentRequest generates a "aws/request.Request" representing the
+// client's request for the GetTrustStoreRevocationContent operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetTrustStoreRevocationContent for more information on using the GetTrustStoreRevocationContent
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetTrustStoreRevocationContentRequest method.
+//	req, resp := client.GetTrustStoreRevocationContentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreRevocationContent
+func (c *ELBV2) GetTrustStoreRevocationContentRequest(input *GetTrustStoreRevocationContentInput) (req *request.Request, output *GetTrustStoreRevocationContentOutput) {
+	op := &request.Operation{
+		Name:       opGetTrustStoreRevocationContent,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetTrustStoreRevocationContentInput{}
+	}
+
+	output = &GetTrustStoreRevocationContentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetTrustStoreRevocationContent API operation for Elastic Load Balancing.
+//
+// Retrieves the specified revocation file.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation GetTrustStoreRevocationContent for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreRevocationContent
+func (c *ELBV2) GetTrustStoreRevocationContent(input *GetTrustStoreRevocationContentInput) (*GetTrustStoreRevocationContentOutput, error) {
+	req, out := c.GetTrustStoreRevocationContentRequest(input)
+	return out, req.Send()
+}
+
+// GetTrustStoreRevocationContentWithContext is the same as GetTrustStoreRevocationContent with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetTrustStoreRevocationContent for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) GetTrustStoreRevocationContentWithContext(ctx aws.Context, input *GetTrustStoreRevocationContentInput, opts ...request.Option) (*GetTrustStoreRevocationContentOutput, error) {
+	req, out := c.GetTrustStoreRevocationContentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyListener = "ModifyListener"
 
 // ModifyListenerRequest generates a "aws/request.Request" representing the
@@ -2400,6 +3253,12 @@ func (c *ELBV2) ModifyListenerRequest(input *ModifyListenerInput) (req *request.
 //
 //   - ErrCodeALPNPolicyNotSupportedException "ALPNPolicyNotFound"
 //     The specified ALPN policy is not supported.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreNotReadyException "TrustStoreNotReady"
+//     The specified trust store is not active.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyListener
 func (c *ELBV2) ModifyListener(input *ModifyListenerInput) (*ModifyListenerOutput, error) {
@@ -2792,6 +3651,91 @@ func (c *ELBV2) ModifyTargetGroupAttributesWithContext(ctx aws.Context, input *M
 	return out, req.Send()
 }
 
+const opModifyTrustStore = "ModifyTrustStore"
+
+// ModifyTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyTrustStore for more information on using the ModifyTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyTrustStoreRequest method.
+//	req, resp := client.ModifyTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTrustStore
+func (c *ELBV2) ModifyTrustStoreRequest(input *ModifyTrustStoreInput) (req *request.Request, output *ModifyTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opModifyTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyTrustStoreInput{}
+	}
+
+	output = &ModifyTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyTrustStore API operation for Elastic Load Balancing.
+//
+// Update the ca certificate bundle for a given trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation ModifyTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeInvalidCaCertificatesBundleException "InvalidCaCertificatesBundle"
+//     The specified ca certificate bundle is in an invalid format, or corrupt.
+//
+//   - ErrCodeCaCertificatesBundleNotFoundException "CaCertificatesBundleNotFound"
+//     The specified ca certificate bundle does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTrustStore
+func (c *ELBV2) ModifyTrustStore(input *ModifyTrustStoreInput) (*ModifyTrustStoreOutput, error) {
+	req, out := c.ModifyTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// ModifyTrustStoreWithContext is the same as ModifyTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) ModifyTrustStoreWithContext(ctx aws.Context, input *ModifyTrustStoreInput, opts ...request.Option) (*ModifyTrustStoreOutput, error) {
+	req, out := c.ModifyTrustStoreRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRegisterTargets = "RegisterTargets"
 
 // RegisterTargetsRequest generates a "aws/request.Request" representing the
@@ -3050,7 +3994,10 @@ func (c *ELBV2) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request,
 //     The specified rule does not exist.
 //
 //   - ErrCodeTooManyTagsException "TooManyTags"
-//     You've reached the limit on the number of tags per load balancer.
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTags
 func (c *ELBV2) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
@@ -3069,6 +4016,89 @@ func (c *ELBV2) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
 // for more information on using Contexts.
 func (c *ELBV2) RemoveTagsWithContext(ctx aws.Context, input *RemoveTagsInput, opts ...request.Option) (*RemoveTagsOutput, error) {
 	req, out := c.RemoveTagsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRemoveTrustStoreRevocations = "RemoveTrustStoreRevocations"
+
+// RemoveTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveTrustStoreRevocations for more information on using the RemoveTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveTrustStoreRevocationsRequest method.
+//	req, resp := client.RemoveTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTrustStoreRevocations
+func (c *ELBV2) RemoveTrustStoreRevocationsRequest(input *RemoveTrustStoreRevocationsInput) (req *request.Request, output *RemoveTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opRemoveTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RemoveTrustStoreRevocationsInput{}
+	}
+
+	output = &RemoveTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// RemoveTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Removes the specified revocation file from the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation RemoveTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTrustStoreRevocations
+func (c *ELBV2) RemoveTrustStoreRevocations(input *RemoveTrustStoreRevocationsInput) (*RemoveTrustStoreRevocationsOutput, error) {
+	req, out := c.RemoveTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// RemoveTrustStoreRevocationsWithContext is the same as RemoveTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) RemoveTrustStoreRevocationsWithContext(ctx aws.Context, input *RemoveTrustStoreRevocationsInput, opts ...request.Option) (*RemoveTrustStoreRevocationsOutput, error) {
+	req, out := c.RemoveTrustStoreRevocationsRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3774,6 +4804,133 @@ func (s AddTagsOutput) GoString() string {
 	return s.String()
 }
 
+type AddTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation file to add.
+	RevocationContents []*RevocationContent `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddTrustStoreRevocationsInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationContents sets the RevocationContents field's value.
+func (s *AddTrustStoreRevocationsInput) SetRevocationContents(v []*RevocationContent) *AddTrustStoreRevocationsInput {
+	s.RevocationContents = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *AddTrustStoreRevocationsInput) SetTrustStoreArn(v string) *AddTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type AddTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the revocation file added to the trust store.
+	TrustStoreRevocations []*TrustStoreRevocation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStoreRevocations sets the TrustStoreRevocations field's value.
+func (s *AddTrustStoreRevocationsOutput) SetTrustStoreRevocations(v []*TrustStoreRevocation) *AddTrustStoreRevocationsOutput {
+	s.TrustStoreRevocations = v
+	return s
+}
+
+// Information about anomaly detection and mitigation.
+type AnomalyDetection struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether anomaly mitigation is in progress.
+	MitigationInEffect *string `type:"string" enum:"MitigationInEffectEnum"`
+
+	// The latest anomaly detection result.
+	Result *string `type:"string" enum:"AnomalyResultEnum"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnomalyDetection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnomalyDetection) GoString() string {
+	return s.String()
+}
+
+// SetMitigationInEffect sets the MitigationInEffect field's value.
+func (s *AnomalyDetection) SetMitigationInEffect(v string) *AnomalyDetection {
+	s.MitigationInEffect = &v
+	return s
+}
+
+// SetResult sets the Result field's value.
+func (s *AnomalyDetection) SetResult(v string) *AnomalyDetection {
+	s.Result = &v
+	return s
+}
+
 // Request parameters to use when integrating with Amazon Cognito to authenticate
 // users.
 type AuthenticateCognitoActionConfig struct {
@@ -4280,6 +5437,9 @@ type CreateListenerInput struct {
 	// LoadBalancerArn is a required field
 	LoadBalancerArn *string `type:"string" required:"true"`
 
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
+
 	// The port on which the load balancer is listening. You cannot specify a port
 	// for a Gateway Load Balancer.
 	Port *int64 `min:"1" type:"integer"`
@@ -4384,6 +5544,12 @@ func (s *CreateListenerInput) SetDefaultActions(v []*Action) *CreateListenerInpu
 // SetLoadBalancerArn sets the LoadBalancerArn field's value.
 func (s *CreateListenerInput) SetLoadBalancerArn(v string) *CreateListenerInput {
 	s.LoadBalancerArn = &v
+	return s
+}
+
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *CreateListenerInput) SetMutualAuthentication(v *MutualAuthenticationAttributes) *CreateListenerInput {
+	s.MutualAuthentication = v
 	return s
 }
 
@@ -5131,6 +6297,148 @@ func (s *CreateTargetGroupOutput) SetTargetGroups(v []*TargetGroup) *CreateTarge
 	return s
 }
 
+type CreateTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Bucket is a required field
+	CaCertificatesBundleS3Bucket *string `type:"string" required:"true"`
+
+	// The Amazon S3 path for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Key is a required field
+	CaCertificatesBundleS3Key *string `type:"string" required:"true"`
+
+	// The Amazon S3 object version for the ca certificates bundle. If undefined
+	// the current version is used.
+	CaCertificatesBundleS3ObjectVersion *string `type:"string"`
+
+	// The name of the trust store.
+	//
+	// This name must be unique per region and cannot be changed after creation.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The tags to assign to the trust store.
+	Tags []*Tag `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateTrustStoreInput"}
+	if s.CaCertificatesBundleS3Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Bucket"))
+	}
+	if s.CaCertificatesBundleS3Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Key"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCaCertificatesBundleS3Bucket sets the CaCertificatesBundleS3Bucket field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3Bucket(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3Bucket = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3Key sets the CaCertificatesBundleS3Key field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3Key(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3Key = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3ObjectVersion sets the CaCertificatesBundleS3ObjectVersion field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3ObjectVersion(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3ObjectVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateTrustStoreInput) SetName(v string) *CreateTrustStoreInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateTrustStoreInput) SetTags(v []*Tag) *CreateTrustStoreInput {
+	s.Tags = v
+	return s
+}
+
+type CreateTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the trust store created.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *CreateTrustStoreOutput) SetTrustStores(v []*TrustStore) *CreateTrustStoreOutput {
+	s.TrustStores = v
+	return s
+}
+
 type DeleteListenerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5400,6 +6708,74 @@ func (s DeleteTargetGroupOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteTargetGroupOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteTrustStoreInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DeleteTrustStoreInput) SetTrustStoreArn(v string) *DeleteTrustStoreInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DeleteTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreOutput) GoString() string {
 	return s.String()
 }
 
@@ -6511,6 +7887,9 @@ func (s *DescribeTargetGroupsOutput) SetTargetGroups(v []*TargetGroup) *Describe
 type DescribeTargetHealthInput struct {
 	_ struct{} `type:"structure"`
 
+	// Used to inclue anomaly detection information.
+	Include []*string `type:"list" enum:"DescribeTargetHealthInputIncludeEnum"`
+
 	// The Amazon Resource Name (ARN) of the target group.
 	//
 	// TargetGroupArn is a required field
@@ -6561,6 +7940,12 @@ func (s *DescribeTargetHealthInput) Validate() error {
 	return nil
 }
 
+// SetInclude sets the Include field's value.
+func (s *DescribeTargetHealthInput) SetInclude(v []*string) *DescribeTargetHealthInput {
+	s.Include = v
+	return s
+}
+
 // SetTargetGroupArn sets the TargetGroupArn field's value.
 func (s *DescribeTargetHealthInput) SetTargetGroupArn(v string) *DescribeTargetHealthInput {
 	s.TargetGroupArn = &v
@@ -6601,6 +7986,405 @@ func (s DescribeTargetHealthOutput) GoString() string {
 // SetTargetHealthDescriptions sets the TargetHealthDescriptions field's value.
 func (s *DescribeTargetHealthOutput) SetTargetHealthDescriptions(v []*TargetHealthDescription) *DescribeTargetHealthOutput {
 	s.TargetHealthDescriptions = v
+	return s
+}
+
+type DescribeTrustStoreAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoreAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoreAssociationsInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetMarker(v string) *DescribeTrustStoreAssociationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetPageSize(v int64) *DescribeTrustStoreAssociationsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetTrustStoreArn(v string) *DescribeTrustStoreAssociationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the resources the trust store is associated to.
+	TrustStoreAssociations []*TrustStoreAssociation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoreAssociationsOutput) SetNextMarker(v string) *DescribeTrustStoreAssociationsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStoreAssociations sets the TrustStoreAssociations field's value.
+func (s *DescribeTrustStoreAssociationsOutput) SetTrustStoreAssociations(v []*TrustStoreAssociation) *DescribeTrustStoreAssociationsOutput {
+	s.TrustStoreAssociations = v
+	return s
+}
+
+// Information about the revocations used by a trust store.
+type DescribeTrustStoreRevocation struct {
+	_ struct{} `type:"structure"`
+
+	// The number of revoked certificates.
+	NumberOfRevokedEntries *int64 `type:"long"`
+
+	// The revocation ID of a revocation file in use.
+	RevocationId *int64 `type:"long"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocation) GoString() string {
+	return s.String()
+}
+
+// SetNumberOfRevokedEntries sets the NumberOfRevokedEntries field's value.
+func (s *DescribeTrustStoreRevocation) SetNumberOfRevokedEntries(v int64) *DescribeTrustStoreRevocation {
+	s.NumberOfRevokedEntries = &v
+	return s
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *DescribeTrustStoreRevocation) SetRevocationId(v int64) *DescribeTrustStoreRevocation {
+	s.RevocationId = &v
+	return s
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *DescribeTrustStoreRevocation) SetRevocationType(v string) *DescribeTrustStoreRevocation {
+	s.RevocationType = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreRevocation) SetTrustStoreArn(v string) *DescribeTrustStoreRevocation {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The revocation IDs of the revocation files you want to describe.
+	RevocationIds []*int64 `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoreRevocationsInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetMarker(v string) *DescribeTrustStoreRevocationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetPageSize(v int64) *DescribeTrustStoreRevocationsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRevocationIds sets the RevocationIds field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetRevocationIds(v []*int64) *DescribeTrustStoreRevocationsInput {
+	s.RevocationIds = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetTrustStoreArn(v string) *DescribeTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the revocation file in the trust store.
+	TrustStoreRevocations []*DescribeTrustStoreRevocation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoreRevocationsOutput) SetNextMarker(v string) *DescribeTrustStoreRevocationsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStoreRevocations sets the TrustStoreRevocations field's value.
+func (s *DescribeTrustStoreRevocationsOutput) SetTrustStoreRevocations(v []*DescribeTrustStoreRevocation) *DescribeTrustStoreRevocationsOutput {
+	s.TrustStoreRevocations = v
+	return s
+}
+
+type DescribeTrustStoresInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The names of the trust stores.
+	Names []*string `type:"list"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArns []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoresInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoresInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoresInput) SetMarker(v string) *DescribeTrustStoresInput {
+	s.Marker = &v
+	return s
+}
+
+// SetNames sets the Names field's value.
+func (s *DescribeTrustStoresInput) SetNames(v []*string) *DescribeTrustStoresInput {
+	s.Names = v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoresInput) SetPageSize(v int64) *DescribeTrustStoresInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetTrustStoreArns sets the TrustStoreArns field's value.
+func (s *DescribeTrustStoresInput) SetTrustStoreArns(v []*string) *DescribeTrustStoresInput {
+	s.TrustStoreArns = v
+	return s
+}
+
+type DescribeTrustStoresOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the trust stores.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoresOutput) SetNextMarker(v string) *DescribeTrustStoresOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *DescribeTrustStoresOutput) SetTrustStores(v []*TrustStore) *DescribeTrustStoresOutput {
+	s.TrustStores = v
 	return s
 }
 
@@ -6711,6 +8495,174 @@ func (s *ForwardActionConfig) SetTargetGroupStickinessConfig(v *TargetGroupStick
 // SetTargetGroups sets the TargetGroups field's value.
 func (s *ForwardActionConfig) SetTargetGroups(v []*TargetGroupTuple) *ForwardActionConfig {
 	s.TargetGroups = v
+	return s
+}
+
+type GetTrustStoreCaCertificatesBundleInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetTrustStoreCaCertificatesBundleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetTrustStoreCaCertificatesBundleInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *GetTrustStoreCaCertificatesBundleInput) SetTrustStoreArn(v string) *GetTrustStoreCaCertificatesBundleInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type GetTrustStoreCaCertificatesBundleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ca certificate bundles Amazon S3 URI.
+	Location *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleOutput) GoString() string {
+	return s.String()
+}
+
+// SetLocation sets the Location field's value.
+func (s *GetTrustStoreCaCertificatesBundleOutput) SetLocation(v string) *GetTrustStoreCaCertificatesBundleOutput {
+	s.Location = &v
+	return s
+}
+
+type GetTrustStoreRevocationContentInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation ID of the revocation file.
+	//
+	// RevocationId is a required field
+	RevocationId *int64 `type:"long" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetTrustStoreRevocationContentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetTrustStoreRevocationContentInput"}
+	if s.RevocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevocationId"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *GetTrustStoreRevocationContentInput) SetRevocationId(v int64) *GetTrustStoreRevocationContentInput {
+	s.RevocationId = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *GetTrustStoreRevocationContentInput) SetTrustStoreArn(v string) *GetTrustStoreRevocationContentInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type GetTrustStoreRevocationContentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation files Amazon S3 URI.
+	Location *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentOutput) GoString() string {
+	return s.String()
+}
+
+// SetLocation sets the Location field's value.
+func (s *GetTrustStoreRevocationContentOutput) SetLocation(v string) *GetTrustStoreRevocationContentOutput {
+	s.Location = &v
 	return s
 }
 
@@ -6960,6 +8912,9 @@ type Listener struct {
 	// The Amazon Resource Name (ARN) of the load balancer.
 	LoadBalancerArn *string `type:"string"`
 
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
+
 	// The port on which the load balancer is listening.
 	Port *int64 `min:"1" type:"integer"`
 
@@ -7016,6 +8971,12 @@ func (s *Listener) SetListenerArn(v string) *Listener {
 // SetLoadBalancerArn sets the LoadBalancerArn field's value.
 func (s *Listener) SetLoadBalancerArn(v string) *Listener {
 	s.LoadBalancerArn = &v
+	return s
+}
+
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *Listener) SetMutualAuthentication(v *MutualAuthenticationAttributes) *Listener {
+	s.MutualAuthentication = v
 	return s
 }
 
@@ -7298,6 +9259,17 @@ type LoadBalancerAttribute struct {
 	//    * idle_timeout.timeout_seconds - The idle timeout value, in seconds. The
 	//    valid range is 1-4000 seconds. The default is 60 seconds.
 	//
+	//    * connection_logs.s3.enabled - Indicates whether connection logs are enabled.
+	//    The value is true or false. The default is false.
+	//
+	//    * connection_logs.s3.bucket - The name of the S3 bucket for the connection
+	//    logs. This attribute is required if connection logs are enabled. The bucket
+	//    must exist in the same region as the load balancer and have a bucket policy
+	//    that grants Elastic Load Balancing permissions to write to the bucket.
+	//
+	//    * connection_logs.s3.prefix - The prefix for the location in the S3 bucket
+	//    for the connection logs.
+	//
 	//    * routing.http.desync_mitigation_mode - Determines how the load balancer
 	//    handles requests that might pose a security risk to your application.
 	//    The possible values are monitor, defensive, and strictest. The default
@@ -7526,6 +9498,9 @@ type ModifyListenerInput struct {
 	// ListenerArn is a required field
 	ListenerArn *string `type:"string" required:"true"`
 
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
+
 	// The port for connections from clients to the load balancer. You cannot specify
 	// a port for a Gateway Load Balancer.
 	Port *int64 `min:"1" type:"integer"`
@@ -7611,6 +9586,12 @@ func (s *ModifyListenerInput) SetDefaultActions(v []*Action) *ModifyListenerInpu
 // SetListenerArn sets the ListenerArn field's value.
 func (s *ModifyListenerInput) SetListenerArn(v string) *ModifyListenerInput {
 	s.ListenerArn = &v
+	return s
+}
+
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *ModifyListenerInput) SetMutualAuthentication(v *MutualAuthenticationAttributes) *ModifyListenerInput {
+	s.MutualAuthentication = v
 	return s
 }
 
@@ -8142,6 +10123,172 @@ func (s *ModifyTargetGroupOutput) SetTargetGroups(v []*TargetGroup) *ModifyTarge
 	return s
 }
 
+type ModifyTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Bucket is a required field
+	CaCertificatesBundleS3Bucket *string `type:"string" required:"true"`
+
+	// The Amazon S3 path for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Key is a required field
+	CaCertificatesBundleS3Key *string `type:"string" required:"true"`
+
+	// The Amazon S3 object version for the ca certificates bundle. If undefined
+	// the current version is used.
+	CaCertificatesBundleS3ObjectVersion *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyTrustStoreInput"}
+	if s.CaCertificatesBundleS3Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Bucket"))
+	}
+	if s.CaCertificatesBundleS3Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Key"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCaCertificatesBundleS3Bucket sets the CaCertificatesBundleS3Bucket field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3Bucket(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3Bucket = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3Key sets the CaCertificatesBundleS3Key field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3Key(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3Key = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3ObjectVersion sets the CaCertificatesBundleS3ObjectVersion field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3ObjectVersion(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3ObjectVersion = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *ModifyTrustStoreInput) SetTrustStoreArn(v string) *ModifyTrustStoreInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type ModifyTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the modified trust store.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *ModifyTrustStoreOutput) SetTrustStores(v []*TrustStore) *ModifyTrustStoreOutput {
+	s.TrustStores = v
+	return s
+}
+
+// Information about the mutual authentication attributes of a listener.
+type MutualAuthenticationAttributes struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether expired client certificates are ignored.
+	IgnoreClientCertificateExpiry *bool `type:"boolean"`
+
+	// The client certificate handling method. Options are off, passthrough or verify.
+	// The default value is off.
+	Mode *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MutualAuthenticationAttributes) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MutualAuthenticationAttributes) GoString() string {
+	return s.String()
+}
+
+// SetIgnoreClientCertificateExpiry sets the IgnoreClientCertificateExpiry field's value.
+func (s *MutualAuthenticationAttributes) SetIgnoreClientCertificateExpiry(v bool) *MutualAuthenticationAttributes {
+	s.IgnoreClientCertificateExpiry = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *MutualAuthenticationAttributes) SetMode(v string) *MutualAuthenticationAttributes {
+	s.Mode = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *MutualAuthenticationAttributes) SetTrustStoreArn(v string) *MutualAuthenticationAttributes {
+	s.TrustStoreArn = &v
+	return s
+}
+
 // Information about a path pattern condition.
 type PathPatternConditionConfig struct {
 	_ struct{} `type:"structure"`
@@ -8648,6 +10795,147 @@ func (s RemoveTagsOutput) String() string {
 // value will be replaced with "sensitive".
 func (s RemoveTagsOutput) GoString() string {
 	return s.String()
+}
+
+type RemoveTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation IDs of the revocation files you want to remove.
+	//
+	// RevocationIds is a required field
+	RevocationIds []*int64 `type:"list" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveTrustStoreRevocationsInput"}
+	if s.RevocationIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevocationIds"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationIds sets the RevocationIds field's value.
+func (s *RemoveTrustStoreRevocationsInput) SetRevocationIds(v []*int64) *RemoveTrustStoreRevocationsInput {
+	s.RevocationIds = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *RemoveTrustStoreRevocationsInput) SetTrustStoreArn(v string) *RemoveTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type RemoveTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// Information about a revocation file.
+type RevocationContent struct {
+	_ struct{} `type:"structure"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon S3 bucket for the revocation file.
+	S3Bucket *string `type:"string"`
+
+	// The Amazon S3 path for the revocation file.
+	S3Key *string `type:"string"`
+
+	// The Amazon S3 object version of the revocation file.
+	S3ObjectVersion *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevocationContent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevocationContent) GoString() string {
+	return s.String()
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *RevocationContent) SetRevocationType(v string) *RevocationContent {
+	s.RevocationType = &v
+	return s
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *RevocationContent) SetS3Bucket(v string) *RevocationContent {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *RevocationContent) SetS3Key(v string) *RevocationContent {
+	s.S3Key = &v
+	return s
+}
+
+// SetS3ObjectVersion sets the S3ObjectVersion field's value.
+func (s *RevocationContent) SetS3ObjectVersion(v string) *RevocationContent {
+	s.S3ObjectVersion = &v
+	return s
 }
 
 // Information about a rule.
@@ -9986,7 +12274,12 @@ type TargetGroupAttribute struct {
 	//
 	//    * load_balancing.algorithm.type - The load balancing algorithm determines
 	//    how the load balancer selects targets when routing requests. The value
-	//    is round_robin or least_outstanding_requests. The default is round_robin.
+	//    is round_robin, least_outstanding_requests, or weighted_random. The default
+	//    is round_robin.
+	//
+	//    * load_balancing.algorithm.anomaly_mitigation - Only available when load_balancing.algorithm.type
+	//    is weighted_random. Indicates whether anomaly mitigation is enabled. The
+	//    value is on or off. The default is off.
 	//
 	//    * slow_start.duration_seconds - The time period, in seconds, during which
 	//    a newly registered target receives an increasing share of the traffic
@@ -10287,6 +12580,13 @@ func (s *TargetHealth) SetState(v string) *TargetHealth {
 type TargetHealthDescription struct {
 	_ struct{} `type:"structure"`
 
+	// The anomaly detection result for the target.
+	//
+	// If no anomalies were detected, the result is normal.
+	//
+	// If anomalies were detected, the result is anomalous.
+	AnomalyDetection *AnomalyDetection `type:"structure"`
+
 	// The port to use to connect with the target.
 	HealthCheckPort *string `type:"string"`
 
@@ -10315,6 +12615,12 @@ func (s TargetHealthDescription) GoString() string {
 	return s.String()
 }
 
+// SetAnomalyDetection sets the AnomalyDetection field's value.
+func (s *TargetHealthDescription) SetAnomalyDetection(v *AnomalyDetection) *TargetHealthDescription {
+	s.AnomalyDetection = v
+	return s
+}
+
 // SetHealthCheckPort sets the HealthCheckPort field's value.
 func (s *TargetHealthDescription) SetHealthCheckPort(v string) *TargetHealthDescription {
 	s.HealthCheckPort = &v
@@ -10330,6 +12636,165 @@ func (s *TargetHealthDescription) SetTarget(v *TargetDescription) *TargetHealthD
 // SetTargetHealth sets the TargetHealth field's value.
 func (s *TargetHealthDescription) SetTargetHealth(v *TargetHealth) *TargetHealthDescription {
 	s.TargetHealth = v
+	return s
+}
+
+// Information about a trust store.
+type TrustStore struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the trust store.
+	Name *string `min:"1" type:"string"`
+
+	// The number of ca certificates in the trust store.
+	NumberOfCaCertificates *int64 `type:"integer"`
+
+	// The current status of the trust store.
+	Status *string `type:"string" enum:"TrustStoreStatus"`
+
+	// The number of revoked certificates in the trust store.
+	TotalRevokedEntries *int64 `type:"long"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStore) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStore) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *TrustStore) SetName(v string) *TrustStore {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfCaCertificates sets the NumberOfCaCertificates field's value.
+func (s *TrustStore) SetNumberOfCaCertificates(v int64) *TrustStore {
+	s.NumberOfCaCertificates = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustStore) SetStatus(v string) *TrustStore {
+	s.Status = &v
+	return s
+}
+
+// SetTotalRevokedEntries sets the TotalRevokedEntries field's value.
+func (s *TrustStore) SetTotalRevokedEntries(v int64) *TrustStore {
+	s.TotalRevokedEntries = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *TrustStore) SetTrustStoreArn(v string) *TrustStore {
+	s.TrustStoreArn = &v
+	return s
+}
+
+// Information about the resources a trust store is associated with.
+type TrustStoreAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the resource.
+	ResourceArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreAssociation) GoString() string {
+	return s.String()
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TrustStoreAssociation) SetResourceArn(v string) *TrustStoreAssociation {
+	s.ResourceArn = &v
+	return s
+}
+
+// Information about a revocation file in use by a trust store.
+type TrustStoreRevocation struct {
+	_ struct{} `type:"structure"`
+
+	// The number of revoked certificates.
+	NumberOfRevokedEntries *int64 `type:"long"`
+
+	// The revocation ID of the revocation file.
+	RevocationId *int64 `type:"long"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreRevocation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreRevocation) GoString() string {
+	return s.String()
+}
+
+// SetNumberOfRevokedEntries sets the NumberOfRevokedEntries field's value.
+func (s *TrustStoreRevocation) SetNumberOfRevokedEntries(v int64) *TrustStoreRevocation {
+	s.NumberOfRevokedEntries = &v
+	return s
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *TrustStoreRevocation) SetRevocationId(v int64) *TrustStoreRevocation {
+	s.RevocationId = &v
+	return s
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *TrustStoreRevocation) SetRevocationType(v string) *TrustStoreRevocation {
+	s.RevocationType = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *TrustStoreRevocation) SetTrustStoreArn(v string) *TrustStoreRevocation {
+	s.TrustStoreArn = &v
 	return s
 }
 
@@ -10358,6 +12823,22 @@ func ActionTypeEnum_Values() []string {
 		ActionTypeEnumAuthenticateCognito,
 		ActionTypeEnumRedirect,
 		ActionTypeEnumFixedResponse,
+	}
+}
+
+const (
+	// AnomalyResultEnumAnomalous is a AnomalyResultEnum enum value
+	AnomalyResultEnumAnomalous = "anomalous"
+
+	// AnomalyResultEnumNormal is a AnomalyResultEnum enum value
+	AnomalyResultEnumNormal = "normal"
+)
+
+// AnomalyResultEnum_Values returns all elements of the AnomalyResultEnum enum
+func AnomalyResultEnum_Values() []string {
+	return []string{
+		AnomalyResultEnumAnomalous,
+		AnomalyResultEnumNormal,
 	}
 }
 
@@ -10398,6 +12879,22 @@ func AuthenticateOidcActionConditionalBehaviorEnum_Values() []string {
 		AuthenticateOidcActionConditionalBehaviorEnumDeny,
 		AuthenticateOidcActionConditionalBehaviorEnumAllow,
 		AuthenticateOidcActionConditionalBehaviorEnumAuthenticate,
+	}
+}
+
+const (
+	// DescribeTargetHealthInputIncludeEnumAnomalyDetection is a DescribeTargetHealthInputIncludeEnum enum value
+	DescribeTargetHealthInputIncludeEnumAnomalyDetection = "AnomalyDetection"
+
+	// DescribeTargetHealthInputIncludeEnumAll is a DescribeTargetHealthInputIncludeEnum enum value
+	DescribeTargetHealthInputIncludeEnumAll = "All"
+)
+
+// DescribeTargetHealthInputIncludeEnum_Values returns all elements of the DescribeTargetHealthInputIncludeEnum enum
+func DescribeTargetHealthInputIncludeEnum_Values() []string {
+	return []string{
+		DescribeTargetHealthInputIncludeEnumAnomalyDetection,
+		DescribeTargetHealthInputIncludeEnumAll,
 	}
 }
 
@@ -10494,6 +12991,22 @@ func LoadBalancerTypeEnum_Values() []string {
 }
 
 const (
+	// MitigationInEffectEnumYes is a MitigationInEffectEnum enum value
+	MitigationInEffectEnumYes = "yes"
+
+	// MitigationInEffectEnumNo is a MitigationInEffectEnum enum value
+	MitigationInEffectEnumNo = "no"
+)
+
+// MitigationInEffectEnum_Values returns all elements of the MitigationInEffectEnum enum
+func MitigationInEffectEnum_Values() []string {
+	return []string{
+		MitigationInEffectEnumYes,
+		MitigationInEffectEnumNo,
+	}
+}
+
+const (
 	// ProtocolEnumHttp is a ProtocolEnum enum value
 	ProtocolEnumHttp = "HTTP"
 
@@ -10542,6 +13055,18 @@ func RedirectActionStatusCodeEnum_Values() []string {
 	return []string{
 		RedirectActionStatusCodeEnumHttp301,
 		RedirectActionStatusCodeEnumHttp302,
+	}
+}
+
+const (
+	// RevocationTypeCrl is a RevocationType enum value
+	RevocationTypeCrl = "CRL"
+)
+
+// RevocationType_Values returns all elements of the RevocationType enum
+func RevocationType_Values() []string {
+	return []string{
+		RevocationTypeCrl,
 	}
 }
 
@@ -10670,5 +13195,21 @@ func TargetTypeEnum_Values() []string {
 		TargetTypeEnumIp,
 		TargetTypeEnumLambda,
 		TargetTypeEnumAlb,
+	}
+}
+
+const (
+	// TrustStoreStatusActive is a TrustStoreStatus enum value
+	TrustStoreStatusActive = "ACTIVE"
+
+	// TrustStoreStatusCreating is a TrustStoreStatus enum value
+	TrustStoreStatusCreating = "CREATING"
+)
+
+// TrustStoreStatus_Values returns all elements of the TrustStoreStatus enum
+func TrustStoreStatus_Values() []string {
+	return []string{
+		TrustStoreStatusActive,
+		TrustStoreStatusCreating,
 	}
 }

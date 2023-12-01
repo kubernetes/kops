@@ -62,6 +62,9 @@ type BlockDevice struct {
 	DestinationType DestinationType `json:"destination_type,omitempty"`
 
 	// GuestFormat specifies the format of the block device.
+	// Not specifying this will cause the device to be formatted to the default in Nova
+	// which is currently vfat.
+	// https://opendev.org/openstack/nova/src/commit/d0b459423dd81644e8d9382b6c87fabaa4f03ad4/nova/privsep/fs.py#L257
 	GuestFormat string `json:"guest_format,omitempty"`
 
 	// VolumeSize is the size of the volume to create (in gigabytes). This can be

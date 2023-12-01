@@ -1,3 +1,19 @@
+## v1.8.0 (2023-11-30)
+
+New features and improvements:
+
+* [GH-2800](https://github.com/gophercloud/gophercloud/pull/2800) [v1] Fix options initialization in ServiceClient.Request (fixes #2798)
+* [GH-2823](https://github.com/gophercloud/gophercloud/pull/2823) [v1] Add more godoc to GuestFormat
+* [GH-2826](https://github.com/gophercloud/gophercloud/pull/2826) Allow objects.CreateTempURL with names containing /v1/
+
+CI changes:
+
+* [GH-2802](https://github.com/gophercloud/gophercloud/pull/2802) [v1] Add job for bobcat stable/2023.2
+* [GH-2819](https://github.com/gophercloud/gophercloud/pull/2819) [v1] Test files alongside code
+* [GH-2814](https://github.com/gophercloud/gophercloud/pull/2814) Make fixtures part of tests
+* [GH-2796](https://github.com/gophercloud/gophercloud/pull/2796) [v1] ci/unit: switch to coverallsapp/github-action
+* [GH-2840](https://github.com/gophercloud/gophercloud/pull/2840) unit tests: Fix the installation of tools
+
 ## v1.7.0 (2023-09-22)
 
 New features and improvements:
