@@ -5,7 +5,7 @@ pod components require to run, such as:
 
 * Operating system components i.e. `sshd`, `udev` etc.
 * Kubernetes system components i.e. `kubelet`, `container runtime` (e.g.
-  Docker), `node problem detector`, `journald` etc.
+  containerd), `node problem detector`, `journald` etc.
 
 As you manage your cluster, it's important that you are cognisant of these
 components because if your critical non-pod components don't have enough

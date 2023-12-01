@@ -290,7 +290,7 @@ spec:
 
 Full documentation is accessible via [godoc](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec).
 
-The `ClusterSpec` allows a user to set configurations for such values as Docker log driver, Kubernetes API server log level, VPC for reusing a VPC (`NetworkID`), and the Kubernetes version.
+The `ClusterSpec` allows a user to set configurations for such values as Kubernetes API server log level, VPC for reusing a VPC (`NetworkID`), and the Kubernetes version.
 
 More information about some of the elements in the `ClusterSpec` is available in the following:
 
