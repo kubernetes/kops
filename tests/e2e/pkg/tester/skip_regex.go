@@ -103,6 +103,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.*affinity"
 	}
 
+	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
+		// https://github.com/kubernetes/kubernetes/issues/121018
+		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
+	}
+
 	if cluster.Spec.LegacyCloudProvider == "gce" {
 		// Firewall tests expect a specific format for cluster and control plane host names
 		// which kOps does not match
