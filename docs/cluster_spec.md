@@ -845,8 +845,6 @@ spec:
 
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
 
-Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
-
 ### LogFormat
 
 Choose between log format. Permitted formats: "json", "text". Default: "text".
@@ -1042,7 +1040,7 @@ When creating a systemd unit hook using the `manifest` field, the hook system wi
 spec:
   # many sections removed
 
-  # run a docker container as a hook
+  # run a container as a hook
   hooks:
   - before:
     - some_service.service
@@ -1318,87 +1316,6 @@ spec:
 ```
 
 If you have NRI disabled (i.e., `nri.enabled = false`), please note that settings for `pluginRegistrationTimeout`, and `pluginRequestTimeout` won't take effect. These settings are only applicable when NRI is enabled. It is valid configuration to enable NRI without specifying custom values for `pluginRegistrationTimeout`, and `pluginRequestTimeout`, as these fields will inherit their default values from containerd. If you need to configure additional NRI parameters, you can do so by providing your complete containerd configuration using `configOverride`.
-
-## Docker
-
-It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
-
-### Registry Mirrors
-
-If you have a bunch of Docker instances (physical or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
-This setting benefits not only cluster provisioning but also image pulling.
-
-@see [Cache-Mirror Dockerhub For Speed](https://hackernoon.com/mirror-cache-dockerhub-locally-for-speed-f4eebd21a5ca)
-@see [Configure the Docker daemon](https://docs.docker.com/registry/recipes/mirror/#configure-the-docker-daemon).
-
-```yaml
-spec:
-  docker:
-    registryMirrors:
-    - https://registry.example.com
-```
-
-### Skip Install
-
-If you want nodeup to skip the Docker installation tasks, you can do so with:
-
-```yaml
-spec:
-  docker:
-    skipInstall: true
-```
-
-**NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
-
-### Storage
-
-The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
-
-```yaml
-docker:
-  storage: devicemapper
-  storageOpts:
-    - "dm.thinpooldev=/dev/mapper/thin-pool"
-    - "dm.use_deferred_deletion=true"
-    - "dm.use_deferred_removal=true"
-```
-
-### Networking
-
-In order for containers started with `docker run` instead of Kubernetes to have network and internet access you need to enable the necessary [iptables](https://docs.docker.com/network/iptables/) rules:
-
-```yaml
-docker:
-  ipMasq: true
-  ipTables: true
-```
-
-### Custom Packages
-
-kOps uses the `.tgz` (static) packages for installing Docker on any supported OS. This makes it easy to use a custom build or pre-release packages, by specifying its URL and sha256:
-
-```yaml
-spec:
-  containerd:
-    packages:
-      urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
-      hashAmd64: 8790f3b94ee07ca69a9fdbd1310cbffc729af0a07e5bf9f34a79df1e13d2e50e
-```
-
-The format of the custom package must be identical to the official packages:
-
-```bash
-tar tf docker-20.10.1.tgz
-    docker/containerd
-    docker/containerd-shim
-    docker/containerd-shim-runc-v2
-    docker/ctr
-    docker/docker
-    docker/docker-init
-    docker/docker-proxy
-    docker/dockerd
-    docker/runc
-```
 
 ## sshKeyName
 
