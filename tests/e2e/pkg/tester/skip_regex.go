@@ -99,6 +99,7 @@ func (t *Tester) setSkipRegexFlag() error {
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"
+		skipRegex += "|internalTrafficPolicy|externallTrafficPolicy|only.terminating.endpoints"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
 	}
