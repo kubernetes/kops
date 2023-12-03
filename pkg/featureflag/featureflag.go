@@ -94,6 +94,8 @@ var (
 	SELinuxMount = new("SELinuxMount", Bool(false))
 	// DO Terraform toggles the DO terraform support.
 	DOTerraform = new("DOTerraform", Bool(false))
+	// Metal enables the experimental bare-metal support.
+	Metal = new("Metal", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
