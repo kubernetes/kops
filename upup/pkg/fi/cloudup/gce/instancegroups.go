@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
@@ -171,13 +172,18 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 			for _, i := range instances {
 				id := i.Instance
+				name := LastComponent(id)
+				instance, err := c.Compute().Instances().Get(project, zoneName, name)
+				if err != nil {
+					return nil, fmt.Errorf("error getting Instance: %v", err)
+				}
 				cm := &cloudinstances.CloudInstance{
-					ID:                 id,
+					ID:                 instance.SelfLink,
 					CloudInstanceGroup: g,
 				}
+				addCloudInstanceData(cm, instance)
 
 				// Try first by provider ID
-				name := LastComponent(id)
 				providerID := "gce://" + project + "/" + zoneName + "/" + name
 				node := nodesByProviderID[providerID]
 
@@ -256,4 +262,29 @@ func matchInstanceGroup(mig *compute.InstanceGroupManager, c *kops.Cluster, inst
 		return nil, fmt.Errorf("found multiple instance groups matching MIG %q", mig.Name)
 	}
 	return matches[0], nil
+}
+
+func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *compute.Instance) {
+	cm.MachineType = LastComponent(instance.MachineType)
+	cm.Status = instance.Status
+	if instance.Status == "RUNNING" {
+		cm.State = cloudinstances.CloudInstanceStatusUpToDate
+	}
+	for k := range instance.Labels {
+		if !strings.HasPrefix(k, GceLabelNameRolePrefix) {
+			continue
+		}
+		role := strings.TrimPrefix(k, GceLabelNameRolePrefix)
+		// A VM must have one network interface and at most a single AccessConfig on an network interface
+		// Also kops doesn't support MultiNics
+		cm.PrivateIP = fi.ValueOf(&instance.NetworkInterfaces[0].NetworkIP)
+		if len(instance.NetworkInterfaces[0].AccessConfigs) == 1 {
+			cm.ExternalIP = fi.ValueOf(&instance.NetworkInterfaces[0].AccessConfigs[0].NatIP)
+		}
+		if role == "master" || role == "control-plane" {
+			cm.Roles = append(cm.Roles, "control-plane")
+		} else {
+			cm.Roles = append(cm.Roles, role)
+		}
+	}
 }

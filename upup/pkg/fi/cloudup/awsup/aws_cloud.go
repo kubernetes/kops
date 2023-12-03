@@ -1281,23 +1281,18 @@ func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Insta
 
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instance) {
 	cm.MachineType = aws.StringValue(instance.InstanceType)
-	isControlPlane := false
 	for _, tag := range instance.Tags {
 		key := aws.StringValue(tag.Key)
 		if !strings.HasPrefix(key, TagNameRolePrefix) {
 			continue
 		}
 		role := strings.TrimPrefix(key, TagNameRolePrefix)
+		cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
 		if role == "master" || role == "control-plane" {
-			isControlPlane = true
+			cm.Roles = append(cm.Roles, "control-plane")
 		} else {
 			cm.Roles = append(cm.Roles, role)
-			cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
 		}
-	}
-	if isControlPlane {
-		cm.Roles = append(cm.Roles, "control-plane")
-		cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
 	}
 }
 

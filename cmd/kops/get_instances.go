@@ -60,6 +60,7 @@ type renderableCloudInstance struct {
 	Status        string   `json:"status"`
 	Roles         []string `json:"roles"`
 	InternalIP    string   `json:"internalIP"`
+	ExternalIP    string   `json:"externalIP"`
 	InstanceGroup string   `json:"instanceGroup"`
 	MachineType   string   `json:"machineType"`
 	State         string   `json:"state"`
@@ -182,6 +183,9 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	t.AddColumn("INTERNAL-IP", func(i *cloudinstances.CloudInstance) string {
 		return i.PrivateIP
 	})
+	t.AddColumn("EXTERNAL-IP", func(i *cloudinstances.CloudInstance) string {
+		return i.ExternalIP
+	})
 	t.AddColumn("INSTANCE-GROUP", func(i *cloudinstances.CloudInstance) string {
 		return i.CloudInstanceGroup.HumanName
 	})
@@ -192,7 +196,7 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 		return string(i.State)
 	})
 
-	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
+	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "EXTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
 	return t.Render(instances, out, columns...)
 }
 
@@ -220,6 +224,7 @@ func asRenderable(instances []*cloudinstances.CloudInstance) []*renderableCloudI
 			Status:        ci.Status,
 			Roles:         ci.Roles,
 			InternalIP:    ci.PrivateIP,
+			ExternalIP:    ci.ExternalIP,
 			InstanceGroup: ci.CloudInstanceGroup.HumanName,
 			MachineType:   ci.MachineType,
 			State:         string(ci.State),

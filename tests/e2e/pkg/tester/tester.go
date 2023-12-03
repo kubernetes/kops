@@ -203,6 +203,9 @@ func (t *Tester) addNodeIG() error {
 			ig = v
 		}
 	}
+	nodeTag := gce.TagForRole(cluster.ObjectMeta.Name, unversioned.InstanceGroupRoleNode)
+	klog.Infof("Setting --node-tag=%s", nodeTag)
+	t.TestArgs += " --node-tag=" + nodeTag
 	igName := gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, ig.Spec.Zones[0])
 	klog.Infof("Setting --node-instance-group=%s", igName)
 	t.TestArgs += " --node-instance-group=" + igName
