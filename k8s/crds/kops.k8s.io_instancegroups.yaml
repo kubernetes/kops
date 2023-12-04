@@ -63,6 +63,11 @@ spec:
           spec:
             description: InstanceGroupSpec is the specification for an InstanceGroup
             properties:
+              additionalNetworkTags:
+                description: AdditionalNetworkTags adds network tags to the GCP Instance.
+                items:
+                  type: string
+                type: array
               additionalSecurityGroups:
                 description: AdditionalSecurityGroups attaches additional security
                   groups (e.g. i-123456)

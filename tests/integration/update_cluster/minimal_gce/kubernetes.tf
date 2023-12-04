@@ -527,7 +527,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     email  = google_service_account.node.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
-  tags = ["minimal-gce-example-com-k8s-io-role-node"]
+  tags = ["minimal-gce-example-com-k8s-io-role-node", "testTag"]
 }
 
 resource "google_compute_network" "minimal-gce-example-com" {

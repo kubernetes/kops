@@ -159,6 +159,8 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+	// AdditionalNetworkTags adds network tags to the GCP Instance.
+	AdditionalNetworkTags []string `json:"additionalNetworkTags,omitempty"`
 }
 
 // InstanceRootVolumeSpec specifies options for an instance's root volume.

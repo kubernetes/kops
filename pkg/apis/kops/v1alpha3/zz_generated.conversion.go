@@ -4738,6 +4738,7 @@ func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
 	out.GCPProvisioningModel = in.GCPProvisioningModel
+	out.AdditionalNetworkTags = in.AdditionalNetworkTags
 	return nil
 }
 
@@ -4927,6 +4928,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.I
 	}
 	out.MaxInstanceLifetime = in.MaxInstanceLifetime
 	out.GCPProvisioningModel = in.GCPProvisioningModel
+	out.AdditionalNetworkTags = in.AdditionalNetworkTags
 	return nil
 }
 

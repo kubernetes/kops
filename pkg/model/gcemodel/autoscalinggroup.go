@@ -176,6 +176,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			case kops.InstanceGroupRoleBastion:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
 			}
+			t.Tags = append(t.Tags, ig.Spec.AdditionalNetworkTags...)
 			clusterLabel := gce.LabelForCluster(b.ClusterName())
 			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
