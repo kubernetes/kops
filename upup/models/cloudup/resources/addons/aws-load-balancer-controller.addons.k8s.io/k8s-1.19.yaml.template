@@ -1,5 +1,5 @@
 {{- with .CloudProvider.AWS.LoadBalancerController }}
-# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.4.6/v2_4_6_full.yaml
+# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.6.2/v2_6_2_full.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -64,6 +64,12 @@ spec:
                 required:
                 - name
                 type: object
+              inboundCIDRs:
+                description: InboundCIDRs specifies the CIDRs that are allowed to
+                  access the Ingresses that belong to IngressClass with this IngressClassParams.
+                items:
+                  type: string
+                type: array
               ipAddressType:
                 description: IPAddressType defines the ip address type for all Ingresses
                   that belong to IngressClass with this IngressClassParams.
@@ -143,6 +149,34 @@ spec:
                 - internal
                 - internet-facing
                 type: string
+              sslPolicy:
+                description: SSLPolicy specifies the SSL Policy for all Ingresses
+                  that belong to IngressClass with this IngressClassParams.
+                type: string
+              subnets:
+                description: Subnets defines the subnets for all Ingresses that belong
+                  to IngressClass with this IngressClassParams.
+                properties:
+                  ids:
+                    description: IDs specify the resource IDs of subnets. Exactly
+                      one of this or `tags` must be specified.
+                    items:
+                      description: SubnetID specifies a subnet ID.
+                      pattern: subnet-[0-9a-f]+
+                      type: string
+                    minItems: 1
+                    type: array
+                  tags:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: Tags specifies subnets in the load balancer's VPC
+                      where each tag specified in the map key contains one of the
+                      values in the corresponding value list. Exactly one of this
+                      or `ids` must be specified.
+                    type: object
+                type: object
               tags:
                 description: Tags defines list of Tags on AWS resources provisioned
                   for Ingresses that belong to IngressClass with this IngressClassParams.
@@ -594,6 +628,22 @@ rules:
   - get
   - update
   - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - aws-load-balancer-controller-leader
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -845,7 +895,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: public.ecr.aws/eks/aws-load-balancer-controller:{{ or .Version "v2.4.6" }}
+        image: public.ecr.aws/eks/aws-load-balancer-controller:{{ or .Version "v2.6.2" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -921,8 +971,18 @@ spec:
   - aws-load-balancer-webhook-service.kube-system.svc.cluster.local
   issuerRef:
     kind: Issuer
-    name: aws-load-balancer-controller.addons.k8s.io
+    name: aws-load-balancer-selfsigned-issuer
   secretName: aws-load-balancer-webhook-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+  name: aws-load-balancer-selfsigned-issuer
+  namespace: kube-system
+spec:
+  selfSigned: {}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
@@ -933,6 +993,31 @@ metadata:
     app.kubernetes.io/name: aws-load-balancer-controller
   name: aws-load-balancer-webhook
 webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
+      path: /mutate-v1-service
+  failurePolicy: Fail
+  name: mservice.elbv2.k8s.aws
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - aws-load-balancer-controller
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - services
+  sideEffects: None
 - admissionReviewVersions:
   - v1beta1
   clientConfig:
@@ -994,6 +1079,32 @@ metadata:
     app.kubernetes.io/name: aws-load-balancer-controller
   name: aws-load-balancer-webhook
 webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
+      path: /validate-elbv2-k8s-aws-v1beta1-ingressclassparams
+  failurePolicy: Fail
+  name: vingressclassparams.elbv2.k8s.aws
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - aws-load-balancer-controller
+  rules:
+  - apiGroups:
+    - elbv2.k8s.aws
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ingressclassparams
+  sideEffects: None
 - admissionReviewVersions:
   - v1beta1
   clientConfig:
