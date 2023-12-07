@@ -121,6 +121,7 @@ create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns none")
 create_args+=("--node-size=t3a.medium,t3.medium,t2.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,m5.large,c4.large,c7a.large,r5a.large,r6a.large,m7a.large")
+create_args+=("--node-volume-size=20")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
