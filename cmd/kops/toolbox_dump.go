@@ -19,10 +19,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -34,6 +36,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
@@ -63,12 +66,14 @@ type ToolboxDumpOptions struct {
 	Dir        string
 	PrivateKey string
 	SSHUser    string
+	MaxNodes   int
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
 	o.Output = OutputYaml
 	o.PrivateKey = "~/.ssh/id_rsa"
 	o.SSHUser = "ubuntu"
+	o.MaxNodes = 500
 }
 
 func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
@@ -94,6 +99,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "Target directory; if specified will collect logs and other information.")
 	cmd.MarkFlagDirname("dir")
+	cmd.Flags().IntVar(&options.MaxNodes, "max-nodes", options.MaxNodes, "The maximum number of nodes from which to dump logs")
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
 	cmd.RegisterFlagCompletionFunc("ssh-user", cobra.NoFileCompletions)
@@ -174,6 +180,11 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			}
 		}
 
+		err = truncateNodeList(&nodes, options.MaxNodes)
+		if err != nil {
+			klog.Warningf("not limiting number of nodes dumped: %v", err)
+		}
+
 		sshConfig := &ssh.ClientConfig{
 			Config: ssh.Config{},
 			User:   options.SSHUser,
@@ -239,4 +250,21 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 	default:
 		return fmt.Errorf("unsupported output format: %q", options.Output)
 	}
+}
+
+func truncateNodeList(nodes *corev1.NodeList, max int) error {
+	if max < 0 {
+		return errors.New("--max-nodes must be greater than zero")
+	}
+	// Move control plane nodes to the start of the list and truncate the remainder
+	slices.SortFunc[[]corev1.Node](nodes.Items, func(a corev1.Node, e corev1.Node) int {
+		if role := util.GetNodeRole(&a); role == "control-plane" || role == "apiserver" {
+			return -1
+		}
+		return 1
+	})
+	if len(nodes.Items) > max {
+		nodes.Items = nodes.Items[:max]
+	}
+	return nil
 }
