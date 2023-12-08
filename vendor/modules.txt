@@ -55,8 +55,8 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/GoogleCloudPlatform/k8s-cloud-provider v1.18.1-0.20220218231025-f11817397a1b
-## explicit; go 1.13
+# github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0
+## explicit; go 1.20
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/filter
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta
@@ -97,7 +97,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.48.10
+# github.com/aws/aws-sdk-go v1.48.15
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -251,7 +251,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/digitalocean/godo v1.106.0
+# github.com/digitalocean/godo v1.107.0
 ## explicit; go 1.20
 github.com/digitalocean/godo
 github.com/digitalocean/godo/metrics
@@ -331,8 +331,8 @@ github.com/exponent-io/jsonpath
 # github.com/felixge/httpsnoop v1.0.4
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
-# github.com/fsnotify/fsnotify v1.6.0
-## explicit; go 1.16
+# github.com/fsnotify/fsnotify v1.7.0
+## explicit; go 1.17
 github.com/fsnotify/fsnotify
 # github.com/go-errors/errors v1.4.2
 ## explicit; go 1.14
@@ -787,7 +787,7 @@ github.com/rivo/uniseg
 # github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
 github.com/russross/blackfriday/v2
-# github.com/sagikazarmark/locafero v0.3.0
+# github.com/sagikazarmark/locafero v0.4.0
 ## explicit; go 1.20
 github.com/sagikazarmark/locafero
 # github.com/sagikazarmark/slog-shim v0.1.0
@@ -833,13 +833,13 @@ github.com/sourcegraph/conc
 github.com/sourcegraph/conc/internal/multierror
 github.com/sourcegraph/conc/iter
 github.com/sourcegraph/conc/panics
-# github.com/spf13/afero v1.10.0
-## explicit; go 1.16
+# github.com/spf13/afero v1.11.0
+## explicit; go 1.19
 github.com/spf13/afero
 github.com/spf13/afero/internal/common
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.5.1
-## explicit; go 1.18
+# github.com/spf13/cast v1.6.0
+## explicit; go 1.19
 github.com/spf13/cast
 # github.com/spf13/cobra v1.8.0
 ## explicit; go 1.15
@@ -848,7 +848,7 @@ github.com/spf13/cobra/doc
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.17.0
+# github.com/spf13/viper v1.18.0
 ## explicit; go 1.18
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
@@ -998,7 +998,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20231127185646-65229373498e
+# golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -1096,7 +1096,7 @@ golang.org/x/tools/internal/versions
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.152.0
+# google.golang.org/api v0.153.0
 ## explicit; go 1.19
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -1112,6 +1112,8 @@ google.golang.org/api/internal/cert
 google.golang.org/api/internal/gensupport
 google.golang.org/api/internal/impersonate
 google.golang.org/api/internal/third_party/uritemplates
+google.golang.org/api/networkservices/v1
+google.golang.org/api/networkservices/v1beta1
 google.golang.org/api/oauth2/v2
 google.golang.org/api/option
 google.golang.org/api/option/internaloption
@@ -1736,8 +1738,8 @@ k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-aws v1.28.3
 ## explicit; go 1.20
 k8s.io/cloud-provider-aws/pkg/providers/v1
-# k8s.io/cloud-provider-gcp/providers v0.27.1
-## explicit; go 1.19
+# k8s.io/cloud-provider-gcp/providers v0.28.2
+## explicit; go 1.20
 k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.28.4
 ## explicit; go 1.20

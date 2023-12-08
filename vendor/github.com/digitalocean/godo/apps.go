@@ -21,6 +21,8 @@ const (
 	AppLogTypeDeploy AppLogType = "DEPLOY"
 	// AppLogTypeRun represents run logs.
 	AppLogTypeRun AppLogType = "RUN"
+	// AppLogTypeRunRestarted represents logs of crashed/restarted instances during runtime.
+	AppLogTypeRunRestarted AppLogType = "RUN_RESTARTED"
 )
 
 // AppsService is an interface for interfacing with the App Platform endpoints

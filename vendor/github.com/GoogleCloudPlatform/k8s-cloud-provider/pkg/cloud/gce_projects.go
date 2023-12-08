@@ -64,7 +64,9 @@ func (g *GCEProjects) Get(ctx context.Context, projectID string) (*compute.Proje
 	}
 	call := g.s.GA.Projects.Get(projectID)
 	call.Context(ctx)
-	return call.Do()
+	v, err := call.Do()
+	g.s.RateLimiter.Observe(ctx, err, rk)
+	return v, err
 }
 
 // SetCommonInstanceMetadata for a given project.
@@ -92,6 +94,7 @@ func (g *GCEProjects) SetCommonInstanceMetadata(ctx context.Context, projectID s
 	call.Context(ctx)
 
 	op, err := call.Do()
+	g.s.RateLimiter.Observe(ctx, err, rk)
 	if err != nil {
 		return err
 	}

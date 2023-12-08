@@ -118,6 +118,7 @@ type DatabasesService interface {
 	GetUser(context.Context, string, string) (*DatabaseUser, *Response, error)
 	ListUsers(context.Context, string, *ListOptions) ([]DatabaseUser, *Response, error)
 	CreateUser(context.Context, string, *DatabaseCreateUserRequest) (*DatabaseUser, *Response, error)
+	UpdateUser(context.Context, string, string, *DatabaseUpdateUserRequest) (*DatabaseUser, *Response, error)
 	DeleteUser(context.Context, string, string) (*Response, error)
 	ResetUserAuth(context.Context, string, string, *DatabaseResetUserAuthRequest) (*DatabaseUser, *Response, error)
 	ListDBs(context.Context, string, *ListOptions) ([]DatabaseDB, *Response, error)
@@ -410,6 +411,11 @@ type DatabaseCreateUserRequest struct {
 	Name          string                     `json:"name"`
 	MySQLSettings *DatabaseMySQLUserSettings `json:"mysql_settings,omitempty"`
 	Settings      *DatabaseUserSettings      `json:"settings,omitempty"`
+}
+
+// DatabaseUpdateUserRequest is used to update an existing database user
+type DatabaseUpdateUserRequest struct {
+	Settings *DatabaseUserSettings `json:"settings,omitempty"`
 }
 
 // DatabaseResetUserAuthRequest is used to reset a users DB auth
@@ -859,6 +865,21 @@ func (svc *DatabasesServiceOp) ListUsers(ctx context.Context, databaseID string,
 func (svc *DatabasesServiceOp) CreateUser(ctx context.Context, databaseID string, createUser *DatabaseCreateUserRequest) (*DatabaseUser, *Response, error) {
 	path := fmt.Sprintf(databaseUsersPath, databaseID)
 	req, err := svc.client.NewRequest(ctx, http.MethodPost, path, createUser)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(databaseUserRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.User, resp, nil
+}
+
+// UpdateUser will update an existing database user
+func (svc *DatabasesServiceOp) UpdateUser(ctx context.Context, databaseID, userID string, updateUser *DatabaseUpdateUserRequest) (*DatabaseUser, *Response, error) {
+	path := fmt.Sprintf(databaseUserPath, databaseID, userID)
+	req, err := svc.client.NewRequest(ctx, http.MethodPut, path, updateUser)
 	if err != nil {
 		return nil, nil, err
 	}

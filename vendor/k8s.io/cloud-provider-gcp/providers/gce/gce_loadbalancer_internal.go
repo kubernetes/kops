@@ -554,7 +554,7 @@ func (g *Cloud) ensureInternalHealthCheck(name string, svcName types.NamespacedN
 }
 
 func (g *Cloud) ensureInternalInstanceGroup(name, zone string, nodes []*v1.Node) (string, error) {
-	klog.V(2).Infof("ensureInternalInstanceGroup(%v, %v): checking group that it contains %v nodes", name, zone, len(nodes))
+	klog.V(2).Infof("ensureInternalInstanceGroup(%v, %v): checking group that it contains %v nodes [node names limited, total number of nodes: %d]", name, zone, loggableNodeNames(nodes), len(nodes))
 	ig, err := g.GetInstanceGroup(name, zone)
 	if err != nil && !isNotFound(err) {
 		return "", err

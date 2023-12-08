@@ -29,7 +29,7 @@ func newArg(t reflect.Type) *arg {
 Loop:
 	for {
 		switch t.Kind() {
-		case reflect.Ptr:
+		case reflect.Pointer:
 			ret.numPtr++
 			t = t.Elem()
 		default:
@@ -62,11 +62,15 @@ func (a *arg) normalizedPkg() string {
 	}
 	switch strings.Join(parts, "/") {
 	case "google.golang.org/api/compute/v1":
-		return "ga."
+		return "computega."
 	case "google.golang.org/api/compute/v0.alpha":
-		return "alpha."
+		return "computealpha."
 	case "google.golang.org/api/compute/v0.beta":
-		return "beta."
+		return "computebeta."
+	case "google.golang.org/api/networkservices/v1":
+		return "networkservicesga."
+	case "google.golang.org/api/networkservices/v1beta1":
+		return "networkservicesbeta."
 	default:
 		panic(fmt.Errorf("unhandled package %q", a.pkg))
 	}
@@ -137,6 +141,9 @@ func (m *Method) IsGet() bool {
 // argsSkip is the number of arguments to skip when generating the
 // synthesized method.
 func (m *Method) argsSkip() int {
+	if m.ServiceInfo.APIGroup == APIGroupNetworkServices {
+		return 2
+	}
 	switch m.keyType {
 	case Zonal:
 		return 4
@@ -187,7 +194,7 @@ func (m *Method) init() {
 		}
 	}
 	// Return of the method must return a single value of type *xxxCall.
-	if fType.NumOut() != 1 || fType.Out(0).Kind() != reflect.Ptr || !strings.HasSuffix(fType.Out(0).Elem().Name(), "Call") {
+	if fType.NumOut() != 1 || fType.Out(0).Kind() != reflect.Pointer || !strings.HasSuffix(fType.Out(0).Elem().Name(), "Call") {
 		panic(fmt.Errorf("method %q.%q: generator only supports methods returning an *xxxCall object",
 			m.Service, m.Name()))
 	}
@@ -204,7 +211,7 @@ func (m *Method) init() {
 	switch doMethod.Func.Type().NumOut() {
 	case 2:
 		out0 := doMethod.Func.Type().Out(0)
-		if out0.Kind() != reflect.Ptr {
+		if out0.Kind() != reflect.Pointer {
 			panic(fmt.Errorf("method %q.%q: return type %q of Do() = S, _; S must be pointer type (%v)",
 				m.Service, m.Name(), returnTypeName, out0))
 		}
@@ -224,7 +231,7 @@ func (m *Method) init() {
 			// itemsField will be a []*ItemType. Dereference to
 			// extract the ItemType.
 			itemsType := itemsField.Type
-			if itemsType.Kind() != reflect.Slice && itemsType.Elem().Kind() != reflect.Ptr {
+			if itemsType.Kind() != reflect.Slice || itemsType.Elem().Kind() != reflect.Pointer {
 				panic(fmt.Errorf("method %q.%q: paged return type %q.Items is not an array of pointers", m.Service, m.Name(), listType.Name()))
 			}
 			m.ItemType = itemsType.Elem().Elem().Name()
@@ -236,7 +243,6 @@ func (m *Method) init() {
 			panic(fmt.Errorf("method %q.%q: return type %q of Do() = S, T; T must be 'error'",
 				m.Service, m.Name(), returnTypeName))
 		}
-		break
 	default:
 		panic(fmt.Errorf("method %q.%q: %q Do() return type is not handled by the generator",
 			m.Service, m.Name(), returnTypeName))
@@ -276,16 +282,16 @@ func (m *Method) MockHook() string {
 	if m.kind == MethodPaged {
 		args = append(args, "*filter.F")
 	}
-
 	args = append(args, fmt.Sprintf("*%s", m.MockWrapType()))
+	args = append(args, "...Option")
 
 	switch m.kind {
 	case MethodOperation:
 		return fmt.Sprintf("%v func(%v) error", m.MockHookName(), strings.Join(args, ", "))
 	case MethodGet:
-		return fmt.Sprintf("%v func(%v) (*%v.%v, error)", m.MockHookName(), strings.Join(args, ", "), m.Version(), m.ReturnType)
+		return fmt.Sprintf("%v func(%v) (*%v%v.%v, error)", m.MockHookName(), strings.Join(args, ", "), m.APIGroup, m.Version(), m.ReturnType)
 	case MethodPaged:
-		return fmt.Sprintf("%v func(%v) ([]*%v.%v, error)", m.MockHookName(), strings.Join(args, ", "), m.Version(), m.ItemType)
+		return fmt.Sprintf("%v func(%v) ([]*%v%v.%v, error)", m.MockHookName(), strings.Join(args, ", "), m.APIGroup, m.Version(), m.ItemType)
 	default:
 		panic(fmt.Errorf("invalid method kind: %v", m.kind))
 	}
@@ -300,14 +306,15 @@ func (m *Method) FcnArgs() string {
 	if m.kind == MethodPaged {
 		args = append(args, "fl *filter.F")
 	}
+	args = append(args, "options ...Option")
 
 	switch m.kind {
 	case MethodOperation:
 		return fmt.Sprintf("%v(%v) error", m.m.Name, strings.Join(args, ", "))
 	case MethodGet:
-		return fmt.Sprintf("%v(%v) (*%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.Version(), m.ReturnType)
+		return fmt.Sprintf("%v(%v) (*%v%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.APIGroup, m.Version(), m.ReturnType)
 	case MethodPaged:
-		return fmt.Sprintf("%v(%v) ([]*%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.Version(), m.ItemType)
+		return fmt.Sprintf("%v(%v) ([]*%v%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.APIGroup, m.Version(), m.ItemType)
 	default:
 		panic(fmt.Errorf("invalid method kind: %v", m.kind))
 	}
@@ -323,14 +330,15 @@ func (m *Method) InterfaceFunc() string {
 	if m.kind == MethodPaged {
 		args = append(args, "*filter.F")
 	}
+	args = append(args, "...Option")
 
 	switch m.kind {
 	case MethodOperation:
 		return fmt.Sprintf("%v(%v) error", m.m.Name, strings.Join(args, ", "))
 	case MethodGet:
-		return fmt.Sprintf("%v(%v) (*%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.Version(), m.ReturnType)
+		return fmt.Sprintf("%v(%v) (*%v%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.APIGroup, m.Version(), m.ReturnType)
 	case MethodPaged:
-		return fmt.Sprintf("%v(%v) ([]*%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.Version(), m.ItemType)
+		return fmt.Sprintf("%v(%v) ([]*%v%v.%v, error)", m.m.Name, strings.Join(args, ", "), m.APIGroup, m.Version(), m.ItemType)
 	default:
 		panic(fmt.Errorf("invalid method kind: %v", m.kind))
 	}

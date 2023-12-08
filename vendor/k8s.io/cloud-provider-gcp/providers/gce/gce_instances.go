@@ -43,7 +43,7 @@ import (
 )
 
 const (
-	defaultZone                   = ""
+	emptyZone                     = ""
 	networkInterfaceIP            = "instance/network-interfaces/%s/ip"
 	networkInterfaceIPV6          = "instance/network-interfaces/%s/ipv6s"
 	networkInterfaceAccessConfigs = "instance/network-interfaces/%s/access-configs"
@@ -58,17 +58,22 @@ func splitNodesByZone(nodes []*v1.Node) map[string][]*v1.Node {
 	zones := make(map[string][]*v1.Node)
 	for _, n := range nodes {
 		z := getZone(n)
-		if z != defaultZone {
+		if z != emptyZone {
 			zones[z] = append(zones[z], n)
 		}
 	}
 	return zones
 }
 
-func getZone(n *v1.Node) string {
-	zone, ok := n.Labels[v1.LabelFailureDomainBetaZone]
+func getZone(node *v1.Node) string {
+	zone, ok := node.Labels[v1.LabelTopologyZone]
+	if ok {
+		return zone
+	}
+	zone, ok = node.Labels[v1.LabelFailureDomainBetaZone]
 	if !ok {
-		return defaultZone
+		klog.Warningf("Node without zone label, returning %q as zone. Node name: %v, node labels: %v", emptyZone, node.Name, node.Labels)
+		return emptyZone
 	}
 	return zone
 }
