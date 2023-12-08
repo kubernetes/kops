@@ -43,3 +43,10 @@ type SingleProjectRouter struct {
 func (r *SingleProjectRouter) ProjectID(ctx context.Context, version meta.Version, service string) string {
 	return r.ID
 }
+
+func getProjectID(ctx context.Context, pr ProjectRouter, opt allOptions, version meta.Version, service string) string {
+	if opt.projectID != "" {
+		return opt.projectID
+	}
+	return pr.ProjectID(ctx, version, service)
+}

@@ -757,6 +757,14 @@ func (a *AppDomainValidation) GetTXTValue() string {
 	return a.TXTValue
 }
 
+// GetType returns the Type field.
+func (a *AppEgressSpec) GetType() AppEgressSpecType {
+	if a == nil {
+		return ""
+	}
+	return a.Type
+}
+
 // GetAlerts returns the Alerts field.
 func (a *AppFunctionsSpec) GetAlerts() []*AppAlertSpec {
 	if a == nil {
@@ -1731,6 +1739,14 @@ func (a *AppSpec) GetDomains() []*AppDomainSpec {
 		return nil
 	}
 	return a.Domains
+}
+
+// GetEgress returns the Egress field.
+func (a *AppSpec) GetEgress() *AppEgressSpec {
+	if a == nil {
+		return nil
+	}
+	return a.Egress
 }
 
 // GetEnvs returns the Envs field.
@@ -3187,6 +3203,14 @@ func (i *ImageSourceSpec) GetRegistry() string {
 		return ""
 	}
 	return i.Registry
+}
+
+// GetRegistryCredentials returns the RegistryCredentials field.
+func (i *ImageSourceSpec) GetRegistryCredentials() string {
+	if i == nil {
+		return ""
+	}
+	return i.RegistryCredentials
 }
 
 // GetRegistryType returns the RegistryType field.

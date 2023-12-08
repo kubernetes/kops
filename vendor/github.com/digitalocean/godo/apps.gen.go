@@ -244,6 +244,20 @@ const (
 	AppDomainSpecType_Alias       AppDomainSpecType = "ALIAS"
 )
 
+// AppEgressSpec Specification for app egress configurations.
+type AppEgressSpec struct {
+	Type AppEgressSpecType `json:"type,omitempty"`
+}
+
+// AppEgressSpecType the model 'AppEgressSpecType'
+type AppEgressSpecType string
+
+// List of AppEgressSpecType
+const (
+	APPEGRESSSPECTYPE_Autoassign  AppEgressSpecType = "AUTOASSIGN"
+	APPEGRESSSPECTYPE_DedicatedIp AppEgressSpecType = "DEDICATED_IP"
+)
+
 // AppFunctionsSpec struct for AppFunctionsSpec
 type AppFunctionsSpec struct {
 	// The name. Must be unique across all components within the same app.
@@ -495,6 +509,7 @@ type AppSpec struct {
 	// A list of alerts which apply to the app.
 	Alerts   []*AppAlertSpec `json:"alerts,omitempty"`
 	Ingress  *AppIngressSpec `json:"ingress,omitempty"`
+	Egress   *AppEgressSpec  `json:"egress,omitempty"`
 	Features []string        `json:"features,omitempty"`
 }
 
@@ -1012,8 +1027,10 @@ type ImageSourceSpec struct {
 	// The repository tag. Defaults to `latest` if not provided and no digest is provided. Cannot be specified if digest is provided.
 	Tag string `json:"tag,omitempty"`
 	// The image digest. Cannot be specified if tag is provided.
-	Digest       string                       `json:"digest,omitempty"`
-	DeployOnPush *ImageSourceSpecDeployOnPush `json:"deploy_on_push,omitempty"`
+	Digest string `json:"digest,omitempty"`
+	// The credentials to be able to pull the image. The value will be encrypted on first submission. On following submissions, the encrypted value should be used. - \"$username:$access_token\" for registries of type `DOCKER_HUB`. - \"$username:$access_token\" for registries of type `GHCR`.
+	RegistryCredentials string                       `json:"registry_credentials,omitempty"`
+	DeployOnPush        *ImageSourceSpecDeployOnPush `json:"deploy_on_push,omitempty"`
 }
 
 // ImageSourceSpecDeployOnPush struct for ImageSourceSpecDeployOnPush
@@ -1022,7 +1039,7 @@ type ImageSourceSpecDeployOnPush struct {
 	Enabled bool `json:"enabled,omitempty"`
 }
 
-// ImageSourceSpecRegistryType  - DOCR: The DigitalOcean container registry type.  - DOCKER_HUB: The DockerHub container registry type.
+// ImageSourceSpecRegistryType  - DOCR: The DigitalOcean container registry type.  - DOCKER_HUB: The DockerHub container registry type.  - GHCR: The GitHub container registry type.
 type ImageSourceSpecRegistryType string
 
 // List of ImageSourceSpecRegistryType
@@ -1030,6 +1047,7 @@ const (
 	ImageSourceSpecRegistryType_Unspecified ImageSourceSpecRegistryType = "UNSPECIFIED"
 	ImageSourceSpecRegistryType_DOCR        ImageSourceSpecRegistryType = "DOCR"
 	ImageSourceSpecRegistryType_DockerHub   ImageSourceSpecRegistryType = "DOCKER_HUB"
+	ImageSourceSpecRegistryType_Ghcr        ImageSourceSpecRegistryType = "GHCR"
 )
 
 // AppInstanceSize struct for AppInstanceSize

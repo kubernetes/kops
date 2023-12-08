@@ -18,7 +18,8 @@ limitations under the License.
 // These methods are used to override the mock objects' methods in order to
 // intercept the standard processing and to add custom logic for test purposes.
 //
-//  // Example usage:
+//	// Example usage:
+//
 // cloud := cloud.NewMockGCE()
 // cloud.MockTargetPools.AddInstanceHook = mock.AddInstanceHook
 package mock
@@ -54,7 +55,7 @@ type gceObject interface {
 }
 
 // AttachDiskHook mocks attaching a disk to an instance
-func AttachDiskHook(ctx context.Context, key *meta.Key, req *ga.AttachedDisk, m *cloud.MockInstances) error {
+func AttachDiskHook(ctx context.Context, key *meta.Key, req *ga.AttachedDisk, m *cloud.MockInstances, options ...cloud.Option) error {
 	instance, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -63,8 +64,13 @@ func AttachDiskHook(ctx context.Context, key *meta.Key, req *ga.AttachedDisk, m 
 	return nil
 }
 
+// Verify AttachDiskHook implements cloud.MockInstances.AttachDiskHook.
+var _ = cloud.MockInstances{
+	AttachDiskHook: AttachDiskHook,
+}
+
 // DetachDiskHook mocks detaching a disk from an instance
-func DetachDiskHook(ctx context.Context, key *meta.Key, diskName string, m *cloud.MockInstances) error {
+func DetachDiskHook(ctx context.Context, key *meta.Key, diskName string, m *cloud.MockInstances, options ...cloud.Option) error {
 	instance, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -81,8 +87,13 @@ func DetachDiskHook(ctx context.Context, key *meta.Key, diskName string, m *clou
 	}
 }
 
+// Verify DetachDiskHook implements cloud.MockInstances.DetachDiskHook.
+var _ = cloud.MockInstances{
+	DetachDiskHook: DetachDiskHook,
+}
+
 // AddInstanceHook mocks adding a Instance to MockTargetPools
-func AddInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsAddInstanceRequest, m *cloud.MockTargetPools) error {
+func AddInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsAddInstanceRequest, m *cloud.MockTargetPools, options ...cloud.Option) error {
 	pool, err := m.Get(ctx, key)
 	if err != nil {
 		return &googleapi.Error{
@@ -98,8 +109,13 @@ func AddInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsAddI
 	return nil
 }
 
+// Verify AddInstanceHook implements cloud.MockTargetPools.AddInstanceHook.
+var _ = cloud.MockTargetPools{
+	AddInstanceHook: AddInstanceHook,
+}
+
 // RemoveInstanceHook mocks removing a Instance from MockTargetPools
-func RemoveInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsRemoveInstanceRequest, m *cloud.MockTargetPools) error {
+func RemoveInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsRemoveInstanceRequest, m *cloud.MockTargetPools, options ...cloud.Option) error {
 	pool, err := m.Get(ctx, key)
 	if err != nil {
 		return &googleapi.Error{
@@ -120,6 +136,11 @@ func RemoveInstanceHook(ctx context.Context, key *meta.Key, req *ga.TargetPoolsR
 	}
 
 	return nil
+}
+
+// Verify RemoveInstanceHook implements cloud.MockTargetPools.RemoveInstanceHook.
+var _ = cloud.MockTargetPools{
+	RemoveInstanceHook: RemoveInstanceHook,
 }
 
 func convertAndInsertAlphaForwardingRule(key *meta.Key, obj gceObject, mRules map[meta.Key]*cloud.MockForwardingRulesObj, version meta.Version, projectID string) (bool, error) {
@@ -150,7 +171,7 @@ func convertAndInsertAlphaForwardingRule(key *meta.Key, obj gceObject, mRules ma
 
 	fwdRule.Name = key.Name
 	if fwdRule.SelfLink == "" {
-		fwdRule.SelfLink = cloud.SelfLink(version, projectID, "forwardingRules", key)
+		fwdRule.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, version, projectID, "forwardingRules", key)
 	}
 
 	mRules[*key] = &cloud.MockForwardingRulesObj{Obj: fwdRule}
@@ -159,7 +180,7 @@ func convertAndInsertAlphaForwardingRule(key *meta.Key, obj gceObject, mRules ma
 
 // InsertFwdRuleHook mocks inserting a ForwardingRule. ForwardingRules are
 // expected to default to Premium tier if no NetworkTier is specified.
-func InsertFwdRuleHook(ctx context.Context, key *meta.Key, obj *ga.ForwardingRule, m *cloud.MockForwardingRules) (bool, error) {
+func InsertFwdRuleHook(ctx context.Context, key *meta.Key, obj *ga.ForwardingRule, m *cloud.MockForwardingRules, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
@@ -167,8 +188,13 @@ func InsertFwdRuleHook(ctx context.Context, key *meta.Key, obj *ga.ForwardingRul
 	return convertAndInsertAlphaForwardingRule(key, obj, m.Objects, meta.VersionGA, projectID)
 }
 
+// Verify InsertFwdRuleHook implements cloud.MockForwardingRules.InsertHook.
+var _ = cloud.MockForwardingRules{
+	InsertHook: InsertFwdRuleHook,
+}
+
 // InsertBetaFwdRuleHook mocks inserting a BetaForwardingRule.
-func InsertBetaFwdRuleHook(ctx context.Context, key *meta.Key, obj *beta.ForwardingRule, m *cloud.MockForwardingRules) (bool, error) {
+func InsertBetaFwdRuleHook(ctx context.Context, key *meta.Key, obj *beta.ForwardingRule, m *cloud.MockBetaForwardingRules, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
@@ -176,13 +202,23 @@ func InsertBetaFwdRuleHook(ctx context.Context, key *meta.Key, obj *beta.Forward
 	return convertAndInsertAlphaForwardingRule(key, obj, m.Objects, meta.VersionBeta, projectID)
 }
 
+// Verify InsertBetaFwdRuleHook implements cloud.MockBetaForwardingRules.InsertHook.
+var _ = cloud.MockBetaForwardingRules{
+	InsertHook: InsertBetaFwdRuleHook,
+}
+
 // InsertAlphaFwdRuleHook mocks inserting an AlphaForwardingRule.
-func InsertAlphaFwdRuleHook(ctx context.Context, key *meta.Key, obj *alpha.ForwardingRule, m *cloud.MockForwardingRules) (bool, error) {
+func InsertAlphaFwdRuleHook(ctx context.Context, key *meta.Key, obj *alpha.ForwardingRule, m *cloud.MockAlphaForwardingRules, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
 	projectID := m.ProjectRouter.ProjectID(ctx, meta.VersionAlpha, "forwardingRules")
 	return convertAndInsertAlphaForwardingRule(key, obj, m.Objects, meta.VersionAlpha, projectID)
+}
+
+// Verify InsertAlphaFwdRuleHook implements cloud.MockAlphaForwardingRules.InsertHook.
+var _ = cloud.MockAlphaForwardingRules{
+	InsertHook: InsertAlphaFwdRuleHook,
 }
 
 // AddressAttributes maps from Address key to a map of Instances
@@ -241,11 +277,16 @@ func convertAndInsertAlphaAddress(key *meta.Key, obj gceObject, mAddrs map[meta.
 	// Set default values used in tests
 	addr.Name = key.Name
 	if addr.SelfLink == "" {
-		addr.SelfLink = cloud.SelfLink(version, projectID, "addresses", key)
+		addr.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, version, projectID, "addresses", key)
 	}
 
 	if addr.Address == "" {
-		addr.Address = fmt.Sprintf("1.2.3.%d", addressAttrs.IPCounter)
+		if addr.IpVersion == "IPV6" {
+			addr.Address = fmt.Sprintf("1111:2222:3333:4444:5555:%d:0:0", addressAttrs.IPCounter)
+			addr.PrefixLength = 96
+		} else {
+			addr.Address = fmt.Sprintf("1.2.3.%d", addressAttrs.IPCounter)
+		}
 		addressAttrs.IPCounter++
 	}
 
@@ -259,7 +300,7 @@ func convertAndInsertAlphaAddress(key *meta.Key, obj gceObject, mAddrs map[meta.
 }
 
 // InsertAddressHook mocks inserting an Address.
-func InsertAddressHook(ctx context.Context, key *meta.Key, obj *ga.Address, m *cloud.MockAddresses) (bool, error) {
+func InsertAddressHook(ctx context.Context, key *meta.Key, obj *ga.Address, m *cloud.MockAddresses, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
@@ -267,8 +308,13 @@ func InsertAddressHook(ctx context.Context, key *meta.Key, obj *ga.Address, m *c
 	return convertAndInsertAlphaAddress(key, obj, m.Objects, meta.VersionGA, projectID, m.X.(AddressAttributes))
 }
 
+// Verify InsertAddressHook implements cloud.MockAddresses.InsertHook.
+var _ = cloud.MockAddresses{
+	InsertHook: InsertAddressHook,
+}
+
 // InsertBetaAddressHook mocks inserting a BetaAddress.
-func InsertBetaAddressHook(ctx context.Context, key *meta.Key, obj *beta.Address, m *cloud.MockAddresses) (bool, error) {
+func InsertBetaAddressHook(ctx context.Context, key *meta.Key, obj *beta.Address, m *cloud.MockBetaAddresses, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
@@ -276,14 +322,24 @@ func InsertBetaAddressHook(ctx context.Context, key *meta.Key, obj *beta.Address
 	return convertAndInsertAlphaAddress(key, obj, m.Objects, meta.VersionBeta, projectID, m.X.(AddressAttributes))
 }
 
+// Verify InsertBetaAddressHook implements MockBetaAddresses.InsertHook.
+var _ = cloud.MockBetaAddresses{
+	InsertHook: InsertBetaAddressHook,
+}
+
 // InsertAlphaAddressHook mocks inserting an Address. Addresses are expected to
 // default to Premium tier if no NetworkTier is specified.
-func InsertAlphaAddressHook(ctx context.Context, key *meta.Key, obj *alpha.Address, m *cloud.MockAlphaAddresses) (bool, error) {
+func InsertAlphaAddressHook(ctx context.Context, key *meta.Key, obj *alpha.Address, m *cloud.MockAlphaAddresses, options ...cloud.Option) (bool, error) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
 	projectID := m.ProjectRouter.ProjectID(ctx, meta.VersionBeta, "addresses")
 	return convertAndInsertAlphaAddress(key, obj, m.Objects, meta.VersionAlpha, projectID, m.X.(AddressAttributes))
+}
+
+// Verify InsertAlphaAddressHook implements MockAlphaAddresses.InsertHook.
+var _ = cloud.MockAlphaAddresses{
+	InsertHook: InsertAlphaAddressHook,
 }
 
 // InstanceGroupAttributes maps from InstanceGroup key to a map of Instances
@@ -358,7 +414,7 @@ func (igAttrs *InstanceGroupAttributes) List(key *meta.Key) []*ga.InstanceWithNa
 }
 
 // AddInstancesHook mocks adding instances from an InstanceGroup
-func AddInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsAddInstancesRequest, m *cloud.MockInstanceGroups) error {
+func AddInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsAddInstancesRequest, m *cloud.MockInstanceGroups, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -371,8 +427,13 @@ func AddInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroups
 	return nil
 }
 
+// Verify AddInstancesHook implements MockInstanceGroups.AddInstancesHook.
+var _ = cloud.MockInstanceGroups{
+	AddInstancesHook: AddInstancesHook,
+}
+
 // ListInstancesHook mocks listing instances from an InstanceGroup
-func ListInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsListInstancesRequest, filter *filter.F, m *cloud.MockInstanceGroups) ([]*ga.InstanceWithNamedPorts, error) {
+func ListInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsListInstancesRequest, filter *filter.F, m *cloud.MockInstanceGroups, options ...cloud.Option) ([]*ga.InstanceWithNamedPorts, error) {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return nil, err
@@ -385,8 +446,13 @@ func ListInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroup
 	return instances, nil
 }
 
+// Verify ListInstancesHook implements MockInstanceGroups.ListInstancesHook.
+var _ = cloud.MockInstanceGroups{
+	ListInstancesHook: ListInstancesHook,
+}
+
 // RemoveInstancesHook mocks removing instances from an InstanceGroup
-func RemoveInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsRemoveInstancesRequest, m *cloud.MockInstanceGroups) error {
+func RemoveInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGroupsRemoveInstancesRequest, m *cloud.MockInstanceGroups, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -399,9 +465,14 @@ func RemoveInstancesHook(ctx context.Context, key *meta.Key, req *ga.InstanceGro
 	return nil
 }
 
+// Verify RemoveInstancesHook implements MockInstanceGroups.RemoveInstancesHook.
+var _ = cloud.MockInstanceGroups{
+	RemoveInstancesHook: RemoveInstancesHook,
+}
+
 // UpdateFirewallHook defines the hook for updating a Firewall. It replaces the
 // object with the same key in the mock with the updated object.
-func UpdateFirewallHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls) error {
+func UpdateFirewallHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -409,15 +480,20 @@ func UpdateFirewallHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m 
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "firewalls")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "firewalls", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "firewalls", key)
 
 	m.Objects[*key] = &cloud.MockFirewallsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateFirewallHook implements MockFirewalls.UpdateHook.
+var _ = cloud.MockFirewalls{
+	UpdateHook: UpdateFirewallHook,
+}
+
 // UpdateAlphaFirewallHook defines the hook for updating an alpha Firewall. It replaces the
 // object with the same key in the mock with the updated object.
-func UpdateAlphaFirewallHook(ctx context.Context, key *meta.Key, obj *alpha.Firewall, m *cloud.MockAlphaFirewalls) error {
+func UpdateAlphaFirewallHook(ctx context.Context, key *meta.Key, obj *alpha.Firewall, m *cloud.MockAlphaFirewalls, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -425,15 +501,20 @@ func UpdateAlphaFirewallHook(ctx context.Context, key *meta.Key, obj *alpha.Fire
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "firewalls")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "firewalls", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "firewalls", key)
 
 	m.Objects[*key] = &cloud.MockFirewallsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateAlphaFirewallHook implements MockAlphaFirewalls.UpdateHook.
+var _ = cloud.MockAlphaFirewalls{
+	UpdateHook: UpdateAlphaFirewallHook,
+}
+
 // UpdateBetaFirewallHook defines the hook for updating a beta Firewall. It replaces the
 // object with the same key in the mock with the updated object.
-func UpdateBetaFirewallHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockBetaFirewalls) error {
+func UpdateBetaFirewallHook(ctx context.Context, key *meta.Key, obj *beta.Firewall, m *cloud.MockBetaFirewalls, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -441,15 +522,20 @@ func UpdateBetaFirewallHook(ctx context.Context, key *meta.Key, obj *ga.Firewall
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "firewalls")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "firewalls", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "firewalls", key)
 
 	m.Objects[*key] = &cloud.MockFirewallsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaFirewallHook implements MockBetaFirewalls.UpdateHook.
+var _ = cloud.MockBetaFirewalls{
+	UpdateHook: UpdateBetaFirewallHook,
+}
+
 // UpdateHealthCheckHook defines the hook for updating a HealthCheck. It
 // replaces the object with the same key in the mock with the updated object.
-func UpdateHealthCheckHook(ctx context.Context, key *meta.Key, obj *ga.HealthCheck, m *cloud.MockHealthChecks) error {
+func UpdateHealthCheckHook(ctx context.Context, key *meta.Key, obj *ga.HealthCheck, m *cloud.MockHealthChecks, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -457,15 +543,20 @@ func UpdateHealthCheckHook(ctx context.Context, key *meta.Key, obj *ga.HealthChe
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockHealthChecksObj{Obj: obj}
 	return nil
+}
+
+// Verify UpdateHealthCheckHook implements MockHealthChecks.UpdateHook.
+var _ = cloud.MockHealthChecks{
+	UpdateHook: UpdateHealthCheckHook,
 }
 
 // UpdateAlphaHealthCheckHook defines the hook for updating an alpha HealthCheck.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateAlphaHealthCheckHook(ctx context.Context, key *meta.Key, obj *alpha.HealthCheck, m *cloud.MockAlphaHealthChecks) error {
+func UpdateAlphaHealthCheckHook(ctx context.Context, key *meta.Key, obj *alpha.HealthCheck, m *cloud.MockAlphaHealthChecks, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -473,76 +564,101 @@ func UpdateAlphaHealthCheckHook(ctx context.Context, key *meta.Key, obj *alpha.H
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockHealthChecksObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateAlphaHealthCheckHook implements MockAlphaHealthChecks.UpdateHook.
+var _ = cloud.MockAlphaHealthChecks{
+	UpdateHook: UpdateAlphaHealthCheckHook,
+}
+
 // UpdateAlphaRegionHealthCheckHook defines the hook for updating an alpha HealthCheck.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateAlphaRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *alpha.HealthCheck, m *cloud.MockAlphaRegionHealthChecks) error {
+func UpdateAlphaRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *alpha.HealthCheck, m *cloud.MockAlphaRegionHealthChecks, options ...cloud.Option) error {
 	if _, err := m.Get(ctx, key); err != nil {
 		return err
 	}
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockRegionHealthChecksObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateAlphaRegionHealthCheckHook implements MockAlphaRegionHealthChecks.UpdateHook.
+var _ = cloud.MockAlphaRegionHealthChecks{
+	UpdateHook: UpdateAlphaRegionHealthCheckHook,
+}
+
 // UpdateBetaHealthCheckHook defines the hook for updating a HealthCheck. It
 // replaces the object with the same key in the mock with the updated object.
-func UpdateBetaHealthCheckHook(ctx context.Context, key *meta.Key, obj *beta.HealthCheck, m *cloud.MockBetaHealthChecks) error {
+func UpdateBetaHealthCheckHook(ctx context.Context, key *meta.Key, obj *beta.HealthCheck, m *cloud.MockBetaHealthChecks, options ...cloud.Option) error {
 	if _, err := m.Get(ctx, key); err != nil {
 		return err
 	}
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockHealthChecksObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaHealthCheckHook implements MockBetaHealthChecks.UpdateHook.
+var _ = cloud.MockBetaHealthChecks{
+	UpdateHook: UpdateBetaHealthCheckHook,
+}
+
 // UpdateBetaRegionHealthCheckHook defines the hook for updating a HealthCheck. It
 // replaces the object with the same key in the mock with the updated object.
-func UpdateBetaRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *beta.HealthCheck, m *cloud.MockBetaRegionHealthChecks) error {
+func UpdateBetaRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *beta.HealthCheck, m *cloud.MockBetaRegionHealthChecks, options ...cloud.Option) error {
 	if _, err := m.Get(ctx, key); err != nil {
 		return err
 	}
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockRegionHealthChecksObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaRegionHealthCheckHook implements MockBetaRegionHealthChecks.UpdateHook.
+var _ = cloud.MockBetaRegionHealthChecks{
+	UpdateHook: UpdateBetaRegionHealthCheckHook,
+}
+
 // UpdateRegionHealthCheckHook defines the hook for updating a HealthCheck. It
 // replaces the object with the same key in the mock with the updated object.
-func UpdateRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *ga.HealthCheck, m *cloud.MockRegionHealthChecks) error {
+func UpdateRegionHealthCheckHook(ctx context.Context, key *meta.Key, obj *ga.HealthCheck, m *cloud.MockRegionHealthChecks, options ...cloud.Option) error {
 	if _, err := m.Get(ctx, key); err != nil {
 		return err
 	}
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "healthChecks")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "healthChecks", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "healthChecks", key)
 
 	m.Objects[*key] = &cloud.MockRegionHealthChecksObj{Obj: obj}
 	return nil
+}
+
+// Verify UpdateRegionHealthCheckHook implements MockRegionHealthChecks.UpdateHook.
+var _ = cloud.MockRegionHealthChecks{
+	UpdateHook: UpdateRegionHealthCheckHook,
 }
 
 // UpdateRegionBackendServiceHook defines the hook for updating a Region
 // BackendsService. It replaces the object with the same key in the mock with
 // the updated object.
-func UpdateRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.BackendService, m *cloud.MockRegionBackendServices) error {
+func UpdateRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.BackendService, m *cloud.MockRegionBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -550,16 +666,21 @@ func UpdateRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockRegionBackendServicesObj{Obj: obj}
 	return nil
 }
 
-// UpdateRegionBackendServiceHook defines the hook for updating a Region
+// Verify UpdateRegionBackendServiceHook implements MockRegionBackendServices.UpdateHook.
+var _ = cloud.MockRegionBackendServices{
+	UpdateHook: UpdateRegionBackendServiceHook,
+}
+
+// UpdateAlphaRegionBackendServiceHook defines the hook for updating a Region
 // BackendsService. It replaces the object with the same key in the mock with
 // the updated object.
-func UpdateAlphaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaRegionBackendServices) error {
+func UpdateAlphaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaRegionBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -567,16 +688,21 @@ func UpdateAlphaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockRegionBackendServicesObj{Obj: obj}
 	return nil
+}
+
+// Verify UpdateAlphaRegionBackendServiceHook implements MockAlphaRegionBackendServices.UpdateHook.
+var _ = cloud.MockAlphaRegionBackendServices{
+	UpdateHook: UpdateAlphaRegionBackendServiceHook,
 }
 
 // UpdateBetaRegionBackendServiceHook defines the hook for updating a Region
 // BackendsService. It replaces the object with the same key in the mock with
 // the updated object.
-func UpdateBetaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *beta.BackendService, m *cloud.MockBetaRegionBackendServices) error {
+func UpdateBetaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj *beta.BackendService, m *cloud.MockBetaRegionBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -584,15 +710,20 @@ func UpdateBetaRegionBackendServiceHook(ctx context.Context, key *meta.Key, obj 
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockRegionBackendServicesObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaRegionBackendServiceHook implements MockBetaRegionBackendServices.UpdateHook.
+var _ = cloud.MockBetaRegionBackendServices{
+	UpdateHook: UpdateBetaRegionBackendServiceHook,
+}
+
 // UpdateBackendServiceHook defines the hook for updating a BackendService.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.BackendService, m *cloud.MockBackendServices) error {
+func UpdateBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.BackendService, m *cloud.MockBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -600,15 +731,20 @@ func UpdateBackendServiceHook(ctx context.Context, key *meta.Key, obj *ga.Backen
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockBackendServicesObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateRegionBackendServiceHook implements MockRegionBackendServices.UpdateHook.
+var _ = cloud.MockRegionBackendServices{
+	UpdateHook: UpdateRegionBackendServiceHook,
+}
+
 // UpdateAlphaBackendServiceHook defines the hook for updating an alpha BackendService.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateAlphaBackendServiceHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices) error {
+func UpdateAlphaBackendServiceHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -616,15 +752,20 @@ func UpdateAlphaBackendServiceHook(ctx context.Context, key *meta.Key, obj *alph
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockBackendServicesObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateAlphaBackendServiceHook implements MockAlphaBackendServices.UpdateHook.
+var _ = cloud.MockAlphaBackendServices{
+	UpdateHook: UpdateAlphaBackendServiceHook,
+}
+
 // UpdateBetaBackendServiceHook defines the hook for updating an beta BackendService.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateBetaBackendServiceHook(ctx context.Context, key *meta.Key, obj *beta.BackendService, m *cloud.MockBetaBackendServices) error {
+func UpdateBetaBackendServiceHook(ctx context.Context, key *meta.Key, obj *beta.BackendService, m *cloud.MockBetaBackendServices, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -632,15 +773,20 @@ func UpdateBetaBackendServiceHook(ctx context.Context, key *meta.Key, obj *beta.
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "backendServices")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "backendServices", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "backendServices", key)
 
 	m.Objects[*key] = &cloud.MockBackendServicesObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaBackendServiceHook implements MockBetaBackendServices.UpdateHook.
+var _ = cloud.MockBetaBackendServices{
+	UpdateHook: UpdateBetaBackendServiceHook,
+}
+
 // UpdateURLMapHook defines the hook for updating a UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, m *cloud.MockUrlMaps) error {
+func UpdateURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, m *cloud.MockUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -648,15 +794,20 @@ func UpdateURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, m *clo
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockUrlMapsObj{Obj: obj}
 	return nil
+}
+
+// Verify UpdateURLMapHook implements MockUrlMaps.UpdateHook.
+var _ = cloud.MockUrlMaps{
+	UpdateHook: UpdateURLMapHook,
 }
 
 // UpdateAlphaURLMapHook defines the hook for updating an alpha UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateAlphaURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.UrlMap, m *cloud.MockAlphaUrlMaps) error {
+func UpdateAlphaURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.UrlMap, m *cloud.MockAlphaUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -664,15 +815,20 @@ func UpdateAlphaURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.UrlMap
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockUrlMapsObj{Obj: obj}
 	return nil
+}
+
+// Verify UpdateAlphaURLMapHook implements MockAlphaUrlMaps.UpdateHook.
+var _ = cloud.MockAlphaUrlMaps{
+	UpdateHook: UpdateAlphaURLMapHook,
 }
 
 // UpdateBetaURLMapHook defines the hook for updating a beta UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateBetaURLMapHook(ctx context.Context, key *meta.Key, obj *beta.UrlMap, m *cloud.MockBetaUrlMaps) error {
+func UpdateBetaURLMapHook(ctx context.Context, key *meta.Key, obj *beta.UrlMap, m *cloud.MockBetaUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -680,15 +836,20 @@ func UpdateBetaURLMapHook(ctx context.Context, key *meta.Key, obj *beta.UrlMap, 
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockUrlMapsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaURLMapHook implements MockBetaUrlMaps.UpdateHook.
+var _ = cloud.MockBetaUrlMaps{
+	UpdateHook: UpdateBetaURLMapHook,
+}
+
 // UpdateAlphaRegionURLMapHook defines the hook for updating an alpha UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateAlphaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.UrlMap, m *cloud.MockAlphaRegionUrlMaps) error {
+func UpdateAlphaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.UrlMap, m *cloud.MockAlphaRegionUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -696,15 +857,20 @@ func UpdateAlphaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *alpha.
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionAlpha, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionAlpha, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockRegionUrlMapsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateAlphaRegionURLMapHook implements MockAlphaRegionUrlMaps.UpdateHook.
+var _ = cloud.MockAlphaRegionUrlMaps{
+	UpdateHook: UpdateAlphaRegionURLMapHook,
+}
+
 // UpdateBetaRegionURLMapHook defines the hook for updating an alpha UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateBetaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *beta.UrlMap, m *cloud.MockBetaRegionUrlMaps) error {
+func UpdateBetaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *beta.UrlMap, m *cloud.MockBetaRegionUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -712,15 +878,20 @@ func UpdateBetaRegionURLMapHook(ctx context.Context, key *meta.Key, obj *beta.Ur
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionBeta, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionBeta, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockRegionUrlMapsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateBetaRegionURLMapHook implements MockBetaRegionUrlMaps.UpdateHook.
+var _ = cloud.MockBetaRegionUrlMaps{
+	UpdateHook: UpdateBetaRegionURLMapHook,
+}
+
 // UpdateRegionURLMapHook defines the hook for updating a GA Regional UrlMap.
 // It replaces the object with the same key in the mock with the updated object.
-func UpdateRegionURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, m *cloud.MockRegionUrlMaps) error {
+func UpdateRegionURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, m *cloud.MockRegionUrlMaps, options ...cloud.Option) error {
 	_, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -728,14 +899,19 @@ func UpdateRegionURLMapHook(ctx context.Context, key *meta.Key, obj *ga.UrlMap, 
 
 	obj.Name = key.Name
 	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "urlMaps")
-	obj.SelfLink = cloud.SelfLink(meta.VersionGA, projectID, "urlMaps", key)
+	obj.SelfLink = cloud.SelfLinkWithGroup(meta.APIGroupCompute, meta.VersionGA, projectID, "urlMaps", key)
 
 	m.Objects[*key] = &cloud.MockRegionUrlMapsObj{Obj: obj}
 	return nil
 }
 
+// Verify UpdateRegionURLMapHook implements MockRegionUrlMaps.UpdateHook.
+var _ = cloud.MockRegionUrlMaps{
+	UpdateHook: UpdateRegionURLMapHook,
+}
+
 // SetTargetGlobalForwardingRuleHook defines the hook for setting the target proxy for a GlobalForwardingRule.
-func SetTargetGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, obj *ga.TargetReference, m *cloud.MockGlobalForwardingRules) error {
+func SetTargetGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, obj *ga.TargetReference, m *cloud.MockGlobalForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -743,10 +919,15 @@ func SetTargetGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, obj *
 
 	fw.Target = obj.Target
 	return nil
+}
+
+// Verify SetTargetGlobalForwardingRuleHook implements MockGlobalForwardingRules.SetTargetHook.
+var _ = cloud.MockGlobalForwardingRules{
+	SetTargetHook: SetTargetGlobalForwardingRuleHook,
 }
 
 // SetTargetForwardingRuleHook defines the hook for setting the target proxy for a ForwardingRule.
-func SetTargetForwardingRuleHook(ctx context.Context, key *meta.Key, obj *ga.TargetReference, m *cloud.MockForwardingRules) error {
+func SetTargetForwardingRuleHook(ctx context.Context, key *meta.Key, obj *ga.TargetReference, m *cloud.MockForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -754,10 +935,15 @@ func SetTargetForwardingRuleHook(ctx context.Context, key *meta.Key, obj *ga.Tar
 
 	fw.Target = obj.Target
 	return nil
+}
+
+// Verify SetTargetForwardingRuleHook implements MockForwardingRules.SetTargetHook.
+var _ = cloud.MockForwardingRules{
+	SetTargetHook: SetTargetForwardingRuleHook,
 }
 
 // SetTargetAlphaForwardingRuleHook defines the hook for setting the target proxy for an Alpha ForwardingRule.
-func SetTargetAlphaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *alpha.TargetReference, m *cloud.MockAlphaForwardingRules) error {
+func SetTargetAlphaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *alpha.TargetReference, m *cloud.MockAlphaForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -765,10 +951,15 @@ func SetTargetAlphaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *a
 
 	fw.Target = obj.Target
 	return nil
+}
+
+// Verify SetTargetAlphaForwardingRuleHook implements MockAlphaForwardingRules.SetTargetHook.
+var _ = cloud.MockAlphaForwardingRules{
+	SetTargetHook: SetTargetAlphaForwardingRuleHook,
 }
 
 // SetTargetBetaForwardingRuleHook defines the hook for setting the target proxy for an Alpha ForwardingRule.
-func SetTargetBetaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *beta.TargetReference, m *cloud.MockBetaForwardingRules) error {
+func SetTargetBetaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *beta.TargetReference, m *cloud.MockBetaForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -778,8 +969,13 @@ func SetTargetBetaForwardingRuleHook(ctx context.Context, key *meta.Key, obj *be
 	return nil
 }
 
+// Verify SetTargetBetaForwardingRuleHook implements MockBetaForwardingRules.SetTargetHook.
+var _ = cloud.MockBetaForwardingRules{
+	SetTargetHook: SetTargetBetaForwardingRuleHook,
+}
+
 // SetTargetAlphaGlobalForwardingRuleHook defines the hook for setting the target proxy for an alpha GlobalForwardingRule.
-func SetTargetAlphaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, ref *alpha.TargetReference, m *cloud.MockAlphaGlobalForwardingRules) error {
+func SetTargetAlphaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, ref *alpha.TargetReference, m *cloud.MockAlphaGlobalForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -789,8 +985,13 @@ func SetTargetAlphaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, 
 	return nil
 }
 
+// Verify SetTargetAlphaGlobalForwardingRuleHook implements MockAlphaGlobalForwardingRules.SetTargetHook.
+var _ = cloud.MockAlphaGlobalForwardingRules{
+	SetTargetHook: SetTargetAlphaGlobalForwardingRuleHook,
+}
+
 // SetTargetBetaGlobalForwardingRuleHook defines the hook for setting the target proxy for a beta GlobalForwardingRule.
-func SetTargetBetaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, obj *beta.TargetReference, m *cloud.MockBetaGlobalForwardingRules) error {
+func SetTargetBetaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, obj *beta.TargetReference, m *cloud.MockBetaGlobalForwardingRules, options ...cloud.Option) error {
 	fw, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -800,8 +1001,13 @@ func SetTargetBetaGlobalForwardingRuleHook(ctx context.Context, key *meta.Key, o
 	return nil
 }
 
+// Verify SetTargetBetaGlobalForwardingRuleHook implements MockBetaGlobalForwardingRules.SetTargetHook.
+var _ = cloud.MockBetaGlobalForwardingRules{
+	SetTargetHook: SetTargetBetaGlobalForwardingRuleHook,
+}
+
 // SetURLMapTargetHTTPProxyHook defines the hook for setting the url map for a TargetHttpProxy.
-func SetURLMapTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockTargetHttpProxies) error {
+func SetURLMapTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -809,10 +1015,15 @@ func SetURLMapTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *ga.Ur
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapTargetHTTPProxyHook implements MockTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockTargetHttpProxies{
+	SetUrlMapHook: SetURLMapTargetHTTPProxyHook,
 }
 
 // SetURLMapTargetHTTPSProxyHook defines the hook for setting the url map for a TargetHttpsProxy.
-func SetURLMapTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockTargetHttpsProxies) error {
+func SetURLMapTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -820,10 +1031,15 @@ func SetURLMapTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.U
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapTargetHTTPSProxyHook implements MockTargetHttpsProxies.SetUrlMapHook.
+var _ = cloud.MockTargetHttpsProxies{
+	SetUrlMapHook: SetURLMapTargetHTTPSProxyHook,
 }
 
 // SetURLMapAlphaRegionTargetHTTPSProxyHook defines the hook for setting the url map for a TargetHttpsProxy.
-func SetURLMapAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaRegionTargetHttpsProxies) error {
+func SetURLMapAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -831,10 +1047,15 @@ func SetURLMapAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapAlphaRegionTargetHTTPSProxyHook implements MockAlphaRegionTargetHttpsProxies.SetUrlMapHook.
+var _ = cloud.MockAlphaRegionTargetHttpsProxies{
+	SetUrlMapHook: SetURLMapAlphaRegionTargetHTTPSProxyHook,
 }
 
 // SetURLMapBetaRegionTargetHTTPSProxyHook defines the hook for setting the url map for a TargetHttpsProxy.
-func SetURLMapBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaRegionTargetHttpsProxies) error {
+func SetURLMapBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -842,10 +1063,15 @@ func SetURLMapBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key,
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapBetaRegionTargetHTTPSProxyHook implements MockBetaRegionTargetHttpsProxies.SetUrlMapHook.
+var _ = cloud.MockBetaRegionTargetHttpsProxies{
+	SetUrlMapHook: SetURLMapBetaRegionTargetHTTPSProxyHook,
 }
 
 // SetURLMapRegionTargetHTTPSProxyHook defines the hook for setting the url map for a TargetHttpsProxy.
-func SetURLMapRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockRegionTargetHttpsProxies) error {
+func SetURLMapRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -853,10 +1079,15 @@ func SetURLMapRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapRegionTargetHTTPSProxyHook implements MockRegionTargetHttpsProxies.SetUrlMapHook.
+var _ = cloud.MockRegionTargetHttpsProxies{
+	SetUrlMapHook: SetURLMapRegionTargetHTTPSProxyHook,
 }
 
 // SetURLMapAlphaTargetHTTPProxyHook defines the hook for setting the url map for a TargetHttpProxy.
-func SetURLMapAlphaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaTargetHttpProxies) error {
+func SetURLMapAlphaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -864,10 +1095,15 @@ func SetURLMapAlphaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapAlphaTargetHTTPProxyHook implements MockAlphaTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockAlphaTargetHttpProxies{
+	SetUrlMapHook: SetURLMapAlphaTargetHTTPProxyHook,
 }
 
 // SetURLMapBetaTargetHTTPProxyHook defines the hook for setting the url map for a beta TargetHttpProxy.
-func SetURLMapBetaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaTargetHttpProxies) error {
+func SetURLMapBetaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -875,10 +1111,15 @@ func SetURLMapBetaTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *b
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapBetaTargetHTTPProxyHook implements MockBetaTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockBetaTargetHttpProxies{
+	SetUrlMapHook: SetURLMapBetaTargetHTTPProxyHook,
 }
 
 // SetURLMapBetaTargetHTTPSProxyHook defines the hook for setting the url map for a beta TargetHttpsProxy.
-func SetURLMapBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaTargetHttpsProxies) error {
+func SetURLMapBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -886,10 +1127,15 @@ func SetURLMapBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapBetaTargetHTTPSProxyHook implements MockBetaTargetHttpsProxies.SetUrlMapHook.
+var _ = cloud.MockBetaTargetHttpsProxies{
+	SetUrlMapHook: SetURLMapBetaTargetHTTPSProxyHook,
 }
 
 // SetURLMapAlphaRegionTargetHTTPProxyHook defines the hook for setting the url map for a TargetHttpProxy.
-func SetURLMapAlphaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaRegionTargetHttpProxies) error {
+func SetURLMapAlphaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.UrlMapReference, m *cloud.MockAlphaRegionTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -897,10 +1143,15 @@ func SetURLMapAlphaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key,
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapAlphaRegionTargetHTTPProxyHook implements MockAlphaRegionTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockAlphaRegionTargetHttpProxies{
+	SetUrlMapHook: SetURLMapAlphaRegionTargetHTTPProxyHook,
 }
 
 // SetURLMapBetaRegionTargetHTTPProxyHook defines the hook for setting the url map for a TargetHttpProxy.
-func SetURLMapBetaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaRegionTargetHttpProxies) error {
+func SetURLMapBetaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *beta.UrlMapReference, m *cloud.MockBetaRegionTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -908,10 +1159,15 @@ func SetURLMapBetaRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, 
 
 	tp.UrlMap = ref.UrlMap
 	return nil
+}
+
+// Verify SetURLMapBetaRegionTargetHTTPProxyHook implements MockBetaRegionTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockBetaRegionTargetHttpProxies{
+	SetUrlMapHook: SetURLMapBetaRegionTargetHTTPProxyHook,
 }
 
 // SetURLMapRegionTargetHTTPProxyHook defines the hook for setting the url map for a TargetHttpProxy.
-func SetURLMapRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockRegionTargetHttpProxies) error {
+func SetURLMapRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref *ga.UrlMapReference, m *cloud.MockRegionTargetHttpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -921,8 +1177,13 @@ func SetURLMapRegionTargetHTTPProxyHook(ctx context.Context, key *meta.Key, ref 
 	return nil
 }
 
+// Verify SetURLMapRegionTargetHTTPProxyHook implements MockRegionTargetHttpProxies.SetUrlMapHook.
+var _ = cloud.MockRegionTargetHttpProxies{
+	SetUrlMapHook: SetURLMapRegionTargetHTTPProxyHook,
+}
+
 // SetBackendServiceAlphaTargetTCPProxyHook defines the hook for setting the backend service for an alpha TargetTcpProxy.
-func SetBackendServiceAlphaTargetTCPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.TargetTcpProxiesSetBackendServiceRequest, m *cloud.MockAlphaTargetTcpProxies) error {
+func SetBackendServiceAlphaTargetTCPProxyHook(ctx context.Context, key *meta.Key, ref *alpha.TargetTcpProxiesSetBackendServiceRequest, m *cloud.MockAlphaTargetTcpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -930,10 +1191,15 @@ func SetBackendServiceAlphaTargetTCPProxyHook(ctx context.Context, key *meta.Key
 
 	tp.Service = ref.Service
 	return nil
+}
+
+// Verify SetBackendServiceAlphaTargetTCPProxyHook implements MockAlphaTargetTcpProxies.SetBackendServiceHook.
+var _ = cloud.MockAlphaTargetTcpProxies{
+	SetBackendServiceHook: SetBackendServiceAlphaTargetTCPProxyHook,
 }
 
 // SetBackendServiceBetaTargetTCPProxyHook defines the hook for setting the backend service for a beta TargetTcpProxy.
-func SetBackendServiceBetaTargetTCPProxyHook(ctx context.Context, key *meta.Key, ref *beta.TargetTcpProxiesSetBackendServiceRequest, m *cloud.MockBetaTargetTcpProxies) error {
+func SetBackendServiceBetaTargetTCPProxyHook(ctx context.Context, key *meta.Key, ref *beta.TargetTcpProxiesSetBackendServiceRequest, m *cloud.MockBetaTargetTcpProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -943,8 +1209,13 @@ func SetBackendServiceBetaTargetTCPProxyHook(ctx context.Context, key *meta.Key,
 	return nil
 }
 
+// Verify SetBackendServiceBetaTargetTCPProxyHook implements MockBetaTargetTcpProxies.SetBackendServiceHook.
+var _ = cloud.MockBetaTargetTcpProxies{
+	SetBackendServiceHook: SetBackendServiceBetaTargetTCPProxyHook,
+}
+
 // SetSslCertificateTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *ga.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockTargetHttpsProxies) error {
+func SetSslCertificateTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *ga.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -952,30 +1223,45 @@ func SetSslCertificateTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, r
 
 	tp.SslCertificates = req.SslCertificates
 	return nil
+}
+
+// Verify SetSslCertificateTargetHTTPSProxyHook implements MockTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateTargetHTTPSProxyHook,
 }
 
 // SetSslCertificateAlphaTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateAlphaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *alpha.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockAlphaTargetHttpsProxies) error {
+func SetSslCertificateAlphaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *alpha.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockAlphaTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
 	}
 	tp.SslCertificates = req.SslCertificates
 	return nil
+}
+
+// Verify SetSslCertificateAlphaTargetHTTPSProxyHook implements MockAlphaTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockAlphaTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateAlphaTargetHTTPSProxyHook,
 }
 
 // SetSslCertificateBetaTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *beta.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockBetaTargetHttpsProxies) error {
+func SetSslCertificateBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *beta.TargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockBetaTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
 	}
 	tp.SslCertificates = req.SslCertificates
 	return nil
+}
+
+// Verify SetSslCertificateBetaTargetHTTPSProxyHook implements MockBetaTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockBetaTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateBetaTargetHTTPSProxyHook,
 }
 
 // SetSslCertificateAlphaRegionTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *alpha.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockAlphaRegionTargetHttpsProxies) error {
+func SetSslCertificateAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *alpha.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockAlphaRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -983,10 +1269,15 @@ func SetSslCertificateAlphaRegionTargetHTTPSProxyHook(ctx context.Context, key *
 
 	tp.SslCertificates = req.SslCertificates
 	return nil
+}
+
+// Verify SetSslCertificateAlphaRegionTargetHTTPSProxyHook implements MockAlphaRegionTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockAlphaRegionTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateAlphaRegionTargetHTTPSProxyHook,
 }
 
 // SetSslCertificateBetaRegionTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *beta.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockBetaRegionTargetHttpsProxies) error {
+func SetSslCertificateBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *beta.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockBetaRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -994,10 +1285,15 @@ func SetSslCertificateBetaRegionTargetHTTPSProxyHook(ctx context.Context, key *m
 
 	tp.SslCertificates = req.SslCertificates
 	return nil
+}
+
+// Verify SetSslCertificateBetaRegionTargetHTTPSProxyHook implements MockBetaRegionTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockBetaRegionTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateBetaRegionTargetHTTPSProxyHook,
 }
 
 // SetSslCertificateRegionTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslCertificateRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *ga.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockRegionTargetHttpsProxies) error {
+func SetSslCertificateRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, req *ga.RegionTargetHttpsProxiesSetSslCertificatesRequest, m *cloud.MockRegionTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -1007,8 +1303,13 @@ func SetSslCertificateRegionTargetHTTPSProxyHook(ctx context.Context, key *meta.
 	return nil
 }
 
+// Verify SetSslCertificateRegionTargetHTTPSProxyHook implements MockRegionTargetHttpsProxies.SetSslCertificatesHook.
+var _ = cloud.MockRegionTargetHttpsProxies{
+	SetSslCertificatesHook: SetSslCertificateRegionTargetHTTPSProxyHook,
+}
+
 // SetSslPolicyTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslPolicyTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.SslPolicyReference, m *cloud.MockTargetHttpsProxies) error {
+func SetSslPolicyTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *ga.SslPolicyReference, m *cloud.MockTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -1016,20 +1317,30 @@ func SetSslPolicyTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *g
 
 	tp.SslPolicy = ref.SslPolicy
 	return nil
+}
+
+// Verify SetSslPolicyTargetHTTPSProxyHook implements MockTargetHttpsProxies.SetSslPolicyHook.
+var _ = cloud.MockTargetHttpsProxies{
+	SetSslPolicyHook: SetSslPolicyTargetHTTPSProxyHook,
 }
 
 // SetSslPolicyAlphaTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslPolicyAlphaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *alpha.SslPolicyReference, m *cloud.MockAlphaTargetHttpsProxies) error {
+func SetSslPolicyAlphaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *alpha.SslPolicyReference, m *cloud.MockAlphaTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
 	}
 	tp.SslPolicy = ref.SslPolicy
 	return nil
+}
+
+// Verify SetSslPolicyAlphaTargetHTTPSProxyHook implements MockAlphaTargetHttpsProxies.SetSslPolicyHook.
+var _ = cloud.MockAlphaTargetHttpsProxies{
+	SetSslPolicyHook: SetSslPolicyAlphaTargetHTTPSProxyHook,
 }
 
 // SetSslPolicyBetaTargetHTTPSProxyHook defines the hook for setting ssl certificates on a TargetHttpsProxy.
-func SetSslPolicyBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.SslPolicyReference, m *cloud.MockBetaTargetHttpsProxies) error {
+func SetSslPolicyBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, ref *beta.SslPolicyReference, m *cloud.MockBetaTargetHttpsProxies, options ...cloud.Option) error {
 	tp, err := m.Get(ctx, key)
 	if err != nil {
 		return err
@@ -1038,128 +1349,257 @@ func SetSslPolicyBetaTargetHTTPSProxyHook(ctx context.Context, key *meta.Key, re
 	return nil
 }
 
+// Verify SetSslPolicyBetaTargetHTTPSProxyHook implements MockBetaTargetHttpsProxies.SetSslPolicyHook.
+var _ = cloud.MockBetaTargetHttpsProxies{
+	SetSslPolicyHook: SetSslPolicyBetaTargetHTTPSProxyHook,
+}
 
 // InsertFirewallsUnauthorizedErrHook mocks firewall insertion. A forbidden error will be thrown as return.
-func InsertFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls) (bool, error) {
+func InsertFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls, options ...cloud.Option) (bool, error) {
 	return true, &googleapi.Error{Code: http.StatusForbidden}
+}
+
+// Verify InsertFirewallsUnauthorizedErrHook implements MockFirewalls.InsertHook.
+var _ = cloud.MockFirewalls{
+	InsertHook: InsertFirewallsUnauthorizedErrHook,
 }
 
 // UpdateFirewallsUnauthorizedErrHook mocks firewall updating. A forbidden error will be thrown as return.
-func UpdateFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls) error {
+func UpdateFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *ga.Firewall, m *cloud.MockFirewalls, options ...cloud.Option) error {
 	return &googleapi.Error{Code: http.StatusForbidden}
 }
 
+// Verify UpdateFirewallsUnauthorizedErrHook implements MockFirewalls.UpdateHook.
+var _ = cloud.MockFirewalls{
+	UpdateHook: UpdateFirewallsUnauthorizedErrHook,
+}
+
 // DeleteFirewallsUnauthorizedErrHook mocks firewall deletion. A forbidden error will be thrown as return.
-func DeleteFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, m *cloud.MockFirewalls) (bool, error) {
+func DeleteFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, m *cloud.MockFirewalls, options ...cloud.Option) (bool, error) {
 	return true, &googleapi.Error{Code: http.StatusForbidden}
 }
 
+// Verify DeleteFirewallsUnauthorizedErrHook implements MockFirewalls.DeleteHook.
+var _ = cloud.MockFirewalls{
+	DeleteHook: DeleteFirewallsUnauthorizedErrHook,
+}
+
 // GetFirewallsUnauthorizedErrHook mocks firewall information retrival. A forbidden error will be thrown as return.
-func GetFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, m *cloud.MockFirewalls) (bool, *ga.Firewall, error) {
+func GetFirewallsUnauthorizedErrHook(ctx context.Context, key *meta.Key, m *cloud.MockFirewalls, options ...cloud.Option) (bool, *ga.Firewall, error) {
 	return true, nil, &googleapi.Error{Code: http.StatusForbidden}
 }
 
+// Verify GetFirewallsUnauthorizedErrHook implements MockFirewalls.GetHook.
+var _ = cloud.MockFirewalls{
+	GetHook: GetFirewallsUnauthorizedErrHook,
+}
+
 // GetTargetPoolInternalErrHook mocks getting target pool. It returns a internal server error.
-func GetTargetPoolInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockTargetPools) (bool, *ga.TargetPool, error) {
+func GetTargetPoolInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockTargetPools, options ...cloud.Option) (bool, *ga.TargetPool, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetTargetPoolInternalErrHook implements MockTargetPools.GetHook.
+var _ = cloud.MockTargetPools{
+	GetHook: GetTargetPoolInternalErrHook,
 }
 
 // GetForwardingRulesInternalErrHook mocks getting forwarding rules and returns an internal server error.
-func GetForwardingRulesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockForwardingRules) (bool, *ga.ForwardingRule, error) {
+func GetForwardingRulesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockForwardingRules, options ...cloud.Option) (bool, *ga.ForwardingRule, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetForwardingRulesInternalErrHook implements MockForwardingRules.GetHook.
+var _ = cloud.MockForwardingRules{
+	GetHook: GetForwardingRulesInternalErrHook,
 }
 
 // GetAddressesInternalErrHook mocks getting network address and returns an internal server error.
-func GetAddressesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses) (bool, *ga.Address, error) {
+func GetAddressesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses, options ...cloud.Option) (bool, *ga.Address, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetAddressesInternalErrHook implements MockAddresses.GetHook.
+var _ = cloud.MockAddresses{
+	GetHook: GetAddressesInternalErrHook,
 }
 
 // GetHTTPHealthChecksInternalErrHook mocks getting http health check and returns an internal server error.
-func GetHTTPHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHttpHealthChecks) (bool, *ga.HttpHealthCheck, error) {
+func GetHTTPHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHttpHealthChecks, options ...cloud.Option) (bool, *ga.HttpHealthCheck, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetHTTPHealthChecksInternalErrHook implements MockHttpHealthChecks.GetHook.
+var _ = cloud.MockHttpHealthChecks{
+	GetHook: GetHTTPHealthChecksInternalErrHook,
 }
 
 // InsertTargetPoolsInternalErrHook mocks getting target pool and returns an internal server error.
-func InsertTargetPoolsInternalErrHook(ctx context.Context, key *meta.Key, obj *ga.TargetPool, m *cloud.MockTargetPools) (bool, error) {
+func InsertTargetPoolsInternalErrHook(ctx context.Context, key *meta.Key, obj *ga.TargetPool, m *cloud.MockTargetPools, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify InsertTargetPoolsInternalErrHook implements MockTargetPools.InsertHook.
+var _ = cloud.MockTargetPools{
+	InsertHook: InsertTargetPoolsInternalErrHook,
 }
 
 // InsertForwardingRulesInternalErrHook mocks getting forwarding rule and returns an internal server error.
-func InsertForwardingRulesInternalErrHook(ctx context.Context, key *meta.Key, obj *ga.ForwardingRule, m *cloud.MockForwardingRules) (bool, error) {
+func InsertForwardingRulesInternalErrHook(ctx context.Context, key *meta.Key, obj *ga.ForwardingRule, m *cloud.MockForwardingRules, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify InsertForwardingRulesInternalErrHook implements MockForwardingRules.InsertHook.
+var _ = cloud.MockForwardingRules{
+	InsertHook: InsertForwardingRulesInternalErrHook,
 }
 
 // DeleteAddressesNotFoundErrHook mocks deleting network address and returns a not found error.
-func DeleteAddressesNotFoundErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses) (bool, error) {
+func DeleteAddressesNotFoundErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses, options ...cloud.Option) (bool, error) {
 	return true, &googleapi.Error{Code: http.StatusNotFound}
 }
 
+// Verify DeleteAddressesNotFoundErrHook implements MockAddresses.DeleteHook.
+var _ = cloud.MockAddresses{
+	DeleteHook: DeleteAddressesNotFoundErrHook,
+}
+
 // DeleteAddressesInternalErrHook mocks deleting address and returns an internal server error.
-func DeleteAddressesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses) (bool, error) {
+func DeleteAddressesInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockAddresses, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify DeleteAddressesInternalErrHook implements MockAddresses.DeleteHook.
+var _ = cloud.MockAddresses{
+	DeleteHook: DeleteAddressesInternalErrHook,
 }
 
 // InsertAlphaBackendServiceUnauthorizedErrHook mocks inserting an alpha BackendService and returns a forbidden error.
-func InsertAlphaBackendServiceUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices) (bool, error) {
+func InsertAlphaBackendServiceUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices, options ...cloud.Option) (bool, error) {
 	return true, UnauthorizedErr
 }
 
+// Verify InsertAlphaBackendServiceUnauthorizedErrHook implements MockAlphaBackendServices.InsertHook.
+var _ = cloud.MockAlphaBackendServices{
+	InsertHook: InsertAlphaBackendServiceUnauthorizedErrHook,
+}
+
 // UpdateAlphaBackendServiceUnauthorizedErrHook mocks updating an alpha BackendService and returns a forbidden error.
-func UpdateAlphaBackendServiceUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices) error {
+func UpdateAlphaBackendServiceUnauthorizedErrHook(ctx context.Context, key *meta.Key, obj *alpha.BackendService, m *cloud.MockAlphaBackendServices, options ...cloud.Option) error {
 	return UnauthorizedErr
 }
 
+// Verify UpdateAlphaBackendServiceUnauthorizedErrHook implements MockAlphaBackendServices.UpdateHook.
+var _ = cloud.MockAlphaBackendServices{
+	UpdateHook: UpdateAlphaBackendServiceUnauthorizedErrHook,
+}
+
 // GetRegionBackendServicesErrHook mocks getting region backend service and returns an internal server error.
-func GetRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices) (bool, *ga.BackendService, error) {
+func GetRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices, options ...cloud.Option) (bool, *ga.BackendService, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetRegionBackendServicesErrHook implements MockRegionBackendServices.GetHook.
+var _ = cloud.MockRegionBackendServices{
+	GetHook: GetRegionBackendServicesErrHook,
 }
 
 // UpdateRegionBackendServicesErrHook mocks updating a reegion backend service and returns an internal server error.
-func UpdateRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, svc *ga.BackendService, m *cloud.MockRegionBackendServices) error {
+func UpdateRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, svc *ga.BackendService, m *cloud.MockRegionBackendServices, options ...cloud.Option) error {
 	return InternalServerError
 }
 
+// Verify UpdateRegionBackendServicesErrHook implements MockRegionBackendServices.UpdateHook.
+var _ = cloud.MockRegionBackendServices{
+	UpdateHook: UpdateRegionBackendServicesErrHook,
+}
+
 // DeleteRegionBackendServicesErrHook mocks deleting region backend service and returns an internal server error.
-func DeleteRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices) (bool, error) {
+func DeleteRegionBackendServicesErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify DeleteRegionBackendServicesErrHook implements MockRegionBackendServices.DeleteHook.
+var _ = cloud.MockRegionBackendServices{
+	DeleteHook: DeleteRegionBackendServicesErrHook,
 }
 
 // DeleteRegionBackendServicesInUseErrHook mocks deleting region backend service and returns an InUseError.
-func DeleteRegionBackendServicesInUseErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices) (bool, error) {
+func DeleteRegionBackendServicesInUseErrHook(ctx context.Context, key *meta.Key, m *cloud.MockRegionBackendServices, options ...cloud.Option) (bool, error) {
 	return true, InUseError
+}
+
+// Verify DeleteRegionBackendServicesInUseErrHook implements MockRegionBackendServices.DeleteHook.
+var _ = cloud.MockRegionBackendServices{
+	DeleteHook: DeleteRegionBackendServicesInUseErrHook,
 }
 
 // GetInstanceGroupInternalErrHook mocks getting instance group and returns an internal server error.
-func GetInstanceGroupInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockInstanceGroups) (bool, *ga.InstanceGroup, error) {
+func GetInstanceGroupInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockInstanceGroups, options ...cloud.Option) (bool, *ga.InstanceGroup, error) {
 	return true, nil, InternalServerError
+}
+
+// Verify GetInstanceGroupInternalErrHook implements MockInstanceGroups.GetHook.
+var _ = cloud.MockInstanceGroups{
+	GetHook: GetInstanceGroupInternalErrHook,
 }
 
 // GetHealthChecksInternalErrHook mocks getting health check and returns an internal server erorr.
-func GetHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks) (bool, *ga.HealthCheck, error) {
+func GetHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks, options ...cloud.Option) (bool, *ga.HealthCheck, error) {
 	return true, nil, InternalServerError
 }
 
+// Verify GetHealthChecksInternalErrHook implements MockHealthChecks.GetHook.
+var _ = cloud.MockHealthChecks{
+	GetHook: GetHealthChecksInternalErrHook,
+}
+
 // DeleteHealthChecksInternalErrHook mocks deleting health check and returns an internal server error.
-func DeleteHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks) (bool, error) {
+func DeleteHealthChecksInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify DeleteHealthChecksInternalErrHook implements MockHealthChecks.DeleteHook.
+var _ = cloud.MockHealthChecks{
+	DeleteHook: DeleteHealthChecksInternalErrHook,
 }
 
 // DeleteHealthChecksInuseErrHook mocks deleting health check and returns an in use error.
-func DeleteHealthChecksInuseErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks) (bool, error) {
+func DeleteHealthChecksInuseErrHook(ctx context.Context, key *meta.Key, m *cloud.MockHealthChecks, options ...cloud.Option) (bool, error) {
 	return true, InUseError
 }
 
+// Verify DeleteHealthChecksInuseErrHook implements MockHealthChecks.DeleteHook.
+var _ = cloud.MockHealthChecks{
+	DeleteHook: DeleteHealthChecksInuseErrHook,
+}
+
 // DeleteForwardingRuleErrHook mocks deleting forwarding rule and returns an internal server error.
-func DeleteForwardingRuleErrHook(ctx context.Context, key *meta.Key, m *cloud.MockForwardingRules) (bool, error) {
+func DeleteForwardingRuleErrHook(ctx context.Context, key *meta.Key, m *cloud.MockForwardingRules, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify DeleteForwardingRuleErrHook implements MockForwardingRules.DeleteHook.
+var _ = cloud.MockForwardingRules{
+	DeleteHook: DeleteForwardingRuleErrHook,
 }
 
 // ListZonesInternalErrHook mocks listing zone and returns an internal server error.
-func ListZonesInternalErrHook(ctx context.Context, fl *filter.F, m *cloud.MockZones) (bool, []*ga.Zone, error) {
+func ListZonesInternalErrHook(ctx context.Context, fl *filter.F, m *cloud.MockZones, options ...cloud.Option) (bool, []*ga.Zone, error) {
 	return true, []*ga.Zone{}, InternalServerError
 }
 
+// Verify ListZonesInternalErrHook implements MockZones.ListHook.
+var _ = cloud.MockZones{
+	ListHook: ListZonesInternalErrHook,
+}
+
 // DeleteInstanceGroupInternalErrHook mocks deleting instance group and returns an internal server error.
-func DeleteInstanceGroupInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockInstanceGroups) (bool, error) {
+func DeleteInstanceGroupInternalErrHook(ctx context.Context, key *meta.Key, m *cloud.MockInstanceGroups, options ...cloud.Option) (bool, error) {
 	return true, InternalServerError
+}
+
+// Verify DeleteInstanceGroupInternalErrHook implements MockInstanceGroups.DeleteHook.
+var _ = cloud.MockInstanceGroups{
+	DeleteHook: DeleteInstanceGroupInternalErrHook,
 }

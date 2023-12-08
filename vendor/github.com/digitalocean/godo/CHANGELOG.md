@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.107.0] - 2023-12-07
+
+- #658 - @markusthoemmes - APPS-8033 Add the RUN_RESTARTED log type
+- #656 - @dweinshenker - Enhancement: add database user update
+- #657 - @markusthoemmes - apps: Add registry_credentials field, GHCR registry type and the egress spec
+
 ## [v1.106.0] - 2023-11-14
 
 - #654 - @dweinshenker - Remove unclean_leader_election_enable for topic configuration

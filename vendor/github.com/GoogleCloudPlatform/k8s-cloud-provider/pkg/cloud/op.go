@@ -34,6 +34,13 @@ const (
 	operationStatusDone = "DONE"
 )
 
+var (
+	// OperationsUseWait set to true to switch to using /Wait vs /Get. This should be a
+	// transparent change to the clients and this option will be removed once we have
+	// confidence that there are no issues with switching to the new method.
+	OperationsUseWait = true
+)
+
 // operation is a GCE operation that can be watied on.
 type operation interface {
 	// isDone queries GCE for the done status. This call can block.
@@ -64,19 +71,36 @@ func (o *gaOperation) isDone(ctx context.Context) (bool, error) {
 		err error
 	)
 
-	switch o.key.Type() {
-	case meta.Regional:
-		op, err = o.s.GA.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("GA.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
-	case meta.Zonal:
-		op, err = o.s.GA.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("GA.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
-	case meta.Global:
-		op, err = o.s.GA.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("GA.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
-	default:
-		return false, fmt.Errorf("invalid key type: %#v", o.key)
+	if OperationsUseWait {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.GA.RegionOperations.Wait(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.RegionOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.GA.ZoneOperations.Wait(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.ZoneOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.GA.GlobalOperations.Wait(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.GlobalOperations.Wait(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
+	} else {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.GA.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.GA.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.GA.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("GA.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
 	}
+
 	if err != nil {
 		return false, err
 	}
@@ -121,19 +145,36 @@ func (o *alphaOperation) isDone(ctx context.Context) (bool, error) {
 		err error
 	)
 
-	switch o.key.Type() {
-	case meta.Regional:
-		op, err = o.s.Alpha.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Alpha.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
-	case meta.Zonal:
-		op, err = o.s.Alpha.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Alpha.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
-	case meta.Global:
-		op, err = o.s.Alpha.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Alpha.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
-	default:
-		return false, fmt.Errorf("invalid key type: %#v", o.key)
+	if OperationsUseWait {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.Alpha.RegionOperations.Wait(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.RegionOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.Alpha.ZoneOperations.Wait(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.ZoneOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.Alpha.GlobalOperations.Wait(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.GlobalOperations.Wait(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
+	} else {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.Alpha.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.Alpha.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.Alpha.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Alpha.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
 	}
+
 	if err != nil {
 		return false, err
 	}
@@ -178,18 +219,34 @@ func (o *betaOperation) isDone(ctx context.Context) (bool, error) {
 		err error
 	)
 
-	switch o.key.Type() {
-	case meta.Regional:
-		op, err = o.s.Beta.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Beta.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
-	case meta.Zonal:
-		op, err = o.s.Beta.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Beta.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
-	case meta.Global:
-		op, err = o.s.Beta.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
-		klog.V(5).Infof("Beta.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
-	default:
-		return false, fmt.Errorf("invalid key type: %#v", o.key)
+	if OperationsUseWait {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.Beta.RegionOperations.Wait(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.RegionOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.Beta.ZoneOperations.Wait(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.ZoneOperations.Wait(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.Beta.GlobalOperations.Wait(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.GlobalOperations.Wait(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
+	} else {
+		switch o.key.Type() {
+		case meta.Regional:
+			op, err = o.s.Beta.RegionOperations.Get(o.projectID, o.key.Region, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.RegionOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Region, o.key.Name, op, err, ctx)
+		case meta.Zonal:
+			op, err = o.s.Beta.ZoneOperations.Get(o.projectID, o.key.Zone, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.ZoneOperations.Get(%v, %v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Zone, o.key.Name, op, err, ctx)
+		case meta.Global:
+			op, err = o.s.Beta.GlobalOperations.Get(o.projectID, o.key.Name).Context(ctx).Do()
+			klog.V(5).Infof("Beta.GlobalOperations.Get(%v, %v) = %+v, %v; ctx = %v", o.projectID, o.key.Name, op, err, ctx)
+		default:
+			return false, fmt.Errorf("invalid key type: %#v", o.key)
+		}
 	}
 	if err != nil {
 		return false, err

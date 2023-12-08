@@ -34,7 +34,7 @@ type gceProjectRouter struct {
 // ProjectID returns the project ID to be used for the given operation.
 func (r *gceProjectRouter) ProjectID(ctx context.Context, version meta.Version, service string) string {
 	switch service {
-	case "Firewalls", "Routes", "Subnetworks":
+	case "Firewalls", "Routes", "Subnetworks", "Networks":
 		return r.gce.NetworkProjectID()
 	default:
 		return r.gce.projectID

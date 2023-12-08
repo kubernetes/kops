@@ -96,7 +96,7 @@ func registerTargetPoolAddInstanceHook(gce *Cloud, callback func(*compute.Target
 		return fmt.Errorf("couldn't cast cloud to mockGCE: %#v", gce)
 	}
 	existingHandler := mockGCE.MockTargetPools.AddInstanceHook
-	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsAddInstanceRequest, m *cloud.MockTargetPools) error {
+	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsAddInstanceRequest, m *cloud.MockTargetPools, options ...cloud.Option) error {
 		callback(req)
 		return existingHandler(ctx, key, req, m)
 	}
@@ -110,7 +110,7 @@ func registerTargetPoolRemoveInstanceHook(gce *Cloud, callback func(*compute.Tar
 		return fmt.Errorf("couldn't cast cloud to mockGCE: %#v", gce)
 	}
 	existingHandler := mockGCE.MockTargetPools.RemoveInstanceHook
-	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsRemoveInstanceRequest, m *cloud.MockTargetPools) error {
+	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsRemoveInstanceRequest, m *cloud.MockTargetPools, options ...cloud.Option) error {
 		callback(req)
 		return existingHandler(ctx, key, req, m)
 	}

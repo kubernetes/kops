@@ -19,13 +19,28 @@ package cloud
 import (
 	"context"
 	"time"
+
+	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
 )
 
 const (
 	defaultCallTimeout = 1 * time.Hour
 )
 
-// ContextWithCallTimeout returns a context with a default timeout, used for generated client calls.
+// ContextWithCallTimeout returns a context with a default timeout, used for
+// generated client calls.
 func ContextWithCallTimeout() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), defaultCallTimeout)
+}
+
+// CallContextKey is a key identifying the most commonly used parts of an operation.
+type CallContextKey struct {
+	// ProjectID is the non-numeric ID of the project.
+	ProjectID string
+	// Operation is the specific method being invoked (e.g. "Get", "List").
+	Operation string
+	// Version is the API version of the call.
+	Version meta.Version
+	// Service is the service being invoked (e.g. "Firewalls", "BackendServices")
+	Service string
 }
