@@ -38,7 +38,9 @@ func isHealthy(u *unstructured.Unstructured) bool {
 	gvk := u.GroupVersionKind()
 	switch gvk {
 	case schema.GroupVersionKind{Group: "", Version: "v1", Kind: "ConfigMap"},
-		schema.GroupVersionKind{Group: "", Version: "v1", Kind: "ServiceAccount"}:
+		schema.GroupVersionKind{Group: "", Version: "v1", Kind: "ServiceAccount"},
+		schema.GroupVersionKind{Group: "autoscaling", Version: "v1", Kind: "HorizontalPodAutoscaler"},
+		schema.GroupVersionKind{Group: "autoscaling", Version: "v2", Kind: "HorizontalPodAutoscaler"}:
 		// No ready signal; assume ready
 		return true
 	case schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRole"},
