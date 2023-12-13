@@ -45,7 +45,13 @@
         "ec2:DescribeSnapshots",
         "ec2:DescribeTags",
         "ec2:DescribeVolumes",
-        "ec2:DescribeVolumesModifications"
+        "ec2:DescribeVolumesModifications",
+        "kms:CreateGrant",
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
       ],
       "Effect": "Allow",
       "Resource": "*"
