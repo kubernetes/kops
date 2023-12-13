@@ -357,9 +357,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
-		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
-	}
+	addKMSIAMPolicies(p)
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -398,9 +396,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
-		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
-	}
+	addKMSIAMPolicies(p)
 
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountExternalPermissions.
 	AddDNSControllerPermissions(b, p)
@@ -1090,7 +1086,7 @@ func AddKubeRouterPermissions(b *PolicyBuilder, p *Policy) {
 	)
 }
 
-func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+func addKMSIAMPolicies(p *Policy) {
 	// TODO could use "kms:ViaService" Condition Key here?
 	p.unconditionalAction.Insert(
 		"kms:CreateGrant",
