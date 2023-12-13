@@ -1001,6 +1001,8 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
 func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
+	addKMSIAMPolicies(p)
+
 	if appendSnapshotPermissions {
 		addSnapshotPersmissions(p)
 	}
