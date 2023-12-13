@@ -191,8 +191,13 @@
         "elasticloadbalancing:DescribeTargetHealth",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
+        "kms:CreateGrant",
+        "kms:Decrypt",
         "kms:DescribeKey",
-        "kms:GenerateRandom"
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:GenerateRandom",
+        "kms:ReEncrypt*"
       ],
       "Effect": "Allow",
       "Resource": "*"

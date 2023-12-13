@@ -73,7 +73,13 @@
         "ec2:DescribeVolumes",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
-        "kms:GenerateRandom"
+        "kms:CreateGrant",
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:GenerateRandom",
+        "kms:ReEncrypt*"
       ],
       "Effect": "Allow",
       "Resource": "*"
