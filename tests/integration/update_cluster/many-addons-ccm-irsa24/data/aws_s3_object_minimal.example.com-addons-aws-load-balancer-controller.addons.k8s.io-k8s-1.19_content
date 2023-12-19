@@ -1063,6 +1063,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - cert-manager
   rules:
   - apiGroups:
     - ""
@@ -1094,6 +1095,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - cert-manager
   rules:
   - apiGroups:
     - ""
