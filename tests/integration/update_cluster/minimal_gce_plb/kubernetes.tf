@@ -439,10 +439,11 @@ resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-plb-example-com" {
-  base_instance_name = "master-us-test1-a"
-  name               = "a-master-us-test1-a-minimal-gce-plb-example-com"
-  target_pools       = [google_compute_target_pool.api-minimal-gce-plb-example-com.self_link]
-  target_size        = 1
+  base_instance_name             = "master-us-test1-a"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-master-us-test1-a-minimal-gce-plb-example-com"
+  target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-example-com.self_link]
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-gce-plb-example-com.self_link
   }
@@ -450,9 +451,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-plb-example-com" {
-  base_instance_name = "nodes"
-  name               = "a-nodes-minimal-gce-plb-example-com"
-  target_size        = 2
+  base_instance_name             = "nodes"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-nodes-minimal-gce-plb-example-com"
+  target_size                    = 2
   version {
     instance_template = google_compute_instance_template.nodes-minimal-gce-plb-example-com.self_link
   }
