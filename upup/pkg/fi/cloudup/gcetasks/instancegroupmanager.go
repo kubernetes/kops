@@ -32,10 +32,11 @@ type InstanceGroupManager struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Zone             *string
-	BaseInstanceName *string
-	InstanceTemplate *InstanceTemplate
-	TargetSize       *int64
+	Zone                        *string
+	BaseInstanceName            *string
+	InstanceTemplate            *InstanceTemplate
+	ListManagedInstancesResults string
+	TargetSize                  *int64
 
 	TargetPools []*TargetPool
 }
@@ -63,6 +64,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
 	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
+	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
 	for _, targetPool := range r.TargetPools {
 		actual.TargetPools = append(actual.TargetPools, &TargetPool{
@@ -94,11 +96,12 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 	}
 
 	i := &compute.InstanceGroupManager{
-		Name:             *e.Name,
-		Zone:             *e.Zone,
-		BaseInstanceName: *e.BaseInstanceName,
-		TargetSize:       *e.TargetSize,
-		InstanceTemplate: instanceTemplateURL,
+		Name:                        *e.Name,
+		Zone:                        *e.Zone,
+		BaseInstanceName:            *e.BaseInstanceName,
+		TargetSize:                  *e.TargetSize,
+		InstanceTemplate:            instanceTemplateURL,
+		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
 
 	for _, targetPool := range e.TargetPools {
@@ -172,12 +175,13 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 }
 
 type terraformInstanceGroupManager struct {
-	Name             *string                    `cty:"name"`
-	Zone             *string                    `cty:"zone"`
-	BaseInstanceName *string                    `cty:"base_instance_name"`
-	Version          *terraformVersion          `cty:"version"`
-	TargetSize       *int64                     `cty:"target_size"`
-	TargetPools      []*terraformWriter.Literal `cty:"target_pools"`
+	Name                        *string                    `cty:"name"`
+	Zone                        *string                    `cty:"zone"`
+	BaseInstanceName            *string                    `cty:"base_instance_name"`
+	ListManagedInstancesResults string                     `cty:"list_managed_instances_results"`
+	Version                     *terraformVersion          `cty:"version"`
+	TargetSize                  *int64                     `cty:"target_size"`
+	TargetPools                 []*terraformWriter.Literal `cty:"target_pools"`
 }
 
 type terraformVersion struct {
@@ -186,10 +190,11 @@ type terraformVersion struct {
 
 func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceGroupManager) error {
 	tf := &terraformInstanceGroupManager{
-		Name:             e.Name,
-		Zone:             e.Zone,
-		BaseInstanceName: e.BaseInstanceName,
-		TargetSize:       e.TargetSize,
+		Name:                        e.Name,
+		Zone:                        e.Zone,
+		BaseInstanceName:            e.BaseInstanceName,
+		TargetSize:                  e.TargetSize,
+		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
 	tf.Version = &terraformVersion{
 		InstanceTemplate: e.InstanceTemplate.TerraformLink(),

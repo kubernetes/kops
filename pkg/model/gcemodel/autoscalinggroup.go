@@ -301,12 +301,13 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			name := gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)
 
 			t := &gcetasks.InstanceGroupManager{
-				Name:             s(name),
-				Lifecycle:        b.Lifecycle,
-				Zone:             s(zone),
-				TargetSize:       fi.PtrTo(int64(targetSize)),
-				BaseInstanceName: s(ig.ObjectMeta.Name),
-				InstanceTemplate: instanceTemplate,
+				Name:                        s(name),
+				Lifecycle:                   b.Lifecycle,
+				Zone:                        s(zone),
+				TargetSize:                  fi.PtrTo(int64(targetSize)),
+				BaseInstanceName:            s(ig.ObjectMeta.Name),
+				InstanceTemplate:            instanceTemplate,
+				ListManagedInstancesResults: "PAGINATED",
 			}
 
 			// Attach masters to load balancer if we're using one
