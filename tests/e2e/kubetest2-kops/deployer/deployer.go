@@ -65,7 +65,9 @@ type deployer struct {
 	ControlPlaneIGOverrides []string `flag:"control-plane-instance-group-overrides" desc:"overrides for the control plane instance groups"`
 	NodeIGOverrides         []string `flag:"node-instance-group-overrides" desc:"overrides for the node instance groups"`
 
-	ValidationWait time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
+	ValidationWait     time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
+	ValidationCount    int           `flag:"validation-count" desc:"how many times should a validation pass"`
+	ValidationInterval time.Duration `flag:"validation-interval" desc:"time in duration to wait between validation attempts"`
 
 	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`
 
@@ -109,13 +111,15 @@ func (d *deployer) Provider() string {
 
 // New implements deployer.New for kops
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
-	// create a deployer object and set fields that are not flag controlled
+	// create a deployer object and set fields that are not flag controlled, and default values
 	d := &deployer{
 		commonOptions: opts,
 		BuildOptions: &builder.BuildOptions{
 			BuildKubernetes: false,
 		},
 		boskosHeartbeatClose: make(chan struct{}),
+		ValidationCount:      10,
+		ValidationInterval:   10 * time.Second,
 	}
 
 	dir, err := defaultArtifactsDir()

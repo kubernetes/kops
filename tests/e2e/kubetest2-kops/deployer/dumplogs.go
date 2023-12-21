@@ -163,7 +163,10 @@ func (d *deployer) dumpClusterInfo() error {
 		"leases",
 		"persistentvolumeclaims",
 		"poddisruptionbudgets",
+		"podmonitors",
+		"statefulsets",
 		"serviceaccounts",
+		"servicemonitors",
 		"rolebindings",
 		"roles",
 	}
@@ -198,6 +201,11 @@ func (d *deployer) dumpClusterInfo() error {
 				}
 			}
 		}
+	}
+	// cleanup zero byte files
+	cmd = exec.Command("find", d.ArtifactsDir, "-size", "0", "-print", "-delete", "-o")
+	if err := cmd.Run(); err != nil {
+		dumpErr = errors.Join(dumpErr, err)
 	}
 	return dumpErr
 }

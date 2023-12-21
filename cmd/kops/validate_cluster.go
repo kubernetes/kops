@@ -66,11 +66,13 @@ type ValidateClusterOptions struct {
 	output      string
 	wait        time.Duration
 	count       int
+	interval    time.Duration
 	kubeconfig  string
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
 	o.output = OutputTable
+	o.interval = 10 * time.Second
 }
 
 func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -105,6 +107,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "Amount of time to wait for the cluster to become ready")
 	cmd.Flags().IntVar(&options.count, "count", options.count, "Number of consecutive successful validations required")
+	cmd.Flags().DurationVar(&options.interval, "interval", options.interval, "Time in duration to wait between validation attempts")
 	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
 
 	return cmd
@@ -164,7 +167,6 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	timeout := time.Now().Add(options.wait)
-	pollInterval := 10 * time.Second
 
 	validator, err := validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient)
 	if err != nil {
@@ -182,7 +184,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 			consecutive = 0
 			if options.wait > 0 {
 				klog.Warningf("(will retry): unexpected error during validation: %v", err)
-				time.Sleep(pollInterval)
+				time.Sleep(options.interval)
 				continue
 			} else {
 				return nil, fmt.Errorf("unexpected error during validation: %v", err)
@@ -219,7 +221,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 			if consecutive < options.count {
 				klog.Infof("(will retry): cluster passed validation %d consecutive times", consecutive)
 				if options.wait > 0 {
-					time.Sleep(pollInterval)
+					time.Sleep(options.interval)
 					continue
 				} else {
 					return nil, fmt.Errorf("cluster passed validation %d consecutive times", consecutive)
@@ -231,7 +233,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 			if options.wait > 0 {
 				klog.Warningf("(will retry): cluster not yet healthy")
 				consecutive = 0
-				time.Sleep(pollInterval)
+				time.Sleep(options.interval)
 				continue
 			} else {
 				return nil, fmt.Errorf("cluster not yet healthy")
