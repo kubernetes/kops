@@ -429,9 +429,10 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-example-com" {
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-example-com" {
-  base_instance_name = "master-us-test1-a"
-  name               = "a-master-us-test1-a-minimal-example-com"
-  target_size        = 1
+  base_instance_name             = "master-us-test1-a"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-master-us-test1-a-minimal-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-example-com.self_link
   }
@@ -439,9 +440,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-ex
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-minimal-example-com" {
-  base_instance_name = "nodes"
-  name               = "a-nodes-minimal-example-com"
-  target_size        = 1
+  base_instance_name             = "nodes"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-nodes-minimal-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.nodes-minimal-example-com.self_link
   }

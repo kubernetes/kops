@@ -501,9 +501,10 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-ha-gce-example-com
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-ha-gce-example-com" {
-  base_instance_name = "master-us-test1-a"
-  name               = "a-master-us-test1-a-ha-gce-example-com"
-  target_size        = 1
+  base_instance_name             = "master-us-test1-a"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-master-us-test1-a-ha-gce-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-ha-gce-example-com.self_link
   }
@@ -511,9 +512,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-ha-gce-exa
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-ha-gce-example-com" {
-  base_instance_name = "nodes"
-  name               = "a-nodes-ha-gce-example-com"
-  target_size        = 1
+  base_instance_name             = "nodes"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "a-nodes-ha-gce-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.nodes-ha-gce-example-com.self_link
   }
@@ -521,9 +523,10 @@ resource "google_compute_instance_group_manager" "a-nodes-ha-gce-example-com" {
 }
 
 resource "google_compute_instance_group_manager" "b-master-us-test1-b-ha-gce-example-com" {
-  base_instance_name = "master-us-test1-b"
-  name               = "b-master-us-test1-b-ha-gce-example-com"
-  target_size        = 1
+  base_instance_name             = "master-us-test1-b"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "b-master-us-test1-b-ha-gce-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-b-ha-gce-example-com.self_link
   }
@@ -531,9 +534,10 @@ resource "google_compute_instance_group_manager" "b-master-us-test1-b-ha-gce-exa
 }
 
 resource "google_compute_instance_group_manager" "b-nodes-ha-gce-example-com" {
-  base_instance_name = "nodes"
-  name               = "b-nodes-ha-gce-example-com"
-  target_size        = 1
+  base_instance_name             = "nodes"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "b-nodes-ha-gce-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.nodes-ha-gce-example-com.self_link
   }
@@ -541,9 +545,10 @@ resource "google_compute_instance_group_manager" "b-nodes-ha-gce-example-com" {
 }
 
 resource "google_compute_instance_group_manager" "c-master-us-test1-c-ha-gce-example-com" {
-  base_instance_name = "master-us-test1-c"
-  name               = "c-master-us-test1-c-ha-gce-example-com"
-  target_size        = 1
+  base_instance_name             = "master-us-test1-c"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "c-master-us-test1-c-ha-gce-example-com"
+  target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-c-ha-gce-example-com.self_link
   }
@@ -551,9 +556,10 @@ resource "google_compute_instance_group_manager" "c-master-us-test1-c-ha-gce-exa
 }
 
 resource "google_compute_instance_group_manager" "c-nodes-ha-gce-example-com" {
-  base_instance_name = "nodes"
-  name               = "c-nodes-ha-gce-example-com"
-  target_size        = 0
+  base_instance_name             = "nodes"
+  list_managed_instances_results = "PAGINATED"
+  name                           = "c-nodes-ha-gce-example-com"
+  target_size                    = 0
   version {
     instance_template = google_compute_instance_template.nodes-ha-gce-example-com.self_link
   }
