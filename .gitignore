@@ -24,7 +24,6 @@
 
 # Vscode files
 .vscode
-.devcontainer
 
 # Emacs save files
 *~
