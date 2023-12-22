@@ -21,6 +21,7 @@ import (
 	"fmt"
 	osexec "os/exec"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -290,7 +291,8 @@ func (d *deployer) IsUp() (bool, error) {
 	args := []string{
 		d.KopsBinaryPath, "validate", "cluster",
 		"--name", d.ClusterName,
-		"--count", "10",
+		"--count", strconv.Itoa(d.ValidationCount),
+		"--interval", d.ValidationInterval.String(),
 		"--wait", wait.String(),
 	}
 	klog.Info(strings.Join(args, " "))

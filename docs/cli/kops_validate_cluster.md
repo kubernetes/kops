@@ -31,6 +31,7 @@ kops validate cluster [CLUSTER] [flags]
 ```
       --count int           Number of consecutive successful validations required
   -h, --help                help for cluster
+      --interval duration   Time in duration to wait between validation attempts (default 10s)
       --kubeconfig string   Path to the kubeconfig file
   -o, --output string       Output format. One of json|yaml|table. (default "table")
       --wait duration       Amount of time to wait for the cluster to become ready
