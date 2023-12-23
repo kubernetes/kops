@@ -25,7 +25,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
@@ -219,8 +218,6 @@ func lastComponent(s string) string {
 	}
 	return s
 }
-
-var _ resolver.Resolver = &Discovery{}
 
 // Resolve implements resolver.Resolve, providing name -> address resolution using GCE discovery.
 func (r *Discovery) Resolve(ctx context.Context, name string) ([]string, error) {
