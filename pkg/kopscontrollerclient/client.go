@@ -33,7 +33,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
-	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
@@ -47,45 +46,7 @@ type Client struct {
 	// BaseURL is the base URL for the server
 	BaseURL url.URL
 
-	// Resolver is a custom resolver that supports resolution of hostnames without requiring DNS.
-	// In particular, this supports gossip mode.
-	Resolver resolver.Resolver
-
 	httpClient *http.Client
-}
-
-// dial implements a DialContext resolver function, for when a custom resolver is in use
-func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, error) {
-	var errors []error
-
-	host, port, err := net.SplitHostPort(addr)
-	if err != nil {
-		return nil, fmt.Errorf("cannot split host and port from %q: %w", addr, err)
-	}
-
-	// TODO: cache?
-	addresses, err := b.Resolver.Resolve(ctx, host)
-	if err != nil {
-		return nil, err
-	}
-
-	klog.Infof("resolved %q to %v", host, addresses)
-
-	for _, addr := range addresses {
-		timeout := 5 * time.Second
-		conn, err := net.DialTimeout(network, addr+":"+port, timeout)
-		if err == nil {
-			return conn, nil
-		}
-		if err != nil {
-			klog.Warningf("failed to dial %q: %v", addr, err)
-			errors = append(errors, err)
-		}
-	}
-	if len(errors) == 0 {
-		return nil, fmt.Errorf("no addresses for %q", addr)
-	}
-	return nil, errors[0]
 }
 
 func (b *Client) Query(ctx context.Context, req any, resp any) error {
@@ -100,10 +61,6 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 			},
 		}
 
-		if b.Resolver != nil {
-			transport.DialContext = b.dial
-		}
-
 		httpClient := &http.Client{
 			Timeout:   time.Duration(15) * time.Second,
 			Transport: transport,
@@ -113,9 +70,7 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 
 	// Sanity-check DNS to provide clearer diagnostic messages.
-	if b.Resolver != nil {
-		// Don't check DNS when there's a custom resolver.
-	} else if ips, err := net.LookupIP(b.BaseURL.Hostname()); err != nil {
+	if ips, err := net.LookupIP(b.BaseURL.Hostname()); err != nil {
 		if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.IsNotFound {
 			return fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
 		}

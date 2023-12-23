@@ -26,13 +26,11 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
-	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -51,7 +49,6 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	var authenticator bootstrap.Authenticator
-	var resolver resolver.Resolver
 
 	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
@@ -66,11 +63,6 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			return err
 		}
 		authenticator = a
-		r, err := gcediscovery.New()
-		if err != nil {
-			return err
-		}
-		resolver = r
 	case kops.CloudProviderHetzner:
 		a, err := hetzner.NewHetznerAuthenticator()
 		if err != nil {
@@ -123,7 +115,6 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
-		Resolver:      resolver,
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{

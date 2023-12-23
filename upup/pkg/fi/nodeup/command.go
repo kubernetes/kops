@@ -48,13 +48,11 @@ import (
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscontrollerclient"
-	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -606,7 +604,6 @@ func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) 
 // getNodeConfigFromServers queries kops-controllers for our node's configuration.
 func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator bootstrap.Authenticator
-	var resolver resolver.Resolver
 
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
@@ -621,12 +618,6 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			return nil, err
 		}
 		authenticator = a
-
-		discovery, err := gcediscovery.New()
-		if err != nil {
-			return nil, err
-		}
-		resolver = discovery
 	case api.CloudProviderHetzner:
 		a, err := hetzner.NewHetznerAuthenticator()
 		if err != nil {
@@ -688,7 +679,6 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 
 	client := &kopscontrollerclient.Client{
 		Authenticator: authenticator,
-		Resolver:      resolver,
 		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
 	}
 
