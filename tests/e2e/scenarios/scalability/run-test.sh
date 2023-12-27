@@ -166,15 +166,37 @@ export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
 export CL2_PROMETHEUS_TOLERATE_MASTER="true"
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
+  # we are not testing statefulsets at this point
+  SMALL_STATEFUL_SETS_PER_NAMESPACE: 0
+  MEDIUM_STATEFUL_SETS_PER_NAMESPACE: 0
+  # we are not testing PVS at this point
+  CL2_ENABLE_PVS: false
+  ENABLE_RESTART_COUNT_CHECK: false
+EOL
+  cat "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml
 
-kubetest2 kops "${KUBETEST2_ARGS[@]}" \
-  --test=clusterloader2 \
-  --kubernetes-version="${K8S_VERSION}" \
-  -- \
-  --provider="${CLOUD_PROVIDER}" \
-  --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
-  --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
-  --kube-config="${KUBECONFIG}"
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+    --test=clusterloader2 \
+    --kubernetes-version="${K8S_VERSION}" \
+    -- \
+    --provider="${CLOUD_PROVIDER}" \
+    --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
+    --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
+    --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml \
+    --kube-config="${KUBECONFIG}"
+else
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+    --test=clusterloader2 \
+    --kubernetes-version="${K8S_VERSION}" \
+    -- \
+    --provider="${CLOUD_PROVIDER}" \
+    --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
+    --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
+    --kube-config="${KUBECONFIG}"
+fi
+
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
   kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
