@@ -292,8 +292,10 @@ func (d *deployer) IsUp() (bool, error) {
 		d.KopsBinaryPath, "validate", "cluster",
 		"--name", d.ClusterName,
 		"--count", strconv.Itoa(d.ValidationCount),
-		"--interval", d.ValidationInterval.String(),
 		"--wait", wait.String(),
+	}
+	if d.ValidationInterval > 10*time.Second {
+		args = append(args, "--interval", d.ValidationInterval.String())
 	}
 	klog.Info(strings.Join(args, " "))
 
