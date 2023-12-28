@@ -157,9 +157,12 @@ func (d *deployer) dumpClusterInfo() error {
 	}
 
 	namespacedResourceTypes := []string{
+		"certificaterequests",
+		"certificates",
 		"configmaps",
 		"endpoints",
 		"endpointslices",
+		"issuers",
 		"leases",
 		"persistentvolumeclaims",
 		"poddisruptionbudgets",
