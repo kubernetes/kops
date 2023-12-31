@@ -56,6 +56,8 @@ var (
 	`))
 
 	toolboxDumpShort = i18n.T(`Dump cluster information`)
+
+	k8sResources = os.Getenv("KOPS_TOOLBOX_DUMP_K8S_RESOURCES")
 )
 
 type ToolboxDumpOptions struct {
@@ -63,10 +65,11 @@ type ToolboxDumpOptions struct {
 
 	ClusterName string
 
-	Dir        string
-	PrivateKey string
-	SSHUser    string
-	MaxNodes   int
+	Dir          string
+	PrivateKey   string
+	SSHUser      string
+	MaxNodes     int
+	K8sResources bool
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
@@ -74,6 +77,7 @@ func (o *ToolboxDumpOptions) InitDefaults() {
 	o.PrivateKey = "~/.ssh/id_rsa"
 	o.SSHUser = "ubuntu"
 	o.MaxNodes = 500
+	o.K8sResources = k8sResources != ""
 }
 
 func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
@@ -99,6 +103,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "Target directory; if specified will collect logs and other information.")
 	cmd.MarkFlagDirname("dir")
+	cmd.Flags().BoolVar(&options.K8sResources, "k8s-resources", options.K8sResources, "Include k8s resources in the dump")
 	cmd.Flags().IntVar(&options.MaxNodes, "max-nodes", options.MaxNodes, "The maximum number of nodes from which to dump logs")
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
@@ -221,6 +226,15 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs, additionalPrivateIPs); err != nil {
 			return fmt.Errorf("error dumping nodes: %v", err)
+		}
+		if options.K8sResources {
+			dumper, err := dump.NewResourceDumper("docker-desktop", config, options.Output, options.Dir)
+			if err != nil {
+				return fmt.Errorf("error creating resource dumper: %w", err)
+			}
+			if err := dumper.DumpResources(ctx); err != nil {
+				return fmt.Errorf("error dumping resources: %w", err)
+			}
 		}
 	}
 
