@@ -235,6 +235,14 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			if err := dumper.DumpResources(ctx); err != nil {
 				return fmt.Errorf("error dumping resources: %w", err)
 			}
+
+			logDumper, err := dump.NewPodLogDumper(config, options.Dir)
+			if err != nil {
+				return fmt.Errorf("error creating pod log dumper: %w", err)
+			}
+			if err := logDumper.DumpLogs(ctx); err != nil {
+				return fmt.Errorf("error dumping pod logs: %w", err)
+			}
 		}
 	}
 
