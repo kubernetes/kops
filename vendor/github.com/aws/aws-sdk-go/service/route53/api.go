@@ -18342,11 +18342,6 @@ type ResourceRecordSet struct {
 	//    You can't use the * wildcard for resource records sets that have a type
 	//    of NS.
 	//
-	// You can use the * wildcard as the leftmost label in a domain name, for example,
-	// *.example.com. You can't use an * for one of the middle labels, for example,
-	// marketing.*.example.com. In addition, the * must replace the entire label;
-	// for example, you can't specify prod*.example.com.
-	//
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
@@ -20470,6 +20465,9 @@ const (
 
 	// CloudWatchRegionIlCentral1 is a CloudWatchRegion enum value
 	CloudWatchRegionIlCentral1 = "il-central-1"
+
+	// CloudWatchRegionCaWest1 is a CloudWatchRegion enum value
+	CloudWatchRegionCaWest1 = "ca-west-1"
 )
 
 // CloudWatchRegion_Values returns all elements of the CloudWatchRegion enum
@@ -20510,6 +20508,7 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionUsIsobEast1,
 		CloudWatchRegionApSoutheast4,
 		CloudWatchRegionIlCentral1,
+		CloudWatchRegionCaWest1,
 	}
 }
 
@@ -20855,6 +20854,9 @@ const (
 
 	// ResourceRecordSetRegionIlCentral1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionIlCentral1 = "il-central-1"
+
+	// ResourceRecordSetRegionCaWest1 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionCaWest1 = "ca-west-1"
 )
 
 // ResourceRecordSetRegion_Values returns all elements of the ResourceRecordSetRegion enum
@@ -20890,6 +20892,7 @@ func ResourceRecordSetRegion_Values() []string {
 		ResourceRecordSetRegionEuSouth2,
 		ResourceRecordSetRegionApSoutheast4,
 		ResourceRecordSetRegionIlCentral1,
+		ResourceRecordSetRegionCaWest1,
 	}
 }
 
@@ -21051,6 +21054,9 @@ const (
 
 	// VPCRegionIlCentral1 is a VPCRegion enum value
 	VPCRegionIlCentral1 = "il-central-1"
+
+	// VPCRegionCaWest1 is a VPCRegion enum value
+	VPCRegionCaWest1 = "ca-west-1"
 )
 
 // VPCRegion_Values returns all elements of the VPCRegion enum
@@ -21090,5 +21096,6 @@ func VPCRegion_Values() []string {
 		VPCRegionEuSouth2,
 		VPCRegionApSoutheast4,
 		VPCRegionIlCentral1,
+		VPCRegionCaWest1,
 	}
 }

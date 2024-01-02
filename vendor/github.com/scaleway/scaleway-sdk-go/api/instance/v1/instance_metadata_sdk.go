@@ -14,12 +14,15 @@ import (
 )
 
 var (
-	metadataURL           = "http://169.254.42.42"
 	metadataRetryBindPort = 200
 )
 
+const metadataAPIv4 = "http://169.254.42.42"
+const metadataAPIv6 = "http://[fd00:42::42]"
+
 // MetadataAPI metadata API
 type MetadataAPI struct {
+	MetadataURL *string
 }
 
 // NewMetadataAPI returns a MetadataAPI object from a Scaleway client.
@@ -27,9 +30,25 @@ func NewMetadataAPI() *MetadataAPI {
 	return &MetadataAPI{}
 }
 
+func (meta *MetadataAPI) getMetadataUrl() string {
+	if meta.MetadataURL != nil {
+		return *meta.MetadataURL
+	}
+
+	for _, url := range []string{metadataAPIv4, metadataAPIv6} {
+		http.DefaultClient.Timeout = 3 * time.Second
+		resp, err := http.Get(url)
+		if err == nil && resp.StatusCode == 200 {
+			meta.MetadataURL = &url
+			return url
+		}
+	}
+	return metadataAPIv4
+}
+
 // GetMetadata returns the metadata available from the server
-func (*MetadataAPI) GetMetadata() (m *Metadata, err error) {
-	resp, err := http.Get(metadataURL + "/conf?format=json")
+func (meta *MetadataAPI) GetMetadata() (m *Metadata, err error) {
+	resp, err := http.Get(meta.getMetadataUrl() + "/conf?format=json")
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting metadataURL")
 	}
@@ -43,6 +62,18 @@ func (*MetadataAPI) GetMetadata() (m *Metadata, err error) {
 	return metadata, nil
 }
 
+// MetadataIP represents all public IPs attached
+type MetadataIP struct {
+	ID               string   `json:"id"`
+	Address          string   `json:"address"`
+	Dynamic          bool     `json:"dynamic"`
+	Gateway          string   `json:"gateway"`
+	Netmask          string   `json:"netmask"`
+	Family           string   `json:"family"`
+	ProvisioningMode string   `json:"provisioning_mode"`
+	Tags             []string `json:"tags"`
+}
+
 // Metadata represents the struct return by the metadata API
 type Metadata struct {
 	ID             string `json:"id,omitempty"`
@@ -51,13 +82,20 @@ type Metadata struct {
 	Organization   string `json:"organization,omitempty"`
 	Project        string `json:"project,omitempty"`
 	CommercialType string `json:"commercial_type,omitempty"`
-	PublicIP       struct {
-		Dynamic bool   `json:"dynamic,omitempty"`
-		ID      string `json:"id,omitempty"`
-		Address string `json:"address,omitempty"`
+	//PublicIP IPv4 only
+	PublicIP struct {
+		ID               string `json:"id"`
+		Address          string `json:"address"`
+		Dynamic          bool   `json:"dynamic"`
+		Gateway          string `json:"gateway"`
+		Netmask          string `json:"netmask"`
+		Family           string `json:"family"`
+		ProvisioningMode string `json:"provisioning_mode"`
 	} `json:"public_ip,omitempty"`
-	PrivateIP string `json:"private_ip,omitempty"`
-	IPv6      struct {
+	PublicIpsV4 []MetadataIP `json:"public_ips_v4,omitempty"`
+	PublicIpsV6 []MetadataIP `json:"public_ips_v6,omitempty"`
+	PrivateIP   string       `json:"private_ip,omitempty"`
+	IPv6        struct {
 		Netmask string `json:"netmask,omitempty"`
 		Gateway string `json:"gateway,omitempty"`
 		Address string `json:"address,omitempty"`
@@ -121,7 +159,7 @@ type Metadata struct {
 }
 
 // ListUserData returns the metadata available from the server
-func (*MetadataAPI) ListUserData() (res *UserData, err error) {
+func (meta *MetadataAPI) ListUserData() (res *UserData, err error) {
 	retries := 0
 	for retries <= metadataRetryBindPort {
 		port := rand.Intn(1024)
@@ -140,7 +178,7 @@ func (*MetadataAPI) ListUserData() (res *UserData, err error) {
 			},
 		}
 
-		resp, err := userdataClient.Get(metadataURL + "/user_data?format=json")
+		resp, err := userdataClient.Get(meta.getMetadataUrl() + "/user_data?format=json")
 		if err != nil {
 			retries++ // retry with a different source port
 			continue
@@ -158,7 +196,7 @@ func (*MetadataAPI) ListUserData() (res *UserData, err error) {
 }
 
 // GetUserData returns the value for the given metadata key
-func (*MetadataAPI) GetUserData(key string) ([]byte, error) {
+func (meta *MetadataAPI) GetUserData(key string) ([]byte, error) {
 	if key == "" {
 		return make([]byte, 0), errors.New("key must not be empty in GetUserData")
 	}
@@ -181,7 +219,7 @@ func (*MetadataAPI) GetUserData(key string) ([]byte, error) {
 			},
 		}
 
-		resp, err := userdataClient.Get(metadataURL + "/user_data/" + key)
+		resp, err := userdataClient.Get(meta.getMetadataUrl() + "/user_data/" + key)
 		if err != nil {
 			retries++ // retry with a different source port
 			continue
@@ -199,7 +237,7 @@ func (*MetadataAPI) GetUserData(key string) ([]byte, error) {
 }
 
 // SetUserData sets the userdata key with the given value
-func (*MetadataAPI) SetUserData(key string, value []byte) error {
+func (meta *MetadataAPI) SetUserData(key string, value []byte) error {
 	if key == "" {
 		return errors.New("key must not be empty in SetUserData")
 	}
@@ -221,7 +259,7 @@ func (*MetadataAPI) SetUserData(key string, value []byte) error {
 				}).DialContext,
 			},
 		}
-		request, err := http.NewRequest("PATCH", metadataURL+"/user_data/"+key, bytes.NewBuffer(value))
+		request, err := http.NewRequest("PATCH", meta.getMetadataUrl()+"/user_data/"+key, bytes.NewBuffer(value))
 		if err != nil {
 			return errors.Wrap(err, "error creating patch userdata request")
 		}
@@ -238,7 +276,7 @@ func (*MetadataAPI) SetUserData(key string, value []byte) error {
 }
 
 // DeleteUserData deletes the userdata key and the associated value
-func (*MetadataAPI) DeleteUserData(key string) error {
+func (meta *MetadataAPI) DeleteUserData(key string) error {
 	if key == "" {
 		return errors.New("key must not be empty in DeleteUserData")
 	}
@@ -260,7 +298,7 @@ func (*MetadataAPI) DeleteUserData(key string) error {
 				}).DialContext,
 			},
 		}
-		request, err := http.NewRequest("DELETE", metadataURL+"/user_data/"+key, bytes.NewBuffer([]byte("")))
+		request, err := http.NewRequest("DELETE", meta.getMetadataUrl()+"/user_data/"+key, bytes.NewBuffer([]byte("")))
 		if err != nil {
 			return errors.Wrap(err, "error creating delete userdata request")
 		}

@@ -138,7 +138,7 @@ func getKeyValuePropertiesFromAnnotation(annotations map[string]string, annotati
 }
 
 // ensureLoadBalancerv2 ensures a v2 load balancer is created
-func (c *Cloud) ensureLoadBalancerv2(namespacedName types.NamespacedName, loadBalancerName string, mappings []nlbPortMapping, instanceIDs, subnetIDs []string, internalELB bool, annotations map[string]string) (*elbv2.LoadBalancer, error) {
+func (c *Cloud) ensureLoadBalancerv2(namespacedName types.NamespacedName, loadBalancerName string, mappings []nlbPortMapping, instanceIDs, discoveredSubnetIDs []string, internalELB bool, annotations map[string]string) (*elbv2.LoadBalancer, error) {
 	loadBalancer, err := c.describeLoadBalancerv2(loadBalancerName)
 	if err != nil {
 		return nil, err
@@ -165,14 +165,14 @@ func (c *Cloud) ensureLoadBalancerv2(namespacedName types.NamespacedName, loadBa
 		var allocationIDs []string
 		if eipList, present := annotations[ServiceAnnotationLoadBalancerEIPAllocations]; present {
 			allocationIDs = strings.Split(eipList, ",")
-			if len(allocationIDs) != len(subnetIDs) {
-				return nil, fmt.Errorf("error creating load balancer: Must have same number of EIP AllocationIDs (%d) and SubnetIDs (%d)", len(allocationIDs), len(subnetIDs))
+			if len(allocationIDs) != len(discoveredSubnetIDs) {
+				return nil, fmt.Errorf("error creating load balancer: Must have same number of EIP AllocationIDs (%d) and SubnetIDs (%d)", len(allocationIDs), len(discoveredSubnetIDs))
 			}
 		}
 
 		// We are supposed to specify one subnet per AZ.
 		// TODO: What happens if we have more than one subnet per AZ?
-		createRequest.SubnetMappings = createSubnetMappings(subnetIDs, allocationIDs)
+		createRequest.SubnetMappings = createSubnetMappings(discoveredSubnetIDs, allocationIDs)
 
 		for k, v := range tags {
 			createRequest.Tags = append(createRequest.Tags, &elbv2.Tag{

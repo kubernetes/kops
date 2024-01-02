@@ -9,22 +9,22 @@ import (
 const (
 
 	// ErrCodeBatchEntryIdsNotDistinct for service response error code
-	// "BatchEntryIdsNotDistinct".
+	// "AWS.SimpleQueueService.BatchEntryIdsNotDistinct".
 	//
 	// Two or more batch entries in the request have the same Id.
-	ErrCodeBatchEntryIdsNotDistinct = "BatchEntryIdsNotDistinct"
+	ErrCodeBatchEntryIdsNotDistinct = "AWS.SimpleQueueService.BatchEntryIdsNotDistinct"
 
 	// ErrCodeBatchRequestTooLong for service response error code
-	// "BatchRequestTooLong".
+	// "AWS.SimpleQueueService.BatchRequestTooLong".
 	//
 	// The length of all the messages put together is more than the limit.
-	ErrCodeBatchRequestTooLong = "BatchRequestTooLong"
+	ErrCodeBatchRequestTooLong = "AWS.SimpleQueueService.BatchRequestTooLong"
 
 	// ErrCodeEmptyBatchRequest for service response error code
-	// "EmptyBatchRequest".
+	// "AWS.SimpleQueueService.EmptyBatchRequest".
 	//
 	// The batch request doesn't contain any entries.
-	ErrCodeEmptyBatchRequest = "EmptyBatchRequest"
+	ErrCodeEmptyBatchRequest = "AWS.SimpleQueueService.EmptyBatchRequest"
 
 	// ErrCodeInvalidAddress for service response error code
 	// "InvalidAddress".
@@ -45,10 +45,10 @@ const (
 	ErrCodeInvalidAttributeValue = "InvalidAttributeValue"
 
 	// ErrCodeInvalidBatchEntryId for service response error code
-	// "InvalidBatchEntryId".
+	// "AWS.SimpleQueueService.InvalidBatchEntryId".
 	//
 	// The Id of a batch entry in a batch request doesn't abide by the specification.
-	ErrCodeInvalidBatchEntryId = "InvalidBatchEntryId"
+	ErrCodeInvalidBatchEntryId = "AWS.SimpleQueueService.InvalidBatchEntryId"
 
 	// ErrCodeInvalidIdFormat for service response error code
 	// "InvalidIdFormat".
@@ -119,10 +119,10 @@ const (
 	ErrCodeKmsThrottled = "KmsThrottled"
 
 	// ErrCodeMessageNotInflight for service response error code
-	// "MessageNotInflight".
+	// "AWS.SimpleQueueService.MessageNotInflight".
 	//
 	// The specified message isn't in flight.
-	ErrCodeMessageNotInflight = "MessageNotInflight"
+	ErrCodeMessageNotInflight = "AWS.SimpleQueueService.MessageNotInflight"
 
 	// ErrCodeOverLimit for service response error code
 	// "OverLimit".
@@ -134,33 +134,33 @@ const (
 	ErrCodeOverLimit = "OverLimit"
 
 	// ErrCodePurgeQueueInProgress for service response error code
-	// "PurgeQueueInProgress".
+	// "AWS.SimpleQueueService.PurgeQueueInProgress".
 	//
 	// Indicates that the specified queue previously received a PurgeQueue request
 	// within the last 60 seconds (the time it can take to delete the messages in
 	// the queue).
-	ErrCodePurgeQueueInProgress = "PurgeQueueInProgress"
+	ErrCodePurgeQueueInProgress = "AWS.SimpleQueueService.PurgeQueueInProgress"
 
 	// ErrCodeQueueDeletedRecently for service response error code
-	// "QueueDeletedRecently".
+	// "AWS.SimpleQueueService.QueueDeletedRecently".
 	//
 	// You must wait 60 seconds after deleting a queue before you can create another
 	// queue with the same name.
-	ErrCodeQueueDeletedRecently = "QueueDeletedRecently"
+	ErrCodeQueueDeletedRecently = "AWS.SimpleQueueService.QueueDeletedRecently"
 
 	// ErrCodeQueueDoesNotExist for service response error code
-	// "QueueDoesNotExist".
+	// "AWS.SimpleQueueService.NonExistentQueue".
 	//
 	// The specified queue doesn't exist.
-	ErrCodeQueueDoesNotExist = "QueueDoesNotExist"
+	ErrCodeQueueDoesNotExist = "AWS.SimpleQueueService.NonExistentQueue"
 
 	// ErrCodeQueueNameExists for service response error code
-	// "QueueNameExists".
+	// "QueueAlreadyExists".
 	//
 	// A queue with this name already exists. Amazon SQS returns this error only
 	// if the request includes attributes whose values differ from those of the
 	// existing queue.
-	ErrCodeQueueNameExists = "QueueNameExists"
+	ErrCodeQueueNameExists = "QueueAlreadyExists"
 
 	// ErrCodeReceiptHandleIsInvalid for service response error code
 	// "ReceiptHandleIsInvalid".
@@ -193,16 +193,16 @@ const (
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
 	// ErrCodeTooManyEntriesInBatchRequest for service response error code
-	// "TooManyEntriesInBatchRequest".
+	// "AWS.SimpleQueueService.TooManyEntriesInBatchRequest".
 	//
 	// The batch request contains more entries than permissible.
-	ErrCodeTooManyEntriesInBatchRequest = "TooManyEntriesInBatchRequest"
+	ErrCodeTooManyEntriesInBatchRequest = "AWS.SimpleQueueService.TooManyEntriesInBatchRequest"
 
 	// ErrCodeUnsupportedOperation for service response error code
-	// "UnsupportedOperation".
+	// "AWS.SimpleQueueService.UnsupportedOperation".
 	//
 	// Error code 400. Unsupported operation.
-	ErrCodeUnsupportedOperation = "UnsupportedOperation"
+	ErrCodeUnsupportedOperation = "AWS.SimpleQueueService.UnsupportedOperation"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{

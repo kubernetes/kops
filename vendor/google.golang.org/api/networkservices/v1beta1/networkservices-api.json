@@ -2483,7 +2483,7 @@
       }
     }
   },
-  "revision": "20231018",
+  "revision": "20231129",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -2716,7 +2716,7 @@
           "type": "string"
         },
         "service": {
-          "description": "Required. The reference to the service that runs the extension. Must be a reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices).",
+          "description": "Required. The reference to the service that runs the extension. Currently only Callout extensions are supported here. To configure a Callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`.",
           "type": "string"
         },
         "supportedEvents": {
@@ -2753,14 +2753,14 @@
       "id": "ExtensionChainMatchCondition",
       "properties": {
         "celExpression": {
-          "description": "Required. A Common Expression Language (CEL) expression that is used to match requests for which the extension chain is executed.",
+          "description": "Required. A Common Expression Language (CEL) expression that is used to match requests for which the extension chain is executed. For more information, see [CEL matcher language reference](https://cloud.google.com/service-extensions/docs/cel-matcher-language-reference).",
           "type": "string"
         }
       },
       "type": "object"
     },
     "Gateway": {
-      "description": "Gateway represents the configuration for a proxy, typically a load balancer. It captures the ip:port over which the services are exposed by the proxy, along with any policy configurations. Routes have reference to to Gateways to dictate how requests should be routed by this Gateway.",
+      "description": "Gateway represents the configuration for a proxy, typically a load balancer. It captures the ip:port over which the services are exposed by the proxy, along with any policy configurations. Routes have reference to to Gateways to dictate how requests should be routed by this Gateway. Next id: 29",
       "id": "Gateway",
       "properties": {
         "addresses": {
@@ -2789,6 +2789,20 @@
         },
         "gatewaySecurityPolicy": {
           "description": "Optional. A fully-qualified GatewaySecurityPolicy URL reference. Defines how a server should apply security policy to inbound (VM to Proxy) initiated connections. For example: `projects/*/locations/*/gatewaySecurityPolicies/swg-policy`. This policy is specific to gateways of type 'SECURE_WEB_GATEWAY'.",
+          "type": "string"
+        },
+        "ipVersion": {
+          "description": "Optional. The IP Version that will be used by this gateway. Valid options are IPV4 or IPV6. Default is IPV4.",
+          "enum": [
+            "IP_VERSION_UNSPECIFIED",
+            "IPV4",
+            "IPV6"
+          ],
+          "enumDescriptions": [
+            "The type when IP version is not specified. Defaults to IPV4.",
+            "The type for IP version 4.",
+            "The type for IP version 6."
+          ],
           "type": "string"
         },
         "labels": {

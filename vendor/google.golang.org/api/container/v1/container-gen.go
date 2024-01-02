@@ -535,6 +535,9 @@ type AdvancedDatapathObservabilityConfig struct {
 	// EnableMetrics: Expose flow metrics on nodes
 	EnableMetrics bool `json:"enableMetrics,omitempty"`
 
+	// EnableRelay: Enable Relay component
+	EnableRelay bool `json:"enableRelay,omitempty"`
+
 	// RelayMode: Method used to make Relay available
 	//
 	// Possible values:
@@ -6561,6 +6564,8 @@ type SecurityPostureConfig struct {
 	// cluster.
 	//   "VULNERABILITY_BASIC" - Applies basic vulnerability scanning on the
 	// cluster.
+	//   "VULNERABILITY_ENTERPRISE" - Applies the Security Posture's
+	// vulnerability on cluster Enterprise level features.
 	VulnerabilityMode string `json:"vulnerabilityMode,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Mode") to

@@ -772,8 +772,15 @@ type ExtensionChainExtension struct {
 	Name string `json:"name,omitempty"`
 
 	// Service: Required. The reference to the service that runs the
-	// extension. Must be a reference to a backend service
-	// (https://cloud.google.com/compute/docs/reference/rest/v1/backendServices).
+	// extension. Currently only Callout extensions are supported here. To
+	// configure a Callout extension, `service` must be a fully-qualified
+	// reference to a backend service
+	// (https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)
+	// in the format:
+	// `https://www.googleapis.com/compute/v1/projects/{project}/regions/{reg
+	// ion}/backendServices/{backendService}` or
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/backe
+	// ndServices/{backendService}`.
 	Service string `json:"service,omitempty"`
 
 	// SupportedEvents: Optional. A set of events during request or response
@@ -825,7 +832,9 @@ func (s *ExtensionChainExtension) MarshalJSON() ([]byte, error) {
 type ExtensionChainMatchCondition struct {
 	// CelExpression: Required. A Common Expression Language (CEL)
 	// expression that is used to match requests for which the extension
-	// chain is executed.
+	// chain is executed. For more information, see CEL matcher language
+	// reference
+	// (https://cloud.google.com/service-extensions/docs/cel-matcher-language-reference).
 	CelExpression string `json:"celExpression,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CelExpression") to
@@ -855,7 +864,7 @@ func (s *ExtensionChainMatchCondition) MarshalJSON() ([]byte, error) {
 // a load balancer. It captures the ip:port over which the services are
 // exposed by the proxy, along with any policy configurations. Routes
 // have reference to to Gateways to dictate how requests should be
-// routed by this Gateway.
+// routed by this Gateway. Next id: 29
 type Gateway struct {
 	// Addresses: Optional. Zero or one IPv4 or IPv6 address on which the
 	// Gateway will receive the traffic. When no address is provided, an IP
@@ -884,6 +893,16 @@ type Gateway struct {
 	// `projects/*/locations/*/gatewaySecurityPolicies/swg-policy`. This
 	// policy is specific to gateways of type 'SECURE_WEB_GATEWAY'.
 	GatewaySecurityPolicy string `json:"gatewaySecurityPolicy,omitempty"`
+
+	// IpVersion: Optional. The IP Version that will be used by this
+	// gateway. Valid options are IPV4 or IPV6. Default is IPV4.
+	//
+	// Possible values:
+	//   "IP_VERSION_UNSPECIFIED" - The type when IP version is not
+	// specified. Defaults to IPV4.
+	//   "IPV4" - The type for IP version 4.
+	//   "IPV6" - The type for IP version 6.
+	IpVersion string `json:"ipVersion,omitempty"`
 
 	// Labels: Optional. Set of label tags associated with the Gateway
 	// resource.

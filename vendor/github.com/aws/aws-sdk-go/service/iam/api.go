@@ -1360,10 +1360,10 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 // Amazon Web Services secures communication with some OIDC identity providers
 // (IdPs) through our library of trusted root certificate authorities (CAs)
 // instead of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
-// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
-// legacy thumbprint remains in your configuration, but is no longer used for
-// validation.
+// In these cases, your legacy thumbprint remains in your configuration, but
+// is no longer used for validation. These OIDC IdPs include Auth0, GitHub,
+// GitLab, Google, and those that use an Amazon S3 bucket to host a JSON Web
+// Key Set (JWKS) endpoint.
 //
 // The trust for the OIDC provider is derived from the IAM provider that this
 // operation creates. Therefore, it is best to limit access to the CreateOpenIDConnectProvider
@@ -16953,10 +16953,10 @@ func (c *IAM) UpdateOpenIDConnectProviderThumbprintRequest(input *UpdateOpenIDCo
 // Amazon Web Services secures communication with some OIDC identity providers
 // (IdPs) through our library of trusted root certificate authorities (CAs)
 // instead of using a certificate thumbprint to verify your IdP server certificate.
-// These OIDC IdPs include Auth0, GitHub, Google, and those that use an Amazon
-// S3 bucket to host a JSON Web Key Set (JWKS) endpoint. In these cases, your
-// legacy thumbprint remains in your configuration, but is no longer used for
-// validation.
+// In these cases, your legacy thumbprint remains in your configuration, but
+// is no longer used for validation. These OIDC IdPs include Auth0, GitHub,
+// GitLab, Google, and those that use an Amazon S3 bucket to host a JSON Web
+// Key Set (JWKS) endpoint.
 //
 // Trust for the OIDC provider is derived from the provider certificate and
 // is validated by the thumbprint. Therefore, it is best to limit access to

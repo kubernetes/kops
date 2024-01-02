@@ -344,7 +344,7 @@ func (c *Cloud) UntagResource(resourceID string, tags map[string]string) error {
 	if err != nil {
 		// An instance not found should not fail the untagging workflow as it
 		// would for tagging, since the target state is already reached.
-		if isAWSErrorInstanceNotFound(err) {
+		if IsAWSErrorInstanceNotFound(err) {
 			klog.Infof("Couldn't find resource when trying to untag it hence skipping it, %v", err)
 			return nil
 		}

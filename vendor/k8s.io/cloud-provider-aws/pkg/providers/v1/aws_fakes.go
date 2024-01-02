@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -47,6 +48,8 @@ type FakeAWSServices struct {
 	asg      *FakeASG
 	metadata *FakeMetadata
 	kms      *FakeKMS
+
+	callCounts map[string]int
 }
 
 // NewFakeAWSServices creates a new FakeAWSServices
@@ -79,6 +82,8 @@ func NewFakeAWSServices(clusterID string) *FakeAWSServices {
 	tag.Value = aws.String(clusterID)
 	selfInstance.Tags = []*ec2.Tag{&tag}
 
+	s.callCounts = make(map[string]int)
+
 	return s
 }
 
@@ -95,6 +100,15 @@ func (s *FakeAWSServices) WithAz(az string) *FakeAWSServices {
 func (s *FakeAWSServices) WithRegion(region string) *FakeAWSServices {
 	s.region = region
 	return s
+}
+
+// countCall increments the counter for the given service, api, and resourceID and returns the resulting call count
+func (s *FakeAWSServices) countCall(service string, api string, resourceID string) int {
+	key := fmt.Sprintf("%s:%s:%s", service, api, resourceID)
+	s.callCounts[key]++
+	count := s.callCounts[key]
+	klog.Warningf("call count: %s:%d", key, count)
+	return count
 }
 
 // Compute returns a fake EC2 client
@@ -295,12 +309,24 @@ func (ec2i *FakeEC2Impl) DescribeAvailabilityZones(request *ec2.DescribeAvailabi
 // CreateTags is a mock for CreateTags from EC2
 func (ec2i *FakeEC2Impl) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
 	for _, id := range input.Resources {
+		callCount := ec2i.aws.countCall("ec2", "CreateTags", *id)
 		if *id == "i-error" {
 			return nil, errors.New("Unable to tag")
 		}
 
 		if *id == "i-not-found" {
 			return nil, awserr.New("InvalidInstanceID.NotFound", "Instance not found", nil)
+		}
+		// return an Instance not found error for the first `n` calls
+		// instance ID should be of the format `i-not-found-count-$N-$SUFFIX`
+		if strings.HasPrefix(*id, "i-not-found-count-") {
+			notFoundCount, err := strconv.Atoi(strings.Split(*id, "-")[4])
+			if err != nil {
+				panic(err)
+			}
+			if callCount < notFoundCount {
+				return nil, awserr.New("InvalidInstanceID.NotFound", "Instance not found", nil)
+			}
 		}
 	}
 	return &ec2.CreateTagsOutput{}, nil
