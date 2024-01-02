@@ -1018,6 +1018,43 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 
 	var nodes []*api.InstanceGroup
 
+	if featureflag.AWSSingleNodesInstanceGroup.Enabled() && cloudProvider == api.CloudProviderAWS && len(opt.SubnetIDs) == 0 {
+		nodeCount := opt.NodeCount
+		if nodeCount == 0 {
+			nodeCount = 1
+		}
+
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleNode
+		g.Spec.MinSize = fi.PtrTo(nodeCount)
+		g.Spec.MaxSize = fi.PtrTo(nodeCount)
+		g.ObjectMeta.Name = "nodes"
+
+		for _, zone := range opt.Zones {
+			subnets := zoneToSubnetsMap[zone]
+			for _, subnet := range subnets[1:] {
+				g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+			}
+		}
+
+		for i, size := range opt.NodeSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if len(opt.NodeSizes) > 1 {
+				if g.Spec.MixedInstancesPolicy == nil {
+					g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{}
+
+				}
+				g.Spec.MixedInstancesPolicy.Instances = append(g.Spec.MixedInstancesPolicy.Instances, size)
+			}
+		}
+		g.Spec.Image = opt.NodeImage
+
+		nodes = append(nodes, g)
+		return nodes, nil
+	}
+
 	// The node count is the number of zones unless explicitly set
 	// We then divvy up amongst the zones
 	numZones := len(opt.Zones)
