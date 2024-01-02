@@ -92,7 +92,7 @@ func (d *podLogDumper) DumpLogs(ctx context.Context) error {
 func (d *podLogDumper) getPodLogs(ctx context.Context, pods chan v1.Pod, results chan podLogDumpResult) {
 	for pod := range pods {
 		for _, container := range append(pod.Spec.InitContainers, pod.Spec.Containers...) {
-			resPath := path.Join(d.artifactsDir, "cluster-info", pod.Namespace, pod.Name, container.Name+".log")
+			resPath := path.Join(d.artifactsDir, "cluster-info", pod.Namespace, pod.Name, container.Name)
 
 			err := os.MkdirAll(path.Dir(resPath), 0755)
 			if err != nil {
@@ -101,62 +101,62 @@ func (d *podLogDumper) getPodLogs(ctx context.Context, pods chan v1.Pod, results
 				}
 				continue
 			}
-			resFile, err := os.Create(resPath)
-			if err != nil {
-				results <- podLogDumpResult{
-					err: fmt.Errorf("creating file %q: %w", resPath, err),
-				}
-				continue
-			}
 
-			prevResp, err := d.k8sClient.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &v1.PodLogOptions{Container: container.Name, Previous: true}).Do(ctx).Raw()
-			hasPrevious := true
-			var statusErr *k8sErrors.StatusError
-			if errors.As(err, &statusErr) {
-				if statusErr.ErrStatus.Code == 400 {
-					hasPrevious = false
+			{
+				resp, err := d.k8sClient.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &v1.PodLogOptions{Container: container.Name, Previous: true}).Do(ctx).Raw()
+				var statusErr *k8sErrors.StatusError
+				if errors.As(err, &statusErr) {
+					if statusErr.ErrStatus.Code != 400 {
+						results <- podLogDumpResult{
+							err: fmt.Errorf("getting pod logs for the previous instance of %v/%v: %w", pod.Namespace, pod.Name, err),
+						}
+					}
 				} else {
-					results <- podLogDumpResult{
-						err: fmt.Errorf("getting pod logs for %v/%v: %w", pod.Namespace, pod.Name, err),
+					err := writeContainerLogs(resPath+".previous.log", resp)
+					if err != nil {
+						results <- podLogDumpResult{
+							err: err,
+						}
 					}
-					continue
 				}
 			}
 
-			resp, err := d.k8sClient.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &v1.PodLogOptions{Container: container.Name}).Do(ctx).Raw()
-			if err != nil {
-				results <- podLogDumpResult{
-					err: fmt.Errorf("getting pod logs for %v/%v: %w", pod.Namespace, pod.Name, err),
-				}
-				continue
-			}
-
-			suffix := fmt.Sprintf("container %v of pod %v/%v ====\n", container.Name, pod.Namespace, pod.Name)
-			if hasPrevious {
-				contents := []byte(fmt.Sprintf("==== START logs for PREVIOUS %v", suffix))
-				contents = append(contents, prevResp...)
-				contents = append(contents, []byte(fmt.Sprintf("==== END logs for PREVIOUS %v", suffix))...)
-				_, err = resFile.Write(contents)
-				if err != nil {
-					results <- podLogDumpResult{
-						err: fmt.Errorf("writing pod logs for %v/%v: %w", pod.Namespace, pod.Name, err),
+			{
+				resp, err := d.k8sClient.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &v1.PodLogOptions{Container: container.Name}).Do(ctx).Raw()
+				var statusErr *k8sErrors.StatusError
+				if errors.As(err, &statusErr) {
+					if statusErr.ErrStatus.Code != 400 {
+						results <- podLogDumpResult{
+							err: fmt.Errorf("getting pod logs for the current instance of %v/%v: %w", pod.Namespace, pod.Name, err),
+						}
+						continue
 					}
-					continue
+				} else {
+					err := writeContainerLogs(resPath+".log", resp)
+					if err != nil {
+						results <- podLogDumpResult{
+							err: err,
+						}
+					}
 				}
 			}
-			contents := []byte(fmt.Sprintf("==== START logs for CURRENT %v", suffix))
-			contents = append(contents, resp...)
-			contents = append(contents, []byte(fmt.Sprintf("==== END logs for CURRENT %v", suffix))...)
-			_, err = resFile.Write(contents)
-			if err != nil {
-				results <- podLogDumpResult{
-					err: fmt.Errorf("writing pod logs for %v/%v: %w", pod.Namespace, pod.Name, err),
-				}
-				continue
-			}
-
 		}
 
 		results <- podLogDumpResult{}
 	}
+}
+
+func writeContainerLogs(filePath string, contents []byte) error {
+	resFile, err := os.Create(filePath)
+	defer func(resFile *os.File) {
+		_ = resFile.Close()
+	}(resFile)
+	if err != nil {
+		return fmt.Errorf("creating file %q: %w", filePath, err)
+	}
+	_, err = resFile.Write(contents)
+	if err != nil {
+		return fmt.Errorf("writing file %q: %w", filePath, err)
+	}
+	return nil
 }
