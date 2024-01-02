@@ -217,6 +217,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--kubernetes-feature-gates", d.KubernetesFeatureGates)
 	}
 
+	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
 
