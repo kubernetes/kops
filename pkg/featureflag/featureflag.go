@@ -96,6 +96,8 @@ var (
 	DOTerraform = new("DOTerraform", Bool(false))
 	// Metal enables the experimental bare-metal support.
 	Metal = new("Metal", Bool(false))
+	// AWSSingleNodesInstanceGroup enables the creation of a single node instance group instead of one per availability zone.
+	AWSSingleNodesInstanceGroup = new("AWSSingleNodesInstanceGroup", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
