@@ -792,7 +792,7 @@ func (s *Expr) MarshalJSON() ([]byte, error) {
 // a load balancer. It captures the ip:port over which the services are
 // exposed by the proxy, along with any policy configurations. Routes
 // have reference to to Gateways to dictate how requests should be
-// routed by this Gateway.
+// routed by this Gateway. Next id: 29
 type Gateway struct {
 	// Addresses: Optional. Zero or one IPv4 or IPv6 address on which the
 	// Gateway will receive the traffic. When no address is provided, an IP
@@ -821,6 +821,16 @@ type Gateway struct {
 	// `projects/*/locations/*/gatewaySecurityPolicies/swg-policy`. This
 	// policy is specific to gateways of type 'SECURE_WEB_GATEWAY'.
 	GatewaySecurityPolicy string `json:"gatewaySecurityPolicy,omitempty"`
+
+	// IpVersion: Optional. The IP Version that will be used by this
+	// gateway. Valid options are IPV4 or IPV6. Default is IPV4.
+	//
+	// Possible values:
+	//   "IP_VERSION_UNSPECIFIED" - The type when IP version is not
+	// specified. Defaults to IPV4.
+	//   "IPV4" - The type for IP version 4.
+	//   "IPV6" - The type for IP version 6.
+	IpVersion string `json:"ipVersion,omitempty"`
 
 	// Labels: Optional. Set of label tags associated with the Gateway
 	// resource.

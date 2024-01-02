@@ -94,10 +94,17 @@ type Error struct {
 	Code    ErrorCode
 	Message string
 	Details interface{}
+
+	response *Response
 }
 
 func (e Error) Error() string {
 	return fmt.Sprintf("%s (%s)", e.Message, e.Code)
+}
+
+// Response returns the [Response] that contained the error if available.
+func (e Error) Response() *Response {
+	return e.response
 }
 
 // ErrorDetailsInvalidInput contains the details of an 'invalid_input' error.

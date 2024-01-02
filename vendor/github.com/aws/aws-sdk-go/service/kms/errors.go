@@ -466,7 +466,7 @@ const (
 	//
 	// The request was rejected because the Amazon VPC endpoint service configuration
 	// does not fulfill the requirements for an external key store proxy. For details,
-	// see the exception message and review the requirements (kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+	// see the exception message and review the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 	// for Amazon VPC endpoint service connectivity for an external key store.
 	ErrCodeXksProxyVpcEndpointServiceInvalidConfigurationException = "XksProxyVpcEndpointServiceInvalidConfigurationException"
 

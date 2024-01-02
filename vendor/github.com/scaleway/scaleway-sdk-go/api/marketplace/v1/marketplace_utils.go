@@ -91,9 +91,3 @@ func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest, opts ..
 func (r *ListImagesResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
-
-// UnsafeSetTotalCount should not be used
-// Internal usage only
-func (r *ListVersionsResponse) UnsafeSetTotalCount(totalCount int) {
-	r.TotalCount = uint32(totalCount)
-}

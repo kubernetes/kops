@@ -25,6 +25,7 @@ const (
 // WaitForDNSZoneRequest is used by WaitForDNSZone method.
 type WaitForDNSZoneRequest struct {
 	DNSZone       string
+	DNSZones      []string
 	Timeout       *time.Duration
 	RetryInterval *time.Duration
 }
@@ -51,10 +52,16 @@ func (s *API) WaitForDNSZone(
 
 	dns, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
+			listReq := &ListDNSZonesRequest{
+				DNSZones: req.DNSZones,
+			}
+
+			if req.DNSZone != "" {
+				listReq.DNSZone = &req.DNSZone
+			}
+
 			// listing dns zones and take the first one
-			DNSZones, err := s.ListDNSZones(&ListDNSZonesRequest{
-				DNSZones: []string{req.DNSZone},
-			}, opts...)
+			DNSZones, err := s.ListDNSZones(listReq, opts...)
 
 			if err != nil {
 				return nil, false, err

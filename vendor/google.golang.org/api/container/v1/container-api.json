@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20231030",
+  "revision": "20231122",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2685,6 +2685,10 @@
       "properties": {
         "enableMetrics": {
           "description": "Expose flow metrics on nodes",
+          "type": "boolean"
+        },
+        "enableRelay": {
+          "description": "Enable Relay component",
           "type": "boolean"
         },
         "relayMode": {
@@ -6318,12 +6322,14 @@
           "enum": [
             "VULNERABILITY_MODE_UNSPECIFIED",
             "VULNERABILITY_DISABLED",
-            "VULNERABILITY_BASIC"
+            "VULNERABILITY_BASIC",
+            "VULNERABILITY_ENTERPRISE"
           ],
           "enumDescriptions": [
             "Default value not specified.",
             "Disables vulnerability scanning on the cluster.",
-            "Applies basic vulnerability scanning on the cluster."
+            "Applies basic vulnerability scanning on the cluster.",
+            "Applies the Security Posture's vulnerability on cluster Enterprise level features."
           ],
           "type": "string"
         }

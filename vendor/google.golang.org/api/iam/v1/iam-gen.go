@@ -3487,14 +3487,14 @@ type WorkforcePoolProvider struct {
 	// keywords may be referenced in the expressions: * `assertion`: JSON
 	// representing the authentication credential issued by the provider. *
 	// `google`: The Google attributes mapped from the assertion in the
-	// `attribute_mappings`. `google.profile_photo` and
-	// `google.display_name` are not supported. * `attribute`: The custom
-	// attributes mapped from the assertion in the `attribute_mappings`. The
-	// maximum length of the attribute condition expression is 4096
-	// characters. If unspecified, all valid authentication credentials will
-	// be accepted. The following example shows how to only allow
-	// credentials with a mapped `google.groups` value of `admins`: ```
-	// "'admins' in google.groups" ```
+	// `attribute_mappings`. `google.profile_photo`, `google.display_name`
+	// and `google.posix_username` are not supported. * `attribute`: The
+	// custom attributes mapped from the assertion in the
+	// `attribute_mappings`. The maximum length of the attribute condition
+	// expression is 4096 characters. If unspecified, all valid
+	// authentication credentials will be accepted. The following example
+	// shows how to only allow credentials with a mapped `google.groups`
+	// value of `admins`: ``` "'admins' in google.groups" ```
 	AttributeCondition string `json:"attributeCondition,omitempty"`
 
 	// AttributeMapping: Required. Maps attributes from the authentication
@@ -3515,15 +3515,18 @@ type WorkforcePoolProvider struct {
 	// specifies the authenticated user's thumbnail photo. This is an
 	// optional field. When set, the image will be visible as the user's
 	// profile picture. If not set, a generic user icon will be displayed
-	// instead. This attribute cannot be referenced in IAM bindings. You can
-	// also provide custom attributes by specifying
-	// `attribute.{custom_attribute}`, where {custom_attribute} is the name
-	// of the custom attribute to be mapped. You can define a maximum of 50
-	// custom attributes. The maximum length of a mapped attribute key is
-	// 100 characters, and the key may only contain the characters
-	// [a-z0-9_]. You can reference these attributes in IAM policies to
-	// define fine-grained access for a workforce pool to Google Cloud
-	// resources. For example: * `google.subject`:
+	// instead. This attribute cannot be referenced in IAM bindings. *
+	// `google.posix_username`: The linux username used by OS login. This is
+	// an optional field and the mapped posix username cannot exceed 32
+	// characters, The key must match the regex "^a-zA-Z0-9._{0,31}$". This
+	// attribute cannot be referenced in IAM bindings. You can also provide
+	// custom attributes by specifying `attribute.{custom_attribute}`, where
+	// {custom_attribute} is the name of the custom attribute to be mapped.
+	// You can define a maximum of 50 custom attributes. The maximum length
+	// of a mapped attribute key is 100 characters, and the key may only
+	// contain the characters [a-z0-9_]. You can reference these attributes
+	// in IAM policies to define fine-grained access for a workforce pool to
+	// Google Cloud resources. For example: * `google.subject`:
 	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool}
 	// /subject/{value}` * `google.groups`:
 	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
