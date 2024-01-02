@@ -91,7 +91,7 @@ func (d *podLogDumper) DumpLogs(ctx context.Context) error {
 
 func (d *podLogDumper) getPodLogs(ctx context.Context, pods chan v1.Pod, results chan podLogDumpResult) {
 	for pod := range pods {
-		for _, container := range pod.Spec.Containers {
+		for _, container := range append(pod.Spec.InitContainers, pod.Spec.Containers...) {
 			resPath := path.Join(d.artifactsDir, "cluster-info", pod.Namespace, pod.Name, container.Name+".log")
 
 			err := os.MkdirAll(path.Dir(resPath), 0755)
