@@ -26,6 +26,7 @@ contents: |
   evictionPressureTransitionPeriod: 0s
   fileCheckFrequency: 0s
   httpCheckFrequency: 0s
+  imageMaximumGCAge: 0s
   imageMinimumGCAge: 0s
   kind: KubeletConfiguration
   logging:
