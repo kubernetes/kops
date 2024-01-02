@@ -72,7 +72,7 @@ type resourceDumpResult struct {
 	err error
 }
 
-func NewResourceDumper(clusterName string, k8sConfig *rest.Config, output, artifactsDir string) (*resourceDumper, error) {
+func NewResourceDumper(k8sConfig *rest.Config, output, artifactsDir string) (*resourceDumper, error) {
 	k8sConfig.QPS = 50
 	k8sConfig.Burst = 100
 	dynamicClient, err := dynamic.NewForConfig(k8sConfig)

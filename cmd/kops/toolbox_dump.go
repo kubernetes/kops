@@ -228,12 +228,20 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return fmt.Errorf("error dumping nodes: %v", err)
 		}
 		if options.K8sResources {
-			dumper, err := dump.NewResourceDumper("docker-desktop", config, options.Output, options.Dir)
+			dumper, err := dump.NewResourceDumper(config, options.Output, options.Dir)
 			if err != nil {
 				return fmt.Errorf("error creating resource dumper: %w", err)
 			}
 			if err := dumper.DumpResources(ctx); err != nil {
 				return fmt.Errorf("error dumping resources: %w", err)
+			}
+
+			logDumper, err := dump.NewPodLogDumper(config, options.Dir)
+			if err != nil {
+				return fmt.Errorf("error creating pod log dumper: %w", err)
+			}
+			if err := logDumper.DumpLogs(ctx); err != nil {
+				return fmt.Errorf("error dumping pod logs: %w", err)
 			}
 		}
 	}
