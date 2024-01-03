@@ -902,6 +902,11 @@ type EBSCSIDriverSpec struct {
 	// Default: The latest stable release which is compatible with your Kubernetes version
 	Version *string `json:"version,omitempty"`
 
+	// KubeAPIQPS QPS to use while talking with Kubernetes API server. (default 20)
+	KubeAPIQPS *resource.Quantity `json:"kubeAPIQPS,omitempty"`
+	// KubeAPIBurst Burst to use while talking with Kubernetes API server. (default 100)
+	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty"`
+
 	// VolumeAttachLimit is the maximum number of volumes attachable per node.
 	// If specified, the limit applies to all nodes.
 	// If not specified, the value is approximated from the instance type.

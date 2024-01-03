@@ -326,6 +326,19 @@ spec:
                         description: 'Enabled enables the AWS EBS CSI driver. Can
                           only be set to true. Default: true'
                         type: boolean
+                      kubeAPIBurst:
+                        description: KubeAPIBurst Burst to use while talking with
+                          Kubernetes API server. (default 100)
+                        format: int32
+                        type: integer
+                      kubeAPIQPS:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: KubeAPIQPS QPS to use while talking with Kubernetes
+                          API server. (default 20)
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       managed:
                         description: Managed controls if aws-ebs-csi-driver is manged
                           and deployed by kOps. The deployment of aws-ebs-csi-driver
