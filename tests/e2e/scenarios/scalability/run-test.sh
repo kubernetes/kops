@@ -127,8 +127,11 @@ create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
-# Enable cluster addons, this enables us to replace the built-in manifest
-KOPS_FEATURE_FLAGS="ClusterAddons,${KOPS_FEATURE_FLAGS:-}"
+# AWS ONLY feature flags
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  # Enable creating a single nodes instance group
+  KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
+fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
 
