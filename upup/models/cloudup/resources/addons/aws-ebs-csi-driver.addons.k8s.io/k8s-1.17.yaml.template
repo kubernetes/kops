@@ -757,8 +757,8 @@ spec:
             - --extra-create-metadata
             - --leader-election=true
             - --default-fstype=ext4
-            - --kube-api-qps=20
-            - --kube-api-burst=100
+            - --kube-api-qps={{ or .KubeAPIQPS "20" }}
+            - --kube-api-burst={{ or .KubeAPIBurst "100" }}
             - --worker-threads=100
           env:
             - name: ADDRESS

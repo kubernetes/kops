@@ -1847,6 +1847,16 @@ func (in *EBSCSIDriverSpec) DeepCopyInto(out *EBSCSIDriverSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KubeAPIQPS != nil {
+		in, out := &in.KubeAPIQPS, &out.KubeAPIQPS
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.KubeAPIBurst != nil {
+		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
+		*out = new(int32)
+		**out = **in
+	}
 	if in.VolumeAttachLimit != nil {
 		in, out := &in.VolumeAttachLimit, &out.VolumeAttachLimit
 		*out = new(int)
