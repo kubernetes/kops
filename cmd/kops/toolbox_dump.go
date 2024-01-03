@@ -167,11 +167,11 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 		var nodes corev1.NodeList
 
-		config, err := clientGetter.ToRESTConfig()
+		kubeConfig, err := clientGetter.ToRESTConfig()
 		if err != nil {
 			klog.Warningf("cannot load kubeconfig settings for %q: %v", contextName, err)
 		} else {
-			k8sClient, err := kubernetes.NewForConfig(config)
+			k8sClient, err := kubernetes.NewForConfig(kubeConfig)
 			if err != nil {
 				klog.Warningf("cannot build kube client for %q: %v", contextName, err)
 			} else {
@@ -227,8 +227,9 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs, additionalPrivateIPs); err != nil {
 			return fmt.Errorf("error dumping nodes: %v", err)
 		}
-		if options.K8sResources {
-			dumper, err := dump.NewResourceDumper(config, options.Output, options.Dir)
+
+		if kubeConfig != nil && options.K8sResources {
+			dumper, err := dump.NewResourceDumper(kubeConfig, options.Output, options.Dir)
 			if err != nil {
 				return fmt.Errorf("error creating resource dumper: %w", err)
 			}
@@ -236,7 +237,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 				return fmt.Errorf("error dumping resources: %w", err)
 			}
 
-			logDumper, err := dump.NewPodLogDumper(config, options.Dir)
+			logDumper, err := dump.NewPodLogDumper(kubeConfig, options.Dir)
 			if err != nil {
 				return fmt.Errorf("error creating pod log dumper: %w", err)
 			}
