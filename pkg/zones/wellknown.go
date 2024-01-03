@@ -165,6 +165,8 @@ var hetznerZones = []string{
 	"hel1",
 	// us-east
 	"ash",
+	// us-west
+	"hil",
 }
 
 var azureZones = []string{

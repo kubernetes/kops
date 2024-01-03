@@ -33,8 +33,10 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 			zoneRegion = "eu-central"
 		case "ash":
 			zoneRegion = "us-east"
+		case "hil":
+			zoneRegion = "us-west"
 		default:
-			return "", fmt.Errorf("unknown zone %q for hetzner cloud, known zones are fsn1, nbg1, hel1, ash", subnet.Zone)
+			return "", fmt.Errorf("unknown zone %q for hetzner cloud, known zones are fsn1, nbg1, hel1, ash, hil", subnet.Zone)
 		}
 
 		if region != "" && zoneRegion != region {
