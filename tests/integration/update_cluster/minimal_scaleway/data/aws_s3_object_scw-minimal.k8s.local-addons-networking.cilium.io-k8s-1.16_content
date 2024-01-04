@@ -551,7 +551,7 @@ spec:
           value: api.internal.scw-minimal.k8s.local
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -648,7 +648,7 @@ spec:
           value: api.internal.scw-minimal.k8s.local
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -667,7 +667,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -688,7 +688,7 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
@@ -718,7 +718,7 @@ spec:
           value: api.internal.scw-minimal.k8s.local
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -735,7 +735,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.14.3
+        image: quay.io/cilium/cilium:v1.14.5
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -890,7 +890,7 @@ spec:
           value: api.internal.scw-minimal.k8s.local
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.14.3
+        image: quay.io/cilium/operator:v1.14.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
