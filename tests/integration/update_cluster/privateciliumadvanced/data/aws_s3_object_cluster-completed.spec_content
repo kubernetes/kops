@@ -234,7 +234,7 @@ spec:
       sidecarIstioProxyImage: cilium/istio_proxy
       toFqdnsDnsRejectResponseCode: refused
       tunnel: disabled
-      version: v1.13.5
+      version: v1.13.10
   nodeTerminationHandler:
     cpuRequest: 50m
     enableRebalanceDraining: false
