@@ -255,10 +255,14 @@ func (d *deployer) featureFlags() string {
 
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set
 func defaultClusterName(cloudProvider string) (string, error) {
+	dnsDomain := os.Getenv("KOPS_DNS_DOMAIN")
 	jobName := os.Getenv("JOB_NAME")
 	jobType := os.Getenv("JOB_TYPE")
 	buildID := os.Getenv("BUILD_ID")
 	pullNumber := os.Getenv("PULL_NUMBER")
+	if dnsDomain == "" {
+		dnsDomain = "test-cncf-aws.k8s.io"
+	}
 	if jobName == "" || buildID == "" {
 		return "", errors.New("JOB_NAME, and BUILD_ID env vars are required when --cluster-name is not set")
 	}
@@ -269,7 +273,7 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	var suffix string
 	switch cloudProvider {
 	case "aws":
-		suffix = "test-cncf-aws.k8s.io"
+		suffix = dnsDomain
 	default:
 		suffix = "k8s.local"
 	}
