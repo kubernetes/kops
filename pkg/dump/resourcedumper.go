@@ -28,6 +28,7 @@ import (
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
@@ -47,7 +48,6 @@ var (
 		"componentstatuses":      {},
 		"podtemplates":           {},
 		"replicationcontrollers": {},
-		"secrets":                {}, // Avoid leaking secrets
 		"controllerrevisions":    {},
 	}
 )
@@ -215,6 +215,9 @@ func (d *resourceDumper) dumpGVRNamespaces(ctx context.Context, jobs chan gvrNam
 				return err
 			}
 			o.SetManagedFields(nil)
+			if err := maskObject(obj); err != nil {
+				return err
+			}
 			return nil
 		})
 		if err != nil {
@@ -250,4 +253,26 @@ func (d *resourceDumper) dumpGVRNamespaces(ctx context.Context, jobs chan gvrNam
 		}
 		results <- resourceDumpResult{}
 	}
+}
+
+func maskObject(obj runtime.Object) error {
+	switch obj.GetObjectKind().GroupVersionKind() {
+	case schema.GroupVersionKind{Group: "", Version: "v1", Kind: "Secret"}:
+		unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+		if err != nil {
+			return err
+		}
+		data, ok, err := unstructured.NestedMap(unstructuredObj, "data")
+		if err != nil {
+			return fmt.Errorf("getting data from secret: %w", err)
+		}
+		if ok {
+			for k := range data {
+				data[k] = "REDACTED"
+			}
+			unstructured.SetNestedMap(unstructuredObj, data, "data")
+		}
+
+	}
+	return nil
 }
