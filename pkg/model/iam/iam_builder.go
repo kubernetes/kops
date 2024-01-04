@@ -831,6 +831,7 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 		"elasticloadbalancing:DescribeLoadBalancerPolicies",
 		"elasticloadbalancing:DescribeTargetGroups",
 		"elasticloadbalancing:DescribeTargetHealth",
+		"iam:CreateServiceLinkedRole",
 		"kms:DescribeKey",
 	)
 
@@ -884,7 +885,7 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 	}
 }
 
-// AddAWSLoadbalancerControllerPermissions adds the permissions needed for the AWS Load Balancer Controller to the givnen policy
+// AddAWSLoadbalancerControllerPermissions adds the permissions needed for the AWS Load Balancer Controller to the given policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, enableShield bool) {
 	p.unconditionalAction.Insert(
 		"cognito-idp:DescribeUserPoolClient",
