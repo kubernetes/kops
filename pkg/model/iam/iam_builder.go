@@ -1116,6 +1116,9 @@ func addASLifecyclePolicies(p *Policy, enableHookSupport bool) {
 			"autoscaling:DescribeLifecycleHooks",
 		)
 	}
+	// TODO: remove this after k8s 1.29 support is removed
+	// It is no longer needed as of kops 1.29 but to prevent node bootstrap issues
+	// during kops upgrades we keep the permission until it is guaranteed to not be needed.
 	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingInstances",
 	)
