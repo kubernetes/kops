@@ -250,6 +250,7 @@
         "elasticloadbalancing:DescribeTargetGroupAttributes",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
+        "iam:CreateServiceLinkedRole",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:CreateGrant",

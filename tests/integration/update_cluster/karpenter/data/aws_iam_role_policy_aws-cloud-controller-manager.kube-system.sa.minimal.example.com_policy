@@ -50,6 +50,7 @@
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
+        "iam:CreateServiceLinkedRole",
         "kms:DescribeKey"
       ],
       "Effect": "Allow",
