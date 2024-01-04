@@ -245,9 +245,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 		modelContext.InstanceID = string(instanceIDBytes)
 
-		modelContext.ConfigurationMode, err = getAWSConfigurationMode(ctx, modelContext)
-		if err != nil {
-			return err
+		// Check if WarmPool is enabled first, to avoid additional API calls
+		if len(modelContext.NodeupConfig.WarmPoolImages) > 0 {
+			modelContext.ConfigurationMode, err = getAWSConfigurationMode(ctx, modelContext)
+			if err != nil {
+				return err
+			}
 		}
 
 		modelContext.MachineType, err = getMachineType()
@@ -712,6 +715,11 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 }
 
 func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (string, error) {
+	// Check if WarmPool is enabled first, to avoid additional API calls
+	if len(c.NodeupConfig.WarmPoolImages) == 0 {
+		return "", nil
+	}
+
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
 	role := c.BootConfig.InstanceGroupRole
