@@ -619,7 +619,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
-	if b.NodeupConfig.Networking.AmazonVPC != nil {
+	// Respect any MaxPods value the user sets explicitly.
+	if b.NodeupConfig.Networking.AmazonVPC != nil && c.MaxPods == nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 
@@ -637,25 +638,22 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			return nil, err
 		}
 
-		// Respect any MaxPods value the user sets explicitly.
-		if c.MaxPods == nil {
-			// Default maximum pods per node defined by KubeletConfiguration
-			maxPods := 110
+		// Default maximum pods per node defined by KubeletConfiguration
+		maxPods := 110
 
-			// AWS VPC CNI plugin-specific maximum pod calculation based on:
-			// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
-			enis := instanceType.InstanceENIs
-			ips := instanceType.InstanceIPsPerENI
-			if enis > 0 && ips > 0 {
-				instanceMaxPods := enis*(ips-1) + 2
-				if instanceMaxPods < maxPods {
-					maxPods = instanceMaxPods
-				}
+		// AWS VPC CNI plugin-specific maximum pod calculation based on:
+		// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
+		enis := instanceType.InstanceENIs
+		ips := instanceType.InstanceIPsPerENI
+		if enis > 0 && ips > 0 {
+			instanceMaxPods := enis*(ips-1) + 2
+			if instanceMaxPods < maxPods {
+				maxPods = instanceMaxPods
 			}
-
-			// Write back values that could have changed
-			c.MaxPods = fi.PtrTo(int32(maxPods))
 		}
+
+		// Write back values that could have changed
+		c.MaxPods = fi.PtrTo(int32(maxPods))
 	}
 
 	if c.VolumePluginDirectory == "" {
