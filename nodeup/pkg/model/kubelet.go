@@ -27,7 +27,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -769,16 +768,28 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 		return append(addrs, name), nil
 	}
 
-	cloud := b.Cloud.(awsup.AWSCloud)
+	addrs := []string{b.InstanceID}
+	sess := session.Must(session.NewSession())
+	metadata := ec2metadata.New(sess)
 
-	result, err := cloud.EC2().DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&b.InstanceID},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing instances: %v", err)
+	if localHostname, err := metadata.GetMetadata("local-hostname"); err == nil {
+		klog.V(2).Infof("Local Hostname: %s", localHostname)
+		addrs = append(addrs, localHostname)
+	}
+	if localIPv4, err := metadata.GetMetadata("local-ipv4"); err == nil {
+		klog.V(2).Infof("Local IPv4: %s", localIPv4)
+		addrs = append(addrs, localIPv4)
+	}
+	if publicIPv4, err := metadata.GetMetadata("public-ipv4"); err == nil {
+		klog.V(2).Infof("Public IPv4: %s", publicIPv4)
+		addrs = append(addrs, publicIPv4)
+	}
+	if publicIPv6, err := metadata.GetMetadata("ipv6"); err == nil {
+		klog.V(2).Infof("Public IPv6: %s", publicIPv6)
+		addrs = append(addrs, publicIPv6)
 	}
 
-	return awsup.GetInstanceCertificateNames(result)
+	return addrs, nil
 }
 
 func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
