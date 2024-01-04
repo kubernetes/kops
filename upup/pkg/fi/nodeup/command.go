@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -719,20 +720,17 @@ func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (
 		return "", nil
 	}
 
-	svc := c.Cloud.(awsup.AWSCloud).Autoscaling()
-
-	result, err := svc.DescribeAutoScalingInstancesWithContext(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
-		InstanceIds: []*string{&c.InstanceID},
-	})
+	targetLifecycleState, err := vfs.Context.ReadFile("metadata://aws/meta-data/autoscaling/target-lifecycle-state")
 	if err != nil {
-		return "", fmt.Errorf("error describing instances: %v", err)
+		var awsErr awserr.RequestFailure
+		if errors.As(err, &awsErr) && awsErr.StatusCode() == 404 {
+			// The instance isn't in an ASG (karpenter, etc.)
+			return "", nil
+		}
+		return "", fmt.Errorf("error reading target-lifecycle-state from instance metadata: %v", err)
 	}
-	// If the instance is not a part of an ASG, it won't be in a warm pool either.
-	if len(result.AutoScalingInstances) < 1 {
-		return "", nil
-	}
-	lifecycle := fi.ValueOf(result.AutoScalingInstances[0].LifecycleState)
-	if strings.HasPrefix(lifecycle, "Warmed:") {
+
+	if strings.HasPrefix(string(targetLifecycleState), "Warmed:") {
 		klog.Info("instance is entering warm pool")
 		return model.ConfigurationModeWarming, nil
 	} else {
