@@ -525,7 +525,16 @@ func runJaeger(ctx context.Context, opt RunJaegerOptions) error {
 
 	{
 		fmt.Fprintf(os.Stdout, "open browser to %s\n", jaegerURL)
-		args := []string{"xdg-open", jaegerURL}
+
+		args := make([]string, 0)
+		for _, o := range []string{"xdg-open", "open"} {
+			if _, err := exec.LookPath(o); err == nil {
+				args = append(args, o)
+				break
+			}
+		}
+		args = append(args, jaegerURL)
+
 		c := exec.CommandContext(ctx, args[0], args[1:]...)
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
