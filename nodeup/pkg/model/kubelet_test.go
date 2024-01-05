@@ -195,7 +195,7 @@ func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, node
 		return
 	}
 	{
-		fileTask, err := buildKubeletComponentConfig(kubeletConfig)
+		fileTask, err := buildKubeletComponentConfig(kubeletConfig, "")
 		if err != nil {
 			t.Fatalf("error from KubeletBuilder buildKubeletComponentConfig: %v", err)
 			return
@@ -406,7 +406,7 @@ func Test_BuildComponentConfigFile(t *testing.T) {
 		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
 	}
 
-	_, err := buildKubeletComponentConfig(&componentConfig)
+	_, err := buildKubeletComponentConfig(&componentConfig, "")
 	if err != nil {
 		t.Errorf("Failed to build component config file: %v", err)
 	}

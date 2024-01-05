@@ -72,7 +72,19 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	{
-		t, err := buildKubeletComponentConfig(kubeletConfig)
+		// Set the provider ID to help speed node registration on large clusters
+		var providerID string
+		if b.CloudProvider() == kops.CloudProviderAWS {
+			sess := session.Must(session.NewSession())
+			metadata := ec2metadata.New(sess)
+			instanceIdentity, err := metadata.GetInstanceIdentityDocument()
+			if err != nil {
+				return err
+			}
+			providerID = fmt.Sprintf("aws:///%s/%s", instanceIdentity.AvailabilityZone, instanceIdentity.InstanceID)
+		}
+
+		t, err := buildKubeletComponentConfig(kubeletConfig, providerID)
 		if err != nil {
 			return err
 		}
@@ -218,8 +230,11 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	return nil
 }
 
-func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, providerID string) (*nodetasks.File, error) {
 	componentConfig := kubelet.KubeletConfiguration{}
+	if providerID != "" {
+		componentConfig.ProviderID = providerID
+	}
 	if kubeletConfig.ShutdownGracePeriod != nil {
 		componentConfig.ShutdownGracePeriod = *kubeletConfig.ShutdownGracePeriod
 	}
