@@ -63,7 +63,6 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 	listFunctions := []listFn{
 		// EC2
 		ListAutoScalingGroups,
-		ListInstances,
 		ListKeypairs,
 		ListSecurityGroups,
 		ListVolumes,
@@ -86,6 +85,12 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 		ListSQSQueues,
 		// EventBridge
 		ListEventBridgeRules,
+	}
+
+	if clusterInfo.UsesKarpenter {
+		// ASG deletion cascades to their instances
+		// Only karpenter-enabled clusters have instances not in ASGs
+		listFunctions = append(listFunctions, ListInstances)
 	}
 
 	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {

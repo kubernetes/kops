@@ -17,8 +17,9 @@ limitations under the License.
 package resources
 
 type ClusterInfo struct {
-	Name        string
-	UsesNoneDNS bool
+	Name          string
+	UsesNoneDNS   bool
+	UsesKarpenter bool
 	// Azure specific
 	AzureResourceGroupName   string
 	AzureResourceGroupShared bool

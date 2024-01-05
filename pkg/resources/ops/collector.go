@@ -41,8 +41,9 @@ import (
 // ListResources collects the resources from the specified cloud
 func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources.Resource, error) {
 	clusterInfo := resources.ClusterInfo{
-		Name:        cluster.Name,
-		UsesNoneDNS: cluster.UsesNoneDNS(),
+		Name:          cluster.Name,
+		UsesNoneDNS:   cluster.UsesNoneDNS(),
+		UsesKarpenter: cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled,
 	}
 
 	switch cloud.ProviderID() {
