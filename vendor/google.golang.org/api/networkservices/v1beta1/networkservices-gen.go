@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -886,6 +886,19 @@ type Gateway struct {
 	// length 1024 characters.
 	Description string `json:"description,omitempty"`
 
+	// EnvoyHeaders: Optional. Determines if envoy will insert internal
+	// debug headers into upstream requests. Other Envoy headers may still
+	// be injected. By default, envoy will not insert any debug headers.
+	//
+	// Possible values:
+	//   "ENVOY_HEADERS_UNSPECIFIED" - Defaults to NONE.
+	//   "NONE" - Suppress envoy debug headers.
+	//   "DEBUG_HEADERS" - Envoy will insert default internal debug headers
+	// into upstream requests: x-envoy-attempt-count
+	// x-envoy-is-timeout-retry x-envoy-expected-rq-timeout-ms
+	// x-envoy-original-path x-envoy-upstream-stream-duration-ms
+	EnvoyHeaders string `json:"envoyHeaders,omitempty"`
+
 	// GatewaySecurityPolicy: Optional. A fully-qualified
 	// GatewaySecurityPolicy URL reference. Defines how a server should
 	// apply security policy to inbound (VM to Proxy) initiated connections.
@@ -1380,6 +1393,13 @@ type GrpcRouteRouteAction struct {
 	// ignored by clients that are configured with a fault_injection_policy
 	FaultInjectionPolicy *GrpcRouteFaultInjectionPolicy `json:"faultInjectionPolicy,omitempty"`
 
+	// IdleTimeout: Optional. Specifies the idle timeout for the selected
+	// route. The idle timeout is defined as the period in which there are
+	// no bytes sent or received on either the upstream or downstream
+	// connection. If not set, the default idle timeout is 1 hour. If set to
+	// 0s, the timeout will be disabled.
+	IdleTimeout string `json:"idleTimeout,omitempty"`
+
 	// RetryPolicy: Optional. Specifies the retry policy associated with
 	// this route.
 	RetryPolicy *GrpcRouteRetryPolicy `json:"retryPolicy,omitempty"`
@@ -1680,6 +1700,20 @@ func (s *HttpRouteCorsPolicy) MarshalJSON() ([]byte, error) {
 // HttpRouteDestination: Specifications of a destination to which the
 // request should be routed to.
 type HttpRouteDestination struct {
+	// RequestHeaderModifier: Optional. The specification for modifying the
+	// headers of a matching request prior to delivery of the request to the
+	// destination. If HeaderModifiers are set on both the Destination and
+	// the RouteAction, they will be merged. Conflicts between the two will
+	// not be resolved on the configuration.
+	RequestHeaderModifier *HttpRouteHeaderModifier `json:"requestHeaderModifier,omitempty"`
+
+	// ResponseHeaderModifier: Optional. The specification for modifying the
+	// headers of a response prior to sending the response back to the
+	// client. If HeaderModifiers are set on both the Destination and the
+	// RouteAction, they will be merged. Conflicts between the two will not
+	// be resolved on the configuration.
+	ResponseHeaderModifier *HttpRouteHeaderModifier `json:"responseHeaderModifier,omitempty"`
+
 	// ServiceName: The URL of a BackendService to route traffic to.
 	ServiceName string `json:"serviceName,omitempty"`
 
@@ -1695,20 +1729,22 @@ type HttpRouteDestination struct {
 	// distributed in equal proportions to all of them.
 	Weight int64 `json:"weight,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ServiceName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "RequestHeaderModifier") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ServiceName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "RequestHeaderModifier") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -1951,6 +1987,44 @@ func (s *HttpRouteHeaderModifier) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// HttpRouteHttpDirectResponse: Static HTTP response object to be
+// returned.
+type HttpRouteHttpDirectResponse struct {
+	// BytesBody: Optional. Response body as bytes. Maximum body size is
+	// 4096B.
+	BytesBody string `json:"bytesBody,omitempty"`
+
+	// Status: Required. Status to return as part of HTTP Response. Must be
+	// a positive integer.
+	Status int64 `json:"status,omitempty"`
+
+	// StringBody: Optional. Response body as a string. Maximum body length
+	// is 1024 characters.
+	StringBody string `json:"stringBody,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BytesBody") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BytesBody") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *HttpRouteHttpDirectResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod HttpRouteHttpDirectResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // HttpRouteQueryParameterMatch: Specifications to match a query
 // parameter in the request.
 type HttpRouteQueryParameterMatch struct {
@@ -2077,6 +2151,10 @@ type HttpRouteRequestMirrorPolicy struct {
 	// weight of the destination will be ignored.
 	Destination *HttpRouteDestination `json:"destination,omitempty"`
 
+	// MirrorPercent: Optional. The percentage of requests to get mirrored
+	// to the desired destination.
+	MirrorPercent float64 `json:"mirrorPercent,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "Destination") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
@@ -2098,6 +2176,20 @@ func (s *HttpRouteRequestMirrorPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRequestMirrorPolicy
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *HttpRouteRequestMirrorPolicy) UnmarshalJSON(data []byte) error {
+	type NoMethod HttpRouteRequestMirrorPolicy
+	var s1 struct {
+		MirrorPercent gensupport.JSONFloat64 `json:"mirrorPercent"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MirrorPercent = float64(s1.MirrorPercent)
+	return nil
 }
 
 // HttpRouteRetryPolicy: The specifications for retries.
@@ -2158,6 +2250,10 @@ type HttpRouteRouteAction struct {
 	// Destinations: The destination to which traffic should be forwarded.
 	Destinations []*HttpRouteDestination `json:"destinations,omitempty"`
 
+	// DirectResponse: Optional. Static HTTP Response object to be returned
+	// regardless of the request.
+	DirectResponse *HttpRouteHttpDirectResponse `json:"directResponse,omitempty"`
+
 	// FaultInjectionPolicy: The specification for fault injection
 	// introduced into traffic to test the resiliency of clients to backend
 	// service failure. As part of fault injection, when clients send
@@ -2167,6 +2263,13 @@ type HttpRouteRouteAction struct {
 	// percentage of requests. timeout and retry_policy will be ignored by
 	// clients that are configured with a fault_injection_policy
 	FaultInjectionPolicy *HttpRouteFaultInjectionPolicy `json:"faultInjectionPolicy,omitempty"`
+
+	// IdleTimeout: Optional. Specifies the idle timeout for the selected
+	// route. The idle timeout is defined as the period in which there are
+	// no bytes sent or received on either the upstream or downstream
+	// connection. If not set, the default idle timeout is 1 hour. If set to
+	// 0s, the timeout will be disabled.
+	IdleTimeout string `json:"idleTimeout,omitempty"`
 
 	// Redirect: If set, the request is directed as configured by this
 	// field.
@@ -3129,6 +3232,19 @@ type Mesh struct {
 	// length 1024 characters.
 	Description string `json:"description,omitempty"`
 
+	// EnvoyHeaders: Optional. Determines if envoy will insert internal
+	// debug headers into upstream requests. Other Envoy headers may still
+	// be injected. By default, envoy will not insert any debug headers.
+	//
+	// Possible values:
+	//   "ENVOY_HEADERS_UNSPECIFIED" - Defaults to NONE.
+	//   "NONE" - Suppress envoy debug headers.
+	//   "DEBUG_HEADERS" - Envoy will insert default internal debug headers
+	// into upstream requests: x-envoy-attempt-count
+	// x-envoy-is-timeout-retry x-envoy-expected-rq-timeout-ms
+	// x-envoy-original-path x-envoy-upstream-stream-duration-ms
+	EnvoyHeaders string `json:"envoyHeaders,omitempty"`
+
 	// InterceptionPort: Optional. If set to a valid TCP port (1-65535),
 	// instructs the SIDECAR proxy to listen on the specified port of
 	// localhost (127.0.0.1) address. The SIDECAR proxy will expect all
@@ -3865,6 +3981,13 @@ type TcpRouteRouteAction struct {
 	// Only one of route destination or original destination can be set.
 	Destinations []*TcpRouteRouteDestination `json:"destinations,omitempty"`
 
+	// IdleTimeout: Optional. Specifies the idle timeout for the selected
+	// route. The idle timeout is defined as the period in which there are
+	// no bytes sent or received on either the upstream or downstream
+	// connection. If not set, the default idle timeout is 30 seconds. If
+	// set to 0s, the timeout will be disabled.
+	IdleTimeout string `json:"idleTimeout,omitempty"`
+
 	// OriginalDestination: Optional. If true, Router will use the
 	// destination IP and port of the original connection as the destination
 	// of the request. Default is false. Only one of route destinations or
@@ -4153,6 +4276,13 @@ type TlsRouteRouteAction struct {
 	// Destinations: Required. The destination services to which traffic
 	// should be forwarded. At least one destination service is required.
 	Destinations []*TlsRouteRouteDestination `json:"destinations,omitempty"`
+
+	// IdleTimeout: Optional. Specifies the idle timeout for the selected
+	// route. The idle timeout is defined as the period in which there are
+	// no bytes sent or received on either the upstream or downstream
+	// connection. If not set, the default idle timeout is 1 hour. If set to
+	// 0s, the timeout will be disabled.
+	IdleTimeout string `json:"idleTimeout,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Destinations") to
 	// unconditionally include in API requests. By default, fields with
