@@ -58,7 +58,7 @@ func run(ctx context.Context) error {
 	src := ""
 	flag.StringVar(&src, "src", src, "tracefile to load")
 	flag.StringVar(&listen, "listen", listen, "endpoint on which to serve grpc")
-	flag.StringVar(&run, "run", run, "visualization program to run [jaeger]")
+	flag.StringVar(&run, "run", run, "visualization program to run [jaeger, docker-jaeger]")
 	klog.InitFlags(nil)
 	flag.Parse()
 
@@ -68,10 +68,11 @@ func run(ctx context.Context) error {
 
 	if run != "" {
 		switch run {
-		case "jaeger":
+		case "jaeger", "docker-jaeger":
 			go func() {
 				opt := RunJaegerOptions{
 					StorageServer: listen,
+					UseDocker:     run == "docker-jaeger",
 				}
 				err := runJaeger(ctx, opt)
 				if err != nil {
@@ -79,7 +80,7 @@ func run(ctx context.Context) error {
 				}
 			}()
 		default:
-			return fmt.Errorf("run=%q not known (valid values: jaeger)", run)
+			return fmt.Errorf("run=%q not known (valid values: jaeger, docker-jaeger)", run)
 		}
 	}
 
@@ -485,6 +486,7 @@ func attributeValueAsString(v *v11.AnyValue) (string, error) {
 // RunJaegerOptions are the options for runJaeger
 type RunJaegerOptions struct {
 	StorageServer string
+	UseDocker     bool
 }
 
 // runJaeger starts the jaeger query & visualizer, binding to our storage server
@@ -494,25 +496,45 @@ func runJaeger(ctx context.Context, opt RunJaegerOptions) error {
 	var jaeger *exec.Cmd
 	{
 		klog.Infof("starting jaeger")
-		args := []string{
-			"docker", "run", "--rm", "--network=host", "--name=jaeger",
-			"-e=SPAN_STORAGE_TYPE=grpc-plugin",
-			"jaegertracing/jaeger-query",
-			"--grpc-storage.server=" + opt.StorageServer,
+
+		var c *exec.Cmd
+		if opt.UseDocker {
+			args := []string{
+				"docker", "run", "--rm", "--network=host", "--name=jaeger",
+				"-e=SPAN_STORAGE_TYPE=grpc-plugin",
+				"jaegertracing/jaeger-query",
+				"--grpc-storage.server=" + opt.StorageServer,
+			}
+			c = exec.CommandContext(ctx, args[0], args[1:]...)
+		} else {
+			args := []string{
+				"jaeger-query",
+				"--grpc-storage.server=" + opt.StorageServer,
+			}
+			c = exec.CommandContext(ctx, args[0], args[1:]...)
+			c.Env = append(os.Environ(), "SPAN_STORAGE_TYPE=grpc-plugin")
 		}
 
-		c := exec.CommandContext(ctx, args[0], args[1:]...)
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		if err := c.Start(); err != nil {
-			return fmt.Errorf("starting jaeger in docker (%s): %w", strings.Join(args, " "), err)
+			return fmt.Errorf("starting jaeger (%s): %w", strings.Join(c.Args, " "), err)
 		}
 		jaeger = c
 	}
 
 	{
 		fmt.Fprintf(os.Stdout, "open browser to %s\n", jaegerURL)
-		args := []string{"xdg-open", jaegerURL}
+
+		args := make([]string, 0)
+		for _, o := range []string{"xdg-open", "open"} {
+			if _, err := exec.LookPath(o); err == nil {
+				args = append(args, o)
+				break
+			}
+		}
+		args = append(args, jaegerURL)
+
 		c := exec.CommandContext(ctx, args[0], args[1:]...)
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
