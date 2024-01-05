@@ -10080,10 +10080,6 @@ webhooks:
       operator: NotIn
       values:
       - "true"
-    - key: name
-      operator: NotIn
-      values:
-      - kube-system
   rules:
   - apiGroups:
     - cert-manager.io
