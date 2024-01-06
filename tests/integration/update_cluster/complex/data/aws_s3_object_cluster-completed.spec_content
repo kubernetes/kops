@@ -35,6 +35,7 @@ spec:
     allocateNodeCIDRs: true
     clusterCIDR: 100.96.0.0/11
     clusterName: complex.example.com
+    concurrentNodeSyncs: 5
     configureCloudRoutes: false
     enableLeaderMigration: true
     image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.15

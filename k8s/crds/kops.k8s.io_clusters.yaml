@@ -598,6 +598,11 @@ spec:
                   clusterName:
                     description: ClusterName is the instance prefix for the cluster.
                     type: string
+                  concurrentNodeSyncs:
+                    description: 'ConcurrentNodeSyncs is the number of workers concurrently
+                      synchronizing nodes. (default: 1)'
+                    format: int32
+                    type: integer
                   configureCloudRoutes:
                     description: ConfigureCloudRoutes enables CIDRs allocated with
                       to be configured on the cloud provider.
