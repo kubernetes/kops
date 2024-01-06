@@ -781,6 +781,11 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.ConcurrentNodeSyncs != nil {
+		in, out := &in.ConcurrentNodeSyncs, &out.ConcurrentNodeSyncs
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
