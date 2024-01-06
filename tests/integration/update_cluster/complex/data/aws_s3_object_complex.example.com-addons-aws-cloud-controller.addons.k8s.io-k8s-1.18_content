@@ -35,6 +35,7 @@ spec:
         - --allocate-node-cidrs=true
         - --cluster-cidr=100.96.0.0/11
         - --cluster-name=complex.example.com
+        - --concurrent-node-syncs=5
         - --configure-cloud-routes=false
         - --enable-leader-migration=true
         - --leader-elect=true

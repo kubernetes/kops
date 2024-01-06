@@ -25,6 +25,8 @@ spec:
   - 1.1.1.0/24
   - pl-44444444
   channel: stable
+  cloudControllerManager:
+    concurrentNodeSyncs: 5
   cloudProvider: aws
   cloudLabels:
     Owner: John Doe
