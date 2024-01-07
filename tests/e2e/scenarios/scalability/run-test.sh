@@ -201,6 +201,6 @@ fi
 
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
-  kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
   DELETE_CLUSTER=false # Don't delete again in trap
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
 fi
