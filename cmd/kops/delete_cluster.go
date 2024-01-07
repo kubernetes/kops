@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
@@ -44,6 +45,14 @@ type DeleteClusterOptions struct {
 	External    bool
 	Unregister  bool
 	ClusterName string
+	wait        time.Duration
+	count       int
+	interval    time.Duration
+}
+
+func (o *DeleteClusterOptions) InitDefaults() {
+	o.count = 42
+	o.interval = 10 * time.Second
 }
 
 var (
@@ -64,6 +73,7 @@ var (
 
 func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:               "cluster [CLUSTER]",
@@ -83,6 +93,10 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Region, "region", options.Region, "External cluster's cloud region")
 	cmd.RegisterFlagCompletionFunc("region", completeRegion)
+
+	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "Amount of time to wait for the cluster resources to de deleted")
+	cmd.Flags().IntVar(&options.count, "count", options.count, "Number of consecutive failures to make progress deleting the cluster resources")
+	cmd.Flags().DurationVar(&options.interval, "interval", options.interval, "Time in duration to wait between deletion attempts")
 
 	return cmd
 }
@@ -171,7 +185,7 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 
 			fmt.Fprintf(out, "\n")
 
-			err = resourceops.DeleteResources(cloud, clusterResources)
+			err = resourceops.DeleteResources(cloud, clusterResources, options.count, options.interval, options.wait)
 			if err != nil {
 				return err
 			}

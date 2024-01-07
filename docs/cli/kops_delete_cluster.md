@@ -24,11 +24,14 @@ kops delete cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --external        Delete an external cluster
-  -h, --help            help for cluster
-      --region string   External cluster's cloud region
-      --unregister      Don't delete cloud resources, just unregister the cluster
-  -y, --yes             Specify --yes to delete the cluster
+      --count int           Number of consecutive failures to make progress deleting the cluster resources (default 42)
+      --external            Delete an external cluster
+  -h, --help                help for cluster
+      --interval duration   Time in duration to wait between deletion attempts (default 10s)
+      --region string       External cluster's cloud region
+      --unregister          Don't delete cloud resources, just unregister the cluster
+      --wait duration       Amount of time to wait for the cluster resources to de deleted
+  -y, --yes                 Specify --yes to delete the cluster
 ```
 
 ### Options inherited from parent commands
