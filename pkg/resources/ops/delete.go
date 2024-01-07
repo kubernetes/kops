@@ -28,7 +28,7 @@ import (
 )
 
 // DeleteResources deletes the resources, as previously collected by ListResources
-func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource) error {
+func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource, count int, interval, wait time.Duration) error {
 	depMap := make(map[string][]string)
 
 	done := make(map[string]*resources.Resource)
@@ -52,9 +52,12 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 		klog.V(2).Infof("\t%s\t%v", k, v)
 	}
 
+	timeout := time.Now().Add(wait)
 	iterationsWithNoProgress := 0
 	for {
-		// TODO: Some form of default ordering based on types?
+		if wait > 0 && time.Now().After(timeout) {
+			return fmt.Errorf("wait time exceeded during resources deletion")
+		}
 
 		failed := make(map[string]*resources.Resource)
 
@@ -167,10 +170,10 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 		}
 
 		iterationsWithNoProgress++
-		if iterationsWithNoProgress > 42 {
+		if iterationsWithNoProgress > count && count != 0 {
 			return fmt.Errorf("not making progress deleting resources; giving up")
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(interval)
 	}
 }
