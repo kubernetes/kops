@@ -478,13 +478,6 @@ resource "google_compute_forwarding_rule" "kops-controller-us-test1-minimal-gce-
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-example-com.name
 }
 
-resource "google_compute_health_check" "api-minimal-gce-example-com" {
-  name = "api-minimal-gce-example-com"
-  tcp_health_check {
-    port = 443
-  }
-}
-
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-example-com" {
   base_instance_name             = "master-us-test1-a"
   list_managed_instances_results = "PAGINATED"
@@ -610,6 +603,18 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
 resource "google_compute_network" "minimal-gce-example-com" {
   auto_create_subnetworks = false
   name                    = "minimal-gce-example-com"
+}
+
+resource "google_compute_region_health_check" "api-minimal-gce-example-com" {
+  http_health_check {
+    port         = 443
+    request_path = "/healthz"
+  }
+  name   = "api-minimal-gce-example-com"
+  region = "us-test1"
+  tcp_health_check {
+    port = 0
+  }
 }
 
 resource "google_compute_router" "nat-minimal-gce-example-com" {

@@ -32,7 +32,7 @@ type ComputeClient interface {
 	Routes() RouteClient
 	ForwardingRules() ForwardingRuleClient
 	HTTPHealthChecks() HttpHealthChecksClient
-	RegionHealthChecks() RegionHealthChecksClient
+	HealthChecks() HealthChecksClient
 	Addresses() AddressClient
 	Firewalls() FirewallClient
 	Routers() RouterClient
@@ -41,7 +41,7 @@ type ComputeClient interface {
 	InstanceGroupManagers() InstanceGroupManagerClient
 	TargetPools() TargetPoolClient
 	Disks() DiskClient
-	RegionBackendServices() RegionBackendServiceClient
+	BackendServices() BackendServiceClient
 }
 
 type computeClientImpl struct {
@@ -98,13 +98,15 @@ func (c *computeClientImpl) Routes() RouteClient {
 
 func (c *computeClientImpl) ForwardingRules() ForwardingRuleClient {
 	return &forwardingRuleClientImpl{
-		srv: c.srv.ForwardingRules,
+		srv:  c.srv.ForwardingRules,
+		gsrv: c.srv.GlobalForwardingRules,
 	}
 }
 
-func (c *computeClientImpl) RegionBackendServices() RegionBackendServiceClient {
-	return &regionBackendServiceClientImpl{
-		srv: c.srv.RegionBackendServices,
+func (c *computeClientImpl) BackendServices() BackendServiceClient {
+	return &backendServiceClientImpl{
+		srv:  c.srv.BackendServices,
+		rsrv: c.srv.RegionBackendServices,
 	}
 }
 
@@ -114,15 +116,17 @@ func (c *computeClientImpl) HTTPHealthChecks() HttpHealthChecksClient {
 	}
 }
 
-func (c *computeClientImpl) RegionHealthChecks() RegionHealthChecksClient {
+func (c *computeClientImpl) HealthChecks() HealthChecksClient {
 	return &healthCheckClientImpl{
-		srv: c.srv.RegionHealthChecks,
+		srv:  c.srv.HealthChecks,
+		rsrv: c.srv.RegionHealthChecks,
 	}
 }
 
 func (c *computeClientImpl) Addresses() AddressClient {
 	return &addressClientImpl{
-		srv: c.srv.Addresses,
+		srv:  c.srv.Addresses,
+		gsrv: c.srv.GlobalAddresses,
 	}
 }
 
@@ -297,40 +301,59 @@ func (c *subnetworkClientImpl) List(ctx context.Context, project, region string)
 }
 
 // ===
-type RegionBackendServiceClient interface {
+type BackendServiceClient interface {
 	Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error)
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.BackendService, error)
 	List(ctx context.Context, project, region string) ([]*compute.BackendService, error)
 }
 
-type regionBackendServiceClientImpl struct {
-	srv *compute.RegionBackendServicesService
+type backendServiceClientImpl struct {
+	srv  *compute.BackendServicesService
+	rsrv *compute.RegionBackendServicesService
 }
 
-var _ RegionBackendServiceClient = &regionBackendServiceClientImpl{}
+var _ BackendServiceClient = &backendServiceClientImpl{}
 
-func (c *regionBackendServiceClientImpl) Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error) {
-	return c.srv.Insert(project, region, fr).Do()
+func (c *backendServiceClientImpl) Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error) {
+	if region == "" {
+		return c.srv.Insert(project, fr).Do()
+	}
+	return c.rsrv.Insert(project, region, fr).Do()
 }
 
-func (c *regionBackendServiceClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
-	return c.srv.Delete(project, region, name).Do()
+func (c *backendServiceClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+	if region == "" {
+		return c.srv.Delete(project, name).Do()
+	}
+	return c.rsrv.Delete(project, region, name).Do()
 }
 
-func (c *regionBackendServiceClientImpl) Get(project, region, name string) (*compute.BackendService, error) {
-	return c.srv.Get(project, region, name).Do()
+func (c *backendServiceClientImpl) Get(project, region, name string) (*compute.BackendService, error) {
+	if region == "" {
+		return c.srv.Get(project, name).Do()
+	}
+	return c.rsrv.Get(project, region, name).Do()
 }
 
-func (c *regionBackendServiceClientImpl) List(ctx context.Context, project, region string) ([]*compute.BackendService, error) {
-	var hcs []*compute.BackendService
-	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.BackendServiceList) error {
-		hcs = append(hcs, p.Items...)
+func (c *backendServiceClientImpl) List(ctx context.Context, project, region string) ([]*compute.BackendService, error) {
+	var bs []*compute.BackendService
+	if region == "" {
+		if err := c.srv.List(project).Pages(ctx, func(p *compute.BackendServiceList) error {
+			bs = append(bs, p.Items...)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+		return bs, nil
+	}
+	if err := c.rsrv.List(project, region).Pages(ctx, func(p *compute.BackendServiceList) error {
+		bs = append(bs, p.Items...)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	return hcs, nil
+	return bs, nil
 }
 
 // ===
@@ -370,29 +393,55 @@ type ForwardingRuleClient interface {
 }
 
 type forwardingRuleClientImpl struct {
-	srv *compute.ForwardingRulesService
+	srv  *compute.ForwardingRulesService
+	gsrv *compute.GlobalForwardingRulesService
 }
 
 var _ ForwardingRuleClient = &forwardingRuleClientImpl{}
 
-func (c *forwardingRuleClientImpl) Insert(ctx context.Context, project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
-	return c.srv.Insert(project, region, fr).Context(ctx).Do()
+func (c *forwardingRuleClientImpl) Insert(project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
+	if region == "" {
+		return c.gsrv.Insert(project, fr).Do()
+	}
+	return c.srv.Insert(project, region, fr).Do()
 }
 
-func (c *forwardingRuleClientImpl) Delete(ctx context.Context, project, region, name string) (*compute.Operation, error) {
-	return c.srv.Delete(project, region, name).Context(ctx).Do()
+func (c *forwardingRuleClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+	if region == "" {
+		return c.gsrv.Delete(project, name).Do()
+	}
+	return c.srv.Delete(project, region, name).Do()
 }
 
-func (c *forwardingRuleClientImpl) Get(ctx context.Context, project, region, name string) (*compute.ForwardingRule, error) {
-	return c.srv.Get(project, region, name).Context(ctx).Do()
+func (c *forwardingRuleClientImpl) Get(project, region, name string) (*compute.ForwardingRule, error) {
+	if region == "" {
+		return c.gsrv.Get(project, name).Do()
+	}
+	return c.srv.Get(project, region, name).Do()
 }
 
 func (c *forwardingRuleClientImpl) SetLabels(ctx context.Context, project string, region string, resource string, request *compute.RegionSetLabelsRequest) (*compute.Operation, error) {
+	if region == "" {
+		grequest := &compute.GlobalSetLabelsRequest{
+			LabelFingerprint: request.LabelFingerprint,
+			Labels:           request.Labels,
+		}
+		return c.gsrv.SetLabels(project, resource, grequest).Do()
+	}
 	return c.srv.SetLabels(project, region, resource, request).Context(ctx).Do()
 }
 
 func (c *forwardingRuleClientImpl) List(ctx context.Context, project, region string) ([]*compute.ForwardingRule, error) {
 	var frs []*compute.ForwardingRule
+	if region == "" {
+		if err := c.gsrv.List(project).Pages(ctx, func(p *compute.ForwardingRuleList) error {
+			frs = append(frs, p.Items...)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+		return frs, nil
+	}
 	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.ForwardingRuleList) error {
 		frs = append(frs, p.Items...)
 		return nil
@@ -402,7 +451,7 @@ func (c *forwardingRuleClientImpl) List(ctx context.Context, project, region str
 	return frs, nil
 }
 
-type RegionHealthChecksClient interface {
+type HealthChecksClient interface {
 	Insert(project, region string, fr *compute.HealthCheck) (*compute.Operation, error)
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.HealthCheck, error)
@@ -410,26 +459,44 @@ type RegionHealthChecksClient interface {
 }
 
 type healthCheckClientImpl struct {
-	srv *compute.RegionHealthChecksService
+	srv  *compute.HealthChecksService
+	rsrv *compute.RegionHealthChecksService
 }
 
-var _ RegionHealthChecksClient = &healthCheckClientImpl{}
+var _ HealthChecksClient = &healthCheckClientImpl{}
 
-func (c *healthCheckClientImpl) Insert(project, region string, fr *compute.HealthCheck) (*compute.Operation, error) {
-	return c.srv.Insert(project, region, fr).Do()
+func (c *healthCheckClientImpl) Insert(project, region string, hc *compute.HealthCheck) (*compute.Operation, error) {
+	if region == "" {
+		return c.srv.Insert(project, hc).Do()
+	}
+	return c.rsrv.Insert(project, region, hc).Do()
 }
 
 func (c *healthCheckClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
-	return c.srv.Delete(project, region, name).Do()
+	if region == "" {
+		return c.srv.Delete(project, name).Do()
+	}
+	return c.rsrv.Delete(project, region, name).Do()
 }
 
 func (c *healthCheckClientImpl) Get(project, region, name string) (*compute.HealthCheck, error) {
-	return c.srv.Get(project, region, name).Do()
+	if region == "" {
+		return c.srv.Get(project, name).Do()
+	}
+	return c.rsrv.Get(project, region, name).Do()
 }
 
 func (c *healthCheckClientImpl) List(ctx context.Context, project, region string) ([]*compute.HealthCheck, error) {
 	var hcs []*compute.HealthCheck
-	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.HealthCheckList) error {
+	if region == "" {
+		if err := c.srv.List(project).Pages(ctx, func(p *compute.HealthCheckList) error {
+			hcs = append(hcs, p.Items...)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if err := c.rsrv.List(project, region).Pages(ctx, func(p *compute.HealthCheckList) error {
 		hcs = append(hcs, p.Items...)
 		return nil
 	}); err != nil {
@@ -483,25 +550,44 @@ type AddressClient interface {
 }
 
 type addressClientImpl struct {
-	srv *compute.AddressesService
+	srv  *compute.AddressesService
+	gsrv *compute.GlobalAddressesService
 }
 
 var _ AddressClient = &addressClientImpl{}
 
 func (c *addressClientImpl) Insert(project, region string, addr *compute.Address) (*compute.Operation, error) {
+	if region == "" {
+		return c.gsrv.Insert(project, addr).Do()
+	}
 	return c.srv.Insert(project, region, addr).Do()
 }
 
 func (c *addressClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+	if region == "" {
+		return c.gsrv.Delete(project, name).Do()
+	}
 	return c.srv.Delete(project, region, name).Do()
 }
 
 func (c *addressClientImpl) Get(project, region, name string) (*compute.Address, error) {
+	if region == "" {
+		return c.gsrv.Get(project, name).Do()
+	}
 	return c.srv.Get(project, region, name).Do()
 }
 
 func (c *addressClientImpl) List(ctx context.Context, project, region string) ([]*compute.Address, error) {
 	var addrs []*compute.Address
+	if region == "" {
+		if err := c.gsrv.List(project).Pages(ctx, func(p *compute.AddressList) error {
+			addrs = append(addrs, p.Items...)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+		return addrs, nil
+	}
 	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.AddressList) error {
 		addrs = append(addrs, p.Items...)
 		return nil
@@ -512,6 +598,13 @@ func (c *addressClientImpl) List(ctx context.Context, project, region string) ([
 }
 
 func (c *addressClientImpl) ListWithFilter(project, region, filter string) ([]*compute.Address, error) {
+	if region == "" {
+		addrs, err := c.gsrv.List(project).Filter(filter).Do()
+		if err != nil {
+			return nil, err
+		}
+		return addrs.Items, nil
+	}
 	addrs, err := c.srv.List(project, region).Filter(filter).Do()
 	if err != nil {
 		return nil, err

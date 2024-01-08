@@ -96,6 +96,10 @@ func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
 	return &gcetasks.TargetPool{Name: s(c.NameForTargetPool(id))}
 }
 
+func (c *GCEModelContext) LinkToBackendService(id string) *gcetasks.BackendService {
+	return &gcetasks.BackendService{Name: s(c.NameForBackendService(id))}
+}
+
 func (c *GCEModelContext) NameForTargetPool(id string) string {
 	return c.SafeSuffixedObjectName(id)
 }

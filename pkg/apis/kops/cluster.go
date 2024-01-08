@@ -505,8 +505,10 @@ const (
 type LoadBalancerClass string
 
 const (
-	LoadBalancerClassClassic LoadBalancerClass = "Classic"
-	LoadBalancerClassNetwork LoadBalancerClass = "Network"
+	LoadBalancerClassClassic  LoadBalancerClass = "Classic"
+	LoadBalancerClassNetwork  LoadBalancerClass = "Network"
+	LoadBalancerClassRegional LoadBalancerClass = "Regional"
+	LoadBalancerClassGlobal   LoadBalancerClass = "Global"
 )
 
 type AccessLogSpec struct {

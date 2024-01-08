@@ -33,9 +33,11 @@ import (
 // and HTTPSHealthCheck.  Those HCs are still needed for some types, so both
 // are implemented in kops, but this one should be preferred when possible.
 type HealthCheck struct {
-	Name      *string
-	Port      int64
-	Lifecycle fi.Lifecycle
+	Name        *string
+	Port        *int64
+	Lifecycle   fi.Lifecycle
+	Region      string
+	RequestPath *string
 }
 
 var _ fi.CompareWithID = &HealthCheck{}
@@ -53,7 +55,13 @@ func (e *HealthCheck) Find(c *fi.CloudupContext) (*HealthCheck, error) {
 	return actual, err
 }
 
-func (e *HealthCheck) URL(cloud gce.GCECloud) string {
+func (e *HealthCheck) URL(cloud gce.GCECloud, region string) string {
+	if region == "" {
+		return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/healthChecks/%s",
+			cloud.Project(),
+			*e.Name)
+	}
+
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/healthChecks/%s",
 		cloud.Project(),
 		cloud.Region(),
@@ -61,7 +69,7 @@ func (e *HealthCheck) URL(cloud gce.GCECloud) string {
 }
 
 func (e *HealthCheck) find(cloud gce.GCECloud) (*HealthCheck, error) {
-	r, err := cloud.Compute().RegionHealthChecks().Get(cloud.Project(), cloud.Region(), *e.Name)
+	r, err := cloud.Compute().HealthChecks().Get(cloud.Project(), e.Region, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -72,8 +80,8 @@ func (e *HealthCheck) find(cloud gce.GCECloud) (*HealthCheck, error) {
 
 	actual := &HealthCheck{}
 	actual.Name = &r.Name
-	if r.TcpHealthCheck != nil {
-		actual.Port = r.TcpHealthCheck.Port
+	if r.HttpHealthCheck != nil {
+		actual.Port = fi.PtrTo(r.TcpHealthCheck.Port)
 	}
 
 	return actual, nil
@@ -83,7 +91,7 @@ func (e *HealthCheck) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (_ *HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
+func (*HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
@@ -95,22 +103,21 @@ func (_ *HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
 	return nil
 }
 
-func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck) error {
+func (*HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck) error {
 	cloud := t.Cloud
 	hc := &compute.HealthCheck{
 		Name: *e.Name,
-		TcpHealthCheck: &compute.TCPHealthCheck{
-			Port: e.Port,
+		HttpHealthCheck: &compute.HTTPHealthCheck{
+			Port:        fi.ValueOf(e.Port),
+			RequestPath: fi.ValueOf(e.RequestPath),
 		},
-		Type: "TCP",
-
-		Region: cloud.Region(),
+		Type: "HTTP",
 	}
 
 	if a == nil {
 		klog.V(2).Infof("Creating HealthCheck %q", hc.Name)
 
-		op, err := cloud.Compute().RegionHealthChecks().Insert(cloud.Project(), cloud.Region(), hc)
+		op, err := cloud.Compute().HealthChecks().Insert(cloud.Project(), e.Region, hc)
 		if err != nil {
 			return fmt.Errorf("error creating healthcheck: %v", err)
 		}
@@ -125,25 +132,35 @@ func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck)
 	return nil
 }
 
-type terraformTCPBlock struct {
-	Port int64 `cty:"port"`
+type terraformHTTPBlock struct {
+	Port        int64  `cty:"port"`
+	RequestPath string `cty:"request_path"`
 }
 
 type terraformHealthCheck struct {
-	Name           string            `cty:"name"`
-	TCPHealthCheck terraformTCPBlock `cty:"tcp_health_check"`
+	Name            string             `cty:"name"`
+	Region          string             `cty:"region"`
+	HTTPHealthCheck terraformHTTPBlock `cty:"http_health_check"`
 }
 
-func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
+func (*HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
 	tf := &terraformHealthCheck{
 		Name: *e.Name,
-		TCPHealthCheck: terraformTCPBlock{
-			Port: e.Port,
+		HTTPHealthCheck: terraformHTTPBlock{
+			Port:        fi.ValueOf(e.Port),
+			RequestPath: fi.ValueOf(e.RequestPath),
 		},
 	}
-	return t.RenderResource("google_compute_health_check", *e.Name, tf)
+	if e.Region == "" {
+		return t.RenderResource("google_compute_health_check", *e.Name, tf)
+	}
+	tf.Region = e.Region
+	return t.RenderResource("google_compute_region_health_check", *e.Name, tf)
 }
 
 func (e *HealthCheck) TerraformAddress() *terraformWriter.Literal {
+	if e.Region == "" {
+		return terraformWriter.LiteralProperty("google_compute_region_health_check", *e.Name, "id")
+	}
 	return terraformWriter.LiteralProperty("google_compute_health_check", *e.Name, "id")
 }

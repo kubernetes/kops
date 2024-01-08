@@ -301,6 +301,11 @@ func (b *KopsModelContext) UseNetworkLoadBalancer() bool {
 	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork
 }
 
+// UseRegionalLoadBalancer checks if we are using Regional LoadBalancer
+func (b *KopsModelContext) UseRegionalLoadBalancer() bool {
+	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassRegional
+}
+
 // UseSSHKey returns true if SSHKeyName from the cluster spec is set to a nonempty string
 // or there is an SSH public key provisioned in the key store.
 func (b *KopsModelContext) UseSSHKey() bool {

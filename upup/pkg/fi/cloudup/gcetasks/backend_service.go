@@ -35,6 +35,7 @@ type BackendService struct {
 	HealthChecks          []*HealthCheck
 	LoadBalancingScheme   *string
 	Protocol              *string
+	Region                string
 	InstanceGroupManagers []*InstanceGroupManager
 
 	Lifecycle    fi.Lifecycle
@@ -48,7 +49,7 @@ func (e *BackendService) CompareWithID() *string {
 }
 
 func (e *BackendService) Find(c *fi.CloudupContext) (*BackendService, error) {
-	actual, err := e.find(c.T.Cloud.(gce.GCECloud))
+	actual, err := e.find(c.T.Cloud.(gce.GCECloud), e.Region)
 	if actual != nil && err == nil {
 		// Ignore system fields
 		actual.Lifecycle = e.Lifecycle
@@ -57,8 +58,8 @@ func (e *BackendService) Find(c *fi.CloudupContext) (*BackendService, error) {
 	return actual, err
 }
 
-func (e *BackendService) find(cloud gce.GCECloud) (*BackendService, error) {
-	r, err := cloud.Compute().RegionBackendServices().Get(cloud.Project(), cloud.Region(), *e.Name)
+func (e *BackendService) find(cloud gce.GCECloud, region string) (*BackendService, error) {
+	r, err := cloud.Compute().BackendServices().Get(cloud.Project(), e.Region, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -107,7 +108,7 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 	cloud := t.Cloud
 	var hcs []string
 	for _, hc := range e.HealthChecks {
-		hcs = append(hcs, hc.URL(cloud))
+		hcs = append(hcs, hc.URL(cloud, e.Region))
 	}
 	var backends []*compute.Backend
 	for _, igm := range e.InstanceGroupManagers {
@@ -121,12 +122,13 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 		HealthChecks:        hcs,
 		LoadBalancingScheme: *e.LoadBalancingScheme,
 		Backends:            backends,
+		PortName:            "http",
 	}
 
 	if a == nil {
 		klog.V(2).Infof("Creating BackendService: %q", bs.Name)
 
-		op, err := cloud.Compute().RegionBackendServices().Insert(cloud.Project(), cloud.Region(), bs)
+		op, err := cloud.Compute().BackendServices().Insert(cloud.Project(), e.Region, bs)
 		if err != nil {
 			return fmt.Errorf("error creating backend service: %v", err)
 		}
@@ -141,7 +143,12 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 	return nil
 }
 
-func (a *BackendService) URL(cloud gce.GCECloud) string {
+func (a *BackendService) URL(cloud gce.GCECloud, region string) string {
+	if region == "" {
+		return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/backendServices/%s",
+			cloud.Project(),
+			*a.Name)
+	}
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/backendServices/%s",
 		cloud.Project(),
 		cloud.Region(),

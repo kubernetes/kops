@@ -49,6 +49,7 @@ type ForwardingRule struct {
 	Network             *Network
 	Subnetwork          *Subnet
 	BackendService      *BackendService
+	Region              string
 
 	// Labels to set on the resource.
 	Labels map[string]string
@@ -70,7 +71,7 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 	cloud := c.T.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Name)
 
-	r, err := cloud.Compute().ForwardingRules().Get(ctx, cloud.Project(), cloud.Region(), name)
+	r, err := cloud.Compute().ForwardingRules().Get(cloud.Project(), e.Region, name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -95,7 +96,7 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 		}
 	}
 	if r.IPAddress != "" {
-		address, err := findAddressByIP(cloud, r.IPAddress)
+		address, err := findAddressByIP(cloud, r.IPAddress, e.Region)
 		if err != nil {
 			return nil, fmt.Errorf("error finding Address with IP=%q: %v", r.IPAddress, err)
 		}
@@ -146,8 +147,9 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	name := fi.ValueOf(e.Name)
 
 	o := &compute.ForwardingRule{
-		Name:       name,
-		IPProtocol: e.IPProtocol,
+		Name:        name,
+		IPProtocol:  e.IPProtocol,
+		NetworkTier: "PREMIUM",
 	}
 	if e.PortRange != nil {
 		o.PortRange = *e.PortRange
@@ -166,15 +168,15 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 
 	if e.BackendService != nil {
 		if o.Target != "" {
-			return fmt.Errorf("cannot specify both %q and %q for forwarding rule target.", o.Target, e.BackendService)
+			return fmt.Errorf("cannot specify both %q and %q for forwarding rule target", o.Target, e.BackendService)
 		}
-		o.BackendService = e.BackendService.URL(t.Cloud)
+		o.BackendService = e.BackendService.URL(t.Cloud, e.Region)
 	}
 
 	if e.IPAddress != nil {
 		o.IPAddress = fi.ValueOf(e.IPAddress.IPAddress)
 		if o.IPAddress == "" {
-			addr, err := e.IPAddress.find(t.Cloud)
+			addr, err := e.IPAddress.find(t.Cloud, e.Region)
 			if err != nil {
 				return fmt.Errorf("error finding Address %q: %v", e.IPAddress, err)
 			}
@@ -189,7 +191,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 		}
 	}
 	if o.IPAddress != "" && e.RuleIPAddress != nil {
-		return fmt.Errorf("Specified both IP Address and rule-managed IP address: %v, %v", e.IPAddress, *e.RuleIPAddress)
+		return fmt.Errorf("specified both IP Address and rule-managed IP address: %v, %v", e.IPAddress, *e.RuleIPAddress)
 	}
 	if e.RuleIPAddress != nil {
 		o.IPAddress = *e.RuleIPAddress
@@ -214,7 +216,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	if a == nil {
 		klog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
-		op, err := t.Cloud.Compute().ForwardingRules().Insert(ctx, t.Cloud.Project(), t.Cloud.Region(), o)
+		op, err := t.Cloud.Compute().ForwardingRules().Insert(t.Cloud.Project(), e.Region, o)
 		if err != nil {
 			return fmt.Errorf("error creating ForwardingRule %q: %v", o.Name, err)
 		}
@@ -225,7 +227,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 
 		if e.Labels != nil {
 			// We can't set labels on creation; we have to read the object to get the fingerprint
-			r, err := t.Cloud.Compute().ForwardingRules().Get(ctx, t.Cloud.Project(), t.Cloud.Region(), name)
+			r, err := t.Cloud.Compute().ForwardingRules().Get(t.Cloud.Project(), e.Region, name)
 			if err != nil {
 				return fmt.Errorf("reading created ForwardingRule %q: %v", name, err)
 			}
@@ -234,7 +236,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 				LabelFingerprint: r.LabelFingerprint,
 				Labels:           e.Labels,
 			}
-			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), t.Cloud.Region(), o.Name, &req)
+			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), e.Region, o.Name, &req)
 			if err != nil {
 				return fmt.Errorf("setting ForwardingRule labels: %w", err)
 			}
@@ -249,7 +251,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 				LabelFingerprint: a.labelFingerprint,
 				Labels:           e.Labels,
 			}
-			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), t.Cloud.Region(), o.Name, &req)
+			op, err := t.Cloud.Compute().ForwardingRules().SetLabels(ctx, t.Cloud.Project(), e.Region, o.Name, &req)
 			if err != nil {
 				return fmt.Errorf("setting ForwardingRule labels: %w", err)
 			}

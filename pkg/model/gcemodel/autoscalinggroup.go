@@ -309,23 +309,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				InstanceTemplate:            instanceTemplate,
 				ListManagedInstancesResults: "PAGINATED",
 			}
-
-			// Attach masters to load balancer if we're using one
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleControlPlane:
-				if b.UseLoadBalancerForAPI() {
-					lbSpec := b.Cluster.Spec.API.LoadBalancer
-					if lbSpec != nil {
-						switch lbSpec.Type {
-						case kops.LoadBalancerTypePublic:
-							t.TargetPools = append(t.TargetPools, b.LinkToTargetPool("api"))
-						case kops.LoadBalancerTypeInternal:
-							klog.Warningf("Not hooking the instance group manager up to anything.")
-						}
-					}
-				}
-			}
-
 			c.AddTask(t)
 		}
 	}

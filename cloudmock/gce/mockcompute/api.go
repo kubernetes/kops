@@ -137,11 +137,11 @@ func (c *MockClient) HTTPHealthChecks() gce.HttpHealthChecksClient {
 	return c.httpHealthChecksClient
 }
 
-func (c *MockClient) RegionHealthChecks() gce.RegionHealthChecksClient {
+func (c *MockClient) HealthChecks() gce.HealthChecksClient {
 	return c.healthCheckClient
 }
 
-func (c *MockClient) RegionBackendServices() gce.RegionBackendServiceClient {
+func (c *MockClient) BackendServices() gce.BackendServiceClient {
 	return c.backendServiceClient
 }
 

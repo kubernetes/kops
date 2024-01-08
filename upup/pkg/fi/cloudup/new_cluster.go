@@ -1490,6 +1490,17 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 		}
 	}
 
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
+		switch opt.APILoadBalancerClass {
+		case "global":
+			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassGlobal
+		case "", "regional":
+			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassRegional
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-class: %q", opt.APILoadBalancerClass)
+		}
+	}
+
 	return nil
 }
 

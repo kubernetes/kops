@@ -224,9 +224,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		lbSpec := spec.API.LoadBalancer
 		lbPath := fieldPath.Child("api", "loadBalancer")
 		if spec.GetCloudProvider() != kops.CloudProviderAWS {
-			if lbSpec.Class != "" {
-				allErrs = append(allErrs, field.Forbidden(lbPath.Child("class"), "class is only supported on AWS"))
-			}
 			if lbSpec.IdleTimeoutSeconds != nil {
 				allErrs = append(allErrs, field.Forbidden(lbPath.Child("idleTimeoutSeconds"), "idleTimeoutSeconds is only supported on AWS"))
 			}

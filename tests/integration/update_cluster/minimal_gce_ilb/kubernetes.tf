@@ -447,13 +447,6 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-ilb-example-
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-ilb-example-com.name
 }
 
-resource "google_compute_health_check" "api-minimal-gce-ilb-example-com" {
-  name = "api-minimal-gce-ilb-example-com"
-  tcp_health_check {
-    port = 443
-  }
-}
-
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-ilb-example-com" {
   base_instance_name             = "master-us-test1-a"
   list_managed_instances_results = "PAGINATED"
@@ -579,6 +572,18 @@ resource "google_compute_instance_template" "nodes-minimal-gce-ilb-example-com" 
 resource "google_compute_network" "minimal-gce-ilb-example-com" {
   auto_create_subnetworks = false
   name                    = "minimal-gce-ilb-example-com"
+}
+
+resource "google_compute_region_health_check" "api-minimal-gce-ilb-example-com" {
+  http_health_check {
+    port         = 443
+    request_path = "/healthz"
+  }
+  name   = "api-minimal-gce-ilb-example-com"
+  region = "us-test1"
+  tcp_health_check {
+    port = 0
+  }
 }
 
 resource "google_compute_router" "nat-minimal-gce-ilb-example-com" {

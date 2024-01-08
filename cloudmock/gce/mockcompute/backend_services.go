@@ -31,7 +31,7 @@ type backendServiceClient struct {
 	sync.Mutex
 }
 
-var _ gce.RegionBackendServiceClient = &backendServiceClient{}
+var _ gce.BackendServiceClient = &backendServiceClient{}
 
 func newBackendServiceClient() *backendServiceClient {
 	return &backendServiceClient{

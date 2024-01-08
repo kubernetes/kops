@@ -182,6 +182,16 @@ resource "google_compute_address" "api-minimal-gce-plb-example-com" {
   name = "api-minimal-gce-plb-example-com"
 }
 
+resource "google_compute_backend_service" "api-minimal-gce-plb-example-com" {
+  backend {
+    group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-plb-example-com.instance_group
+  }
+  health_checks         = [google_compute_health_check.api-minimal-gce-plb-example-com.id]
+  load_balancing_scheme = "EXTERNAL"
+  name                  = "api-minimal-gce-plb-example-com"
+  protocol              = "TCP"
+}
+
 resource "google_compute_disk" "a-etcd-events-minimal-gce-plb-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
@@ -420,8 +430,9 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-plb-example
 }
 
 resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
-  ip_address  = google_compute_address.api-minimal-gce-plb-example-com.address
-  ip_protocol = "TCP"
+  backend_service = google_compute_backend_service.api-minimal-gce-plb-example-com.id
+  ip_address      = google_compute_address.api-minimal-gce-plb-example-com.address
+  ip_protocol     = "TCP"
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
     "name"                = "api"
@@ -429,20 +440,24 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
   load_balancing_scheme = "EXTERNAL"
   name                  = "api-minimal-gce-plb-example-com"
   port_range            = "443-443"
-  target                = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
 }
 
-resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {
-  name         = "api-minimal-gce-plb-example-com"
-  port         = 3990
-  request_path = "/healthz"
+resource "google_compute_health_check" "api-minimal-gce-plb-example-com" {
+  http_health_check {
+    port         = 3990
+    request_path = "/healthz"
+  }
+  name   = "api-minimal-gce-plb-example-com"
+  region = ""
+  tcp_health_check {
+    port = 0
+  }
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-plb-example-com" {
   base_instance_name             = "master-us-test1-a"
   list_managed_instances_results = "PAGINATED"
   name                           = "a-master-us-test1-a-minimal-gce-plb-example-com"
-  target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-example-com.self_link]
   target_size                    = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-gce-plb-example-com.self_link
@@ -589,11 +604,6 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-plb-example-com" {
   network       = google_compute_network.minimal-gce-plb-example-com.name
   region        = "us-test1"
   stack_type    = "IPV4_ONLY"
-}
-
-resource "google_compute_target_pool" "api-minimal-gce-plb-example-com" {
-  health_checks = [google_compute_http_health_check.api-minimal-gce-plb-example-com.self_link]
-  name          = "api-minimal-gce-plb-example-com"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
