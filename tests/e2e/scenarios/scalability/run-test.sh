@@ -95,6 +95,7 @@ create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/serve
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.etcdClusters[0].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
 create_args+=("--set spec.etcdClusters[1].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
+create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=5")
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
@@ -127,8 +128,11 @@ create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
 
 
-# Enable cluster addons, this enables us to replace the built-in manifest
-KOPS_FEATURE_FLAGS="ClusterAddons,${KOPS_FEATURE_FLAGS:-}"
+# AWS ONLY feature flags
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  # Enable creating a single nodes instance group
+  KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
+fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
 
@@ -201,6 +205,6 @@ fi
 
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
-  kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
   DELETE_CLUSTER=false # Don't delete again in trap
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" --down
 fi
