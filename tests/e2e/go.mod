@@ -20,7 +20,7 @@ require (
 	k8s.io/release v0.16.4
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
 	sigs.k8s.io/boskos v0.0.0-20230524062849-a7ef97ee445d
-	sigs.k8s.io/kubetest2 v0.0.0-20231014151303-89f09b65e8dd
+	sigs.k8s.io/kubetest2 v0.0.0-20231218114518-71238a9645df
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -133,6 +133,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.1 // indirect
+	github.com/go-resty/resty/v2 v2.10.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
