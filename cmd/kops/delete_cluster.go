@@ -51,8 +51,9 @@ type DeleteClusterOptions struct {
 }
 
 func (o *DeleteClusterOptions) InitDefaults() {
-	o.count = 42
+	o.count = 0
 	o.interval = 10 * time.Second
+	o.wait = 10 * time.Minute
 }
 
 var (
