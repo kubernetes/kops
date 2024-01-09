@@ -395,7 +395,7 @@ spec:
       priorityClassName: system-node-critical
       tolerations:
         - operator: Exists
-      hostNetwork: false
+      hostNetwork: {{ .HostNetwork }}
       securityContext:
         fsGroup: 0
         runAsGroup: 0
