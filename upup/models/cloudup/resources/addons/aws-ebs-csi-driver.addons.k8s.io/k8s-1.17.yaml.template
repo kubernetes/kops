@@ -377,6 +377,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
+              {{- if not .HostNetwork }}
+              - key: topology.kubernetes.io/zone
+                operator: Exists
+              {{- end }}
               - key: eks.amazonaws.com/compute-type
                 operator: NotIn
                 values:
@@ -395,7 +399,7 @@ spec:
       priorityClassName: system-node-critical
       tolerations:
         - operator: Exists
-      hostNetwork: false
+      hostNetwork: {{ .HostNetwork }}
       securityContext:
         fsGroup: 0
         runAsGroup: 0

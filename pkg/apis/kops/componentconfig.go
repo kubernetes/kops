@@ -913,6 +913,10 @@ type EBSCSIDriverSpec struct {
 	// KubeAPIBurst Burst to use while talking with Kubernetes API server. (default 100)
 	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty"`
 
+	// HostNetwork can be used for large clusters for faster access to node info via instance metadata.
+	// Default: false
+	HostNetwork bool `json:"hostNetwork,omitempty"`
+
 	// VolumeAttachLimit is the maximum number of volumes attachable per node.
 	// If specified, the limit applies to all nodes.
 	// If not specified, the value is approximated from the instance type.
