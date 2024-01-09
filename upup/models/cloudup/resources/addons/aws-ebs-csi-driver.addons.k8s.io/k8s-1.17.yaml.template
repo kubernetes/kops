@@ -377,6 +377,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
+              {{- if not .HostNetwork }}
+              - key: topology.kubernetes.io/zone
+                operator: Exists
+              {{- end }}
               - key: eks.amazonaws.com/compute-type
                 operator: NotIn
                 values:
