@@ -326,6 +326,11 @@ spec:
                         description: 'Enabled enables the AWS EBS CSI driver. Can
                           only be set to true. Default: true'
                         type: boolean
+                      hostNetwork:
+                        description: 'HostNetwork can be used for large clusters for
+                          faster access to node info via instance metadata. Default:
+                          false'
+                        type: boolean
                       kubeAPIBurst:
                         description: KubeAPIBurst Burst to use while talking with
                           Kubernetes API server. (default 100)
