@@ -357,21 +357,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-ipv6-example-com" {
 }
 
 resource "aws_eip" "us-test-1a-minimal-ipv6-example-com" {
+  domain = "vpc"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
-  vpc = true
 }
 
 resource "aws_eip" "us-test-1b-minimal-ipv6-example-com" {
+  domain = "vpc"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1b.minimal-ipv6.example.com"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
   }
-  vpc = true
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-ipv6-example-com" {
@@ -1331,7 +1331,7 @@ terraform {
     aws = {
       "configuration_aliases" = [aws.files]
       "source"                = "hashicorp/aws"
-      "version"               = ">= 4.0.0"
+      "version"               = ">= 5.0.0"
     }
   }
 }

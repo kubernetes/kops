@@ -406,12 +406,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecilium-example-com" {
 }
 
 resource "aws_eip" "us-test-1a-privatecilium-example-com" {
+  domain = "vpc"
   tags = {
     "KubernetesCluster"                               = "privatecilium.example.com"
     "Name"                                            = "us-test-1a.privatecilium.example.com"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
-  vpc = true
 }
 
 resource "aws_elb" "api-privatecilium-example-com" {
@@ -1477,7 +1477,7 @@ terraform {
     aws = {
       "configuration_aliases" = [aws.files]
       "source"                = "hashicorp/aws"
-      "version"               = ">= 4.0.0"
+      "version"               = ">= 5.0.0"
     }
   }
 }
