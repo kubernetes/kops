@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/google/shlex"
+	"golang.org/x/exp/slices"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
@@ -34,7 +35,6 @@ import (
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
-	"k8s.io/utils/strings/slices"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 

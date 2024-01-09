@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"strconv"
 
+	"golang.org/x/exp/slices"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/utils/strings/slices"
 )
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
