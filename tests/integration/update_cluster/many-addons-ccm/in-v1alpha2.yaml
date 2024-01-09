@@ -18,6 +18,7 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
+      hostNetwork: true
   cloudControllerManager:
     cloudProvider: aws
   cloudProvider: aws
