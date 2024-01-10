@@ -56,12 +56,12 @@ provider "aws" {
 }
 
 resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
+  domain = "vpc"
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
     "Name"                                              = "us-test-1a.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
-  vpc = true
 }
 
 resource "aws_internet_gateway" "lifecyclephases-example-com" {
@@ -193,7 +193,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 4.0.0"
+      "version" = ">= 5.0.0"
     }
   }
 }

@@ -271,8 +271,8 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 }
 
 type terraformElasticIP struct {
-	VPC  *bool             `cty:"vpc"`
-	Tags map[string]string `cty:"tags"`
+	Domain *string           `cty:"domain"`
+	Tags   map[string]string `cty:"tags"`
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
@@ -285,8 +285,8 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 	}
 
 	tf := &terraformElasticIP{
-		VPC:  aws.Bool(true),
-		Tags: e.Tags,
+		Domain: aws.String("vpc"),
+		Tags:   e.Tags,
 	}
 
 	return t.RenderResource("aws_eip", *e.Name, tf)
