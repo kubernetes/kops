@@ -823,7 +823,7 @@ terraform {
     }
     google = {
       "source"  = "hashicorp/google"
-      "version" = ">= 2.19.0"
+      "version" = ">= 5.11.0"
     }
   }
 }
