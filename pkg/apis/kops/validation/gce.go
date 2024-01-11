@@ -48,6 +48,9 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 
 	if gce.UsesIPAliases(c) {
 		gcpAliasRange := c.Spec.CloudConfig.GCPAliasRange
+		if gcpAliasRange == nil {
+			return allErrs
+		}
 		if !gceValidateAliasRange(gcpAliasRange) {
 			f := fieldSpec.Child("CloudConfig")
 			allErrs = append(allErrs, field.Invalid(f.Child("gcpAliasRange"), gcpAliasRange, "must match /2[4-8]"))
