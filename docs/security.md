@@ -22,7 +22,7 @@ setting either `spec.sshAccess` in the cluster spec or using `kops create cluste
 To change the SSH public key on an existing cluster:
 
 * `kops delete sshpublickey --name <clustername> sshpublickey`
-* `kops create sshpublickey --name <clustername> sshpublickey -i ~/.ssh/newkey.pub`
+* `kops create sshpublickey --name <clustername> -i ~/.ssh/newkey.pub`
 * `kops update cluster <clustername> --yes` to reconfigure the launch templates.
 * `kops rolling-update cluster --name <clustername> --yes` to roll all the machines so they have the new key.
 
