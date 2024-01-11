@@ -245,7 +245,7 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			},
 			"google": {
 				"source":  "hashicorp/google",
-				"version": ">= 2.19.0",
+				"version": ">= 5.11.0",
 			},
 			"hcloud": {
 				"source":  "hetznercloud/hcloud",
