@@ -762,15 +762,14 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyUriInUseException
 //     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     and XksProxyUriPath is already associated with an external key store in the
-//     Amazon Web Services account and Region. Each external key store in an account
-//     and Region must use a unique external key store proxy API address.
+//     and XksProxyUriPath is already associated with another external key store
+//     in this Amazon Web Services Region. Each external key store in a Region must
+//     use a unique external key store proxy API address.
 //
 //   - XksProxyUriEndpointInUseException
-//     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an account and Region must
-//     use a unique external key store proxy address.
+//     The request was rejected because the XksProxyUriEndpoint is already associated
+//     with another external key store in this Amazon Web Services Region. To identify
+//     the cause, see the error message that accompanies the exception.
 //
 //   - XksProxyUriUnreachableException
 //     KMS was unable to reach the specified XksProxyUriPath. The path must be reachable
@@ -789,9 +788,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInUseException
 //     The request was rejected because the specified Amazon VPC endpoint service
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an Amazon Web Services account
-//     and Region must use a different Amazon VPC endpoint service.
+//     is already associated with another external key store in this Amazon Web
+//     Services Region. Each external key store in a Region must use a different
+//     Amazon VPC endpoint service.
 //
 //   - XksProxyVpcEndpointServiceNotFoundException
 //     The request was rejected because KMS could not find the specified VPC endpoint
@@ -802,8 +801,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInvalidConfigurationException
 //     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message and review the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+//     does not fulfill the requirements for an external key store. To identify
+//     the cause, see the error message that accompanies the exception and review
+//     the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
@@ -813,9 +813,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //     to the proxy vendor.
 //
 //   - XksProxyInvalidConfigurationException
-//     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message.
+//     The request was rejected because the external key store proxy is not configured
+//     correctly. To identify the cause, see the error message that accompanies
+//     the exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/CreateCustomKeyStore
 func (c *KMS) CreateCustomKeyStore(input *CreateCustomKeyStoreInput) (*CreateCustomKeyStoreOutput, error) {
@@ -1347,8 +1347,8 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 //
 //   - XksKeyAlreadyInUseException
 //     The request was rejected because the (XksKeyId) is already associated with
-//     a KMS key in this external key store. Each KMS key in an external key store
-//     must be associated with a different external key.
+//     another KMS key in this external key store. Each KMS key in an external key
+//     store must be associated with a different external key.
 //
 //   - XksKeyNotFoundException
 //     The request was rejected because the external key store proxy could not find
@@ -8495,15 +8495,14 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyUriInUseException
 //     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     and XksProxyUriPath is already associated with an external key store in the
-//     Amazon Web Services account and Region. Each external key store in an account
-//     and Region must use a unique external key store proxy API address.
+//     and XksProxyUriPath is already associated with another external key store
+//     in this Amazon Web Services Region. Each external key store in a Region must
+//     use a unique external key store proxy API address.
 //
 //   - XksProxyUriEndpointInUseException
-//     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an account and Region must
-//     use a unique external key store proxy address.
+//     The request was rejected because the XksProxyUriEndpoint is already associated
+//     with another external key store in this Amazon Web Services Region. To identify
+//     the cause, see the error message that accompanies the exception.
 //
 //   - XksProxyUriUnreachableException
 //     KMS was unable to reach the specified XksProxyUriPath. The path must be reachable
@@ -8522,9 +8521,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInUseException
 //     The request was rejected because the specified Amazon VPC endpoint service
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an Amazon Web Services account
-//     and Region must use a different Amazon VPC endpoint service.
+//     is already associated with another external key store in this Amazon Web
+//     Services Region. Each external key store in a Region must use a different
+//     Amazon VPC endpoint service.
 //
 //   - XksProxyVpcEndpointServiceNotFoundException
 //     The request was rejected because KMS could not find the specified VPC endpoint
@@ -8535,8 +8534,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInvalidConfigurationException
 //     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message and review the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+//     does not fulfill the requirements for an external key store. To identify
+//     the cause, see the error message that accompanies the exception and review
+//     the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
@@ -8546,9 +8546,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //     to the proxy vendor.
 //
 //   - XksProxyInvalidConfigurationException
-//     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message.
+//     The request was rejected because the external key store proxy is not configured
+//     correctly. To identify the cause, see the error message that accompanies
+//     the exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/UpdateCustomKeyStore
 func (c *KMS) UpdateCustomKeyStore(input *UpdateCustomKeyStoreInput) (*UpdateCustomKeyStoreOutput, error) {
@@ -10143,7 +10143,7 @@ type CreateCustomKeyStoreInput struct {
 	//
 	//    * An external key store with PUBLIC_ENDPOINT connectivity cannot use the
 	//    same XksProxyUriEndpoint value as an external key store with VPC_ENDPOINT_SERVICE
-	//    connectivity in the same Amazon Web Services Region.
+	//    connectivity in this Amazon Web Services Region.
 	//
 	//    * Each external key store with VPC_ENDPOINT_SERVICE connectivity must
 	//    have its own private DNS name. The XksProxyUriEndpoint value for external
@@ -20820,8 +20820,8 @@ func (s *VerifyOutput) SetSigningAlgorithm(v string) *VerifyOutput {
 }
 
 // The request was rejected because the (XksKeyId) is already associated with
-// a KMS key in this external key store. Each KMS key in an external key store
-// must be associated with a different external key.
+// another KMS key in this external key store. Each KMS key in an external key
+// store must be associated with a different external key.
 type XksKeyAlreadyInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21303,9 +21303,9 @@ func (s *XksProxyIncorrectAuthenticationCredentialException) RequestID() string 
 	return s.RespMetadata.RequestID
 }
 
-// The request was rejected because the Amazon VPC endpoint service configuration
-// does not fulfill the requirements for an external key store proxy. For details,
-// see the exception message.
+// The request was rejected because the external key store proxy is not configured
+// correctly. To identify the cause, see the error message that accompanies
+// the exception.
 type XksProxyInvalidConfigurationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21436,10 +21436,9 @@ func (s *XksProxyInvalidResponseException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The request was rejected because the concatenation of the XksProxyUriEndpoint
-// is already associated with an external key store in the Amazon Web Services
-// account and Region. Each external key store in an account and Region must
-// use a unique external key store proxy address.
+// The request was rejected because the XksProxyUriEndpoint is already associated
+// with another external key store in this Amazon Web Services Region. To identify
+// the cause, see the error message that accompanies the exception.
 type XksProxyUriEndpointInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21504,9 +21503,9 @@ func (s *XksProxyUriEndpointInUseException) RequestID() string {
 }
 
 // The request was rejected because the concatenation of the XksProxyUriEndpoint
-// and XksProxyUriPath is already associated with an external key store in the
-// Amazon Web Services account and Region. Each external key store in an account
-// and Region must use a unique external key store proxy API address.
+// and XksProxyUriPath is already associated with another external key store
+// in this Amazon Web Services Region. Each external key store in a Region must
+// use a unique external key store proxy API address.
 type XksProxyUriInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21640,9 +21639,9 @@ func (s *XksProxyUriUnreachableException) RequestID() string {
 }
 
 // The request was rejected because the specified Amazon VPC endpoint service
-// is already associated with an external key store in the Amazon Web Services
-// account and Region. Each external key store in an Amazon Web Services account
-// and Region must use a different Amazon VPC endpoint service.
+// is already associated with another external key store in this Amazon Web
+// Services Region. Each external key store in a Region must use a different
+// Amazon VPC endpoint service.
 type XksProxyVpcEndpointServiceInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21707,8 +21706,9 @@ func (s *XksProxyVpcEndpointServiceInUseException) RequestID() string {
 }
 
 // The request was rejected because the Amazon VPC endpoint service configuration
-// does not fulfill the requirements for an external key store proxy. For details,
-// see the exception message and review the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+// does not fulfill the requirements for an external key store. To identify
+// the cause, see the error message that accompanies the exception and review
+// the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 // for Amazon VPC endpoint service connectivity for an external key store.
 type XksProxyVpcEndpointServiceInvalidConfigurationException struct {
 	_            struct{}                  `type:"structure"`
