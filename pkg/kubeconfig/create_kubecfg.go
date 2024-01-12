@@ -55,13 +55,24 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 			}
 
 			var targets []string
-			for _, ingress := range ingresses {
-				if ingress.Hostname != "" {
-					targets = append(targets, ingress.Hostname)
+
+			for _, useInternalEndpoint := range []bool{false, true} {
+				for _, ingress := range ingresses {
+					if !useInternalEndpoint && ingress.InternalEndpoint {
+						continue
+					}
+					if ingress.Hostname != "" {
+						targets = append(targets, ingress.Hostname)
+					}
+					if ingress.IP != "" {
+						targets = append(targets, ingress.IP)
+					}
 				}
-				if ingress.IP != "" {
-					targets = append(targets, ingress.IP)
+				if len(targets) > 0 {
+					// Prefer external addresses
+					break
 				}
+				klog.Infof("no external API endpoints found; falling back to internal API endpoints")
 			}
 
 			sort.Strings(targets)
