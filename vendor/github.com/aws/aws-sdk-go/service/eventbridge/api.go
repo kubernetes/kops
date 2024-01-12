@@ -5425,6 +5425,60 @@ func (s *ApiDestination) SetName(v string) *ApiDestination {
 	return s
 }
 
+// Contains the GraphQL operation to be parsed and executed, if the event target
+// is an AppSync API.
+type AppSyncParameters struct {
+	_ struct{} `type:"structure"`
+
+	// The GraphQL operation; that is, the query, mutation, or subscription to be
+	// parsed and executed by the GraphQL service.
+	//
+	// For more information, see Operations (https://docs.aws.amazon.com/appsync/latest/devguide/graphql-architecture.html#graphql-operations)
+	// in the AppSync User Guide.
+	//
+	// GraphQLOperation is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppSyncParameters's
+	// String and GoString methods.
+	GraphQLOperation *string `min:"1" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppSyncParameters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppSyncParameters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AppSyncParameters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AppSyncParameters"}
+	if s.GraphQLOperation != nil && len(*s.GraphQLOperation) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GraphQLOperation", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphQLOperation sets the GraphQLOperation field's value.
+func (s *AppSyncParameters) SetGraphQLOperation(v string) *AppSyncParameters {
+	s.GraphQLOperation = &v
+	return s
+}
+
 // An Archive object that contains details about an archive.
 type Archive struct {
 	_ struct{} `type:"structure"`
@@ -14324,29 +14378,7 @@ type PutRuleInput struct {
 	// The scheduling expression. For example, "cron(0 20 * * ? *)" or "rate(5 minutes)".
 	ScheduleExpression *string `type:"string"`
 
-	// The state of the rule.
-	//
-	// Valid values include:
-	//
-	//    * DISABLED: The rule is disabled. EventBridge does not match any events
-	//    against the rule.
-	//
-	//    * ENABLED: The rule is enabled. EventBridge matches events against the
-	//    rule, except for Amazon Web Services management events delivered through
-	//    CloudTrail.
-	//
-	//    * ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS: The rule is enabled for
-	//    all events, including Amazon Web Services management events delivered
-	//    through CloudTrail. Management events provide visibility into management
-	//    operations that are performed on resources in your Amazon Web Services
-	//    account. These are also known as control plane operations. For more information,
-	//    see Logging management events (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html#logging-management-events)
-	//    in the CloudTrail User Guide, and Filtering management events from Amazon
-	//    Web Services services (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event.html#eb-service-event-cloudtrail)
-	//    in the Amazon EventBridge User Guide. This value is only valid for rules
-	//    on the default (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is-how-it-works-concepts.html#eb-bus-concepts-buses)
-	//    event bus or custom event buses (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-event-bus.html).
-	//    It does not apply to partner event buses (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-saas.html).
+	// Indicates whether the rule is enabled or disabled.
 	State *string `type:"string" enum:"RuleState"`
 
 	// The list of key-value pairs to associate with the rule.
@@ -15545,28 +15577,6 @@ type Rule struct {
 	ScheduleExpression *string `type:"string"`
 
 	// The state of the rule.
-	//
-	// Valid values include:
-	//
-	//    * DISABLED: The rule is disabled. EventBridge does not match any events
-	//    against the rule.
-	//
-	//    * ENABLED: The rule is enabled. EventBridge matches events against the
-	//    rule, except for Amazon Web Services management events delivered through
-	//    CloudTrail.
-	//
-	//    * ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS: The rule is enabled for
-	//    all events, including Amazon Web Services management events delivered
-	//    through CloudTrail. Management events provide visibility into management
-	//    operations that are performed on resources in your Amazon Web Services
-	//    account. These are also known as control plane operations. For more information,
-	//    see Logging management events (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html#logging-management-events)
-	//    in the CloudTrail User Guide, and Filtering management events from Amazon
-	//    Web Services services (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event.html#eb-service-event-cloudtrail)
-	//    in the Amazon EventBridge User Guide. This value is only valid for rules
-	//    on the default (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is-how-it-works-concepts.html#eb-bus-concepts-buses)
-	//    event bus or custom event buses (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-event-bus.html).
-	//    It does not apply to partner event buses (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-saas.html).
 	State *string `type:"string" enum:"RuleState"`
 }
 
@@ -16334,6 +16344,10 @@ func (s TagResourceOutput) GoString() string {
 type Target struct {
 	_ struct{} `type:"structure"`
 
+	// Contains the GraphQL operation to be parsed and executed, if the event target
+	// is an AppSync API.
+	AppSyncParameters *AppSyncParameters `type:"structure"`
+
 	// The Amazon Resource Name (ARN) of the target.
 	//
 	// Arn is a required field
@@ -16463,6 +16477,11 @@ func (s *Target) Validate() error {
 	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
 	}
+	if s.AppSyncParameters != nil {
+		if err := s.AppSyncParameters.Validate(); err != nil {
+			invalidParams.AddNested("AppSyncParameters", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.BatchParameters != nil {
 		if err := s.BatchParameters.Validate(); err != nil {
 			invalidParams.AddNested("BatchParameters", err.(request.ErrInvalidParams))
@@ -16513,6 +16532,12 @@ func (s *Target) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAppSyncParameters sets the AppSyncParameters field's value.
+func (s *Target) SetAppSyncParameters(v *AppSyncParameters) *Target {
+	s.AppSyncParameters = v
+	return s
 }
 
 // SetArn sets the Arn field's value.
