@@ -69,7 +69,6 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 
 		Lifecycle: b.Lifecycle,
 		WellKnownServices: []wellknownservices.WellKnownService{
-			wellknownservices.KubeAPIServerInternal,
 			wellknownservices.KubeAPIServerExternal,
 		},
 	}
@@ -108,7 +107,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		})
 	}
 
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderContext) error {
@@ -155,7 +154,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 // createInternalLB creates an internal load balancer for the cluster.  In
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
-func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
+func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext, useForKubeAPIServerExternal bool) error {
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
 
 	hc := &gcetasks.HealthCheck{
@@ -212,10 +211,12 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			Subnetwork:    subnet,
 
 			WellKnownServices: []wellknownservices.WellKnownService{
-				wellknownservices.KubeAPIServerExternal,
 				wellknownservices.KubeAPIServerInternal,
 			},
 			Lifecycle: b.Lifecycle,
+		}
+		if useForKubeAPIServerExternal {
+			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KubeAPIServerExternal)
 		}
 		c.AddTask(ipAddress)
 
@@ -254,7 +255,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			})
 		}
 	}
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -270,22 +271,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-		return b.createPublicLB(c)
+		if err := b.createPublicLB(c); err != nil {
+			return err
+		}
+		// We always create the internal load balancer also;
+		// it allows us to restrict access to only the nodes.
+		useForKubeAPIServerExternal := false
+		if err := b.createInternalLB(c, useForKubeAPIServerExternal); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	case kops.LoadBalancerTypeInternal:
-		return b.createInternalLB(c)
+		useForKubeAPIServerExternal := true
+		if err := b.createInternalLB(c, useForKubeAPIServerExternal); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
-}
-
-// subnetNotSpecified returns true if the given LB subnet is not listed in the list of cluster subnets.
-func subnetNotSpecified(sn kops.LoadBalancerSubnetSpec, subnets []kops.ClusterSubnetSpec) bool {
-	for _, csn := range subnets {
-		if csn.Name == sn.Name || csn.ID == sn.Name {
-			return false
-		}
-	}
-	return true
 }
