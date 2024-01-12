@@ -72,6 +72,9 @@ type SubnetInfo struct {
 // ApiIngressStatus represents the status of an ingress point:
 // traffic intended for the service should be sent to an ingress point.
 type ApiIngressStatus struct {
+	// InternalEndpoint is true when the endpoint is only reachable from the cloud.
+	InternalEndpoint bool
+
 	// IP is set for load-balancer ingress points that are IP based
 	// (typically GCE or OpenStack load-balancers)
 	// +optional
