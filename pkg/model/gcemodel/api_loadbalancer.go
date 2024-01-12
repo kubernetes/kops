@@ -105,7 +105,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		})
 	}
 
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderContext) error {
@@ -248,7 +248,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			})
 		}
 	}
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -264,22 +264,25 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-		return b.createPublicLB(c)
+		if err := b.createPublicLB(c); err != nil {
+			return err
+		}
+		// We always create the internal load balancer also;
+		// it allows us to restrict access to only the nodes.
+		if err := b.createInternalLB(c); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	case kops.LoadBalancerTypeInternal:
-		return b.createInternalLB(c)
+		if err := b.createInternalLB(c); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
-}
-
-// subnetNotSpecified returns true if the given LB subnet is not listed in the list of cluster subnets.
-func subnetNotSpecified(sn kops.LoadBalancerSubnetSpec, subnets []kops.ClusterSubnetSpec) bool {
-	for _, csn := range subnets {
-		if csn.Name == sn.Name || csn.ID == sn.Name {
-			return false
-		}
-	}
-	return true
 }
