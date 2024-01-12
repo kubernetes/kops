@@ -345,8 +345,11 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Querying EC2 instances")
+	filters := BuildEC2Filters(cloud)
+	filters = append(filters, awsup.NewEC2Filter("vpc-id", vpcID))
+	filters = append(filters, awsup.NewEC2Filter("instance-state-name", ec2.InstanceStateNameRunning))
 	request := &ec2.DescribeInstancesInput{
-		Filters: BuildEC2Filters(cloud),
+		Filters: filters,
 	}
 
 	var resourceTrackers []*resources.Resource
@@ -355,29 +358,6 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 		for _, reservation := range p.Reservations {
 			for _, instance := range reservation.Instances {
 				id := aws.StringValue(instance.InstanceId)
-
-				managedByASG := false
-				for _, tag := range instance.Tags {
-					if fi.ValueOf(tag.Key) == "aws:autoscaling:groupName" {
-						managedByASG = true
-						break
-					}
-				}
-
-				if instance.State != nil {
-					stateName := fi.ValueOf(instance.State.Name)
-					switch stateName {
-					case "terminated", "shutting-down":
-						continue
-
-					case "running", "stopped", "pending":
-						// We need to delete
-						klog.V(4).Infof("instance %q has state=%q", id, stateName)
-
-					default:
-						klog.Infof("unknown instance state for %q: %q", id, stateName)
-					}
-				}
 
 				resourceTracker := &resources.Resource{
 					Name:    FindName(instance.Tags),
@@ -392,13 +372,11 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
 				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
 
-				hasVolumes := false
 				for _, volume := range instance.BlockDeviceMappings {
 					if volume.Ebs == nil || fi.ValueOf(volume.Ebs.DeleteOnTermination) {
 						continue
 					}
 					blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
-					hasVolumes = true
 				}
 				for _, sg := range instance.SecurityGroups {
 					blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
@@ -406,10 +384,7 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 
 				resourceTracker.Blocks = blocks
 
-				// Track only instances not managed by ASG or with volumes
-				if !managedByASG || hasVolumes {
-					resourceTrackers = append(resourceTrackers, resourceTracker)
-				}
+				resourceTrackers = append(resourceTrackers, resourceTracker)
 			}
 		}
 		return true
