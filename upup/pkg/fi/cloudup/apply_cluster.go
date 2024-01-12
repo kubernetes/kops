@@ -1457,50 +1457,52 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	if hasAPIServer {
-		config.ApiserverAdditionalIPs = wellKnownAddresses[wellknownservices.KubeAPIServer]
+		config.ApiserverAdditionalIPs = wellKnownAddresses[wellknownservices.KubeAPIServerExternal]
 	}
 
 	// Set API server address to an IP from the cluster network CIDR
-	var controlPlaneIPs []string
+	// var apiserverExternalIPs []string
+	var apiserverInternalIPs []string
+	kopsControllerIPs := wellKnownAddresses[wellknownservices.KopsControllerInternal]
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
 		// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
-		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
+		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServerInternal] {
 			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
 				_, cidr, err := net.ParseCIDR(networkCIDR)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
 				}
 				if cidr.Contains(net.ParseIP(additionalIP)) {
-					controlPlaneIPs = append(controlPlaneIPs, additionalIP)
+					apiserverInternalIPs = append(apiserverInternalIPs, additionalIP)
 				}
 			}
 		}
 
 	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderGCE, kops.CloudProviderAzure:
 		// Use any IP address that is found (including public ones)
-		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
-			controlPlaneIPs = append(controlPlaneIPs, additionalIP)
+		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServerInternal] {
+			apiserverInternalIPs = append(apiserverInternalIPs, additionalIP)
 		}
 	}
 
 	if cluster.UsesNoneDNS() {
-		bootConfig.APIServerIPs = controlPlaneIPs
+		bootConfig.APIServerIPs = apiserverInternalIPs
 	} else {
 		// If we do have a fixed IP, we use it (on some clouds, initially)
 		// This covers the clouds in UseKopsControllerForNodeConfig which use kops-controller for node config,
 		// but don't have a specialized discovery mechanism for finding kops-controller etc.
 		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO:
-			bootConfig.APIServerIPs = controlPlaneIPs
+			bootConfig.APIServerIPs = kopsControllerIPs
 		}
 	}
 
 	useConfigServer := apiModel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
 	if useConfigServer {
 		hosts := []string{"kops-controller.internal." + cluster.ObjectMeta.Name}
-		if len(bootConfig.APIServerIPs) > 0 {
-			hosts = bootConfig.APIServerIPs
+		if len(kopsControllerIPs) > 0 {
+			hosts = kopsControllerIPs
 		}
 
 		configServer := &nodeup.ConfigServerOptions{

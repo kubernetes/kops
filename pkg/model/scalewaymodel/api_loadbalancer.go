@@ -82,7 +82,8 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	c.AddTask(loadBalancer)
 
-	loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KubeAPIServer)
+	loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KubeAPIServerInternal)
+	loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KubeAPIServerExternal)
 	lbBackendHttps, lbFrontendHttps := createLbBackendAndFrontend("https", wellknownports.KubeAPIServer, zone, loadBalancer)
 	lbBackendHttps.Lifecycle = b.Lifecycle
 	c.AddTask(lbBackendHttps)
@@ -90,7 +91,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	c.AddTask(lbFrontendHttps)
 
 	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KopsController)
+		loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KopsControllerInternal)
 		lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
 		lbBackendKopsController.Lifecycle = b.Lifecycle
 		c.AddTask(lbBackendKopsController)

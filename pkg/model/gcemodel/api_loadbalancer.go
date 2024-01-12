@@ -67,8 +67,11 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	ipAddress := &gcetasks.Address{
 		Name: s(b.NameForIPAddress("api")),
 
-		Lifecycle:         b.Lifecycle,
-		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+		Lifecycle: b.Lifecycle,
+		WellKnownServices: []wellknownservices.WellKnownService{
+			wellknownservices.KubeAPIServerInternal,
+			wellknownservices.KubeAPIServerExternal,
+		},
 	}
 	c.AddTask(ipAddress)
 
@@ -88,7 +91,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		},
 	})
 	if b.Cluster.UsesNoneDNS() {
-		ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+		ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsControllerInternal)
 
 		c.AddTask(&gcetasks.ForwardingRule{
 			Name:                s(b.NameForForwardingRule("kops-controller")),
@@ -208,8 +211,11 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			Purpose:       s("SHARED_LOADBALANCER_VIP"),
 			Subnetwork:    subnet,
 
-			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
-			Lifecycle:         b.Lifecycle,
+			WellKnownServices: []wellknownservices.WellKnownService{
+				wellknownservices.KubeAPIServerExternal,
+				wellknownservices.KubeAPIServerInternal,
+			},
+			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(ipAddress)
 
@@ -229,7 +235,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			},
 		})
 		if b.Cluster.UsesNoneDNS() {
-			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsControllerInternal)
 
 			c.AddTask(&gcetasks.ForwardingRule{
 				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),

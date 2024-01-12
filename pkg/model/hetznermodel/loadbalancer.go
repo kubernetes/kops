@@ -65,7 +65,11 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) error
 			hetzner.TagKubernetesClusterName: b.ClusterName(),
 		},
 
-		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer, wellknownservices.KopsController},
+		WellKnownServices: []wellknownservices.WellKnownService{
+			wellknownservices.KopsControllerInternal,
+			wellknownservices.KubeAPIServerExternal,
+			wellknownservices.KubeAPIServerInternal,
+		},
 	}
 
 	c.AddTask(&loadbalancer)

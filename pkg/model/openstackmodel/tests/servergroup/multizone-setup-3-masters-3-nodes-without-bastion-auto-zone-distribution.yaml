@@ -10,7 +10,8 @@ LB: null
 Lifecycle: Sync
 Name: fip-master-1-cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 - kops-controller
 ---
 ID: null
@@ -19,7 +20,8 @@ LB: null
 Lifecycle: Sync
 Name: fip-master-2-cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 - kops-controller
 ---
 ID: null
@@ -28,7 +30,8 @@ LB: null
 Lifecycle: Sync
 Name: fip-master-3-cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 - kops-controller
 ---
 ID: null
@@ -62,7 +65,8 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-1-cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
   - kops-controller
 GroupName: master
 ID: null
@@ -153,7 +157,8 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-2-cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
   - kops-controller
 GroupName: master
 ID: null
@@ -244,7 +249,8 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-3-cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
   - kops-controller
 GroupName: master
 ID: null

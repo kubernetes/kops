@@ -50,16 +50,20 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
-		Name:              fi.PtrTo(b.NameForLoadBalancer()),
-		Lifecycle:         b.Lifecycle,
-		ResourceGroup:     b.LinkToResourceGroup(),
-		Tags:              map[string]*string{},
-		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+		Name:          fi.PtrTo(b.NameForLoadBalancer()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          map[string]*string{},
 	}
+
+	lb.WellKnownServices = append(lb.WellKnownServices,
+		wellknownservices.KubeAPIServerExternal,
+		wellknownservices.KubeAPIServerInternal)
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypeInternal:
 		lb.External = to.Ptr(false)
+
 		subnet, err := b.subnetForLoadBalancer()
 		if err != nil {
 			return err
@@ -83,7 +87,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	c.AddTask(lb)
 
 	if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		lb.WellKnownServices = append(lb.WellKnownServices, wellknownservices.KopsController)
+		lb.WellKnownServices = append(lb.WellKnownServices, wellknownservices.KopsControllerInternal)
 	}
 
 	return nil
