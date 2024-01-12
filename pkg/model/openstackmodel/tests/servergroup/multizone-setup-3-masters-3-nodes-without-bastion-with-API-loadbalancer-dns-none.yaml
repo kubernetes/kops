@@ -37,7 +37,8 @@ LB:
 Lifecycle: Sync
 Name: fip-api.cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-internal
+- kube-apiserver-external
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
@@ -96,7 +97,8 @@ Port:
   - KopsName=port-master-a-1
   - KubernetesCluster=cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
 Region: ""
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -174,7 +176,8 @@ Port:
   - KopsName=port-master-b-1
   - KubernetesCluster=cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
 Region: ""
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -252,7 +255,8 @@ Port:
   - KopsName=port-master-c-1
   - KubernetesCluster=cluster
   WellKnownServices:
-  - kube-apiserver
+  - kube-apiserver-external
+  - kube-apiserver-internal
 Region: ""
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -866,7 +870,8 @@ Tags:
 - KopsName=port-master-a-1
 - KubernetesCluster=cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
@@ -900,7 +905,8 @@ Tags:
 - KopsName=port-master-b-1
 - KubernetesCluster=cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
@@ -934,7 +940,8 @@ Tags:
 - KopsName=port-master-c-1
 - KubernetesCluster=cluster
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-external
+- kube-apiserver-internal
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null

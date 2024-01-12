@@ -199,11 +199,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},
-			SubnetMappings:    nlbSubnetMappings,
-			Tags:              tags,
-			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
-			VPC:               b.LinkToVPC(),
-			Type:              fi.PtrTo("network"),
+			SubnetMappings: nlbSubnetMappings,
+			Tags:           tags,
+			WellKnownServices: []wellknownservices.WellKnownService{
+				wellknownservices.KubeAPIServerInternal,
+				wellknownservices.KubeAPIServerExternal,
+			},
+			VPC:  b.LinkToVPC(),
+			Type: fi.PtrTo("network"),
 		}
 
 		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
@@ -241,8 +244,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Timeout: fi.PtrTo(int64(300)),
 			},
 
-			Tags:              tags,
-			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+			Tags: tags,
+			WellKnownServices: []wellknownservices.WellKnownService{
+				wellknownservices.KubeAPIServerInternal,
+				wellknownservices.KubeAPIServerExternal,
+			},
 		}
 
 		if b.Cluster.UsesNoneDNS() {
@@ -554,8 +560,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				ToPort:        fi.PtrTo(int64(4)),
 			})
 			if b.Cluster.UsesNoneDNS() {
-				nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
-				clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsController)
+				nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsControllerInternal)
+				clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsControllerInternal)
 
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),

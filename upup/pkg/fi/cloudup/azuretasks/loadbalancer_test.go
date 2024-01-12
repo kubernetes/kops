@@ -45,7 +45,7 @@ func newTestLoadBalancer() *LoadBalancer {
 			},
 		},
 		External:          to.Ptr(true),
-		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServerExternal},
 		Tags: map[string]*string{
 			testTagKey: to.Ptr(testTagValue),
 		},

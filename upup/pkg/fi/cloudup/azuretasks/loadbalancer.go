@@ -207,7 +207,7 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 		Tags: e.Tags,
 	}
 
-	if slices.Contains(e.WellKnownServices, wellknownservices.KubeAPIServer) {
+	if slices.Contains(e.WellKnownServices, wellknownservices.KubeAPIServerExternal) || slices.Contains(e.WellKnownServices, wellknownservices.KubeAPIServerInternal) {
 		lb.Properties.Probes = append(lb.Properties.Probes, &network.Probe{
 			Name: to.Ptr("Health-TCP-443"),
 			Properties: &network.ProbePropertiesFormat{
@@ -239,7 +239,7 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 		})
 	}
 
-	if slices.Contains(e.WellKnownServices, wellknownservices.KopsController) {
+	if slices.Contains(e.WellKnownServices, wellknownservices.KopsControllerInternal) {
 		lb.Properties.Probes = append(lb.Properties.Probes, &network.Probe{
 			Name: to.Ptr("Health-TCP-3988"),
 			Properties: &network.ProbePropertiesFormat{

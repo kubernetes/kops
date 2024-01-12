@@ -19,9 +19,20 @@ package wellknownservices
 type WellKnownService string
 
 const (
-	// KubeAPIServer is the service where kube-apiserver listens.
-	KubeAPIServer WellKnownService = "kube-apiserver"
+	// KubeAPIServerExternal is the service where kube-apiserver listens for user traffic.
+	KubeAPIServerExternal WellKnownService = "kube-apiserver-external"
 
-	// KopsController is the service where kops-controller listens.
-	KopsController WellKnownService = "kops-controller"
+	// KubeAPIServerInternal is the service where kube-apiserver listens for internal (in-cluster) traffic.
+	// Note that this might still be exposed publicly, "internal" refers to whether the source of the traffic
+	// is from inside or outside the cluster.
+	KubeAPIServerInternal WellKnownService = "kube-apiserver-internal"
+
+	// KopsControllerInternal is the service where kops-controller listens for internal (in-cluster) traffic.
+	// As with KubeAPIServerInternal, this might still be exposed publicly,
+	// "internal" refers to whether whether the source of the traffic is from inside or outside the cluster.
+	// There is no "KopsControllerExternal" because the only client of kops-controller should be the Nodes;
+	// and generally we do not need or want to expose kops-controller to the internet.
+	// However, on some clouds it's not easy to restrict access, and we don't rely on kops-controller being
+	// unreachable publicly.
+	KopsControllerInternal WellKnownService = "kops-controller"
 )

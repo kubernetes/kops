@@ -120,12 +120,12 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 			// 	apiserverAdditionalIPs = append(apiserverAdditionalIPs, ingress.Hostname)
 			// }
 			if ingress.IP != "" {
-				wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], ingress.IP)
+				wellKnownAddresses[wellknownservices.KubeAPIServerExternal] = append(wellKnownAddresses[wellknownservices.KubeAPIServerExternal], ingress.IP)
 			}
 		}
 	}
 
-	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
+	if len(wellKnownAddresses[wellknownservices.KubeAPIServerExternal]) == 0 {
 		// TODO: Should we support DNS?
 		return fmt.Errorf("unable to determine IP address for kube-apiserver")
 	}

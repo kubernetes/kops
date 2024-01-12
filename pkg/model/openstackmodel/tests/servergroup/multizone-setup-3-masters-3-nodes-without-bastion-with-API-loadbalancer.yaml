@@ -37,7 +37,8 @@ LB:
 Lifecycle: Sync
 Name: fip-master-public-name
 WellKnownServices:
-- kube-apiserver
+- kube-apiserver-internal
+- kube-apiserver-external
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
