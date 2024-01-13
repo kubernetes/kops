@@ -87,23 +87,6 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			"name":           "api",
 		},
 	})
-	if b.Cluster.UsesNoneDNS() {
-		ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
-
-		c.AddTask(&gcetasks.ForwardingRule{
-			Name:                s(b.NameForForwardingRule("kops-controller")),
-			Lifecycle:           b.Lifecycle,
-			PortRange:           s(strconv.Itoa(wellknownports.KopsControllerPort) + "-" + strconv.Itoa(wellknownports.KopsControllerPort)),
-			TargetPool:          targetPool,
-			IPAddress:           ipAddress,
-			IPProtocol:          "TCP",
-			LoadBalancingScheme: s("EXTERNAL"),
-			Labels: map[string]string{
-				clusterLabel.Key: clusterLabel.Value,
-				"name":           "kops-controller",
-			},
-		})
-	}
 
 	return nil
 }
@@ -231,7 +214,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		if b.Cluster.UsesNoneDNS() {
 			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
 
-			c.AddTask(&gcetasks.ForwardingRule{
+			fr := &gcetasks.ForwardingRule{
 				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),
 				Lifecycle:           b.Lifecycle,
 				BackendService:      bs,
@@ -245,7 +228,11 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 					clusterLabel.Key: clusterLabel.Value,
 					"name":           "kops-controller-" + sn.Name,
 				},
-			})
+			}
+			// We previously created a forwarding rule which was external; prune it
+			fr.PruneForwardingRulesWithName(b.NameForForwardingRule("kops-controller")) //, "Removing legacy external load balancer for kops-controller")
+
+			c.AddTask(fr)
 		}
 	}
 	return nil
