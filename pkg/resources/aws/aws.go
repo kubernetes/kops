@@ -318,24 +318,28 @@ func matchesIAMTags(tags map[string]string, actual []*iam.Tag) bool {
 	return true
 }
 
-//type DeletableResource interface {
-//	Delete(cloud fi.Cloud) error
-//}
-
-func DeleteInstance(cloud fi.Cloud, t *resources.Resource) error {
+func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
-	id := t.ID
-	klog.V(2).Infof("Deleting EC2 instance %q", id)
-	request := &ec2.TerminateInstancesInput{
-		InstanceIds: []*string{&id},
-	}
-	_, err := c.EC2().TerminateInstances(request)
-	if err != nil {
-		if awsup.AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
-			klog.V(2).Infof("Got InvalidInstanceID.NotFound error deleting instance %q; will treat as already-deleted", id)
-		} else {
-			return fmt.Errorf("error deleting Instance %q: %v", id, err)
+	var ids []*string
+	for i, instance := range t {
+		ids = append(ids, &instance.ID)
+		if len(ids) < 100 && i < len(t)-1 {
+			continue
+		}
+
+		klog.Infof("Terminating %d EC2 instances", len(ids))
+		request := &ec2.TerminateInstancesInput{
+			InstanceIds: ids,
+		}
+		ids = []*string{}
+		_, err := c.EC2().TerminateInstances(request)
+		if err != nil {
+			if awsup.AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
+				klog.V(2).Infof("Got InvalidInstanceID.NotFound error terminating instances; will treat as already terminated")
+			} else {
+				return fmt.Errorf("error terminating instances: %v", err)
+			}
 		}
 	}
 	return nil
@@ -360,12 +364,13 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 				id := aws.StringValue(instance.InstanceId)
 
 				resourceTracker := &resources.Resource{
-					Name:    FindName(instance.Tags),
-					ID:      id,
-					Type:    ec2.ResourceTypeInstance,
-					Deleter: DeleteInstance,
-					Dumper:  DumpInstance,
-					Obj:     instance,
+					Name:         FindName(instance.Tags),
+					ID:           id,
+					Type:         ec2.ResourceTypeInstance,
+					GroupDeleter: DeleteInstances,
+					GroupKey:     fi.ValueOf(instance.SubnetId),
+					Dumper:       DumpInstance,
+					Obj:          instance,
 				}
 
 				var blocks []string
