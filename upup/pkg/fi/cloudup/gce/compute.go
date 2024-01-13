@@ -362,9 +362,9 @@ func (c *routeClientImpl) List(ctx context.Context, project string) ([]*compute.
 }
 
 type ForwardingRuleClient interface {
-	Insert(project, region string, fr *compute.ForwardingRule) (*compute.Operation, error)
-	Delete(project, region, name string) (*compute.Operation, error)
-	Get(project, region, name string) (*compute.ForwardingRule, error)
+	Insert(ctx context.Context, project, region string, fr *compute.ForwardingRule) (*compute.Operation, error)
+	Delete(ctx context.Context, project, region, name string) (*compute.Operation, error)
+	Get(ctx context.Context, project, region, name string) (*compute.ForwardingRule, error)
 	List(ctx context.Context, project, region string) ([]*compute.ForwardingRule, error)
 	SetLabels(ctx context.Context, project, region, resource string, request *compute.RegionSetLabelsRequest) (*compute.Operation, error)
 }
@@ -375,16 +375,16 @@ type forwardingRuleClientImpl struct {
 
 var _ ForwardingRuleClient = &forwardingRuleClientImpl{}
 
-func (c *forwardingRuleClientImpl) Insert(project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
-	return c.srv.Insert(project, region, fr).Do()
+func (c *forwardingRuleClientImpl) Insert(ctx context.Context, project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
+	return c.srv.Insert(project, region, fr).Context(ctx).Do()
 }
 
-func (c *forwardingRuleClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
-	return c.srv.Delete(project, region, name).Do()
+func (c *forwardingRuleClientImpl) Delete(ctx context.Context, project, region, name string) (*compute.Operation, error) {
+	return c.srv.Delete(project, region, name).Context(ctx).Do()
 }
 
-func (c *forwardingRuleClientImpl) Get(project, region, name string) (*compute.ForwardingRule, error) {
-	return c.srv.Get(project, region, name).Do()
+func (c *forwardingRuleClientImpl) Get(ctx context.Context, project, region, name string) (*compute.ForwardingRule, error) {
+	return c.srv.Get(project, region, name).Context(ctx).Do()
 }
 
 func (c *forwardingRuleClientImpl) SetLabels(ctx context.Context, project string, region string, resource string, request *compute.RegionSetLabelsRequest) (*compute.Operation, error) {

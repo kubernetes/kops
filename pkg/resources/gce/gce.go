@@ -500,6 +500,8 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*resources.Resource, erro
 }
 
 func deleteForwardingRule(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
+
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.ForwardingRule)
 
@@ -509,7 +511,7 @@ func deleteForwardingRule(cloud fi.Cloud, r *resources.Resource) error {
 		return err
 	}
 
-	op, err := c.Compute().ForwardingRules().Delete(u.Project, u.Region, u.Name)
+	op, err := c.Compute().ForwardingRules().Delete(ctx, u.Project, u.Region, u.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			klog.Infof("ForwardingRule not found, assuming deleted: %q", t.SelfLink)
@@ -585,7 +587,7 @@ nextFirewallRule:
 
 			// We lookup the forwarding rule by name, but we then validate that it points to one of our resources
 			forwardingRuleName := strings.TrimPrefix(firewallRule.Name, "k8s-fw-")
-			forwardingRule, err := c.Compute().ForwardingRules().Get(c.Project(), c.Region(), forwardingRuleName)
+			forwardingRule, err := c.Compute().ForwardingRules().Get(ctx, c.Project(), c.Region(), forwardingRuleName)
 			if err != nil {
 				if gce.IsNotFound(err) {
 					// We looked it up by name, so an error isn't unlikely
