@@ -806,12 +806,12 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 
 		rtRequest := &ec2.DescribeRouteTablesInput{}
 		rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
-		if err != nil {
+		if err != nil && awsup.AWSErrorCode(err) != "InvalidRouteTableID.NotFound" {
 			return nil, fmt.Errorf("error describing RouteTables: %v", err)
 		}
 		// sharedNgwIds is the set of IDs for shared NGWs, that we should not delete
 		sharedNgwIds := sets.NewString()
-		{
+		if rtResponse != nil {
 			for _, rt := range rtResponse.RouteTables {
 				for _, t := range rt.Tags {
 					k := aws.StringValue(t.Key)
@@ -1305,32 +1305,34 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			request.RouteTableIds = append(request.RouteTableIds, aws.String(routeTable.ID))
 		}
 		response, err := c.EC2().DescribeRouteTables(request)
-		if err != nil {
+		if err != nil && awsup.AWSErrorCode(err) != "InvalidRouteTableID.NotFound" {
 			return nil, fmt.Errorf("error from DescribeRouteTables: %v", err)
 		}
-		for _, rt := range response.RouteTables {
-			routeTableID := aws.StringValue(rt.RouteTableId)
-			resource := routeTables[routeTableID]
-			if resource == nil {
-				// We somehow got a route table that we didn't ask for
-				klog.Warningf("unable to find resource for route table %s", routeTableID)
-				continue
-			}
-
-			shared := resource.Shared
-			for _, t := range rt.Tags {
-				k := *t.Key
-				// v := *t.Value
-				if k == "AssociatedNatgateway" {
-					shared = true
+		if response != nil {
+			for _, rt := range response.RouteTables {
+				routeTableID := aws.StringValue(rt.RouteTableId)
+				resource := routeTables[routeTableID]
+				if resource == nil {
+					// We somehow got a route table that we didn't ask for
+					klog.Warningf("unable to find resource for route table %s", routeTableID)
+					continue
 				}
-			}
 
-			for _, route := range rt.Routes {
-				if route.NatGatewayId != nil {
-					natGatewayIds.Insert(*route.NatGatewayId)
-					if !shared {
-						ownedNatGatewayIds.Insert(*route.NatGatewayId)
+				shared := resource.Shared
+				for _, t := range rt.Tags {
+					k := *t.Key
+					// v := *t.Value
+					if k == "AssociatedNatgateway" {
+						shared = true
+					}
+				}
+
+				for _, route := range rt.Routes {
+					if route.NatGatewayId != nil {
+						natGatewayIds.Insert(*route.NatGatewayId)
+						if !shared {
+							ownedNatGatewayIds.Insert(*route.NatGatewayId)
+						}
 					}
 				}
 			}
