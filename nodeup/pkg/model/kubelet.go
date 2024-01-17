@@ -634,7 +634,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
 	// Respect any MaxPods value the user sets explicitly.
-	if b.NodeupConfig.Networking.AmazonVPC != nil && c.MaxPods == nil {
+	if (b.NodeupConfig.Networking.AmazonVPC != nil || (b.NodeupConfig.Networking.Cilium != nil && b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni)) && c.MaxPods == nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 
