@@ -95,7 +95,7 @@ create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/serve
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.etcdClusters[0].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
 create_args+=("--set spec.etcdClusters[1].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
-create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=5")
+create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=30")
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
