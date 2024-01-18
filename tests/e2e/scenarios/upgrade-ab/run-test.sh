@@ -45,7 +45,7 @@ if [[ "$K8S_VERSION_B" == "ci" ]]; then
   K8S_VERSION_B=https://storage.googleapis.com/k8s-release-dev/ci/$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
   TEST_PACKAGE_MARKER="latest.txt"
   TEST_PACKAGE_DIR="ci"
-  TEST_PACKAGE_BUCKET="k8s-release-dev"
+  TEST_PACKAGE_URL="https://storage.googleapis.com/k8s-release-dev"
 fi
 
 export KOPS_BASE_URL
@@ -154,7 +154,7 @@ if [[ -n ${TEST_PACKAGE_MARKER-} ]]; then
     test_package_args+=" --test-package-dir=${TEST_PACKAGE_DIR-}"
   fi
   if [[ -n ${TEST_PACKAGE_BUCKET-} ]]; then
-    test_package_args+=" --test-package-bucket=${TEST_PACKAGE_BUCKET-}"
+    test_package_args+=" --test-package-url=${TEST_PACKAGE_URL-}"
   fi
 else
   test_package_args+=" --test-package-version=${TEST_PACKAGE_VERSION}"
