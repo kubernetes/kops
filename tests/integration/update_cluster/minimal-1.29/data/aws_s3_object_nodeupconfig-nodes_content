@@ -4,15 +4,15 @@ Assets:
   - bea582731cd9585b838d60fe63c5e6e9f74616eaea09982497a636f618e8d3a3@https://dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/amd64/kubectl
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
   - f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
-  - 371de359d6102c51f6ee2361d08297948d134ce7379e01cb965ceeffa4365fba@https://github.com/containerd/containerd/releases/download/v1.7.7/containerd-1.7.7-linux-amd64.tar.gz
-  - b9bfdd4cb27cddbb6172a442df165a80bfc0538a676fbca1a6a6c8f4c6933b43@https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.amd64
+  - 6a24d8b996533fa1b0d7348fe9813a78cd01fa16cff865a961ad0d556f5cd665@https://github.com/containerd/containerd/releases/download/v1.7.12/containerd-1.7.12-linux-amd64.tar.gz
+  - 77ae134de014613c44d25e6310a57a219a7a91155cd47d069a0f22a2cad5caea@https://github.com/opencontainers/runc/releases/download/v1.1.11/runc.amd64
   arm64:
   - d7db0c24157cd20b8625665cdf9e4f97f193f83bbe0cdb787e1a79175eb854a2@https://dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubelet
   - 247a1b42dbdbba49be382759f7561c56ce1a41da8b0b7a731b979c5c8024013a@https://dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
   - 525e2b62ba92a1b6f3dc9612449a84aa61652e680f7ebf4eff579795fe464b57@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz
-  - 0a104f487193665d2681fcb5ed83f2baa5f97849fe2661188da835c9d4eaf9e3@https://github.com/containerd/containerd/releases/download/v1.7.7/containerd-1.7.7-linux-arm64.tar.gz
-  - b43e9f561e85906f469eef5a7b7992fc586f750f44a0e011da4467e7008c33a0@https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.arm64
+  - 8a1b35a521d071a8828f63fe007a51e5b7ac863a1195f5dee32543b1a9d5f2b6@https://github.com/containerd/containerd/releases/download/v1.7.12/containerd-1.7.12-linux-arm64.tar.gz
+  - 9f1ee53f06b78cc4a115ca6ae4eec10567999539ce828a22c5351edba043ed12@https://github.com/opencontainers/runc/releases/download/v1.1.11/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
 Hooks:
@@ -55,7 +55,7 @@ UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.9
-  version: 1.7.7
+    version: 1.1.11
+  version: 1.7.12
 usesLegacyGossip: false
 usesNoneDNS: false
