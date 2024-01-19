@@ -1418,13 +1418,12 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 		if opt.DNSZone != "" {
 			// Use dns=public if zone is specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
-		} else if cluster.UsesLegacyGossip() {
-			// Use dns=none if .k8s.local is specified instead of Gossip
-			klog.Warningf("Gossip is deprecated, using None DNS instead")
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
-		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS || cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
-			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
 		} else {
+			if cluster.UsesLegacyGossip() {
+				// Warn about using dns=none instead of Gossip
+				klog.Warningf("Gossip is deprecated, using None DNS instead")
+			}
+			// Default to dns=none instead of dns=public for all cloud providers
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		}
 	case "public":
