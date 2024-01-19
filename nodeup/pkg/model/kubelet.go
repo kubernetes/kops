@@ -27,7 +27,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -576,7 +575,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
-	if b.NodeupConfig.Networking.AmazonVPC != nil {
+	// Respect any MaxPods value the user sets explicitly.
+	if (b.NodeupConfig.Networking.AmazonVPC != nil || (b.NodeupConfig.Networking.Cilium != nil && b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni)) && c.MaxPods == nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 
@@ -594,25 +594,22 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			return nil, err
 		}
 
-		// Respect any MaxPods value the user sets explicitly.
-		if c.MaxPods == nil {
-			// Default maximum pods per node defined by KubeletConfiguration
-			maxPods := 110
+		// Default maximum pods per node defined by KubeletConfiguration
+		maxPods := 110
 
-			// AWS VPC CNI plugin-specific maximum pod calculation based on:
-			// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
-			enis := instanceType.InstanceENIs
-			ips := instanceType.InstanceIPsPerENI
-			if enis > 0 && ips > 0 {
-				instanceMaxPods := enis*(ips-1) + 2
-				if instanceMaxPods < maxPods {
-					maxPods = instanceMaxPods
-				}
+		// AWS VPC CNI plugin-specific maximum pod calculation based on:
+		// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
+		enis := instanceType.InstanceENIs
+		ips := instanceType.InstanceIPsPerENI
+		if enis > 0 && ips > 0 {
+			instanceMaxPods := enis*(ips-1) + 2
+			if instanceMaxPods < maxPods {
+				maxPods = instanceMaxPods
 			}
-
-			// Write back values that could have changed
-			c.MaxPods = fi.PtrTo(int32(maxPods))
 		}
+
+		// Write back values that could have changed
+		c.MaxPods = fi.PtrTo(int32(maxPods))
 	}
 
 	if c.VolumePluginDirectory == "" {
@@ -728,16 +725,28 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 		return append(addrs, name), nil
 	}
 
-	cloud := b.Cloud.(awsup.AWSCloud)
+	addrs := []string{b.InstanceID}
+	sess := session.Must(session.NewSession())
+	metadata := ec2metadata.New(sess)
 
-	result, err := cloud.EC2().DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&b.InstanceID},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing instances: %v", err)
+	if localHostname, err := metadata.GetMetadata("local-hostname"); err == nil {
+		klog.V(2).Infof("Local Hostname: %s", localHostname)
+		addrs = append(addrs, localHostname)
+	}
+	if localIPv4, err := metadata.GetMetadata("local-ipv4"); err == nil {
+		klog.V(2).Infof("Local IPv4: %s", localIPv4)
+		addrs = append(addrs, localIPv4)
+	}
+	if publicIPv4, err := metadata.GetMetadata("public-ipv4"); err == nil {
+		klog.V(2).Infof("Public IPv4: %s", publicIPv4)
+		addrs = append(addrs, publicIPv4)
+	}
+	if publicIPv6, err := metadata.GetMetadata("ipv6"); err == nil {
+		klog.V(2).Infof("Public IPv6: %s", publicIPv6)
+		addrs = append(addrs, publicIPv6)
 	}
 
-	return awsup.GetInstanceCertificateNames(result, b.NodeupConfig.UseInstanceIDForNodeName)
+	return addrs, nil
 }
 
 func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
