@@ -132,6 +132,10 @@ type SSMAPI interface {
 	DeleteMaintenanceWindowWithContext(aws.Context, *ssm.DeleteMaintenanceWindowInput, ...request.Option) (*ssm.DeleteMaintenanceWindowOutput, error)
 	DeleteMaintenanceWindowRequest(*ssm.DeleteMaintenanceWindowInput) (*request.Request, *ssm.DeleteMaintenanceWindowOutput)
 
+	DeleteOpsItem(*ssm.DeleteOpsItemInput) (*ssm.DeleteOpsItemOutput, error)
+	DeleteOpsItemWithContext(aws.Context, *ssm.DeleteOpsItemInput, ...request.Option) (*ssm.DeleteOpsItemOutput, error)
+	DeleteOpsItemRequest(*ssm.DeleteOpsItemInput) (*request.Request, *ssm.DeleteOpsItemOutput)
+
 	DeleteOpsMetadata(*ssm.DeleteOpsMetadataInput) (*ssm.DeleteOpsMetadataOutput, error)
 	DeleteOpsMetadataWithContext(aws.Context, *ssm.DeleteOpsMetadataInput, ...request.Option) (*ssm.DeleteOpsMetadataOutput, error)
 	DeleteOpsMetadataRequest(*ssm.DeleteOpsMetadataInput) (*request.Request, *ssm.DeleteOpsMetadataOutput)

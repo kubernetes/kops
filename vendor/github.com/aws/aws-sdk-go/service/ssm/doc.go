@@ -15,7 +15,7 @@
 // Related resources
 //
 //   - For information about each of the capabilities that comprise Systems
-//     Manager, see Systems Manager capabilities (https://docs.aws.amazon.com/systems-manager-automation-runbooks/latest/userguide/systems-manager-capabilities.html)
+//     Manager, see Systems Manager capabilities (https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html#systems-manager-capabilities)
 //     in the Amazon Web Services Systems Manager User Guide.
 //
 //   - For details about predefined runbooks for Automation, a capability of
