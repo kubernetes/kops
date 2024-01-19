@@ -5,7 +5,9 @@ metadata:
   name: karpenter.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -42,7 +44,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.23.0
-  masterPublicName: api.karpenter.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     calico: {}
@@ -68,7 +69,7 @@ spec:
     zone: us-test-1c
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 
