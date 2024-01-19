@@ -2,6 +2,10 @@
 
 package sqs
 
+import (
+	"github.com/aws/aws-sdk-go/private/protocol"
+)
+
 const (
 
 	// ErrCodeBatchEntryIdsNotDistinct for service response error code
@@ -22,11 +26,23 @@ const (
 	// The batch request doesn't contain any entries.
 	ErrCodeEmptyBatchRequest = "AWS.SimpleQueueService.EmptyBatchRequest"
 
+	// ErrCodeInvalidAddress for service response error code
+	// "InvalidAddress".
+	//
+	// The accountId is invalid.
+	ErrCodeInvalidAddress = "InvalidAddress"
+
 	// ErrCodeInvalidAttributeName for service response error code
 	// "InvalidAttributeName".
 	//
 	// The specified attribute doesn't exist.
 	ErrCodeInvalidAttributeName = "InvalidAttributeName"
+
+	// ErrCodeInvalidAttributeValue for service response error code
+	// "InvalidAttributeValue".
+	//
+	// A queue attribute value is invalid.
+	ErrCodeInvalidAttributeValue = "InvalidAttributeValue"
 
 	// ErrCodeInvalidBatchEntryId for service response error code
 	// "AWS.SimpleQueueService.InvalidBatchEntryId".
@@ -45,6 +61,62 @@ const (
 	//
 	// The message contains characters outside the allowed set.
 	ErrCodeInvalidMessageContents = "InvalidMessageContents"
+
+	// ErrCodeInvalidSecurity for service response error code
+	// "InvalidSecurity".
+	//
+	// When the request to a queue is not HTTPS and SigV4.
+	ErrCodeInvalidSecurity = "InvalidSecurity"
+
+	// ErrCodeKmsAccessDenied for service response error code
+	// "KmsAccessDenied".
+	//
+	// The caller doesn't have the required KMS access.
+	ErrCodeKmsAccessDenied = "KmsAccessDenied"
+
+	// ErrCodeKmsDisabled for service response error code
+	// "KmsDisabled".
+	//
+	// The request was denied due to request throttling.
+	ErrCodeKmsDisabled = "KmsDisabled"
+
+	// ErrCodeKmsInvalidKeyUsage for service response error code
+	// "KmsInvalidKeyUsage".
+	//
+	// The request was rejected for one of the following reasons:
+	//
+	//    * The KeyUsage value of the KMS key is incompatible with the API operation.
+	//
+	//    * The encryption algorithm or signing algorithm specified for the operation
+	//    is incompatible with the type of key material in the KMS key (KeySpec).
+	ErrCodeKmsInvalidKeyUsage = "KmsInvalidKeyUsage"
+
+	// ErrCodeKmsInvalidState for service response error code
+	// "KmsInvalidState".
+	//
+	// The request was rejected because the state of the specified resource is not
+	// valid for this request.
+	ErrCodeKmsInvalidState = "KmsInvalidState"
+
+	// ErrCodeKmsNotFound for service response error code
+	// "KmsNotFound".
+	//
+	// The request was rejected because the specified entity or resource could not
+	// be found.
+	ErrCodeKmsNotFound = "KmsNotFound"
+
+	// ErrCodeKmsOptInRequired for service response error code
+	// "KmsOptInRequired".
+	//
+	// The request was rejected because the specified key policy isn't syntactically
+	// or semantically correct.
+	ErrCodeKmsOptInRequired = "KmsOptInRequired"
+
+	// ErrCodeKmsThrottled for service response error code
+	// "KmsThrottled".
+	//
+	// Amazon Web Services KMS throttles requests for the following conditions.
+	ErrCodeKmsThrottled = "KmsThrottled"
 
 	// ErrCodeMessageNotInflight for service response error code
 	// "AWS.SimpleQueueService.MessageNotInflight".
@@ -96,6 +168,24 @@ const (
 	// The specified receipt handle isn't valid.
 	ErrCodeReceiptHandleIsInvalid = "ReceiptHandleIsInvalid"
 
+	// ErrCodeRequestThrottled for service response error code
+	// "RequestThrottled".
+	//
+	// The request was denied due to request throttling.
+	//
+	//    * The rate of requests per second exceeds the Amazon Web Services KMS
+	//    request quota for an account and Region.
+	//
+	//    * A burst or sustained high rate of requests to change the state of the
+	//    same KMS key. This condition is often known as a "hot key."
+	//
+	//    * Requests for operations on KMS keys in a Amazon Web Services CloudHSM
+	//    key store might be throttled at a lower-than-expected rate when the Amazon
+	//    Web Services CloudHSM cluster associated with the Amazon Web Services
+	//    CloudHSM key store is processing numerous commands, including those unrelated
+	//    to the Amazon Web Services CloudHSM key store.
+	ErrCodeRequestThrottled = "RequestThrottled"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
@@ -114,3 +204,64 @@ const (
 	// Error code 400. Unsupported operation.
 	ErrCodeUnsupportedOperation = "AWS.SimpleQueueService.UnsupportedOperation"
 )
+
+var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"BatchEntryIdsNotDistinct":     newErrorBatchEntryIdsNotDistinct,
+	"BatchRequestTooLong":          newErrorBatchRequestTooLong,
+	"EmptyBatchRequest":            newErrorEmptyBatchRequest,
+	"InvalidAddress":               newErrorInvalidAddress,
+	"InvalidAttributeName":         newErrorInvalidAttributeName,
+	"InvalidAttributeValue":        newErrorInvalidAttributeValue,
+	"InvalidBatchEntryId":          newErrorInvalidBatchEntryId,
+	"InvalidIdFormat":              newErrorInvalidIdFormat,
+	"InvalidMessageContents":       newErrorInvalidMessageContents,
+	"InvalidSecurity":              newErrorInvalidSecurity,
+	"KmsAccessDenied":              newErrorKmsAccessDenied,
+	"KmsDisabled":                  newErrorKmsDisabled,
+	"KmsInvalidKeyUsage":           newErrorKmsInvalidKeyUsage,
+	"KmsInvalidState":              newErrorKmsInvalidState,
+	"KmsNotFound":                  newErrorKmsNotFound,
+	"KmsOptInRequired":             newErrorKmsOptInRequired,
+	"KmsThrottled":                 newErrorKmsThrottled,
+	"MessageNotInflight":           newErrorMessageNotInflight,
+	"OverLimit":                    newErrorOverLimit,
+	"PurgeQueueInProgress":         newErrorPurgeQueueInProgress,
+	"QueueDeletedRecently":         newErrorQueueDeletedRecently,
+	"QueueDoesNotExist":            newErrorQueueDoesNotExist,
+	"QueueNameExists":              newErrorQueueNameExists,
+	"ReceiptHandleIsInvalid":       newErrorReceiptHandleIsInvalid,
+	"RequestThrottled":             newErrorRequestThrottled,
+	"ResourceNotFoundException":    newErrorResourceNotFoundException,
+	"TooManyEntriesInBatchRequest": newErrorTooManyEntriesInBatchRequest,
+	"UnsupportedOperation":         newErrorUnsupportedOperation,
+}
+var queryExceptionFromCode = map[string]func(protocol.ResponseMetadata, string) error{
+	"BatchEntryIdsNotDistinct":     newQueryCompatibleErrorBatchEntryIdsNotDistinct,
+	"BatchRequestTooLong":          newQueryCompatibleErrorBatchRequestTooLong,
+	"EmptyBatchRequest":            newQueryCompatibleErrorEmptyBatchRequest,
+	"InvalidAddress":               newQueryCompatibleErrorInvalidAddress,
+	"InvalidAttributeName":         newQueryCompatibleErrorInvalidAttributeName,
+	"InvalidAttributeValue":        newQueryCompatibleErrorInvalidAttributeValue,
+	"InvalidBatchEntryId":          newQueryCompatibleErrorInvalidBatchEntryId,
+	"InvalidIdFormat":              newQueryCompatibleErrorInvalidIdFormat,
+	"InvalidMessageContents":       newQueryCompatibleErrorInvalidMessageContents,
+	"InvalidSecurity":              newQueryCompatibleErrorInvalidSecurity,
+	"KmsAccessDenied":              newQueryCompatibleErrorKmsAccessDenied,
+	"KmsDisabled":                  newQueryCompatibleErrorKmsDisabled,
+	"KmsInvalidKeyUsage":           newQueryCompatibleErrorKmsInvalidKeyUsage,
+	"KmsInvalidState":              newQueryCompatibleErrorKmsInvalidState,
+	"KmsNotFound":                  newQueryCompatibleErrorKmsNotFound,
+	"KmsOptInRequired":             newQueryCompatibleErrorKmsOptInRequired,
+	"KmsThrottled":                 newQueryCompatibleErrorKmsThrottled,
+	"MessageNotInflight":           newQueryCompatibleErrorMessageNotInflight,
+	"OverLimit":                    newQueryCompatibleErrorOverLimit,
+	"PurgeQueueInProgress":         newQueryCompatibleErrorPurgeQueueInProgress,
+	"QueueDeletedRecently":         newQueryCompatibleErrorQueueDeletedRecently,
+	"QueueDoesNotExist":            newQueryCompatibleErrorQueueDoesNotExist,
+	"QueueNameExists":              newQueryCompatibleErrorQueueNameExists,
+	"ReceiptHandleIsInvalid":       newQueryCompatibleErrorReceiptHandleIsInvalid,
+	"RequestThrottled":             newQueryCompatibleErrorRequestThrottled,
+	"ResourceNotFoundException":    newQueryCompatibleErrorResourceNotFoundException,
+	"TooManyEntriesInBatchRequest": newQueryCompatibleErrorTooManyEntriesInBatchRequest,
+	"UnsupportedOperation":         newQueryCompatibleErrorUnsupportedOperation,
+}

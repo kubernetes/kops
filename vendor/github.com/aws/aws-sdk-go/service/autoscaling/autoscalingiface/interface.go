@@ -166,6 +166,9 @@ type AutoScalingAPI interface {
 	DescribeInstanceRefreshesWithContext(aws.Context, *autoscaling.DescribeInstanceRefreshesInput, ...request.Option) (*autoscaling.DescribeInstanceRefreshesOutput, error)
 	DescribeInstanceRefreshesRequest(*autoscaling.DescribeInstanceRefreshesInput) (*request.Request, *autoscaling.DescribeInstanceRefreshesOutput)
 
+	DescribeInstanceRefreshesPages(*autoscaling.DescribeInstanceRefreshesInput, func(*autoscaling.DescribeInstanceRefreshesOutput, bool) bool) error
+	DescribeInstanceRefreshesPagesWithContext(aws.Context, *autoscaling.DescribeInstanceRefreshesInput, func(*autoscaling.DescribeInstanceRefreshesOutput, bool) bool, ...request.Option) error
+
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeLaunchConfigurationsWithContext(aws.Context, *autoscaling.DescribeLaunchConfigurationsInput, ...request.Option) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeLaunchConfigurationsRequest(*autoscaling.DescribeLaunchConfigurationsInput) (*request.Request, *autoscaling.DescribeLaunchConfigurationsOutput)
@@ -185,9 +188,15 @@ type AutoScalingAPI interface {
 	DescribeLoadBalancerTargetGroupsWithContext(aws.Context, *autoscaling.DescribeLoadBalancerTargetGroupsInput, ...request.Option) (*autoscaling.DescribeLoadBalancerTargetGroupsOutput, error)
 	DescribeLoadBalancerTargetGroupsRequest(*autoscaling.DescribeLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.DescribeLoadBalancerTargetGroupsOutput)
 
+	DescribeLoadBalancerTargetGroupsPages(*autoscaling.DescribeLoadBalancerTargetGroupsInput, func(*autoscaling.DescribeLoadBalancerTargetGroupsOutput, bool) bool) error
+	DescribeLoadBalancerTargetGroupsPagesWithContext(aws.Context, *autoscaling.DescribeLoadBalancerTargetGroupsInput, func(*autoscaling.DescribeLoadBalancerTargetGroupsOutput, bool) bool, ...request.Option) error
+
 	DescribeLoadBalancers(*autoscaling.DescribeLoadBalancersInput) (*autoscaling.DescribeLoadBalancersOutput, error)
 	DescribeLoadBalancersWithContext(aws.Context, *autoscaling.DescribeLoadBalancersInput, ...request.Option) (*autoscaling.DescribeLoadBalancersOutput, error)
 	DescribeLoadBalancersRequest(*autoscaling.DescribeLoadBalancersInput) (*request.Request, *autoscaling.DescribeLoadBalancersOutput)
+
+	DescribeLoadBalancersPages(*autoscaling.DescribeLoadBalancersInput, func(*autoscaling.DescribeLoadBalancersOutput, bool) bool) error
+	DescribeLoadBalancersPagesWithContext(aws.Context, *autoscaling.DescribeLoadBalancersInput, func(*autoscaling.DescribeLoadBalancersOutput, bool) bool, ...request.Option) error
 
 	DescribeMetricCollectionTypes(*autoscaling.DescribeMetricCollectionTypesInput) (*autoscaling.DescribeMetricCollectionTypesOutput, error)
 	DescribeMetricCollectionTypesWithContext(aws.Context, *autoscaling.DescribeMetricCollectionTypesInput, ...request.Option) (*autoscaling.DescribeMetricCollectionTypesOutput, error)

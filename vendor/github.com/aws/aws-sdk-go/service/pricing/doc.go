@@ -27,12 +27,8 @@
 // you can use GetProducts to find specific products that you're interested
 // in, such as an AmazonEC2 instance, with a Provisioned IOPS volumeType.
 //
-// You can use the following endpoints for the Amazon Web Services Price List
-// API:
-//
-//   - https://api.pricing.us-east-1.amazonaws.com
-//
-//   - https://api.pricing.ap-south-1.amazonaws.com
+// For more information, see Using the Amazon Web Services Price List API (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/price-changes.html)
+// in the Billing User Guide.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15 for more information on this service.
 //
