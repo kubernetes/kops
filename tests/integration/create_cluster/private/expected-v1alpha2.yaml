@@ -45,7 +45,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.26.0
-  masterPublicName: api.private.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -66,7 +65,7 @@ spec:
     bastion:
       bastionPublicName: bastion.private.example.com
     dns:
-      type: Public
+      type: None
 
 ---
 

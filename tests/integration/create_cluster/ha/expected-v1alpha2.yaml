@@ -5,7 +5,9 @@ metadata:
   name: ha.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -51,7 +53,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.26.0
-  masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -74,7 +75,7 @@ spec:
     zone: us-test-1c
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 

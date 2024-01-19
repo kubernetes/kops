@@ -5,7 +5,8 @@ metadata:
   name: ha-gce.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -46,7 +47,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.26.0
-  masterPublicName: api.ha-gce.example.com
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -61,7 +61,7 @@ spec:
     type: Public
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 
