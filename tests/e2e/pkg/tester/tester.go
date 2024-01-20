@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/octago/sflags/gen/gpflag"
@@ -187,11 +188,6 @@ func (t *Tester) addNodeIG() error {
 		return err
 	}
 
-	// Skip this function for non gce clusters
-	if cluster.Spec.LegacyCloudProvider != "gce" {
-		return nil
-	}
-
 	igs, err := kops.GetInstanceGroups("kops", cluster.Name, nil)
 	if err != nil {
 		return err
@@ -203,6 +199,15 @@ func (t *Tester) addNodeIG() error {
 			ig = v
 		}
 	}
+	numNodes := int(*ig.Spec.MaxSize) // we assume that MinSize = Maxsize, this is true for e2e testing
+	klog.Infof("Setting -num-nodes=%v", numNodes)
+	t.TestArgs += " -num-nodes=" + strconv.Itoa(numNodes)
+
+	// Skip the rest of this function for non gce clusters
+	if cluster.Spec.LegacyCloudProvider != "gce" {
+		return nil
+	}
+
 	nodeTag := gce.TagForRole(cluster.ObjectMeta.Name, unversioned.InstanceGroupRoleNode)
 	klog.Infof("Setting --node-tag=%s", nodeTag)
 	t.TestArgs += " --node-tag=" + nodeTag
