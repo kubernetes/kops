@@ -8,7 +8,6 @@ AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master
 ID: null
 Image: image-master
@@ -86,12 +85,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.2-4
 FloatingIP: null
-ForAPIServer: false
 GroupName: node
 ID: null
 Image: image-node
@@ -160,6 +159,7 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 Lifecycle: ""
 Name: apiserver-aggregator-ca

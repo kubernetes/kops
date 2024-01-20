@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
@@ -240,7 +241,9 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 				}
 				c.AddTask(t)
 				if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-					b.associateFIPToKeypair(t)
+					// Ensure the floating IP is included in the TLS certificate,
+					// if we're not going to use an alias for it
+					t.WellKnownServices = append(t.WellKnownServices, wellknownservices.KubeAPIServer, wellknownservices.KopsController)
 				}
 				instanceTask.FloatingIP = t
 			}
@@ -248,12 +251,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 	}
 
 	return nil
-}
-
-func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.FloatingIP) {
-	// Ensure the floating IP is included in the TLS certificate,
-	// if we're not going to use an alias for it
-	fipTask.ForAPIServer = true
 }
 
 func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -340,9 +337,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 		c.AddTask(lbfipTask)
 
-		if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-			b.associateFIPToKeypair(lbfipTask)
-		}
+		lbfipTask.WellKnownServices = append(lbfipTask.WellKnownServices, wellknownservices.KubeAPIServer)
 
 		poolTask := &openstacktasks.LBPool{
 			Name:         fi.PtrTo(fmt.Sprintf("%s-https", fi.ValueOf(lbTask.Name))),

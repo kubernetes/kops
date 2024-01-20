@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -40,8 +41,11 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, wellKnownAddresses WellKnownAddresses, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error)
 }
+
+// WellKnownAddresses holds known addresses for well-known services
+type WellKnownAddresses map[wellknownservices.WellKnownService][]string
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
@@ -58,8 +62,9 @@ type BootstrapScript struct {
 	ig        *kops.InstanceGroup
 	builder   *BootstrapScriptBuilder
 	resource  fi.CloudupTaskDependentResource
-	// alternateNameTasks are tasks that contribute api-server IP addresses.
-	alternateNameTasks []fi.HasAddress
+
+	// hasAddressTasks holds fi.HasAddress tasks, that contribute well-known services.
+	hasAddressTasks []fi.HasAddress
 
 	// caTasks hold the CA tasks, for dependency analysis.
 	caTasks map[string]*fitasks.Keypair
@@ -76,9 +81,9 @@ var (
 
 // kubeEnv returns the boot config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) (*nodeup.BootConfig, error) {
-	var alternateNames []string
+	wellKnownAddresses := make(WellKnownAddresses)
 
-	for _, hasAddress := range b.alternateNameTasks {
+	for _, hasAddress := range b.hasAddressTasks {
 		addresses, err := hasAddress.FindAddresses(c)
 		if err != nil {
 			return nil, fmt.Errorf("error finding address for %v: %v", hasAddress, err)
@@ -88,13 +93,17 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 			klog.V(2).Infof("Task did not have an address: %v", hasAddress)
 			continue
 		}
-		for _, address := range addresses {
-			klog.V(8).Infof("Resolved alternateName %q for %q", address, hasAddress)
-			alternateNames = append(alternateNames, address)
+
+		klog.V(8).Infof("Resolved alternateNames %q for %q", addresses, hasAddress)
+
+		for _, wellKnownService := range hasAddress.GetWellKnownServices() {
+			wellKnownAddresses[wellKnownService] = append(wellKnownAddresses[wellKnownService], addresses...)
 		}
 	}
 
-	sort.Strings(alternateNames)
+	for k := range wellKnownAddresses {
+		sort.Strings(wellKnownAddresses[k])
+	}
 
 	keysets := make(map[string]*fi.Keyset)
 	for _, caTask := range b.caTasks {
@@ -105,7 +114,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 		}
 		keysets[name] = keyset
 	}
-	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, keysets)
+	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, wellKnownAddresses, keysets)
 	if err != nil {
 		return nil, err
 	}
@@ -288,9 +297,9 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.CloudupTask) []fi.
 	var deps []fi.CloudupTask
 
 	for _, task := range tasks {
-		if hasAddress, ok := task.(fi.HasAddress); ok && hasAddress.IsForAPIServer() {
+		if hasAddress, ok := task.(fi.HasAddress); ok && len(hasAddress.GetWellKnownServices()) > 0 {
 			deps = append(deps, task)
-			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
+			b.hasAddressTasks = append(b.hasAddressTasks, hasAddress)
 		}
 	}
 

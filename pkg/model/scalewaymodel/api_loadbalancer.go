@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scalewaytasks"
@@ -81,6 +82,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	c.AddTask(loadBalancer)
 
+	loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KubeAPIServer)
 	lbBackendHttps, lbFrontendHttps := createLbBackendAndFrontend("https", wellknownports.KubeAPIServer, zone, loadBalancer)
 	lbBackendHttps.Lifecycle = b.Lifecycle
 	c.AddTask(lbBackendHttps)
@@ -88,10 +90,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	c.AddTask(lbFrontendHttps)
 
 	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		// Ensure the LB hostname is included in the TLS certificate,
-		// if we're not going to use an alias for it
-		loadBalancer.ForAPIServer = true
-
+		loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KopsController)
 		lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
 		lbBackendKopsController.Lifecycle = b.Lifecycle
 		c.AddTask(lbBackendKopsController)

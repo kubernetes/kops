@@ -82,7 +82,9 @@ func (s *Port) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	return addrs, nil
 }
 
-func (s *Port) IsForAPIServer() bool {
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this load balancer.
+func (s *Port) GetWellKnownServices() bool {
 	return s.ForAPIServer
 }
 

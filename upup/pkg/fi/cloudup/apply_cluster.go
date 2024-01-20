@@ -59,6 +59,7 @@ import (
 	"k8s.io/kops/pkg/model/scalewaymodel"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -1346,7 +1347,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddresses model.WellKnownAddresses, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1449,7 +1450,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if hasAPIServer {
-		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
+		config.ApiserverAdditionalIPs = wellKnownAddresses[wellknownservices.KubeAPIServer]
 	}
 
 	// Set API server address to an IP from the cluster network CIDR
@@ -1457,7 +1458,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
 		// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
-		for _, additionalIP := range apiserverAdditionalIPs {
+		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
 				_, cidr, err := net.ParseCIDR(networkCIDR)
 				if err != nil {
@@ -1471,7 +1472,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderGCE, kops.CloudProviderAzure:
 		// Use any IP address that is found (including public ones)
-		for _, additionalIP := range apiserverAdditionalIPs {
+		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			controlPlaneIPs = append(controlPlaneIPs, additionalIP)
 		}
 	}

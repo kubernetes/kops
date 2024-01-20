@@ -7,24 +7,23 @@ Name: master
 Lifecycle: ""
 Name: node
 ---
-ForAPIServer: false
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-bastion-1-cluster
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: false
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-bastion-1-cluster
-ForAPIServer: false
+  WellKnownServices: null
 GroupName: bastion
 ID: null
 Image: image
@@ -91,12 +90,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: bastion
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
@@ -174,12 +173,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
@@ -248,6 +247,7 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 Lifecycle: ""
 Name: apiserver-aggregator-ca

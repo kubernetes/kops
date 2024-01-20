@@ -11,7 +11,6 @@ AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: bastion
 ID: null
 Image: image
@@ -78,12 +77,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: bastion
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
@@ -161,12 +160,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
@@ -235,6 +234,7 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 Lifecycle: ""
 Name: apiserver-aggregator-ca

@@ -4,59 +4,66 @@ Name: master
 Lifecycle: ""
 Name: node
 ---
-ForAPIServer: true
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-master-1-cluster
+WellKnownServices:
+- kube-apiserver
+- kops-controller
 ---
-ForAPIServer: true
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-master-2-cluster
+WellKnownServices:
+- kube-apiserver
+- kops-controller
 ---
-ForAPIServer: true
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-master-3-cluster
+WellKnownServices:
+- kube-apiserver
+- kops-controller
 ---
-ForAPIServer: false
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-node-1-cluster
+WellKnownServices: null
 ---
-ForAPIServer: false
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-node-2-cluster
+WellKnownServices: null
 ---
-ForAPIServer: false
 ID: null
 IP: null
 LB: null
 Lifecycle: Sync
 Name: fip-node-3-cluster
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: true
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-master-1-cluster
-ForAPIServer: false
+  WellKnownServices:
+  - kube-apiserver
+  - kops-controller
 GroupName: master
 ID: null
 Image: image
@@ -134,18 +141,20 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-2
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: true
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-master-2-cluster
-ForAPIServer: false
+  WellKnownServices:
+  - kube-apiserver
+  - kops-controller
 GroupName: master
 ID: null
 Image: image
@@ -223,18 +232,20 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-3
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: true
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-master-3-cluster
-ForAPIServer: false
+  WellKnownServices:
+  - kube-apiserver
+  - kops-controller
 GroupName: master
 ID: null
 Image: image
@@ -312,18 +323,18 @@ UserData:
   task:
     Lifecycle: ""
     Name: master
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: false
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-node-1-cluster
-ForAPIServer: false
+  WellKnownServices: null
 GroupName: node
 ID: null
 Image: image
@@ -392,18 +403,18 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 AvailabilityZone: zone-2
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: false
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-node-2-cluster
-ForAPIServer: false
+  WellKnownServices: null
 GroupName: node
 ID: null
 Image: image
@@ -472,18 +483,18 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 AvailabilityZone: zone-3
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP:
-  ForAPIServer: false
   ID: null
   IP: null
   LB: null
   Lifecycle: Sync
   Name: fip-node-3-cluster
-ForAPIServer: false
+  WellKnownServices: null
 GroupName: node
 ID: null
 Image: image
@@ -552,6 +563,7 @@ UserData:
   task:
     Lifecycle: ""
     Name: node
+WellKnownServices: null
 ---
 Lifecycle: ""
 Name: apiserver-aggregator-ca

@@ -10,7 +10,6 @@ Name: master-c
 Lifecycle: ""
 Name: node-a
 ---
-ForAPIServer: true
 ID: null
 IP: null
 LB:
@@ -31,12 +30,13 @@ LB:
   VipSubnet: null
 Lifecycle: Sync
 Name: fip-api.cluster
+WellKnownServices:
+- kube-apiserver
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master-a
 ID: null
 Image: image
@@ -110,12 +110,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master-a
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master-b
 ID: null
 Image: image
@@ -189,12 +189,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master-b
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: master-c
 ID: null
 Image: image
@@ -268,12 +268,12 @@ UserData:
   task:
     Lifecycle: ""
     Name: master-c
+WellKnownServices: null
 ---
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
-ForAPIServer: false
 GroupName: node-a
 ID: null
 Image: image
@@ -342,6 +342,7 @@ UserData:
   task:
     Lifecycle: ""
     Name: node-a
+WellKnownServices: null
 ---
 Lifecycle: ""
 Name: apiserver-aggregator-ca

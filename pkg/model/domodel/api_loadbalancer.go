@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -60,10 +61,11 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API LB
 	loadbalancer := &dotasks.LoadBalancer{
-		Name:       fi.PtrTo(loadbalancerName),
-		Region:     fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
-		DropletTag: fi.PtrTo(clusterMasterTag),
-		Lifecycle:  b.Lifecycle,
+		Name:              fi.PtrTo(loadbalancerName),
+		Region:            fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
+		DropletTag:        fi.PtrTo(clusterMasterTag),
+		Lifecycle:         b.Lifecycle,
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KopsController, wellknownservices.KubeAPIServer},
 	}
 
 	if b.Cluster.Spec.Networking.NetworkID != "" {
@@ -75,12 +77,6 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	}
 
 	c.AddTask(loadbalancer)
-
-	// Ensure the LB hostname is included in the TLS certificate,
-	// if we're not going to use an alias for it
-	if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		loadbalancer.ForAPIServer = true
-	}
 
 	return nil
 }

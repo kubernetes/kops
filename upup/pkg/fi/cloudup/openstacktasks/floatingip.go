@@ -26,6 +26,7 @@ import (
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
@@ -33,12 +34,15 @@ import (
 
 // +kops:fitask
 type FloatingIP struct {
-	Name         *string
-	ID           *string
-	LB           *LB
-	IP           *string
-	Lifecycle    fi.Lifecycle
-	ForAPIServer bool
+	Name      *string
+	ID        *string
+	LB        *LB
+	IP        *string
+	Lifecycle fi.Lifecycle
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var _ fi.HasAddress = &FloatingIP{}
@@ -73,8 +77,10 @@ func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) 
 	return result, nil
 }
 
-func (e *FloatingIP) IsForAPIServer() bool {
-	return e.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this address.
+func (e *FloatingIP) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return e.WellKnownServices
 }
 
 func (e *FloatingIP) FindAddresses(context *fi.CloudupContext) ([]string, error) {

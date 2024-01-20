@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -67,11 +68,14 @@ type ClassicLoadBalancer struct {
 	CrossZoneLoadBalancing *ClassicLoadBalancerCrossZoneLoadBalancing
 	SSLCertificateID       string
 
-	Tags         map[string]string
-	ForAPIServer bool
+	Tags map[string]string
 
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
+
+	// WellKnownServices indicates which services are supported by this resource.
+	// This field is internal and is not rendered to the cloud.
+	WellKnownServices []wellknownservices.WellKnownService
 }
 
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
@@ -229,7 +233,7 @@ func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, 
 
 	// Ignore system fields
 	actual.Lifecycle = e.Lifecycle
-	actual.ForAPIServer = e.ForAPIServer
+	actual.WellKnownServices = e.WellKnownServices
 
 	tagMap, err := cloud.DescribeELBTags([]string{*lb.LoadBalancerName})
 	if err != nil {
@@ -341,8 +345,10 @@ func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, 
 
 var _ fi.HasAddress = &ClassicLoadBalancer{}
 
-func (e *ClassicLoadBalancer) IsForAPIServer() bool {
-	return e.ForAPIServer
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this address (likely attached to a load balancer).
+func (e *ClassicLoadBalancer) GetWellKnownServices() []wellknownservices.WellKnownService {
+	return e.WellKnownServices
 }
 
 func (e *ClassicLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {

@@ -55,8 +55,9 @@ func (lb *LoadBalancer) CompareWithID() *string {
 	return lb.Name
 }
 
-// IsForAPIServer for api server.
-func (lb *LoadBalancer) IsForAPIServer() bool {
+// GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
+// It indicates which services we support with this load balancer.
+func (lb *LoadBalancer) GetWellKnownServices() bool {
 	return lb.ForAPIServer
 }
 

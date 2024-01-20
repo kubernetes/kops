@@ -23,6 +23,7 @@ import (
 	"golang.org/x/exp/slices"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -64,9 +65,10 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 	c.AddTask(poolHealthCheck)
 
 	ipAddress := &gcetasks.Address{
-		Name:         s(b.NameForIPAddress("api")),
-		ForAPIServer: true,
-		Lifecycle:    b.Lifecycle,
+		Name: s(b.NameForIPAddress("api")),
+
+		Lifecycle:         b.Lifecycle,
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 	}
 	c.AddTask(ipAddress)
 
@@ -86,6 +88,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		},
 	})
 	if b.Cluster.UsesNoneDNS() {
+		ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+
 		c.AddTask(&gcetasks.ForwardingRule{
 			Name:                s(b.NameForForwardingRule("kops-controller")),
 			Lifecycle:           b.Lifecycle,
@@ -203,8 +207,9 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			IPAddressType: s("INTERNAL"),
 			Purpose:       s("SHARED_LOADBALANCER_VIP"),
 			Subnetwork:    subnet,
-			ForAPIServer:  true,
-			Lifecycle:     b.Lifecycle,
+
+			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+			Lifecycle:         b.Lifecycle,
 		}
 		c.AddTask(ipAddress)
 
@@ -224,6 +229,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			},
 		})
 		if b.Cluster.UsesNoneDNS() {
+			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+
 			c.AddTask(&gcetasks.ForwardingRule{
 				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),
 				Lifecycle:           b.Lifecycle,
