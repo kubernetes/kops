@@ -250,7 +250,7 @@ resource "google_compute_firewall" "lb-health-checks-minimal-gce-with-a-very-ver
   disabled      = false
   name          = "lb-health-checks-minimal-gce-with-a-very-very-very-very--96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
-  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.204.0/22", "209.85.152.0/22"]
   target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane"]
 }
 

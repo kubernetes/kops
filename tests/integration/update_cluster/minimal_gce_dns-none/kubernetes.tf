@@ -266,7 +266,7 @@ resource "google_compute_firewall" "lb-health-checks-minimal-gce-example-com" {
   disabled      = false
   name          = "lb-health-checks-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
-  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.204.0/22", "209.85.152.0/22"]
   target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
 }
 

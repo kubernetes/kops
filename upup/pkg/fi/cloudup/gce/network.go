@@ -167,12 +167,12 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 		return err
 	}
 
-	serviceCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(20, 32))
+	serviceCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(16, 32))
 	if err != nil {
 		return err
 	}
 
-	nodeCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(20, 32))
+	nodeCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(19, 32))
 	if err != nil {
 		return err
 	}
