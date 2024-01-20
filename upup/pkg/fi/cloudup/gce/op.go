@@ -58,7 +58,7 @@ func waitForZoneOp(client *compute.Service, op *compute.Operation) error {
 	}
 
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.ZoneOperations.Get(u.Project, u.Zone, operationName).Do()
+		return client.ZoneOperations.Wait(u.Project, u.Zone, operationName).Do()
 	})
 }
 
@@ -69,7 +69,7 @@ func waitForRegionOp(client *compute.Service, op *compute.Operation) error {
 	}
 
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.RegionOperations.Get(u.Project, u.Region, operationName).Do()
+		return client.RegionOperations.Wait(u.Project, u.Region, operationName).Do()
 	})
 }
 
@@ -80,7 +80,7 @@ func waitForGlobalOp(client *compute.Service, op *compute.Operation) error {
 	}
 
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.GlobalOperations.Get(u.Project, operationName).Do()
+		return client.GlobalOperations.Wait(u.Project, operationName).Do()
 	})
 }
 
@@ -108,7 +108,8 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 		}
 		pollOp, err := getOperation(opName)
 		if err != nil {
-			klog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
+			klog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v]", opName, pollOp, err)
+			klog.Infof("getErrorFromOp: [%v]", getErrorFromOp(pollOp))
 		}
 		done := opIsDone(pollOp)
 		if done {
