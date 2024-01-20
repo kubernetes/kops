@@ -44,6 +44,10 @@ func (d *deployer) DumpClusterLogs() error {
 		"--private-key", d.SSHPrivateKeyPath,
 		"--ssh-user", d.SSHUser,
 	}
+
+	if d.MaxNodesToDump != "" {
+		args = append(args, "--max-nodes", d.MaxNodesToDump)
+	}
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(append(d.env(), "KOPS_TOOLBOX_DUMP_K8S_RESOURCES=1")...)

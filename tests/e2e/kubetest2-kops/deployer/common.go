@@ -100,6 +100,8 @@ func (d *deployer) initialize() error {
 				d.SSHPublicKeyPath = publicKey
 			}
 			d.createBucket = true
+		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
+			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
 	}
 

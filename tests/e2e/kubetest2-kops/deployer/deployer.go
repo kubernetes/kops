@@ -68,6 +68,7 @@ type deployer struct {
 	ValidationWait     time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
 	ValidationCount    int           `flag:"validation-count" desc:"how many times should a validation pass"`
 	ValidationInterval time.Duration `flag:"validation-interval" desc:"time in duration to wait between validation attempts"`
+	MaxNodesToDump     string        `flag:"max-nodes-to-dump" desc:"max number of nodes to dump logs from, helpful to set when running scale tests"`
 
 	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`
 
