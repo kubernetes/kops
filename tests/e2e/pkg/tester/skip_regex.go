@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|nfs|NFS|Gluster"
+	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|nfs|NFS|Gluster|NodeProblemDetector"
 )
 
 func (t *Tester) setSkipRegexFlag() error {
@@ -81,6 +81,8 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
 		// https://github.com/cilium/cilium/issues/9207
 		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
+		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
+		skipRegex += "|should.check.kube-proxy.urls"
 
 		if isPre28 {
 			// These may be fixed in Cilium 1.13 but skipping for now
