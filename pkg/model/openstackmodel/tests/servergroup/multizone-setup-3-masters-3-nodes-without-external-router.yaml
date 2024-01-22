@@ -43,7 +43,6 @@ Name: master-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: master-a
   Lifecycle: Sync
@@ -79,6 +78,7 @@ Port:
   - KopsInstanceGroup=master-a
   - KopsName=port-master-a-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -126,7 +126,6 @@ Name: master-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: master-b
   Lifecycle: Sync
@@ -162,6 +161,7 @@ Port:
   - KopsInstanceGroup=master-b
   - KopsName=port-master-b-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -209,7 +209,6 @@ Name: master-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: master-c
   Lifecycle: Sync
@@ -245,6 +244,7 @@ Port:
   - KopsInstanceGroup=master-c
   - KopsName=port-master-c-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -289,7 +289,6 @@ Name: node-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: node-a
   Lifecycle: Sync
@@ -319,6 +318,7 @@ Port:
   - KopsInstanceGroup=node-a
   - KopsName=port-node-a-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -363,7 +363,6 @@ Name: node-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: node-b
   Lifecycle: Sync
@@ -393,6 +392,7 @@ Port:
   - KopsInstanceGroup=node-b
   - KopsName=port-node-b-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -437,7 +437,6 @@ Name: node-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
   AllowedAddressPairs: null
-  ForAPIServer: false
   ID: null
   InstanceGroupName: node-c
   Lifecycle: Sync
@@ -467,6 +466,7 @@ Port:
   - KopsInstanceGroup=node-c
   - KopsName=port-node-c-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -655,7 +655,6 @@ PublicACL: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: master-a
 Lifecycle: Sync
@@ -691,10 +690,10 @@ Tags:
 - KopsInstanceGroup=master-a
 - KopsName=port-master-a-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: master-b
 Lifecycle: Sync
@@ -730,10 +729,10 @@ Tags:
 - KopsInstanceGroup=master-b
 - KopsName=port-master-b-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: master-c
 Lifecycle: Sync
@@ -769,10 +768,10 @@ Tags:
 - KopsInstanceGroup=master-c
 - KopsName=port-master-c-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: node-a
 Lifecycle: Sync
@@ -802,10 +801,10 @@ Tags:
 - KopsInstanceGroup=node-a
 - KopsName=port-node-a-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: node-b
 Lifecycle: Sync
@@ -835,10 +834,10 @@ Tags:
 - KopsInstanceGroup=node-b
 - KopsName=port-node-b-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 AdditionalSecurityGroups: null
 AllowedAddressPairs: null
-ForAPIServer: false
 ID: null
 InstanceGroupName: node-c
 Lifecycle: Sync
@@ -868,6 +867,7 @@ Tags:
 - KopsInstanceGroup=node-c
 - KopsName=port-node-c-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 ClusterName: cluster
 ID: null
