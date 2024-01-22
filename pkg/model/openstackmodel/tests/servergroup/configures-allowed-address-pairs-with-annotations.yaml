@@ -28,7 +28,6 @@ Port:
   - ip_address: 10.123.0.1
     mac_address: 12:34:56:78:90:AB
   - ip_address: 192.168.0.0/16
-  ForAPIServer: false
   ID: null
   InstanceGroupName: node
   Lifecycle: Sync
@@ -58,6 +57,7 @@ Port:
   - KopsInstanceGroup=node
   - KopsName=port-node-1
   - KubernetesCluster=cluster
+  WellKnownServices: null
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -199,7 +199,6 @@ AllowedAddressPairs:
 - ip_address: 10.123.0.1
   mac_address: 12:34:56:78:90:AB
 - ip_address: 192.168.0.0/16
-ForAPIServer: false
 ID: null
 InstanceGroupName: node
 Lifecycle: Sync
@@ -229,6 +228,7 @@ Tags:
 - KopsInstanceGroup=node
 - KopsName=port-node-1
 - KubernetesCluster=cluster
+WellKnownServices: null
 ---
 ClusterName: cluster
 ID: null
