@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.23
     manifest: gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: 8e1135e5e35ab819145872bfe5e29a18fcbb5e52b6b3d3d421ef92d13db33b9c
+    manifestHash: 43d87627a8435bde820421e6ca7db78751f7a7dce1513a6a9047c93f5f290400
     name: gcp-pd-csi-driver.addons.k8s.io
     selector:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io
