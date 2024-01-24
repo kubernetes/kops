@@ -3591,6 +3591,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ConcurrentHorizontalPodAustoscalerSyncs != nil {
+		in, out := &in.ConcurrentHorizontalPodAustoscalerSyncs, &out.ConcurrentHorizontalPodAustoscalerSyncs
+		*out = new(int32)
+		**out = **in
+	}
 	if in.AuthorizationAlwaysAllowPaths != nil {
 		in, out := &in.AuthorizationAlwaysAllowPaths, &out.AuthorizationAlwaysAllowPaths
 		*out = make([]string, len(*in))

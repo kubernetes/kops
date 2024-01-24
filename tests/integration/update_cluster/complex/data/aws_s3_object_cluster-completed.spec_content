@@ -135,6 +135,7 @@ spec:
     cloudProvider: external
     clusterCIDR: 100.96.0.0/11
     clusterName: complex.example.com
+    concurrentHorizontalPodAustoscalerSyncs: 10
     configureCloudRoutes: false
     featureGates:
       CSIMigrationAWS: "true"

@@ -5139,6 +5139,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRCSyncs = in.ConcurrentRCSyncs
+	out.ConcurrentHorizontalPodAustoscalerSyncs = in.ConcurrentHorizontalPodAustoscalerSyncs
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
@@ -5213,6 +5214,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRCSyncs = in.ConcurrentRCSyncs
+	out.ConcurrentHorizontalPodAustoscalerSyncs = in.ConcurrentHorizontalPodAustoscalerSyncs
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths

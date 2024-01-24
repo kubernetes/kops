@@ -50,6 +50,8 @@ spec:
     cpuLimit: 500m
     memoryRequest: 800Mi
     memoryLimit: 1000Mi
+  kubeControllerManager:
+    concurrentHorizontalPodAustoscalerSyncs: 10
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.24.0
