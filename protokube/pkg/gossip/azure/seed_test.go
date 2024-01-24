@@ -21,34 +21,34 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
 type mockClient struct {
-	vmss   []compute.VirtualMachineScaleSet
-	ifaces map[string][]network.Interface
+	vmss   []*compute.VirtualMachineScaleSet
+	ifaces map[string][]*network.Interface
 }
 
 var _ client = &mockClient{}
 
-func (c *mockClient) ListVMScaleSets(ctx context.Context) ([]compute.VirtualMachineScaleSet, error) {
+func (c *mockClient) ListVMScaleSets(ctx context.Context) ([]*compute.VirtualMachineScaleSet, error) {
 	return c.vmss, nil
 }
 
-func (c *mockClient) ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]network.Interface, error) {
+func (c *mockClient) ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error) {
 	return c.ifaces[vmScaleSetName], nil
 }
 
-func newTestInterfaces(ip string) []network.Interface {
-	return []network.Interface{
+func newTestInterfaces(ip string) []*network.Interface {
+	return []*network.Interface{
 		{
-			InterfacePropertiesFormat: &network.InterfacePropertiesFormat{
-				IPConfigurations: &[]network.InterfaceIPConfiguration{
+			Properties: &network.InterfacePropertiesFormat{
+				IPConfigurations: []*network.InterfaceIPConfiguration{
 					{
-						InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
-							PrivateIPAddress: to.StringPtr(ip),
+						Properties: &network.InterfaceIPConfigurationPropertiesFormat{
+							PrivateIPAddress: to.Ptr(ip),
 						},
 					},
 				},
@@ -66,29 +66,29 @@ func TestGetSeeds(t *testing.T) {
 	vmssNames := []string{"vmss0", "vmss1", "vmss"}
 	ips := []string{"ip0", "ip1", "ip2"}
 	client := &mockClient{
-		vmss: []compute.VirtualMachineScaleSet{
+		vmss: []*compute.VirtualMachineScaleSet{
 			{
-				Name: to.StringPtr(vmssNames[0]),
+				Name: to.Ptr(vmssNames[0]),
 				Tags: map[string]*string{
-					clusterTag: to.StringPtr(clusterName),
+					clusterTag: to.Ptr(clusterName),
 				},
 			},
 			{
-				Name: to.StringPtr(vmssNames[1]),
+				Name: to.Ptr(vmssNames[1]),
 				Tags: map[string]*string{
-					clusterTag:             to.StringPtr(clusterName),
-					"not-relevant-tag-key": to.StringPtr("val"),
+					clusterTag:             to.Ptr(clusterName),
+					"not-relevant-tag-key": to.Ptr("val"),
 				},
 			},
 			{
 				// Irrelevalent VM that has no matching tag.
-				Name: to.StringPtr(vmssNames[2]),
+				Name: to.Ptr(vmssNames[2]),
 				Tags: map[string]*string{
-					"not-relevant-tag-key": to.StringPtr("val"),
+					"not-relevant-tag-key": to.Ptr("val"),
 				},
 			},
 		},
-		ifaces: map[string][]network.Interface{
+		ifaces: map[string][]*network.Interface{
 			vmssNames[0]: newTestInterfaces(ips[0]),
 			vmssNames[1]: newTestInterfaces(ips[1]),
 			vmssNames[2]: newTestInterfaces(ips[2]),
