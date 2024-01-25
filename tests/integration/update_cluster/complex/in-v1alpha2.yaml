@@ -29,6 +29,7 @@ spec:
     concurrentNodeSyncs: 5
   kubeControllerManager:
     concurrentHorizontalPodAustoscalerSyncs: 10
+    concurrentJobSyncs: 10
   cloudProvider: aws
   cloudLabels:
     Owner: John Doe
