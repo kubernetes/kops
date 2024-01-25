@@ -654,6 +654,8 @@ type KubeControllerManagerConfig struct {
 	ConcurrentRCSyncs *int32 `json:"concurrentRCSyncs,omitempty" flag:"concurrent-rc-syncs"`
 	// The number of horizontal pod autoscaler objects that are allowed to sync concurrently (default 5).
 	ConcurrentHorizontalPodAustoscalerSyncs *int32 `json:"concurrentHorizontalPodAustoscalerSyncs,omitempty" flag:"concurrent-horizontal-pod-autoscaler-syncs"`
+	// The number of job objects that are allowed to sync concurrently (default 5).
+	ConcurrentJobSyncs *int32 `json:"concurrentJobSyncs,omitempty" flag:"concurrent-job-syncs"`
 	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
