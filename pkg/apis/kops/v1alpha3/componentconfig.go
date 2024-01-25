@@ -652,6 +652,8 @@ type KubeControllerManagerConfig struct {
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	// This only works on kubernetes >= 1.14
 	ConcurrentRCSyncs *int32 `json:"concurrentRCSyncs,omitempty" flag:"concurrent-rc-syncs"`
+	// The number of horizontal pod autoscaler objects that are allowed to sync concurrently (default 5).
+	ConcurrentHorizontalPodAustoscalerSyncs *int32 `json:"concurrentHorizontalPodAustoscalerSyncs,omitempty" flag:"concurrent-horizontal-pod-autoscaler-syncs"`
 	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig

@@ -2147,6 +2147,11 @@ spec:
                       sync concurrently.
                     format: int32
                     type: integer
+                  concurrentHorizontalPodAustoscalerSyncs:
+                    description: The number of horizontal pod autoscaler objects that
+                      are allowed to sync concurrently (default 5).
+                    format: int32
+                    type: integer
                   concurrentNamespaceSyncs:
                     description: The number of namespace objects that are allowed
                       to sync concurrently.
