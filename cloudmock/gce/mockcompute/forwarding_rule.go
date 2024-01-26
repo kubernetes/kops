@@ -53,7 +53,7 @@ func (c *forwardingRuleClient) All() map[string]interface{} {
 	return m
 }
 
-func (c *forwardingRuleClient) Insert(project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
+func (c *forwardingRuleClient) Insert(ctx context.Context, project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
 	c.Lock()
 	defer c.Unlock()
 	regions, ok := c.forwardingRules[project]
@@ -91,7 +91,7 @@ func (c *forwardingRuleClient) SetLabels(ctx context.Context, project, region, n
 	return doneOperation(), nil
 }
 
-func (c *forwardingRuleClient) Delete(project, region, name string) (*compute.Operation, error) {
+func (c *forwardingRuleClient) Delete(ctx context.Context, project, region, name string) (*compute.Operation, error) {
 	c.Lock()
 	defer c.Unlock()
 	regions, ok := c.forwardingRules[project]
@@ -109,7 +109,7 @@ func (c *forwardingRuleClient) Delete(project, region, name string) (*compute.Op
 	return doneOperation(), nil
 }
 
-func (c *forwardingRuleClient) Get(project, region, name string) (*compute.ForwardingRule, error) {
+func (c *forwardingRuleClient) Get(ctx context.Context, project, region, name string) (*compute.ForwardingRule, error) {
 	c.Lock()
 	defer c.Unlock()
 	regions, ok := c.forwardingRules[project]

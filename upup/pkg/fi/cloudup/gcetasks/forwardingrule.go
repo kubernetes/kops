@@ -65,10 +65,12 @@ func (e *ForwardingRule) CompareWithID() *string {
 }
 
 func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
+	ctx := c.Context()
+
 	cloud := c.T.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Name)
 
-	r, err := cloud.Compute().ForwardingRules().Get(cloud.Project(), cloud.Region(), name)
+	r, err := cloud.Compute().ForwardingRules().Get(ctx, cloud.Project(), cloud.Region(), name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -212,7 +214,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	if a == nil {
 		klog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
-		op, err := t.Cloud.Compute().ForwardingRules().Insert(t.Cloud.Project(), t.Cloud.Region(), o)
+		op, err := t.Cloud.Compute().ForwardingRules().Insert(ctx, t.Cloud.Project(), t.Cloud.Region(), o)
 		if err != nil {
 			return fmt.Errorf("error creating ForwardingRule %q: %v", o.Name, err)
 		}
@@ -223,7 +225,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 
 		if e.Labels != nil {
 			// We can't set labels on creation; we have to read the object to get the fingerprint
-			r, err := t.Cloud.Compute().ForwardingRules().Get(t.Cloud.Project(), t.Cloud.Region(), name)
+			r, err := t.Cloud.Compute().ForwardingRules().Get(ctx, t.Cloud.Project(), t.Cloud.Region(), name)
 			if err != nil {
 				return fmt.Errorf("reading created ForwardingRule %q: %v", name, err)
 			}
