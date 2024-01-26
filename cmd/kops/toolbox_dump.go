@@ -210,7 +210,14 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return fmt.Errorf("adding key to SSH agent: %w", err)
 		}
 
-		dumper := dump.NewLogDumper(cluster.ObjectMeta.Name, sshConfig, keyRing, options.Dir)
+		// look for a bastion instance and use it if exists
+		bastionAddress := ""
+		for _, instance := range d.Instances {
+			if strings.Contains(instance.Name, "bastion") {
+				bastionAddress = instance.PublicAddresses[0]
+			}
+		}
+		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir)
 
 		var additionalIPs []string
 		var additionalPrivateIPs []string
@@ -224,7 +231,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			}
 		}
 
-		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs, additionalPrivateIPs); err != nil {
+		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, additionalIPs, additionalPrivateIPs); err != nil {
 			return fmt.Errorf("error dumping nodes: %v", err)
 		}
 

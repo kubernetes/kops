@@ -34,11 +34,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-const (
-	// MaxNodesToDump is the maximum number of nodes to dump
-	MaxNodesToDump = 500
-)
-
 // logDumper gets all the nodes from a kubernetes cluster and dumps a well-known set of logs
 type logDumper struct {
 	sshClientFactory sshClientFactory
@@ -51,11 +46,14 @@ type logDumper struct {
 }
 
 // NewLogDumper is the constructor for a logDumper
-func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string) *logDumper {
+func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string) *logDumper {
 	sshClientFactory := &sshClientFactoryImplementation{
-		bastion:   "bastion." + clusterName,
 		keyRing:   keyRing,
 		sshConfig: sshConfig,
+	}
+	if bastionAddress != "" {
+		log.Printf("detected a bastion instance, with the address: %s", bastionAddress)
+		sshClientFactory.bastion = bastionAddress
 	}
 
 	d := &logDumper{
@@ -106,9 +104,10 @@ func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, keyRing agent
 // if the IPs are not found from kubectl get nodes, then these will be dumped also.
 // This allows for dumping log on nodes even if they don't register as a kubernetes
 // node, or if a node fails to register, or if the whole cluster fails to start.
-func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, additionalIPs, additionalPrivateIPs []string) error {
+func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, maxNodesToDump int, additionalIPs, additionalPrivateIPs []string) error {
 	var special, regular, dumped []*corev1.Node
 
+	log.Printf("starting to dump %d nodes fetched through the Kubernetes APIs", len(nodes.Items))
 	for i := range nodes.Items {
 		node := &nodes.Items[i]
 
@@ -139,8 +138,8 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 	}
 
 	for i := range regular {
-		if len(dumped) >= MaxNodesToDump {
-			log.Printf("stopping dumping nodes: %d nodes dumped", MaxNodesToDump)
+		if len(dumped) >= maxNodesToDump {
+			log.Printf("stopping dumping nodes: %d nodes dumped", maxNodesToDump)
 			return nil
 		}
 		node := regular[i]
@@ -154,8 +153,8 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 
 	notDumped := findInstancesNotDumped(additionalIPs, dumped)
 	for _, ip := range notDumped {
-		if len(dumped) >= MaxNodesToDump {
-			log.Printf("stopping dumping nodes: %d nodes dumped", MaxNodesToDump)
+		if len(dumped) >= maxNodesToDump {
+			log.Printf("stopping dumping nodes: %d nodes dumped", maxNodesToDump)
 			return nil
 		}
 		err := d.dumpNotRegistered(ctx, ip, false)
@@ -166,8 +165,8 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 
 	notDumped = findInstancesNotDumped(additionalPrivateIPs, dumped)
 	for _, ip := range notDumped {
-		if len(dumped) >= MaxNodesToDump {
-			log.Printf("stopping dumping nodes: %d nodes dumped", MaxNodesToDump)
+		if len(dumped) >= maxNodesToDump {
+			log.Printf("stopping dumping nodes: %d nodes dumped", maxNodesToDump)
 			return nil
 		}
 		err := d.dumpNotRegistered(ctx, ip, true)
