@@ -22,7 +22,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
@@ -72,7 +71,7 @@ func (d *deployer) initialize() error {
 		if d.GCPProject == "" {
 			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
 
-			boskosClient, err := boskos.NewClient("http://boskos.test-pods.svc.cluster.local.")
+			boskosClient, err := boskos.NewClient(d.BoskosLocation)
 			if err != nil {
 				return fmt.Errorf("failed to make boskos client: %s", err)
 			}
@@ -80,9 +79,9 @@ func (d *deployer) initialize() error {
 
 			resource, err := boskos.Acquire(
 				d.boskos,
-				"gce-project",
-				5*time.Minute,
-				5*time.Minute,
+				d.BoskosResourceType,
+				d.BoskosAcquireTimeout,
+				d.BoskosHeartbeatInterval,
 				d.boskosHeartbeatClose,
 			)
 			if err != nil {

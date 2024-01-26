@@ -193,7 +193,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 			args = appendIfUnset(args, "--project", d.GCPProject)
 		}
 		// set some sane default e2e testing behaviour on gce
-		args = appendIfUnset(args, "--gce-service-account", "default")
 		args = appendIfUnset(args, "--networking", "kubenet")
 		args = appendIfUnset(args, "--node-volume-size", "100")
 
