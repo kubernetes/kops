@@ -1659,6 +1659,15 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 	return elbv2s, elbv2Tags, nil
 }
 
+func DumpTargetGroup(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = TypeTargetGroup
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+	return nil
+}
+
 func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
 	targetgroups, _, err := DescribeTargetGroups(cloud)
 	if err != nil {
@@ -1673,7 +1682,7 @@ func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.R
 			ID:      string(*tg.TargetGroupArn),
 			Type:    TypeTargetGroup,
 			Deleter: DeleteTargetGroup,
-			Dumper:  DumpELB,
+			Dumper:  DumpTargetGroup,
 			Obj:     tg,
 		}
 
