@@ -92,8 +92,11 @@ type deployer struct {
 
 	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project
-	boskos *client.Client
-
+	boskos                  *client.Client
+	BoskosLocation          string        `flag:"boskos-location" desc:"If set, manually specifies the location of the Boskos server."`
+	BoskosAcquireTimeout    time.Duration `flag:"boskos-acquire-timeout" desc:"How long should boskos wait to acquire a resource before timing out"`
+	BoskosHeartbeatInterval time.Duration `flag:"boskos-heartbeat-interval" desc:"How often should boskos send a heartbeat to Boskos to hold the acquired resource. 0 means no heartbeat."`
+	BoskosResourceType      string        `flag:"boskos-resource-type" desc:"If set, manually specifies the resource type of GCP projects to acquire from Boskos."`
 	// this channel serves as a signal channel for the hearbeat goroutine
 	// so that it can be explicitly closed
 	boskosHeartbeatClose chan struct{}
@@ -118,11 +121,14 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		BuildOptions: &builder.BuildOptions{
 			BuildKubernetes: false,
 		},
-		boskosHeartbeatClose: make(chan struct{}),
-		ValidationCount:      10,
-		ValidationInterval:   10 * time.Second,
+		boskosHeartbeatClose:    make(chan struct{}),
+		ValidationCount:         10,
+		ValidationInterval:      10 * time.Second,
+		BoskosLocation:          "http://boskos.test-pods.svc.cluster.local.",
+		BoskosResourceType:      "gce-project",
+		BoskosAcquireTimeout:    5 * time.Minute,
+		BoskosHeartbeatInterval: 5 * time.Minute,
 	}
-
 	dir, err := defaultArtifactsDir()
 	if err != nil {
 		klog.Fatalf("unable to determine artifacts directory: %v", err)

@@ -27,7 +27,7 @@ kubetest2 kops -v=6 \
     --up --down --build --build-kubernetes=true --target-build-arch=linux/amd64 \
     --cloud-provider=gce --admin-access=0.0.0.0/0 \
     --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
-    --create-args "--networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+    --create-args "--gce-service-account=default --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
     --test=kops \
     -- \
     --ginkgo-args="--debug" \
