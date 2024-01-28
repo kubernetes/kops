@@ -134,31 +134,49 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		listeners := map[string]*awstasks.ClassicLoadBalancerListener{
 			"443": {InstancePort: 443},
 		}
+		var nlbListeners []*awstasks.NetworkLoadBalancerListener
 
-		nlbListeners := []*awstasks.NetworkLoadBalancerListener{
-			{
-				Port:            443,
-				TargetGroupName: b.NLBTargetGroupName("tcp"),
-			},
-		}
-		if b.Cluster.UsesNoneDNS() {
-			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
-				Port:            wellknownports.KopsControllerPort,
-				TargetGroupName: b.NLBTargetGroupName("kops-controller"),
-			})
-		}
+		if lbSpec.SSLCertificate == "" {
+			listener443 := &awstasks.NetworkLoadBalancerListener{
+				Name:                fi.PtrTo(b.NLBListenerName("api", 443)),
+				Lifecycle:           b.Lifecycle,
+				NetworkLoadBalancer: b.LinkToNLB("api"),
+				Port:                443,
+				TargetGroup:         b.LinkToTargetGroup("tcp"),
+			}
+			nlbListeners = append(nlbListeners, listener443)
+		} else {
+			listener8443 := &awstasks.NetworkLoadBalancerListener{
+				Name:                fi.PtrTo(b.NLBListenerName("api", 8443)),
+				Lifecycle:           b.Lifecycle,
+				NetworkLoadBalancer: b.LinkToNLB("api"),
+				Port:                8443,
+				TargetGroup:         b.LinkToTargetGroup("tcp"),
+			}
+			nlbListeners = append(nlbListeners, listener8443)
 
-		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
-			nlbListeners[0].Port = 8443
-
-			nlbListener := &awstasks.NetworkLoadBalancerListener{
-				Port:             443,
-				TargetGroupName:  b.NLBTargetGroupName("tls"),
-				SSLCertificateID: lbSpec.SSLCertificate,
+			listener443 := &awstasks.NetworkLoadBalancerListener{
+				Name:                fi.PtrTo(b.NLBListenerName("api", 443)),
+				Lifecycle:           b.Lifecycle,
+				NetworkLoadBalancer: b.LinkToNLB("api"),
+				Port:                443,
+				TargetGroup:         b.LinkToTargetGroup("tls"),
+				SSLCertificateID:    lbSpec.SSLCertificate,
 			}
 			if lbSpec.SSLPolicy != nil {
-				nlbListener.SSLPolicy = *lbSpec.SSLPolicy
+				listener443.SSLPolicy = *lbSpec.SSLPolicy
+			}
+			nlbListeners = append(nlbListeners, listener443)
+		}
+
+		if b.Cluster.UsesNoneDNS() {
+			nlbListener := &awstasks.NetworkLoadBalancerListener{
+				Name:                fi.PtrTo(b.NLBListenerName("api", wellknownports.KopsControllerPort)),
+				Lifecycle:           b.Lifecycle,
+				NetworkLoadBalancer: b.LinkToNLB("api"),
+				Port:                wellknownports.KopsControllerPort,
+				TargetGroup:         b.LinkToTargetGroup("kops-controller"),
 			}
 			nlbListeners = append(nlbListeners, nlbListener)
 		}
@@ -184,7 +202,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				b.LinkToELBSecurityGroup("api"),
 			},
 			SubnetMappings: nlbSubnetMappings,
-			Listeners:      nlbListeners,
 			TargetGroups:   make([]*awstasks.TargetGroup, 0),
 
 			Tags:              tags,
@@ -359,6 +376,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
 			}
 			sort.Stable(awstasks.OrderTargetGroupsByName(nlb.TargetGroups))
+			for _, nlbListener := range nlbListeners {
+				c.AddTask(nlbListener)
+			}
 			c.AddTask(nlb)
 		}
 

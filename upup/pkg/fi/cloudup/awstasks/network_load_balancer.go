@@ -58,8 +58,6 @@ type NetworkLoadBalancer struct {
 	SubnetMappings []*SubnetMapping
 	SecurityGroups []*SecurityGroup
 
-	Listeners []*NetworkLoadBalancerListener
-
 	Scheme *string
 
 	CrossZoneLoadBalancing *bool
@@ -80,6 +78,9 @@ type NetworkLoadBalancer struct {
 
 	// waitForLoadBalancerReady controls whether we wait for the load balancer to be ready before completing the "Render" operation.
 	waitForLoadBalancerReady bool
+
+	// After this is found/created, we store the ARN
+	loadBalancerArn string
 }
 
 func (e *NetworkLoadBalancer) SetWaitForLoadBalancerReady(v bool) {
@@ -92,66 +93,6 @@ var _ fi.CloudupProducesDeletions = &NetworkLoadBalancer{}
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
-}
-
-type NetworkLoadBalancerListener struct {
-	Port             int
-	TargetGroupName  string
-	SSLCertificateID string
-	SSLPolicy        string
-}
-
-func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, loadBalancerArn string) (*elbv2.CreateListenerInput, error) {
-	var tgARN string
-	for _, tg := range targetGroups {
-		if fi.ValueOf(tg.Name) == e.TargetGroupName {
-			tgARN = fi.ValueOf(tg.ARN)
-		}
-	}
-	if tgARN == "" {
-		return nil, fmt.Errorf("target group not found for NLB listener %+v", e)
-	}
-
-	l := &elbv2.CreateListenerInput{
-		DefaultActions: []*elbv2.Action{
-			{
-				TargetGroupArn: aws.String(tgARN),
-				Type:           aws.String(elbv2.ActionTypeEnumForward),
-			},
-		},
-		LoadBalancerArn: aws.String(loadBalancerArn),
-		Port:            aws.Int64(int64(e.Port)),
-	}
-
-	if e.SSLCertificateID != "" {
-		l.Certificates = []*elbv2.Certificate{}
-		l.Certificates = append(l.Certificates, &elbv2.Certificate{
-			CertificateArn: aws.String(e.SSLCertificateID),
-		})
-		l.Protocol = aws.String(elbv2.ProtocolEnumTls)
-		if e.SSLPolicy != "" {
-			l.SslPolicy = aws.String(e.SSLPolicy)
-		}
-	} else {
-		l.Protocol = aws.String(elbv2.ProtocolEnumTcp)
-	}
-
-	return l, nil
-}
-
-var _ fi.CloudupHasDependencies = &NetworkLoadBalancerListener{}
-
-func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
-	return nil
-}
-
-// OrderListenersByPort implements sort.Interface for []OrderListenersByPort, based on port number
-type OrderListenersByPort []*NetworkLoadBalancerListener
-
-func (a OrderListenersByPort) Len() int      { return len(a) }
-func (a OrderListenersByPort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a OrderListenersByPort) Less(i, j int) bool {
-	return a[i].Port < a[j].Port
 }
 
 // The load balancer name 'api.renamenlbcluster.k8s.local' can only contain characters that are alphanumeric characters and hyphens(-)\n\tstatus code: 400,
@@ -324,18 +265,8 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 			return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
 		}
 
-		actual.Listeners = []*NetworkLoadBalancerListener{}
 		actual.TargetGroups = []*TargetGroup{}
 		for _, l := range response.Listeners {
-			actualListener := &NetworkLoadBalancerListener{}
-			actualListener.Port = int(aws.Int64Value(l.Port))
-			if len(l.Certificates) != 0 {
-				actualListener.SSLCertificateID = aws.StringValue(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
-				if l.SslPolicy != nil {
-					actualListener.SSLPolicy = aws.StringValue(l.SslPolicy)
-				}
-			}
-
 			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
 			if len(l.DefaultActions) > 0 {
 				targetGroupARN := l.DefaultActions[0].TargetGroupArn
@@ -356,11 +287,8 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 					if len(descResp.TargetGroups) != 1 {
 						return nil, fmt.Errorf("unexpected DescribeTargetGroups response: %v", descResp)
 					}
-
-					actualListener.TargetGroupName = aws.StringValue(descResp.TargetGroups[0].TargetGroupName)
 				}
 			}
-			actual.Listeners = append(actual.Listeners, actualListener)
 		}
 		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 
@@ -443,6 +371,9 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	actual.WellKnownServices = e.WellKnownServices
 	actual.Lifecycle = e.Lifecycle
 
+	// Store for other tasks
+	e.loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
+
 	klog.V(4).Infof("Found NLB %+v", actual)
 
 	return actual, nil
@@ -496,7 +427,6 @@ func (e *NetworkLoadBalancer) Run(c *fi.CloudupContext) error {
 func (e *NetworkLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
-	sort.Stable(OrderListenersByPort(e.Listeners))
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 
 	e.IpAddressType = fi.PtrTo("dualstack")
@@ -569,10 +499,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 	var loadBalancerName string
 	var loadBalancerArn string
 
-	if len(e.Listeners) != len(e.TargetGroups) {
-		return fmt.Errorf("nlb listeners and target groups do not match: %v listeners vs %v target groups", len(e.Listeners), len(e.TargetGroups))
-	}
-
 	if a == nil {
 		if e.LoadBalancerName == nil {
 			return fi.RequiredField("LoadBalancerName")
@@ -619,7 +545,8 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			e.DNSName = lb.DNSName
 			e.HostedZoneId = lb.CanonicalHostedZoneId
 			e.VPC = &VPC{ID: lb.VpcId}
-			loadBalancerArn = fi.ValueOf(lb.LoadBalancerArn)
+			loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
+			e.loadBalancerArn = loadBalancerArn
 		}
 
 		if e.waitForLoadBalancerReady {
@@ -634,20 +561,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 		}
 
-		{
-			for _, listener := range e.Listeners {
-				createListenerInput, err := listener.mapToAWS(e.TargetGroups, loadBalancerArn)
-				if err != nil {
-					return err
-				}
-
-				klog.V(2).Infof("Creating Listener for NLB with port %v", listener.Port)
-				_, err = t.Cloud.ELBV2().CreateListener(createListenerInput)
-				if err != nil {
-					return fmt.Errorf("error creating listener for NLB: %v", err)
-				}
-			}
-		}
 	} else {
 		loadBalancerName = fi.ValueOf(a.LoadBalancerName)
 
@@ -720,43 +633,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 		}
 
-		if changes.Listeners != nil {
-
-			if lb != nil {
-
-				request := &elbv2.DescribeListenersInput{
-					LoadBalancerArn: lb.LoadBalancerArn,
-				}
-				response, err := t.Cloud.ELBV2().DescribeListeners(request)
-				if err != nil {
-					return fmt.Errorf("error querying for NLB listeners :%v", err)
-				}
-
-				for _, l := range response.Listeners {
-					// delete the listener before recreating it
-					_, err := t.Cloud.ELBV2().DeleteListener(&elbv2.DeleteListenerInput{
-						ListenerArn: l.ListenerArn,
-					})
-					if err != nil {
-						return fmt.Errorf("error deleting load balancer listener with arn = : %v : %v", l.ListenerArn, err)
-					}
-				}
-			}
-
-			for _, listener := range changes.Listeners {
-
-				awsListener, err := listener.mapToAWS(e.TargetGroups, loadBalancerArn)
-				if err != nil {
-					return err
-				}
-
-				klog.V(2).Infof("Creating Listener for NLB with port %v", listener.Port)
-				_, err = t.Cloud.ELBV2().CreateListener(awsListener)
-				if err != nil {
-					return fmt.Errorf("error creating NLB listener: %v", err)
-				}
-			}
-		}
 		if err := t.AddELBV2Tags(loadBalancerArn, e.Tags); err != nil {
 			return err
 		}
@@ -792,20 +668,6 @@ type terraformNetworkLoadBalancerSubnetMapping struct {
 	PrivateIPv4Address *string                  `cty:"private_ipv4_address"`
 }
 
-type terraformNetworkLoadBalancerListener struct {
-	LoadBalancer   *terraformWriter.Literal                     `cty:"load_balancer_arn"`
-	Port           int64                                        `cty:"port"`
-	Protocol       string                                       `cty:"protocol"`
-	CertificateARN *string                                      `cty:"certificate_arn"`
-	SSLPolicy      *string                                      `cty:"ssl_policy"`
-	DefaultAction  []terraformNetworkLoadBalancerListenerAction `cty:"default_action"`
-}
-
-type terraformNetworkLoadBalancerListenerAction struct {
-	Type           string                   `cty:"type"`
-	TargetGroupARN *terraformWriter.Literal `cty:"target_group_arn"`
-}
-
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
 		Name:                   *e.LoadBalancerName,
@@ -839,46 +701,9 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		}
 	}
 
-	err := t.RenderResource("aws_lb", *e.Name, nlbTF)
+	err := t.RenderResource("aws_lb", e.TerraformName(), nlbTF)
 	if err != nil {
 		return err
-	}
-
-	for _, listener := range e.Listeners {
-		var listenerTG *TargetGroup
-		for _, tg := range e.TargetGroups {
-			if aws.StringValue(tg.Name) == listener.TargetGroupName {
-				listenerTG = tg
-				break
-			}
-		}
-		if listenerTG == nil {
-			return fmt.Errorf("target group not found for NLB listener %+v", e)
-		}
-		listenerTF := &terraformNetworkLoadBalancerListener{
-			LoadBalancer: e.TerraformLink(),
-			Port:         int64(listener.Port),
-			DefaultAction: []terraformNetworkLoadBalancerListenerAction{
-				{
-					Type:           elbv2.ActionTypeEnumForward,
-					TargetGroupARN: listenerTG.TerraformLink(),
-				},
-			},
-		}
-		if listener.SSLCertificateID != "" {
-			listenerTF.CertificateARN = &listener.SSLCertificateID
-			listenerTF.Protocol = elbv2.ProtocolEnumTls
-			if listener.SSLPolicy != "" {
-				listenerTF.SSLPolicy = &listener.SSLPolicy
-			}
-		} else {
-			listenerTF.Protocol = elbv2.ProtocolEnumTcp
-		}
-
-		err = t.RenderResource("aws_lb_listener", fmt.Sprintf("%v-%v", e.TerraformName(), listener.Port), listenerTF)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -894,7 +719,7 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.L
 	if len(params) > 0 {
 		prop = params[0]
 	}
-	return terraformWriter.LiteralProperty("aws_lb", *e.Name, prop)
+	return terraformWriter.LiteralProperty("aws_lb", e.TerraformName(), prop)
 }
 
 // FindDeletions schedules deletion of the corresponding legacy classic load balancer when it no longer has targets.
