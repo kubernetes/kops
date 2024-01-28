@@ -241,8 +241,8 @@ func GetResourceName32(cluster string, prefix string) string {
 	return truncate.TruncateString(s, opt)
 }
 
-// GetTargetGroupNameFromARN will attempt to parse a target group ARN and return its name
-func GetTargetGroupNameFromARN(targetGroupARN string) (string, error) {
+// NameForExternalTargetGroup will attempt to calculate a meaningful name for a target group given an ARN.
+func NameForExternalTargetGroup(targetGroupARN string) (string, error) {
 	parsed, err := arn.Parse(targetGroupARN)
 	if err != nil {
 		return "", fmt.Errorf("error parsing target group ARN: %v", err)

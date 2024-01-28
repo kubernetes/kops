@@ -1624,7 +1624,7 @@ func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.R
 		id := aws.StringValue(tg.TargetGroupName)
 		resourceTracker := &resources.Resource{
 			Name:    id,
-			ID:      targetGroup.ARN(),
+			ID:      targetGroup.ARN,
 			Type:    TypeTargetGroup,
 			Deleter: DeleteTargetGroup,
 			Dumper:  DumpTargetGroup,

@@ -50,6 +50,7 @@ type DNSTarget interface {
 }
 
 func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
@@ -75,7 +76,7 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 
 	var found *route53.ResourceRecordSet
 
-	err := cloud.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.Route53().ListResourceRecordSetsPagesWithContext(ctx, request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
 		for _, rr := range p.ResourceRecordSets {
 			resourceType := aws.StringValue(rr.Type)
 			name := aws.StringValue(rr.Name)

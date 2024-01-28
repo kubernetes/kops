@@ -22,13 +22,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -46,11 +47,14 @@ type NetworkLoadBalancer struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	// LoadBalancerName is the name in NLB, possibly different from our name
+	// LoadBalancerBaseName is the base name to use when naming load balancers in NLB.
+	// The full, stable name will be in the Name tag.
 	// (NLB is restricted as to names, so we have limited choices!)
-	// We use the Name tag to find the existing NLB.
-	LoadBalancerName *string
-	CLBName          *string
+	LoadBalancerBaseName *string
+
+	// CLBName is the name of a ClassicLoadBalancer to delete, if found.
+	// This enables migration from CLB -> NLB
+	CLBName *string
 
 	DNSName      *string
 	HostedZoneId *string
@@ -80,6 +84,12 @@ type NetworkLoadBalancer struct {
 
 	// After this is found/created, we store the ARN
 	loadBalancerArn string
+
+	// After this is found/created, we store the revision
+	revision string
+
+	// deletions is a list of previous versions of this object, that we should delete when asked to clean up.
+	deletions []fi.CloudupDeletion
 }
 
 func (e *NetworkLoadBalancer) SetWaitForLoadBalancerReady(v bool) {
@@ -94,43 +104,9 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
-// The load balancer name 'api.renamenlbcluster.k8s.local' can only contain characters that are alphanumeric characters and hyphens(-)\n\tstatus code: 400,
-func findNetworkLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerName string) (*elbv2.LoadBalancer, error) {
-	request := &elbv2.DescribeLoadBalancersInput{
-		Names: []*string{&loadBalancerName},
-	}
-	found, err := describeNetworkLoadBalancers(cloud, request, func(lb *elbv2.LoadBalancer) bool {
-		// TODO: Filter by cluster?
-
-		if aws.StringValue(lb.LoadBalancerName) == loadBalancerName {
-			return true
-		}
-
-		klog.Warningf("Got NLB with unexpected name: %q", aws.StringValue(lb.LoadBalancerName))
-		return false
-	})
-	if err != nil {
-		if awsError, ok := err.(awserr.Error); ok {
-			if awsError.Code() == "LoadBalancerNotFound" {
-				return nil, nil
-			}
-		}
-
-		return nil, fmt.Errorf("error listing NLBs: %v", err)
-	}
-
-	if len(found) == 0 {
-		return nil, nil
-	}
-
-	if len(found) != 1 {
-		return nil, fmt.Errorf("Found multiple NLBs with name %q", loadBalancerName)
-	}
-
-	return found[0], nil
-}
-
 func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elbv2.LoadBalancer, error) {
+	ctx := context.TODO()
+
 	// TODO: Any way to avoid listing all NLBs?
 	request := &elbv2.DescribeLoadBalancersInput{}
 
@@ -142,9 +118,7 @@ func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTa
 
 	matchHostedZoneId := aws.StringValue(alias.HostedZoneId)
 
-	found, err := describeNetworkLoadBalancers(cloud, request, func(lb *elbv2.LoadBalancer) bool {
-		// TODO: Filter by cluster?
-
+	found, err := describeNetworkLoadBalancers(ctx, cloud, request, func(lb *elbv2.LoadBalancer) bool {
 		if matchHostedZoneId != aws.StringValue(lb.CanonicalHostedZoneId) {
 			return false
 		}
@@ -168,9 +142,9 @@ func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTa
 	return found[0], nil
 }
 
-func describeNetworkLoadBalancers(cloud awsup.AWSCloud, request *elbv2.DescribeLoadBalancersInput, filter func(*elbv2.LoadBalancer) bool) ([]*elbv2.LoadBalancer, error) {
+func describeNetworkLoadBalancers(ctx context.Context, cloud awsup.AWSCloud, request *elbv2.DescribeLoadBalancersInput, filter func(*elbv2.LoadBalancer) bool) ([]*elbv2.LoadBalancer, error) {
 	var found []*elbv2.LoadBalancer
-	err := cloud.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.ELBV2().DescribeLoadBalancersPagesWithContext(ctx, request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
 		for _, lb := range p.LoadBalancers {
 			if filter(lb) {
 				found = append(found, lb)
@@ -195,22 +169,44 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 }
 
 func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
-	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
+	allLoadBalancers, err := awsup.ListELBV2LoadBalancers(ctx, cloud)
 	if err != nil {
 		return nil, err
 	}
-	if lb == nil {
+
+	latest := awsup.FindLatestELBV2ByNameTag(allLoadBalancers, fi.ValueOf(e.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	// Stash deletions for later
+	for _, lb := range allLoadBalancers {
+		if lb.NameTag() != fi.ValueOf(e.Name) {
+			continue
+		}
+		if latest != nil && latest.ARN() == lb.ARN() {
+			continue
+		}
+
+		e.deletions = append(e.deletions, &deleteNLB{
+			obj: lb,
+		})
+	}
+
+	if latest == nil {
 		return nil, nil
 	}
 
-	loadBalancerArn := lb.LoadBalancerArn
+	lb := latest.LoadBalancer
+
+	loadBalancerArn := latest.ARN()
 
 	actual := &NetworkLoadBalancer{}
 	actual.Name = e.Name
 	actual.CLBName = e.CLBName
-	actual.LoadBalancerName = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneId // CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
@@ -218,16 +214,16 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	actual.Type = lb.Type
 	actual.IpAddressType = lb.IpAddressType
 
-	tagMap, err := cloud.DescribeELBV2Tags([]string{*loadBalancerArn})
-	if err != nil {
-		return nil, err
-	}
 	actual.Tags = make(map[string]string)
-	for _, tag := range tagMap[*loadBalancerArn] {
-		if strings.HasPrefix(aws.StringValue(tag.Key), "aws:cloudformation:") {
+	for _, tag := range latest.Tags {
+		k := aws.StringValue(tag.Key)
+		if strings.HasPrefix(k, "aws:cloudformation:") {
 			continue
 		}
-		actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+		if k == awsup.KopsResourceRevisionTag {
+			continue
+		}
+		actual.Tags[k] = aws.StringValue(tag.Value)
 	}
 
 	for _, az := range lb.AvailabilityZones {
@@ -256,7 +252,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	}
 
 	{
-		lbAttributes, err := findNetworkLoadBalancerAttributes(cloud, aws.StringValue(loadBalancerArn))
+		lbAttributes, err := findNetworkLoadBalancerAttributes(cloud, loadBalancerArn)
 		if err != nil {
 			return nil, err
 		}
@@ -312,30 +308,34 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	if e.HostedZoneId == nil {
 		e.HostedZoneId = actual.HostedZoneId
 	}
-	if e.LoadBalancerName == nil {
-		e.LoadBalancerName = actual.LoadBalancerName
-	}
 
 	// An existing internal NLB can't be updated to dualstack.
 	if fi.ValueOf(actual.Scheme) == elbv2.LoadBalancerSchemeEnumInternal && fi.ValueOf(actual.IpAddressType) == elbv2.IpAddressTypeIpv4 {
 		e.IpAddressType = actual.IpAddressType
 	}
 
-	// We allow for the LoadBalancerName to be wrong:
-	// 1. We don't want to force a rename of the NLB, because that is a destructive operation
-	if fi.ValueOf(e.LoadBalancerName) != fi.ValueOf(actual.LoadBalancerName) {
-		klog.V(2).Infof("Reusing existing load balancer with name: %q", aws.StringValue(actual.LoadBalancerName))
-		e.LoadBalancerName = actual.LoadBalancerName
-	}
-
 	_ = actual.Normalize(c)
 	actual.WellKnownServices = e.WellKnownServices
 	actual.Lifecycle = e.Lifecycle
+	actual.LoadBalancerBaseName = e.LoadBalancerBaseName
 
-	// Store for other tasks
+	// Store state for other tasks
 	e.loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
+	actual.loadBalancerArn = e.loadBalancerArn
+	e.revision, _ = latest.GetTag(awsup.KopsResourceRevisionTag)
+	actual.revision = e.revision
 
 	klog.V(4).Infof("Found NLB %+v", actual)
+
+	// AWS does not allow us to add security groups to an ELB that was initially created without them.
+	// This forces a new revision (currently, the only operation that forces a new revision)
+	if len(actual.SecurityGroups) == 0 && len(e.SecurityGroups) > 0 {
+		klog.Warningf("setting securityGroups on an existing NLB created without securityGroups; will force a new NLB")
+		t := time.Now()
+		revision := strconv.FormatInt(t.Unix(), 10)
+		actual = nil
+		e.revision = revision
+	}
 
 	return actual, nil
 }
@@ -348,30 +348,37 @@ func (e *NetworkLoadBalancer) GetWellKnownServices() []wellknownservices.WellKno
 	return e.WellKnownServices
 }
 
-func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+func (e *NetworkLoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
+	ctx := c.Context()
+
 	var addresses []string
 
-	cloud := context.T.Cloud.(awsup.AWSCloud)
-	cluster := context.T.Cluster
+	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cluster := c.T.Cluster
 
 	{
-		lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
+		allLoadBalancers, err := awsup.ListELBV2LoadBalancers(ctx, cloud)
 		if err != nil {
-			return nil, fmt.Errorf("failed to find load balancer matching %q: %w", e.Tags["Name"], err)
+			return nil, err
 		}
-		if lb != nil && fi.ValueOf(lb.DNSName) != "" {
-			addresses = append(addresses, fi.ValueOf(lb.DNSName))
-		}
-	}
 
-	if cluster.UsesNoneDNS() {
-		nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), fi.ValueOf(e.LoadBalancerName))
-		if err != nil {
-			return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", fi.ValueOf(e.LoadBalancerName), err)
-		}
-		for _, ni := range nis {
-			if fi.ValueOf(ni.PrivateIpAddress) != "" {
-				addresses = append(addresses, fi.ValueOf(ni.PrivateIpAddress))
+		lb := awsup.FindLatestELBV2ByNameTag(allLoadBalancers, fi.ValueOf(e.Name))
+
+		if lb != nil {
+			if fi.ValueOf(lb.LoadBalancer.DNSName) != "" {
+				addresses = append(addresses, fi.ValueOf(lb.LoadBalancer.DNSName))
+			}
+
+			if cluster.UsesNoneDNS() {
+				nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), aws.StringValue(lb.LoadBalancer.LoadBalancerName))
+				if err != nil {
+					return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", aws.StringValue(lb.LoadBalancer.LoadBalancerName), err)
+				}
+				for _, ni := range nis {
+					if fi.ValueOf(ni.PrivateIpAddress) != "" {
+						addresses = append(addresses, fi.ValueOf(ni.PrivateIpAddress))
+					}
+				}
 			}
 		}
 	}
@@ -456,23 +463,42 @@ func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) err
 func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer) error {
 	ctx := context.TODO()
 
-	var loadBalancerName string
-	var loadBalancerArn string
+	loadBalancerArn := ""
+
+	revision := e.revision
+
+	// TODO: Use maps.Clone when we are >= go1.21 on supported branches
+	tags := make(map[string]string)
+	for k, v := range e.Tags {
+		tags[k] = v
+	}
+
+	// We removed revision for the diff/plan, but we want to set it
+	if revision != "" {
+		tags[awsup.KopsResourceRevisionTag] = revision
+	}
 
 	if a == nil {
-		if e.LoadBalancerName == nil {
-			return fi.RequiredField("LoadBalancerName")
-		}
+		loadBalancerName := fi.ValueOf(e.LoadBalancerBaseName)
+		if revision != "" {
+			s := fi.ValueOf(e.LoadBalancerBaseName) + "-" + revision
 
-		loadBalancerName = *e.LoadBalancerName
+			// We always compute the hash and add it, lest we trick users into assuming that we never do this
+			opt := truncate.TruncateStringOptions{
+				MaxLength:     32,
+				AlwaysAddHash: true,
+				HashLength:    6,
+			}
+			loadBalancerName = truncate.TruncateString(s, opt)
+		}
 
 		{
 			request := &elbv2.CreateLoadBalancerInput{}
-			request.Name = e.LoadBalancerName
+			request.Name = &loadBalancerName
 			request.Scheme = e.Scheme
 			request.Type = e.Type
 			request.IpAddressType = e.IpAddressType
-			request.Tags = awsup.ELBv2Tags(e.Tags)
+			request.Tags = awsup.ELBv2Tags(tags)
 
 			for _, subnetMapping := range e.SubnetMappings {
 				request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
@@ -502,6 +528,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			e.VPC = &VPC{ID: lb.VpcId}
 			loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
 			e.loadBalancerArn = loadBalancerArn
+			e.revision = revision
 		}
 
 		if e.waitForLoadBalancerReady {
@@ -517,19 +544,12 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		}
 
 	} else {
-		loadBalancerName = fi.ValueOf(a.LoadBalancerName)
-
-		lb, err := findNetworkLoadBalancerByLoadBalancerName(t.Cloud, loadBalancerName)
-		if err != nil {
-			return fmt.Errorf("error getting load balancer by name: %v", err)
-		}
-
-		loadBalancerArn = fi.ValueOf(lb.LoadBalancerArn)
+		loadBalancerArn = a.loadBalancerArn
 
 		if changes.IpAddressType != nil {
 			request := &elbv2.SetIpAddressTypeInput{
 				IpAddressType:   e.IpAddressType,
-				LoadBalancerArn: lb.LoadBalancerArn,
+				LoadBalancerArn: &loadBalancerArn,
 			}
 			if _, err := t.Cloud.ELBV2().SetIpAddressType(request); err != nil {
 				return fmt.Errorf("error setting the IP addresses type: %v", err)
@@ -576,7 +596,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 		if changes.SecurityGroups != nil {
 			request := &elbv2.SetSecurityGroupsInput{
-				LoadBalancerArn: lb.LoadBalancerArn,
+				LoadBalancerArn: &loadBalancerArn,
 			}
 			for _, sg := range e.SecurityGroups {
 				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
@@ -588,11 +608,11 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 		}
 
-		if err := t.AddELBV2Tags(loadBalancerArn, e.Tags); err != nil {
+		if err := t.AddELBV2Tags(loadBalancerArn, tags); err != nil {
 			return err
 		}
 
-		if err := t.RemoveELBV2Tags(loadBalancerArn, e.Tags); err != nil {
+		if err := t.RemoveELBV2Tags(loadBalancerArn, tags); err != nil {
 			return err
 		}
 	}
@@ -625,7 +645,7 @@ type terraformNetworkLoadBalancerSubnetMapping struct {
 
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
-		Name:                   *e.LoadBalancerName,
+		Name:                   *e.LoadBalancerBaseName,
 		Internal:               fi.ValueOf(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
 		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
@@ -679,39 +699,43 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.L
 
 // FindDeletions schedules deletion of the corresponding legacy classic load balancer when it no longer has targets.
 func (e *NetworkLoadBalancer) FindDeletions(context *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
-	if e.CLBName == nil {
-		return nil, nil
+	var deletions []fi.CloudupDeletion
+
+	deletions = append(deletions, e.deletions...)
+
+	if e.CLBName != nil {
+		cloud := context.T.Cloud.(awsup.AWSCloud)
+
+		lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.CLBName))
+		if err != nil {
+			return nil, err
+		}
+
+		if lb != nil {
+			klog.V(4).Infof("Found CLB %v", aws.StringValue(lb.LoadBalancerName))
+			deletions = append(deletions, &deleteClassicLoadBalancer{LoadBalancerName: e.CLBName})
+		}
 	}
 
-	cloud := context.T.Cloud.(awsup.AWSCloud)
-
-	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.CLBName))
-	if err != nil {
-		return nil, err
-	}
-	if lb == nil {
-		return nil, nil
-	}
-
-	// Testing shows that the instances are deregistered immediately after the apply_cluster.
-	// TODO: Figure out how to delay deregistration until instances are terminated.
-	//if len(lb.Instances) > 0 {
-	//	klog.V(2).Infof("CLB %s has targets; not scheduling deletion", *lb.LoadBalancerName)
-	//	return nil, nil
-	//}
-
-	actual := &deleteClassicLoadBalancer{}
-	actual.LoadBalancerName = lb.LoadBalancerName
-
-	klog.V(4).Infof("Found CLB %+v", actual)
-
-	return []fi.CloudupDeletion{actual}, nil
+	return deletions, nil
 }
 
 type deleteClassicLoadBalancer struct {
 	// LoadBalancerName is the name in ELB, possibly different from our name
 	// (ELB is restricted as to names, so we have limited choices!)
 	LoadBalancerName *string
+}
+
+func (d deleteClassicLoadBalancer) TaskName() string {
+	return "ClassicLoadBalancer"
+}
+
+func (d deleteClassicLoadBalancer) Item() string {
+	return *d.LoadBalancerName
+}
+
+func (d deleteClassicLoadBalancer) DeferDeletion() bool {
+	return true
 }
 
 func (d deleteClassicLoadBalancer) Delete(t fi.CloudupTarget) error {
@@ -730,10 +754,54 @@ func (d deleteClassicLoadBalancer) Delete(t fi.CloudupTarget) error {
 	return nil
 }
 
-func (d deleteClassicLoadBalancer) TaskName() string {
-	return "ClassicLoadBalancer"
+// deleteNLB tracks a NLB that we're going to delete
+// It implements fi.CloudupDeletion
+type deleteNLB struct {
+	obj *awsup.LoadBalancerInfo
 }
 
-func (d deleteClassicLoadBalancer) Item() string {
-	return *d.LoadBalancerName
+func buildDeleteNLB(obj *awsup.LoadBalancerInfo) *deleteNLB {
+	d := &deleteNLB{}
+	d.obj = obj
+	return d
+}
+
+var _ fi.CloudupDeletion = &deleteNLB{}
+
+func (d *deleteNLB) Delete(t fi.CloudupTarget) error {
+	ctx := context.TODO()
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	arn := d.obj.ARN()
+	klog.V(2).Infof("deleting load balancer %q", arn)
+	if _, err := awsTarget.Cloud.ELBV2().DeleteLoadBalancerWithContext(ctx, &elbv2.DeleteLoadBalancerInput{
+		LoadBalancerArn: &arn,
+	}); err != nil {
+		return fmt.Errorf("error deleting ELB LoadBalancer %q: %w", arn, err)
+	}
+
+	return nil
+}
+
+// String returns a string representation of the task
+func (d *deleteNLB) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+// TaskName returns the task name
+func (d *deleteNLB) TaskName() string {
+	return "network-load-balancer"
+}
+
+// Item returns the launch template name
+func (d *deleteNLB) Item() string {
+	return d.obj.ARN()
+}
+
+func (d *deleteNLB) DeferDeletion() bool {
+	return true
 }

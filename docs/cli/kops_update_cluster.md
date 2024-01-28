@@ -33,6 +33,7 @@ kops update cluster [CLUSTER] [flags]
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
       --out string                    Path to write any local output
       --phase string                  Subset of tasks to run: cluster, network, security
+      --prune                         Delete old revisions of cloud resources that were needed during an upgrade
       --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)
       --target string                 Target - direct, terraform (default "direct")
       --user string                   Existing user in kubeconfig file to use.  Implies --create-kube-config

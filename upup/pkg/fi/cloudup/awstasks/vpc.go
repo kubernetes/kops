@@ -391,3 +391,7 @@ func (d *deleteVPCCIDRBlock) TaskName() string {
 func (d *deleteVPCCIDRBlock) Item() string {
 	return fmt.Sprintf("%v: cidr=%v", *d.vpcID, *d.cidrBlock)
 }
+
+func (d *deleteVPCCIDRBlock) DeferDeletion() bool {
+	return false // TODO: should we defer this?
+}
