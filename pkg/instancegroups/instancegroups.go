@@ -492,6 +492,8 @@ func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
 		Phase:              "",
 		TargetName:         "direct",
 		LifecycleOverrides: map[string]fi.Lifecycle{},
+
+		DeletionProcessing: fi.DeletionProcessingModeDeleteIfNotDeferrred,
 	}
 
 	return applyCmd.Run(c.Ctx)

@@ -164,8 +164,6 @@ type AWSCloud interface {
 	FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error)
 	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
 	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
-	FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error)
-	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
 	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]*elbv2.Tag, error)
 	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
 
@@ -1880,68 +1878,34 @@ func describeELBTags(c AWSCloud, loadBalancerNames []string) (map[string][]*elb.
 	return tagMap, nil
 }
 
-func (c *awsCloudImplementation) FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error) {
-	return findELBV2ByNameTag(c, findNameTag)
-}
-
-func findELBV2ByNameTag(c AWSCloud, findNameTag string) (*elbv2.LoadBalancer, error) {
-	// TODO: Any way around this?
-	klog.V(2).Infof("Listing all NLBs for findNetworkLoadBalancerByNameTag")
-
-	request := &elbv2.DescribeLoadBalancersInput{}
-	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	var found []*elbv2.LoadBalancer
-
-	var innerError error
-	err := c.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancers) == 0 {
-			return true
+func FindLatestELBV2ByNameTag(loadBalancers []*LoadBalancerInfo, findNameTag string) *LoadBalancerInfo {
+	var latest *LoadBalancerInfo
+	var latestRevision int
+	for _, lb := range loadBalancers {
+		if lb.NameTag() != findNameTag {
+			continue
 		}
+		revisionTag, _ := lb.GetTag(KopsResourceRevisionTag)
 
-		// TODO: Filter by cluster?
-
-		var arns []string
-		arnToELB := make(map[string]*elbv2.LoadBalancer)
-		for _, elb := range p.LoadBalancers {
-			arn := aws.StringValue(elb.LoadBalancerArn)
-			arnToELB[arn] = elb
-			arns = append(arns, arn)
-		}
-
-		tagMap, err := c.DescribeELBV2Tags(arns)
-		if err != nil {
-			innerError = err
-			return false
-		}
-
-		for loadBalancerArn, tags := range tagMap {
-			name, foundNameTag := FindELBV2Tag(tags, "Name")
-			if !foundNameTag || name != findNameTag {
+		revision := -1
+		if revisionTag == "" {
+			revision = 0
+		} else {
+			n, err := strconv.Atoi(revisionTag)
+			if err != nil {
+				klog.Warningf("ignoring load balancer %q with revision %q", aws.StringValue(lb.LoadBalancer.LoadBalancerArn), revision)
 				continue
 			}
-			elb := arnToELB[loadBalancerArn]
-			found = append(found, elb)
+			revision = n
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+
+		if latest == nil || revision > latestRevision {
+			latestRevision = revision
+			latest = lb
+		}
 	}
 
-	if len(found) == 0 {
-		return nil, nil
-	}
-
-	if len(found) != 1 {
-		return nil, fmt.Errorf("Found multiple NLBs with Name %q", findNameTag)
-	}
-
-	return found[0], nil
+	return latest
 }
 
 func (c *awsCloudImplementation) FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error) {
@@ -2333,22 +2297,28 @@ func getApiIngressStatus(c AWSCloud, cluster *kops.Cluster) ([]fi.ApiIngressStat
 	return ingresses, nil
 }
 
-func findDNSName(c AWSCloud, cluster *kops.Cluster) (string, error) {
+func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
+	ctx := context.TODO()
+
 	name := "api." + cluster.Name
 	if cluster.Spec.API.LoadBalancer == nil {
 		return "", nil
 	}
 	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
-		if lb, err := c.FindELBByNameTag(name); err != nil {
+		if lb, err := cloud.FindELBByNameTag(name); err != nil {
 			return "", fmt.Errorf("error looking for AWS ELB: %v", err)
 		} else if lb != nil {
 			return aws.StringValue(lb.DNSName), nil
 		}
 	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-		if lb, err := c.FindELBV2ByNameTag(name); err != nil {
-			return "", fmt.Errorf("error looking for AWS NLB: %v", err)
-		} else if lb != nil {
-			return aws.StringValue(lb.DNSName), nil
+		allLoadBalancers, err := ListELBV2LoadBalancers(ctx, cloud)
+		if err != nil {
+			return "", fmt.Errorf("looking for AWS NLB: %w", err)
+		}
+
+		latest := FindLatestELBV2ByNameTag(allLoadBalancers, name)
+		if latest != nil {
+			return aws.StringValue(latest.LoadBalancer.DNSName), nil
 		}
 	}
 	return "", nil

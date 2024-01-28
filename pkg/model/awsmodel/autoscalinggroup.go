@@ -492,7 +492,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 		}
 
 		if extLB.TargetGroupARN != nil {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(extLB.TargetGroupARN))
+			targetGroupName, err := awsup.NameForExternalTargetGroup(fi.ValueOf(extLB.TargetGroupARN))
 			if err != nil {
 				return nil, err
 			}

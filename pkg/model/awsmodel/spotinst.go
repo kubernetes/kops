@@ -851,7 +851,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 			c.EnsureTask(lb)
 		}
 		if extLB.TargetGroupARN != nil {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(extLB.TargetGroupARN))
+			targetGroupName, err := awsup.NameForExternalTargetGroup(fi.ValueOf(extLB.TargetGroupARN))
 			if err != nil {
 				return nil, nil, err
 			}

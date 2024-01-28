@@ -27,6 +27,7 @@ kops update cluster [CLUSTER] [flags]
 ```
       --admin duration[=18h0m0s]      Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade          Allow an older version of kOps to update the cluster than last used
+      --cleanup-after-upgrade         Delete old revisions of cloud resources that were needed during an upgrade
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                          help for cluster
       --internal                      Use the cluster's internal DNS name. Implies --create-kube-config

@@ -319,8 +319,6 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// Create NLB itself
 	var nlb *awstasks.NetworkLoadBalancer
 	{
-		loadBalancerName := b.LBName32("bastion")
-
 		tags := b.CloudTags("", false)
 		for k, v := range b.Cluster.Spec.CloudLabels {
 			tags[k] = v
@@ -341,13 +339,12 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Name:      fi.PtrTo(b.NLBName("bastion")),
 			Lifecycle: b.Lifecycle,
 
-			LoadBalancerName: fi.PtrTo(loadBalancerName),
-			CLBName:          fi.PtrTo("bastion." + b.ClusterName()),
-			SubnetMappings:   nlbSubnetMappings,
+			LoadBalancerBaseName: fi.PtrTo(b.LBName32("bastion")),
+			CLBName:              fi.PtrTo("bastion." + b.ClusterName()),
+			SubnetMappings:       nlbSubnetMappings,
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("bastion"),
 			},
-
 			Tags:          tags,
 			VPC:           b.LinkToVPC(),
 			Type:          fi.PtrTo("network"),
@@ -390,6 +387,7 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			UnhealthyThreshold: fi.PtrTo(int64(2)),
 			Shared:             fi.PtrTo(false),
 		}
+		tg.CreateNewRevisionsWith(nlb)
 
 		c.AddTask(tg)
 

@@ -211,10 +211,6 @@ func (c *MockAWSCloud) DescribeELBTags(loadBalancerNames []string) (map[string][
 	return describeELBTags(c, loadBalancerNames)
 }
 
-func (c *MockAWSCloud) FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error) {
-	return findELBV2ByNameTag(c, findNameTag)
-}
-
 func (c *MockAWSCloud) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
 	return describeELBV2Tags(c, loadBalancerArns)
 }

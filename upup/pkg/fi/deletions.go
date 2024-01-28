@@ -38,6 +38,7 @@ type Deletion[T SubContext] interface {
 	Delete(target Target[T]) error
 	TaskName() string
 	Item() string
+	DeferDeletion() bool
 }
 
 type CloudupDeletion = Deletion[CloudupSubContext]

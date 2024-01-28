@@ -256,9 +256,30 @@ func (t *DryRunTarget[T]) PrintReport(taskMap map[string]Task[T], out io.Writer)
 		// Give everything a consistent ordering
 		sort.Sort(DeletionByTaskName[T](t.deletions))
 
-		fmt.Fprintf(b, "Will delete items:\n")
+		var deferred []Deletion[T]
+		var immediate []Deletion[T]
+
 		for _, d := range t.deletions {
-			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			if d.DeferDeletion() {
+				deferred = append(deferred, d)
+			} else {
+				immediate = append(immediate, d)
+			}
+		}
+
+		if len(deferred) != 0 {
+			fmt.Fprintf(b, "Items will be deleted only when --cleanup-after-upgrade specified:\n")
+			for _, d := range deferred {
+				fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			}
+			fmt.Fprintf(b, "\n")
+		}
+		if len(immediate) != 0 {
+			fmt.Fprintf(b, "Items will be deleted during update:\n")
+			for _, d := range immediate {
+				fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			}
+			fmt.Fprintf(b, "\n")
 		}
 	}
 

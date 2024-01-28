@@ -101,8 +101,11 @@ type AutoscalingGroup struct {
 	CapacityRebalance *bool
 	// WarmPool is the WarmPool config for the ASG
 	WarmPool *WarmPool
+
+	deletions []fi.CloudupDeletion
 }
 
+var _ fi.CloudupProducesDeletions = &AutoscalingGroup{}
 var _ fi.CompareWithID = &AutoscalingGroup{}
 var _ fi.CloudupTaskNormalize = &AutoscalingGroup{}
 
@@ -212,13 +215,21 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 	sort.Stable(OrderLoadBalancersByName(actual.LoadBalancers))
 
 	actual.TargetGroups = []*TargetGroup{}
-	if len(g.TargetGroupARNs) > 0 {
-		for _, tg := range g.TargetGroupARNs {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(tg))
-			if err != nil {
-				return nil, err
+	{
+		byARN := make(map[string]*TargetGroup)
+		for _, tg := range e.TargetGroups {
+			if tg.info != nil {
+				byARN[tg.info.ARN()] = tg
 			}
-			actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
+		}
+		for _, arn := range g.TargetGroupARNs {
+			tg := byARN[aws.StringValue(arn)]
+			if tg != nil {
+				actual.TargetGroups = append(actual.TargetGroups, tg)
+				continue
+			}
+			actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: arn})
+			e.deletions = append(e.deletions, buildDeleteAutoscalingTargetGroupAttachment(aws.StringValue(g.AutoScalingGroupName), aws.StringValue(arn)))
 		}
 	}
 	sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
@@ -612,7 +623,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		var attachTGRequests []*autoscaling.AttachLoadBalancerTargetGroupsInput
-		var detachTGRequests []*autoscaling.DetachLoadBalancerTargetGroupsInput
 		if changes.TargetGroups != nil {
 			if e != nil && len(e.TargetGroups) > 0 {
 				for _, tgsChunkToAttach := range sliceChunks(e.AutoscalingTargetGroups(), attachLoadBalancerTargetGroupsMaxItems) {
@@ -623,14 +633,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				}
 			}
 
-			if a != nil && len(a.TargetGroups) > 0 {
-				for _, tgsChunkToDetach := range sliceChunks(e.getTGsToDetach(a.TargetGroups), detachLoadBalancerTargetGroupsMaxItems) {
-					detachTGRequests = append(detachTGRequests, &autoscaling.DetachLoadBalancerTargetGroupsInput{
-						AutoScalingGroupName: e.Name,
-						TargetGroupARNs:      tgsChunkToDetach,
-					})
-				}
-			}
+			// Detaching is done in a deletion task
+
 			changes.TargetGroups = nil
 		}
 
@@ -717,13 +721,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if attachLBRequest != nil {
 			if _, err := t.Cloud.Autoscaling().AttachLoadBalancersWithContext(ctx, attachLBRequest); err != nil {
 				return fmt.Errorf("error attaching LoadBalancers: %v", err)
-			}
-		}
-		if len(detachTGRequests) > 0 {
-			for _, detachTGRequest := range detachTGRequests {
-				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroupsWithContext(ctx, detachTGRequest); err != nil {
-					return fmt.Errorf("failed to detach target groups: %v", err)
-				}
 			}
 		}
 		if len(attachTGRequests) > 0 {
@@ -1120,4 +1117,53 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 // TerraformLink fills in the property
 func (e *AutoscalingGroup) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_autoscaling_group", fi.ValueOf(e.Name), "id")
+}
+
+func (e *AutoscalingGroup) FindDeletions(context *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
+	return e.deletions, nil
+}
+
+type deleteAutoscalingTargetGroupAttachment struct {
+	autoScalingGroupName string
+	targetGroupARN       string
+}
+
+var _ fi.CloudupDeletion = &deleteAutoscalingTargetGroupAttachment{}
+
+func buildDeleteAutoscalingTargetGroupAttachment(autoScalingGroupName string, targetGroupARN string) *deleteAutoscalingTargetGroupAttachment {
+	d := &deleteAutoscalingTargetGroupAttachment{}
+	d.autoScalingGroupName = autoScalingGroupName
+	d.targetGroupARN = targetGroupARN
+	return d
+}
+
+func (d *deleteAutoscalingTargetGroupAttachment) Delete(t fi.CloudupTarget) error {
+	ctx := context.TODO()
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	req := &autoscaling.DetachLoadBalancerTargetGroupsInput{
+		AutoScalingGroupName: aws.String(d.autoScalingGroupName),
+		TargetGroupARNs:      aws.StringSlice([]string{d.targetGroupARN}),
+	}
+	if _, err := awsTarget.Cloud.Autoscaling().DetachLoadBalancerTargetGroupsWithContext(ctx, req); err != nil {
+		return fmt.Errorf("failed to detach target groups from autoscaling group: %v", err)
+	}
+
+	return nil
+}
+
+func (d *deleteAutoscalingTargetGroupAttachment) TaskName() string {
+	return "autoscaling-elb-attachment"
+
+}
+func (d *deleteAutoscalingTargetGroupAttachment) Item() string {
+	return d.autoScalingGroupName + ":" + d.targetGroupARN
+}
+
+func (d *deleteAutoscalingTargetGroupAttachment) DeferDeletion() bool {
+	return true
 }

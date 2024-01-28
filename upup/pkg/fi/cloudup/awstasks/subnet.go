@@ -541,6 +541,10 @@ func (d *deleteSubnetIPv6CIDRBlock) Item() string {
 	return fmt.Sprintf("%v: ipv6cidr=%v", *d.vpcID, *d.ipv6CidrBlock)
 }
 
+func (d *deleteSubnetIPv6CIDRBlock) DeferDeletion() bool {
+	return false // TODO: should we defer this?
+}
+
 func calculateSubnetCIDR(vpcCIDR, subnetCIDR *string) (*string, error) {
 	if vpcCIDR == nil {
 		return nil, fmt.Errorf("expecting VPC CIDR to not be <nil>")

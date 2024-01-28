@@ -72,8 +72,6 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		return nil
 	}
 
-	loadBalancerName := fi.ValueOf(e.LoadBalancerName)
-
 	request := &elbv2.ModifyLoadBalancerAttributesInput{
 		LoadBalancerArn: aws.String(loadBalancerArn),
 	}
@@ -113,14 +111,14 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 
 	request.Attributes = attributes
 
-	klog.V(2).Infof("Configuring NLB attributes for NLB %q", loadBalancerName)
+	klog.V(2).Infof("Configuring NLB attributes for NLB %q", loadBalancerArn)
 
 	response, err := t.Cloud.ELBV2().ModifyLoadBalancerAttributes(request)
 	if err != nil {
-		return fmt.Errorf("error configuring NLB attributes for NLB %q: %v", loadBalancerName, err)
+		return fmt.Errorf("error configuring NLB attributes for NLB %q: %v", loadBalancerArn, err)
 	}
 
-	klog.V(4).Infof("modified NLB attributes for NLB %q, response %+v", loadBalancerName, response)
+	klog.V(4).Infof("modified NLB attributes for NLB %q, response %+v", loadBalancerArn, response)
 
 	return nil
 }
