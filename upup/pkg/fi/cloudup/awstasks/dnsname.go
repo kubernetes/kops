@@ -160,7 +160,6 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		if nameTag == "" {
 			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
-		nameTag = strings.Replace(nameTag, ".", "-", -1)
 		return &NetworkLoadBalancer{Name: fi.PtrTo(nameTag)}, nil
 	}
 	return nil, nil
