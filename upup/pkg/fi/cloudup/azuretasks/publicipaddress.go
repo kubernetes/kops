@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -59,7 +59,7 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 	var found *network.PublicIPAddress
 	for _, v := range l {
 		if *v.Name == *p.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -116,14 +116,14 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 	}
 
 	p := network.PublicIPAddress{
-		Location: to.StringPtr(t.Cloud.Region()),
-		Name:     to.StringPtr(*e.Name),
-		PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{
-			PublicIPAddressVersion:   network.IPv4,
-			PublicIPAllocationMethod: network.Static,
+		Location: to.Ptr(t.Cloud.Region()),
+		Name:     to.Ptr(*e.Name),
+		Properties: &network.PublicIPAddressPropertiesFormat{
+			PublicIPAddressVersion:   to.Ptr(network.IPVersionIPv4),
+			PublicIPAllocationMethod: to.Ptr(network.IPAllocationMethodStatic),
 		},
-		Sku: &network.PublicIPAddressSku{
-			Name: network.PublicIPAddressSkuNameStandard,
+		SKU: &network.PublicIPAddressSKU{
+			Name: to.Ptr(network.PublicIPAddressSKUNameStandard),
 		},
 		Tags: e.Tags,
 	}
@@ -140,5 +140,4 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 	e.ID = pip.ID
 
 	return nil
-
 }

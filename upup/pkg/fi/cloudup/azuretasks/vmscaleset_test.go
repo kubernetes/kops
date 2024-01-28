@@ -24,8 +24,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -63,30 +63,30 @@ func TestLoadBalancerIDParse(t *testing.T) {
 
 func newTestVMScaleSet() *VMScaleSet {
 	return &VMScaleSet{
-		Name:      to.StringPtr("vmss"),
+		Name:      to.Ptr("vmss"),
 		Lifecycle: fi.LifecycleSync,
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
 		VirtualNetwork: &VirtualNetwork{
-			Name: to.StringPtr("vnet"),
+			Name: to.Ptr("vnet"),
 		},
 		Subnet: &Subnet{
-			Name: to.StringPtr("sub"),
+			Name: to.Ptr("sub"),
 		},
 		LoadBalancer: &LoadBalancer{
-			Name: to.StringPtr("api-lb"),
+			Name: to.Ptr("api-lb"),
 		},
 		StorageProfile:     &VMScaleSetStorageProfile{},
-		RequirePublicIP:    to.BoolPtr(true),
-		SKUName:            to.StringPtr("sku"),
-		Capacity:           to.Int64Ptr(10),
-		ComputerNamePrefix: to.StringPtr("cprefix"),
-		AdminUser:          to.StringPtr("admin"),
-		SSHPublicKey:       to.StringPtr("ssh"),
+		RequirePublicIP:    to.Ptr(true),
+		SKUName:            to.Ptr("sku"),
+		Capacity:           to.Ptr[int64](10),
+		ComputerNamePrefix: to.Ptr("cprefix"),
+		AdminUser:          to.Ptr("admin"),
+		SSHPublicKey:       to.Ptr("ssh"),
 		UserData:           fi.NewStringResource("custom"),
 		Tags:               map[string]*string{},
-		Zones:              []string{"zone1"},
+		Zones:              []*string{to.Ptr("zone1")},
 	}
 }
 
@@ -107,14 +107,14 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 		t.Errorf("unexpected name: expected %s, but got %s", e, a)
 	}
 	// Check other major fields.
-	if a, e := *actual.Sku.Name, *expected.SKUName; a != e {
+	if a, e := *actual.SKU.Name, *expected.SKUName; a != e {
 		t.Errorf("unexpected SKU name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.Sku.Capacity, *expected.Capacity; a != e {
+	if a, e := *actual.SKU.Capacity, *expected.Capacity; a != e {
 		t.Errorf("unexpected SKU Capacity: expected %d, but got %d", e, a)
 	}
 	actualUserData, err := base64.StdEncoding.DecodeString(
-		*actual.VirtualMachineProfile.UserData)
+		*actual.Properties.VirtualMachineProfile.UserData)
 	if err != nil {
 		t.Fatalf("failed to decode user data: %s", err)
 	}
@@ -130,8 +130,8 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 		t.Errorf("unexpected nil principalID")
 	}
 
-	if a, e := *actual.Zones, expected.Zones; !reflect.DeepEqual(a, e) {
-		t.Errorf("unexpected Zone: expected %s, but got %s", e, a)
+	if a, e := actual.Zones, expected.Zones; !reflect.DeepEqual(a, e) {
+		t.Errorf("unexpected Zone: expected %+v, but got %+v", e, a)
 	}
 }
 
@@ -144,10 +144,10 @@ func TestVMScaleSetFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 	}
 	vmss := &VMScaleSet{
-		Name:          to.StringPtr("vmss"),
+		Name:          to.Ptr("vmss"),
 		ResourceGroup: rg,
 	}
 	// Find will return nothing if there is no VM ScaleSet created.
@@ -162,35 +162,35 @@ func TestVMScaleSetFind(t *testing.T) {
 	// Create a VM ScaleSet.
 	userData := []byte("custom")
 	osProfile := &compute.VirtualMachineScaleSetOSProfile{
-		ComputerNamePrefix: to.StringPtr("prefix"),
-		AdminUsername:      to.StringPtr("admin"),
+		ComputerNamePrefix: to.Ptr("prefix"),
+		AdminUsername:      to.Ptr("admin"),
 		LinuxConfiguration: &compute.LinuxConfiguration{
 			SSH: &compute.SSHConfiguration{
-				PublicKeys: &[]compute.SSHPublicKey{
+				PublicKeys: []*compute.SSHPublicKey{
 					{
-						Path:    to.StringPtr("path"),
-						KeyData: to.StringPtr("ssh"),
+						Path:    to.Ptr("path"),
+						KeyData: to.Ptr("ssh"),
 					},
 				},
 			},
-			DisablePasswordAuthentication: to.BoolPtr(true),
+			DisablePasswordAuthentication: to.Ptr(true),
 		},
 	}
 	storageProfile := &compute.VirtualMachineScaleSetStorageProfile{
 		ImageReference: &compute.ImageReference{
-			Publisher: to.StringPtr("publisher"),
-			Offer:     to.StringPtr("offer"),
-			Sku:       to.StringPtr("sku"),
-			Version:   to.StringPtr("version"),
+			Publisher: to.Ptr("publisher"),
+			Offer:     to.Ptr("offer"),
+			SKU:       to.Ptr("sku"),
+			Version:   to.Ptr("version"),
 		},
-		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
-			OsType:       compute.OperatingSystemTypes(compute.Linux),
-			CreateOption: compute.DiskCreateOptionTypesFromImage,
-			DiskSizeGB:   to.Int32Ptr(2),
+		OSDisk: &compute.VirtualMachineScaleSetOSDisk{
+			OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+			CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+			DiskSizeGB:   to.Ptr[int32](2),
 			ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-				StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+				StorageAccountType: to.Ptr(compute.StorageAccountTypesPremiumLRS),
 			},
-			Caching: compute.CachingTypes(compute.HostCachingReadWrite),
+			Caching: to.Ptr(compute.CachingTypes(compute.HostCachingReadWrite)),
 		},
 	}
 	subnetID := azure.SubnetID{
@@ -206,61 +206,61 @@ func TestVMScaleSetFind(t *testing.T) {
 	}
 	ipConfigProperties := &compute.VirtualMachineScaleSetIPConfigurationProperties{
 		Subnet: &compute.APIEntityReference{
-			ID: to.StringPtr(subnetID.String()),
+			ID: to.Ptr(subnetID.String()),
 		},
-		Primary:                 to.BoolPtr(true),
-		PrivateIPAddressVersion: compute.IPv4,
+		Primary:                 to.Ptr(true),
+		PrivateIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 	}
 	ipConfigProperties.PublicIPAddressConfiguration = &compute.VirtualMachineScaleSetPublicIPAddressConfiguration{
-		Name: to.StringPtr("vmss-publicipconfig"),
-		VirtualMachineScaleSetPublicIPAddressConfigurationProperties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
-			PublicIPAddressVersion: compute.IPv4,
+		Name: to.Ptr("vmss-publicipconfig"),
+		Properties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
+			PublicIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 		},
 	}
-	ipConfigProperties.LoadBalancerBackendAddressPools = &[]compute.SubResource{
+	ipConfigProperties.LoadBalancerBackendAddressPools = []*compute.SubResource{
 		{
-			ID: to.StringPtr(loadBalancerID.String()),
+			ID: to.Ptr(loadBalancerID.String()),
 		},
 	}
-	networkConfig := compute.VirtualMachineScaleSetNetworkConfiguration{
-		Name: to.StringPtr("vmss-netconfig"),
-		VirtualMachineScaleSetNetworkConfigurationProperties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
-			Primary:            to.BoolPtr(true),
-			EnableIPForwarding: to.BoolPtr(true),
-			IPConfigurations: &[]compute.VirtualMachineScaleSetIPConfiguration{
+	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
+		Name: to.Ptr("vmss-netconfig"),
+		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
+			Primary:            to.Ptr(true),
+			EnableIPForwarding: to.Ptr(true),
+			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
-					Name: to.StringPtr("vmss-ipconfig"),
-					VirtualMachineScaleSetIPConfigurationProperties: ipConfigProperties,
+					Name:       to.Ptr("vmss-ipconfig"),
+					Properties: ipConfigProperties,
 				},
 			},
 		},
 	}
 
 	vmssParameters := compute.VirtualMachineScaleSet{
-		Location: to.StringPtr(cloud.Location),
-		Sku: &compute.Sku{
-			Name:     to.StringPtr("sku"),
-			Capacity: to.Int64Ptr(2),
+		Location: to.Ptr(cloud.Location),
+		SKU: &compute.SKU{
+			Name:     to.Ptr("sku"),
+			Capacity: to.Ptr[int64](2),
 		},
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+		Properties: &compute.VirtualMachineScaleSetProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: to.Ptr(compute.UpgradeModeManual),
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
-				OsProfile:      osProfile,
+				OSProfile:      osProfile,
 				StorageProfile: storageProfile,
-				UserData:       to.StringPtr(base64.RawStdEncoding.EncodeToString(userData)),
+				UserData:       to.Ptr(base64.RawStdEncoding.EncodeToString(userData)),
 				NetworkProfile: &compute.VirtualMachineScaleSetNetworkProfile{
-					NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
+					NetworkInterfaceConfigurations: []*compute.VirtualMachineScaleSetNetworkConfiguration{
 						networkConfig,
 					},
 				},
 			},
 		},
 		Identity: &compute.VirtualMachineScaleSetIdentity{
-			Type: compute.ResourceIdentityTypeSystemAssigned,
+			Type: to.Ptr(compute.ResourceIdentityTypeSystemAssigned),
 		},
-		Zones: &[]string{"zone1"},
+		Zones: []*string{to.Ptr("zone1")},
 	}
 	if _, err := cloud.VMScaleSet().CreateOrUpdate(context.Background(), *rg.Name, *vmss.Name, vmssParameters); err != nil {
 		t.Fatalf("failed to create: %s", err)
@@ -287,17 +287,17 @@ func TestVMScaleSetFind(t *testing.T) {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
 	// Check other major fields.
-	if a, e := *actual.SKUName, *vmssParameters.Sku.Name; a != e {
+	if a, e := *actual.SKUName, *vmssParameters.SKU.Name; a != e {
 		t.Errorf("unexpected SKU name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.Capacity, *vmssParameters.Sku.Capacity; a != e {
+	if a, e := *actual.Capacity, *vmssParameters.SKU.Capacity; a != e {
 		t.Errorf("unexpected SKU Capacity: expected %d, but got %d", e, a)
 	}
 	if !*actual.RequirePublicIP {
 		t.Errorf("unexpected require public IP")
 	}
-	if a, e := actual.Zones, *vmssParameters.Zones; !reflect.DeepEqual(a, e) {
-		t.Errorf("unexpected Zone: expected %s, but got %s", e, a)
+	if a, e := actual.Zones, vmssParameters.Zones; !reflect.DeepEqual(a, e) {
+		t.Errorf("unexpected Zone: expected %v, but got %v", e, a)
 	}
 }
 
@@ -334,7 +334,7 @@ func TestVMScaleSetCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &VMScaleSet{Name: to.StringPtr("name")},
+			e:       &VMScaleSet{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -345,13 +345,13 @@ func TestVMScaleSetCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &VMScaleSet{Name: to.StringPtr("name")},
+			a:       &VMScaleSet{Name: to.Ptr("name")},
 			changes: &VMScaleSet{Name: nil},
 			success: true,
 		},
 		{
-			a:       &VMScaleSet{Name: to.StringPtr("name")},
-			changes: &VMScaleSet{Name: to.StringPtr("newName")},
+			a:       &VMScaleSet{Name: to.Ptr("name")},
+			changes: &VMScaleSet{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

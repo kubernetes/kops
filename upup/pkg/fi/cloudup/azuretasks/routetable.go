@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -57,7 +57,7 @@ func (r *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
 	var found *network.RouteTable
 	for _, v := range l {
 		if *v.Name == *r.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -111,12 +111,14 @@ func (*RouteTable) RenderAzure(t *azure.AzureAPITarget, a, e, changes *RouteTabl
 	}
 
 	rt := network.RouteTable{
-		Location: to.StringPtr(t.Cloud.Region()),
+		Location: to.Ptr(t.Cloud.Region()),
 		Tags:     e.Tags,
 	}
-	return t.Cloud.RouteTable().CreateOrUpdate(
+	_, err := t.Cloud.RouteTable().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		*e.Name,
 		rt)
+
+	return err
 }

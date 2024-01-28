@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -58,7 +58,7 @@ func (asg *ApplicationSecurityGroup) Find(c *fi.CloudupContext) (*ApplicationSec
 	var found *network.ApplicationSecurityGroup
 	for _, v := range l {
 		if *v.Name == *asg.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -115,8 +115,8 @@ func (*ApplicationSecurityGroup) RenderAzure(t *azure.AzureAPITarget, a, e, chan
 	}
 
 	p := network.ApplicationSecurityGroup{
-		Location: to.StringPtr(t.Cloud.Region()),
-		Name:     to.StringPtr(*e.Name),
+		Location: to.Ptr(t.Cloud.Region()),
+		Name:     to.Ptr(*e.Name),
 		Tags:     e.Tags,
 	}
 

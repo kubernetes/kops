@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -33,13 +33,13 @@ func TestVirtualNetworkRenderAzure(t *testing.T) {
 	apiTarget := azure.NewAzureAPITarget(cloud)
 	vnet := &VirtualNetwork{}
 	expected := &VirtualNetwork{
-		Name: to.StringPtr("vnet"),
+		Name: to.Ptr("vnet"),
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
-		CIDR: to.StringPtr("10.0.0.0/8"),
+		CIDR: to.Ptr("10.0.0.0/8"),
 		Tags: map[string]*string{
-			"key": to.StringPtr("val"),
+			"key": to.Ptr("val"),
 		},
 	}
 	if err := vnet.RenderAzure(apiTarget, nil, expected, nil); err != nil {
@@ -50,11 +50,11 @@ func TestVirtualNetworkRenderAzure(t *testing.T) {
 	if a, e := *actual.Location, cloud.Region(); a != e {
 		t.Fatalf("unexpected location: expected %s, but got %s", e, a)
 	}
-	addrPrefixes := *actual.AddressSpace.AddressPrefixes
+	addrPrefixes := actual.Properties.AddressSpace.AddressPrefixes
 	if a, e := len(addrPrefixes), 1; a != e {
 		t.Fatalf("unexpected number of addess prefixes: expected %d, but got %d", e, a)
 	}
-	if a, e := addrPrefixes[0], *expected.CIDR; a != e {
+	if a, e := *addrPrefixes[0], *expected.CIDR; a != e {
 		t.Errorf("unexpected CIDR: expected %s, but got %s", e, a)
 	}
 	if a, e := actual.Tags, expected.Tags; !reflect.DeepEqual(a, e) {
@@ -71,10 +71,10 @@ func TestVirtualNetworkFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 	}
 	vnet := &VirtualNetwork{
-		Name:          to.StringPtr("vnet"),
+		Name:          to.Ptr("vnet"),
 		ResourceGroup: rg,
 	}
 	// Find will return nothing if there is no Virtual Network created.
@@ -89,17 +89,18 @@ func TestVirtualNetworkFind(t *testing.T) {
 	// Create a Virtual Network.
 	cidr := "10.0.0.0/8"
 	vnetParameters := network.VirtualNetwork{
-		Location: to.StringPtr(cloud.Location),
-		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{
+		Location: to.Ptr(cloud.Location),
+		Properties: &network.VirtualNetworkPropertiesFormat{
 			AddressSpace: &network.AddressSpace{
-				AddressPrefixes: &[]string{cidr},
+				AddressPrefixes: []*string{&cidr},
 			},
 		},
 		Tags: map[string]*string{
-			"key": to.StringPtr("val"),
+			"key": to.Ptr("val"),
 		},
 	}
-	if err := cloud.VirtualNetwork().CreateOrUpdate(context.Background(), *rg.Name, *vnet.Name, vnetParameters); err != nil {
+	_, err = cloud.VirtualNetwork().CreateOrUpdate(context.Background(), *rg.Name, *vnet.Name, vnetParameters)
+	if err != nil {
 		t.Fatalf("failed to create: %s", err)
 	}
 	// Find again.
@@ -135,14 +136,14 @@ func TestVirtualNetworkRun(t *testing.T) {
 		val = "val"
 	)
 	vnet := &VirtualNetwork{
-		Name:      to.StringPtr("rg"),
+		Name:      to.Ptr("rg"),
 		Lifecycle: fi.LifecycleSync,
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
-		CIDR: to.StringPtr("10.0.0.0/8"),
+		CIDR: to.Ptr("10.0.0.0/8"),
 		Tags: map[string]*string{
-			key: to.StringPtr(val),
+			key: to.Ptr(val),
 		},
 	}
 	err := vnet.Normalize(ctx)
@@ -154,8 +155,8 @@ func TestVirtualNetworkRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	e := map[string]*string{
-		azure.TagClusterName: to.StringPtr(testClusterName),
-		key:                  to.StringPtr(val),
+		azure.TagClusterName: to.Ptr(testClusterName),
+		key:                  to.Ptr(val),
 	}
 	if a := vnet.Tags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)
@@ -169,7 +170,7 @@ func TestVirtualNetworkCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &VirtualNetwork{Name: to.StringPtr("name")},
+			e:       &VirtualNetwork{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -180,13 +181,13 @@ func TestVirtualNetworkCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &VirtualNetwork{Name: to.StringPtr("name")},
+			a:       &VirtualNetwork{Name: to.Ptr("name")},
 			changes: &VirtualNetwork{Name: nil},
 			success: true,
 		},
 		{
-			a:       &VirtualNetwork{Name: to.StringPtr("name")},
-			changes: &VirtualNetwork{Name: to.StringPtr("newName")},
+			a:       &VirtualNetwork{Name: to.Ptr("name")},
+			changes: &VirtualNetwork{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

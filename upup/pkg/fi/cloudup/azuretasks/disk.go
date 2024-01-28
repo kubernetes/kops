@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -35,7 +35,7 @@ type Disk struct {
 	ResourceGroup *ResourceGroup
 	SizeGB        *int32
 	Tags          map[string]*string
-	Zones         *[]string
+	Zones         []*string
 }
 
 var (
@@ -59,7 +59,7 @@ func (d *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 	var found *compute.Disk
 	for _, v := range l {
 		if *v.Name == *d.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -67,16 +67,21 @@ func (d *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 		return nil, nil
 	}
 
-	return &Disk{
+	disk := &Disk{
 		Name:      d.Name,
 		Lifecycle: d.Lifecycle,
 		ResourceGroup: &ResourceGroup{
 			Name: d.ResourceGroup.Name,
 		},
-		SizeGB: found.DiskSizeGB,
+		SizeGB: found.Properties.DiskSizeGB,
 		Tags:   found.Tags,
 		Zones:  found.Zones,
-	}, nil
+	}
+	if found.Properties != nil {
+		disk.SizeGB = found.Properties.DiskSizeGB
+	}
+
+	return disk, nil
 }
 
 func (d *Disk) Normalize(c *fi.CloudupContext) error {
@@ -116,20 +121,25 @@ func (*Disk) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Disk) error {
 	name := *e.Name
 
 	disk := compute.Disk{
-		Location: to.StringPtr(t.Cloud.Region()),
-		DiskProperties: &compute.DiskProperties{
+		Location: to.Ptr(t.Cloud.Region()),
+		Properties: &compute.DiskProperties{
 			CreationData: &compute.CreationData{
-				CreateOption: compute.Empty,
+				CreateOption: to.Ptr(compute.DiskCreateOptionEmpty),
 			},
 			DiskSizeGB: e.SizeGB,
+		},
+		SKU: &compute.DiskSKU{
+			Name: to.Ptr(compute.DiskStorageAccountTypesStandardSSDLRS),
 		},
 		Tags:  e.Tags,
 		Zones: e.Zones,
 	}
 
-	return t.Cloud.Disk().CreateOrUpdate(
+	_, err := t.Cloud.Disk().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		name,
 		disk)
+
+	return err
 }

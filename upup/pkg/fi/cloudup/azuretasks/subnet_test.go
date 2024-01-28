@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -32,14 +32,14 @@ func TestSubnetRenderAzure(t *testing.T) {
 	apiTarget := azure.NewAzureAPITarget(cloud)
 	subnet := &Subnet{}
 	expected := &Subnet{
-		Name: to.StringPtr("vnet"),
+		Name: to.Ptr("vnet"),
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
 		VirtualNetwork: &VirtualNetwork{
-			Name: to.StringPtr("vnet"),
+			Name: to.Ptr("vnet"),
 		},
-		CIDR: to.StringPtr("10.0.0.0/8"),
+		CIDR: to.Ptr("10.0.0.0/8"),
 	}
 	if err := subnet.RenderAzure(apiTarget, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -49,7 +49,7 @@ func TestSubnetRenderAzure(t *testing.T) {
 	if a, e := *actual.Name, *expected.Name; a != e {
 		t.Errorf("unexpected name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.AddressPrefix, *expected.CIDR; a != e {
+	if a, e := *actual.Properties.AddressPrefix, *expected.CIDR; a != e {
 		t.Errorf("unexpected CIDR: expected %s, but got %s", e, a)
 	}
 }
@@ -63,14 +63,14 @@ func TestSubnetFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 	}
 	vnet := &VirtualNetwork{
-		Name:          to.StringPtr("vnet"),
+		Name:          to.Ptr("vnet"),
 		ResourceGroup: rg,
 	}
 	subnet := &Subnet{
-		Name:           to.StringPtr("sub"),
+		Name:           to.Ptr("sub"),
 		ResourceGroup:  rg,
 		VirtualNetwork: vnet,
 	}
@@ -86,8 +86,8 @@ func TestSubnetFind(t *testing.T) {
 	// Create a Subnet.
 	cidr := "10.0.0.0/8"
 	subnetParameters := network.Subnet{
-		SubnetPropertiesFormat: &network.SubnetPropertiesFormat{
-			AddressPrefix: to.StringPtr(cidr),
+		Properties: &network.SubnetPropertiesFormat{
+			AddressPrefix: to.Ptr(cidr),
 		},
 	}
 	if _, err := cloud.Subnet().CreateOrUpdate(context.Background(), *rg.Name, *vnet.Name, *subnet.Name, subnetParameters); err != nil {
@@ -119,7 +119,7 @@ func TestSubnetCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &Subnet{Name: to.StringPtr("name")},
+			e:       &Subnet{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -130,13 +130,13 @@ func TestSubnetCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &Subnet{Name: to.StringPtr("name")},
+			a:       &Subnet{Name: to.Ptr("name")},
 			changes: &Subnet{Name: nil},
 			success: true,
 		},
 		{
-			a:       &Subnet{Name: to.StringPtr("name")},
-			changes: &Subnet{Name: to.StringPtr("newName")},
+			a:       &Subnet{Name: to.Ptr("name")},
+			changes: &Subnet{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

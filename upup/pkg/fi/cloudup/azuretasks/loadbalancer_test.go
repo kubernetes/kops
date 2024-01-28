@@ -22,30 +22,30 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 func newTestLoadBalancer() *LoadBalancer {
 	return &LoadBalancer{
-		Name:      to.StringPtr("loadbalancer"),
+		Name:      to.Ptr("loadbalancer"),
 		Lifecycle: fi.LifecycleSync,
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
 		Subnet: &Subnet{
-			Name:      to.StringPtr("subnet"),
+			Name:      to.Ptr("subnet"),
 			Lifecycle: fi.LifecycleSync,
 			VirtualNetwork: &VirtualNetwork{
-				Name: to.StringPtr("vnet"),
+				Name: to.Ptr("vnet"),
 			},
 		},
-		External:     to.BoolPtr(true),
+		External:     to.Ptr(true),
 		ForAPIServer: true,
 		Tags: map[string]*string{
-			testTagKey: to.StringPtr(testTagValue),
+			testTagKey: to.Ptr(testTagValue),
 		},
 	}
 }
@@ -77,10 +77,10 @@ func TestLoadBalancerFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 	}
 	loadBalancer := &LoadBalancer{
-		Name: to.StringPtr("loadbalancer"),
+		Name: to.Ptr("loadbalancer"),
 		ResourceGroup: &ResourceGroup{
 			Name: rg.Name,
 		},
@@ -95,28 +95,29 @@ func TestLoadBalancerFind(t *testing.T) {
 	}
 
 	feConfigProperties := &network.FrontendIPConfigurationPropertiesFormat{
-		PrivateIPAllocationMethod: network.Dynamic,
+		PrivateIPAllocationMethod: to.Ptr(network.IPAllocationMethodDynamic),
 		Subnet: &network.Subnet{
-			Name: to.StringPtr("subnet"),
-			ID:   to.StringPtr("id"),
+			Name: to.Ptr("subnet"),
+			ID:   to.Ptr("id"),
 		},
 	}
 	feConfigProperties.PublicIPAddress = &network.PublicIPAddress{
-		ID: to.StringPtr("id"),
+		ID: to.Ptr("id"),
 	}
 
 	// Create a Loadbalancer.
 	loadBalancerParameters := network.LoadBalancer{
-		Location: to.StringPtr("eastus"),
-		LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: &[]network.FrontendIPConfiguration{
+		Location: to.Ptr("eastus"),
+		Properties: &network.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*network.FrontendIPConfiguration{
 				{
-					FrontendIPConfigurationPropertiesFormat: feConfigProperties,
+					Properties: feConfigProperties,
 				},
 			},
 		},
 	}
-	if err := cloud.LoadBalancer().CreateOrUpdate(context.Background(), *rg.Name, *loadBalancer.Name, loadBalancerParameters); err != nil {
+	_, err = cloud.LoadBalancer().CreateOrUpdate(context.Background(), *rg.Name, *loadBalancer.Name, loadBalancerParameters)
+	if err != nil {
 		t.Fatalf("failed to create: %s", err)
 	}
 	// Find again.
@@ -158,8 +159,8 @@ func TestLoadBalancerRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	e := map[string]*string{
-		azure.TagClusterName: to.StringPtr(testClusterName),
-		testTagKey:           to.StringPtr(testTagValue),
+		azure.TagClusterName: to.Ptr(testClusterName),
+		testTagKey:           to.Ptr(testTagValue),
 	}
 	if a := lb.Tags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)
@@ -173,7 +174,7 @@ func TestLoadBalancerCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &LoadBalancer{Name: to.StringPtr("name")},
+			e:       &LoadBalancer{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -184,13 +185,13 @@ func TestLoadBalancerCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &LoadBalancer{Name: to.StringPtr("name")},
+			a:       &LoadBalancer{Name: to.Ptr("name")},
 			changes: &LoadBalancer{Name: nil},
 			success: true,
 		},
 		{
-			a:       &LoadBalancer{Name: to.StringPtr("name")},
-			changes: &LoadBalancer{Name: to.StringPtr("newName")},
+			a:       &LoadBalancer{Name: to.Ptr("name")},
+			changes: &LoadBalancer{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

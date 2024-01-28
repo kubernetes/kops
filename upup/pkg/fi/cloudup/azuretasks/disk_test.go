@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -35,14 +35,14 @@ const (
 
 func newTestDisk() *Disk {
 	return &Disk{
-		Name:      to.StringPtr("disk"),
+		Name:      to.Ptr("disk"),
 		Lifecycle: fi.LifecycleSync,
 		ResourceGroup: &ResourceGroup{
-			Name: to.StringPtr("rg"),
+			Name: to.Ptr("rg"),
 		},
-		SizeGB: to.Int32Ptr(32),
+		SizeGB: to.Ptr[int32](32),
 		Tags: map[string]*string{
-			testTagKey: to.StringPtr(testTagValue),
+			testTagKey: to.Ptr(testTagValue),
 		},
 	}
 }
@@ -63,7 +63,7 @@ func TestDiskRenderAzure(t *testing.T) {
 	if a, e := *actual.Name, *expected.Name; a != e {
 		t.Errorf("unexpected name: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.DiskProperties.DiskSizeGB, *expected.SizeGB; a != e {
+	if a, e := *actual.Properties.DiskSizeGB, *expected.SizeGB; a != e {
 		t.Fatalf("unexpected disk size: expected %d, but got %d", e, a)
 	}
 	if a, e := actual.Tags, expected.Tags; !reflect.DeepEqual(a, e) {
@@ -80,10 +80,10 @@ func TestDiskFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 	}
 	disk := &Disk{
-		Name:          to.StringPtr("disk"),
+		Name:          to.Ptr("disk"),
 		ResourceGroup: rg,
 	}
 	// Find will return nothing if there is no Disk created.
@@ -98,19 +98,20 @@ func TestDiskFind(t *testing.T) {
 	// Create a Disk.
 	var diskSizeGB int32 = 32
 	tags := map[string]*string{
-		"key": to.StringPtr("value"),
+		"key": to.Ptr("value"),
 	}
 	diskParameters := compute.Disk{
-		Location: to.StringPtr(cloud.Location),
-		DiskProperties: &compute.DiskProperties{
+		Location: to.Ptr(cloud.Location),
+		Properties: &compute.DiskProperties{
 			CreationData: &compute.CreationData{
-				CreateOption: compute.Empty,
+				CreateOption: to.Ptr(compute.DiskCreateOptionEmpty),
 			},
-			DiskSizeGB: to.Int32Ptr(diskSizeGB),
+			DiskSizeGB: to.Ptr(diskSizeGB),
 		},
 		Tags: tags,
 	}
-	if err := cloud.Disk().CreateOrUpdate(context.Background(), *rg.Name, *disk.Name, diskParameters); err != nil {
+	_, err = cloud.Disk().CreateOrUpdate(context.Background(), *rg.Name, *disk.Name, diskParameters)
+	if err != nil {
 		t.Fatalf("failed to create: %s", err)
 	}
 	// Find again.
@@ -151,8 +152,8 @@ func TestDiskRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	expectedTags := map[string]*string{
-		azure.TagClusterName: to.StringPtr(testClusterName),
-		testTagKey:           to.StringPtr(testTagValue),
+		azure.TagClusterName: to.Ptr(testClusterName),
+		testTagKey:           to.Ptr(testTagValue),
 	}
 	if a, e := vmss.Tags, expectedTags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)
@@ -166,7 +167,7 @@ func TestDiskCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &Disk{Name: to.StringPtr("name")},
+			e:       &Disk{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -177,13 +178,13 @@ func TestDiskCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &Disk{Name: to.StringPtr("name")},
+			a:       &Disk{Name: to.Ptr("name")},
 			changes: &Disk{Name: nil},
 			success: true,
 		},
 		{
-			a:       &Disk{Name: to.StringPtr("name")},
-			changes: &Disk{Name: to.StringPtr("newName")},
+			a:       &Disk{Name: to.Ptr("name")},
+			changes: &Disk{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

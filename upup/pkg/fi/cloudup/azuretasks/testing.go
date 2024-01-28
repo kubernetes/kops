@@ -21,16 +21,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-
-	// Use 2018-01-01-preview API as we need the version to create
-	// a role assignment with Data Actions (https://github.com/Azure/azure-sdk-for-go/issues/1895).
-	// The non-preview version of the authorization API (2015-07-01)
-	// doesn't support Data Actions.
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/google/uuid"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -70,46 +65,46 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 	return &MockAzureCloud{
 		Location: location,
 		ResourceGroupsClient: &MockResourceGroupsClient{
-			RGs: map[string]resources.Group{},
+			RGs: map[string]*resources.ResourceGroup{},
 		},
 		VirtualNetworksClient: &MockVirtualNetworksClient{
-			VNets: map[string]network.VirtualNetwork{},
+			VNets: map[string]*network.VirtualNetwork{},
 		},
 		SubnetsClient: &MockSubnetsClient{
-			Subnets: map[string]network.Subnet{},
+			Subnets: map[string]*network.Subnet{},
 		},
 		RouteTablesClient: &MockRouteTablesClient{
-			RTs: map[string]network.RouteTable{},
+			RTs: map[string]*network.RouteTable{},
 		},
 		NetworkSecurityGroupsClient: &MockNetworkSecurityGroupsClient{
-			NSGs: map[string]network.SecurityGroup{},
+			NSGs: map[string]*network.SecurityGroup{},
 		},
 		ApplicationSecurityGroupsClient: &MockApplicationSecurityGroupsClient{
-			ASGs: map[string]network.ApplicationSecurityGroup{},
+			ASGs: map[string]*network.ApplicationSecurityGroup{},
 		},
 		VMScaleSetsClient: &MockVMScaleSetsClient{
-			VMSSes: map[string]compute.VirtualMachineScaleSet{},
+			VMSSes: map[string]*compute.VirtualMachineScaleSet{},
 		},
 		VMScaleSetVMsClient: &MockVMScaleSetVMsClient{
-			VMs: map[string]compute.VirtualMachineScaleSetVM{},
+			VMs: map[string]*compute.VirtualMachineScaleSetVM{},
 		},
 		DisksClient: &MockDisksClient{
-			Disks: map[string]compute.Disk{},
+			Disks: map[string]*compute.Disk{},
 		},
 		RoleAssignmentsClient: &MockRoleAssignmentsClient{
-			RAs: map[string]authz.RoleAssignment{},
+			RAs: map[string]*authz.RoleAssignment{},
 		},
 		NetworkInterfacesClient: &MockNetworkInterfacesClient{
-			NIs: map[string]network.Interface{},
+			NIs: map[string]*network.Interface{},
 		},
 		LoadBalancersClient: &MockLoadBalancersClient{
-			LBs: map[string]network.LoadBalancer{},
+			LBs: map[string]*network.LoadBalancer{},
 		},
 		PublicIPAddressesClient: &MockPublicIPAddressesClient{
-			PubIPs: map[string]network.PublicIPAddress{},
+			PubIPs: map[string]*network.PublicIPAddress{},
 		},
 		NatGatewaysClient: &MockNatGatewaysClient{
-			NGWs: map[string]network.NatGateway{},
+			NGWs: map[string]*network.NatGateway{},
 		},
 	}
 }
@@ -169,7 +164,7 @@ func (c *MockAzureCloud) GetCloudGroups(
 
 // AddClusterTags add the cluster tag to the given tag map.
 func (c *MockAzureCloud) AddClusterTags(tags map[string]*string) {
-	tags[azure.TagClusterName] = fi.PtrTo(testClusterName)
+	tags[azure.TagClusterName] = to.Ptr(testClusterName)
 }
 
 // FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
@@ -259,24 +254,22 @@ func (c *MockAzureCloud) NatGateway() azure.NatGatewaysClient {
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
 type MockResourceGroupsClient struct {
-	RGs map[string]resources.Group
+	RGs map[string]*resources.ResourceGroup
 }
 
 var _ azure.ResourceGroupsClient = &MockResourceGroupsClient{}
 
 // CreateOrUpdate creates or updates a resource group.
-func (c *MockResourceGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, parameters resources.Group) error {
+func (c *MockResourceGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, parameters resources.ResourceGroup) error {
 	parameters.Name = &resourceGroupName
-	c.RGs[resourceGroupName] = parameters
+	parameters.ID = &resourceGroupName
+	c.RGs[resourceGroupName] = &parameters
 	return nil
 }
 
 // List returns a slice of resource groups.
-func (c *MockResourceGroupsClient) List(ctx context.Context, filter string) ([]resources.Group, error) {
-	if filter != "" {
-		return nil, fmt.Errorf("unsupported non-empty filter: %s", filter)
-	}
-	var l []resources.Group
+func (c *MockResourceGroupsClient) List(ctx context.Context) ([]*resources.ResourceGroup, error) {
+	var l []*resources.ResourceGroup
 	for _, rg := range c.RGs {
 		l = append(l, rg)
 	}
@@ -294,24 +287,25 @@ func (c *MockResourceGroupsClient) Delete(ctx context.Context, name string) erro
 
 // MockVirtualNetworksClient is a mock implementation of virtual network client.
 type MockVirtualNetworksClient struct {
-	VNets map[string]network.VirtualNetwork
+	VNets map[string]*network.VirtualNetwork
 }
 
 var _ azure.VirtualNetworksClient = &MockVirtualNetworksClient{}
 
 // CreateOrUpdate creates or updates a virtual network.
-func (c *MockVirtualNetworksClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, virtualNetworkName string, parameters network.VirtualNetwork) error {
+func (c *MockVirtualNetworksClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, virtualNetworkName string, parameters network.VirtualNetwork) (*network.VirtualNetwork, error) {
 	if _, ok := c.VNets[virtualNetworkName]; ok {
-		return fmt.Errorf("update not supported")
+		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &virtualNetworkName
-	c.VNets[virtualNetworkName] = parameters
-	return nil
+	parameters.ID = &virtualNetworkName
+	c.VNets[virtualNetworkName] = &parameters
+	return &parameters, nil
 }
 
 // List returns a slice of virtual networks.
-func (c *MockVirtualNetworksClient) List(ctx context.Context, resourceGroupName string) ([]network.VirtualNetwork, error) {
-	var l []network.VirtualNetwork
+func (c *MockVirtualNetworksClient) List(ctx context.Context, resourceGroupName string) ([]*network.VirtualNetwork, error) {
+	var l []*network.VirtualNetwork
 	for _, vnet := range c.VNets {
 		l = append(l, vnet)
 	}
@@ -330,7 +324,7 @@ func (c *MockVirtualNetworksClient) Delete(ctx context.Context, resourceGroupNam
 
 // MockSubnetsClient is a mock implementation of a subnet client.
 type MockSubnetsClient struct {
-	Subnets map[string]network.Subnet
+	Subnets map[string]*network.Subnet
 }
 
 var _ azure.SubnetsClient = &MockSubnetsClient{}
@@ -342,13 +336,14 @@ func (c *MockSubnetsClient) CreateOrUpdate(ctx context.Context, resourceGroupNam
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &subnetName
-	c.Subnets[subnetName] = parameters
+	parameters.ID = &subnetName
+	c.Subnets[subnetName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of subnets.
-func (c *MockSubnetsClient) List(ctx context.Context, resourceGroupName, virtualNetworkName string) ([]network.Subnet, error) {
-	var l []network.Subnet
+func (c *MockSubnetsClient) List(ctx context.Context, resourceGroupName, virtualNetworkName string) ([]*network.Subnet, error) {
+	var l []*network.Subnet
 	for _, subnet := range c.Subnets {
 		l = append(l, subnet)
 	}
@@ -367,25 +362,26 @@ func (c *MockSubnetsClient) Delete(ctx context.Context, resourceGroupName, vnetN
 
 // MockRouteTablesClient is a mock implementation of a route table client.
 type MockRouteTablesClient struct {
-	RTs map[string]network.RouteTable
+	RTs map[string]*network.RouteTable
 }
 
 var _ azure.RouteTablesClient = &MockRouteTablesClient{}
 
 // CreateOrUpdate creates or updates a route table.
-func (c *MockRouteTablesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) error {
+func (c *MockRouteTablesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) (*network.RouteTable, error) {
 	// Ignore resourceGroupName for simplicity.
 	if _, ok := c.RTs[routeTableName]; ok {
-		return fmt.Errorf("update not supported")
+		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &routeTableName
-	c.RTs[routeTableName] = parameters
-	return nil
+	parameters.ID = &routeTableName
+	c.RTs[routeTableName] = &parameters
+	return &parameters, nil
 }
 
 // List returns a slice of route tables.
-func (c *MockRouteTablesClient) List(ctx context.Context, resourceGroupName string) ([]network.RouteTable, error) {
-	var l []network.RouteTable
+func (c *MockRouteTablesClient) List(ctx context.Context, resourceGroupName string) ([]*network.RouteTable, error) {
+	var l []*network.RouteTable
 	for _, rt := range c.RTs {
 		l = append(l, rt)
 	}
@@ -404,7 +400,7 @@ func (c *MockRouteTablesClient) Delete(ctx context.Context, resourceGroupName, r
 
 // MockVMScaleSetsClient is a mock implementation of VM Scale Set client.
 type MockVMScaleSetsClient struct {
-	VMSSes map[string]compute.VirtualMachineScaleSet
+	VMSSes map[string]*compute.VirtualMachineScaleSet
 }
 
 var _ azure.VMScaleSetsClient = &MockVMScaleSetsClient{}
@@ -416,14 +412,15 @@ func (c *MockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &vmScaleSetName
-	parameters.Identity.PrincipalID = fi.PtrTo(uuid.New().String())
-	c.VMSSes[vmScaleSetName] = parameters
+	parameters.ID = &vmScaleSetName
+	parameters.Identity.PrincipalID = to.Ptr(uuid.New().String())
+	c.VMSSes[vmScaleSetName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of VM Scale Sets.
-func (c *MockVMScaleSetsClient) List(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachineScaleSet, error) {
-	var l []compute.VirtualMachineScaleSet
+func (c *MockVMScaleSetsClient) List(ctx context.Context, resourceGroupName string) ([]*compute.VirtualMachineScaleSet, error) {
+	var l []*compute.VirtualMachineScaleSet
 	for _, vmss := range c.VMSSes {
 		l = append(l, vmss)
 	}
@@ -436,7 +433,7 @@ func (c *MockVMScaleSetsClient) Get(ctx context.Context, resourceGroupName strin
 	if !ok {
 		return nil, nil
 	}
-	return &vmss, nil
+	return vmss, nil
 }
 
 // Delete deletes a specified VM Scale Set.
@@ -451,15 +448,15 @@ func (c *MockVMScaleSetsClient) Delete(ctx context.Context, resourceGroupName, v
 
 // MockVMScaleSetVMsClient is a mock implementation of VM Scale Set VM client.
 type MockVMScaleSetVMsClient struct {
-	VMs map[string]compute.VirtualMachineScaleSetVM
+	VMs map[string]*compute.VirtualMachineScaleSetVM
 }
 
 var _ azure.VMScaleSetVMsClient = &MockVMScaleSetVMsClient{}
 
 // List returns a slice of VM Scale Set VMs.
-func (c *MockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
+func (c *MockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error) {
 	// Ignore resourceGroupName and vmssName for simplicity.
-	var l []compute.VirtualMachineScaleSetVM
+	var l []*compute.VirtualMachineScaleSetVM
 	for _, vm := range c.VMs {
 		l = append(l, vm)
 	}
@@ -468,25 +465,26 @@ func (c *MockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, v
 
 // MockDisksClient is a mock implementation of disk client.
 type MockDisksClient struct {
-	Disks map[string]compute.Disk
+	Disks map[string]*compute.Disk
 }
 
 var _ azure.DisksClient = &MockDisksClient{}
 
 // CreateOrUpdate creates or updates a disk.
-func (c *MockDisksClient) CreateOrUpdate(ctx context.Context, resourceGroupName, diskName string, parameters compute.Disk) error {
+func (c *MockDisksClient) CreateOrUpdate(ctx context.Context, resourceGroupName, diskName string, parameters compute.Disk) (*compute.Disk, error) {
 	// Ignore resourceGroupName for simplicity.
 	if _, ok := c.Disks[diskName]; ok {
-		return fmt.Errorf("update not supported")
+		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &diskName
-	c.Disks[diskName] = parameters
-	return nil
+	parameters.ID = &diskName
+	c.Disks[diskName] = &parameters
+	return &parameters, nil
 }
 
 // List returns a slice of disks.
-func (c *MockDisksClient) List(ctx context.Context, resourceGroupName string) ([]compute.Disk, error) {
-	var l []compute.Disk
+func (c *MockDisksClient) List(ctx context.Context, resourceGroupName string) ([]*compute.Disk, error) {
+	var l []*compute.Disk
 	for _, disk := range c.Disks {
 		l = append(l, disk)
 	}
@@ -505,7 +503,7 @@ func (c *MockDisksClient) Delete(ctx context.Context, resourceGroupName, diskNam
 
 // MockRoleAssignmentsClient is a mock implementation of role assignment client.
 type MockRoleAssignmentsClient struct {
-	RAs map[string]authz.RoleAssignment
+	RAs map[string]*authz.RoleAssignment
 }
 
 var _ azure.RoleAssignmentsClient = &MockRoleAssignmentsClient{}
@@ -520,21 +518,22 @@ func (c *MockRoleAssignmentsClient) Create(
 	if _, ok := c.RAs[roleAssignmentName]; ok {
 		return nil, fmt.Errorf("update not supported")
 	}
-	ra := authz.RoleAssignment{
-		ID: to.StringPtr(roleAssignmentName),
-		RoleAssignmentPropertiesWithScope: &authz.RoleAssignmentPropertiesWithScope{
-			Scope:            to.StringPtr(scope),
-			RoleDefinitionID: parameters.RoleDefinitionID,
-			PrincipalID:      parameters.PrincipalID,
+	ra := &authz.RoleAssignment{
+		ID:   to.Ptr(roleAssignmentName),
+		Name: to.Ptr(roleAssignmentName),
+		Properties: &authz.RoleAssignmentProperties{
+			Scope:            to.Ptr(scope),
+			RoleDefinitionID: parameters.Properties.RoleDefinitionID,
+			PrincipalID:      parameters.Properties.PrincipalID,
 		},
 	}
 	c.RAs[roleAssignmentName] = ra
-	return &ra, nil
+	return ra, nil
 }
 
 // List returns a slice of role assignments.
-func (c *MockRoleAssignmentsClient) List(ctx context.Context, resourceGroupName string) ([]authz.RoleAssignment, error) {
-	var l []authz.RoleAssignment
+func (c *MockRoleAssignmentsClient) List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error) {
+	var l []*authz.RoleAssignment
 	for _, ra := range c.RAs {
 		l = append(l, ra)
 	}
@@ -553,15 +552,15 @@ func (c *MockRoleAssignmentsClient) Delete(ctx context.Context, scope, raName st
 
 // MockNetworkInterfacesClient is a mock implementation of network interfaces client.
 type MockNetworkInterfacesClient struct {
-	NIs map[string]network.Interface
+	NIs map[string]*network.Interface
 }
 
 var _ azure.NetworkInterfacesClient = &MockNetworkInterfacesClient{}
 
 // List returns a slice of VM Scale Set Network Interfaces.
-func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context.Context, resourceGroupName, vmssName string) ([]network.Interface, error) {
+func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context.Context, resourceGroupName, vmssName string) ([]*network.Interface, error) {
 	// Ignore resourceGroupName and vmssName for simplicity.
-	var l []network.Interface
+	var l []*network.Interface
 	for _, ni := range c.NIs {
 		l = append(l, ni)
 	}
@@ -570,24 +569,25 @@ func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context
 
 // MockLoadBalancersClient is a mock implementation of role assignment client.
 type MockLoadBalancersClient struct {
-	LBs map[string]network.LoadBalancer
+	LBs map[string]*network.LoadBalancer
 }
 
 var _ azure.LoadBalancersClient = &MockLoadBalancersClient{}
 
 // CreateOrUpdate creates a new loadbalancer.
-func (c *MockLoadBalancersClient) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) error {
+func (c *MockLoadBalancersClient) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) (*network.LoadBalancer, error) {
 	if _, ok := c.LBs[loadBalancerName]; ok {
-		return nil
+		return nil, nil
 	}
 	parameters.Name = &loadBalancerName
-	c.LBs[loadBalancerName] = parameters
-	return nil
+	parameters.ID = &loadBalancerName
+	c.LBs[loadBalancerName] = &parameters
+	return &parameters, nil
 }
 
 // List returns a slice of loadbalancer.
-func (c *MockLoadBalancersClient) List(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, error) {
-	var l []network.LoadBalancer
+func (c *MockLoadBalancersClient) List(ctx context.Context, resourceGroupName string) ([]*network.LoadBalancer, error) {
+	var l []*network.LoadBalancer
 	for _, lb := range c.LBs {
 		l = append(l, lb)
 	}
@@ -616,7 +616,7 @@ func (c *MockLoadBalancersClient) Delete(ctx context.Context, scope, lbName stri
 
 // MockPublicIPAddressesClient is a mock implementation of role assignment client.
 type MockPublicIPAddressesClient struct {
-	PubIPs map[string]network.PublicIPAddress
+	PubIPs map[string]*network.PublicIPAddress
 }
 
 var _ azure.PublicIPAddressesClient = &MockPublicIPAddressesClient{}
@@ -627,13 +627,14 @@ func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resour
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &publicIPAddressName
-	c.PubIPs[publicIPAddressName] = parameters
+	parameters.ID = &publicIPAddressName
+	c.PubIPs[publicIPAddressName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of public ip address.
-func (c *MockPublicIPAddressesClient) List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error) {
-	var l []network.PublicIPAddress
+func (c *MockPublicIPAddressesClient) List(ctx context.Context, resourceGroupName string) ([]*network.PublicIPAddress, error) {
+	var l []*network.PublicIPAddress
 	for _, lb := range c.PubIPs {
 		l = append(l, lb)
 	}
@@ -652,7 +653,7 @@ func (c *MockPublicIPAddressesClient) Delete(ctx context.Context, scope, publicI
 
 // MockNetworkSecurityGroupsClient is a mock implementation of Network Security Group client.
 type MockNetworkSecurityGroupsClient struct {
-	NSGs map[string]network.SecurityGroup
+	NSGs map[string]*network.SecurityGroup
 }
 
 var _ azure.NetworkSecurityGroupsClient = &MockNetworkSecurityGroupsClient{}
@@ -664,13 +665,14 @@ func (c *MockNetworkSecurityGroupsClient) CreateOrUpdate(ctx context.Context, re
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &nsgName
-	c.NSGs[nsgName] = parameters
+	parameters.ID = &nsgName
+	c.NSGs[nsgName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of Network Security Groups.
-func (c *MockNetworkSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]network.SecurityGroup, error) {
-	var l []network.SecurityGroup
+func (c *MockNetworkSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]*network.SecurityGroup, error) {
+	var l []*network.SecurityGroup
 	for _, nsg := range c.NSGs {
 		l = append(l, nsg)
 	}
@@ -679,11 +681,11 @@ func (c *MockNetworkSecurityGroupsClient) List(ctx context.Context, resourceGrou
 
 // Get Returns a specified Network Security Group.
 func (c *MockNetworkSecurityGroupsClient) Get(ctx context.Context, resourceGroupName string, nsgName string) (*network.SecurityGroup, error) {
-	asg, ok := c.NSGs[nsgName]
+	nsg, ok := c.NSGs[nsgName]
 	if !ok {
 		return nil, nil
 	}
-	return &asg, nil
+	return nsg, nil
 }
 
 // Delete deletes a specified Network Security Group.
@@ -698,7 +700,7 @@ func (c *MockNetworkSecurityGroupsClient) Delete(ctx context.Context, resourceGr
 
 // MockApplicationSecurityGroupsClient is a mock implementation of Application Security Group client.
 type MockApplicationSecurityGroupsClient struct {
-	ASGs map[string]network.ApplicationSecurityGroup
+	ASGs map[string]*network.ApplicationSecurityGroup
 }
 
 var _ azure.ApplicationSecurityGroupsClient = &MockApplicationSecurityGroupsClient{}
@@ -710,13 +712,14 @@ func (c *MockApplicationSecurityGroupsClient) CreateOrUpdate(ctx context.Context
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &asgName
-	c.ASGs[asgName] = parameters
+	parameters.ID = &asgName
+	c.ASGs[asgName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of Application Security Groups.
-func (c *MockApplicationSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]network.ApplicationSecurityGroup, error) {
-	var l []network.ApplicationSecurityGroup
+func (c *MockApplicationSecurityGroupsClient) List(ctx context.Context, resourceGroupName string) ([]*network.ApplicationSecurityGroup, error) {
+	var l []*network.ApplicationSecurityGroup
 	for _, nsg := range c.ASGs {
 		l = append(l, nsg)
 	}
@@ -729,7 +732,7 @@ func (c *MockApplicationSecurityGroupsClient) Get(ctx context.Context, resourceG
 	if !ok {
 		return nil, nil
 	}
-	return &asg, nil
+	return asg, nil
 }
 
 // Delete deletes a specified Application Security Group.
@@ -744,7 +747,7 @@ func (c *MockApplicationSecurityGroupsClient) Delete(ctx context.Context, resour
 
 // MockNatGatewaysClient is a mock implementation of Nat Gateway client.
 type MockNatGatewaysClient struct {
-	NGWs map[string]network.NatGateway
+	NGWs map[string]*network.NatGateway
 }
 
 var _ azure.NatGatewaysClient = &MockNatGatewaysClient{}
@@ -756,13 +759,14 @@ func (c *MockNatGatewaysClient) CreateOrUpdate(ctx context.Context, resourceGrou
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &ngwName
-	c.NGWs[ngwName] = parameters
+	parameters.ID = &ngwName
+	c.NGWs[ngwName] = &parameters
 	return &parameters, nil
 }
 
 // List returns a slice of Nat Gateways.
-func (c *MockNatGatewaysClient) List(ctx context.Context, resourceGroupName string) ([]network.NatGateway, error) {
-	var l []network.NatGateway
+func (c *MockNatGatewaysClient) List(ctx context.Context, resourceGroupName string) ([]*network.NatGateway, error) {
+	var l []*network.NatGateway
 	for _, ngw := range c.NGWs {
 		l = append(l, ngw)
 	}
@@ -775,7 +779,7 @@ func (c *MockNatGatewaysClient) Get(ctx context.Context, resourceGroupName strin
 	if !ok {
 		return nil, nil
 	}
-	return &ngw, nil
+	return ngw, nil
 }
 
 // Delete deletes a specified Nat Gateway.
