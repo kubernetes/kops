@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -149,26 +149,25 @@ func TestGetStorageProfile(t *testing.T) {
 			spec: kops.InstanceGroupSpec{
 				Image: "Canonical:UbuntuServer:18.04-LTS:latest",
 				RootVolume: &kops.InstanceRootVolumeSpec{
-					Type: fi.PtrTo(string(compute.StorageAccountTypesStandardLRS)),
+					Type: fi.PtrTo(string(compute.StorageAccountTypesUltraSSDLRS)),
 					Size: fi.PtrTo(int32(128)),
 				},
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
-				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
-					Publisher: to.StringPtr("Canonical"),
-					Offer:     to.StringPtr("UbuntuServer"),
-					Sku:       to.StringPtr("18.04-LTS"),
-					Version:   to.StringPtr("latest"),
+					Publisher: to.Ptr("Canonical"),
+					Offer:     to.Ptr("UbuntuServer"),
+					SKU:       to.Ptr("18.04-LTS"),
+					Version:   to.Ptr("latest"),
 				},
-				OsDisk: &compute.VirtualMachineScaleSetOSDisk{
-					OsType:       compute.OperatingSystemTypes(compute.Linux),
-					CreateOption: compute.DiskCreateOptionTypesFromImage,
-					DiskSizeGB:   to.Int32Ptr(128),
+				OSDisk: &compute.VirtualMachineScaleSetOSDisk{
+					OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+					CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+					DiskSizeGB:   to.Ptr[int32](128),
 					ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-						StorageAccountType: compute.StorageAccountTypesStandardLRS,
+						StorageAccountType: to.Ptr(compute.StorageAccountTypesUltraSSDLRS),
 					},
-					Caching: compute.CachingTypes(compute.HostCachingReadWrite),
+					Caching: to.Ptr(compute.CachingTypesReadWrite),
 				},
 			},
 		},
@@ -178,21 +177,20 @@ func TestGetStorageProfile(t *testing.T) {
 				Role:  kops.InstanceGroupRoleControlPlane,
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
-				DiskControllerType: fi.PtrTo(string(compute.SCSI)),
 				ImageReference: &compute.ImageReference{
-					Publisher: to.StringPtr("Canonical"),
-					Offer:     to.StringPtr("UbuntuServer"),
-					Sku:       to.StringPtr("18.04-LTS"),
-					Version:   to.StringPtr("latest"),
+					Publisher: to.Ptr("Canonical"),
+					Offer:     to.Ptr("UbuntuServer"),
+					SKU:       to.Ptr("18.04-LTS"),
+					Version:   to.Ptr("latest"),
 				},
-				OsDisk: &compute.VirtualMachineScaleSetOSDisk{
-					OsType:       compute.OperatingSystemTypes(compute.Linux),
-					CreateOption: compute.DiskCreateOptionTypesFromImage,
-					DiskSizeGB:   to.Int32Ptr(defaults.DefaultVolumeSizeMaster),
+				OSDisk: &compute.VirtualMachineScaleSetOSDisk{
+					OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+					CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+					DiskSizeGB:   to.Ptr[int32](defaults.DefaultVolumeSizeMaster),
 					ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-						StorageAccountType: compute.StorageAccountTypesPremiumLRS,
+						StorageAccountType: to.Ptr(compute.StorageAccountTypesStandardSSDLRS),
 					},
-					Caching: compute.CachingTypes(compute.HostCachingReadWrite),
+					Caching: to.Ptr(compute.CachingTypesReadWrite),
 				},
 			},
 		},
@@ -221,17 +219,17 @@ func TestParseImage(t *testing.T) {
 			image:   "Canonical:UbuntuServer:18.04-LTS:latest",
 			success: true,
 			imageRef: &compute.ImageReference{
-				Publisher: to.StringPtr("Canonical"),
-				Offer:     to.StringPtr("UbuntuServer"),
-				Sku:       to.StringPtr("18.04-LTS"),
-				Version:   to.StringPtr("latest"),
+				Publisher: to.Ptr("Canonical"),
+				Offer:     to.Ptr("UbuntuServer"),
+				SKU:       to.Ptr("18.04-LTS"),
+				Version:   to.Ptr("latest"),
 			},
 		},
 		{
 			image:   "/subscriptions/<subscription id>/resourceGroups/<resource group>/providers/<provider>/images/<image>",
 			success: true,
 			imageRef: &compute.ImageReference{
-				ID: to.StringPtr("/subscriptions/<subscription id>/resourceGroups/<resource group>/providers/<provider>/images/<image>"),
+				ID: to.Ptr("/subscriptions/<subscription id>/resourceGroups/<resource group>/providers/<provider>/images/<image>"),
 			},
 		},
 		{

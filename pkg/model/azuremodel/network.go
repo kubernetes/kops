@@ -19,7 +19,7 @@ package azuremodel
 import (
 	"strconv"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -61,11 +61,11 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                network.SecurityRuleAccessAllow,
 			Direction:             network.SecurityRuleDirectionInbound,
 			Protocol:              network.SecurityRuleProtocolTCP,
-			SourceAddressPrefixes: &sshAccessIPv4,
+			SourceAddressPrefixes: sshAccessIPv4,
 			SourcePortRange:       fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{
-				b.NameForApplicationSecurityGroupControlPlane(),
-				b.NameForApplicationSecurityGroupNodes(),
+			DestinationApplicationSecurityGroupNames: []*string{
+				fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane()),
+				fi.PtrTo(b.NameForApplicationSecurityGroupNodes()),
 			},
 			DestinationPortRange: fi.PtrTo("22"),
 		})
@@ -78,11 +78,11 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                network.SecurityRuleAccessAllow,
 			Direction:             network.SecurityRuleDirectionInbound,
 			Protocol:              network.SecurityRuleProtocolTCP,
-			SourceAddressPrefixes: &sshAccessIPv6,
+			SourceAddressPrefixes: sshAccessIPv6,
 			SourcePortRange:       fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{
-				b.NameForApplicationSecurityGroupControlPlane(),
-				b.NameForApplicationSecurityGroupNodes(),
+			DestinationApplicationSecurityGroupNames: []*string{
+				fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane()),
+				fi.PtrTo(b.NameForApplicationSecurityGroupNodes()),
 			},
 			DestinationPortRange: fi.PtrTo("22"),
 		})
@@ -95,9 +95,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolTCP,
-			SourceAddressPrefixes:                    &k8sAccessIPv4,
+			SourceAddressPrefixes:                    k8sAccessIPv4,
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 	}
@@ -109,9 +109,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolTCP,
-			SourceAddressPrefixes:                    &k8sAccessIPv6,
+			SourceAddressPrefixes:                    k8sAccessIPv6,
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 	}
@@ -123,9 +123,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolAsterisk,
-			SourceAddressPrefixes:                    &nodePortAccessIPv4,
+			SourceAddressPrefixes:                    nodePortAccessIPv4,
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupNodes()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 			DestinationPortRange:                     fi.PtrTo("30000-32767"),
 		})
 	}
@@ -137,9 +137,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolAsterisk,
-			SourceAddressPrefixes:                    &nodePortAccessIPv6,
+			SourceAddressPrefixes:                    nodePortAccessIPv6,
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupNodes()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 			DestinationPortRange:                     fi.PtrTo("30000-32767"),
 		})
 	}
@@ -149,9 +149,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessAllow,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -160,9 +160,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessAllow,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupNodes()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -171,9 +171,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessAllow,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupNodes()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupNodes()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -182,9 +182,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessDeny,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolTCP,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupNodes()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		DestinationPortRange:                     fi.PtrTo("2380-2381"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -193,9 +193,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessDeny,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolTCP,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupNodes()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		DestinationPortRange:                     fi.PtrTo("4000-4001"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -204,9 +204,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Access:                                   network.SecurityRuleAccessAllow,
 		Direction:                                network.SecurityRuleDirectionInbound,
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
-		SourceApplicationSecurityGroupNames:      &[]string{b.NameForApplicationSecurityGroupNodes()},
+		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	if b.Cluster.UsesNoneDNS() && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypePublic {
@@ -219,7 +219,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Protocol:                                 network.SecurityRuleProtocolTCP,
 			SourceAddressPrefix:                      fi.PtrTo("*"),
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -230,7 +230,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Protocol:                                 network.SecurityRuleProtocolTCP,
 			SourceAddressPrefix:                      fi.PtrTo("*"),
 			SourcePortRange:                          fi.PtrTo("*"),
-			DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KopsControllerPort)),
 		})
 	}
@@ -253,7 +253,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
 		SourceAddressPrefix:                      fi.PtrTo("*"),
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupControlPlane()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
@@ -264,7 +264,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Protocol:                                 network.SecurityRuleProtocolAsterisk,
 		SourceAddressPrefix:                      fi.PtrTo("*"),
 		SourcePortRange:                          fi.PtrTo("*"),
-		DestinationApplicationSecurityGroupNames: &[]string{b.NameForApplicationSecurityGroupNodes()},
+		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	c.AddTask(nsgTask)
@@ -311,21 +311,23 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	return nil
 }
 
-func ipv4CIDRs(mixedCIDRs []string) []string {
-	var cidrs []string
-	for _, cidr := range mixedCIDRs {
+func ipv4CIDRs(mixedCIDRs []string) []*string {
+	var cidrs []*string
+	for i := range mixedCIDRs {
+		cidr := mixedCIDRs[i]
 		if net.IPFamilyOfCIDRString(cidr) == net.IPv4 {
-			cidrs = append(cidrs, cidr)
+			cidrs = append(cidrs, &cidr)
 		}
 	}
 	return cidrs
 }
 
-func ipv6CIDRs(mixedCIDRs []string) []string {
-	var cidrs []string
-	for _, cidr := range mixedCIDRs {
+func ipv6CIDRs(mixedCIDRs []string) []*string {
+	var cidrs []*string
+	for i := range mixedCIDRs {
+		cidr := mixedCIDRs[i]
 		if net.IPFamilyOfCIDRString(cidr) == net.IPv6 {
-			cidrs = append(cidrs, cidr)
+			cidrs = append(cidrs, &cidr)
 		}
 	}
 	return cidrs
