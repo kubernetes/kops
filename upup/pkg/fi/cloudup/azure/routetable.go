@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
-// RouteTablesClient is a client for managing Virtual Networks.
+// RouteTablesClient is a client for managing route tables.
 type RouteTablesClient interface {
-	CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) error
-	List(ctx context.Context, resourceGroupName string) ([]network.RouteTable, error)
+	CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) (*network.RouteTable, error)
+	List(ctx context.Context, resourceGroupName string) ([]*network.RouteTable, error)
 	Delete(ctx context.Context, resourceGroupName, vnetName string) error
 }
 
@@ -37,37 +37,48 @@ type routeTablesClientImpl struct {
 
 var _ RouteTablesClient = &routeTablesClientImpl{}
 
-func (c *routeTablesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) error {
-	_, err := c.c.CreateOrUpdate(ctx, resourceGroupName, routeTableName, parameters)
-	return err
+func (c *routeTablesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) (*network.RouteTable, error) {
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, routeTableName, parameters, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating/updating route table: %w", err)
+	}
+	rt, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("waiting for route table create/update completion: %w", err)
+	}
+	return &rt.RouteTable, err
 }
 
-func (c *routeTablesClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.RouteTable, error) {
-	var l []network.RouteTable
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.Next() {
+func (c *routeTablesClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.RouteTable, error) {
+	var l []*network.RouteTable
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing route tables: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *routeTablesClientImpl) Delete(ctx context.Context, resourceGroupName, vnetName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, vnetName)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, vnetName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting virtual network: %s", err)
+		return fmt.Errorf("deleting route table: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for virtual network deletion completion: %s", err)
+	if _, err := future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for route table deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newRouteTablesClientImpl(subscriptionID string, authorizer autorest.Authorizer) *routeTablesClientImpl {
-	c := network.NewRouteTablesClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &routeTablesClientImpl{
-		c: &c,
+func newRouteTablesClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*routeTablesClientImpl, error) {
+	c, err := network.NewRouteTablesClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating route tables client: %w", err)
 	}
+	return &routeTablesClientImpl{
+		c: c,
+	}, nil
 }

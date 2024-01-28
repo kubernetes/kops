@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
@@ -85,30 +85,61 @@ var _ fi.Cloud = &azureCloudImplementation{}
 
 // NewAzureCloud creates a new AzureCloud.
 func NewAzureCloud(subscriptionID, location string, tags map[string]string) (AzureCloud, error) {
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
+		return nil, fmt.Errorf("error creating an identity: %s", err)
+	}
+
+	azureCloudImpl := &azureCloudImplementation{
+		subscriptionID: subscriptionID,
+		location:       location,
+		tags:           tags,
+	}
+
+	if azureCloudImpl.resourceGroupsClient, err = newResourceGroupsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.vnetsClient, err = newVirtualNetworksClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.subnetsClient, err = newSubnetsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.routeTablesClient, err = newRouteTablesClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.networkSecurityGroupsClient, err = newNetworkSecurityGroupsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.applicationSecurityGroupsClient, err = newApplicationSecurityGroupsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.vmscaleSetsClient, err = newVMScaleSetsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.vmscaleSetVMsClient, err = newVMScaleSetVMsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.disksClient, err = newDisksClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.roleAssignmentsClient, err = newRoleAssignmentsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.networkInterfacesClient, err = newNetworkInterfacesClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.loadBalancersClient, err = newLoadBalancersClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.publicIPAddressesClient, err = newPublicIPAddressesClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.natGatewaysClient, err = newNatGatewaysClientImpl(subscriptionID, cred); err != nil {
 		return nil, err
 	}
 
-	return &azureCloudImplementation{
-		subscriptionID:                  subscriptionID,
-		location:                        location,
-		tags:                            tags,
-		resourceGroupsClient:            newResourceGroupsClientImpl(subscriptionID, authorizer),
-		vnetsClient:                     newVirtualNetworksClientImpl(subscriptionID, authorizer),
-		subnetsClient:                   newSubnetsClientImpl(subscriptionID, authorizer),
-		routeTablesClient:               newRouteTablesClientImpl(subscriptionID, authorizer),
-		networkSecurityGroupsClient:     newNetworkSecurityGroupsClientImpl(subscriptionID, authorizer),
-		applicationSecurityGroupsClient: newApplicationSecurityGroupsClientImpl(subscriptionID, authorizer),
-		vmscaleSetsClient:               newVMScaleSetsClientImpl(subscriptionID, authorizer),
-		vmscaleSetVMsClient:             newVMScaleSetVMsClientImpl(subscriptionID, authorizer),
-		disksClient:                     newDisksClientImpl(subscriptionID, authorizer),
-		roleAssignmentsClient:           newRoleAssignmentsClientImpl(subscriptionID, authorizer),
-		networkInterfacesClient:         newNetworkInterfacesClientImpl(subscriptionID, authorizer),
-		loadBalancersClient:             newLoadBalancersClientImpl(subscriptionID, authorizer),
-		publicIPAddressesClient:         newPublicIPAddressesClientImpl(subscriptionID, authorizer),
-		natGatewaysClient:               newNatGatewaysClientImpl(subscriptionID, authorizer),
-	}, nil
+	return azureCloudImpl, nil
 }
 
 func (c *azureCloudImplementation) Region() string {
@@ -136,15 +167,24 @@ func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.V
 		if *vnet.ID != id {
 			continue
 		}
+		if vnet.Properties == nil {
+			continue
+		}
 		subnets := make([]*fi.SubnetInfo, 0)
-		for _, subnet := range *vnet.Subnets {
+		for _, subnet := range vnet.Properties.Subnets {
+			if subnet.Properties == nil {
+				continue
+			}
 			subnets = append(subnets, &fi.SubnetInfo{
 				ID:   *subnet.ID,
-				CIDR: *subnet.AddressPrefix,
+				CIDR: *subnet.Properties.AddressPrefix,
 			})
 		}
+		if vnet.Properties.AddressSpace == nil || len(vnet.Properties.AddressSpace.AddressPrefixes) == 0 {
+			continue
+		}
 		return &fi.VPCInfo{
-			CIDR:    (*vnet.AddressSpace.AddressPrefixes)[0],
+			CIDR:    *vnet.Properties.AddressSpace.AddressPrefixes[0],
 			Subnets: subnets,
 		}, nil
 	}
@@ -182,10 +222,10 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 
 	lbSpec := cluster.Spec.API.LoadBalancer
 	if lbSpec != nil {
-		// Get loadbalancers in cluster resource group
+		// Get load balancers in cluster resource group
 		lbs, err := c.loadBalancersClient.List(context.TODO(), rg)
 		if err != nil {
-			return nil, fmt.Errorf("error getting Loadbalancer for API Ingress Status: %s", err)
+			return nil, fmt.Errorf("getting Loadbalancer for API Ingress Status: %w", err)
 		}
 
 		for _, lb := range lbs {
@@ -193,24 +233,23 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 			if val == nil || *val != cluster.Name {
 				continue
 			}
-			if lb.LoadBalancerPropertiesFormat == nil {
+			if lb.Properties == nil {
 				continue
 			}
-			for _, i := range *lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations {
-				if i.FrontendIPConfigurationPropertiesFormat == nil {
+			for _, i := range lb.Properties.FrontendIPConfigurations {
+				if i.Properties == nil {
 					continue
 				}
 				switch lbSpec.Type {
 				case kops.LoadBalancerTypeInternal:
-					if i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress == nil {
+					if i.Properties.PrivateIPAddress == nil {
 						continue
 					}
 					ingresses = append(ingresses, fi.ApiIngressStatus{
-						IP: *i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress,
+						IP: *i.Properties.PrivateIPAddress,
 					})
 				case kops.LoadBalancerTypePublic:
-					if i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress == nil ||
-						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID == nil {
+					if i.Properties.PublicIPAddress == nil || i.Properties.PublicIPAddress.ID == nil {
 						continue
 					}
 					pips, err := c.publicIPAddressesClient.List(context.TODO(), rg)
@@ -218,17 +257,15 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 						return nil, fmt.Errorf("error getting PublicIPAddress for API Ingress Status: %w", err)
 					}
 					for _, pip := range pips {
-						if *pip.ID != *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID {
+						if pip.ID == nil || pip.Properties == nil || pip.Properties.IPAddress == nil || *pip.ID != *i.Properties.PublicIPAddress.ID {
 							continue
 						}
-						if pip.IPAddress != nil {
-							ingresses = append(ingresses, fi.ApiIngressStatus{
-								IP: *pip.IPAddress,
-							})
-						}
+						ingresses = append(ingresses, fi.ApiIngressStatus{
+							IP: *pip.Properties.IPAddress,
+						})
 					}
 				default:
-					return nil, fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
+					return nil, fmt.Errorf("unknown load balancer type: %q", lbSpec.Type)
 				}
 			}
 		}
@@ -236,7 +273,7 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 		// Get scale sets in cluster resource group and find masters scale set
 		scaleSets, err := c.vmscaleSetsClient.List(context.TODO(), rg)
 		if err != nil {
-			return nil, fmt.Errorf("error getting Cluster Master Scale Set for API Ingress Status: %s", err)
+			return nil, fmt.Errorf("getting cluster control plane VMSS for API ingress status: %w", err)
 		}
 		var vmssName string
 		for _, scaleSet := range scaleSets {
@@ -249,26 +286,29 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 			}
 		}
 		if vmssName == "" {
-			return nil, fmt.Errorf("error getting Master Scale Set Name for API Ingress Status")
+			return nil, fmt.Errorf("getting control plane VMSS name for API ingress status")
 		}
 
 		// Get masters scale set network interfaces and append to api ingress status
 		nis, err := c.NetworkInterface().ListScaleSetsNetworkInterfaces(context.TODO(), rg, vmssName)
 		if err != nil {
-			return nil, fmt.Errorf("error getting Master Scale Set Network Interfaces for API Ingress Status: %s", err)
+			return nil, fmt.Errorf("getting control plane VMSS network interfaces for API ingress status: %w", err)
 		}
 		for _, ni := range nis {
-			if ni.Primary == nil || !*ni.Primary {
+			if ni.Properties == nil || ni.Properties.Primary == nil || !*ni.Properties.Primary {
 				continue
 			}
-			for _, i := range *ni.IPConfigurations {
+			for _, i := range ni.Properties.IPConfigurations {
+				if i.Properties == nil || i.Properties.PrivateIPAddress == nil {
+					continue
+				}
 				ingresses = append(ingresses, fi.ApiIngressStatus{
-					IP: *i.PrivateIPAddress,
+					IP: *i.Properties.PrivateIPAddress,
 				})
 			}
 		}
 		if ingresses == nil {
-			return nil, fmt.Errorf("error getting API Ingress Status so make sure to update your kubecfg accordingly")
+			return nil, fmt.Errorf("getting API ingress status")
 		}
 	}
 

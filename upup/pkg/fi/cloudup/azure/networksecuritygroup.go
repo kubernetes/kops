@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
-// NetworkSecurityGroupsClient is a client for managing Network Security Groups.
+// NetworkSecurityGroupsClient is a client for managing network security groups.
 type NetworkSecurityGroupsClient interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName, NetworkSecurityGroupName string, parameters network.SecurityGroup) (*network.SecurityGroup, error)
-	List(ctx context.Context, resourceGroupName string) ([]network.SecurityGroup, error)
+	List(ctx context.Context, resourceGroupName string) ([]*network.SecurityGroup, error)
 	Delete(ctx context.Context, resourceGroupName, NetworkSecurityGroupName string) error
 }
 
@@ -38,46 +38,47 @@ type NetworkSecurityGroupsClientImpl struct {
 var _ NetworkSecurityGroupsClient = &NetworkSecurityGroupsClientImpl{}
 
 func (c *NetworkSecurityGroupsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, NetworkSecurityGroupName string, parameters network.SecurityGroup) (*network.SecurityGroup, error) {
-	future, err := c.c.CreateOrUpdate(ctx, resourceGroupName, NetworkSecurityGroupName, parameters)
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, NetworkSecurityGroupName, parameters, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating/updating Network Security Group: %w", err)
+		return nil, fmt.Errorf("creating/updating network security group: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return nil, fmt.Errorf("error waiting for Network Security Group create/update completion: %w", err)
-	}
-	asg, err := future.Result(*c.c)
+	asg, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error obtaining result for Network Security Group create/update: %w", err)
+		return nil, fmt.Errorf("waiting for network security group create/update completion: %w", err)
 	}
-	return &asg, err
+	return &asg.SecurityGroup, err
 }
 
-func (c *NetworkSecurityGroupsClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.SecurityGroup, error) {
-	var l []network.SecurityGroup
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.NextWithContext(ctx) {
+func (c *NetworkSecurityGroupsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.SecurityGroup, error) {
+	var l []*network.SecurityGroup
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing network security groups: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *NetworkSecurityGroupsClientImpl) Delete(ctx context.Context, resourceGroupName, NetworkSecurityGroupName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, NetworkSecurityGroupName)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, NetworkSecurityGroupName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting Network Security Group: %w", err)
+		return fmt.Errorf("deleting network security group: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for Network Security Group deletion completion: %w", err)
+	if _, err = future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for network security group deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newNetworkSecurityGroupsClientImpl(subscriptionID string, authorizer autorest.Authorizer) *NetworkSecurityGroupsClientImpl {
-	c := network.NewSecurityGroupsClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &NetworkSecurityGroupsClientImpl{
-		c: &c,
+func newNetworkSecurityGroupsClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*NetworkSecurityGroupsClientImpl, error) {
+	c, err := network.NewSecurityGroupsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating network security groups client: %w", err)
 	}
+	return &NetworkSecurityGroupsClientImpl{
+		c: c,
+	}, nil
 }

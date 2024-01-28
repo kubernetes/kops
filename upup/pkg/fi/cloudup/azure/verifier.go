@@ -24,9 +24,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 )
@@ -76,32 +76,32 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	}
 	igName := strings.TrimSuffix(vmssName, "."+a.clusterName)
 
-	vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, "")
+	vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, nil)
 	if err != nil {
 		return nil, fmt.Errorf("getting info for VMSS virtual machine %q #%s: %w", vmssName, vmssIndex, err)
 	}
-	if vm.VMID == nil {
+	if vm.Properties == nil || vm.Properties.VMID == nil {
 		return nil, fmt.Errorf("determining VMID for VMSS %q virtual machine #%s", vmssName, vmssIndex)
 	}
-	if vmId != *vm.VMID {
+	if vmId != *vm.Properties.VMID {
 		return nil, fmt.Errorf("matching VMID %q to VMSS %q virtual machine #%s", vmId, vmssName, vmssIndex)
 	}
-	if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil || *vm.OsProfile.ComputerName == "" {
+	if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
 		return nil, fmt.Errorf("determining ComputerName for VMSS %q virtual machine #%s", vmssName, vmssIndex)
 	}
-	nodeName := *vm.OsProfile.ComputerName
+	nodeName := *vm.Properties.OSProfile.ComputerName
 
-	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName+"-netconfig", "")
+	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName+"-netconfig", nil)
 	if err != nil {
 		return nil, fmt.Errorf("getting info for VMSS network interface %q #%s: %w", vmssName, vmssIndex, err)
 	}
 
 	var addrs []string
 	var challengeEndpoints []string
-	for _, ipc := range *ni.IPConfigurations {
-		if ipc.PrivateIPAddress != nil {
-			addrs = append(addrs, *ipc.PrivateIPAddress)
-			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
+	for _, ipc := range ni.Properties.IPConfigurations {
+		if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
+			addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
+			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
 		}
 	}
 	if len(addrs) == 0 {
@@ -141,19 +141,23 @@ func newClient() (*client, error) {
 		return nil, fmt.Errorf("empty subscription name")
 	}
 
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating authorizer: %w", err)
+		return nil, fmt.Errorf("creating an identity: %w", err)
 	}
 
-	nisClient := network.NewInterfacesClient(m.Compute.SubscriptionID)
-	nisClient.Authorizer = authorizer
-	vmsClient := compute.NewVirtualMachineScaleSetVMsClient(m.Compute.SubscriptionID)
-	vmsClient.Authorizer = authorizer
+	nisClient, err := network.NewInterfacesClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating interfaces client: %w", err)
+	}
+	vmsClient, err := compute.NewVirtualMachineScaleSetVMsClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating VMSSVMs client: %w", err)
+	}
 
 	return &client{
 		resourceGroup: m.Compute.ResourceGroupName,
-		nisClient:     &nisClient,
-		vmsClient:     &vmsClient,
+		nisClient:     nisClient,
+		vmsClient:     vmsClient,
 	}, nil
 }

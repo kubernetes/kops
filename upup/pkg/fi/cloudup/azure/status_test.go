@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
 type mockVMScaleSetsClient struct {
-	vmsses []compute.VirtualMachineScaleSet
+	vmsses []*compute.VirtualMachineScaleSet
 }
 
 var _ VMScaleSetsClient = &mockVMScaleSetsClient{}
@@ -40,14 +40,14 @@ func (c *mockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 	return nil, fmt.Errorf("unimplemented")
 }
 
-func (c *mockVMScaleSetsClient) List(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachineScaleSet, error) {
+func (c *mockVMScaleSetsClient) List(ctx context.Context, resourceGroupName string) ([]*compute.VirtualMachineScaleSet, error) {
 	return c.vmsses, nil
 }
 
 func (c *mockVMScaleSetsClient) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
 	for _, vmss := range c.vmsses {
 		if *vmss.Name == vmssName {
-			return &vmss, nil
+			return vmss, nil
 		}
 	}
 	return nil, nil
@@ -58,12 +58,12 @@ func (c *mockVMScaleSetsClient) Delete(ctx context.Context, resourceGroupName, v
 }
 
 type mockVMScaleSetVMsClient struct {
-	vms []compute.VirtualMachineScaleSetVM
+	vms []*compute.VirtualMachineScaleSetVM
 }
 
 var _ VMScaleSetVMsClient = &mockVMScaleSetVMsClient{}
 
-func (c *mockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
+func (c *mockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error) {
 	return c.vms, nil
 }
 
@@ -76,46 +76,46 @@ func TestFindEtcdStatus(t *testing.T) {
 	}
 
 	etcdClusterName := "main"
-	disks := []compute.Disk{
+	disks := []*compute.Disk{
 		{
-			Name: to.StringPtr("d0"),
+			Name: to.Ptr("d0"),
 			Tags: map[string]*string{
-				TagClusterName:                             to.StringPtr(clusterName),
-				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
-				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
-				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("a/a,b,c"),
+				TagClusterName:                             to.Ptr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.Ptr("1"),
+				TagNameRolePrefix + TagRoleMaster:          to.Ptr("1"),
+				TagNameEtcdClusterPrefix + etcdClusterName: to.Ptr("a/a,b,c"),
 			},
 		},
 		{
-			Name: to.StringPtr("d1"),
+			Name: to.Ptr("d1"),
 			Tags: map[string]*string{
-				TagClusterName:                             to.StringPtr(clusterName),
-				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
-				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
-				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("b/a,b,c"),
+				TagClusterName:                             to.Ptr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.Ptr("1"),
+				TagNameRolePrefix + TagRoleMaster:          to.Ptr("1"),
+				TagNameEtcdClusterPrefix + etcdClusterName: to.Ptr("b/a,b,c"),
 			},
 		},
 		{
-			Name: to.StringPtr("d2"),
+			Name: to.Ptr("d2"),
 			Tags: map[string]*string{
-				TagClusterName:                             to.StringPtr(clusterName),
-				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
-				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
-				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("c/a,b,c"),
+				TagClusterName:                             to.Ptr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.Ptr("1"),
+				TagNameRolePrefix + TagRoleMaster:          to.Ptr("1"),
+				TagNameEtcdClusterPrefix + etcdClusterName: to.Ptr("c/a,b,c"),
 			},
 		},
 		{
 			// No etcd tag.
-			Name: to.StringPtr("not_relevant"),
+			Name: to.Ptr("not_relevant"),
 			Tags: map[string]*string{
-				TagClusterName: to.StringPtr("different_cluster"),
+				TagClusterName: to.Ptr("different_cluster"),
 			},
 		},
 		{
 			// No corresponding cluster tag.
-			Name: to.StringPtr("not_relevant"),
+			Name: to.Ptr("not_relevant"),
 			Tags: map[string]*string{
-				TagClusterName: to.StringPtr("different_cluster"),
+				TagClusterName: to.Ptr("different_cluster"),
 			},
 		},
 	}
@@ -171,36 +171,36 @@ func TestGetCloudGroups(t *testing.T) {
 
 	vmssClient := &mockVMScaleSetsClient{}
 	vmssClient.vmsses = append(vmssClient.vmsses,
-		compute.VirtualMachineScaleSet{
-			Name: to.StringPtr(masterVMSS),
+		&compute.VirtualMachineScaleSet{
+			Name: to.Ptr(masterVMSS),
 			Tags: map[string]*string{
-				TagClusterName: to.StringPtr(clusterName),
+				TagClusterName: to.Ptr(clusterName),
 			},
-			Sku: &compute.Sku{
-				Capacity: to.Int64Ptr(1),
+			SKU: &compute.SKU{
+				Capacity: to.Ptr[int64](1),
 			},
 		},
-		compute.VirtualMachineScaleSet{
-			Name: to.StringPtr(nodeVMSS),
+		&compute.VirtualMachineScaleSet{
+			Name: to.Ptr(nodeVMSS),
 			Tags: map[string]*string{
-				TagClusterName: to.StringPtr(clusterName),
+				TagClusterName: to.Ptr(clusterName),
 			},
-			Sku: &compute.Sku{
-				Capacity: to.Int64Ptr(2),
+			SKU: &compute.SKU{
+				Capacity: to.Ptr[int64](2),
 			},
 		},
 	)
 
 	vmClient := &mockVMScaleSetVMsClient{}
 	vmClient.vms = append(vmClient.vms,
-		compute.VirtualMachineScaleSetVM{
-			Name: to.StringPtr(masterVM),
+		&compute.VirtualMachineScaleSetVM{
+			Name: to.Ptr(masterVM),
 		},
-		compute.VirtualMachineScaleSetVM{
-			Name: to.StringPtr(nodeVM0),
+		&compute.VirtualMachineScaleSetVM{
+			Name: to.Ptr(nodeVM0),
 		},
-		compute.VirtualMachineScaleSetVM{
-			Name: to.StringPtr(nodeVM1),
+		&compute.VirtualMachineScaleSetVM{
+			Name: to.Ptr(nodeVM1),
 		},
 	)
 

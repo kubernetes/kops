@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
-// PublicIPAddressesClient is a client for public ip addresses.
+// PublicIPAddressesClient is a client for public IP addresses.
 type PublicIPAddressesClient interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error)
-	List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error)
+	List(ctx context.Context, resourceGroupName string) ([]*network.PublicIPAddress, error)
 	Delete(ctx context.Context, resourceGroupName, publicIPAddressName string) error
 }
 
@@ -38,46 +38,47 @@ type publicIPAddressesClientImpl struct {
 var _ PublicIPAddressesClient = &publicIPAddressesClientImpl{}
 
 func (c *publicIPAddressesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error) {
-	future, err := c.c.CreateOrUpdate(ctx, resourceGroupName, publicIPAddressName, parameters)
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, publicIPAddressName, parameters, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating/updating public ip address: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
+	resp, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
 		return nil, fmt.Errorf("waiting for public ip address create/update completion: %w", err)
 	}
-	pip, err := future.Result(*c.c)
-	if err != nil {
-		return nil, fmt.Errorf("obtaining result for public ip address create/update: %w", err)
-	}
-	return &pip, err
+	return &resp.PublicIPAddress, err
 }
 
-func (c *publicIPAddressesClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error) {
-	var l []network.PublicIPAddress
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.Next() {
+func (c *publicIPAddressesClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.PublicIPAddress, error) {
+	var l []*network.PublicIPAddress
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing public ip addresses: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *publicIPAddressesClientImpl) Delete(ctx context.Context, resourceGroupName, publicIPAddressName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, publicIPAddressName)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, publicIPAddressName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting public ip address: %s", err)
+		return fmt.Errorf("deleting public ip address: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for public ip address deletion completion: %s", err)
+	if _, err := future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for public ip address deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newPublicIPAddressesClientImpl(subscriptionID string, authorizer autorest.Authorizer) *publicIPAddressesClientImpl {
-	c := network.NewPublicIPAddressesClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &publicIPAddressesClientImpl{
-		c: &c,
+func newPublicIPAddressesClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*publicIPAddressesClientImpl, error) {
+	c, err := network.NewPublicIPAddressesClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating public ip addresses client: %w", err)
 	}
+	return &publicIPAddressesClientImpl{
+		c: c,
+	}, nil
 }

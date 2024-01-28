@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
-// LoadBalancersClient is a client for connecting to the kubernetes api.
+// LoadBalancersClient is a client for managing load balancers.
 type LoadBalancersClient interface {
-	CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) error
-	List(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, error)
+	CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) (*network.LoadBalancer, error)
+	List(ctx context.Context, resourceGroupName string) ([]*network.LoadBalancer, error)
 	Get(ctx context.Context, resourceGroupName string, loadBalancerName string) (*network.LoadBalancer, error)
 	Delete(ctx context.Context, resourceGroupName, loadBalancerName string) error
 }
@@ -38,45 +39,59 @@ type loadBalancersClientImpl struct {
 
 var _ LoadBalancersClient = &loadBalancersClientImpl{}
 
-func (c *loadBalancersClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) error {
-	_, err := c.c.CreateOrUpdate(ctx, resourceGroupName, loadBalancerName, parameters)
-	return err
+func (c *loadBalancersClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) (*network.LoadBalancer, error) {
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, loadBalancerName, parameters, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating/updating load balancer: %w", err)
+	}
+	resp, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("waiting for load balancer create/update: %w", err)
+	}
+	return &resp.LoadBalancer, nil
 }
 
-func (c *loadBalancersClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, error) {
-	var l []network.LoadBalancer
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.Next() {
+func (c *loadBalancersClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.LoadBalancer, error) {
+	var l []*network.LoadBalancer
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing load balancers: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *loadBalancersClientImpl) Get(ctx context.Context, resourceGroupName string, loadBalancerName string) (*network.LoadBalancer, error) {
-	l, err := c.c.Get(ctx, resourceGroupName, loadBalancerName, "frontendIpConfigurations/publicIpAddress")
-	if err != nil {
-		return nil, err
+	opts := &network.LoadBalancersClientGetOptions{
+		Expand: to.Ptr("frontendIpConfigurations/publicIpAddress"),
 	}
-	return &l, nil
+	resp, err := c.c.Get(ctx, resourceGroupName, loadBalancerName, opts)
+	if err != nil {
+		return nil, fmt.Errorf("getting load balancer: %w", err)
+	}
+	return &resp.LoadBalancer, nil
 }
 
 func (c *loadBalancersClientImpl) Delete(ctx context.Context, resourceGroupName, loadBalancerName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, loadBalancerName)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, loadBalancerName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting loadbalancer: %s", err)
+		return fmt.Errorf("deleting load balancer: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for loadbalancer deletion completion: %s", err)
+	if _, err := future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for load balancer deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newLoadBalancersClientImpl(subscriptionID string, authorizer autorest.Authorizer) *loadBalancersClientImpl {
-	c := network.NewLoadBalancersClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &loadBalancersClientImpl{
-		c: &c,
+func newLoadBalancersClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*loadBalancersClientImpl, error) {
+	c, err := network.NewLoadBalancersClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating load balancers client: %w", err)
 	}
+	return &loadBalancersClientImpl{
+		c: c,
+	}, nil
 }

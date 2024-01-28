@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
 // VirtualNetworksClient is a client for managing Virtual Networks.
 type VirtualNetworksClient interface {
-	CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName string, parameters network.VirtualNetwork) error
-	List(ctx context.Context, resourceGroupName string) ([]network.VirtualNetwork, error)
+	CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName string, parameters network.VirtualNetwork) (*network.VirtualNetwork, error)
+	List(ctx context.Context, resourceGroupName string) ([]*network.VirtualNetwork, error)
 	Delete(ctx context.Context, resourceGroupName, vnetName string) error
 }
 
@@ -37,37 +37,48 @@ type virtualNetworksClientImpl struct {
 
 var _ VirtualNetworksClient = &virtualNetworksClientImpl{}
 
-func (c *virtualNetworksClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName string, parameters network.VirtualNetwork) error {
-	_, err := c.c.CreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, parameters)
-	return err
+func (c *virtualNetworksClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName string, parameters network.VirtualNetwork) (*network.VirtualNetwork, error) {
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, parameters, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating/updating virtual network: %w", err)
+	}
+	vnet, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("waiting for virtual network create/update completion: %w", err)
+	}
+	return &vnet.VirtualNetwork, err
 }
 
-func (c *virtualNetworksClientImpl) List(ctx context.Context, resourceGroupName string) ([]network.VirtualNetwork, error) {
-	var l []network.VirtualNetwork
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.Next() {
+func (c *virtualNetworksClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.VirtualNetwork, error) {
+	var l []*network.VirtualNetwork
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing virtual networks: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *virtualNetworksClientImpl) Delete(ctx context.Context, resourceGroupName, vnetName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, vnetName)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, vnetName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting virtual network: %s", err)
+		return fmt.Errorf("deleting virtual network: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for virtual network deletion completion: %s", err)
+	if _, err = future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for virtual network deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newVirtualNetworksClientImpl(subscriptionID string, authorizer autorest.Authorizer) *virtualNetworksClientImpl {
-	c := network.NewVirtualNetworksClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &virtualNetworksClientImpl{
-		c: &c,
+func newVirtualNetworksClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*virtualNetworksClientImpl, error) {
+	c, err := network.NewVirtualNetworksClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating virtual networks client: %w", err)
 	}
+	return &virtualNetworksClientImpl{
+		c: c,
+	}, nil
 }
