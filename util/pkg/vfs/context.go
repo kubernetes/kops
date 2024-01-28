@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gophercloud/gophercloud"
@@ -57,7 +58,7 @@ type vfsContextState struct {
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
 
-	azureClient *azureClient
+	azureClient *azblob.Client
 }
 
 // Context holds the global VFS state.
@@ -482,7 +483,7 @@ func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
 }
 
 // getAzureBlobClient returns the client for azure blob storage, caching it for future reuse.
-func (c *VFSContext) getAzureBlobClient(ctx context.Context) (*azureClient, error) {
+func (c *VFSContext) getAzureBlobClient(ctx context.Context) (*azblob.Client, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 

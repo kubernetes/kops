@@ -91,28 +91,6 @@ Set the env var `AZURE_STORAGE_ACCOUNT` to the storage account name for later us
 $ export AZURE_STORAGE_ACCOUNT=kopstest
 ```
 
-Get an access key of the account and set it in env var `AZURE_STORAGE_KEY` for later use.
-
-```bash
-$ az storage account keys list --account-name kopstest
-[
-  {
-	"keyName": "key1",
-	"permissions": "Full",
-	"value": "RHWWn..."
-  },
-  {
-	"keyName": "key2",
-	"permissions": "Full",
-	"value": "..."
-  }
-
-]
-
-$ export AZURE_STORAGE_KEY="RHWWn...“
-```
-
-
 Then create a blob container.
 
 ```bash

@@ -22,11 +22,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 
-	"github.com/Azure/azure-pipeline-go/pipeline"
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"golang.org/x/oauth2"
 	"k8s.io/klog/v2"
 )
@@ -35,57 +34,26 @@ const (
 	storageResourceID = "https://storage.azure.com/"
 )
 
-type azureClient struct {
-	p           pipeline.Pipeline
-	accountName string
-}
-
-func (c *azureClient) newContainerURL(containerName string) (*azblob.ContainerURL, error) {
-	u, err := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net/%s", c.accountName, containerName))
-	if err != nil {
-		return nil, err
-	}
-	// Create a ContainerURL object that wraps the container URL and a request
-	// pipeline to make requests.
-	cURL := azblob.NewContainerURL(*u, c.p)
-	return &cURL, nil
-}
-
-func newAzureClient(ctx context.Context) (*azureClient, error) {
+func newAzureClient(ctx context.Context) (*azblob.Client, error) {
+	klog.Infof("New Azure Blob client")
 	accountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
 	if accountName == "" {
 		return nil, fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")
 	}
-	credential, err := newAzureCredential(ctx, accountName)
+
+	url := fmt.Sprintf("https://%s.blob.core.windows.net/", accountName)
+
+	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, err
 	}
-	return &azureClient{
-		p:           azblob.NewPipeline(credential, azblob.PipelineOptions{}),
-		accountName: accountName,
-	}, nil
-}
 
-// newAzureCredential returns a Azure credential. When env var
-// AZURE_STORAGE_KEY is set, obtain a credential from the env
-// var. When the env var is not set, obtain a credential from Instance
-// Metadata Service.
-//
-// Please note that Instance Metadata Service is available only within a VM
-// running in Azure (and when necessary role is attached to the VM).
-func newAzureCredential(ctx context.Context, accountName string) (azblob.Credential, error) {
-	accountKey := os.Getenv("AZURE_STORAGE_KEY")
-	if accountKey != "" {
-		klog.V(2).Infof("Creating a shared key credential")
-		return azblob.NewSharedKeyCredential(accountName, accountKey)
-	}
-
-	klog.V(2).Infof("Creating a token credential from Instance Metadata Service.")
-	token, err := getAccessTokenFromInstanceMetadataService(ctx)
+	client, err := azblob.NewClient(url, credential, nil)
 	if err != nil {
 		return nil, err
 	}
-	return azblob.NewTokenCredential(token, nil), nil
+
+	return client, nil
 }
 
 // getAccessTokenFromInstanceMetadataService obtains the access token from Instance Metadata Service.

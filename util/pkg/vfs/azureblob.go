@@ -27,7 +27,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/bloberror"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -100,53 +103,58 @@ func (p *AzureBlobPath) Join(relativePath ...string) Path {
 
 // ReadFile returns the content of the blob.
 func (p *AzureBlobPath) ReadFile(ctx context.Context) ([]byte, error) {
-	var b bytes.Buffer
-	_, err := p.WriteTo(&b)
+	klog.V(8).Infof("Reading file: %s - %s", p.container, p.key)
+
+	client, err := p.getClient(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	get, err := client.DownloadStream(ctx, p.container, p.key, nil)
+	if err != nil {
+		if bloberror.HasCode(err, bloberror.ContainerNotFound) || bloberror.HasCode(err, bloberror.BlobNotFound) {
+			return nil, os.ErrNotExist
+		}
+		return nil, err
+	}
+
+	b := &bytes.Buffer{}
+	retryReader := get.NewRetryReader(ctx, &azblob.RetryReaderOptions{})
+	_, err = b.ReadFrom(retryReader)
+	if err != nil {
+		return nil, err
+	}
+
 	return b.Bytes(), nil
 }
 
 // WriteTo writes the content of the blob to the writer.
-func (p *AzureBlobPath) WriteTo(w io.Writer) (n int64, err error) {
+func (p *AzureBlobPath) WriteTo(w io.Writer) (int64, error) {
+	klog.V(8).Infof("Writing to: %s - %s", p.container, p.key)
+
 	ctx := context.TODO()
 
-	client, err := p.getClient(ctx)
+	b, err := p.ReadFile(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	cURL, err := client.newContainerURL(p.container)
+	n, err := w.Write(b)
 	if err != nil {
 		return 0, err
 	}
-	resp, err := cURL.NewBlockBlobURL(p.key).Download(
-		ctx,
-		0, /* offset */
-		azblob.CountToEnd,
-		azblob.BlobAccessConditions{},
-		false, /* rangeGetContentMD5 */
-		azblob.ClientProvidedKeyOptions{},
-	)
-	if err != nil {
-		serr, ok := err.(azblob.StorageError)
-		if ok && serr.ServiceCode() == azblob.ServiceCodeBlobNotFound {
-			return 0, os.ErrNotExist
-		}
-		return 0, err
-	}
-	return io.Copy(w, resp.Body(azblob.RetryReaderOptions{MaxRetryRequests: 10}))
+
+	return int64(n), err
 }
 
 // createFileLockAzureBLob prevents concurrent creates on the same
 // file while maintaining atomicity of writes.
-//
-// This takes the same approach as S3Path.
 var createFileLockAzureBlob sync.Mutex
 
 // CreateFile writes the file contents only if the file does not already exist.
 func (p *AzureBlobPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
+	klog.V(8).Infof("Creating file: %s - %s", p.container, p.key)
+
 	createFileLockAzureBlob.Lock()
 	defer createFileLockAzureBlob.Unlock()
 
@@ -162,62 +170,43 @@ func (p *AzureBlobPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl 
 }
 
 // WriteFile writes the blob to the reader.
-//
-// TODO(kenji): Support ACL.
 func (p *AzureBlobPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
+	klog.V(8).Infof("Writing file: %s - %s", p.container, p.key)
+
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
-	if err != nil {
+	_, err = client.CreateContainer(ctx, p.container, nil)
+	if err != nil && !bloberror.HasCode(err, bloberror.ContainerAlreadyExists) {
 		return err
-	}
-	if _, err := data.Seek(0, 0); err != nil {
-		return fmt.Errorf("error seeking to start of data stream: %v", err)
 	}
 
-	cURL, err := client.newContainerURL(p.container)
-	if err != nil {
-		return err
-	}
-	// Use block blob. Other options are page blobs (optimized for
-	// random read/write) and append blob (optimized for append).
-	_, err = cURL.NewBlockBlobURL(p.key).Upload(
-		ctx,
-		data,
-		azblob.BlobHTTPHeaders{
-			ContentType: "application/octet-stream",
-			ContentMD5:  md5Hash.HashValue,
-		},
-		azblob.Metadata{},
-		azblob.BlobAccessConditions{},
-		azblob.AccessTierNone,
-		azblob.BlobTagsMap{},
-		azblob.ClientProvidedKeyOptions{},
-		azblob.ImmutabilityPolicyOptions{},
-	)
+	_, err = client.UploadStream(ctx, p.container, p.key, data, nil)
 	return err
 }
 
 // Remove deletes the blob.
 func (p *AzureBlobPath) Remove(ctx context.Context) error {
+	klog.V(8).Infof("Removing file: %q - %q", p.container, p.key)
+
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	cURL, err := client.newContainerURL(p.container)
+	_, err = client.DeleteBlob(ctx, p.container, p.key, nil)
 	if err != nil {
 		return err
 	}
-	// Delete the blob, but keep its snapshot.
-	_, err = cURL.NewBlockBlobURL(p.key).Delete(ctx, azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
-	return err
+
+	return nil
 }
 
 func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
+	klog.V(8).Infof("Removing ALL files: %s - %s", p.container, p.key)
+
 	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
@@ -226,7 +215,7 @@ func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
 	for _, blobPath := range tree {
 		err := blobPath.Remove(ctx)
 		if err != nil {
-			return fmt.Errorf("error removing file %s: %w", blobPath, err)
+			return fmt.Errorf("removing file %s: %w", blobPath, err)
 		}
 	}
 
@@ -234,116 +223,76 @@ func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
 }
 
 func (p *AzureBlobPath) RemoveAllVersions(ctx context.Context) error {
-	client, err := p.getClient(ctx)
+	klog.V(8).Infof("Removing ALL file versions: %s - %s", p.container, p.key)
+
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return err
 	}
 
-	cURL, err := client.newContainerURL(p.container)
-	if err != nil {
-		return err
+	for _, blobPath := range tree {
+		err := blobPath.Remove(ctx)
+		if err != nil {
+			return fmt.Errorf("removing file %s: %w", blobPath, err)
+		}
 	}
-	// Delete the blob and its snapshot.
-	_, err = cURL.NewBlockBlobURL(p.key).Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
-	return err
+
+	return nil
 }
 
 // ReadDir lists the blobs under the current Path.
 func (p *AzureBlobPath) ReadDir() ([]Path, error) {
+	klog.V(8).Infof("Reading dir: %s - %s", p.container, p.key)
+
 	ctx := context.TODO()
 
-	client, err := p.getClient(ctx)
+	tree, err := p.ReadTree(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var paths []Path
-	cURL, err := client.newContainerURL(p.container)
-	if err != nil {
-		return nil, err
+	for _, blob := range tree {
+		if p.Join(blob.Base()).Path() == blob.Path() {
+			klog.V(8).Infof("Found file: %q", blob.Path())
+			paths = append(paths, blob)
+		}
 	}
 
-	prefix := p.key
-	if !strings.HasSuffix(prefix, "/") {
-		prefix += "/"
-	}
-
-	for m := (azblob.Marker{}); m.NotDone(); {
-		// List all blobs that have the same prefix (without
-		// recursion).  By specifying "/", the request will
-		// group blobs with their names up to the appearance of "/".
-		//
-		// Suppose that we have the following blobs:
-		//
-		// - cluster/cluster.spec
-		// - cluster/config
-		// - cluster/instancegroup/master-eastus-1
-		//
-		// When the prefix is set to "cluster/", the request
-		// returns "cluster/cluster.spec" and "cluster/config" in BlobItems
-		// and returns "cluster/instancegroup/" in BlobPrefixes.
-		resp, err := cURL.ListBlobsHierarchySegment(
-			ctx,
-			m,
-			"/", /* delimiter */
-			azblob.ListBlobsSegmentOptions{Prefix: prefix})
-		if err != nil {
-			return nil, nil
-		}
-		for _, item := range resp.Segment.BlobItems {
-			paths = append(paths, &AzureBlobPath{
-				vfsContext: p.vfsContext,
-				container:  p.container,
-				key:        item.Name,
-				md5Hash:    string(item.Properties.ContentMD5),
-			})
-		}
-		for _, prefix := range resp.Segment.BlobPrefixes {
-			paths = append(paths, &AzureBlobPath{
-				vfsContext: p.vfsContext,
-				container:  p.container,
-				key:        prefix.Name,
-			})
-		}
-
-		m = resp.NextMarker
-
-	}
 	return paths, nil
 }
 
 // ReadTree lists all blobs (recursively) in the subtree rooted at the current Path.
 func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
+	klog.V(8).Infof("Reading tree: %s - %s", p.container, p.key)
+
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var paths []Path
-	cURL, err := client.newContainerURL(p.container)
-	if err != nil {
-		return nil, err
-	}
-	for m := (azblob.Marker{}); m.NotDone(); {
-		resp, err := cURL.ListBlobsFlatSegment(ctx, m, azblob.ListBlobsSegmentOptions{Prefix: p.key})
+	pager := client.NewListBlobsFlatPager(p.container, &azblob.ListBlobsFlatOptions{
+		Prefix: to.Ptr(p.key),
+	})
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, nil
+			return nil, err
 		}
-		for _, item := range resp.Segment.BlobItems {
+		for _, blob := range resp.Segment.BlobItems {
 			paths = append(paths, &AzureBlobPath{
 				vfsContext: p.vfsContext,
 				container:  p.container,
-				key:        item.Name,
-				md5Hash:    string(item.Properties.ContentMD5),
+				key:        *blob.Name,
 			})
 		}
-		m = resp.NextMarker
-
 	}
+
 	return paths, nil
 }
 
 // getClient returns the client for azure blob storage.
-func (p *AzureBlobPath) getClient(ctx context.Context) (*azureClient, error) {
+func (p *AzureBlobPath) getClient(ctx context.Context) (*azblob.Client, error) {
 	return p.vfsContext.getAzureBlobClient(ctx)
 }
