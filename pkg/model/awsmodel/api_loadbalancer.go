@@ -202,7 +202,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				b.LinkToELBSecurityGroup("api"),
 			},
 			SubnetMappings: nlbSubnetMappings,
-			TargetGroups:   make([]*awstasks.TargetGroup, 0),
 
 			Tags:              tags,
 			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
@@ -323,8 +322,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				}
 
 				c.AddTask(tg)
-
-				nlb.TargetGroups = append(nlb.TargetGroups, tg)
 			}
 
 			if b.Cluster.UsesNoneDNS() {
@@ -349,8 +346,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				}
 
 				c.AddTask(tg)
-
-				nlb.TargetGroups = append(nlb.TargetGroups, tg)
 			}
 
 			if lbSpec.SSLCertificate != "" {
@@ -373,9 +368,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Shared:             fi.PtrTo(false),
 				}
 				c.AddTask(secondaryTG)
-				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
 			}
-			sort.Stable(awstasks.OrderTargetGroupsByName(nlb.TargetGroups))
 			for _, nlbListener := range nlbListeners {
 				c.AddTask(nlbListener)
 			}
