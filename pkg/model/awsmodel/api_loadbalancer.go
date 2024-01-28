@@ -245,7 +245,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			nlb.Scheme = fi.PtrTo("internal")
 		case kops.LoadBalancerTypePublic:
 			clb.Scheme = nil
-			nlb.Scheme = nil
+			nlb.Scheme = fi.PtrTo("internet-facing")
 		default:
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
