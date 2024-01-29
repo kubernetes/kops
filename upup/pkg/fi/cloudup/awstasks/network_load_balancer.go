@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -76,6 +77,13 @@ type NetworkLoadBalancer struct {
 	// WellKnownServices indicates which services are supported by this resource.
 	// This field is internal and is not rendered to the cloud.
 	WellKnownServices []wellknownservices.WellKnownService
+
+	// waitForLoadBalancerReady controls whether we wait for the load balancer to be ready before completing the "Render" operation.
+	waitForLoadBalancerReady bool
+}
+
+func (e *NetworkLoadBalancer) SetWaitForLoadBalancerReady(v bool) {
+	e.waitForLoadBalancerReady = v
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -556,6 +564,8 @@ func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) err
 }
 
 func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer) error {
+	ctx := context.TODO()
+
 	var loadBalancerName string
 	var loadBalancerArn string
 
@@ -610,22 +620,17 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			e.HostedZoneId = lb.CanonicalHostedZoneId
 			e.VPC = &VPC{ID: lb.VpcId}
 			loadBalancerArn = fi.ValueOf(lb.LoadBalancerArn)
-
 		}
 
-		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
-		// Limiting this to clusters using NoneDNS because load balancer creation is quite slow.
-		for _, tg := range e.TargetGroups {
-			if strings.HasPrefix(fi.ValueOf(tg.Name), "kops-controller") {
-				klog.Infof("Waiting for load balancer %q to be created...", loadBalancerName)
-				request := &elbv2.DescribeLoadBalancersInput{
-					Names: []*string{&loadBalancerName},
-				}
-				err := t.Cloud.ELBV2().WaitUntilLoadBalancerAvailable(request)
-				if err != nil {
-					return fmt.Errorf("error waiting for NLB %q: %w", loadBalancerName, err)
-				}
-				break
+		if e.waitForLoadBalancerReady {
+			klog.Infof("Waiting for load balancer %q to be created...", loadBalancerName)
+			request := &elbv2.DescribeLoadBalancersInput{
+				Names: []*string{&loadBalancerName},
+			}
+
+			err := t.Cloud.ELBV2().WaitUntilLoadBalancerAvailableWithContext(ctx, request)
+			if err != nil {
+				return fmt.Errorf("error waiting for NLB %q: %w", loadBalancerName, err)
 			}
 		}
 
