@@ -104,22 +104,20 @@ func defaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
 		}
 	}
 
-	if producesDeletions, ok := e.(ProducesDeletions[T]); ok && c.Target.ProcessDeletions() {
-		var deletions []Deletion[T]
-		deletions, err = producesDeletions.FindDeletions(c)
+	if producesDeletions, ok := e.(ProducesDeletions[T]); ok && c.deletionProcessingMode != DeletionProcessingModeIgnore {
+		deletions, err := producesDeletions.FindDeletions(c)
 		if err != nil {
 			return err
 		}
 		for _, deletion := range deletions {
 			if _, ok := c.Target.(*DryRunTarget[T]); ok {
-				err = c.Target.(*DryRunTarget[T]).Delete(deletion)
-			} else if _, ok := c.Target.(*DryRunTarget[T]); ok {
-				err = c.Target.(*DryRunTarget[T]).Delete(deletion)
+				if err := c.Target.(*DryRunTarget[T]).RecordDeletion(deletion); err != nil {
+					return err
+				}
 			} else {
-				err = deletion.Delete(c.Target)
-			}
-			if err != nil {
-				return err
+				if err := deletion.Delete(c.Target); err != nil {
+					return err
+				}
 			}
 		}
 	}

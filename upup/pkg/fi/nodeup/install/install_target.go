@@ -31,11 +31,6 @@ func (t *InstallTarget) Finish(taskMap map[string]fi.InstallTask) error {
 	return nil
 }
 
-func (t *InstallTarget) ProcessDeletions() bool {
-	// We don't expect any, but it would be our job to process them
-	return true
-}
-
 func (t *InstallTarget) DefaultCheckExisting() bool {
 	return true
 }

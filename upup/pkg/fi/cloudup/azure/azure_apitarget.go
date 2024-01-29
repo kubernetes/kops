@@ -40,11 +40,6 @@ func (t *AzureAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 
-// ProcessDeletions returns true if we should delete resources.
-func (t *AzureAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *AzureAPITarget) DefaultCheckExisting() bool {
 	return true
 }

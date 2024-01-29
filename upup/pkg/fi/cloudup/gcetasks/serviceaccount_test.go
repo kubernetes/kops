@@ -101,7 +101,7 @@ func checkHasChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks
 func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks map[string]fi.CloudupTask) {
 	target := gce.NewGCEAPITarget(cloud)
 
-	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
+	context, err := fi.NewCloudupContext(ctx, fi.DeletionProcessingModeDeleteIncludingDeferred, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
@@ -120,7 +120,7 @@ func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[st
 	}
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
+	context, err := fi.NewCloudupContext(ctx, fi.DeletionProcessingModeDeleteIncludingDeferred, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

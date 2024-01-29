@@ -36,10 +36,6 @@ func (t *DOAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 
-func (t *DOAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *DOAPITarget) DefaultCheckExisting() bool {
 	return true
 }

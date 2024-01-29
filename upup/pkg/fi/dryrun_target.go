@@ -92,11 +92,6 @@ func NewNodeupDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *No
 	return newDryRunTarget[NodeupSubContext](assetBuilder, out)
 }
 
-func (t *DryRunTarget[T]) ProcessDeletions() bool {
-	// We display deletions
-	return true
-}
-
 func (t *DryRunTarget[T]) DefaultCheckExisting() bool {
 	return true
 }
@@ -117,7 +112,7 @@ func (t *DryRunTarget[T]) Render(a, e, changes Task[T]) error {
 	return nil
 }
 
-func (t *DryRunTarget[T]) Delete(deletion Deletion[T]) error {
+func (t *DryRunTarget[T]) RecordDeletion(deletion Deletion[T]) error {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 

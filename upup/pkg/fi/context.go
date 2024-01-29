@@ -38,6 +38,8 @@ type Context[T SubContext] struct {
 	tasks    map[string]Task[T]
 	warnings []*Warning[T]
 
+	deletionProcessingMode DeletionProcessingMode
+
 	T T
 }
 
@@ -74,31 +76,40 @@ type Warning[T SubContext] struct {
 	Message string
 }
 
-func newContext[T SubContext](ctx context.Context, target Target[T], sub T, tasks map[string]Task[T]) (*Context[T], error) {
+func newContext[T SubContext](ctx context.Context, deletionProcessingMode DeletionProcessingMode, target Target[T], sub T, tasks map[string]Task[T]) (*Context[T], error) {
 	c := &Context[T]{
 		ctx:    ctx,
 		Target: target,
 		tasks:  tasks,
 		T:      sub,
+
+		deletionProcessingMode: deletionProcessingMode,
 	}
 
 	return c, nil
 }
 
 func NewInstallContext(ctx context.Context, target InstallTarget, tasks map[string]InstallTask) (*InstallContext, error) {
+	// We don't expect deletions, but we would be the one to handle them.
+	deletionProcessingMode := DeletionProcessingModeDeleteIncludingDeferred
+
 	sub := InstallSubContext{}
-	return newContext[InstallSubContext](ctx, target, sub, tasks)
+	return newContext[InstallSubContext](ctx, deletionProcessingMode, target, sub, tasks)
 }
+
 func NewNodeupContext(ctx context.Context, target NodeupTarget, keystore KeystoreReader, bootConfig *nodeup.BootConfig, nodeupConfig *nodeup.Config, tasks map[string]NodeupTask) (*NodeupContext, error) {
+	// We don't expect deletions, but we would be the one to handle them.
+	deletionProcessingMode := DeletionProcessingModeDeleteIncludingDeferred
+
 	sub := NodeupSubContext{
 		BootConfig:   bootConfig,
 		NodeupConfig: nodeupConfig,
 		Keystore:     keystore,
 	}
-	return newContext[NodeupSubContext](ctx, target, sub, tasks)
+	return newContext[NodeupSubContext](ctx, deletionProcessingMode, target, sub, tasks)
 }
 
-func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, tasks map[string]CloudupTask) (*CloudupContext, error) {
+func NewCloudupContext(ctx context.Context, deletionProcessingMode DeletionProcessingMode, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, tasks map[string]CloudupTask) (*CloudupContext, error) {
 	sub := CloudupSubContext{
 		Cloud:             cloud,
 		Cluster:           cluster,
@@ -106,7 +117,7 @@ func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.
 		Keystore:          keystore,
 		SecretStore:       secretStore,
 	}
-	return newContext[CloudupSubContext](ctx, target, sub, tasks)
+	return newContext[CloudupSubContext](ctx, deletionProcessingMode, target, sub, tasks)
 }
 
 func (c *Context[T]) AllTasks() map[string]Task[T] {
