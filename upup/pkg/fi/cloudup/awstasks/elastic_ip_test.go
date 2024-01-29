@@ -78,18 +78,7 @@ func TestElasticIPCreate(t *testing.T) {
 		allTasks := buildTasks()
 		eip1 := allTasks["eip1"].(*ElasticIP)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(eip1.ID) == "" {
 			t.Fatalf("ID not set after create")

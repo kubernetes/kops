@@ -98,18 +98,7 @@ func TestSubnetCreate(t *testing.T) {
 		allTasks := buildTasks()
 		subnet1 := allTasks["subnet1"].(*Subnet)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
@@ -190,18 +179,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 		allTasks := buildTasks()
 		subnet1 := allTasks["subnet1"].(*Subnet)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
@@ -290,18 +268,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 		allTasks := buildTasks()
 		subnet1 := allTasks["subnet1"].(*Subnet)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
@@ -424,18 +391,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 		allTasks := buildTasks()
 		subnet1 := allTasks["subnet1"].(*Subnet)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
