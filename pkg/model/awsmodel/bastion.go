@@ -360,7 +360,7 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		case kops.LoadBalancerTypeInternal:
 			nlb.Scheme = fi.PtrTo("internal")
 		case kops.LoadBalancerTypePublic:
-			nlb.Scheme = nil
+			nlb.Scheme = fi.PtrTo("internet-facing")
 		default:
 			return fmt.Errorf("unhandled bastion LoadBalancer type %q", bastionLoadBalancerType)
 		}
