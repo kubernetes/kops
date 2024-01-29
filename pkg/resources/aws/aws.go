@@ -1568,13 +1568,16 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 // For NLBs and ALBs
 func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
-	elbv2s, _, err := DescribeELBV2s(cloud)
+	ctx := context.TODO()
+
+	loadBalancers, err := awsup.ListELBV2LoadBalancers(ctx, cloud.(awsup.AWSCloud))
 	if err != nil {
 		return nil, err
 	}
 
 	var resourceTrackers []*resources.Resource
-	for _, elb := range elbv2s {
+	for _, loadBalancer := range loadBalancers {
+		elb := loadBalancer.LoadBalancer
 		id := aws.StringValue(elb.LoadBalancerName)
 		resourceTracker := &resources.Resource{
 			Name:    id,
@@ -1598,65 +1601,6 @@ func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resourc
 	}
 
 	return resourceTrackers, nil
-}
-
-func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.Tag, error) {
-	c := cloud.(awsup.AWSCloud)
-	tags := c.Tags()
-
-	klog.V(2).Infof("Listing all NLBs and ALBs")
-
-	request := &elbv2.DescribeLoadBalancersInput{}
-	// ELBV2 DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	var elbv2s []*elbv2.LoadBalancer
-	elbv2Tags := make(map[string][]*elbv2.Tag)
-
-	var innerError error
-	err := c.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancers) == 0 {
-			return true
-		}
-
-		tagRequest := &elbv2.DescribeTagsInput{}
-
-		nameToELB := make(map[string]*elbv2.LoadBalancer)
-		for _, elb := range p.LoadBalancers {
-			name := aws.StringValue(elb.LoadBalancerArn)
-			nameToELB[name] = elb
-
-			tagRequest.ResourceArns = append(tagRequest.ResourceArns, elb.LoadBalancerArn)
-		}
-
-		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
-		if err != nil {
-			innerError = fmt.Errorf("error listing elb Tags: %v", err)
-			return false
-		}
-
-		for _, t := range tagResponse.TagDescriptions {
-
-			elbARN := aws.StringValue(t.ResourceArn)
-			if !matchesElbV2Tags(tags, t.Tags) {
-				continue
-			}
-
-			elbv2Tags[elbARN] = t.Tags
-			elb := nameToELB[elbARN]
-			elbv2s = append(elbv2s, elb)
-		}
-
-		return true
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
-	}
-
-	return elbv2s, elbv2Tags, nil
 }
 
 func DumpTargetGroup(op *resources.DumpOperation, r *resources.Resource) error {

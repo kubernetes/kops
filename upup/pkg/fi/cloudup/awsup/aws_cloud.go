@@ -163,7 +163,9 @@ type AWSCloud interface {
 	RemoveELBV2Tags(ResourceArn string, tags map[string]string) error
 	FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error)
 	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
+	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
 	FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error)
+	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
 	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]*elbv2.Tag, error)
 	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
 

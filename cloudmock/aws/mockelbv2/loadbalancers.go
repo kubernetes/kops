@@ -17,9 +17,11 @@ limitations under the License.
 package mockelbv2
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
@@ -72,6 +74,10 @@ func (m *MockELBV2) DescribeLoadBalancersPages(request *elbv2.DescribeLoadBalanc
 	callback(page, false)
 
 	return nil
+}
+
+func (m *MockELBV2) DescribeLoadBalancersPagesWithContext(ctx context.Context, request *elbv2.DescribeLoadBalancersInput, callback func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool), opts ...request.Option) error {
+	return m.DescribeLoadBalancersPages(request, callback)
 }
 
 func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (*elbv2.CreateLoadBalancerOutput, error) {
