@@ -94,18 +94,7 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 		allTasks := buildTasks()
 		eigw1 := allTasks["eigw1"].(*EgressOnlyInternetGateway)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(eigw1.ID) == "" {
 			t.Fatalf("ID not set after create")
@@ -142,5 +131,23 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 	{
 		allTasks := buildTasks()
 		checkNoChanges(t, ctx, cloud, allTasks)
+	}
+}
+
+func runTasks(t *testing.T, cloud awsup.AWSCloud, allTasks map[string]fi.CloudupTask) {
+	t.Helper()
+	ctx := context.TODO()
+
+	target := &awsup.AWSAPITarget{
+		Cloud: cloud,
+	}
+
+	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
+	if err != nil {
+		t.Fatalf("error building context: %v", err)
+	}
+
+	if err := context.RunTasks(testRunTasksOptions); err != nil {
+		t.Fatalf("unexpected error during Run: %v", err)
 	}
 }

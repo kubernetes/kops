@@ -137,18 +137,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 		sg1 := allTasks["sg1"].(*SecurityGroup)
 		vpc1 := allTasks["vpc1"].(*VPC)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(sg1.ID) == "" {
 			t.Fatalf("ID not set after create")

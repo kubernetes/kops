@@ -52,18 +52,7 @@ func TestVPCCreate(t *testing.T) {
 		allTasks := buildTasks()
 		vpc1 := allTasks["vpc1"].(*VPC)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set after create")
@@ -134,8 +123,6 @@ func Test4758(t *testing.T) {
 }
 
 func TestSharedVPCAdditionalCIDR(t *testing.T) {
-	ctx := context.TODO()
-
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	c.CreateVpcWithId(&ec2.CreateVpcInput{
@@ -177,18 +164,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 		allTasks := buildTasks()
 		vpc1 := allTasks["vpc-1"].(*VPC)
 
-		target := &awsup.AWSAPITarget{
-			Cloud: cloud,
-		}
-
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
-		if err != nil {
-			t.Fatalf("error building context: %v", err)
-		}
-
-		if err := context.RunTasks(testRunTasksOptions); err != nil {
-			t.Fatalf("unexpected error during Run: %v", err)
-		}
+		runTasks(t, cloud, allTasks)
 
 		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set")
