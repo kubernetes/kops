@@ -163,6 +163,7 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
 KUBECONFIG=$(mktemp -t kubeconfig.XXXXXXXXX)
 kops export kubecfg --admin --kubeconfig="${KUBECONFIG}"
 
+
 kops get instances
 
 # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
