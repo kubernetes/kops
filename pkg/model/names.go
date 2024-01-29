@@ -98,7 +98,7 @@ func (b *KopsModelContext) CLBName(prefix string) string {
 }
 
 func (b *KopsModelContext) NLBName(prefix string) string {
-	return strings.ReplaceAll(prefix+"-"+b.ClusterName(), ".", "-")
+	return prefix + "." + b.ClusterName()
 }
 
 func (b *KopsModelContext) NLBTargetGroupName(prefix string) string {

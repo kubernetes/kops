@@ -167,16 +167,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			klog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
 		}
 
-		tags := b.CloudTags(loadBalancerName, false)
+		tags := b.CloudTags("", false)
 		for k, v := range b.Cluster.Spec.CloudLabels {
 			tags[k] = v
 		}
 		// Override the returned name to be the expected ELB name
 		tags["Name"] = "api." + b.ClusterName()
 
-		name := b.NLBName("api")
 		nlb = &awstasks.NetworkLoadBalancer{
-			Name:      &name,
+			Name:      fi.PtrTo(b.NLBName("api")),
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.PtrTo(loadBalancerName),

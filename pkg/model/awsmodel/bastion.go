@@ -321,7 +321,7 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	{
 		loadBalancerName := b.LBName32("bastion")
 
-		tags := b.CloudTags(loadBalancerName, false)
+		tags := b.CloudTags("", false)
 		for k, v := range b.Cluster.Spec.CloudLabels {
 			tags[k] = v
 		}

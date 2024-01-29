@@ -870,13 +870,18 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 			listenerTF.Protocol = elbv2.ProtocolEnumTcp
 		}
 
-		err = t.RenderResource("aws_lb_listener", fmt.Sprintf("%v-%v", *e.Name, listener.Port), listenerTF)
+		err = t.RenderResource("aws_lb_listener", fmt.Sprintf("%v-%v", e.TerraformName(), listener.Port), listenerTF)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (e *NetworkLoadBalancer) TerraformName() string {
+	tfName := strings.Replace(fi.ValueOf(e.Name), ".", "-", -1)
+	return tfName
 }
 
 func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.Literal {
