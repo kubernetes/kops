@@ -1,6 +1,6 @@
-# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.13/config/master/aws-k8s-cni.yaml
+# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.16/config/master/aws-k8s-cni.yaml
 ---
-# Source: crds/customresourcedefinition.yaml
+# Source: aws-vpc-cni/crds/customresourcedefinition.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -21,7 +21,241 @@ spec:
     plural: eniconfigs
     singular: eniconfig
     kind: ENIConfig
-
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: policyendpoints.networking.k8s.aws
+spec:
+  group: networking.k8s.aws
+  names:
+    kind: PolicyEndpoint
+    listKind: PolicyEndpointList
+    plural: policyendpoints
+    singular: policyendpoint
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: PolicyEndpoint is the Schema for the policyendpoints API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: PolicyEndpointSpec defines the desired state of PolicyEndpoint
+            properties:
+              egress:
+                description: Egress is the list of egress rules containing resolved
+                  network addresses
+                items:
+                  description: EndpointInfo defines the network endpoint information
+                    for the policy ingress/egress
+                  properties:
+                    cidr:
+                      description: CIDR is the network address(s) of the endpoint
+                      type: string
+                    except:
+                      description: Except is the exceptions to the CIDR ranges mentioned
+                        above.
+                      items:
+                        type: string
+                      type: array
+                    ports:
+                      description: Ports is the list of ports
+                      items:
+                        description: Port contains information about the transport
+                          port/protocol
+                        properties:
+                          endPort:
+                            description: Endport specifies the port range port to
+                              endPort port must be defined and an integer, endPort
+                              > port
+                            format: int32
+                            type: integer
+                          port:
+                            description: Port specifies the numerical port for the
+                              protocol. If empty applies to all ports
+                            format: int32
+                            type: integer
+                          protocol:
+                            default: TCP
+                            description: Protocol specifies the transport protocol,
+                              default TCP
+                            type: string
+                        type: object
+                      type: array
+                  required:
+                  - cidr
+                  type: object
+                type: array
+              ingress:
+                description: Ingress is the list of ingress rules containing resolved
+                  network addresses
+                items:
+                  description: EndpointInfo defines the network endpoint information
+                    for the policy ingress/egress
+                  properties:
+                    cidr:
+                      description: CIDR is the network address(s) of the endpoint
+                      type: string
+                    except:
+                      description: Except is the exceptions to the CIDR ranges mentioned
+                        above.
+                      items:
+                        type: string
+                      type: array
+                    ports:
+                      description: Ports is the list of ports
+                      items:
+                        description: Port contains information about the transport
+                          port/protocol
+                        properties:
+                          endPort:
+                            description: Endport specifies the port range port to
+                              endPort port must be defined and an integer, endPort
+                              > port
+                            format: int32
+                            type: integer
+                          port:
+                            description: Port specifies the numerical port for the
+                              protocol. If empty applies to all ports
+                            format: int32
+                            type: integer
+                          protocol:
+                            default: TCP
+                            description: Protocol specifies the transport protocol,
+                              default TCP
+                            type: string
+                        type: object
+                      type: array
+                  required:
+                  - cidr
+                  type: object
+                type: array
+              podIsolation:
+                description: PodIsolation specifies whether the pod needs to be isolated
+                  for a particular traffic direction Ingress or Egress, or both. If
+                  default isolation is not specified, and there are no ingress/egress
+                  rules, then the pod is not isolated from the point of view of this
+                  policy. This follows the NetworkPolicy spec.PolicyTypes.
+                items:
+                  description: PolicyType string describes the NetworkPolicy type
+                    This type is beta-level in 1.8
+                  type: string
+                type: array
+              podSelector:
+                description: PodSelector is the podSelector from the policy resource
+                properties:
+                  matchExpressions:
+                    description: matchExpressions is a list of label selector requirements.
+                      The requirements are ANDed.
+                    items:
+                      description: A label selector requirement is a selector that
+                        contains values, a key, and an operator that relates the key
+                        and values.
+                      properties:
+                        key:
+                          description: key is the label key that the selector applies
+                            to.
+                          type: string
+                        operator:
+                          description: operator represents a key's relationship to
+                            a set of values. Valid operators are In, NotIn, Exists
+                            and DoesNotExist.
+                          type: string
+                        values:
+                          description: values is an array of string values. If the
+                            operator is In or NotIn, the values array must be non-empty.
+                            If the operator is Exists or DoesNotExist, the values
+                            array must be empty. This array is replaced during a strategic
+                            merge patch.
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - key
+                      - operator
+                      type: object
+                    type: array
+                  matchLabels:
+                    additionalProperties:
+                      type: string
+                    description: matchLabels is a map of {key,value} pairs. A single
+                      {key,value} in the matchLabels map is equivalent to an element
+                      of matchExpressions, whose key field is "key", the operator
+                      is "In", and the values array contains only "value". The requirements
+                      are ANDed.
+                    type: object
+                type: object
+                x-kubernetes-map-type: atomic
+              podSelectorEndpoints:
+                description: PodSelectorEndpoints contains information about the pods
+                  matching the podSelector
+                items:
+                  description: PodEndpoint defines the summary information for the
+                    pods
+                  properties:
+                    hostIP:
+                      description: HostIP is the IP address of the host the pod is
+                        currently running on
+                      type: string
+                    name:
+                      description: Name is the pod name
+                      type: string
+                    namespace:
+                      description: Namespace is the pod namespace
+                      type: string
+                    podIP:
+                      description: PodIP is the IP address of the pod
+                      type: string
+                  required:
+                  - hostIP
+                  - name
+                  - namespace
+                  - podIP
+                  type: object
+                type: array
+              policyRef:
+                description: PolicyRef is a reference to the Kubernetes NetworkPolicy
+                  resource.
+                properties:
+                  name:
+                    description: Name is the name of the Policy
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace of the Policy
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - policyRef
+            type: object
+          status:
+            description: PolicyEndpointStatus defines the observed state of PolicyEndpoint
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
 ---
 # Source: aws-vpc-cni/templates/serviceaccount.yaml
 apiVersion: v1
@@ -33,7 +267,27 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.13.4"
+    app.kubernetes.io/version: "v1.16.2"
+---
+# Source: aws-vpc-cni/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amazon-vpc-cni
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-node
+    app.kubernetes.io/instance: aws-vpc-cni
+    k8s-app: aws-node
+    app.kubernetes.io/version: "v1.16.2"
+data:
+  enable-windows-ipam: "false"
+  enable-network-policy-controller: "false"
+  enable-windows-prefix-delegation: "false"
+  warm-prefix-target: "0"
+  warm-ip-target: "1"
+  minimum-ip-target: "3"
+  branch-eni-cooldown: "60"
 ---
 # Source: aws-vpc-cni/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -44,7 +298,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.13.4"
+    app.kubernetes.io/version: "v1.16.2"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -74,6 +328,19 @@ rules:
     resources:
       - events
     verbs: ["create", "patch", "list"]
+  - apiGroups: ["networking.k8s.aws"]
+    resources:
+      - policyendpoints
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.aws"]
+    resources:
+      - policyendpoints/status
+    verbs: ["get"]
+  - apiGroups:
+      - vpcresources.k8s.aws
+    resources:
+      - cninodes
+    verbs: ["get", "list", "watch", "patch"]
 ---
 # Source: aws-vpc-cni/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -84,7 +351,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.13.4"
+    app.kubernetes.io/version: "v1.16.2"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -104,7 +371,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.13.4"
+    app.kubernetes.io/version: "v1.16.2"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -125,7 +392,7 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.13.4" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.16.2" }}"
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
             value: "false"
@@ -134,8 +401,8 @@ spec:
         securityContext:
             privileged: true
         resources:
-          requests:
-            cpu: 25m
+            requests:
+              cpu: 25m
         volumeMounts:
           - mountPath: /host/opt/cni/bin
             name: cni-bin-dir
@@ -150,7 +417,7 @@ spec:
 {{ end }}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.13.4" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.16.2" }}"
           ports:
             - containerPort: 61678
               name: metrics
@@ -250,7 +517,43 @@ spec:
             name: run-dir
           - mountPath: /run/xtables.lock
             name: xtables-lock
+        - name: aws-eks-nodeagent
+          image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.0.7
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          args:
+            - --enable-ipv6=false
+            - --enable-network-policy=false
+            - --enable-cloudwatch-logs=false
+            - --enable-policy-event-logs=false
+            - --metrics-bind-addr=:8162
+            - --health-probe-bind-addr=:8163
+            - --conntrack-cache-cleanup-period=300
+          resources:
+            requests:
+              cpu: 25m
+          securityContext:
+            capabilities:
+              add:
+              - NET_ADMIN
+            privileged: true
+          volumeMounts:
+          - mountPath: /host/opt/cni/bin
+            name: cni-bin-dir
+          - mountPath: /sys/fs/bpf
+            name: bpf-pin-path
+          - mountPath: /var/log/aws-routed-eni
+            name: log-dir
+          - mountPath: /var/run/aws-node
+            name: run-dir
       volumes:
+      - name: bpf-pin-path
+        hostPath:
+          path: /sys/fs/bpf
       - name: cni-bin-dir
         hostPath:
           path: /opt/cni/bin
