@@ -355,6 +355,7 @@ definition: |
   RestartSec=5
   LimitNPROC=infinity
   LimitCORE=infinity
+  LimitNOFILE=infinity
   TasksMax=infinity
   OOMScoreAdjust=-999
 

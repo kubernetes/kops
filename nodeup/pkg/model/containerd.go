@@ -203,6 +203,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 
 	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
+	manifest.Set("Service", "LimitNOFILE", "infinity")
 	manifest.Set("Service", "TasksMax", "infinity")
 
 	// make killing of processes of this unit under memory pressure very unlikely
