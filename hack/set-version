@@ -33,7 +33,7 @@ set -x
 
 NEW_RELEASE_VERSION=$1
 
-if [[ ! "${NEW_RELEASE_VERSION}" =~ ^([0-9]+[.][0-9]+)[.]([0-9]+)(-(alpha|beta)[.]([0-9]+))?$ ]]; then
+if [[ ! "${NEW_RELEASE_VERSION}" =~ ^([0-9]+[.][0-9]+)[.]([0-9]+)(-(alpha|beta|invoca)[.]([0-9]+))?$ ]]; then
   echo "syntax $0 <new-release-version>"
   echo "<new-relese-version> must be 'X.Y.Z', 'X.Y.Z-alpha.N', or 'X.Y.Z-beta.N'"
   exit 1
