@@ -75,6 +75,9 @@ func (c *KMS) CancelKeyDeletionRequest(input *CancelKeyDeletionInput) (req *requ
 //
 // Related operations: ScheduleKeyDeletion
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -269,6 +272,9 @@ func (c *KMS) ConnectCustomKeyStoreRequest(input *ConnectCustomKeyStoreInput) (r
 //   - DisconnectCustomKeyStore
 //
 //   - UpdateCustomKeyStore
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -470,6 +476,9 @@ func (c *KMS) CreateAliasRequest(input *CreateAliasInput) (req *request.Request,
 //
 //   - UpdateAlias
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -664,6 +673,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - UpdateCustomKeyStore
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -750,15 +762,14 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyUriInUseException
 //     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     and XksProxyUriPath is already associated with an external key store in the
-//     Amazon Web Services account and Region. Each external key store in an account
-//     and Region must use a unique external key store proxy API address.
+//     and XksProxyUriPath is already associated with another external key store
+//     in this Amazon Web Services Region. Each external key store in a Region must
+//     use a unique external key store proxy API address.
 //
 //   - XksProxyUriEndpointInUseException
-//     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an account and Region must
-//     use a unique external key store proxy address.
+//     The request was rejected because the XksProxyUriEndpoint is already associated
+//     with another external key store in this Amazon Web Services Region. To identify
+//     the cause, see the error message that accompanies the exception.
 //
 //   - XksProxyUriUnreachableException
 //     KMS was unable to reach the specified XksProxyUriPath. The path must be reachable
@@ -777,9 +788,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInUseException
 //     The request was rejected because the specified Amazon VPC endpoint service
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an Amazon Web Services account
-//     and Region must use a different Amazon VPC endpoint service.
+//     is already associated with another external key store in this Amazon Web
+//     Services Region. Each external key store in a Region must use a different
+//     Amazon VPC endpoint service.
 //
 //   - XksProxyVpcEndpointServiceNotFoundException
 //     The request was rejected because KMS could not find the specified VPC endpoint
@@ -790,8 +801,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInvalidConfigurationException
 //     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message and review the requirements (kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+//     does not fulfill the requirements for an external key store. To identify
+//     the cause, see the error message that accompanies the exception and review
+//     the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
@@ -801,9 +813,9 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //     to the proxy vendor.
 //
 //   - XksProxyInvalidConfigurationException
-//     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message.
+//     The request was rejected because the external key store proxy is not configured
+//     correctly. To identify the cause, see the error message that accompanies
+//     the exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/CreateCustomKeyStore
 func (c *KMS) CreateCustomKeyStore(input *CreateCustomKeyStoreInput) (*CreateCustomKeyStoreOutput, error) {
@@ -921,6 +933,9 @@ func (c *KMS) CreateGrantRequest(input *CreateGrantInput) (req *request.Request,
 //   - RetireGrant
 //
 //   - RevokeGrant
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1218,6 +1233,9 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 //
 //   - ScheduleKeyDeletion
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1329,8 +1347,8 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 //
 //   - XksKeyAlreadyInUseException
 //     The request was rejected because the (XksKeyId) is already associated with
-//     a KMS key in this external key store. Each KMS key in an external key store
-//     must be associated with a different external key.
+//     another KMS key in this external key store. Each KMS key in an external key
+//     store must be associated with a different external key.
 //
 //   - XksKeyNotFoundException
 //     The request was rejected because the external key store proxy could not find
@@ -1462,10 +1480,10 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 // or any Amazon Web Services SDK. Use the Recipient parameter to provide the
 // attestation document for the enclave. Instead of the plaintext data, the
 // response includes the plaintext data encrypted with the public key from the
-// attestation document (CiphertextForRecipient).For information about the interaction
-// between KMS and Amazon Web Services Nitro Enclaves, see How Amazon Web Services
-// Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-// in the Key Management Service Developer Guide..
+// attestation document (CiphertextForRecipient). For information about the
+// interaction between KMS and Amazon Web Services Nitro Enclaves, see How Amazon
+// Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+// in the Key Management Service Developer Guide.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
@@ -1487,6 +1505,9 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 //   - GenerateDataKeyPair
 //
 //   - ReEncrypt
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1672,6 +1693,9 @@ func (c *KMS) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request,
 //
 //   - UpdateAlias
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1827,6 +1851,9 @@ func (c *KMS) DeleteCustomKeyStoreRequest(input *DeleteCustomKeyStoreInput) (req
 //
 //   - UpdateCustomKeyStore
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1970,6 +1997,9 @@ func (c *KMS) DeleteImportedKeyMaterialRequest(input *DeleteImportedKeyMaterialI
 //   - GetParametersForImport
 //
 //   - ImportKeyMaterial
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2140,6 +2170,9 @@ func (c *KMS) DescribeCustomKeyStoresRequest(input *DescribeCustomKeyStoresInput
 //
 //   - UpdateCustomKeyStore
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2288,11 +2321,11 @@ func (c *KMS) DescribeKeyRequest(input *DescribeKeyInput) (req *request.Request,
 // signing, or generating and verifying MACs) and the algorithms that the KMS
 // key supports.
 //
-// For multi-Region keys (kms/latest/developerguide/multi-region-keys-overview.html),
+// For multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html),
 // DescribeKey displays the primary key and all related replica keys. For KMS
-// keys in CloudHSM key stores (kms/latest/developerguide/keystore-cloudhsm.html),
+// keys in CloudHSM key stores (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html),
 // it includes information about the key store, such as the key store ID and
-// the CloudHSM cluster ID. For KMS keys in external key stores (kms/latest/developerguide/keystore-external.html),
+// the CloudHSM cluster ID. For KMS keys in external key stores (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html),
 // it includes the custom key store ID and the ID of the external key.
 //
 // DescribeKey does not return the following information:
@@ -2337,6 +2370,9 @@ func (c *KMS) DescribeKeyRequest(input *DescribeKeyInput) (req *request.Request,
 //   - ListResourceTags
 //
 //   - ListRetirableGrants
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2447,6 +2483,9 @@ func (c *KMS) DisableKeyRequest(input *DisableKeyInput) (req *request.Request, o
 // (key policy)
 //
 // Related operations: EnableKey
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2592,6 +2631,9 @@ func (c *KMS) DisableKeyRotationRequest(input *DisableKeyRotationInput) (req *re
 //   - EnableKeyRotation
 //
 //   - GetKeyRotationStatus
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2752,6 +2794,9 @@ func (c *KMS) DisconnectCustomKeyStoreRequest(input *DisconnectCustomKeyStoreInp
 //
 //   - UpdateCustomKeyStore
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2879,6 +2924,9 @@ func (c *KMS) EnableKeyRequest(input *EnableKeyInput) (req *request.Request, out
 //
 // Related operations: DisableKey
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2994,7 +3042,7 @@ func (c *KMS) EnableKeyRotationRequest(input *EnableKeyRotationInput) (req *requ
 // Enables automatic rotation of the key material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
 // of the specified symmetric encryption KMS key.
 //
-// When you enable automatic rotation of acustomer managed KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk),
+// When you enable automatic rotation of a customer managed KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk),
 // KMS rotates the key material of the KMS key one year (approximately 365 days)
 // from the enable date and every year thereafter. You can monitor rotation
 // of the key material for your KMS keys in CloudTrail and Amazon CloudWatch.
@@ -3042,6 +3090,9 @@ func (c *KMS) EnableKeyRotationRequest(input *EnableKeyRotationInput) (req *requ
 //   - DisableKeyRotation
 //
 //   - GetKeyRotationStatus
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3219,6 +3270,9 @@ func (c *KMS) EncryptRequest(input *EncryptInput) (req *request.Request, output 
 //   - GenerateDataKey
 //
 //   - GenerateDataKeyPair
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3445,6 +3499,9 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 //
 //   - GenerateDataKeyWithoutPlaintext
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3582,8 +3639,8 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 // private key that is encrypted under the symmetric encryption KMS key you
 // specify. You can use the data key pair to perform asymmetric cryptography
 // and implement digital signatures outside of KMS. The bytes in the keys are
-// random; they not related to the caller or to the KMS key that is used to
-// encrypt the private key.
+// random; they are not related to the caller or to the KMS key that is used
+// to encrypt the private key.
 //
 // You can use the public key that GenerateDataKeyPair returns to encrypt data
 // or verify a signature outside of KMS. Then, store the encrypted private key
@@ -3659,6 +3716,9 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 //   - GenerateDataKeyPairWithoutPlaintext
 //
 //   - GenerateDataKeyWithoutPlaintext
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3853,6 +3913,9 @@ func (c *KMS) GenerateDataKeyPairWithoutPlaintextRequest(input *GenerateDataKeyP
 //   - GenerateDataKeyPair
 //
 //   - GenerateDataKeyWithoutPlaintext
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4060,6 +4123,9 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 //
 //   - GenerateDataKeyPairWithoutPlaintext
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4226,6 +4292,9 @@ func (c *KMS) GenerateMacRequest(input *GenerateMacInput) (req *request.Request,
 //
 // Related operations: VerifyMac
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4383,6 +4452,9 @@ func (c *KMS) GenerateRandomRequest(input *GenerateRandomInput) (req *request.Re
 // Required permissions: kms:GenerateRandom (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
 // (IAM policy)
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4510,7 +4582,10 @@ func (c *KMS) GetKeyPolicyRequest(input *GetKeyPolicyInput) (req *request.Reques
 // Required permissions: kms:GetKeyPolicy (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
 // (key policy)
 //
-// Related operations: PutKeyPolicy
+// Related operations: PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4676,6 +4751,9 @@ func (c *KMS) GetKeyRotationStatusRequest(input *GetKeyRotationStatusInput) (req
 //
 //   - EnableKeyRotation
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4800,11 +4878,11 @@ func (c *KMS) GetParametersForImportRequest(input *GetParametersForImportInput) 
 // Origin value of EXTERNAL to create a KMS key with no key material. You can
 // import key material for a symmetric encryption KMS key, HMAC KMS key, asymmetric
 // encryption KMS key, or asymmetric signing KMS key. You can also import key
-// material into a multi-Region key (kms/latest/developerguide/multi-region-keys-overview.html)
+// material into a multi-Region key (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
 // of any supported type. However, you can't import key material into a KMS
-// key in a custom key store (kms/latest/developerguide/custom-key-store-overview.html).
+// key in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
 // You can also use GetParametersForImport to get a public key and import token
-// to reimport the original key material (kms/latest/developerguide/importing-keys.html#reimport-key-material)
+// to reimport the original key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material)
 // into a KMS key whose key material expired or was deleted.
 //
 // GetParametersForImport returns the items that you need to import your key
@@ -4852,6 +4930,9 @@ func (c *KMS) GetParametersForImportRequest(input *GetParametersForImportInput) 
 //   - ImportKeyMaterial
 //
 //   - DeleteImportedKeyMaterial
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5016,6 +5097,9 @@ func (c *KMS) GetPublicKeyRequest(input *GetPublicKeyInput) (req *request.Reques
 // (key policy)
 //
 // Related operations: CreateKey
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5256,6 +5340,9 @@ func (c *KMS) ImportKeyMaterialRequest(input *ImportKeyMaterialInput) (req *requ
 //
 //   - GetParametersForImport
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -5430,6 +5517,9 @@ func (c *KMS) ListAliasesRequest(input *ListAliasesInput) (req *request.Request,
 //   - DeleteAlias
 //
 //   - UpdateAlias
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5615,6 +5705,9 @@ func (c *KMS) ListGrantsRequest(input *ListGrantsInput) (req *request.Request, o
 //
 //   - RevokeGrant
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -5799,7 +5892,10 @@ func (c *KMS) ListKeyPoliciesRequest(input *ListKeyPoliciesInput) (req *request.
 //
 //   - GetKeyPolicy
 //
-//   - PutKeyPolicy
+//   - PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5983,6 +6079,9 @@ func (c *KMS) ListKeysRequest(input *ListKeysInput) (req *request.Request, outpu
 //
 //   - ListResourceTags
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -6149,6 +6248,9 @@ func (c *KMS) ListResourceTagsRequest(input *ListResourceTagsInput) (req *reques
 //
 //   - UntagResource
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -6311,13 +6413,21 @@ func (c *KMS) ListRetirableGrantsRequest(input *ListRetirableGrantsInput) (req *
 // grants in several programming languages, see Programming grants (https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html).
 //
 // Cross-account use: You must specify a principal in your Amazon Web Services
-// account. However, this operation can return grants in any Amazon Web Services
-// account. You do not need kms:ListRetirableGrants permission (or any other
-// additional permission) in any Amazon Web Services account other than your
-// own.
+// account. This operation returns a list of grants where the retiring principal
+// specified in the ListRetirableGrants request is the same retiring principal
+// on the grant. This can include grants on KMS keys owned by other Amazon Web
+// Services accounts, but you do not need kms:ListRetirableGrants permission
+// (or any other additional permission) in any Amazon Web Services account other
+// than your own.
 //
 // Required permissions: kms:ListRetirableGrants (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
 // (IAM policy) in your Amazon Web Services account.
+//
+// KMS authorizes ListRetirableGrants requests by evaluating the caller account's
+// kms:ListRetirableGrants permissions. The authorized resource in ListRetirableGrants
+// calls is the retiring principal specified in the request. KMS does not evaluate
+// the caller's permissions to verify their access to any KMS keys or grants
+// that might be returned by the ListRetirableGrants call.
 //
 // Related operations:
 //
@@ -6328,6 +6438,9 @@ func (c *KMS) ListRetirableGrantsRequest(input *ListRetirableGrantsInput) (req *
 //   - RetireGrant
 //
 //   - RevokeGrant
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6492,6 +6605,9 @@ func (c *KMS) PutKeyPolicyRequest(input *PutKeyPolicyInput) (req *request.Reques
 // (key policy)
 //
 // Related operations: GetKeyPolicy
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6697,6 +6813,9 @@ func (c *KMS) ReEncryptRequest(input *ReEncryptInput) (req *request.Request, out
 //
 //   - GenerateDataKeyPair
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -6900,7 +7019,7 @@ func (c *KMS) ReplicateKeyRequest(input *ReplicateKeyInput) (req *request.Reques
 // If you replicate a multi-Region primary key with imported key material, the
 // replica key is created with no key material. You must import the same key
 // material that you imported into the primary key. For details, see Importing
-// key material into multi-Region keys (kms/latest/developerguide/multi-region-keys-import.html)
+// key material into multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-import.html)
 // in the Key Management Service Developer Guide.
 //
 // To convert a replica key to a primary key, use the UpdatePrimaryRegion operation.
@@ -6926,6 +7045,9 @@ func (c *KMS) ReplicateKeyRequest(input *ReplicateKeyInput) (req *request.Reques
 //   - CreateKey
 //
 //   - UpdatePrimaryRegion
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7073,7 +7195,7 @@ func (c *KMS) RetireGrantRequest(input *RetireGrantInput) (req *request.Request,
 // Cross-account use: Yes. You can retire a grant on a KMS key in a different
 // Amazon Web Services account.
 //
-// Required permissions::Permission to retire a grant is determined primarily
+// Required permissions: Permission to retire a grant is determined primarily
 // by the grant. For details, see Retiring and revoking grants (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete)
 // in the Key Management Service Developer Guide.
 //
@@ -7086,6 +7208,9 @@ func (c *KMS) RetireGrantRequest(input *RetireGrantInput) (req *request.Request,
 //   - ListRetirableGrants
 //
 //   - RevokeGrant
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7236,6 +7361,9 @@ func (c *KMS) RevokeGrantRequest(input *RevokeGrantInput) (req *request.Request,
 //
 //   - RetireGrant
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -7360,7 +7488,7 @@ func (c *KMS) ScheduleKeyDeletionRequest(input *ScheduleKeyDeletionInput) (req *
 //
 // Deleting a KMS key is a destructive and potentially dangerous operation.
 // When a KMS key is deleted, all data that was encrypted under the KMS key
-// is unrecoverable. (The only exception is a multi-Region replica key (kms/latest/developerguide/multi-region-keys-delete.html),
+// is unrecoverable. (The only exception is a multi-Region replica key (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-delete.html),
 // or an asymmetric or HMAC KMS key with imported key material (kms/latest/developerguide/importing-keys-managing.html#import-delete-key).)
 // To prevent the use of a KMS key without deleting it, use DisableKey.
 //
@@ -7405,6 +7533,9 @@ func (c *KMS) ScheduleKeyDeletionRequest(input *ScheduleKeyDeletionInput) (req *
 //   - CancelKeyDeletion
 //
 //   - DisableKey
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7565,6 +7696,9 @@ func (c *KMS) SignRequest(input *SignInput) (req *request.Request, output *SignO
 // (key policy)
 //
 // Related operations: Verify
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7744,6 +7878,9 @@ func (c *KMS) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 //
 //   - UntagResource
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -7891,6 +8028,9 @@ func (c *KMS) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 //   - ReplicateKey
 //
 //   - TagResource
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8049,6 +8189,9 @@ func (c *KMS) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request,
 //   - DeleteAlias
 //
 //   - ListAliases
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8240,6 +8383,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - DisconnectCustomKeyStore
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -8349,15 +8495,14 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyUriInUseException
 //     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     and XksProxyUriPath is already associated with an external key store in the
-//     Amazon Web Services account and Region. Each external key store in an account
-//     and Region must use a unique external key store proxy API address.
+//     and XksProxyUriPath is already associated with another external key store
+//     in this Amazon Web Services Region. Each external key store in a Region must
+//     use a unique external key store proxy API address.
 //
 //   - XksProxyUriEndpointInUseException
-//     The request was rejected because the concatenation of the XksProxyUriEndpoint
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an account and Region must
-//     use a unique external key store proxy address.
+//     The request was rejected because the XksProxyUriEndpoint is already associated
+//     with another external key store in this Amazon Web Services Region. To identify
+//     the cause, see the error message that accompanies the exception.
 //
 //   - XksProxyUriUnreachableException
 //     KMS was unable to reach the specified XksProxyUriPath. The path must be reachable
@@ -8376,9 +8521,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInUseException
 //     The request was rejected because the specified Amazon VPC endpoint service
-//     is already associated with an external key store in the Amazon Web Services
-//     account and Region. Each external key store in an Amazon Web Services account
-//     and Region must use a different Amazon VPC endpoint service.
+//     is already associated with another external key store in this Amazon Web
+//     Services Region. Each external key store in a Region must use a different
+//     Amazon VPC endpoint service.
 //
 //   - XksProxyVpcEndpointServiceNotFoundException
 //     The request was rejected because KMS could not find the specified VPC endpoint
@@ -8389,8 +8534,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //
 //   - XksProxyVpcEndpointServiceInvalidConfigurationException
 //     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message and review the requirements (kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+//     does not fulfill the requirements for an external key store. To identify
+//     the cause, see the error message that accompanies the exception and review
+//     the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
@@ -8400,9 +8546,9 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //     to the proxy vendor.
 //
 //   - XksProxyInvalidConfigurationException
-//     The request was rejected because the Amazon VPC endpoint service configuration
-//     does not fulfill the requirements for an external key store proxy. For details,
-//     see the exception message.
+//     The request was rejected because the external key store proxy is not configured
+//     correctly. To identify the cause, see the error message that accompanies
+//     the exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/UpdateCustomKeyStore
 func (c *KMS) UpdateCustomKeyStore(input *UpdateCustomKeyStoreInput) (*UpdateCustomKeyStoreOutput, error) {
@@ -8488,6 +8634,9 @@ func (c *KMS) UpdateKeyDescriptionRequest(input *UpdateKeyDescriptionInput) (req
 //   - CreateKey
 //
 //   - DescribeKey
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8667,6 +8816,9 @@ func (c *KMS) UpdatePrimaryRegionRequest(input *UpdatePrimaryRegionInput) (req *
 //
 //   - ReplicateKey
 //
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -8822,6 +8974,9 @@ func (c *KMS) VerifyRequest(input *VerifyInput) (req *request.Request, output *V
 // (key policy)
 //
 // Related operations: Sign
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8987,6 +9142,9 @@ func (c *KMS) VerifyMacRequest(input *VerifyMacInput) (req *request.Request, out
 // (key policy)
 //
 // Related operations: GenerateMac
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9985,7 +10143,7 @@ type CreateCustomKeyStoreInput struct {
 	//
 	//    * An external key store with PUBLIC_ENDPOINT connectivity cannot use the
 	//    same XksProxyUriEndpoint value as an external key store with VPC_ENDPOINT_SERVICE
-	//    connectivity in the same Amazon Web Services Region.
+	//    connectivity in this Amazon Web Services Region.
 	//
 	//    * Each external key store with VPC_ENDPOINT_SERVICE connectivity must
 	//    have its own private DNS name. The XksProxyUriEndpoint value for external
@@ -10454,8 +10612,8 @@ type CreateKeyInput struct {
 	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
-	// making the request from making a subsequent PutKeyPolicy request on the KMS
-	// key.
+	// making the request from making a subsequent PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+	// request on the KMS key.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// Creates the KMS key in the specified custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
@@ -11459,7 +11617,7 @@ type DecryptInput struct {
 	// To get the alias name and alias ARN, use ListAliases.
 	KeyId *string `min:"1" type:"string"`
 
-	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// A signed attestation document (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave-concepts.html#term-attestdoc)
 	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
 	// use with the enclave's public key. The only valid encryption algorithm is
 	// RSAES_OAEP_SHA_256.
@@ -14537,8 +14695,8 @@ type GetParametersForImportInput struct {
 	//    algorithm with the RSA_2048 wrapping key spec to wrap ECC_NIST_P521 key
 	//    material.
 	//
-	//    * RSAES_PKCS1_V1_5 (Deprecated) — Supported only for symmetric encryption
-	//    key material (and only in legacy mode).
+	//    * RSAES_PKCS1_V1_5 (Deprecated) — As of October 10, 2023, KMS does not
+	//    support the RSAES_PKCS1_V1_5 wrapping algorithm.
 	//
 	// WrappingAlgorithm is a required field
 	WrappingAlgorithm *string `type:"string" required:"true" enum:"AlgorithmSpec"`
@@ -17791,8 +17949,8 @@ type PutKeyPolicyInput struct {
 	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
-	// making the request from making a subsequent PutKeyPolicy request on the KMS
-	// key.
+	// making the request from making a subsequent PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+	// request on the KMS key.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// Sets the key policy on the specified KMS key.
@@ -18330,8 +18488,8 @@ type ReplicateKeyInput struct {
 	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
-	// making the request from making a subsequent PutKeyPolicy request on the KMS
-	// key.
+	// making the request from making a subsequent PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+	// request on the KMS key.
 	BypassPolicyLockoutSafetyCheck *bool `type:"boolean"`
 
 	// A description of the KMS key. The default value is an empty string (no description).
@@ -20662,8 +20820,8 @@ func (s *VerifyOutput) SetSigningAlgorithm(v string) *VerifyOutput {
 }
 
 // The request was rejected because the (XksKeyId) is already associated with
-// a KMS key in this external key store. Each KMS key in an external key store
-// must be associated with a different external key.
+// another KMS key in this external key store. Each KMS key in an external key
+// store must be associated with a different external key.
 type XksKeyAlreadyInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21145,9 +21303,9 @@ func (s *XksProxyIncorrectAuthenticationCredentialException) RequestID() string 
 	return s.RespMetadata.RequestID
 }
 
-// The request was rejected because the Amazon VPC endpoint service configuration
-// does not fulfill the requirements for an external key store proxy. For details,
-// see the exception message.
+// The request was rejected because the external key store proxy is not configured
+// correctly. To identify the cause, see the error message that accompanies
+// the exception.
 type XksProxyInvalidConfigurationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21278,10 +21436,9 @@ func (s *XksProxyInvalidResponseException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The request was rejected because the concatenation of the XksProxyUriEndpoint
-// is already associated with an external key store in the Amazon Web Services
-// account and Region. Each external key store in an account and Region must
-// use a unique external key store proxy address.
+// The request was rejected because the XksProxyUriEndpoint is already associated
+// with another external key store in this Amazon Web Services Region. To identify
+// the cause, see the error message that accompanies the exception.
 type XksProxyUriEndpointInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21346,9 +21503,9 @@ func (s *XksProxyUriEndpointInUseException) RequestID() string {
 }
 
 // The request was rejected because the concatenation of the XksProxyUriEndpoint
-// and XksProxyUriPath is already associated with an external key store in the
-// Amazon Web Services account and Region. Each external key store in an account
-// and Region must use a unique external key store proxy API address.
+// and XksProxyUriPath is already associated with another external key store
+// in this Amazon Web Services Region. Each external key store in a Region must
+// use a unique external key store proxy API address.
 type XksProxyUriInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21482,9 +21639,9 @@ func (s *XksProxyUriUnreachableException) RequestID() string {
 }
 
 // The request was rejected because the specified Amazon VPC endpoint service
-// is already associated with an external key store in the Amazon Web Services
-// account and Region. Each external key store in an Amazon Web Services account
-// and Region must use a different Amazon VPC endpoint service.
+// is already associated with another external key store in this Amazon Web
+// Services Region. Each external key store in a Region must use a different
+// Amazon VPC endpoint service.
 type XksProxyVpcEndpointServiceInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -21549,8 +21706,9 @@ func (s *XksProxyVpcEndpointServiceInUseException) RequestID() string {
 }
 
 // The request was rejected because the Amazon VPC endpoint service configuration
-// does not fulfill the requirements for an external key store proxy. For details,
-// see the exception message and review the requirements (kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
+// does not fulfill the requirements for an external key store. To identify
+// the cause, see the error message that accompanies the exception and review
+// the requirements (https://docs.aws.amazon.com/kms/latest/developerguide/vpc-connectivity.html#xks-vpc-requirements)
 // for Amazon VPC endpoint service connectivity for an external key store.
 type XksProxyVpcEndpointServiceInvalidConfigurationException struct {
 	_            struct{}                  `type:"structure"`

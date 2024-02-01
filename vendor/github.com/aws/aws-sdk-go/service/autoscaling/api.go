@@ -769,7 +769,7 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 // If you finish before the timeout period ends, send a callback by using the
 // CompleteLifecycleAction API call.
 //
-// For more information, see Amazon EC2 Auto Scaling lifecycle hooks (https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html)
+// For more information, see Complete a lifecycle action (https://docs.aws.amazon.com/autoscaling/ec2/userguide/completing-lifecycle-hooks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2411,6 +2411,12 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 		Name:       opDescribeInstanceRefreshes,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2475,6 +2481,57 @@ func (c *AutoScaling) DescribeInstanceRefreshesWithContext(ctx aws.Context, inpu
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeInstanceRefreshesPages iterates over the pages of a DescribeInstanceRefreshes operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeInstanceRefreshes method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeInstanceRefreshes operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceRefreshesPages(params,
+//	    func(page *autoscaling.DescribeInstanceRefreshesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeInstanceRefreshesPages(input *DescribeInstanceRefreshesInput, fn func(*DescribeInstanceRefreshesOutput, bool) bool) error {
+	return c.DescribeInstanceRefreshesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeInstanceRefreshesPagesWithContext same as DescribeInstanceRefreshesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeInstanceRefreshesPagesWithContext(ctx aws.Context, input *DescribeInstanceRefreshesInput, fn func(*DescribeInstanceRefreshesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeInstanceRefreshesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeInstanceRefreshesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstanceRefreshesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeLaunchConfigurations = "DescribeLaunchConfigurations"
@@ -2812,6 +2869,12 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 		Name:       opDescribeLoadBalancerTargetGroups,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2899,6 +2962,57 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsWithContext(ctx aws.Contex
 	return out, req.Send()
 }
 
+// DescribeLoadBalancerTargetGroupsPages iterates over the pages of a DescribeLoadBalancerTargetGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeLoadBalancerTargetGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeLoadBalancerTargetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeLoadBalancerTargetGroupsPages(params,
+//	    func(page *autoscaling.DescribeLoadBalancerTargetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeLoadBalancerTargetGroupsPages(input *DescribeLoadBalancerTargetGroupsInput, fn func(*DescribeLoadBalancerTargetGroupsOutput, bool) bool) error {
+	return c.DescribeLoadBalancerTargetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeLoadBalancerTargetGroupsPagesWithContext same as DescribeLoadBalancerTargetGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeLoadBalancerTargetGroupsPagesWithContext(ctx aws.Context, input *DescribeLoadBalancerTargetGroupsInput, fn func(*DescribeLoadBalancerTargetGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeLoadBalancerTargetGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeLoadBalancerTargetGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLoadBalancerTargetGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeLoadBalancers = "DescribeLoadBalancers"
 
 // DescribeLoadBalancersRequest generates a "aws/request.Request" representing the
@@ -2929,6 +3043,12 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 		Name:       opDescribeLoadBalancers,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -3014,6 +3134,57 @@ func (c *AutoScaling) DescribeLoadBalancersWithContext(ctx aws.Context, input *D
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeLoadBalancersPages iterates over the pages of a DescribeLoadBalancers operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeLoadBalancers method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeLoadBalancers operation.
+//	pageNum := 0
+//	err := client.DescribeLoadBalancersPages(params,
+//	    func(page *autoscaling.DescribeLoadBalancersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeLoadBalancersPages(input *DescribeLoadBalancersInput, fn func(*DescribeLoadBalancersOutput, bool) bool) error {
+	return c.DescribeLoadBalancersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeLoadBalancersPagesWithContext same as DescribeLoadBalancersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeLoadBalancersPagesWithContext(ctx aws.Context, input *DescribeLoadBalancersInput, fn func(*DescribeLoadBalancersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeLoadBalancersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeLoadBalancersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLoadBalancersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeMetricCollectionTypes = "DescribeMetricCollectionTypes"
@@ -4167,6 +4338,12 @@ func (c *AutoScaling) DescribeWarmPoolRequest(input *DescribeWarmPoolInput) (req
 		Name:       opDescribeWarmPool,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4227,6 +4404,57 @@ func (c *AutoScaling) DescribeWarmPoolWithContext(ctx aws.Context, input *Descri
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeWarmPoolPages iterates over the pages of a DescribeWarmPool operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeWarmPool method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeWarmPool operation.
+//	pageNum := 0
+//	err := client.DescribeWarmPoolPages(params,
+//	    func(page *autoscaling.DescribeWarmPoolOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeWarmPoolPages(input *DescribeWarmPoolInput, fn func(*DescribeWarmPoolOutput, bool) bool) error {
+	return c.DescribeWarmPoolPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeWarmPoolPagesWithContext same as DescribeWarmPoolPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeWarmPoolPagesWithContext(ctx aws.Context, input *DescribeWarmPoolInput, fn func(*DescribeWarmPoolOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeWarmPoolInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeWarmPoolRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeWarmPoolOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDetachInstances = "DetachInstances"
@@ -4560,7 +4788,7 @@ func (c *AutoScaling) DetachTrafficSourcesRequest(input *DetachTrafficSourcesInp
 //
 // Detaches one or more traffic sources from the specified Auto Scaling group.
 //
-// When you detach a taffic, it enters the Removing state while deregistering
+// When you detach a traffic source, it enters the Removing state while deregistering
 // the instances in the group. When all instances are deregistered, then you
 // can no longer describe the traffic source using the DescribeTrafficSources
 // API call. The instances continue to run.
@@ -6284,10 +6512,7 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 
 // StartInstanceRefresh API operation for Auto Scaling.
 //
-// Starts an instance refresh. During an instance refresh, Amazon EC2 Auto Scaling
-// performs a rolling update of instances in an Auto Scaling group. Instances
-// are terminated first and then replaced, which temporarily reduces the capacity
-// available within your Auto Scaling group.
+// Starts an instance refresh.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
@@ -6978,6 +7203,39 @@ func (s *Alarm) SetAlarmARN(v string) *Alarm {
 // SetAlarmName sets the AlarmName field's value.
 func (s *Alarm) SetAlarmName(v string) *Alarm {
 	s.AlarmName = &v
+	return s
+}
+
+// Specifies the CloudWatch alarm specification to use in an instance refresh.
+type AlarmSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The names of one or more CloudWatch alarms to monitor for the instance refresh.
+	// You can specify up to 10 alarms.
+	Alarms []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AlarmSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AlarmSpecification) GoString() string {
+	return s.String()
+}
+
+// SetAlarms sets the Alarms field's value.
+func (s *AlarmSpecification) SetAlarms(v []*string) *AlarmSpecification {
+	s.Alarms = v
 	return s
 }
 
@@ -8041,6 +8299,11 @@ type CreateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceId *string `min:"1" type:"string"`
 
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The name of the launch configuration to use to launch instances.
 	//
 	// Conditional: You must specify either a launch template (LaunchTemplate or
@@ -8219,6 +8482,11 @@ func (s *CreateAutoScalingGroupInput) Validate() error {
 	if s.VPCZoneIdentifier != nil && len(*s.VPCZoneIdentifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("VPCZoneIdentifier", 1))
 	}
+	if s.InstanceMaintenancePolicy != nil {
+		if err := s.InstanceMaintenancePolicy.Validate(); err != nil {
+			invalidParams.AddNested("InstanceMaintenancePolicy", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.LaunchTemplate != nil {
 		if err := s.LaunchTemplate.Validate(); err != nil {
 			invalidParams.AddNested("LaunchTemplate", err.(request.ErrInvalidParams))
@@ -8329,6 +8597,12 @@ func (s *CreateAutoScalingGroupInput) SetHealthCheckType(v string) *CreateAutoSc
 // SetInstanceId sets the InstanceId field's value.
 func (s *CreateAutoScalingGroupInput) SetInstanceId(v string) *CreateAutoScalingGroupInput {
 	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *CreateAutoScalingGroupInput) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *CreateAutoScalingGroupInput {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 
@@ -13344,6 +13618,9 @@ type Group struct {
 	// HealthCheckType is a required field
 	HealthCheckType *string `min:"1" type:"string" required:"true"`
 
+	// An instance maintenance policy.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The EC2 instances associated with the group.
 	Instances []*Instance `type:"list"`
 
@@ -13510,6 +13787,12 @@ func (s *Group) SetHealthCheckGracePeriod(v int64) *Group {
 // SetHealthCheckType sets the HealthCheckType field's value.
 func (s *Group) SetHealthCheckType(v string) *Group {
 	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *Group) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *Group {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 
@@ -13900,6 +14183,78 @@ func (s *InstanceDetails) SetProtectedFromScaleIn(v bool) *InstanceDetails {
 // SetWeightedCapacity sets the WeightedCapacity field's value.
 func (s *InstanceDetails) SetWeightedCapacity(v string) *InstanceDetails {
 	s.WeightedCapacity = &v
+	return s
+}
+
+// Describes an instance maintenance policy.
+//
+// For more information, see Set instance maintenance policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+// in the Amazon EC2 Auto Scaling User Guide.
+type InstanceMaintenancePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the upper threshold as a percentage of the desired capacity of
+	// the Auto Scaling group. It represents the maximum percentage of the group
+	// that can be in service and healthy, or pending, to support your workload
+	// when replacing instances. Value range is 100 to 200. After it's set, a value
+	// of -1 will clear the previously set value.
+	//
+	// Both MinHealthyPercentage and MaxHealthyPercentage must be specified, and
+	// the difference between them cannot be greater than 100. A large range increases
+	// the number of instances that can be replaced at the same time.
+	MaxHealthyPercentage *int64 `type:"integer"`
+
+	// Specifies the lower threshold as a percentage of the desired capacity of
+	// the Auto Scaling group. It represents the minimum percentage of the group
+	// to keep in service, healthy, and ready to use to support your workload when
+	// replacing instances. Value range is 0 to 100. After it's set, a value of
+	// -1 will clear the previously set value.
+	MinHealthyPercentage *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceMaintenancePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceMaintenancePolicy) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstanceMaintenancePolicy) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstanceMaintenancePolicy"}
+	if s.MaxHealthyPercentage != nil && *s.MaxHealthyPercentage < -1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxHealthyPercentage", -1))
+	}
+	if s.MinHealthyPercentage != nil && *s.MinHealthyPercentage < -1 {
+		invalidParams.Add(request.NewErrParamMinValue("MinHealthyPercentage", -1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxHealthyPercentage sets the MaxHealthyPercentage field's value.
+func (s *InstanceMaintenancePolicy) SetMaxHealthyPercentage(v int64) *InstanceMaintenancePolicy {
+	s.MaxHealthyPercentage = &v
+	return s
+}
+
+// SetMinHealthyPercentage sets the MinHealthyPercentage field's value.
+func (s *InstanceMaintenancePolicy) SetMinHealthyPercentage(v int64) *InstanceMaintenancePolicy {
+	s.MinHealthyPercentage = &v
 	return s
 }
 
@@ -18014,7 +18369,7 @@ type PutScalingPolicyInput struct {
 
 	// The amount by which to scale, based on the specified adjustment type. A positive
 	// value adds to the current capacity while a negative number removes from the
-	// current capacity. For exact capacity, you must specify a positive value.
+	// current capacity. For exact capacity, you must specify a non-negative value.
 	//
 	// Required if the policy type is SimpleScaling. (Not used with any other policy
 	// type.)
@@ -18687,8 +19042,13 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
 
+	// (Optional) The CloudWatch alarm specification. CloudWatch alarms can be used
+	// to identify any issues and fail the operation if an alarm threshold is met.
+	AlarmSpecification *AlarmSpecification `type:"structure"`
+
 	// (Optional) Indicates whether to roll back the Auto Scaling group to its previous
-	// configuration if the instance refresh fails. The default is false.
+	// configuration if the instance refresh fails or a CloudWatch alarm threshold
+	// is met. The default is false.
 	//
 	// A rollback is not supported in the following situations:
 	//
@@ -18700,6 +19060,9 @@ type RefreshPreferences struct {
 	//
 	//    * The Auto Scaling group uses the launch template's $Latest or $Default
 	//    version.
+	//
+	// For more information, see Undo changes with a rollback (https://docs.aws.amazon.com/autoscaling/ec2/userguide/instance-refresh-rollback.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	AutoRollback *bool `type:"boolean"`
 
 	// (Optional) The amount of time, in seconds, to wait after a checkpoint before
@@ -18731,14 +19094,26 @@ type RefreshPreferences struct {
 	// in all cases), or the HealthCheckGracePeriod property otherwise.
 	InstanceWarmup *int64 `type:"integer"`
 
-	// The amount of capacity in the Auto Scaling group that must pass your group's
-	// health checks to allow the operation to continue. The value is expressed
-	// as a percentage of the desired capacity of the Auto Scaling group (rounded
-	// up to the nearest integer). The default is 90.
+	// Specifies the maximum percentage of the group that can be in service and
+	// healthy, or pending, to support your workload when replacing instances. The
+	// value is expressed as a percentage of the desired capacity of the Auto Scaling
+	// group. Value range is 100 to 200.
 	//
-	// Setting the minimum healthy percentage to 100 percent limits the rate of
-	// replacement to one instance at a time. In contrast, setting it to 0 percent
-	// has the effect of replacing all instances at the same time.
+	// If you specify MaxHealthyPercentage, you must also specify MinHealthyPercentage,
+	// and the difference between them cannot be greater than 100. A larger range
+	// increases the number of instances that can be replaced at the same time.
+	//
+	// If you do not specify this property, the default is 100 percent, or the percentage
+	// set in the instance maintenance policy for the Auto Scaling group, if defined.
+	MaxHealthyPercentage *int64 `min:"100" type:"integer"`
+
+	// Specifies the minimum percentage of the group to keep in service, healthy,
+	// and ready to use to support your workload to allow the operation to continue.
+	// The value is expressed as a percentage of the desired capacity of the Auto
+	// Scaling group. Value range is 0 to 100.
+	//
+	// If you do not specify this property, the default is 90 percent, or the percentage
+	// set in the instance maintenance policy for the Auto Scaling group, if defined.
 	MinHealthyPercentage *int64 `type:"integer"`
 
 	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
@@ -18812,6 +19187,25 @@ func (s RefreshPreferences) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RefreshPreferences) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RefreshPreferences"}
+	if s.MaxHealthyPercentage != nil && *s.MaxHealthyPercentage < 100 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxHealthyPercentage", 100))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAlarmSpecification sets the AlarmSpecification field's value.
+func (s *RefreshPreferences) SetAlarmSpecification(v *AlarmSpecification) *RefreshPreferences {
+	s.AlarmSpecification = v
+	return s
+}
+
 // SetAutoRollback sets the AutoRollback field's value.
 func (s *RefreshPreferences) SetAutoRollback(v bool) *RefreshPreferences {
 	s.AutoRollback = &v
@@ -18833,6 +19227,12 @@ func (s *RefreshPreferences) SetCheckpointPercentages(v []*int64) *RefreshPrefer
 // SetInstanceWarmup sets the InstanceWarmup field's value.
 func (s *RefreshPreferences) SetInstanceWarmup(v int64) *RefreshPreferences {
 	s.InstanceWarmup = &v
+	return s
+}
+
+// SetMaxHealthyPercentage sets the MaxHealthyPercentage field's value.
+func (s *RefreshPreferences) SetMaxHealthyPercentage(v int64) *RefreshPreferences {
+	s.MaxHealthyPercentage = &v
 	return s
 }
 
@@ -18957,7 +19357,9 @@ type RollbackInstanceRefreshInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the Auto Scaling group.
-	AutoScalingGroupName *string `min:"1" type:"string"`
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -18981,6 +19383,9 @@ func (s RollbackInstanceRefreshInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *RollbackInstanceRefreshInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "RollbackInstanceRefreshInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
 	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
 	}
@@ -19890,14 +20295,17 @@ type StartInstanceRefreshInput struct {
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
 	// Sets your preferences for the instance refresh so that it performs as expected
-	// when you start it. Includes the instance warmup time, the minimum healthy
-	// percentage, and the behaviors that you want Amazon EC2 Auto Scaling to use
-	// if instances that are in Standby state or protected from scale in are found.
-	// You can also choose to enable additional features, such as the following:
+	// when you start it. Includes the instance warmup time, the minimum and maximum
+	// healthy percentages, and the behaviors that you want Amazon EC2 Auto Scaling
+	// to use if instances that are in Standby state or protected from scale in
+	// are found. You can also choose to enable additional features, such as the
+	// following:
 	//
 	//    * Auto rollback
 	//
 	//    * Checkpoints
+	//
+	//    * CloudWatch alarms
 	//
 	//    * Skip matching
 	Preferences *RefreshPreferences `type:"structure"`
@@ -19936,6 +20344,11 @@ func (s *StartInstanceRefreshInput) Validate() error {
 	if s.DesiredConfiguration != nil {
 		if err := s.DesiredConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("DesiredConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Preferences != nil {
+		if err := s.Preferences.Validate(); err != nil {
+			invalidParams.AddNested("Preferences", err.(request.ErrInvalidParams))
 		}
 	}
 
@@ -20052,12 +20465,7 @@ type StepAdjustment struct {
 
 	// The amount by which to scale, based on the specified adjustment type. A positive
 	// value adds to the current capacity while a negative number removes from the
-	// current capacity.
-	//
-	// The amount by which to scale. The adjustment is based on the value that you
-	// specified in the AdjustmentType property (either an absolute number or a
-	// percentage). A positive value adds to the current capacity and a negative
-	// number subtracts from the current capacity.
+	// current capacity. For exact capacity, you must specify a non-negative value.
 	//
 	// ScalingAdjustment is a required field
 	ScalingAdjustment *int64 `type:"integer" required:"true"`
@@ -21049,6 +21457,11 @@ type UpdateAutoScalingGroupInput struct {
 	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `type:"structure"`
+
 	// The name of the launch configuration. If you specify LaunchConfigurationName
 	// in your update request, you can't specify LaunchTemplate or MixedInstancesPolicy.
 	LaunchConfigurationName *string `min:"1" type:"string"`
@@ -21166,6 +21579,11 @@ func (s *UpdateAutoScalingGroupInput) Validate() error {
 	if s.VPCZoneIdentifier != nil && len(*s.VPCZoneIdentifier) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("VPCZoneIdentifier", 1))
 	}
+	if s.InstanceMaintenancePolicy != nil {
+		if err := s.InstanceMaintenancePolicy.Validate(); err != nil {
+			invalidParams.AddNested("InstanceMaintenancePolicy", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.LaunchTemplate != nil {
 		if err := s.LaunchTemplate.Validate(); err != nil {
 			invalidParams.AddNested("LaunchTemplate", err.(request.ErrInvalidParams))
@@ -21240,6 +21658,12 @@ func (s *UpdateAutoScalingGroupInput) SetHealthCheckGracePeriod(v int64) *Update
 // SetHealthCheckType sets the HealthCheckType field's value.
 func (s *UpdateAutoScalingGroupInput) SetHealthCheckType(v string) *UpdateAutoScalingGroupInput {
 	s.HealthCheckType = &v
+	return s
+}
+
+// SetInstanceMaintenancePolicy sets the InstanceMaintenancePolicy field's value.
+func (s *UpdateAutoScalingGroupInput) SetInstanceMaintenancePolicy(v *InstanceMaintenancePolicy) *UpdateAutoScalingGroupInput {
+	s.InstanceMaintenancePolicy = v
 	return s
 }
 

@@ -241,6 +241,12 @@ func (c *EventBridge) CreateApiDestinationRequest(input *CreateApiDestinationInp
 // Creates an API destination, which is an HTTP invocation endpoint configured
 // as a target for events.
 //
+// API destinations do not support private destinations, such as interface VPC
+// endpoints.
+//
+// For more information, see API destinations (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
+// in the EventBridge User Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -727,13 +733,21 @@ func (c *EventBridge) CreatePartnerEventSourceRequest(input *CreatePartnerEventS
 //
 // partner_name/event_namespace/event_name
 //
-// partner_name is determined during partner registration and identifies the
-// partner to Amazon Web Services customers. event_namespace is determined by
-// the partner and is a way for the partner to categorize their events. event_name
-// is determined by the partner, and should uniquely identify an event-generating
-// resource within the partner system. The combination of event_namespace and
-// event_name should help Amazon Web Services customers decide whether to create
-// an event bus to receive these events.
+//   - partner_name is determined during partner registration, and identifies
+//     the partner to Amazon Web Services customers.
+//
+//   - event_namespace is determined by the partner, and is a way for the partner
+//     to categorize their events.
+//
+//   - event_name is determined by the partner, and should uniquely identify
+//     an event-generating resource within the partner system. The event_name
+//     must be unique across all Amazon Web Services customers. This is because
+//     the event source is a shared resource between the partner and customer
+//     accounts, and each partner event source unique in the partner account.
+//
+// The combination of event_namespace and event_name should help Amazon Web
+// Services customers decide whether to create an event bus to receive these
+// events.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1893,7 +1907,7 @@ func (c *EventBridge) DescribeEndpointRequest(input *DescribeEndpointInput) (req
 // Get the information about an existing global endpoint. For more information
 // about global endpoints, see Making applications Regional-fault tolerant with
 // global endpoints and event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
-// in the Amazon EventBridge User Guide..
+// in the Amazon EventBridge User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2854,7 +2868,7 @@ func (c *EventBridge) ListEndpointsRequest(input *ListEndpointsInput) (req *requ
 // List the global endpoints associated with this account. For more information
 // about global endpoints, see Making applications Regional-fault tolerant with
 // global endpoints and event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
-// in the Amazon EventBridge User Guide..
+// in the Amazon EventBridge User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3348,6 +3362,8 @@ func (c *EventBridge) ListRuleNamesByTargetRequest(input *ListRuleNamesByTargetI
 // Lists the rules for the specified target. You can see which of the rules
 // in Amazon EventBridge can invoke a specific target in your account.
 //
+// The maximum number of results per page for requests is 100.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3430,6 +3446,8 @@ func (c *EventBridge) ListRulesRequest(input *ListRulesInput) (req *request.Requ
 //
 // Lists your Amazon EventBridge rules. You can either list all the rules or
 // you can provide a prefix to match to the rule names.
+//
+// The maximum number of results per page for requests is 100.
 //
 // ListRules does not list the targets of a rule. To see the targets associated
 // with a rule, use ListTargetsByRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html).
@@ -3599,6 +3617,8 @@ func (c *EventBridge) ListTargetsByRuleRequest(input *ListTargetsByRuleInput) (r
 //
 // Lists the targets assigned to the specified rule.
 //
+// The maximum number of results per page for requests is 100.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3682,6 +3702,15 @@ func (c *EventBridge) PutEventsRequest(input *PutEventsInput) (req *request.Requ
 // Sends custom events to Amazon EventBridge so that they can be matched to
 // rules.
 //
+// The maximum size for a PutEvents event entry is 256 KB. Entry size is calculated
+// including the event and any necessary characters and keys of the JSON representation
+// of the event. To learn more, see Calculating PutEvents event entry size (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html)
+// in the Amazon EventBridge User Guide
+//
+// PutEvents accepts the data in JSON format. For the JSON number (integer)
+// data type, the constraints are: a minimum value of -9,223,372,036,854,775,808
+// and a maximum value of 9,223,372,036,854,775,807.
+//
 // PutEvents will only process nested JSON up to 1100 levels deep.
 //
 // This AWS SDK does not support calling multi-region endpoints with SigV4a authentication.
@@ -3764,6 +3793,10 @@ func (c *EventBridge) PutPartnerEventsRequest(input *PutPartnerEventsInput) (req
 //
 // This is used by SaaS partners to write events to a customer's partner event
 // bus. Amazon Web Services customers do not use this operation.
+//
+// For information on calculating event batch size, see Calculating EventBridge
+// PutEvents event entry size (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html)
+// in the EventBridge User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4117,72 +4150,24 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 // Targets are the resources that are invoked when a rule is triggered.
 //
+// The maximum number of entries per request is 10.
+//
 // Each rule can have up to five (5) targets associated with it at one time.
 //
-// You can configure the following as targets for Events:
-//
-//   - API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
-//
-//   - API Gateway (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-gateway-target.html)
-//
-//   - Batch job queue
-//
-//   - CloudWatch group
-//
-//   - CodeBuild project
-//
-//   - CodePipeline
-//
-//   - EC2 CreateSnapshot API call
-//
-//   - EC2 Image Builder
-//
-//   - EC2 RebootInstances API call
-//
-//   - EC2 StopInstances API call
-//
-//   - EC2 TerminateInstances API call
-//
-//   - ECS task
-//
-//   - Event bus in a different account or Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cross-account.html)
-//
-//   - Event bus in the same account and Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-bus-to-bus.html)
-//
-//   - Firehose delivery stream
-//
-//   - Glue workflow
-//
-//   - Incident Manager response plan (https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-creation.html#incident-tracking-auto-eventbridge)
-//
-//   - Inspector assessment template
-//
-//   - Kinesis stream
-//
-//   - Lambda function
-//
-//   - Redshift cluster
-//
-//   - Redshift Serverless workgroup
-//
-//   - SageMaker Pipeline
-//
-//   - SNS topic
-//
-//   - SQS queue
-//
-//   - Step Functions state machine
-//
-//   - Systems Manager Automation
-//
-//   - Systems Manager OpsItem
-//
-//   - Systems Manager Run Command
+// For a list of services you can configure as targets for events, see EventBridge
+// targets (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-targets.html)
+// in the Amazon EventBridge User Guide.
 //
 // Creating rules with built-in targets is supported only in the Amazon Web
-// Services Management Console. The built-in targets are EC2 CreateSnapshot
-// API call, EC2 RebootInstances API call, EC2 StopInstances API call, and EC2
-// TerminateInstances API call.
+// Services Management Console. The built-in targets are:
+//
+//   - Amazon EBS CreateSnapshot API call
+//
+//   - Amazon EC2 RebootInstances API call
+//
+//   - Amazon EC2 StopInstances API call
+//
+//   - Amazon EC2 TerminateInstances API call
 //
 // For some target types, PutTargets provides target-specific parameters. If
 // the target is a Kinesis data stream, you can optionally specify which shard
@@ -4191,11 +4176,16 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // field.
 //
 // To be able to make API calls against the resources that you own, Amazon EventBridge
-// needs the appropriate permissions. For Lambda and Amazon SNS resources, EventBridge
-// relies on resource-based policies. For EC2 instances, Kinesis Data Streams,
-// Step Functions state machines and API Gateway APIs, EventBridge relies on
-// IAM roles that you specify in the RoleARN argument in PutTargets. For more
-// information, see Authentication and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
+// needs the appropriate permissions:
+//
+//   - For Lambda and Amazon SNS resources, EventBridge relies on resource-based
+//     policies.
+//
+//   - For EC2 instances, Kinesis Data Streams, Step Functions state machines
+//     and API Gateway APIs, EventBridge relies on IAM roles that you specify
+//     in the RoleARN argument in PutTargets.
+//
+// For more information, see Authentication and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
 // in the Amazon EventBridge User Guide.
 //
 // If another Amazon Web Services account is in the same region and has granted
@@ -4217,6 +4207,10 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // permissions in the Target structure. For more information, see Sending and
 // Receiving Events Between Amazon Web Services Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
 // in the Amazon EventBridge User Guide.
+//
+// If you have an IAM role on a cross-account event bus target, a PutTargets
+// call without a role on the same target (same Id and Arn) will not remove
+// the role.
 //
 // For more information about enabling cross-account events, see PutPermission
 // (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutPermission.html).
@@ -4455,6 +4449,8 @@ func (c *EventBridge) RemoveTargetsRequest(input *RemoveTargetsInput) (req *requ
 // time. If that happens, FailedEntryCount is non-zero in the response and each
 // entry in FailedEntries provides the ID of the failed target and the error
 // code.
+//
+// The maximum number of entries per request is 10.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5212,7 +5208,7 @@ func (c *EventBridge) UpdateEndpointRequest(input *UpdateEndpointInput) (req *re
 // Update an existing endpoint. For more information about global endpoints,
 // see Making applications Regional-fault tolerant with global endpoints and
 // event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
-// in the Amazon EventBridge User Guide..
+// in the Amazon EventBridge User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5426,6 +5422,60 @@ func (s *ApiDestination) SetLastModifiedTime(v time.Time) *ApiDestination {
 // SetName sets the Name field's value.
 func (s *ApiDestination) SetName(v string) *ApiDestination {
 	s.Name = &v
+	return s
+}
+
+// Contains the GraphQL operation to be parsed and executed, if the event target
+// is an AppSync API.
+type AppSyncParameters struct {
+	_ struct{} `type:"structure"`
+
+	// The GraphQL operation; that is, the query, mutation, or subscription to be
+	// parsed and executed by the GraphQL service.
+	//
+	// For more information, see Operations (https://docs.aws.amazon.com/appsync/latest/devguide/graphql-architecture.html#graphql-operations)
+	// in the AppSync User Guide.
+	//
+	// GraphQLOperation is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppSyncParameters's
+	// String and GoString methods.
+	GraphQLOperation *string `min:"1" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppSyncParameters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppSyncParameters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AppSyncParameters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AppSyncParameters"}
+	if s.GraphQLOperation != nil && len(*s.GraphQLOperation) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GraphQLOperation", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphQLOperation sets the GraphQLOperation field's value.
+func (s *AppSyncParameters) SetGraphQLOperation(v string) *AppSyncParameters {
+	s.GraphQLOperation = &v
 	return s
 }
 
@@ -6311,7 +6361,11 @@ type ConnectionBodyParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionBodyParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6362,7 +6416,11 @@ type ConnectionHeaderParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionHeaderParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6559,7 +6617,11 @@ type ConnectionQueryStringParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key for the query string parameter.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionQueryStringParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6939,8 +7001,12 @@ type CreateConnectionApiKeyAuthRequestParameters struct {
 
 	// The value for the API key to use for authorization.
 	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// ApiKeyValue is a required field
-	ApiKeyValue *string `min:"1" type:"string" required:"true"`
+	ApiKeyValue *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -7091,8 +7157,12 @@ type CreateConnectionBasicAuthRequestParameters struct {
 
 	// The password associated with the user name to use for Basic authorization.
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"1" type:"string" required:"true"`
+	Password *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	//
@@ -7258,8 +7328,12 @@ type CreateConnectionOAuthClientRequestParameters struct {
 	// The client secret associated with the client ID to use for OAuth authorization
 	// for the connection.
 	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	//
 	// ClientSecret is a required field
-	ClientSecret *string `min:"1" type:"string" required:"true"`
+	ClientSecret *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -13645,21 +13719,34 @@ type PutEventsRequestEntry struct {
 	_ struct{} `type:"structure"`
 
 	// A valid JSON object. There is no other schema imposed. The JSON object may
-	// contain fields and nested subobjects.
+	// contain fields and nested sub-objects.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Detail *string `type:"string"`
 
 	// Free-form string, with a maximum of 128 characters, used to decide what fields
 	// to expect in the event detail.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	DetailType *string `type:"string"`
 
 	// The name or ARN of the event bus to receive the event. Only the rules that
 	// are associated with this event bus are used to match the event. If you omit
 	// this, the default event bus is used.
 	//
-	// If you're using a global endpoint with a custom bus, you must enter the name,
-	// not the ARN, of the event bus in either the primary or secondary Region here
-	// and the corresponding event bus in the other Region will be determined based
-	// on the endpoint referenced by the EndpointId.
+	// If you're using a global endpoint with a custom bus, you can enter either
+	// the name or Amazon Resource Name (ARN) of the event bus in either the primary
+	// or secondary Region here. EventBridge then determines the corresponding event
+	// bus in the other Region based on the endpoint referenced by the EndpointId.
+	// Specifying the event bus ARN is preferred.
 	EventBusName *string `min:"1" type:"string"`
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
@@ -13667,6 +13754,12 @@ type PutEventsRequestEntry struct {
 	Resources []*string `type:"list"`
 
 	// The source of the event.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Source *string `type:"string"`
 
 	// The time stamp of the event, per RFC3339 (https://www.rfc-editor.org/rfc/rfc3339.txt).
@@ -13758,12 +13851,46 @@ func (s *PutEventsRequestEntry) SetTraceHeader(v string) *PutEventsRequestEntry 
 	return s
 }
 
-// Represents an event that failed to be submitted. For information about the
-// errors that are common to all actions, see Common Errors (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html).
+// Represents the results of an event submitted to an event bus.
+//
+// If the submission was successful, the entry has the event ID in it. Otherwise,
+// you can use the error code and error message to identify the problem with
+// the entry.
+//
+// For information about the errors that are common to all actions, see Common
+// Errors (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html).
 type PutEventsResultEntry struct {
 	_ struct{} `type:"structure"`
 
 	// The error code that indicates why the event submission failed.
+	//
+	// Retryable errors include:
+	//
+	//    * InternalFailure (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
+	//    The request processing has failed because of an unknown error, exception
+	//    or failure.
+	//
+	//    * ThrottlingException (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
+	//    The request was denied due to request throttling.
+	//
+	// Non-retryable errors include:
+	//
+	//    * AccessDeniedException (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
+	//    You do not have sufficient access to perform this action.
+	//
+	//    * InvalidAccountIdException The account ID provided is not valid.
+	//
+	//    * InvalidArgument A specified parameter is not valid.
+	//
+	//    * MalformedDetail The JSON provided is not valid.
+	//
+	//    * RedactionFailure Redacting the CloudTrail event failed.
+	//
+	//    * NotAuthorizedForSourceException You do not have permissions to publish
+	//    events with this source onto this event bus.
+	//
+	//    * NotAuthorizedForDetailTypeException You do not have permissions to publish
+	//    events with this detail type onto this event bus.
 	ErrorCode *string `type:"string"`
 
 	// The error message that explains why the event submission failed.
@@ -13871,8 +13998,13 @@ func (s *PutPartnerEventsInput) SetEntries(v []*PutPartnerEventsRequestEntry) *P
 type PutPartnerEventsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of events from this operation that were successfully written to
-	// the partner event bus.
+	// The results for each event entry the partner submitted in this request. If
+	// the event was successfully submitted, the entry has the event ID in it. Otherwise,
+	// you can use the error code and error message to identify the problem with
+	// the entry.
+	//
+	// For each record, the index of the response element is the same as the index
+	// in the request array.
 	Entries []*PutPartnerEventsResultEntry `type:"list"`
 
 	// The number of events from this operation that could not be written to the
@@ -13915,11 +14047,23 @@ type PutPartnerEventsRequestEntry struct {
 	_ struct{} `type:"structure"`
 
 	// A valid JSON string. There is no other schema imposed. The JSON string may
-	// contain fields and nested subobjects.
+	// contain fields and nested sub-objects.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Detail *string `type:"string"`
 
 	// A free-form string, with a maximum of 128 characters, used to decide what
 	// fields to expect in the event detail.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	DetailType *string `type:"string"`
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
@@ -13927,6 +14071,12 @@ type PutPartnerEventsRequestEntry struct {
 	Resources []*string `type:"list"`
 
 	// The event source that is generating the entry.
+	//
+	// Detail, DetailType, and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request
+	// that do not include each of those properties, EventBridge fails that entry.
+	// If you submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Source *string `min:"1" type:"string"`
 
 	// The date and time of the event.
@@ -13994,7 +14144,10 @@ func (s *PutPartnerEventsRequestEntry) SetTime(v time.Time) *PutPartnerEventsReq
 	return s
 }
 
-// Represents an event that a partner tried to generate, but failed.
+// The result of an event entry the partner submitted in this request. If the
+// event was successfully submitted, the entry has the event ID in it. Otherwise,
+// you can use the error code and error message to identify the problem with
+// the entry.
 type PutPartnerEventsResultEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -14543,8 +14696,8 @@ func (s *PutTargetsResultEntry) SetTargetId(v string) *PutTargetsResultEntry {
 }
 
 // These are custom parameters to be used when the target is a Amazon Redshift
-// cluster or Redshift Serverless workgroup to invoke the Amazon Redshift Data
-// API ExecuteStatement based on EventBridge events.
+// cluster to invoke the Amazon Redshift Data API ExecuteStatement based on
+// EventBridge events.
 type RedshiftDataParameters struct {
 	_ struct{} `type:"structure"`
 
@@ -14554,8 +14707,6 @@ type RedshiftDataParameters struct {
 	Database *string `min:"1" type:"string" required:"true"`
 
 	// The database user name. Required when authenticating using temporary credentials.
-	//
-	// Do not provide this parameter when connecting to a Redshift Serverless workgroup.
 	DbUser *string `min:"1" type:"string"`
 
 	// The name or ARN of the secret that enables access to the database. Required
@@ -14569,7 +14720,11 @@ type RedshiftDataParameters struct {
 	// String and GoString methods.
 	Sql *string `min:"1" type:"string" sensitive:"true"`
 
-	// A list of SQLs.
+	// One or more SQL statements to run. The SQL statements are run as a single
+	// transaction. They run serially in the order of the array. Subsequent SQL
+	// statements don't start until the previous statement in the array completes.
+	// If any SQL statement fails, then because they are run as one transaction,
+	// all work is rolled back.
 	//
 	// Sqls is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by RedshiftDataParameters's
@@ -16189,6 +16344,10 @@ func (s TagResourceOutput) GoString() string {
 type Target struct {
 	_ struct{} `type:"structure"`
 
+	// Contains the GraphQL operation to be parsed and executed, if the event target
+	// is an AppSync API.
+	AppSyncParameters *AppSyncParameters `type:"structure"`
+
 	// The Amazon Resource Name (ARN) of the target.
 	//
 	// Arn is a required field
@@ -16318,6 +16477,11 @@ func (s *Target) Validate() error {
 	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
 	}
+	if s.AppSyncParameters != nil {
+		if err := s.AppSyncParameters.Validate(); err != nil {
+			invalidParams.AddNested("AppSyncParameters", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.BatchParameters != nil {
 		if err := s.BatchParameters.Validate(); err != nil {
 			invalidParams.AddNested("BatchParameters", err.(request.ErrInvalidParams))
@@ -16368,6 +16532,12 @@ func (s *Target) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAppSyncParameters sets the AppSyncParameters field's value.
+func (s *Target) SetAppSyncParameters(v *AppSyncParameters) *Target {
+	s.AppSyncParameters = v
+	return s
 }
 
 // SetArn sets the Arn field's value.
@@ -16962,7 +17132,11 @@ type UpdateConnectionApiKeyAuthRequestParameters struct {
 	ApiKeyName *string `min:"1" type:"string"`
 
 	// The value associated with teh API key to use for authorization.
-	ApiKeyValue *string `min:"1" type:"string"`
+	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	ApiKeyValue *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -17104,7 +17278,11 @@ type UpdateConnectionBasicAuthRequestParameters struct {
 	_ struct{} `type:"structure"`
 
 	// The password associated with the user name to use for Basic authorization.
-	Password *string `min:"1" type:"string"`
+	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	Password *string `min:"1" type:"string" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	Username *string `min:"1" type:"string"`
@@ -17245,7 +17423,11 @@ type UpdateConnectionOAuthClientRequestParameters struct {
 	ClientID *string `min:"1" type:"string"`
 
 	// The client secret assciated with the client ID to use for OAuth authorization.
-	ClientSecret *string `min:"1" type:"string"`
+	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	ClientSecret *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -18016,6 +18198,9 @@ const (
 
 	// RuleStateDisabled is a RuleState enum value
 	RuleStateDisabled = "DISABLED"
+
+	// RuleStateEnabledWithAllCloudtrailManagementEvents is a RuleState enum value
+	RuleStateEnabledWithAllCloudtrailManagementEvents = "ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS"
 )
 
 // RuleState_Values returns all elements of the RuleState enum
@@ -18023,5 +18208,6 @@ func RuleState_Values() []string {
 	return []string{
 		RuleStateEnabled,
 		RuleStateDisabled,
+		RuleStateEnabledWithAllCloudtrailManagementEvents,
 	}
 }
