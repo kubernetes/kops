@@ -59,14 +59,14 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 					Version: fi.PtrTo("1.1.5"),
 				}
 			case b.IsKubernetesGTE("1.27.2"):
-				containerd.Version = fi.PtrTo("1.7.7")
+				containerd.Version = fi.PtrTo("1.7.13")
 				containerd.Runc = &kops.Runc{
-					Version: fi.PtrTo("1.1.9"),
+					Version: fi.PtrTo("1.1.12"),
 				}
 			default:
-				containerd.Version = fi.PtrTo("1.6.24")
+				containerd.Version = fi.PtrTo("1.6.28")
 				containerd.Runc = &kops.Runc{
-					Version: fi.PtrTo("1.1.9"),
+					Version: fi.PtrTo("1.1.12"),
 				}
 			}
 		}
