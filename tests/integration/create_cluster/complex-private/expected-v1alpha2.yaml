@@ -137,7 +137,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: bastions
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -164,7 +164,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -184,7 +184,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -204,7 +204,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -224,7 +224,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -246,7 +246,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -267,7 +267,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
