@@ -27,8 +27,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.11
-    version: 1.7.12
+      version: 1.1.12
+    version: 1.7.13
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
