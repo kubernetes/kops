@@ -1065,7 +1065,7 @@ resource "aws_s3_object" "privateciliumadvanced-example-com-addons-limit-range-a
 resource "aws_s3_object" "privateciliumadvanced-example-com-addons-networking-cilium-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privateciliumadvanced.example.com-addons-networking.cilium.io-k8s-1.16_content")
-  key                    = "clusters.example.com/privateciliumadvanced.example.com/addons/networking.cilium.io/k8s-1.16-v1.14.yaml"
+  key                    = "clusters.example.com/privateciliumadvanced.example.com/addons/networking.cilium.io/k8s-1.16-v1.15.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
