@@ -193,6 +193,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Type:              fi.PtrTo("network"),
 		}
 
+		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
+		// Limiting this to clusters using NoneDNS because load balancer creation is quite slow.
+		if b.Cluster.UsesNoneDNS() {
+			nlb.SetWaitForLoadBalancerReady(true)
+		}
+
 		clb = &awstasks.ClassicLoadBalancer{
 			Name:      fi.PtrTo("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
