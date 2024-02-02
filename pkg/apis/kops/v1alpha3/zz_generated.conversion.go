@@ -5755,6 +5755,8 @@ func autoConvert_v1alpha3_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
+	out.ImageMinimumGCAge = in.ImageMinimumGCAge
+	out.ImageMaximumGCAge = in.ImageMaximumGCAge
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.ImagePullProgressDeadline = in.ImagePullProgressDeadline
@@ -5857,6 +5859,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha3_KubeletConfigSpec(in *kops.K
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
+	out.ImageMinimumGCAge = in.ImageMinimumGCAge
+	out.ImageMaximumGCAge = in.ImageMaximumGCAge
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.ImagePullProgressDeadline = in.ImagePullProgressDeadline
