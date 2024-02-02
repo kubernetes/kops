@@ -218,7 +218,7 @@ spec:
     emptyDir: {}
 `
 
-const kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:1.27.2"
+const kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:1.27.3"
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instanceGroupName string) (*v1.Pod, error) {
