@@ -585,6 +585,17 @@ spec:
                       disk usage to garbage collect to.
                     format: int32
                     type: integer
+                  imageMaximumGCAge:
+                    description: 'imageMaximumGCAge is the maximum age an image can
+                      be unused before it is garbage collected. The default of this
+                      field is "0s", which disables this field--meaning images won''t
+                      be garbage collected based on being unused for too long. Default:
+                      "0s" (disabled)'
+                    type: string
+                  imageMinimumGCAge:
+                    description: 'imageMinimumGCAge is the minimum age for an unused
+                      image before it is garbage collected. Default: "2m"'
+                    type: string
                   imagePullProgressDeadline:
                     description: ImagePullProgressDeadline is the timeout for image
                       pulls If no pulling progress is made before this deadline, the
