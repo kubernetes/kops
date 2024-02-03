@@ -1,5 +1,5 @@
 {{- with .CloudProvider.AWS.LoadBalancerController }}
-# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.6.2/v2_6_2_full.yaml
+# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.7.0/v2_7_0_full.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -895,7 +895,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: public.ecr.aws/eks/aws-load-balancer-controller:{{ or .Version "v2.6.2" }}
+        image: public.ecr.aws/eks/aws-load-balancer-controller:{{ or .Version "v2.7.0" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -1149,12 +1149,13 @@ webhooks:
     - ingresses
   sideEffects: None
 ---
+# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.7.0/v2_7_0_ingclass.yaml
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: IngressClassParams
 metadata:
   labels:
     app.kubernetes.io/name: aws-load-balancer-controller
-  name: alb 
+  name: alb
 ---
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
@@ -1170,7 +1171,6 @@ spec:
     name: alb
 ---
 apiVersion: policy/v1
-
 kind: PodDisruptionBudget
 metadata:
   name: aws-load-balancer-controller

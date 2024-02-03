@@ -939,7 +939,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: public.ecr.aws/eks/aws-load-balancer-controller:v2.6.2
+        image: public.ecr.aws/eks/aws-load-balancer-controller:v2.7.0
         livenessProbe:
           failureThreshold: 2
           httpGet:
