@@ -40,7 +40,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.14.5"
+		c.Version = "v1.15.0"
 	}
 
 	if c.EnableEndpointHealthChecking == nil {

@@ -35,7 +35,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 		klog.Infof("found cilium (%q) in addons; won't use builtin", key)
 	} else {
 		id := "k8s-1.16"
-		location := key + "/" + id + "-v1.14.yaml"
+		location := key + "/" + id + "-v1.15.yaml"
 
 		addon := &api.AddonSpec{
 			Name:               fi.PtrTo(key),
