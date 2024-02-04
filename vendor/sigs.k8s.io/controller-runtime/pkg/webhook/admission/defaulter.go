@@ -27,12 +27,14 @@ import (
 )
 
 // Defaulter defines functions for setting defaults on resources.
+// Deprecated: Ue CustomDefaulter instead.
 type Defaulter interface {
 	runtime.Object
 	Default()
 }
 
 // DefaultingWebhookFor creates a new Webhook for Defaulting the provided type.
+// Deprecated: Use WithCustomDefaulter instead.
 func DefaultingWebhookFor(scheme *runtime.Scheme, defaulter Defaulter) *Webhook {
 	return &Webhook{
 		Handler: &mutatingHandler{defaulter: defaulter, decoder: NewDecoder(scheme)},

@@ -33,7 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/cache/internal"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -83,6 +83,9 @@ type Informers interface {
 	// of the underlying object.
 	GetInformerForKind(ctx context.Context, gvk schema.GroupVersionKind, opts ...InformerGetOption) (Informer, error)
 
+	// RemoveInformer removes an informer entry and stops it if it was running.
+	RemoveInformer(ctx context.Context, obj client.Object) error
+
 	// Start runs all the informers known to this cache until the context is closed.
 	// It blocks.
 	Start(ctx context.Context) error
@@ -121,6 +124,8 @@ type Informer interface {
 
 	// HasSynced return true if the informers underlying store has synced.
 	HasSynced() bool
+	// IsStopped returns true if the informer has been stopped.
+	IsStopped() bool
 }
 
 // AllNamespaces should be used as the map key to deliminate namespace settings
@@ -198,6 +203,12 @@ type Options struct {
 	// DefaultTransform will be used as transform for all object types
 	// unless there is already one set in ByObject or DefaultNamespaces.
 	DefaultTransform toolscache.TransformFunc
+
+	// DefaultWatchErrorHandler will be used to the WatchErrorHandler which is called
+	// whenever ListAndWatch drops the connection with an error.
+	//
+	// After calling this handler, the informer will backoff and retry.
+	DefaultWatchErrorHandler toolscache.WatchErrorHandler
 
 	// DefaultUnsafeDisableDeepCopy is the default for UnsafeDisableDeepCopy
 	// for everything that doesn't specify this.
@@ -369,7 +380,8 @@ func newCache(restConfig *rest.Config, opts Options) newCacheFunc {
 					Field: config.FieldSelector,
 				},
 				Transform:             config.Transform,
-				UnsafeDisableDeepCopy: pointer.BoolDeref(config.UnsafeDisableDeepCopy, false),
+				WatchErrorHandler:     opts.DefaultWatchErrorHandler,
+				UnsafeDisableDeepCopy: ptr.Deref(config.UnsafeDisableDeepCopy, false),
 				NewInformer:           opts.newInformer,
 			}),
 			readerFailOnMissingInformer: opts.ReaderFailOnMissingInformer,
@@ -400,7 +412,7 @@ func defaultOpts(config *rest.Config, opts Options) (Options, error) {
 	// Construct a new Mapper if unset
 	if opts.Mapper == nil {
 		var err error
-		opts.Mapper, err = apiutil.NewDiscoveryRESTMapper(config, opts.HTTPClient)
+		opts.Mapper, err = apiutil.NewDynamicRESTMapper(config, opts.HTTPClient)
 		if err != nil {
 			return Options{}, fmt.Errorf("could not create RESTMapper from config: %w", err)
 		}

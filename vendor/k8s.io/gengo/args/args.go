@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -121,7 +120,9 @@ func (g *GeneratorArgs) LoadGoBoilerplate() ([]byte, error) {
 		if len(b) != 0 {
 			b = append(b, byte('\n'))
 		}
-		generatorName := path.Base(os.Args[0])
+		generatorName := filepath.Base(os.Args[0])
+		// Strip the extension from the name to normalize output between *nix and Windows.
+		generatorName = generatorName[:len(generatorName)-len(filepath.Ext(generatorName))]
 		generatedByComment := strings.Replace(g.GeneratedByCommentTemplate, "GENERATOR_NAME", generatorName, -1)
 		s := fmt.Sprintf("%s\n\n", generatedByComment)
 		b = append(b, []byte(s)...)

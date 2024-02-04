@@ -376,6 +376,7 @@ type DatabaseReplica struct {
 	CreatedAt          time.Time           `json:"created_at"`
 	PrivateNetworkUUID string              `json:"private_network_uuid,omitempty"`
 	Tags               []string            `json:"tags,omitempty"`
+	StorageSizeMib     uint64              `json:"storage_size_mib,omitempty"`
 }
 
 // DatabasePool represents a database connection pool
@@ -436,6 +437,7 @@ type DatabaseCreateReplicaRequest struct {
 	Size               string   `json:"size"`
 	PrivateNetworkUUID string   `json:"private_network_uuid"`
 	Tags               []string `json:"tags,omitempty"`
+	StorageSizeMib     uint64   `json:"storage_size_mib,omitempty"`
 }
 
 // DatabaseUpdateFirewallRulesRequest is used to set the firewall rules for a database

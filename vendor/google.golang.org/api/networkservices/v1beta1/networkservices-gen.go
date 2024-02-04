@@ -449,11 +449,34 @@ type Binding struct {
 	// For example, `admins@example.com`. * `domain:{domain}`: The G Suite
 	// domain (primary) that represents all the users of that domain. For
 	// example, `google.com` or `example.com`. *
-	// `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus
-	// unique identifier) representing a user that has been recently
-	// deleted. For example, `alice@example.com?uid=123456789012345678901`.
-	// If the user is recovered, this value reverts to `user:{emailid}` and
-	// the recovered user retains the role in the binding. *
+	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool_
+	// id}/subject/{subject_attribute_value}`: A single identity in a
+	// workforce identity pool. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
+	// ol_id}/group/{group_id}`: All workforce identities in a group. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
+	// ol_id}/attribute.{attribute_name}/{attribute_value}`: All workforce
+	// identities with a specific attribute value. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
+	// ol_id}/*`: All identities in a workforce identity pool. *
+	// `principal://iam.googleapis.com/projects/{project_number}/locations/gl
+	// obal/workloadIdentityPools/{pool_id}/subject/{subject_attribute_value}
+	// `: A single identity in a workload identity pool. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
+	// /global/workloadIdentityPools/{pool_id}/group/{group_id}`: A workload
+	// identity pool group. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
+	// /global/workloadIdentityPools/{pool_id}/attribute.{attribute_name}/{at
+	// tribute_value}`: All identities in a workload identity pool with a
+	// certain attribute. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
+	// /global/workloadIdentityPools/{pool_id}/*`: All identities in a
+	// workload identity pool. * `deleted:user:{emailid}?uid={uniqueid}`: An
+	// email address (plus unique identifier) representing a user that has
+	// been recently deleted. For example,
+	// `alice@example.com?uid=123456789012345678901`. If the user is
+	// recovered, this value reverts to `user:{emailid}` and the recovered
+	// user retains the role in the binding. *
 	// `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address
 	// (plus unique identifier) representing a service account that has been
 	// recently deleted. For example,
@@ -465,11 +488,20 @@ type Binding struct {
 	// that has been recently deleted. For example,
 	// `admins@example.com?uid=123456789012345678901`. If the group is
 	// recovered, this value reverts to `group:{emailid}` and the recovered
-	// group retains the role in the binding.
+	// group retains the role in the binding. *
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePool
+	// s/{pool_id}/subject/{subject_attribute_value}`: Deleted single
+	// identity in a workforce identity pool. For example,
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePool
+	// s/my-pool-id/subject/my-subject-attribute-value`.
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to the list of `members`, or principals.
-	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
+	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an
+	// overview of the IAM roles and permissions, see the IAM documentation
+	// (https://cloud.google.com/iam/docs/roles-overview). For a list of the
+	// available pre-defined roles, see here
+	// (https://cloud.google.com/iam/docs/understanding-roles).
 	Role string `json:"role,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Condition") to
@@ -2550,8 +2582,8 @@ type LbRouteExtension struct {
 	// Managed HTTP(S) Load Balancing.
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
 
-	// Name: Required. Name of the `LbRouteExtension` resource in the
-	// following format:
+	// Name: Required. Identifier. Name of the `LbRouteExtension` resource
+	// in the following format:
 	// `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route_e
 	// xtension}`.
 	Name string `json:"name,omitempty"`
@@ -2631,8 +2663,8 @@ type LbTrafficExtension struct {
 	// Managed HTTP(S) Load Balancing.
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
 
-	// Name: Required. Name of the `LbTrafficExtension` resource in the
-	// following format:
+	// Name: Required. Identifier. Name of the `LbTrafficExtension` resource
+	// in the following format:
 	// `projects/{project}/locations/{location}/lbTrafficExtensions/{lb_traff
 	// ic_extension}`.
 	Name string `json:"name,omitempty"`
@@ -3314,7 +3346,8 @@ type MetadataLabelMatcher struct {
 	// with label connects, the config from P2 will be selected. If a client
 	// with label connects, the config from P3 will be selected. If there is
 	// more than one best match, (for example, if a config P4 with selector
-	// exists and if a client with label connects), an error will be thrown.
+	// exists and if a client with label connects), pick up the one with
+	// older creation time.
 	//
 	// Possible values:
 	//   "METADATA_LABEL_MATCH_CRITERIA_UNSPECIFIED" - Default value. Should
@@ -9635,8 +9668,8 @@ type ProjectsLocationsLbRouteExtensionsPatchCall struct {
 // Patch: Updates the parameters of the specified `LbRouteExtension`
 // resource.
 //
-//   - name: Name of the `LbRouteExtension` resource in the following
-//     format:
+//   - name: Identifier. Name of the `LbRouteExtension` resource in the
+//     following format:
 //     `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route
 //     _extension}`.
 func (r *ProjectsLocationsLbRouteExtensionsService) Patch(name string, lbrouteextension *LbRouteExtension) *ProjectsLocationsLbRouteExtensionsPatchCall {
@@ -9774,7 +9807,7 @@ func (c *ProjectsLocationsLbRouteExtensionsPatchCall) Do(opts ...googleapi.CallO
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. Name of the `LbRouteExtension` resource in the following format: `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route_extension}`.",
+	//       "description": "Required. Identifier. Name of the `LbRouteExtension` resource in the following format: `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route_extension}`.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/lbRouteExtensions/[^/]+$",
 	//       "required": true,
@@ -10524,8 +10557,8 @@ type ProjectsLocationsLbTrafficExtensionsPatchCall struct {
 // Patch: Updates the parameters of the specified `LbTrafficExtension`
 // resource.
 //
-//   - name: Name of the `LbTrafficExtension` resource in the following
-//     format:
+//   - name: Identifier. Name of the `LbTrafficExtension` resource in the
+//     following format:
 //     `projects/{project}/locations/{location}/lbTrafficExtensions/{lb_tra
 //     ffic_extension}`.
 func (r *ProjectsLocationsLbTrafficExtensionsService) Patch(name string, lbtrafficextension *LbTrafficExtension) *ProjectsLocationsLbTrafficExtensionsPatchCall {
@@ -10663,7 +10696,7 @@ func (c *ProjectsLocationsLbTrafficExtensionsPatchCall) Do(opts ...googleapi.Cal
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. Name of the `LbTrafficExtension` resource in the following format: `projects/{project}/locations/{location}/lbTrafficExtensions/{lb_traffic_extension}`.",
+	//       "description": "Required. Identifier. Name of the `LbTrafficExtension` resource in the following format: `projects/{project}/locations/{location}/lbTrafficExtensions/{lb_traffic_extension}`.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/lbTrafficExtensions/[^/]+$",
 	//       "required": true,

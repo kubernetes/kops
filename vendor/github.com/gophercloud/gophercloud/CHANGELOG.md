@@ -1,3 +1,18 @@
+## v1.9.0 (2024-02-02)
+
+New features and improvements:
+
+* [GH-2884](https://github.com/gophercloud/gophercloud/pull/2884) [v1] Context-aware methods to ProviderClient and ServiceClient
+* [GH-2887](https://github.com/gophercloud/gophercloud/pull/2887) [v1] Add support of Flavors and FlavorProfiles for Octavia
+* [GH-2875](https://github.com/gophercloud/gophercloud/pull/2875) [v1] [db/v1/instance]: adding support for availability_zone for a db instance
+
+CI changes:
+
+* [GH-2856](https://github.com/gophercloud/gophercloud/pull/2856) [v1] Fix devstack install on EOL magnum branches
+* [GH-2857](https://github.com/gophercloud/gophercloud/pull/2857) [v1] Fix networking acceptance tests
+* [GH-2858](https://github.com/gophercloud/gophercloud/pull/2858) [v1] build(deps): bump actions/upload-artifact from 3 to 4
+* [GH-2859](https://github.com/gophercloud/gophercloud/pull/2859) [v1] build(deps): bump github/codeql-action from 2 to 3
+
 ## v1.8.0 (2023-11-30)
 
 New features and improvements:
