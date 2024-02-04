@@ -328,12 +328,15 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		// Override the returned name to be the expected ELB name
 		tags["Name"] = "bastion." + b.ClusterName()
 
-		nlbListeners := []*awstasks.NetworkLoadBalancerListener{
-			{
-				Port:            22,
-				TargetGroupName: b.NLBTargetGroupName("bastion"),
-			},
+		nlbListener := &awstasks.NetworkLoadBalancerListener{
+			Name:                fi.PtrTo(b.NLBListenerName("bastion", 22)),
+			Lifecycle:           b.Lifecycle,
+			NetworkLoadBalancer: b.LinkToNLB("bastion"),
+			Port:                22,
+			TargetGroup:         b.LinkToTargetGroup("bastion"),
 		}
+		c.AddTask(nlbListener)
+
 		nlb = &awstasks.NetworkLoadBalancer{
 			Name:      fi.PtrTo(b.NLBName("bastion")),
 			Lifecycle: b.Lifecycle,
@@ -344,7 +347,6 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("bastion"),
 			},
-			Listeners:    nlbListeners,
 			TargetGroups: make([]*awstasks.TargetGroup, 0),
 
 			Tags:          tags,

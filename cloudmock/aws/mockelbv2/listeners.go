@@ -21,39 +21,41 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) DescribeListeners(request *elbv2.DescribeListenersInput) (*elbv2.DescribeListenersOutput, error) {
+func (m *MockELBV2) DescribeListenersPagesWithContext(ctx aws.Context, request *elbv2.DescribeListenersInput, callback func(*elbv2.DescribeListenersOutput, bool) bool, options ...request.Option) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DescribeListeners v2 %v", request)
+	klog.Infof("DescribeListenersPagesWithContext v2 %v", request)
 
-	resp := &elbv2.DescribeListenersOutput{
+	page := &elbv2.DescribeListenersOutput{
 		Listeners: make([]*elbv2.Listener, 0),
 	}
 	for _, l := range m.Listeners {
 		listener := l.description
 		if aws.StringValue(request.LoadBalancerArn) == aws.StringValue(listener.LoadBalancerArn) {
-			resp.Listeners = append(resp.Listeners, &listener)
+			page.Listeners = append(page.Listeners, &listener)
 		} else {
 			for _, reqARN := range request.ListenerArns {
 				if aws.StringValue(reqARN) == aws.StringValue(listener.ListenerArn) {
-					resp.Listeners = append(resp.Listeners, &listener)
+					page.Listeners = append(page.Listeners, &listener)
 				}
 			}
 		}
 	}
-	return resp, nil
+	callback(page, true)
+	return nil
 }
 
-func (m *MockELBV2) CreateListener(request *elbv2.CreateListenerInput) (*elbv2.CreateListenerOutput, error) {
+func (m *MockELBV2) CreateListenerWithContext(ctx aws.Context, request *elbv2.CreateListenerInput, opts ...request.Option) (*elbv2.CreateListenerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("CreateListener v2 %v", request)
+	klog.Infof("CreateListenerWithContext v2 %v", request)
 
 	l := elbv2.Listener{
 		DefaultActions:  request.DefaultActions,
@@ -96,11 +98,11 @@ func (m *MockELBV2) CreateListener(request *elbv2.CreateListenerInput) (*elbv2.C
 	return &elbv2.CreateListenerOutput{Listeners: []*elbv2.Listener{&l}}, nil
 }
 
-func (m *MockELBV2) DeleteListener(request *elbv2.DeleteListenerInput) (*elbv2.DeleteListenerOutput, error) {
+func (m *MockELBV2) DeleteListenerWithContext(ctx aws.Context, request *elbv2.DeleteListenerInput, opts ...request.Option) (*elbv2.DeleteListenerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DeleteListener v2 %v", request)
+	klog.Infof("DeleteListenerWithContext v2 %v", request)
 
 	lARN := aws.StringValue(request.ListenerArn)
 	if _, ok := m.Listeners[lARN]; !ok {
