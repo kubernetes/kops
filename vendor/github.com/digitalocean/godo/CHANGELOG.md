@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.108.0] - 2024-01-17
+
+- #660 - @dweinshenker - Enable CRUD operations for replicas with storage_size_mib
+
 ## [v1.107.0] - 2023-12-07
 
 - #658 - @markusthoemmes - APPS-8033 Add the RUN_RESTARTED log type

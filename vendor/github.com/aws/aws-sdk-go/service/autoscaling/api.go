@@ -2431,7 +2431,7 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 // DescribeInstanceRefreshes API operation for Auto Scaling.
 //
 // Gets information about the instance refreshes for the specified Auto Scaling
-// group.
+// group from the previous six weeks.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
@@ -14196,8 +14196,8 @@ type InstanceMaintenancePolicy struct {
 	// Specifies the upper threshold as a percentage of the desired capacity of
 	// the Auto Scaling group. It represents the maximum percentage of the group
 	// that can be in service and healthy, or pending, to support your workload
-	// when replacing instances. Value range is 100 to 200. After it's set, a value
-	// of -1 will clear the previously set value.
+	// when replacing instances. Value range is 100 to 200. To clear a previously
+	// set value, specify a value of -1.
 	//
 	// Both MinHealthyPercentage and MaxHealthyPercentage must be specified, and
 	// the difference between them cannot be greater than 100. A large range increases
@@ -14207,8 +14207,8 @@ type InstanceMaintenancePolicy struct {
 	// Specifies the lower threshold as a percentage of the desired capacity of
 	// the Auto Scaling group. It represents the minimum percentage of the group
 	// to keep in service, healthy, and ready to use to support your workload when
-	// replacing instances. Value range is 0 to 100. After it's set, a value of
-	// -1 will clear the previously set value.
+	// replacing instances. Value range is 0 to 100. To clear a previously set value,
+	// specify a value of -1.
 	MinHealthyPercentage *int64 `type:"integer"`
 }
 
@@ -14855,6 +14855,31 @@ type InstanceRequirements struct {
 	// Default: Any local storage type
 	LocalStorageTypes []*string `type:"list" enum:"LocalStorageType"`
 
+	// [Price protection] The price protection threshold for Spot Instances, as
+	// a percentage of an identified On-Demand price. The identified On-Demand price
+	// is the price of the lowest priced current generation C, M, or R instance
+	// type with your specified attributes. If no current generation C, M, or R
+	// instance type matches your attributes, then the identified price is from
+	// either the lowest priced current generation instance types or, failing that,
+	// the lowest priced previous generation instance types that match your attributes.
+	// When Amazon EC2 Auto Scaling selects instance types with your attributes,
+	// we will exclude instance types whose price exceeds your specified threshold.
+	//
+	// The parameter accepts an integer, which Amazon EC2 Auto Scaling interprets
+	// as a percentage.
+	//
+	// To indicate no price protection threshold, specify a high value, such as
+	// 999999.
+	//
+	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
+	// threshold is based on the per-vCPU or per-memory price instead of the per
+	// instance price.
+	//
+	// Only one of SpotMaxPricePercentageOverLowestPrice or MaxSpotPriceAsPercentageOfOptimalOnDemandPrice
+	// can be specified. If you don't specify either, then SpotMaxPricePercentageOverLowestPrice
+	// is used and the value for that parameter defaults to 100.
+	MaxSpotPriceAsPercentageOfOptimalOnDemandPrice *int64 `type:"integer"`
+
 	// The minimum and maximum amount of memory per vCPU for an instance type, in
 	// GiB.
 	//
@@ -14877,17 +14902,24 @@ type InstanceRequirements struct {
 	// Default: No minimum or maximum limits
 	NetworkInterfaceCount *NetworkInterfaceCountRequest `type:"structure"`
 
-	// The price protection threshold for On-Demand Instances. This is the maximum
-	// you’ll pay for an On-Demand Instance, expressed as a percentage higher
-	// than the least expensive current generation M, C, or R instance type with
-	// your specified attributes. When Amazon EC2 Auto Scaling selects instance
-	// types with your attributes, we will exclude instance types whose price is
-	// higher than your threshold. The parameter accepts an integer, which Amazon
-	// EC2 Auto Scaling interprets as a percentage. To turn off price protection,
-	// specify a high value, such as 999999.
+	// [Price protection] The price protection threshold for On-Demand Instances,
+	// as a percentage higher than an identified On-Demand price. The identified
+	// On-Demand price is the price of the lowest priced current generation C, M,
+	// or R instance type with your specified attributes. If no current generation
+	// C, M, or R instance type matches your attributes, then the identified price
+	// is from either the lowest priced current generation instance types or, failing
+	// that, the lowest priced previous generation instance types that match your
+	// attributes. When Amazon EC2 Auto Scaling selects instance types with your
+	// attributes, we will exclude instance types whose price exceeds your specified
+	// threshold.
+	//
+	// The parameter accepts an integer, which Amazon EC2 Auto Scaling interprets
+	// as a percentage.
+	//
+	// To turn off price protection, specify a high value, such as 999999.
 	//
 	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
-	// threshold is applied based on the per vCPU or per memory price instead of
+	// threshold is applied based on the per-vCPU or per-memory price instead of
 	// the per instance price.
 	//
 	// Default: 20
@@ -14899,18 +14931,27 @@ type InstanceRequirements struct {
 	// Default: false
 	RequireHibernateSupport *bool `type:"boolean"`
 
-	// The price protection threshold for Spot Instances. This is the maximum you’ll
-	// pay for a Spot Instance, expressed as a percentage higher than the least
-	// expensive current generation M, C, or R instance type with your specified
-	// attributes. When Amazon EC2 Auto Scaling selects instance types with your
-	// attributes, we will exclude instance types whose price is higher than your
-	// threshold. The parameter accepts an integer, which Amazon EC2 Auto Scaling
-	// interprets as a percentage. To turn off price protection, specify a high
-	// value, such as 999999.
+	// [Price protection] The price protection threshold for Spot Instances, as
+	// a percentage higher than an identified Spot price. The identified Spot price
+	// is the price of the lowest priced current generation C, M, or R instance
+	// type with your specified attributes. If no current generation C, M, or R
+	// instance type matches your attributes, then the identified price is from
+	// either the lowest priced current generation instance types or, failing that,
+	// the lowest priced previous generation instance types that match your attributes.
+	// When Amazon EC2 Auto Scaling selects instance types with your attributes,
+	// we will exclude instance types whose price exceeds your specified threshold.
+	//
+	// The parameter accepts an integer, which Amazon EC2 Auto Scaling interprets
+	// as a percentage.
+	//
+	// To turn off price protection, specify a high value, such as 999999.
 	//
 	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
-	// threshold is applied based on the per vCPU or per memory price instead of
-	// the per instance price.
+	// threshold is based on the per-vCPU or per-memory price instead of the per
+	// instance price.
+	//
+	// Only one of SpotMaxPricePercentageOverLowestPrice or MaxSpotPriceAsPercentageOfOptimalOnDemandPrice
+	// can be specified.
 	//
 	// Default: 100
 	SpotMaxPricePercentageOverLowestPrice *int64 `type:"integer"`
@@ -15052,6 +15093,12 @@ func (s *InstanceRequirements) SetLocalStorage(v string) *InstanceRequirements {
 // SetLocalStorageTypes sets the LocalStorageTypes field's value.
 func (s *InstanceRequirements) SetLocalStorageTypes(v []*string) *InstanceRequirements {
 	s.LocalStorageTypes = v
+	return s
+}
+
+// SetMaxSpotPriceAsPercentageOfOptimalOnDemandPrice sets the MaxSpotPriceAsPercentageOfOptimalOnDemandPrice field's value.
+func (s *InstanceRequirements) SetMaxSpotPriceAsPercentageOfOptimalOnDemandPrice(v int64) *InstanceRequirements {
+	s.MaxSpotPriceAsPercentageOfOptimalOnDemandPrice = &v
 	return s
 }
 
@@ -16780,8 +16827,8 @@ func (s *MetricGranularityType) SetGranularity(v string) *MetricGranularityType 
 	return s
 }
 
-// This structure defines the CloudWatch metric to return, along with the statistic,
-// period, and unit.
+// This structure defines the CloudWatch metric to return, along with the statistic
+// and unit.
 //
 // For more information about the CloudWatch terminology below, see Amazon CloudWatch
 // concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)

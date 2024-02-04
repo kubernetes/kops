@@ -508,6 +508,9 @@ type AddonsConfig struct {
 	// track whether network policy is enabled for the nodes.
 	NetworkPolicyConfig *NetworkPolicyConfig `json:"networkPolicyConfig,omitempty"`
 
+	// StatefulHaConfig: Optional. Configuration for the StatefulHA add-on.
+	StatefulHaConfig *StatefulHAConfig `json:"statefulHaConfig,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "CloudRunConfig") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
@@ -1802,6 +1805,18 @@ type ClusterUpdate struct {
 	// DesiredImageType: The desired image type for the node pool. NOTE: Set
 	// the "desired_node_pool" field as well.
 	DesiredImageType string `json:"desiredImageType,omitempty"`
+
+	// DesiredInTransitEncryptionConfig: Specify the details of in-transit
+	// encryption.
+	//
+	// Possible values:
+	//   "IN_TRANSIT_ENCRYPTION_CONFIG_UNSPECIFIED" - Unspecified, will be
+	// inferred as default - IN_TRANSIT_ENCRYPTION_UNSPECIFIED.
+	//   "IN_TRANSIT_ENCRYPTION_DISABLED" - In-transit encryption is
+	// disabled.
+	//   "IN_TRANSIT_ENCRYPTION_INTER_NODE_TRANSPARENT" - Data in-transit is
+	// encrypted using inter-node transparent encryption.
+	DesiredInTransitEncryptionConfig string `json:"desiredInTransitEncryptionConfig,omitempty"`
 
 	// DesiredIntraNodeVisibilityConfig: The desired config of Intra-node
 	// visibility.
@@ -4374,6 +4389,18 @@ type NetworkConfig struct {
 	// GatewayApiConfig: GatewayAPIConfig contains the desired config of
 	// Gateway API on this cluster.
 	GatewayApiConfig *GatewayAPIConfig `json:"gatewayApiConfig,omitempty"`
+
+	// InTransitEncryptionConfig: Specify the details of in-transit
+	// encryption.
+	//
+	// Possible values:
+	//   "IN_TRANSIT_ENCRYPTION_CONFIG_UNSPECIFIED" - Unspecified, will be
+	// inferred as default - IN_TRANSIT_ENCRYPTION_UNSPECIFIED.
+	//   "IN_TRANSIT_ENCRYPTION_DISABLED" - In-transit encryption is
+	// disabled.
+	//   "IN_TRANSIT_ENCRYPTION_INTER_NODE_TRANSPARENT" - Data in-transit is
+	// encrypted using inter-node transparent encryption.
+	InTransitEncryptionConfig string `json:"inTransitEncryptionConfig,omitempty"`
 
 	// Network: Output only. The relative name of the Google Compute Engine
 	// network(https://cloud.google.com/compute/docs/networks-and-firewalls#n
@@ -7530,6 +7557,34 @@ func (s *StartIPRotationRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// StatefulHAConfig: Configuration for the Stateful HA add-on.
+type StatefulHAConfig struct {
+	// Enabled: Whether the Stateful HA add-on is enabled for this cluster.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *StatefulHAConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod StatefulHAConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Status: The `Status` type defines a logical error model that is
 // suitable for different programming environments, including REST APIs
 // and RPC APIs. It is used by gRPC (https://github.com/grpc). Each
@@ -9752,8 +9807,7 @@ type ProjectsLocationsClustersGetJwksCall struct {
 }
 
 // GetJwks: Gets the public component of the cluster signing keys in
-// JSON Web Key format. This API is not yet intended for general use,
-// and is not available for all clusters.
+// JSON Web Key format.
 //
 //   - parent: The cluster (project, location, cluster name) to get keys
 //     for. Specified in the format `projects/*/locations/*/clusters/*`.
@@ -9862,7 +9916,7 @@ func (c *ProjectsLocationsClustersGetJwksCall) Do(opts ...googleapi.CallOption) 
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the public component of the cluster signing keys in JSON Web Key format. This API is not yet intended for general use, and is not available for all clusters.",
+	//   "description": "Gets the public component of the cluster signing keys in JSON Web Key format.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/jwks",
 	//   "httpMethod": "GET",
 	//   "id": "container.projects.locations.clusters.getJwks",
@@ -13421,8 +13475,7 @@ type ProjectsLocationsClustersWellKnownGetOpenidConfigurationCall struct {
 // GetOpenidConfiguration: Gets the OIDC discovery document for the
 // cluster. See the OpenID Connect Discovery 1.0 specification
 // (https://openid.net/specs/openid-connect-discovery-1_0.html) for
-// details. This API is not yet intended for general use, and is not
-// available for all clusters.
+// details.
 //
 //   - parent: The cluster (project, location, cluster name) to get the
 //     discovery document for. Specified in the format
@@ -13532,7 +13585,7 @@ func (c *ProjectsLocationsClustersWellKnownGetOpenidConfigurationCall) Do(opts .
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the OIDC discovery document for the cluster. See the [OpenID Connect Discovery 1.0 specification](https://openid.net/specs/openid-connect-discovery-1_0.html) for details. This API is not yet intended for general use, and is not available for all clusters.",
+	//   "description": "Gets the OIDC discovery document for the cluster. See the [OpenID Connect Discovery 1.0 specification](https://openid.net/specs/openid-connect-discovery-1_0.html) for details.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/.well-known/openid-configuration",
 	//   "httpMethod": "GET",
 	//   "id": "container.projects.locations.clusters.well-known.getOpenid-configuration",

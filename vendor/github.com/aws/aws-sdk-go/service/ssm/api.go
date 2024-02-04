@@ -3746,6 +3746,9 @@ func (c *SSM) DescribeAvailablePatchesRequest(input *DescribeAvailablePatchesInp
 //
 // Lists all patches eligible to be included in a patch baseline.
 //
+// Currently, DescribeAvailablePatches supports only the Amazon Linux 1, Amazon
+// Linux 2, and Windows Server operating systems.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -16767,6 +16770,11 @@ type Association struct {
 	// form another account, you must set the document version to default.
 	DocumentVersion *string `type:"string"`
 
+	// The number of hours that an association can run on specified targets. After
+	// the resulting cutoff time passes, associations that are currently running
+	// are cancelled, and no pending executions are started on remaining targets.
+	Duration *int64 `min:"1" type:"integer"`
+
 	// The managed node ID.
 	InstanceId *string `type:"string"`
 
@@ -16835,6 +16843,12 @@ func (s *Association) SetAssociationVersion(v string) *Association {
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *Association) SetDocumentVersion(v string) *Association {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *Association) SetDuration(v int64) *Association {
+	s.Duration = &v
 	return s
 }
 
@@ -16993,6 +17007,11 @@ type AssociationDescription struct {
 
 	// The document version.
 	DocumentVersion *string `type:"string"`
+
+	// The number of hours that an association can run on specified targets. After
+	// the resulting cutoff time passes, associations that are currently running
+	// are cancelled, and no pending executions are started on remaining targets.
+	Duration *int64 `min:"1" type:"integer"`
 
 	// The managed node ID.
 	InstanceId *string `type:"string"`
@@ -17161,6 +17180,12 @@ func (s *AssociationDescription) SetDate(v time.Time) *AssociationDescription {
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *AssociationDescription) SetDocumentVersion(v string) *AssociationDescription {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *AssociationDescription) SetDuration(v int64) *AssociationDescription {
+	s.Duration = &v
 	return s
 }
 
@@ -18066,6 +18091,11 @@ type AssociationVersionInfo struct {
 	// used when the association version was created.
 	DocumentVersion *string `type:"string"`
 
+	// The number of hours that an association can run on specified targets. After
+	// the resulting cutoff time passes, associations that are currently running
+	// are cancelled, and no pending executions are started on remaining targets.
+	Duration *int64 `min:"1" type:"integer"`
+
 	// The maximum number of targets allowed to run the association at the same
 	// time. You can specify a number, for example 10, or a percentage of the target
 	// set, for example 10%. The default value is 100%, which means all targets
@@ -18204,6 +18234,12 @@ func (s *AssociationVersionInfo) SetCreatedDate(v time.Time) *AssociationVersion
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *AssociationVersionInfo) SetDocumentVersion(v string) *AssociationVersionInfo {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *AssociationVersionInfo) SetDuration(v int64) *AssociationVersionInfo {
+	s.Duration = &v
 	return s
 }
 
@@ -21693,6 +21729,22 @@ type CreateAssociationBatchRequestEntry struct {
 	// The document version.
 	DocumentVersion *string `type:"string"`
 
+	// The number of hours the association can run before it is canceled. Duration
+	// applies to associations that are currently running, and any pending and in
+	// progress commands on all targets. If a target was taken offline for the association
+	// to run, it is made available again immediately, without a reboot.
+	//
+	// The Duration parameter applies only when both these conditions are true:
+	//
+	//    * The association for which you specify a duration is cancelable according
+	//    to the parameters of the SSM command document or Automation runbook associated
+	//    with this execution.
+	//
+	//    * The command specifies the ApplyOnlyAtCronInterval (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CreateAssociationBatchRequestEntry.html#systemsmanager-Type-CreateAssociationBatchRequestEntry-ApplyOnlyAtCronInterval)
+	//    parameter, which means that the association doesn't run immediately after
+	//    it is created, but only according to the specified schedule.
+	Duration *int64 `min:"1" type:"integer"`
+
 	// The managed node ID.
 	//
 	// InstanceId has been deprecated. To specify a managed node ID for an association,
@@ -21819,6 +21871,9 @@ func (s *CreateAssociationBatchRequestEntry) Validate() error {
 	if s.AutomationTargetParameterName != nil && len(*s.AutomationTargetParameterName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutomationTargetParameterName", 1))
 	}
+	if s.Duration != nil && *s.Duration < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Duration", 1))
+	}
 	if s.MaxConcurrency != nil && len(*s.MaxConcurrency) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MaxConcurrency", 1))
 	}
@@ -21913,6 +21968,12 @@ func (s *CreateAssociationBatchRequestEntry) SetComplianceSeverity(v string) *Cr
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *CreateAssociationBatchRequestEntry) SetDocumentVersion(v string) *CreateAssociationBatchRequestEntry {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *CreateAssociationBatchRequestEntry) SetDuration(v int64) *CreateAssociationBatchRequestEntry {
+	s.Duration = &v
 	return s
 }
 
@@ -22029,6 +22090,22 @@ type CreateAssociationInput struct {
 	// If you want to run an association using a new version of a document shared
 	// form another account, you must set the document version to default.
 	DocumentVersion *string `type:"string"`
+
+	// The number of hours the association can run before it is canceled. Duration
+	// applies to associations that are currently running, and any pending and in
+	// progress commands on all targets. If a target was taken offline for the association
+	// to run, it is made available again immediately, without a reboot.
+	//
+	// The Duration parameter applies only when both these conditions are true:
+	//
+	//    * The association for which you specify a duration is cancelable according
+	//    to the parameters of the SSM command document or Automation runbook associated
+	//    with this execution.
+	//
+	//    * The command specifies the ApplyOnlyAtCronInterval (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CreateAssociation.html#systemsmanager-CreateAssociation-request-ApplyOnlyAtCronInterval)
+	//    parameter, which means that the association doesn't run immediately after
+	//    it is created, but only according to the specified schedule.
+	Duration *int64 `min:"1" type:"integer"`
 
 	// The managed node ID.
 	//
@@ -22180,6 +22257,9 @@ func (s *CreateAssociationInput) Validate() error {
 	if s.AutomationTargetParameterName != nil && len(*s.AutomationTargetParameterName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutomationTargetParameterName", 1))
 	}
+	if s.Duration != nil && *s.Duration < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Duration", 1))
+	}
 	if s.MaxConcurrency != nil && len(*s.MaxConcurrency) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MaxConcurrency", 1))
 	}
@@ -22284,6 +22364,12 @@ func (s *CreateAssociationInput) SetComplianceSeverity(v string) *CreateAssociat
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *CreateAssociationInput) SetDocumentVersion(v string) *CreateAssociationInput {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *CreateAssociationInput) SetDuration(v int64) *CreateAssociationInput {
+	s.Duration = &v
 	return s
 }
 
@@ -26228,8 +26314,8 @@ type DescribeDocumentInput struct {
 	Name *string `type:"string" required:"true"`
 
 	// An optional field specifying the version of the artifact associated with
-	// the document. For example, "Release 12, Update 6". This value is unique across
-	// all versions of a document, and can't be changed.
+	// the document. For example, 12.6. This value is unique across all versions
+	// of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -30166,8 +30252,8 @@ type DocumentIdentifier struct {
 	TargetType *string `type:"string"`
 
 	// An optional field specifying the version of the artifact associated with
-	// the document. For example, "Release 12, Update 6". This value is unique across
-	// all versions of a document, and can't be changed.
+	// the document. For example, 12.6. This value is unique across all versions
+	// of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -30647,8 +30733,8 @@ type DocumentRequires struct {
 	Version *string `type:"string"`
 
 	// An optional field specifying the version of the artifact associated with
-	// the document. For example, "Release 12, Update 6". This value is unique across
-	// all versions of a document, and can't be changed.
+	// the document. For example, 12.6. This value is unique across all versions
+	// of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -30942,9 +31028,8 @@ type DocumentVersionInfo struct {
 	// S3 bucket is correct."
 	StatusInformation *string `type:"string"`
 
-	// The version of the artifact associated with the document. For example, "Release
-	// 12, Update 6". This value is unique across all versions of a document, and
-	// can't be changed.
+	// The version of the artifact associated with the document. For example, 12.6.
+	// This value is unique across all versions of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -32155,8 +32240,7 @@ func (s *GetConnectionStatusInput) SetTarget(v string) *GetConnectionStatusInput
 type GetConnectionStatusOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The status of the connection to the managed node. For example, 'Connected'
-	// or 'Not Connected'.
+	// The status of the connection to the managed node.
 	Status *string `type:"string" enum:"ConnectionStatus"`
 
 	// The ID of the managed node to check connection status.
@@ -32418,8 +32502,8 @@ type GetDocumentInput struct {
 	Name *string `type:"string" required:"true"`
 
 	// An optional field specifying the version of the artifact associated with
-	// the document. For example, "Release 12, Update 6". This value is unique across
-	// all versions of a document and can't be changed.
+	// the document. For example, 12.6. This value is unique across all versions
+	// of a document and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -32532,9 +32616,8 @@ type GetDocumentOutput struct {
 	// S3 bucket is correct."
 	StatusInformation *string `type:"string"`
 
-	// The version of the artifact associated with the document. For example, "Release
-	// 12, Update 6". This value is unique across all versions of a document, and
-	// can't be changed.
+	// The version of the artifact associated with the document. For example, 12.6.
+	// This value is unique across all versions of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 
@@ -47764,7 +47847,8 @@ type ParameterHistory struct {
 	// Information about the parameter.
 	Description *string `type:"string"`
 
-	// The ID of the query key used for this parameter.
+	// The alias of the Key Management Service (KMS) key used to encrypt the parameter.
+	// Applies to SecureString parameters only
 	KeyId *string `min:"1" type:"string"`
 
 	// Labels assigned to the parameter version.
@@ -48118,7 +48202,8 @@ type ParameterMetadata struct {
 	// Description of the parameter actions.
 	Description *string `type:"string"`
 
-	// The ID of the query key used for this parameter.
+	// The alias of the Key Management Service (KMS) key used to encrypt the parameter.
+	// Applies to SecureString parameters only.
 	KeyId *string `min:"1" type:"string"`
 
 	// Date the parameter was last changed or updated.
@@ -49040,6 +49125,9 @@ type PatchComplianceData struct {
 
 	// The IDs of one or more Common Vulnerabilities and Exposure (CVE) issues that
 	// are resolved by the patch.
+	//
+	// Currently, CVE ID values are reported only for patches with a status of Missing
+	// or Failed.
 	CVEIds *string `type:"string"`
 
 	// The classification of the patch, such as SecurityUpdates, Updates, and CriticalUpdates.
@@ -57236,6 +57324,22 @@ type UpdateAssociationInput struct {
 	// form another account, you must set the document version to default.
 	DocumentVersion *string `type:"string"`
 
+	// The number of hours the association can run before it is canceled. Duration
+	// applies to associations that are currently running, and any pending and in
+	// progress commands on all targets. If a target was taken offline for the association
+	// to run, it is made available again immediately, without a reboot.
+	//
+	// The Duration parameter applies only when both these conditions are true:
+	//
+	//    * The association for which you specify a duration is cancelable according
+	//    to the parameters of the SSM command document or Automation runbook associated
+	//    with this execution.
+	//
+	//    * The command specifies the ApplyOnlyAtCronInterval (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_UpdateAssociation.html#systemsmanager-UpdateAssociation-request-ApplyOnlyAtCronInterval)
+	//    parameter, which means that the association doesn't run immediately after
+	//    it is updated, but only according to the specified schedule.
+	Duration *int64 `min:"1" type:"integer"`
+
 	// The maximum number of targets allowed to run the association at the same
 	// time. You can specify a number, for example 10, or a percentage of the target
 	// set, for example 10%. The default value is 100%, which means all targets
@@ -57364,6 +57468,9 @@ func (s *UpdateAssociationInput) Validate() error {
 	if s.AutomationTargetParameterName != nil && len(*s.AutomationTargetParameterName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutomationTargetParameterName", 1))
 	}
+	if s.Duration != nil && *s.Duration < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Duration", 1))
+	}
 	if s.MaxConcurrency != nil && len(*s.MaxConcurrency) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MaxConcurrency", 1))
 	}
@@ -57467,6 +57574,12 @@ func (s *UpdateAssociationInput) SetComplianceSeverity(v string) *UpdateAssociat
 // SetDocumentVersion sets the DocumentVersion field's value.
 func (s *UpdateAssociationInput) SetDocumentVersion(v string) *UpdateAssociationInput {
 	s.DocumentVersion = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *UpdateAssociationInput) SetDuration(v int64) *UpdateAssociationInput {
+	s.Duration = &v
 	return s
 }
 
@@ -57808,8 +57921,8 @@ type UpdateDocumentInput struct {
 	TargetType *string `type:"string"`
 
 	// An optional field specifying the version of the artifact you are updating
-	// with the document. For example, "Release 12, Update 6". This value is unique
-	// across all versions of a document, and can't be changed.
+	// with the document. For example, 12.6. This value is unique across all versions
+	// of a document, and can't be changed.
 	VersionName *string `type:"string"`
 }
 

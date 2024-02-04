@@ -367,7 +367,7 @@
                   ]
                 },
                 "getJwks": {
-                  "description": "Gets the public component of the cluster signing keys in JSON Web Key format. This API is not yet intended for general use, and is not available for all clusters.",
+                  "description": "Gets the public component of the cluster signing keys in JSON Web Key format.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/jwks",
                   "httpMethod": "GET",
                   "id": "container.projects.locations.clusters.getJwks",
@@ -1108,7 +1108,7 @@
                 "well-known": {
                   "methods": {
                     "getOpenid-configuration": {
-                      "description": "Gets the OIDC discovery document for the cluster. See the [OpenID Connect Discovery 1.0 specification](https://openid.net/specs/openid-connect-discovery-1_0.html) for details. This API is not yet intended for general use, and is not available for all clusters.",
+                      "description": "Gets the OIDC discovery document for the cluster. See the [OpenID Connect Discovery 1.0 specification](https://openid.net/specs/openid-connect-discovery-1_0.html) for details.",
                       "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/.well-known/openid-configuration",
                       "httpMethod": "GET",
                       "id": "container.projects.locations.clusters.well-known.getOpenid-configuration",
@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20231122",
+  "revision": "20240116",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2675,6 +2675,10 @@
         "networkPolicyConfig": {
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
+        },
+        "statefulHaConfig": {
+          "$ref": "StatefulHAConfig",
+          "description": "Optional. Configuration for the StatefulHA add-on."
         }
       },
       "type": "object"
@@ -3556,6 +3560,20 @@
         },
         "desiredImageType": {
           "description": "The desired image type for the node pool. NOTE: Set the \"desired_node_pool\" field as well.",
+          "type": "string"
+        },
+        "desiredInTransitEncryptionConfig": {
+          "description": "Specify the details of in-transit encryption.",
+          "enum": [
+            "IN_TRANSIT_ENCRYPTION_CONFIG_UNSPECIFIED",
+            "IN_TRANSIT_ENCRYPTION_DISABLED",
+            "IN_TRANSIT_ENCRYPTION_INTER_NODE_TRANSPARENT"
+          ],
+          "enumDescriptions": [
+            "Unspecified, will be inferred as default - IN_TRANSIT_ENCRYPTION_UNSPECIFIED.",
+            "In-transit encryption is disabled.",
+            "Data in-transit is encrypted using inter-node transparent encryption."
+          ],
           "type": "string"
         },
         "desiredIntraNodeVisibilityConfig": {
@@ -4966,6 +4984,20 @@
         "gatewayApiConfig": {
           "$ref": "GatewayAPIConfig",
           "description": "GatewayAPIConfig contains the desired config of Gateway API on this cluster."
+        },
+        "inTransitEncryptionConfig": {
+          "description": "Specify the details of in-transit encryption.",
+          "enum": [
+            "IN_TRANSIT_ENCRYPTION_CONFIG_UNSPECIFIED",
+            "IN_TRANSIT_ENCRYPTION_DISABLED",
+            "IN_TRANSIT_ENCRYPTION_INTER_NODE_TRANSPARENT"
+          ],
+          "enumDescriptions": [
+            "Unspecified, will be inferred as default - IN_TRANSIT_ENCRYPTION_UNSPECIFIED.",
+            "In-transit encryption is disabled.",
+            "Data in-transit is encrypted using inter-node transparent encryption."
+          ],
+          "type": "string"
         },
         "network": {
           "description": "Output only. The relative name of the Google Compute Engine network(https://cloud.google.com/compute/docs/networks-and-firewalls#networks) to which the cluster is connected. Example: projects/my-project/global/networks/my-network",
@@ -6877,6 +6909,17 @@
           "deprecated": true,
           "description": "Deprecated. The name of the Google Compute Engine [zone](https://cloud.google.com/compute/docs/zones#available) in which the cluster resides. This field has been deprecated and replaced by the name field.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "StatefulHAConfig": {
+      "description": "Configuration for the Stateful HA add-on.",
+      "id": "StatefulHAConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the Stateful HA add-on is enabled for this cluster.",
+          "type": "boolean"
         }
       },
       "type": "object"

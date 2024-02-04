@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"sync"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -166,8 +167,10 @@ func (m *mapper) addKnownGroupAndReload(groupName string, versions ...string) er
 		if err != nil {
 			return err
 		}
-		for _, version := range apiGroup.Versions {
-			versions = append(versions, version.Version)
+		if apiGroup != nil {
+			for _, version := range apiGroup.Versions {
+				versions = append(versions, version.Version)
+			}
 		}
 	}
 
@@ -254,17 +257,12 @@ func (m *mapper) findAPIGroupByName(groupName string) (*metav1.APIGroup, error) 
 	m.mu.Unlock()
 
 	// Looking in the cache again.
-	{
-		m.mu.RLock()
-		group, ok := m.apiGroups[groupName]
-		m.mu.RUnlock()
-		if ok {
-			return group, nil
-		}
-	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 
-	// If there is still nothing, return an error.
-	return nil, fmt.Errorf("failed to find API group %q", groupName)
+	// Don't return an error here if the API group is not present.
+	// The reloaded RESTMapper will take care of returning a NoMatchError.
+	return m.apiGroups[groupName], nil
 }
 
 // fetchGroupVersionResources fetches the resources for the specified group and its versions.
@@ -276,7 +274,7 @@ func (m *mapper) fetchGroupVersionResources(groupName string, versions ...string
 		groupVersion := schema.GroupVersion{Group: groupName, Version: version}
 
 		apiResourceList, err := m.client.ServerResourcesForGroupVersion(groupVersion.String())
-		if err != nil {
+		if err != nil && !apierrors.IsNotFound(err) {
 			failedGroups[groupVersion] = err
 		}
 		if apiResourceList != nil {
