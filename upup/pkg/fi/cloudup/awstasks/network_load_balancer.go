@@ -196,6 +196,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 }
 
 func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -260,13 +261,16 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 		request := &elbv2.DescribeListenersInput{
 			LoadBalancerArn: loadBalancerArn,
 		}
-		response, err := cloud.ELBV2().DescribeListeners(request)
-		if err != nil {
-			return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
+		var listeners []*elbv2.Listener
+		if err := cloud.ELBV2().DescribeListenersPagesWithContext(ctx, request, func(page *elbv2.DescribeListenersOutput, lastPage bool) bool {
+			listeners = append(listeners, page.Listeners...)
+			return true
+		}); err != nil {
+			return nil, fmt.Errorf("listing NLB listeners: %w", err)
 		}
 
 		actual.TargetGroups = []*TargetGroup{}
-		for _, l := range response.Listeners {
+		for _, l := range listeners {
 			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
 			if len(l.DefaultActions) > 0 {
 				targetGroupARN := l.DefaultActions[0].TargetGroupArn
