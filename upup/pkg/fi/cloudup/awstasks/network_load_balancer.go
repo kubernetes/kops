@@ -68,9 +68,8 @@ type NetworkLoadBalancer struct {
 
 	Type *string
 
-	VPC          *VPC
-	TargetGroups []*TargetGroup
-	AccessLog    *NetworkLoadBalancerAccessLog
+	VPC       *VPC
+	AccessLog *NetworkLoadBalancerAccessLog
 
 	// WellKnownServices indicates which services are supported by this resource.
 	// This field is internal and is not rendered to the cloud.
@@ -196,7 +195,6 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 }
 
 func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
-	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -255,47 +253,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 
 	for _, sg := range lb.SecurityGroups {
 		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: sg})
-	}
-
-	{
-		request := &elbv2.DescribeListenersInput{
-			LoadBalancerArn: loadBalancerArn,
-		}
-		var listeners []*elbv2.Listener
-		if err := cloud.ELBV2().DescribeListenersPagesWithContext(ctx, request, func(page *elbv2.DescribeListenersOutput, lastPage bool) bool {
-			listeners = append(listeners, page.Listeners...)
-			return true
-		}); err != nil {
-			return nil, fmt.Errorf("listing NLB listeners: %w", err)
-		}
-
-		actual.TargetGroups = []*TargetGroup{}
-		for _, l := range listeners {
-			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
-			if len(l.DefaultActions) > 0 {
-				targetGroupARN := l.DefaultActions[0].TargetGroupArn
-				if targetGroupARN != nil {
-					targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(targetGroupARN))
-					if err != nil {
-						return nil, err
-					}
-					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.PtrTo(targetGroupName)})
-
-					cloud := c.T.Cloud.(awsup.AWSCloud)
-					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
-						TargetGroupArns: []*string{targetGroupARN},
-					})
-					if err != nil {
-						return nil, fmt.Errorf("error querying for NLB listener target groups: %v", err)
-					}
-					if len(descResp.TargetGroups) != 1 {
-						return nil, fmt.Errorf("unexpected DescribeTargetGroups response: %v", descResp)
-					}
-				}
-			}
-		}
-		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
-
 	}
 
 	{
@@ -431,7 +388,6 @@ func (e *NetworkLoadBalancer) Run(c *fi.CloudupContext) error {
 func (e *NetworkLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
-	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 
 	e.IpAddressType = fi.PtrTo("dualstack")
 	for _, subnet := range e.SubnetMappings {
@@ -506,11 +462,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 	if a == nil {
 		if e.LoadBalancerName == nil {
 			return fi.RequiredField("LoadBalancerName")
-		}
-		for _, tg := range e.TargetGroups {
-			if tg.ARN == nil {
-				return fmt.Errorf("missing required target group ARN for NLB creation %v", tg)
-			}
 		}
 
 		loadBalancerName = *e.LoadBalancerName

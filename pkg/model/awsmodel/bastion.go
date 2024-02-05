@@ -347,7 +347,6 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("bastion"),
 			},
-			TargetGroups: make([]*awstasks.TargetGroup, 0),
 
 			Tags:          tags,
 			VPC:           b.LinkToVPC(),
@@ -394,9 +393,6 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		c.AddTask(tg)
 
-		nlb.TargetGroups = append(nlb.TargetGroups, tg)
-
-		sort.Stable(awstasks.OrderTargetGroupsByName(nlb.TargetGroups))
 		c.AddTask(nlb)
 	}
 
