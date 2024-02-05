@@ -199,9 +199,11 @@ func (t *Tester) addNodeIG() error {
 			ig = v
 		}
 	}
-	numNodes := int(*ig.Spec.MaxSize) // we assume that MinSize = Maxsize, this is true for e2e testing
-	klog.Infof("Setting -num-nodes=%v", numNodes)
-	t.TestArgs += " -num-nodes=" + strconv.Itoa(numNodes)
+	if ig.Spec.MaxSize != nil {
+		numNodes := int(*ig.Spec.MaxSize) // we assume that MinSize = Maxsize, this is true for e2e testing
+		klog.Infof("Setting -num-nodes=%v", numNodes)
+		t.TestArgs += " -num-nodes=" + strconv.Itoa(numNodes)
+	}
 
 	// Skip the rest of this function for non gce clusters
 	if cluster.Spec.LegacyCloudProvider != "gce" {
