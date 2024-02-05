@@ -5,6 +5,7 @@ As of Kubernetes 1.27 the default images used by kOps are the **[official Ubuntu
 You can choose a different image for an instance group by editing it with `kops edit ig nodes`.
 
 For AWS, you should set the `image` field in one of the following formats:
+
 * `ami-abcdef` - specifies an image by id directly (image id is precise, but ids vary by region)
 * `<owner>/<name>` specifies an image by its owner's account ID  and name properties
 * `<alias>/<name>` specifies an image by its [owner's alias](#owner-aliases) and name properties
@@ -223,8 +224,6 @@ az vm image list --all --output table \
 ### Ubuntu 22.04 (Jammy)
 
 Ubuntu 22.04 is based on Kernel version **5.15** which fixes all the known major Kernel bugs.
-
-**WARNING**: The Amazon VPC CNI is not compatible with Ubuntu 22.04. See [kubernetes/kops#15720](https://github.com/kubernetes/kops/issues/15720) and [aws/amazon-vpc-cni-k8s#2103](https://github.com/aws/amazon-vpc-cni-k8s/issues/2103) for more info.
 
 Available images can be listed using:
 

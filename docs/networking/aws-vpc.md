@@ -2,8 +2,6 @@
 
 The Amazon VPC CNI uses the native AWS networking for Pods. Every pod gets an Elastic Network Interface (ENI) on the node it is running and an IP address belonging to the subnets assigned to the node.
 
-**WARNING**: The Amazon VPC CNI is not compatible with Ubuntu 22.04. See [kubernetes/kops#15720](https://github.com/kubernetes/kops/issues/15720) and [aws/amazon-vpc-cni-k8s#2103](https://github.com/aws/amazon-vpc-cni-k8s/issues/2103) for more info.
-
 ## Installing
 
 To use Amazon VPC, specify the following in the cluster spec:
@@ -25,7 +23,6 @@ kops create cluster \
 ```
 
 **Important:** pods use the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network. In addition, this CNI does not enforce network policies.
-
 
 ## Configuration
 
