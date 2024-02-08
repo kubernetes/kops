@@ -21,7 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-// KarpenterOptionsBuilder adds options for the cilium to the model
+// KarpenterOptionsBuilder adds options for karpenter to the model
 type KarpenterOptionsBuilder struct {
 	Context *OptionsContext
 }
@@ -36,7 +36,7 @@ func (b *KarpenterOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Image == "" {
-		c.Image = "public.ecr.aws/karpenter/controller:v0.31.3"
+		c.Image = "public.ecr.aws/karpenter/controller:v0.32.6"
 	}
 
 	if c.LogEncoding == "" {
