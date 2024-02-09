@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -33,9 +33,9 @@ func TestResourceGroupRenderAzure(t *testing.T) {
 	apiTarget := azure.NewAzureAPITarget(cloud)
 	rg := &ResourceGroup{}
 	expected := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 		Tags: map[string]*string{
-			"key": to.StringPtr("value"),
+			"key": to.Ptr("value"),
 		},
 	}
 	if err := rg.RenderAzure(apiTarget, nil, expected, nil); err != nil {
@@ -56,14 +56,14 @@ func TestResourceGroupRenderAzure(t *testing.T) {
 	// Call Render again to update tags.
 	current := expected
 	expected = &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name: to.Ptr("rg"),
 		Tags: map[string]*string{
-			"key2": to.StringPtr("value2"),
+			"key2": to.Ptr("value2"),
 		},
 	}
 	changes := &ResourceGroup{
 		Tags: map[string]*string{
-			"key2": to.StringPtr("value2"),
+			"key2": to.Ptr("value2"),
 		},
 	}
 	if err := rg.RenderAzure(apiTarget, current, expected, changes); err != nil {
@@ -90,8 +90,8 @@ func TestResourceGroupFind(t *testing.T) {
 	}
 
 	rg := &ResourceGroup{
-		Name:   to.StringPtr("rg"),
-		Shared: to.BoolPtr(true),
+		Name:   to.Ptr("rg"),
+		Shared: to.Ptr(true),
 	}
 	// Find will return nothing if there is no Resource Group created.
 	actual, err := rg.Find(ctx)
@@ -103,10 +103,10 @@ func TestResourceGroupFind(t *testing.T) {
 	}
 
 	// Create a Resource Group.
-	rgParameters := resources.Group{
-		Location: to.StringPtr(cloud.Location),
+	rgParameters := resources.ResourceGroup{
+		Location: to.Ptr(cloud.Location),
 		Tags: map[string]*string{
-			"key": to.StringPtr("value"),
+			"key": to.Ptr("value"),
 		},
 	}
 	if err := cloud.ResourceGroup().CreateOrUpdate(context.Background(), *rg.Name, rgParameters); err != nil {
@@ -129,7 +129,7 @@ func TestResourceGroupFind(t *testing.T) {
 
 	// Call Find with an invalid resource group name.
 	rg = &ResourceGroup{
-		Name: to.StringPtr("invalid"),
+		Name: to.Ptr("invalid"),
 	}
 	actual, err = rg.Find(ctx)
 	if err != nil {
@@ -154,10 +154,10 @@ func TestResourceGroupRun(t *testing.T) {
 		val = "val"
 	)
 	rg := &ResourceGroup{
-		Name:      to.StringPtr("rg"),
+		Name:      to.Ptr("rg"),
 		Lifecycle: fi.LifecycleSync,
 		Tags: map[string]*string{
-			key: to.StringPtr(val),
+			key: to.Ptr(val),
 		},
 	}
 	err := rg.Normalize(ctx)
@@ -169,8 +169,8 @@ func TestResourceGroupRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	e := map[string]*string{
-		azure.TagClusterName: to.StringPtr(testClusterName),
-		key:                  to.StringPtr(val),
+		azure.TagClusterName: to.Ptr(testClusterName),
+		key:                  to.Ptr(val),
 	}
 	if a := rg.Tags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)
@@ -184,7 +184,7 @@ func TestResourceGroupCheckChanges(t *testing.T) {
 	}{
 		{
 			a:       nil,
-			e:       &ResourceGroup{Name: to.StringPtr("name")},
+			e:       &ResourceGroup{Name: to.Ptr("name")},
 			changes: nil,
 			success: true,
 		},
@@ -195,13 +195,13 @@ func TestResourceGroupCheckChanges(t *testing.T) {
 			success: false,
 		},
 		{
-			a:       &ResourceGroup{Name: to.StringPtr("name")},
+			a:       &ResourceGroup{Name: to.Ptr("name")},
 			changes: &ResourceGroup{Name: nil},
 			success: true,
 		},
 		{
-			a:       &ResourceGroup{Name: to.StringPtr("name")},
-			changes: &ResourceGroup{Name: to.StringPtr("newName")},
+			a:       &ResourceGroup{Name: to.Ptr("name")},
+			changes: &ResourceGroup{Name: to.Ptr("newName")},
 			success: false,
 		},
 	}

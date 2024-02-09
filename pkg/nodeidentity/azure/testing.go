@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 )
 
 type mockClient struct {
@@ -29,10 +29,10 @@ type mockClient struct {
 
 var _ vmssGetter = &mockClient{}
 
-func (c *mockClient) getVMScaleSet(ctx context.Context, vmssName string) (compute.VirtualMachineScaleSet, error) {
+func (c *mockClient) getVMScaleSet(ctx context.Context, vmssName string) (*compute.VirtualMachineScaleSet, error) {
 	vmss, ok := c.vmsses[vmssName]
 	if !ok {
-		return compute.VirtualMachineScaleSet{}, fmt.Errorf("no VM ScaleSet found for %s", vmssName)
+		return nil, fmt.Errorf("no VM ScaleSet found for %s", vmssName)
 	}
-	return vmss, nil
+	return &vmss, nil
 }

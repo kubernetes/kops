@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
@@ -43,7 +43,7 @@ const (
 )
 
 type vmssGetter interface {
-	getVMScaleSet(ctx context.Context, vmssName string) (compute.VirtualMachineScaleSet, error)
+	getVMScaleSet(ctx context.Context, vmssName string) (*compute.VirtualMachineScaleSet, error)
 }
 
 var _ vmssGetter = &client{}

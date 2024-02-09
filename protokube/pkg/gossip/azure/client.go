@@ -25,9 +25,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
 type instanceComputeMetadata struct {
@@ -94,21 +94,25 @@ func NewClient() (*Client, error) {
 		return nil, fmt.Errorf("empty resource group name")
 	}
 
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating an authorizer: %s", err)
+		return nil, fmt.Errorf("error creating an identity: %s", err)
 	}
 
-	vmssesClient := compute.NewVirtualMachineScaleSetsClient(m.Compute.SubscriptionID)
-	vmssesClient.Authorizer = authorizer
+	vmssesClient, err := compute.NewVirtualMachineScaleSetsClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating VMSS client: %s", err)
+	}
 
-	interfacesClient := network.NewInterfacesClient(m.Compute.SubscriptionID)
-	interfacesClient.Authorizer = authorizer
+	interfacesClient, err := network.NewInterfacesClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating interfaces client: %s", err)
+	}
 
 	return &Client{
 		metadata:         m,
-		vmssesClient:     &vmssesClient,
-		interfacesClient: &interfacesClient,
+		vmssesClient:     vmssesClient,
+		interfacesClient: interfacesClient,
 	}, nil
 }
 
@@ -143,25 +147,29 @@ func (c *Client) GetInternalIP() net.IP {
 }
 
 // ListVMScaleSets returns VM ScaleSets in the resource group.
-func (c *Client) ListVMScaleSets(ctx context.Context) ([]compute.VirtualMachineScaleSet, error) {
-	var l []compute.VirtualMachineScaleSet
-	for iter, err := c.vmssesClient.ListComplete(ctx, c.resourceGroupName()); iter.NotDone(); err = iter.Next() {
+func (c *Client) ListVMScaleSets(ctx context.Context) ([]*compute.VirtualMachineScaleSet, error) {
+	var l []*compute.VirtualMachineScaleSet
+	pager := c.vmssesClient.NewListPager(c.resourceGroupName(), nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 // ListVMSSNetworkInterfaces returns the interfaces that the specified VM ScaleSet has.
-func (c *Client) ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]network.Interface, error) {
-	var l []network.Interface
-	for iter, err := c.interfacesClient.ListVirtualMachineScaleSetNetworkInterfacesComplete(ctx, c.resourceGroupName(), vmScaleSetName); iter.NotDone(); err = iter.Next() {
+func (c *Client) ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error) {
+	var l []*network.Interface
+	pager := c.interfacesClient.NewListPager(c.resourceGroupName(), nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 )
 
-// VMScaleSetsClient is a client for managing VM Scale Set.
+// VMScaleSetsClient is a client for managing VMSSs.
 type VMScaleSetsClient interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error)
-	List(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachineScaleSet, error)
+	List(ctx context.Context, resourceGroupName string) ([]*compute.VirtualMachineScaleSet, error)
 	Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error)
 	Delete(ctx context.Context, resourceGroupName, vmssName string) error
 }
@@ -39,54 +40,58 @@ type vmScaleSetsClientImpl struct {
 var _ VMScaleSetsClient = &vmScaleSetsClientImpl{}
 
 func (c *vmScaleSetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
-	future, err := c.c.CreateOrUpdate(ctx, resourceGroupName, vmScaleSetName, parameters)
+	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, vmScaleSetName, parameters, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating/updating VM Scale Set: %s", err)
+		return nil, fmt.Errorf("creating/updating VMSS: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return nil, fmt.Errorf("error waiting for VM Scale Set create/update completion: %s", err)
-	}
-	vmss, err := future.Result(*c.c)
+	resp, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error obtaining result for VM Scale Set create/update: %s", err)
+		return nil, fmt.Errorf("waiting for VMSS create/update: %w", err)
 	}
-	return &vmss, nil
+	return &resp.VirtualMachineScaleSet, nil
 }
 
-func (c *vmScaleSetsClientImpl) List(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachineScaleSet, error) {
-	var l []compute.VirtualMachineScaleSet
-	for iter, err := c.c.ListComplete(ctx, resourceGroupName); iter.NotDone(); err = iter.Next() {
+func (c *vmScaleSetsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*compute.VirtualMachineScaleSet, error) {
+	var l []*compute.VirtualMachineScaleSet
+	pager := c.c.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing VMSSs: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *vmScaleSetsClientImpl) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	vmss, err := c.c.Get(ctx, resourceGroupName, vmssName, compute.UserData)
-	if err != nil {
-		return nil, err
+	opts := &compute.VirtualMachineScaleSetsClientGetOptions{
+		Expand: to.Ptr(compute.ExpandTypesForGetVMScaleSetsUserData),
 	}
-	return &vmss, nil
+	resp, err := c.c.Get(ctx, resourceGroupName, vmssName, opts)
+	if err != nil {
+		return nil, fmt.Errorf("getting VMSS: %w", err)
+	}
+	return &resp.VirtualMachineScaleSet, nil
 }
 
 func (c *vmScaleSetsClientImpl) Delete(ctx context.Context, resourceGroupName, vmssName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, vmssName, nil)
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, vmssName, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting VM Scale Set: %s", err)
+		return fmt.Errorf("deleting VMSS: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for VM Scale Set deletion completion: %s", err)
+	if _, err := future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for VMSS deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newVMScaleSetsClientImpl(subscriptionID string, authorizer autorest.Authorizer) *vmScaleSetsClientImpl {
-	c := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &vmScaleSetsClientImpl{
-		c: &c,
+func newVMScaleSetsClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*vmScaleSetsClientImpl, error) {
+	c, err := compute.NewVirtualMachineScaleSetsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating VMSSs client: %w", err)
 	}
+	return &vmScaleSetsClientImpl{
+		c: c,
+	}, nil
 }

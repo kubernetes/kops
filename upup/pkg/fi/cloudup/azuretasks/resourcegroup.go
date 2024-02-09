@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -52,14 +52,14 @@ func (r *ResourceGroup) CompareWithID() *string {
 // Find discovers the ResourceGroup in the cloud provider.
 func (r *ResourceGroup) Find(c *fi.CloudupContext) (*ResourceGroup, error) {
 	cloud := c.T.Cloud.(azure.AzureCloud)
-	l, err := cloud.ResourceGroup().List(context.TODO(), "" /* filter*/)
+	l, err := cloud.ResourceGroup().List(context.TODO())
 	if err != nil {
 		return nil, err
 	}
-	var found *resources.Group
+	var found *resources.ResourceGroup
 	for _, rg := range l {
 		if *rg.Name == *r.Name {
-			found = &rg
+			found = rg
 			break
 		}
 	}
@@ -67,7 +67,7 @@ func (r *ResourceGroup) Find(c *fi.CloudupContext) (*ResourceGroup, error) {
 		return nil, nil
 	}
 	return &ResourceGroup{
-		Name:      to.StringPtr(*found.Name),
+		Name:      to.Ptr(*found.Name),
 		Lifecycle: r.Lifecycle,
 		Tags:      found.Tags,
 		// To prevent spurious comparison failures. Follow awstask.VPC.
@@ -112,8 +112,8 @@ func (*ResourceGroup) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Resour
 	return t.Cloud.ResourceGroup().CreateOrUpdate(
 		context.TODO(),
 		*e.Name,
-		resources.Group{
-			Location: to.StringPtr(t.Cloud.Region()),
+		resources.ResourceGroup{
+			Location: to.Ptr(t.Cloud.Region()),
 			Tags:     e.Tags,
 		})
 }

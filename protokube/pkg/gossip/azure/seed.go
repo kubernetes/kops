@@ -20,15 +20,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 type client interface {
-	ListVMScaleSets(ctx context.Context) ([]compute.VirtualMachineScaleSet, error)
-	ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]network.Interface, error)
+	ListVMScaleSets(ctx context.Context) ([]*compute.VirtualMachineScaleSet, error)
+	ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error)
 }
 
 var _ client = &Client{}
@@ -61,7 +61,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	var vmssNames []string
 	for _, vmss := range vmsses {
-		if p.isVMSSForCluster(&vmss) {
+		if p.isVMSSForCluster(vmss) {
 			vmssNames = append(vmssNames, *vmss.Name)
 		}
 	}
@@ -74,8 +74,14 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 			return nil, fmt.Errorf("error listing VMSS network interfaces: %s", err)
 		}
 		for _, iface := range ifaces {
-			for _, i := range *iface.IPConfigurations {
-				seeds = append(seeds, *i.PrivateIPAddress)
+			if iface.Properties == nil {
+				continue
+			}
+			for _, i := range iface.Properties.IPConfigurations {
+				if i.Properties == nil || i.Properties.PrivateIPAddress == nil {
+					continue
+				}
+				seeds = append(seeds, *i.Properties.PrivateIPAddress)
 			}
 		}
 	}

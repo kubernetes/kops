@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -36,7 +36,7 @@ type VirtualNetwork struct {
 	ResourceGroup *ResourceGroup
 	CIDR          *string
 	Tags          map[string]*string
-	Subnets       *[]network.Subnet
+	Subnets       []*network.Subnet
 	Shared        *bool
 }
 
@@ -61,7 +61,7 @@ func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 	var found *network.VirtualNetwork
 	for _, v := range l {
 		if *v.Name == *n.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -69,9 +69,19 @@ func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 		return nil, nil
 	}
 
-	addrPrefixes := *found.AddressSpace.AddressPrefixes
+	if found.ID == nil {
+		return nil, fmt.Errorf("found virtual network without ID")
+	}
+	if found.Properties == nil {
+		return nil, fmt.Errorf("found virtual network without properties")
+	}
+	if found.Properties.AddressSpace == nil {
+		return nil, fmt.Errorf("found virtual network without address space")
+	}
+
+	addrPrefixes := found.Properties.AddressSpace.AddressPrefixes
 	if len(addrPrefixes) != 1 {
-		return nil, fmt.Errorf("expected exactly one address prefix, but got %+v", addrPrefixes)
+		return nil, fmt.Errorf("expecting exactly 1 address prefix for %q, found %d: %+v", *n.Name, len(addrPrefixes), addrPrefixes)
 	}
 	return &VirtualNetwork{
 		Name:      n.Name,
@@ -80,9 +90,9 @@ func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 		ResourceGroup: &ResourceGroup{
 			Name: n.ResourceGroup.Name,
 		},
-		CIDR:    to.StringPtr(addrPrefixes[0]),
+		CIDR:    addrPrefixes[0],
 		Tags:    found.Tags,
-		Subnets: found.Subnets,
+		Subnets: found.Properties.Subnets,
 	}, nil
 }
 
@@ -129,18 +139,20 @@ func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Virtu
 	}
 
 	vnet := network.VirtualNetwork{
-		Location: to.StringPtr(t.Cloud.Region()),
-		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{
+		Location: to.Ptr(t.Cloud.Region()),
+		Properties: &network.VirtualNetworkPropertiesFormat{
 			AddressSpace: &network.AddressSpace{
-				AddressPrefixes: &[]string{*e.CIDR},
+				AddressPrefixes: []*string{e.CIDR},
 			},
 			Subnets: e.Subnets,
 		},
 		Tags: e.Tags,
 	}
-	return t.Cloud.VirtualNetwork().CreateOrUpdate(
+	_, err := t.Cloud.VirtualNetwork().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		*e.Name,
 		vnet)
+
+	return err
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,54 +20,58 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
-// ResourceGroupsClient is a client for managing Resource Groups.
+// ResourceGroupsClient is a client for managing resource groups.
 type ResourceGroupsClient interface {
-	CreateOrUpdate(ctx context.Context, name string, parameters resources.Group) error
-	List(ctx context.Context, filter string) ([]resources.Group, error)
+	CreateOrUpdate(ctx context.Context, name string, parameters resources.ResourceGroup) error
+	List(ctx context.Context) ([]*resources.ResourceGroup, error)
 	Delete(ctx context.Context, name string) error
 }
 
 type resourceGroupsClientImpl struct {
-	c *resources.GroupsClient
+	c *resources.ResourceGroupsClient
 }
 
 var _ ResourceGroupsClient = &resourceGroupsClientImpl{}
 
-func (c *resourceGroupsClientImpl) CreateOrUpdate(ctx context.Context, name string, parameters resources.Group) error {
-	_, err := c.c.CreateOrUpdate(ctx, name, parameters)
+func (c *resourceGroupsClientImpl) CreateOrUpdate(ctx context.Context, name string, parameters resources.ResourceGroup) error {
+	_, err := c.c.CreateOrUpdate(ctx, name, parameters, nil)
 	return err
 }
 
-func (c *resourceGroupsClientImpl) List(ctx context.Context, filter string) ([]resources.Group, error) {
-	var l []resources.Group
-	for iter, err := c.c.ListComplete(ctx, filter, nil /* top */); iter.NotDone(); err = iter.Next() {
+func (c *resourceGroupsClientImpl) List(ctx context.Context) ([]*resources.ResourceGroup, error) {
+	var l []*resources.ResourceGroup
+	pager := c.c.NewListPager(nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing resource groups: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *resourceGroupsClientImpl) Delete(ctx context.Context, name string) error {
-	future, err := c.c.Delete(ctx, name, "")
+	future, err := c.c.BeginDelete(ctx, name, nil)
 	if err != nil {
-		return fmt.Errorf("error deleting resource group: %s", err)
+		return fmt.Errorf("deleting resource group: %w", err)
 	}
-	if err := future.WaitForCompletionRef(ctx, c.c.Client); err != nil {
-		return fmt.Errorf("error waiting for resource group deletion completion: %s", err)
+	if _, err = future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for resource group deletion completion: %w", err)
 	}
 	return nil
 }
 
-func newResourceGroupsClientImpl(subscriptionID string, authorizer autorest.Authorizer) *resourceGroupsClientImpl {
-	c := resources.NewGroupsClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &resourceGroupsClientImpl{
-		c: &c,
+func newResourceGroupsClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*resourceGroupsClientImpl, error) {
+	c, err := resources.NewResourceGroupsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating resource group client: %w", err)
 	}
+	return &resourceGroupsClientImpl{
+		c: c,
+	}, nil
 }

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -49,10 +49,10 @@ func (c *azureCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*ko
 	return status, nil
 }
 
-func (c *azureCloudImplementation) findEtcdStatus(disks []compute.Disk) ([]kops.EtcdClusterStatus, error) {
+func (c *azureCloudImplementation) findEtcdStatus(disks []*compute.Disk) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 	for _, disk := range disks {
-		if !c.isDiskForCluster(&disk) {
+		if !c.isDiskForCluster(disk) {
 			continue
 		}
 
@@ -135,7 +135,7 @@ func (c *azureCloudImplementation) GetCloudGroups(
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for _, vmss := range vmsses {
-		if !isOwnedByCluster(&vmss, cluster.Name) {
+		if !isOwnedByCluster(vmss, cluster.Name) {
 			continue
 		}
 
@@ -147,7 +147,7 @@ func (c *azureCloudImplementation) GetCloudGroups(
 			continue
 		}
 
-		cig, err := c.buildCloudInstanceGroup(ctx, cluster, ig, &vmss, nodeMap)
+		cig, err := c.buildCloudInstanceGroup(ctx, cluster, ig, vmss, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", ig.Name, err)
 		}
@@ -163,7 +163,7 @@ func (c *azureCloudImplementation) buildCloudInstanceGroup(
 	vmss *compute.VirtualMachineScaleSet,
 	nodeMap map[string]*v1.Node,
 ) (*cloudinstances.CloudInstanceGroup, error) {
-	cap := int(*vmss.Sku.Capacity)
+	cap := int(*vmss.SKU.Capacity)
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     *vmss.Name,
 		InstanceGroup: ig,

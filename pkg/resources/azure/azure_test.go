@@ -21,11 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
-	azureresources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
@@ -47,46 +47,46 @@ func TestListResourcesAzure(t *testing.T) {
 		lbName         = "lb"
 	)
 	clusterTags := map[string]*string{
-		azure.TagClusterName: to.StringPtr(clusterName),
+		azure.TagClusterName: to.Ptr(clusterName),
 	}
 
 	cloud := azuretasks.NewMockAzureCloud("eastus")
 	// Set up resources in the mock clients.
 	rgs := cloud.ResourceGroupsClient.RGs
-	rgs[rgName] = azureresources.Group{
-		Name: to.StringPtr(rgName),
+	rgs[rgName] = &armresources.ResourceGroup{
+		Name: to.Ptr(rgName),
 		Tags: clusterTags,
 	}
-	rgs[irrelevantName] = azureresources.Group{
-		Name: to.StringPtr(irrelevantName),
+	rgs[irrelevantName] = &armresources.ResourceGroup{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	vnets := cloud.VirtualNetworksClient.VNets
-	vnets[vnetName] = network.VirtualNetwork{
-		Name:                           to.StringPtr(vnetName),
-		Tags:                           clusterTags,
-		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{},
+	vnets[vnetName] = &network.VirtualNetwork{
+		Name:       to.Ptr(vnetName),
+		Tags:       clusterTags,
+		Properties: &network.VirtualNetworkPropertiesFormat{},
 	}
-	vnets[irrelevantName] = network.VirtualNetwork{
-		Name: to.StringPtr(irrelevantName),
+	vnets[irrelevantName] = &network.VirtualNetwork{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	subnets := cloud.SubnetsClient.Subnets
-	subnets[rgName] = network.Subnet{
-		Name:                   to.StringPtr(subnetName),
-		SubnetPropertiesFormat: &network.SubnetPropertiesFormat{},
+	subnets[rgName] = &network.Subnet{
+		Name:       to.Ptr(subnetName),
+		Properties: &network.SubnetPropertiesFormat{},
 	}
-	vnets[irrelevantName] = network.VirtualNetwork{
-		Name: to.StringPtr(irrelevantName),
+	vnets[irrelevantName] = &network.VirtualNetwork{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	rts := cloud.RouteTablesClient.RTs
-	rts[rtName] = network.RouteTable{
-		Name: to.StringPtr(rtName),
+	rts[rtName] = &network.RouteTable{
+		Name: to.Ptr(rtName),
 		Tags: clusterTags,
 	}
-	rts[irrelevantName] = network.RouteTable{
-		Name: to.StringPtr(irrelevantName),
+	rts[irrelevantName] = &network.RouteTable{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	vmsses := cloud.VMScaleSetsClient.VMSSes
@@ -96,47 +96,47 @@ func TestListResourcesAzure(t *testing.T) {
 		VirtualNetworkName: vnetName,
 		SubnetName:         subnetName,
 	}
-	networkConfig := compute.VirtualMachineScaleSetNetworkConfiguration{
-		VirtualMachineScaleSetNetworkConfigurationProperties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
-			IPConfigurations: &[]compute.VirtualMachineScaleSetIPConfiguration{
+	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
+		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
+			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
-					VirtualMachineScaleSetIPConfigurationProperties: &compute.VirtualMachineScaleSetIPConfigurationProperties{
+					Properties: &compute.VirtualMachineScaleSetIPConfigurationProperties{
 						Subnet: &compute.APIEntityReference{
-							ID: to.StringPtr(subnetID.String()),
+							ID: to.Ptr(subnetID.String()),
 						},
 					},
 				},
 			},
 		},
 	}
-	vmsses[vmssName] = compute.VirtualMachineScaleSet{
-		Name: to.StringPtr(vmssName),
+	vmsses[vmssName] = &compute.VirtualMachineScaleSet{
+		Name: to.Ptr(vmssName),
 		Tags: clusterTags,
-		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+		Properties: &compute.VirtualMachineScaleSetProperties{
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				NetworkProfile: &compute.VirtualMachineScaleSetNetworkProfile{
-					NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
+					NetworkInterfaceConfigurations: []*compute.VirtualMachineScaleSetNetworkConfiguration{
 						networkConfig,
 					},
 				},
 			},
 		},
 		Identity: &compute.VirtualMachineScaleSetIdentity{
-			Type:        compute.ResourceIdentityTypeSystemAssigned,
-			PrincipalID: to.StringPtr(principalID),
+			Type:        to.Ptr(compute.ResourceIdentityTypeSystemAssigned),
+			PrincipalID: to.Ptr(principalID),
 		},
 	}
-	vmsses[irrelevantName] = compute.VirtualMachineScaleSet{
-		Name: to.StringPtr(irrelevantName),
+	vmsses[irrelevantName] = &compute.VirtualMachineScaleSet{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	vms := cloud.VMScaleSetVMsClient.VMs
-	vms[vmName] = compute.VirtualMachineScaleSetVM{
-		VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+	vms[vmName] = &compute.VirtualMachineScaleSetVM{
+		Properties: &compute.VirtualMachineScaleSetVMProperties{
 			StorageProfile: &compute.StorageProfile{
-				DataDisks: &[]compute.DataDisk{
+				DataDisks: []*compute.DataDisk{
 					{
-						Name: to.StringPtr(diskName),
+						Name: to.Ptr(diskName),
 					},
 				},
 			},
@@ -144,34 +144,34 @@ func TestListResourcesAzure(t *testing.T) {
 	}
 
 	disks := cloud.DisksClient.Disks
-	disks[diskName] = compute.Disk{
-		Name: to.StringPtr(diskName),
+	disks[diskName] = &compute.Disk{
+		Name: to.Ptr(diskName),
 		Tags: clusterTags,
 	}
-	disks[irrelevantName] = compute.Disk{
-		Name: to.StringPtr(irrelevantName),
+	disks[irrelevantName] = &compute.Disk{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	ras := cloud.RoleAssignmentsClient.RAs
-	ras[raName] = authz.RoleAssignment{
-		Name: to.StringPtr(raName),
-		RoleAssignmentPropertiesWithScope: &authz.RoleAssignmentPropertiesWithScope{
-			Scope:       to.StringPtr("scope"),
-			PrincipalID: to.StringPtr(principalID),
+	ras[raName] = &authz.RoleAssignment{
+		Name: to.Ptr(raName),
+		Properties: &authz.RoleAssignmentProperties{
+			Scope:       to.Ptr("scope"),
+			PrincipalID: to.Ptr(principalID),
 		},
 	}
-	disks[irrelevantName] = compute.Disk{
-		Name: to.StringPtr(irrelevantName),
+	disks[irrelevantName] = &compute.Disk{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	lbs := cloud.LoadBalancersClient.LBs
-	lbs[lbName] = network.LoadBalancer{
-		Name:                         to.StringPtr(lbName),
-		Tags:                         clusterTags,
-		LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{},
+	lbs[lbName] = &network.LoadBalancer{
+		Name:       to.Ptr(lbName),
+		Tags:       clusterTags,
+		Properties: &network.LoadBalancerPropertiesFormat{},
 	}
-	lbs[irrelevantName] = network.LoadBalancer{
-		Name: to.StringPtr(irrelevantName),
+	lbs[irrelevantName] = &network.LoadBalancer{
+		Name: to.Ptr(irrelevantName),
 	}
 
 	// Call listResourcesAzure.
@@ -277,26 +277,26 @@ func TestIsOwnedByCluster(t *testing.T) {
 	}{
 		{
 			tags: map[string]*string{
-				azure.TagClusterName: to.StringPtr(clusterName),
+				azure.TagClusterName: to.Ptr(clusterName),
 			},
 			expected: true,
 		},
 		{
 			tags: map[string]*string{
-				azure.TagClusterName: to.StringPtr(clusterName),
-				"other-key":          to.StringPtr("other-tag"),
+				azure.TagClusterName: to.Ptr(clusterName),
+				"other-key":          to.Ptr("other-tag"),
 			},
 			expected: true,
 		},
 		{
 			tags: map[string]*string{
-				"other-key": to.StringPtr("other-tag"),
+				"other-key": to.Ptr("other-tag"),
 			},
 			expected: false,
 		},
 		{
 			tags: map[string]*string{
-				azure.TagClusterName: to.StringPtr("different-cluster"),
+				azure.TagClusterName: to.Ptr("different-cluster"),
 			},
 			expected: false,
 		},

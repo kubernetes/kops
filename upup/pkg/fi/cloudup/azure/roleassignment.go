@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,19 +18,16 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
-	// Use 2018-01-01-preview API as we need the version to create
-	// a role assignment with Data Actions (https://github.com/Azure/azure-sdk-for-go/issues/1895).
-	// The non-preview version of the authorization API (2015-07-01)
-	// doesn't support Data Actions.
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 )
 
-// RoleAssignmentsClient is a client for managing Role Assignments
+// RoleAssignmentsClient is a client for managing role assignments
 type RoleAssignmentsClient interface {
 	Create(ctx context.Context, scope, roleAssignmentName string, parameters authz.RoleAssignmentCreateParameters) (*authz.RoleAssignment, error)
-	List(ctx context.Context, resourceGroupName string) ([]authz.RoleAssignment, error)
+	List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error)
 	Delete(ctx context.Context, scope, raName string) error
 }
 
@@ -46,30 +43,37 @@ func (c *roleAssignmentsClientImpl) Create(
 	roleAssignmentName string,
 	parameters authz.RoleAssignmentCreateParameters,
 ) (*authz.RoleAssignment, error) {
-	ra, err := c.c.Create(ctx, scope, roleAssignmentName, parameters)
-	return &ra, err
+	resp, err := c.c.Create(ctx, scope, roleAssignmentName, parameters, nil)
+	return &resp.RoleAssignment, err
 }
 
-func (c *roleAssignmentsClientImpl) List(ctx context.Context, resourceGroupName string) ([]authz.RoleAssignment, error) {
-	var l []authz.RoleAssignment
-	for iter, err := c.c.ListForResourceGroupComplete(ctx, resourceGroupName, "", ""); iter.NotDone(); err = iter.Next() {
+func (c *roleAssignmentsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error) {
+	var l []*authz.RoleAssignment
+	pager := c.c.NewListForResourceGroupPager(resourceGroupName, nil)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing role assignments: %w", err)
 		}
-		l = append(l, iter.Value())
+		l = append(l, resp.Value...)
 	}
 	return l, nil
 }
 
 func (c *roleAssignmentsClientImpl) Delete(ctx context.Context, scope, raName string) error {
-	_, err := c.c.Delete(ctx, scope, raName, "")
-	return err
+	_, err := c.c.Delete(ctx, scope, raName, nil)
+	if err != nil {
+		return fmt.Errorf("deleting role assignment: %w", err)
+	}
+	return nil
 }
 
-func newRoleAssignmentsClientImpl(subscriptionID string, authorizer autorest.Authorizer) *roleAssignmentsClientImpl {
-	c := authz.NewRoleAssignmentsClient(subscriptionID)
-	c.Authorizer = authorizer
-	return &roleAssignmentsClientImpl{
-		c: &c,
+func newRoleAssignmentsClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*roleAssignmentsClientImpl, error) {
+	c, err := authz.NewRoleAssignmentsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating role assignments client: %w", err)
 	}
+	return &roleAssignmentsClientImpl{
+		c: c,
+	}, nil
 }

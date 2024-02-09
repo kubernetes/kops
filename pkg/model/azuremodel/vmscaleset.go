@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -86,13 +86,13 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 	name string,
 	ig *kops.InstanceGroup,
 ) (*azuretasks.VMScaleSet, error) {
-	var azNumbers []string
+	var azNumbers []*string
 	for _, zone := range ig.Spec.Zones {
 		az, err := azure.ZoneToAvailabilityZoneNumber(zone)
 		if err != nil {
 			return nil, err
 		}
-		azNumbers = append(azNumbers, az)
+		azNumbers = append(azNumbers, &az)
 	}
 	t := &azuretasks.VMScaleSet{
 		Name:               fi.PtrTo(name),
@@ -162,7 +162,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 
 	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane && b.Cluster.Spec.API.LoadBalancer != nil {
 		t.LoadBalancer = &azuretasks.LoadBalancer{
-			Name: to.StringPtr(b.NameForLoadBalancer()),
+			Name: to.Ptr(b.NameForLoadBalancer()),
 		}
 	}
 
@@ -207,7 +207,7 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 	if spec.RootVolume != nil && spec.RootVolume.Type != nil {
 		storageAccountType = compute.StorageAccountTypes(*spec.RootVolume.Type)
 	} else {
-		storageAccountType = compute.StorageAccountTypesPremiumLRS
+		storageAccountType = compute.StorageAccountTypesStandardSSDLRS
 	}
 
 	imageReference, err := parseImage(spec.Image)
@@ -216,16 +216,15 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 	}
 
 	return &compute.VirtualMachineScaleSetStorageProfile{
-		DiskControllerType: fi.PtrTo(string(compute.SCSI)),
-		ImageReference:     imageReference,
-		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
-			OsType:       compute.OperatingSystemTypes(compute.Linux),
-			CreateOption: compute.DiskCreateOptionTypesFromImage,
-			DiskSizeGB:   to.Int32Ptr(volumeSize),
+		ImageReference: imageReference,
+		OSDisk: &compute.VirtualMachineScaleSetOSDisk{
+			OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+			CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+			DiskSizeGB:   to.Ptr(volumeSize),
 			ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-				StorageAccountType: storageAccountType,
+				StorageAccountType: &storageAccountType,
 			},
-			Caching: compute.CachingTypes(compute.HostCachingReadWrite),
+			Caching: to.Ptr(compute.CachingTypesReadWrite),
 		},
 	}, nil
 }
@@ -233,7 +232,7 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 func parseImage(image string) (*compute.ImageReference, error) {
 	if strings.HasPrefix(image, "/subscriptions/") {
 		return &compute.ImageReference{
-			ID: to.StringPtr(image),
+			ID: to.Ptr(image),
 		}, nil
 	}
 
@@ -242,20 +241,20 @@ func parseImage(image string) (*compute.ImageReference, error) {
 		return nil, fmt.Errorf("malformed format of image urn: %s", image)
 	}
 	return &compute.ImageReference{
-		Publisher: to.StringPtr(l[0]),
-		Offer:     to.StringPtr(l[1]),
-		Sku:       to.StringPtr(l[2]),
-		Version:   to.StringPtr(l[3]),
+		Publisher: to.Ptr(l[0]),
+		Offer:     to.Ptr(l[1]),
+		SKU:       to.Ptr(l[2]),
+		Version:   to.Ptr(l[3]),
 	}, nil
 }
 
 func (b *VMScaleSetModelBuilder) buildRoleAssignmentTask(vmss *azuretasks.VMScaleSet, roleKey, roleDefID string) *azuretasks.RoleAssignment {
 	name := fmt.Sprintf("%s-%s", *vmss.Name, roleKey)
 	return &azuretasks.RoleAssignment{
-		Name:          to.StringPtr(name),
+		Name:          to.Ptr(name),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		VMScaleSet:    vmss,
-		RoleDefID:     to.StringPtr(roleDefID),
+		RoleDefID:     to.Ptr(roleDefID),
 	}
 }

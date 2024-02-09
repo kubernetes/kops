@@ -23,8 +23,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type instanceComputeMetadata struct {
@@ -55,23 +56,32 @@ func newClient() (*client, error) {
 		return nil, fmt.Errorf("empty resource group name")
 	}
 
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating an authorizer: %s", err)
+		return nil, fmt.Errorf("creating identity: %w", err)
 	}
 
-	vmssesClient := compute.NewVirtualMachineScaleSetsClient(m.Compute.SubscriptionID)
-	vmssesClient.Authorizer = authorizer
+	vmssesClient, err := compute.NewVirtualMachineScaleSetsClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating VMSS client: %w", err)
+	}
 
 	return &client{
 		metadata:     m,
-		vmssesClient: &vmssesClient,
+		vmssesClient: vmssesClient,
 	}, nil
 }
 
 // getVMScaleSet returns the specified VM ScaleSet.
-func (c *client) getVMScaleSet(ctx context.Context, vmssName string) (compute.VirtualMachineScaleSet, error) {
-	return c.vmssesClient.Get(ctx, c.metadata.Compute.ResourceGroupName, vmssName, compute.UserData)
+func (c *client) getVMScaleSet(ctx context.Context, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	opts := &compute.VirtualMachineScaleSetsClientGetOptions{
+		Expand: fi.PtrTo(compute.ExpandTypesForGetVMScaleSetsUserData),
+	}
+	resp, err := c.vmssesClient.Get(ctx, c.metadata.Compute.ResourceGroupName, vmssName, opts)
+	if err != nil {
+		return nil, fmt.Errorf("getting VMSS: %w", err)
+	}
+	return &resp.VirtualMachineScaleSet, nil
 }
 
 // queryInstanceMetadata queries Azure Instance Metadata documented in

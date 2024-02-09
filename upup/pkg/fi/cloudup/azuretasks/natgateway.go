@@ -19,8 +19,8 @@ package azuretasks
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -60,7 +60,7 @@ func (ngw *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 	var found *network.NatGateway
 	for _, v := range l {
 		if *v.Name == *ngw.Name {
-			found = &v
+			found = v
 			break
 		}
 	}
@@ -71,8 +71,11 @@ func (ngw *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 	ngw.ID = found.ID
 
 	var pips []*PublicIPAddress
-	if found.PublicIPAddresses != nil {
-		for _, pip := range *found.PublicIPAddresses {
+	if found.Properties != nil && found.Properties.PublicIPAddresses != nil {
+		for _, pip := range found.Properties.PublicIPAddresses {
+			if pip.ID == nil {
+				continue
+			}
 			pips = append(pips, &PublicIPAddress{ID: pip.ID})
 		}
 	}
@@ -123,21 +126,24 @@ func (*NatGateway) RenderAzure(t *azure.AzureAPITarget, a, e, changes *NatGatewa
 	}
 
 	p := network.NatGateway{
-		Location:                   to.StringPtr(t.Cloud.Region()),
-		Name:                       to.StringPtr(*e.Name),
-		NatGatewayPropertiesFormat: &network.NatGatewayPropertiesFormat{},
-		Sku: &network.NatGatewaySku{
-			Name: network.NatGatewaySkuNameStandard,
+		Location:   to.Ptr(t.Cloud.Region()),
+		Name:       to.Ptr(*e.Name),
+		Properties: &network.NatGatewayPropertiesFormat{},
+		SKU: &network.NatGatewaySKU{
+			Name: to.Ptr(network.NatGatewaySKUNameStandard),
 		},
 		Tags: e.Tags,
 	}
 
 	if len(e.PublicIPAddresses) > 0 {
-		var pips []network.SubResource
+		var pips []*network.SubResource
 		for _, pip := range e.PublicIPAddresses {
-			pips = append(pips, network.SubResource{ID: pip.ID})
+			if pip.ID == nil {
+				continue
+			}
+			pips = append(pips, &network.SubResource{ID: pip.ID})
 		}
-		p.PublicIPAddresses = &pips
+		p.Properties.PublicIPAddresses = pips
 	}
 
 	ngw, err := t.Cloud.NatGateway().CreateOrUpdate(

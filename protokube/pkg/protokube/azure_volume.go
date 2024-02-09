@@ -21,16 +21,16 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipazure "k8s.io/kops/protokube/pkg/gossip/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 type client interface {
-	ListVMScaleSets(ctx context.Context) ([]compute.VirtualMachineScaleSet, error)
-	ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]network.Interface, error)
+	ListVMScaleSets(ctx context.Context) ([]*compute.VirtualMachineScaleSet, error)
+	ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error)
 	GetName() string
 	GetTags() (map[string]string, error)
 	GetInternalIP() net.IP
