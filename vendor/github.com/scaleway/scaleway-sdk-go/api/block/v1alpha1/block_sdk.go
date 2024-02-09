@@ -559,24 +559,6 @@ type GetVolumeRequest struct {
 	VolumeID string `json:"-"`
 }
 
-// ImportSnapshotFromS3Request: import snapshot from s3 request.
-type ImportSnapshotFromS3Request struct {
-	// Zone: zone to target. If none is passed will use default zone from the config.
-	Zone scw.Zone `json:"-"`
-
-	Bucket string `json:"bucket"`
-
-	Key string `json:"key"`
-
-	Name string `json:"name"`
-
-	ProjectID string `json:"project_id"`
-
-	Tags []string `json:"tags"`
-
-	Size *scw.Size `json:"size,omitempty"`
-}
-
 // ListSnapshotsRequest: list snapshots request.
 type ListSnapshotsRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
@@ -1131,43 +1113,6 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	scwReq := &scw.ScalewayRequest{
 		Method: "POST",
 		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots",
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Snapshot
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// ImportSnapshotFromS3:
-func (s *API) ImportSnapshotFromS3(req *ImportSnapshotFromS3Request, opts ...scw.RequestOption) (*Snapshot, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if req.ProjectID == "" {
-		defaultProjectID, _ := s.client.GetDefaultProjectID()
-		req.ProjectID = defaultProjectID
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method: "POST",
-		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots/import-from-s3",
 	}
 
 	err = scwReq.SetBody(req)

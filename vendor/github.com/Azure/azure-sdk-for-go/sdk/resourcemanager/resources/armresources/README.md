@@ -11,7 +11,7 @@ The `armresources` module provides operations for working with Azure Resources.
 ## Prerequisites
 
 - an [Azure subscription](https://azure.microsoft.com/free/)
-- Go 1.18 or above
+- Go 1.18 or above (You could download and install the latest version of Go from [here](https://go.dev/doc/install). It will replace the existing Go on your machine. If you want to install multiple Go versions on the same machine, you could refer this [doc](https://go.dev/doc/manage-install).)
 
 ## Install the package
 
@@ -33,12 +33,12 @@ cred, err := azidentity.NewDefaultAzureCredential(nil)
 
 For more information on authentication, please see the documentation for `azidentity` at [pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity).
 
-## Clients
+## Client Factory
 
-Azure Resources modules consist of one or more clients.  A client groups a set of related APIs, providing access to its functionality within the specified subscription.  Create one or more clients to access the APIs you require using your credential.
+Azure Resources module consists of one or more clients. We provide a client factory which could be used to create any client in this module.
 
 ```go
-client, err := armresources.NewClient(<subscription ID>, cred, nil)
+clientFactory, err := armresources.NewClientFactory(<subscription ID>, cred, nil)
 ```
 
 You can use `ClientOptions` in package `github.com/Azure/azure-sdk-for-go/sdk/azcore/arm` to set endpoint to connect with public and sovereign clouds as well as Azure Stack. For more information, please see the documentation for `azcore` at [pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azcore](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azcore).
@@ -49,11 +49,27 @@ options := arm.ClientOptions {
         Cloud: cloud.AzureChina,
     },
 }
-client, err := armresources.NewClient(<subscription ID>, cred, &options)
+clientFactory, err := armresources.NewClientFactory(<subscription ID>, cred, &options)
 ```
+
+## Clients
+
+A client groups a set of related APIs, providing access to its functionality.  Create one or more clients to access the APIs you require using client factory.
+
+```go
+client := clientFactory.NewClient()
+```
+
+## Fakes
+
+The fake package contains types used for constructing in-memory fake servers used in unit tests.
+This allows writing tests to cover various success/error conditions without the need for connecting to a live service.
+
+Please see https://github.com/Azure/azure-sdk-for-go/tree/main/sdk/samples/fakes for details and examples on how to use fakes.
 
 ## More sample code
 
+- [Creating a Fake](https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/resources/armresources/fake_example_test.go)
 - [Deployment](https://aka.ms/azsdk/go/mgmt/samples?path=sdk/resourcemanager/resource/deployment)
 - [Provider](https://aka.ms/azsdk/go/mgmt/samples?path=sdk/resourcemanager/resource/provider)
 - [Resource Group](https://aka.ms/azsdk/go/mgmt/samples?path=sdk/resourcemanager/resource/resourcegroups)

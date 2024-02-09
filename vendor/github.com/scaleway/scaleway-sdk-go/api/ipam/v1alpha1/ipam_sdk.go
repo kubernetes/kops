@@ -131,7 +131,7 @@ type Resource struct {
 type Reverse struct {
 	Hostname string `json:"hostname"`
 
-	Address *scw.IPNet `json:"address"`
+	Address *net.IP `json:"address"`
 }
 
 // IP: ip.

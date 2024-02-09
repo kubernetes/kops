@@ -1254,7 +1254,7 @@ type ListAPIKeysRequest struct {
 	// Expired: defines whether to filter out expired API keys or not.
 	Expired *bool `json:"-"`
 
-	// AccessKey: filter by access key.
+	// Deprecated: AccessKey: filter by access key (deprecated in favor of `access_keys`).
 	AccessKey *string `json:"-"`
 
 	// Description: filter by description.
@@ -1266,6 +1266,9 @@ type ListAPIKeysRequest struct {
 	// BearerType: filter by type of bearer.
 	// Default value: unknown_bearer_type
 	BearerType BearerType `json:"-"`
+
+	// AccessKeys: filter by a list of access keys.
+	AccessKeys []string `json:"-"`
 }
 
 // ListAPIKeysResponse: list api keys response.
@@ -1596,6 +1599,9 @@ type ListPoliciesRequest struct {
 
 	// Tag: filter by tags containing a given string.
 	Tag *string `json:"-"`
+
+	// PolicyIDs: filter by a list of IDs.
+	PolicyIDs []string `json:"-"`
 }
 
 // ListPoliciesResponse: list policies response.
@@ -1938,6 +1944,15 @@ type UpdateSSHKeyRequest struct {
 	Disabled *bool `json:"disabled,omitempty"`
 }
 
+// UpdateUserRequest: update user request.
+type UpdateUserRequest struct {
+	// UserID: ID of the user to update.
+	UserID string `json:"-"`
+
+	// Tags: new tags for the user (maximum of 10 tags).
+	Tags *[]string `json:"tags,omitempty"`
+}
+
 // IAM API.
 type API struct {
 	client *scw.Client
@@ -2128,6 +2143,33 @@ func (s *API) GetUser(req *GetUserRequest, opts ...scw.RequestOption) (*User, er
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
 		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "",
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateUser: Update the parameters of a user, including `tags`.
+func (s *API) UpdateUser(req *UpdateUserRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "PATCH",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
 	}
 
 	var resp User
@@ -2602,6 +2644,7 @@ func (s *API) ListPolicies(req *ListPoliciesRequest, opts ...scw.RequestOption) 
 	parameter.AddToQuery(query, "no_principal", req.NoPrincipal)
 	parameter.AddToQuery(query, "policy_name", req.PolicyName)
 	parameter.AddToQuery(query, "tag", req.Tag)
+	parameter.AddToQuery(query, "policy_ids", req.PolicyIDs)
 
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
@@ -2853,6 +2896,7 @@ func (s *API) ListAPIKeys(req *ListAPIKeysRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "description", req.Description)
 	parameter.AddToQuery(query, "bearer_id", req.BearerID)
 	parameter.AddToQuery(query, "bearer_type", req.BearerType)
+	parameter.AddToQuery(query, "access_keys", req.AccessKeys)
 	parameter.AddToQuery(query, "application_id", req.ApplicationID)
 	parameter.AddToQuery(query, "user_id", req.UserID)
 
