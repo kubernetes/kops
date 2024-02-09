@@ -24796,16 +24796,6 @@ var awsPartition = partition{
 			},
 			Endpoints: serviceEndpoints{
 				endpointKey{
-					Region: "af-south-1",
-				}: endpoint{
-					Hostname: "resource-explorer-2.af-south-1.api.aws",
-				},
-				endpointKey{
-					Region: "ap-east-1",
-				}: endpoint{
-					Hostname: "resource-explorer-2.ap-east-1.api.aws",
-				},
-				endpointKey{
 					Region: "ap-northeast-1",
 				}: endpoint{
 					Hostname: "resource-explorer-2.ap-northeast-1.api.aws",
@@ -24826,11 +24816,6 @@ var awsPartition = partition{
 					Hostname: "resource-explorer-2.ap-south-1.api.aws",
 				},
 				endpointKey{
-					Region: "ap-south-2",
-				}: endpoint{
-					Hostname: "resource-explorer-2.ap-south-2.api.aws",
-				},
-				endpointKey{
 					Region: "ap-southeast-1",
 				}: endpoint{
 					Hostname: "resource-explorer-2.ap-southeast-1.api.aws",
@@ -24846,11 +24831,6 @@ var awsPartition = partition{
 					Hostname: "resource-explorer-2.ap-southeast-3.api.aws",
 				},
 				endpointKey{
-					Region: "ap-southeast-4",
-				}: endpoint{
-					Hostname: "resource-explorer-2.ap-southeast-4.api.aws",
-				},
-				endpointKey{
 					Region: "ca-central-1",
 				}: endpoint{
 					Hostname: "resource-explorer-2.ca-central-1.api.aws",
@@ -24861,19 +24841,9 @@ var awsPartition = partition{
 					Hostname: "resource-explorer-2.eu-central-1.api.aws",
 				},
 				endpointKey{
-					Region: "eu-central-2",
-				}: endpoint{
-					Hostname: "resource-explorer-2.eu-central-2.api.aws",
-				},
-				endpointKey{
 					Region: "eu-north-1",
 				}: endpoint{
 					Hostname: "resource-explorer-2.eu-north-1.api.aws",
-				},
-				endpointKey{
-					Region: "eu-south-1",
-				}: endpoint{
-					Hostname: "resource-explorer-2.eu-south-1.api.aws",
 				},
 				endpointKey{
 					Region: "eu-west-1",
@@ -24889,16 +24859,6 @@ var awsPartition = partition{
 					Region: "eu-west-3",
 				}: endpoint{
 					Hostname: "resource-explorer-2.eu-west-3.api.aws",
-				},
-				endpointKey{
-					Region: "il-central-1",
-				}: endpoint{
-					Hostname: "resource-explorer-2.il-central-1.api.aws",
-				},
-				endpointKey{
-					Region: "me-central-1",
-				}: endpoint{
-					Hostname: "resource-explorer-2.me-central-1.api.aws",
 				},
 				endpointKey{
 					Region: "me-south-1",
@@ -35528,6 +35488,16 @@ var awscnPartition = partition{
 			},
 		},
 		"identitystore": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "cn-north-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "cn-northwest-1",
+				}: endpoint{},
+			},
+		},
+		"inspector2": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
 					Region: "cn-north-1",

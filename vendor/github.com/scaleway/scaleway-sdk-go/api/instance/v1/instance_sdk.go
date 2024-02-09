@@ -1186,7 +1186,11 @@ type ServerIP struct {
 	// Tags: tags associated with the IP.
 	Tags []string `json:"tags"`
 
-	// State: default value: unknown_state
+	// IpamID: the ip_id of an IPAM ip if the ip is created from IPAM, null if not.
+	IpamID string `json:"ipam_id"`
+
+	// State: IP address state.
+	// Default value: unknown_state
 	State ServerIPState `json:"state"`
 }
 
@@ -1218,6 +1222,8 @@ type ServerLocation struct {
 // ServerMaintenance: server maintenance.
 type ServerMaintenance struct {
 	Reason string `json:"reason"`
+
+	StartDate *time.Time `json:"start_date"`
 }
 
 // VolumeServer: volume server.
@@ -1428,6 +1434,8 @@ type IP struct {
 	State IPState `json:"state"`
 
 	Prefix scw.IPNet `json:"prefix"`
+
+	IpamID string `json:"ipam_id"`
 
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"zone"`
