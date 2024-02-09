@@ -829,7 +829,7 @@ func (s *Expr) MarshalJSON() ([]byte, error) {
 // a load balancer. It captures the ip:port over which the services are
 // exposed by the proxy, along with any policy configurations. Routes
 // have reference to to Gateways to dictate how requests should be
-// routed by this Gateway. Next id: 29
+// routed by this Gateway. Next id: 30
 type Gateway struct {
 	// Addresses: Optional. Zero or one IPv4 or IPv6 address on which the
 	// Gateway will receive the traffic. When no address is provided, an IP

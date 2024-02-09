@@ -226,6 +226,40 @@ func (enum *ContactLegalForm) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ContactStatus string
+
+const (
+	// If unspecified, the status is unknown by default.
+	ContactStatusStatusUnknown = ContactStatus("status_unknown")
+	// The contact is active and can be edited.
+	ContactStatusActive = ContactStatus("active")
+	// The contact is temporarily locked (ie. while being edited).
+	ContactStatusPending = ContactStatus("pending")
+)
+
+func (enum ContactStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "status_unknown"
+	}
+	return string(enum)
+}
+
+func (enum ContactStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ContactStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ContactStatus(ContactStatus(tmp).String())
+	return nil
+}
+
 type DNSZoneStatus string
 
 const (
@@ -1428,6 +1462,9 @@ type Contact struct {
 	State string `json:"state"`
 
 	ExtensionNl *ContactExtensionNL `json:"extension_nl"`
+
+	// Status: default value: status_unknown
+	Status ContactStatus `json:"status"`
 }
 
 // ContactRolesRoles: contact roles roles.
@@ -1705,25 +1742,37 @@ type SSLCertificate struct {
 
 // Task: task.
 type Task struct {
+	// ID: the unique identifier of the task.
 	ID string `json:"id"`
 
+	// ProjectID: the project ID associated to the task.
 	ProjectID string `json:"project_id"`
 
+	// OrganizationID: the organization ID associated to the task.
 	OrganizationID string `json:"organization_id"`
 
+	// Domain: the domain name associated to the task.
 	Domain *string `json:"domain"`
 
-	// Type: default value: unknown
+	// Type: the type of the task.
+	// Default value: unknown
 	Type TaskType `json:"type"`
 
-	// Status: default value: unavailable
+	// Status: the status of the task.
+	// Default value: unavailable
 	Status TaskStatus `json:"status"`
 
+	// StartedAt: start date of the task.
 	StartedAt *time.Time `json:"started_at"`
 
+	// UpdatedAt: last update of the task.
 	UpdatedAt *time.Time `json:"updated_at"`
 
+	// Message: error message associated to the task.
 	Message *string `json:"message"`
+
+	// ContactIDentifier: human-friendly contact identifier used when the task concerns a contact.
+	ContactIDentifier *string `json:"contact_identifier"`
 }
 
 // TransferInDomainRequestTransferRequest: transfer in domain request transfer request.

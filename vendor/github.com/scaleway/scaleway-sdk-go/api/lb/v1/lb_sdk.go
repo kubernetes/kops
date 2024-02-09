@@ -524,6 +524,37 @@ func (enum *ListFrontendsRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ListIPsRequestIPType string
+
+const (
+	ListIPsRequestIPTypeAll  = ListIPsRequestIPType("all")
+	ListIPsRequestIPTypeIPv4 = ListIPsRequestIPType("ipv4")
+	ListIPsRequestIPTypeIPv6 = ListIPsRequestIPType("ipv6")
+)
+
+func (enum ListIPsRequestIPType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "all"
+	}
+	return string(enum)
+}
+
+func (enum ListIPsRequestIPType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListIPsRequestIPType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListIPsRequestIPType(ListIPsRequestIPType(tmp).String())
+	return nil
+}
+
 type ListLBsRequestOrderBy string
 
 const (
@@ -1843,6 +1874,9 @@ type CreateIPRequest struct {
 
 	// Reverse: reverse DNS (domain name) for the IP address.
 	Reverse *string `json:"reverse,omitempty"`
+
+	// IsIPv6: if true, creates a Flexible IP with an ipv6 address.
+	IsIPv6 bool `json:"is_ipv6"`
 }
 
 // CreateLBRequest: create lb request.
@@ -1869,6 +1903,12 @@ type CreateLBRequest struct {
 
 	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
 	AssignFlexibleIP *bool `json:"assign_flexible_ip,omitempty"`
+
+	// AssignFlexibleIPv6: defines whether to automatically assign a flexible public IPv6 to the Load Balancer. Default value is `false` (do not assign).
+	AssignFlexibleIPv6 *bool `json:"assign_flexible_ipv6,omitempty"`
+
+	// IPIDs: list of IP IDs to attach to the Load Balancer.
+	IPIDs []string `json:"ip_ids"`
 
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
@@ -2354,6 +2394,10 @@ type ListIPsRequest struct {
 
 	// ProjectID: project ID to filter for, only Load Balancer IP addresses from this Project will be returned.
 	ProjectID *string `json:"-"`
+
+	// IPType: IP type to filter for.
+	// Default value: all
+	IPType ListIPsRequestIPType `json:"-"`
 }
 
 // ListIPsResponse: list i ps response.
@@ -3016,6 +3060,9 @@ type UpdateIPRequest struct {
 
 	// Reverse: reverse DNS (domain name) for the IP address.
 	Reverse *string `json:"reverse,omitempty"`
+
+	// LBID: ID of the server on which to attach the flexible IP.
+	LBID *string `json:"lb_id,omitempty"`
 }
 
 // UpdateLBRequest: update lb request.
@@ -3341,6 +3388,9 @@ type ZonedAPICreateIPRequest struct {
 
 	// Reverse: reverse DNS (domain name) for the IP address.
 	Reverse *string `json:"reverse,omitempty"`
+
+	// IsIPv6: if true, creates a Flexible IP with an ipv6 address.
+	IsIPv6 bool `json:"is_ipv6"`
 }
 
 // ZonedAPICreateLBRequest: zoned api create lb request.
@@ -3367,6 +3417,12 @@ type ZonedAPICreateLBRequest struct {
 
 	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
 	AssignFlexibleIP *bool `json:"assign_flexible_ip,omitempty"`
+
+	// AssignFlexibleIPv6: defines whether to automatically assign a flexible public IPv6 to the Load Balancer. Default value is `false` (do not assign).
+	AssignFlexibleIPv6 *bool `json:"assign_flexible_ipv6,omitempty"`
+
+	// IPIDs: list of IP IDs to attach to the Load Balancer.
+	IPIDs []string `json:"ip_ids"`
 
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
@@ -3706,6 +3762,10 @@ type ZonedAPIListIPsRequest struct {
 
 	// ProjectID: project ID to filter for, only Load Balancer IP addresses from this Project will be returned.
 	ProjectID *string `json:"-"`
+
+	// IPType: IP type to filter for.
+	// Default value: all
+	IPType ListIPsRequestIPType `json:"-"`
 }
 
 // ZonedAPIListLBPrivateNetworksRequest: zoned api list lb private networks request.
@@ -4184,6 +4244,9 @@ type ZonedAPIUpdateIPRequest struct {
 
 	// Reverse: reverse DNS (domain name) for the IP address.
 	Reverse *string `json:"reverse,omitempty"`
+
+	// LBID: ID of the server on which to attach the flexible IP.
+	LBID *string `json:"lb_id,omitempty"`
 }
 
 // ZonedAPIUpdateLBRequest: zoned api update lb request.
@@ -4501,6 +4564,7 @@ func (s *ZonedAPI) ListIPs(req *ZonedAPIListIPsRequest, opts ...scw.RequestOptio
 	parameter.AddToQuery(query, "ip_address", req.IPAddress)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "ip_type", req.IPType)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -6460,6 +6524,7 @@ func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsR
 	parameter.AddToQuery(query, "ip_address", req.IPAddress)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "ip_type", req.IPType)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")
