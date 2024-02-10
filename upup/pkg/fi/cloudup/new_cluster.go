@@ -1267,6 +1267,12 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	}
 
 	cluster.Spec.Networking.Topology = &api.TopologySpec{}
+
+	err := setupDNSTopology(opt, cluster)
+	if err != nil {
+		return nil, err
+	}
+
 	switch opt.Topology {
 	case api.TopologyPublic:
 
@@ -1405,10 +1411,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 	}
 
-	err := setupDNSTopology(opt, cluster)
-	if err != nil {
-		return nil, err
-	}
 	return bastions, nil
 }
 

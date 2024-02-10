@@ -87,7 +87,6 @@ func TestCreateEtcdCluster(t *testing.T) {
 func TestSetupNetworking(t *testing.T) {
 	tests := []struct {
 		options  NewClusterOptions
-		actual   api.Cluster
 		expected api.Cluster
 	}{
 		{
@@ -333,6 +332,102 @@ func TestSetupNetworking(t *testing.T) {
 		if string(expectedYaml) != string(actualYaml) {
 			diffString := diff.FormatDiff(string(expectedYaml), string(actualYaml))
 			t.Errorf("unexpected cluster networking setup:\n%s", diffString)
+		}
+	}
+}
+
+func TestSetupTopology(t *testing.T) {
+	tests := []struct {
+		options  NewClusterOptions
+		skeleton api.Cluster
+		expected api.Cluster
+	}{
+		{
+			options: NewClusterOptions{
+				Topology: api.TopologyPrivate,
+				Bastion:  true,
+			},
+			skeleton: api.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.29.0",
+					Networking: api.NetworkingSpec{
+						Topology: &api.TopologySpec{
+							DNS: api.DNSTypeNone,
+						},
+					},
+				},
+			},
+			expected: api.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.29.0",
+					Networking: api.NetworkingSpec{
+						Topology: &api.TopologySpec{
+							DNS: api.DNSTypeNone,
+						},
+					},
+				},
+			},
+		},
+		{
+			options: NewClusterOptions{
+				Topology: api.TopologyPrivate,
+				DNSType:  string(api.DNSTypePublic),
+				Bastion:  true,
+			},
+			skeleton: api.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.29.0",
+					Networking: api.NetworkingSpec{
+						Topology: &api.TopologySpec{
+							DNS: api.DNSTypePublic,
+						},
+					},
+				},
+			},
+			expected: api.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.29.0",
+					Networking: api.NetworkingSpec{
+						Topology: &api.TopologySpec{
+							DNS: api.DNSTypePublic,
+							Bastion: &api.BastionSpec{
+								PublicName: "bastion.test",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		_, err := setupTopology(&test.options, &test.skeleton, nil)
+		if err != nil {
+			t.Errorf("error during topology setup: %v", err)
+		}
+		expectedYaml, err := yaml.Marshal(test.expected)
+		if err != nil {
+			t.Errorf("error converting expected cluster spec to yaml: %v", err)
+		}
+		actualYaml, err := yaml.Marshal(&test.skeleton)
+		if err != nil {
+			t.Errorf("error converting actual cluster spec to yaml: %v", err)
+		}
+		if string(expectedYaml) != string(actualYaml) {
+			diffString := diff.FormatDiff(string(expectedYaml), string(actualYaml))
+			t.Errorf("unexpected cluster topology setup:\n%s", diffString)
 		}
 	}
 }
