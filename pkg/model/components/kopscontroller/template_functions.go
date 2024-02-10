@@ -45,7 +45,7 @@ type templateFunctions struct {
 
 // DNSHeadlessServices returns a list of headless k8s services for clusters that dont have a public DNS zone
 func (t *templateFunctions) DNSHeadlessServices() ([]*corev1.Service, error) {
-	if !t.Cluster.UsesLegacyGossip() {
+	if t.Cluster.PublishesDNSRecords() {
 		return nil, nil
 	}
 
