@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -250,7 +249,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "test-nodes",
 			},
 			Spec: g.Input,
@@ -351,7 +350,7 @@ func TestMixedInstancePolicies(t *testing.T) {
 
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "test-nodes",
 			},
 			Spec: g.Input,
@@ -383,7 +382,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 	}{
 		{
 			ig: &kops.InstanceGroup{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "some-ig",
 				},
 				Spec: kops.InstanceGroupSpec{
@@ -399,7 +398,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 		},
 		{
 			ig: &kops.InstanceGroup{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "some-ig",
 				},
 				Spec: kops.InstanceGroupSpec{
