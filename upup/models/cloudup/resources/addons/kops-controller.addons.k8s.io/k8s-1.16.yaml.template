@@ -246,7 +246,7 @@ subjects:
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
 
-{{- range $service := KopsController.GossipServices }}
+{{- range $service := KopsController.DNSHeadlessServices }}
 ---
 {{ KubeObjectToApplyYAML $service }}
 {{- end }}

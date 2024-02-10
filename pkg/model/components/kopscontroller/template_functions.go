@@ -43,8 +43,8 @@ type templateFunctions struct {
 	Cluster *kops.Cluster
 }
 
-// KopsControllerConfig returns the yaml configuration for kops-controller
-func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
+// DNSHeadlessServices returns a list of headless k8s services for clusters that dont have a public DNS zone
+func (t *templateFunctions) DNSHeadlessServices() ([]*corev1.Service, error) {
 	if !t.Cluster.UsesLegacyGossip() {
 		return nil, nil
 	}
