@@ -17,14 +17,20 @@ limitations under the License.
 package mockelb
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog/v2"
 )
 
 func (m *MockELB) DescribeTags(request *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error) {
+	return m.DescribeTagsWithContext(context.TODO(), request)
+}
+
+func (m *MockELB) DescribeTagsWithContext(ctx aws.Context, request *elb.DescribeTagsInput, opt ...request.Option) (*elb.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 

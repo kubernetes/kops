@@ -27,7 +27,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) DescribeTargetGroups(request *elbv2.DescribeTargetGroupsInput) (*elbv2.DescribeTargetGroupsOutput, error) {
+func (m *MockELBV2) DescribeTargetGroupsWithContext(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, opts ...request.Option) (*elbv2.DescribeTargetGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -79,7 +79,7 @@ func (m *MockELBV2) DescribeTargetGroups(request *elbv2.DescribeTargetGroupsInpu
 }
 
 func (m *MockELBV2) DescribeTargetGroupsPagesWithContext(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool), opt ...request.Option) error {
-	page, err := m.DescribeTargetGroups(request)
+	page, err := m.DescribeTargetGroupsWithContext(ctx, request)
 	if err != nil {
 		return err
 	}
