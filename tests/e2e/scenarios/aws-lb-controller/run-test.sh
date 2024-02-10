@@ -33,6 +33,10 @@ ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
 
 kops-up
 
+KUBECONFIG=$(mktemp -t kops.XXXXXXXXX)
+export KUBECONFIG
+"${KOPS}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "${KUBECONFIG}"
+
 VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
