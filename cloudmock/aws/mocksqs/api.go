@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 )
@@ -109,6 +110,6 @@ func (m *MockSQS) ListQueueTags(input *sqs.ListQueueTagsInput) (*sqs.ListQueueTa
 	return response, nil
 }
 
-func (m *MockSQS) DeleteQueue(*sqs.DeleteQueueInput) (*sqs.DeleteQueueOutput, error) {
+func (m *MockSQS) DeleteQueueWithContext(aws.Context, *sqs.DeleteQueueInput, ...request.Option) (*sqs.DeleteQueueOutput, error) {
 	panic("Not implemented")
 }

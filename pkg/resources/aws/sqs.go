@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -39,6 +40,7 @@ func DumpSQSQueue(op *resources.DumpOperation, r *resources.Resource) error {
 }
 
 func DeleteSQSQueue(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	url := r.ID
@@ -47,9 +49,12 @@ func DeleteSQSQueue(cloud fi.Cloud, r *resources.Resource) error {
 	request := &sqs.DeleteQueueInput{
 		QueueUrl: &url,
 	}
-	_, err := c.SQS().DeleteQueue(request)
-	if err != nil {
-		return fmt.Errorf("error deleting SQS queue %q: %v", url, err)
+	if _, err := c.SQS().DeleteQueueWithContext(ctx, request); err != nil {
+		if awsup.AWSErrorCode(err) == "AWS.SimpleQueueService.NonExistentQueue" {
+			// Concurrently deleted
+			return nil
+		}
+		return fmt.Errorf("error deleting SQS queue %q: %w", url, err)
 	}
 	return nil
 }
