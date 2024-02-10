@@ -4,11 +4,11 @@ kOps maintainers set aside one hour every week for **public** office hours. This
 
 The time and date for the office hours can be found in the [sig-cluster-lifecycle calendar](https://calendar.google.com/calendar/u/0/embed?src=u5822lrl4q68ic1iakuvcpe7b4@group.calendar.google.com).
 
-The office hourse are hosted in a [zoom video chat](https://zoom.us/j/97072789944?pwd=VVlUR3dhN2h5TEFQZHZTVVd4SnJUdz09).
+The office hours are hosted in a [zoom video chat](https://zoom.us/j/97072789944?pwd=VVlUR3dhN2h5TEFQZHZTVVd4SnJUdz09).
 
 ### Regular office hours
 
-The regular office hours are typically more formal and tend to focus on discussons. They are typically recorded.
+The regular office hours are typically more formal and tend to focus on discussions. They are typically recorded.
 
 ### Bonus meetings
 
@@ -22,7 +22,7 @@ Our office hours call is recorded, but the tone tends to be casual. First-timers
 
 - Contributors with a feature proposal seeking feedback, assistance, etc
 - Members planning for what we want to get done for the next release
-- Strategizing for larger initiatives, such as those that involve more than one sig or potentially more moving pieces
+- Strategizing for larger initiatives, such as those that involve more than one SIG or potentially more moving pieces
 - Help wanted requests
 - Demonstrations of cool stuff. PoCs. Fresh ideas. Show us how you use kOps to go beyond the norm- help us define the future!
 
