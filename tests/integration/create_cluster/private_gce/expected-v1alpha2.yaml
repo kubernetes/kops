@@ -57,8 +57,6 @@ spec:
     region: us-test1
     type: Private
   topology:
-    bastion:
-      bastionPublicName: bastion.private.example.com
     dns:
       type: None
 

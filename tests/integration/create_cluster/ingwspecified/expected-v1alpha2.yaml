@@ -59,8 +59,6 @@ spec:
     type: Utility
     zone: us-test-1a
   topology:
-    bastion:
-      bastionPublicName: bastion.private.example.com
     dns:
       type: None
 
