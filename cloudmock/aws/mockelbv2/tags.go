@@ -17,7 +17,10 @@ limitations under the License.
 package mockelbv2
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 )
@@ -57,7 +60,7 @@ func (m *MockELBV2) AddTags(request *elbv2.AddTagsInput) (*elbv2.AddTagsOutput, 
 	return &elbv2.AddTagsOutput{}, nil
 }
 
-func (m *MockELBV2) DescribeTags(request *elbv2.DescribeTagsInput) (*elbv2.DescribeTagsOutput, error) {
+func (m *MockELBV2) DescribeTagsWithContext(ctx aws.Context, request *elbv2.DescribeTagsInput, opts ...request.Option) (*elbv2.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -74,4 +77,8 @@ func (m *MockELBV2) DescribeTags(request *elbv2.DescribeTagsInput) (*elbv2.Descr
 		}
 	}
 	return resp, nil
+}
+
+func (m *MockELBV2) DescribeTags(request *elbv2.DescribeTagsInput) (*elbv2.DescribeTagsOutput, error) {
+	return m.DescribeTagsWithContext(context.TODO(), request)
 }

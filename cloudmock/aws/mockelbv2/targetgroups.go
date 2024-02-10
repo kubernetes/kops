@@ -17,10 +17,12 @@ limitations under the License.
 package mockelbv2
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 )
@@ -76,7 +78,7 @@ func (m *MockELBV2) DescribeTargetGroups(request *elbv2.DescribeTargetGroupsInpu
 	}, nil
 }
 
-func (m *MockELBV2) DescribeTargetGroupsPages(request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool)) error {
+func (m *MockELBV2) DescribeTargetGroupsPagesWithContext(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool), opt ...request.Option) error {
 	page, err := m.DescribeTargetGroups(request)
 	if err != nil {
 		return err
@@ -85,6 +87,10 @@ func (m *MockELBV2) DescribeTargetGroupsPages(request *elbv2.DescribeTargetGroup
 	callback(page, false)
 
 	return nil
+}
+
+func (m *MockELBV2) DescribeTargetGroupsPages(request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool)) error {
+	return m.DescribeTargetGroupsPagesWithContext(context.TODO(), request, callback)
 }
 
 func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*elbv2.CreateTargetGroupOutput, error) {

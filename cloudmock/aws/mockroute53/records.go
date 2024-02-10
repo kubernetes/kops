@@ -17,6 +17,7 @@ limitations under the License.
 package mockroute53
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -37,11 +38,7 @@ func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInpu
 	panic("MockRoute53 ListResourceRecordSets not implemented")
 }
 
-func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(aws.Context, *route53.ListResourceRecordSetsInput, func(*route53.ListResourceRecordSetsOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
+func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(ctx aws.Context, request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool, opts ...request.Option) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -72,6 +69,10 @@ func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceR
 	callback(page, lastPage)
 
 	return nil
+}
+
+func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
+	return m.ListResourceRecordSetsPagesWithContext(context.TODO(), request, callback)
 }
 
 func (m *MockRoute53) ChangeResourceRecordSetsRequest(*route53.ChangeResourceRecordSetsInput) (*request.Request, *route53.ChangeResourceRecordSetsOutput) {
