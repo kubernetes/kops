@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/kops/pkg/wellknownservices"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/upup/pkg/fi"
@@ -42,8 +44,8 @@ func newTestLoadBalancer() *LoadBalancer {
 				Name: to.Ptr("vnet"),
 			},
 		},
-		External:     to.Ptr(true),
-		ForAPIServer: true,
+		External:          to.Ptr(true),
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 		Tags: map[string]*string{
 			testTagKey: to.Ptr(testTagValue),
 		},

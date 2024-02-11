@@ -21,6 +21,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 )
@@ -49,10 +50,11 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
-		Name:          fi.PtrTo(b.NameForLoadBalancer()),
-		Lifecycle:     b.Lifecycle,
-		ResourceGroup: b.LinkToResourceGroup(),
-		Tags:          map[string]*string{},
+		Name:              fi.PtrTo(b.NameForLoadBalancer()),
+		Lifecycle:         b.Lifecycle,
+		ResourceGroup:     b.LinkToResourceGroup(),
+		Tags:              map[string]*string{},
+		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 	}
 
 	switch lbSpec.Type {
@@ -81,7 +83,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	c.AddTask(lb)
 
 	if b.Cluster.UsesLegacyGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		lb.ForAPIServer = true
+		lb.WellKnownServices = append(lb.WellKnownServices, wellknownservices.KopsController)
 	}
 
 	return nil
