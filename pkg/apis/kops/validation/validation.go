@@ -1044,9 +1044,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			serviceClusterIPRange, errs = parseCIDR(fldPath.Child("serviceClusterIPRange"), v.ServiceClusterIPRange)
 			allErrs = append(allErrs, errs...)
 
-			if subnet.Overlap(podCIDR, serviceClusterIPRange) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must not overlap podCIDR %q", serviceClusterIPRange, podCIDR)))
-			}
+			// Removed as part of #16340; we previously supported this and it seems to work fine.
+			// We may add back if we find problems and have a path for migrating existing clusters.
+			// if subnet.Overlap(podCIDR, serviceClusterIPRange) {
+			// 	allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must not overlap podCIDR %q", serviceClusterIPRange, podCIDR)))
+			// }
 		}
 	}
 

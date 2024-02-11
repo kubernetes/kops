@@ -414,6 +414,115 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 	}
 }
 
+func Test_Validate_Networking_OverlappingCIDR(t *testing.T) {
+	grid := []struct {
+		Name           string
+		Networking     kops.NetworkingSpec
+		ExpectedErrors []*field.Error
+	}{
+		{
+			Name: "no-overlap",
+			Networking: kops.NetworkingSpec{
+				NetworkCIDR:           "10.0.0.0/8",
+				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.64.10.0/24",
+				ServiceClusterIPRange: "100.64.20.0/24",
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						Name: "subnet-test",
+						CIDR: "10.10.0.0/16",
+						Type: "Public",
+					},
+				},
+			},
+		},
+		{
+			Name: "overlap-podcidr-and-servicecidr",
+			Networking: kops.NetworkingSpec{
+				NetworkCIDR:           "10.0.0.0/8",
+				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.64.0.0/10",
+				ServiceClusterIPRange: "100.64.0.0/13",
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						Name: "subnet-test",
+						CIDR: "10.10.0.0/16",
+						Type: "Public",
+					},
+				},
+			},
+		},
+		{
+			Name: "overlap-servicecidr-and-subnetcidr",
+			Networking: kops.NetworkingSpec{
+				NetworkCIDR:           "10.0.0.0/8",
+				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.64.10.0/24",
+				ServiceClusterIPRange: "100.64.20.0/24",
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						Name: "subnet-test",
+						CIDR: "100.64.20.0/28",
+						Type: "Public",
+					},
+				},
+			},
+			ExpectedErrors: []*field.Error{
+				{
+					Type:   field.ErrorTypeForbidden,
+					Detail: `subnet "subnet-test" cidr "100.64.20.0/28" is not a subnet of the networkCIDR "10.0.0.0/8"`,
+					Field:  "networking.subnets[0].cidr",
+				},
+				{
+					Type:   field.ErrorTypeForbidden,
+					Detail: `subnet "subnet-test" cidr "100.64.20.0/28" must not overlap serviceClusterIPRange "100.64.20.0/24"`,
+					Field:  "networking.subnets[0].cidr",
+				},
+			},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.Name, func(t *testing.T) {
+			cluster := &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.27.0",
+				},
+			}
+			cluster.Spec.Networking = g.Networking
+
+			errs := validateNetworking(cluster, &cluster.Spec.Networking, field.NewPath("networking"), true, &cloudProviderConstraints{})
+			testFieldErrors(t, errs, g.ExpectedErrors)
+		})
+	}
+}
+
+func testFieldErrors(t *testing.T, actual field.ErrorList, expectedErrors []*field.Error) {
+	t.Helper()
+
+	if len(actual) > len(expectedErrors) {
+		t.Errorf("found unexpected errors: %+v", actual)
+	}
+
+	for _, expected := range expectedErrors {
+		found := false
+		for _, err := range actual {
+			if expected.Type != "" && expected.Type != err.Type {
+				continue
+			}
+			if expected.Detail != "" && expected.Detail != err.Detail {
+				continue
+			}
+			if expected.Field != "" && expected.Field != err.Field {
+				continue
+			}
+			found = true
+		}
+		if !found {
+			t.Errorf("expected error %+v, was not found in errors: %+v", expected, actual)
+		}
+	}
+}
+
 func Test_Validate_AdditionalPolicies(t *testing.T) {
 	grid := []struct {
 		Input          map[string]string

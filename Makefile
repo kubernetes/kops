@@ -40,7 +40,7 @@ GOBIN := $(shell go env GOPATH)/bin
 endif
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
-CODEGEN_VERSION=v0.24.0
+CODEGEN_VERSION=v0.28.6
 
 KO=go run github.com/google/ko@v0.14.1
 
@@ -752,7 +752,7 @@ dev-upload: dev-upload-linux-amd64 dev-upload-linux-arm64
 .PHONY: crds
 crds:
 	cd "${KOPS_ROOT}/hack" && go build -o "${KOPS_ROOT}/_output/bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
-	"${KOPS_ROOT}/_output/bin/controller-gen" crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
+	"${KOPS_ROOT}/_output/bin/controller-gen" crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/
 
 #------------------------------------------------------
 # kops-controller

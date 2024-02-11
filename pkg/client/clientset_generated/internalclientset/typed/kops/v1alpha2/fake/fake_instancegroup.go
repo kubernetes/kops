@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeInstanceGroups struct {
 	ns   string
 }
 
-var instancegroupsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "v1alpha2", Resource: "instancegroups"}
+var instancegroupsResource = v1alpha2.SchemeGroupVersion.WithResource("instancegroups")
 
-var instancegroupsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "v1alpha2", Kind: "InstanceGroup"}
+var instancegroupsKind = v1alpha2.SchemeGroupVersion.WithKind("InstanceGroup")
 
 // Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
 func (c *FakeInstanceGroups) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.InstanceGroup, err error) {

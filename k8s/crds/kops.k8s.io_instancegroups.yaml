@@ -1,11 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.5.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: instancegroups.kops.k8s.io
 spec:
   group: kops.k8s.io
@@ -46,14 +44,19 @@ spec:
           masters) with the same configuration
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -137,13 +140,14 @@ spec:
                             type: boolean
                         type: object
                       enabled:
-                        description: Enabled determines if kOps will install the Nvidia
-                          GPU runtime and drivers. They will only be installed on
-                          intances that has an Nvidia GPU.
+                        description: |-
+                          Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
+                          They will only be installed on intances that has an Nvidia GPU.
                         type: boolean
                       package:
-                        description: Package is the name of the nvidia driver package
-                          that will be installed. Default is "nvidia-headless-460-server".
+                        description: |-
+                          Package is the name of the nvidia driver package that will be installed.
+                          Default is "nvidia-headless-460-server".
                         type: string
                     type: object
                   packages:
@@ -270,10 +274,11 @@ spec:
                   type: object
                 type: array
               gcpProvisioningModel:
-                description: 'GCPProvisioningModel: Specifies the provisioning model
-                  of the GCP instance. Valid values:   ''STANDARD'': (default) standard
-                  provisioning with user controlled run time, no discounts   ''SPOT'':
-                  heavily discounted, no guaranteed run time.'
+                description: |-
+                  GCPProvisioningModel: Specifies the provisioning model of the GCP instance.
+                  Valid values:
+                    'STANDARD': (default) standard provisioning with user controlled run time, no discounts
+                    'SPOT': heavily discounted, no guaranteed run time.
                 type: string
               guestAccelerators:
                 description: GuestAccelerators configures additional accelerators
@@ -344,10 +349,10 @@ spec:
                         type: string
                       type: array
                     useRawManifest:
-                      description: UseRawManifest indicates that the contents of Manifest
-                        should be used as the contents of the systemd unit, unmodified.
-                        Before and Requires are ignored when used together with this
-                        value (and validation shouldn't allow them to be set)
+                      description: |-
+                        UseRawManifest indicates that the contents of Manifest should be used as the contents
+                        of the systemd unit, unmodified. Before and Requires are ignored when used together
+                        with this value (and validation shouldn't allow them to be set)
                       type: boolean
                   type: object
                 type: array
@@ -356,32 +361,33 @@ spec:
                   IAM profile (AWS only).
                 properties:
                   profile:
-                    description: Profile of the cloud group IAM profile. In aws this
-                      is the arn for the iam instance profile
+                    description: |-
+                      Profile of the cloud group IAM profile. In aws this is the arn
+                      for the iam instance profile
                     type: string
                 type: object
               image:
                 description: Image is the instance (ami etc) we should use
                 type: string
               instanceInterruptionBehavior:
-                description: InstanceInterruptionBehavior defines if a spot instance
-                  should be terminated, hibernated, or stopped after interruption
+                description: |-
+                  InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
+                  or stopped after interruption
                 type: string
               instanceMetadata:
                 description: InstanceMetadata defines the EC2 instance metadata service
                   options (AWS Only)
                 properties:
                   httpPutResponseHopLimit:
-                    description: HTTPPutResponseHopLimit is the desired HTTP PUT response
-                      hop limit for instance metadata requests. The larger the number,
-                      the further instance metadata requests can travel. The default
-                      value is 1.
+                    description: |-
+                      HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+                      The larger the number, the further instance metadata requests can travel. The default value is 1.
                     format: int64
                     type: integer
                   httpTokens:
-                    description: HTTPTokens is the state of token usage for the instance
-                      metadata requests. If the parameter is not specified in the
-                      request, the default state is "required".
+                    description: |-
+                      HTTPTokens is the state of token usage for the instance metadata requests.
+                      If the parameter is not specified in the request, the default state is "required".
                     type: string
                 type: object
               instanceProtection:
@@ -539,9 +545,9 @@ spec:
                       Hard Eviction Thresholds while calculating Node Allocatable
                     type: boolean
                   experimentalAllowedUnsafeSysctls:
-                    description: ExperimentalAllowedUnsafeSysctls are passed to the
-                      kubelet config to whitelist allowable sysctls Was promoted to
-                      beta and renamed. https://github.com/kubernetes/kubernetes/pull/63717
+                    description: |-
+                      ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+                      Was promoted to beta and renamed. https://github.com/kubernetes/kubernetes/pull/63717
                     items:
                       type: string
                     type: array
@@ -556,15 +562,16 @@ spec:
                       feature gates for alpha/experimental features.
                     type: object
                   hairpinMode:
-                    description: 'How should the kubelet configure the container bridge
-                      for hairpin packets. Setting this flag allows endpoints in a
-                      Service to loadbalance back to themselves if they should try
-                      to access their own Service. Values:   "promiscuous-bridge":
-                      make the container bridge promiscuous.   "hairpin-veth":       set
-                      the hairpin flag on container veth interfaces.   "none":               do
-                      nothing. Setting --configure-cbr0 to false implies that to achieve
-                      hairpin NAT one must set --hairpin-mode=veth-flag, because bridge
-                      assumes the existence of a container bridge named cbr0.'
+                    description: |-
+                      How should the kubelet configure the container bridge for hairpin packets.
+                      Setting this flag allows endpoints in a Service to loadbalance back to
+                      themselves if they should try to access their own Service. Values:
+                        "promiscuous-bridge": make the container bridge promiscuous.
+                        "hairpin-veth":       set the hairpin flag on container veth interfaces.
+                        "none":               do nothing.
+                      Setting --configure-cbr0 to false implies that to achieve hairpin NAT
+                      one must set --hairpin-mode=veth-flag, because bridge assumes the
+                      existence of a container bridge named cbr0.
                     type: string
                   hostnameOverride:
                     description: HostnameOverride is the hostname used to identify
@@ -575,31 +582,32 @@ spec:
                       container housekeepings.
                     type: string
                   imageGCHighThresholdPercent:
-                    description: ImageGCHighThresholdPercent is the percent of disk
-                      usage after which image garbage collection is always run.
+                    description: |-
+                      ImageGCHighThresholdPercent is the percent of disk usage after which
+                      image garbage collection is always run.
                     format: int32
                     type: integer
                   imageGCLowThresholdPercent:
-                    description: ImageGCLowThresholdPercent is the percent of disk
-                      usage before which image garbage collection is never run. Lowest
-                      disk usage to garbage collect to.
+                    description: |-
+                      ImageGCLowThresholdPercent is the percent of disk usage before which
+                      image garbage collection is never run. Lowest disk usage to garbage
+                      collect to.
                     format: int32
                     type: integer
                   imageMaximumGCAge:
-                    description: 'imageMaximumGCAge is the maximum age an image can
-                      be unused before it is garbage collected. The default of this
-                      field is "0s", which disables this field--meaning images won''t
-                      be garbage collected based on being unused for too long. Default:
-                      "0s" (disabled)'
+                    description: |-
+                      imageMaximumGCAge is the maximum age an image can be unused before it is garbage collected.
+                      The default of this field is "0s", which disables this field--meaning images won't be garbage
+                      collected based on being unused for too long. Default: "0s" (disabled)
                     type: string
                   imageMinimumGCAge:
                     description: 'imageMinimumGCAge is the minimum age for an unused
                       image before it is garbage collected. Default: "2m"'
                     type: string
                   imagePullProgressDeadline:
-                    description: ImagePullProgressDeadline is the timeout for image
-                      pulls If no pulling progress is made before this deadline, the
-                      image pulling will be cancelled. (default 1m0s)
+                    description: |-
+                      ImagePullProgressDeadline is the timeout for image pulls
+                      If no pulling progress is made before this deadline, the image pulling will be cancelled. (default 1m0s)
                     type: string
                   kernelMemcgNotification:
                     description: Integrate with the kernel memcg notification to determine
@@ -624,8 +632,10 @@ spec:
                       isolate the kubelet in.
                     type: string
                   logFormat:
-                    description: 'LogFormat is the logging format of the kubelet.
-                      Supported values: text, json. Default: text'
+                    description: |-
+                      LogFormat is the logging format of the kubelet.
+                      Supported values: text, json.
+                      Default: text
                     type: string
                   logLevel:
                     description: LogLevel is the logging level of the kubelet
@@ -637,13 +647,15 @@ spec:
                     format: int32
                     type: integer
                   memorySwapBehavior:
-                    description: 'MemorySwapBehavior defines how swap is used by container
-                      workloads. Supported values: LimitedSwap, "UnlimitedSwap.'
+                    description: |-
+                      MemorySwapBehavior defines how swap is used by container workloads.
+                      Supported values: LimitedSwap, "UnlimitedSwap.
                     type: string
                   networkPluginMTU:
-                    description: NetworkPluginMTU is the MTU to be passed to the network
-                      plugin, and overrides the default MTU for cases where it cannot
-                      be automatically computed (such as IPSEC).
+                    description: |-
+                      NetworkPluginMTU is the MTU to be passed to the network plugin,
+                      and overrides the default MTU for cases where it cannot be automatically
+                      computed (such as IPSEC).
                     format: int32
                     type: integer
                   networkPluginName:
@@ -657,9 +669,9 @@ spec:
                       cluster.
                     type: object
                   nodeStatusUpdateFrequency:
-                    description: NodeStatusUpdateFrequency Specifies how often kubelet
-                      posts node status to master (default 10s) must work with nodeMonitorGracePeriod
-                      in KubeControllerManagerConfig.
+                    description: |-
+                      NodeStatusUpdateFrequency Specifies how often kubelet posts node status to master (default 10s)
+                      must work with nodeMonitorGracePeriod in KubeControllerManagerConfig.
                     type: string
                   nonMasqueradeCIDR:
                     description: 'NonMasqueradeCIDR configures masquerading: traffic
@@ -671,9 +683,9 @@ spec:
                     format: int32
                     type: integer
                   podCIDR:
-                    description: PodCIDR is the CIDR to use for pod IP addresses,
-                      only used in standalone mode. In cluster mode, this is obtained
-                      from the master.
+                    description: |-
+                      PodCIDR is the CIDR to use for pod IP addresses, only used in standalone mode.
+                      In cluster mode, this is obtained from the master.
                     type: string
                   podInfraContainerImage:
                     description: PodInfraContainerImage is the image whose network/ipc
@@ -689,10 +701,9 @@ spec:
                     format: int64
                     type: integer
                   protectKernelDefaults:
-                    description: 'Default kubelet behaviour for kernel tuning. If
-                      set, kubelet errors if any of kernel tunables is different than
-                      kubelet defaults. (DEPRECATED: This parameter should be set
-                      via the config file specified by the Kubelet''s --config flag.'
+                    description: |-
+                      Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+                      (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
                     type: boolean
                   readOnlyPort:
                     description: ReadOnlyPort is the port used by the kubelet api
@@ -700,9 +711,9 @@ spec:
                     format: int32
                     type: integer
                   reconcileCIDR:
-                    description: ReconcileCIDR is Reconcile node CIDR with the CIDR
-                      specified by the API server. No-op if register-node or configure-cbr0
-                      is false.
+                    description: |-
+                      ReconcileCIDR is Reconcile node CIDR with the CIDR specified by the
+                      API server. No-op if register-node or configure-cbr0 is false.
                     type: boolean
                   registerNode:
                     description: RegisterNode enables automatic registration with
@@ -755,19 +766,21 @@ spec:
                       profiles.
                     type: string
                   serializeImagePulls:
-                    description: '// SerializeImagePulls when enabled, tells the Kubelet
-                      to pull images one // at a time. We recommend *not* changing
-                      the default value on nodes that // run docker daemon with version  <
-                      1.9 or an Aufs storage backend. // Issue #10959 has more details.'
+                    description: |-
+                      // SerializeImagePulls when enabled, tells the Kubelet to pull images one
+                      // at a time. We recommend *not* changing the default value on nodes that
+                      // run docker daemon with version  < 1.9 or an Aufs storage backend.
+                      // Issue #10959 has more details.
                     type: boolean
                   shutdownGracePeriod:
-                    description: 'ShutdownGracePeriod specifies the total duration
-                      that the node should delay the shutdown by. Default: 30s'
+                    description: |-
+                      ShutdownGracePeriod specifies the total duration that the node should delay the shutdown by.
+                      Default: 30s
                     type: string
                   shutdownGracePeriodCriticalPods:
-                    description: 'ShutdownGracePeriodCriticalPods specifies the duration
-                      used to terminate critical pods during a node shutdown. Default:
-                      10s'
+                    description: |-
+                      ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown.
+                      Default: 10s
                     type: string
                   streamingConnectionIdleTimeout:
                     description: StreamingConnectionIdleTimeout is the maximum time
@@ -775,10 +788,10 @@ spec:
                       automatically closed
                     type: string
                   systemCgroups:
-                    description: SystemCgroups is absolute name of cgroups in which
-                      to place all non-kernel processes that are not already in a
-                      container. Empty for no container. Rolling back the flag requires
-                      a reboot.
+                    description: |-
+                      SystemCgroups is absolute name of cgroups in which to place
+                      all non-kernel processes that are not already in a container. Empty
+                      for no container. Rolling back the flag requires a reboot.
                     type: string
                   systemReserved:
                     additionalProperties:
@@ -831,9 +844,9 @@ spec:
                 description: Manager determines what is managing the node lifecycle
                 type: string
               maxInstanceLifetime:
-                description: MaxInstanceLifetime to the maximum amount of time, in
-                  seconds, that an instance can be in service. Value expected must
-                  be in form of duration ("ms", "s", "m", "h")
+                description: |-
+                  MaxInstanceLifetime to the maximum amount of time, in seconds, that an instance can be in service.
+                  Value expected must be in form of duration ("ms", "s", "m", "h")
                 type: string
               maxPrice:
                 description: MaxPrice indicates this is a spot-pricing group, with
@@ -893,11 +906,11 @@ spec:
                       type: string
                     type: array
                   onDemandAboveBase:
-                    description: OnDemandAboveBase controls the percentages of On-Demand
-                      Instances and Spot Instances for your additional capacity beyond
-                      OnDemandBase. The range is 0–100. The default value is 100.
-                      If you leave this parameter set to 100, the percentages are
-                      100% for On-Demand Instances and 0% for Spot Instances.
+                    description: |-
+                      OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+                      additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+                      leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+                      Spot Instances.
                     format: int64
                     type: integer
                   onDemandAllocationStrategy:
@@ -905,22 +918,21 @@ spec:
                       instance types to fulfill On-Demand capacity
                     type: string
                   onDemandBase:
-                    description: OnDemandBase is the minimum amount of the Auto Scaling
-                      group's capacity that must be fulfilled by On-Demand Instances.
-                      This base portion is provisioned first as your group scales.
+                    description: |-
+                      OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+                      fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
                     format: int64
                     type: integer
                   spotAllocationStrategy:
-                    description: SpotAllocationStrategy diversifies your Spot capacity
-                      across multiple instance types to find the best pricing. Higher
-                      Spot availability may result from a larger number of instance
-                      types to choose from.
+                    description: |-
+                      SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+                      find the best pricing. Higher Spot availability may result from a larger number of
+                      instance types to choose from.
                     type: string
                   spotInstancePools:
-                    description: SpotInstancePools is the number of Spot pools to
-                      use to allocate your Spot capacity (defaults to 2) pools are
-                      determined from the different instance types in the Overrides
-                      array of LaunchTemplate
+                    description: |-
+                      SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+                      pools are determined from the different instance types in the Overrides array of LaunchTemplate
                     format: int64
                     type: integer
                 type: object
@@ -943,38 +955,42 @@ spec:
                 description: RollingUpdate defines the rolling-update behavior
                 properties:
                   drainAndTerminate:
-                    description: DrainAndTerminate enables draining and terminating
-                      nodes during rolling updates. Defaults to true.
+                    description: |-
+                      DrainAndTerminate enables draining and terminating nodes during rolling updates.
+                      Defaults to true.
                     type: boolean
                   maxSurge:
                     anyOf:
                     - type: integer
                     - type: string
-                    description: 'MaxSurge is the maximum number of extra nodes that
-                      can be created during the update. The value can be an absolute
-                      number (for example 5) or a percentage of desired machines (for
-                      example 10%). The absolute number is calculated from a percentage
-                      by rounding up. Has no effect on instance groups with role "Master".
-                      Defaults to 1 on AWS, 0 otherwise. Example: when this is set
-                      to 30%, the InstanceGroup can be scaled up immediately when
-                      the rolling update starts, such that the total number of old
-                      and new nodes do not exceed 130% of desired nodes.'
+                    description: |-
+                      MaxSurge is the maximum number of extra nodes that can be created
+                      during the update.
+                      The value can be an absolute number (for example 5) or a percentage of
+                      desired machines (for example 10%).
+                      The absolute number is calculated from a percentage by rounding up.
+                      Has no effect on instance groups with role "Master".
+                      Defaults to 1 on AWS, 0 otherwise.
+                      Example: when this is set to 30%, the InstanceGroup can be scaled
+                      up immediately when the rolling update starts, such that the total
+                      number of old and new nodes do not exceed 130% of desired
+                      nodes.
                     x-kubernetes-int-or-string: true
                   maxUnavailable:
                     anyOf:
                     - type: integer
                     - type: string
-                    description: 'MaxUnavailable is the maximum number of nodes that
-                      can be unavailable during the update. The value can be an absolute
-                      number (for example 5) or a percentage of desired nodes (for
-                      example 10%). The absolute number is calculated from a percentage
-                      by rounding down. Defaults to 1 if MaxSurge is 0, otherwise
-                      defaults to 0. Example: when this is set to 30%, the InstanceGroup
-                      can be scaled down to 70% of desired nodes immediately when
-                      the rolling update starts. Once new nodes are ready, more old
-                      nodes can be drained, ensuring that the total number of nodes
-                      available at all times during the update is at least 70% of
-                      desired nodes.'
+                    description: |-
+                      MaxUnavailable is the maximum number of nodes that can be unavailable during the update.
+                      The value can be an absolute number (for example 5) or a percentage of desired
+                      nodes (for example 10%).
+                      The absolute number is calculated from a percentage by rounding down.
+                      Defaults to 1 if MaxSurge is 0, otherwise defaults to 0.
+                      Example: when this is set to 30%, the InstanceGroup can be scaled
+                      down to 70% of desired nodes immediately when the rolling update
+                      starts. Once new nodes are ready, more old nodes can be drained,
+                      ensuring that the total number of nodes available at all times
+                      during the update is at least 70% of desired nodes.
                     x-kubernetes-int-or-string: true
                 type: object
               rootVolumeDeleteOnTermination:
@@ -1032,9 +1048,10 @@ spec:
                   type: string
                 type: array
               sysctlParameters:
-                description: SysctlParameters will configure kernel parameters using
-                  sysctl(8). When specified, each parameter must follow the form variable=value,
-                  the way it would appear in sysctl.conf.
+                description: |-
+                  SysctlParameters will configure kernel parameters using sysctl(8). When
+                  specified, each parameter must follow the form variable=value, the way
+                  it would appear in sysctl.conf.
                 items:
                   type: string
                 type: array
@@ -1045,16 +1062,17 @@ spec:
                   type: string
                 type: array
               tenancy:
-                description: Describes the tenancy of this instance group. Can be
-                  either default or dedicated. Currently only applies to AWS.
+                description: |-
+                  Describes the tenancy of this instance group. Can be either default or dedicated.
+                  Currently only applies to AWS.
                 type: string
               updatePolicy:
-                description: 'UpdatePolicy determines the policy for applying upgrades
-                  automatically. If specified, this value overrides a value specified
-                  in the Cluster''s "spec.updatePolicy" field. Valid values:   ''automatic''
-                  (default): apply updates automatically (apply OS security upgrades,
-                  avoiding rebooting when possible)   ''external'': do not apply updates
-                  automatically; they are applied manually or by an external system'
+                description: |-
+                  UpdatePolicy determines the policy for applying upgrades automatically.
+                  If specified, this value overrides a value specified in the Cluster's "spec.updatePolicy" field.
+                  Valid values:
+                    'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
+                    'external': do not apply updates automatically; they are applied manually or by an external system
                 type: string
               volumeMounts:
                 description: VolumeMounts a collection of volume mounts
@@ -1092,9 +1110,9 @@ spec:
                     attached to the instance group
                   properties:
                     deleteOnTermination:
-                      description: DeleteOnTermination configures volume retention
-                        policy upon instance termination. The volume is deleted by
-                        default. Cluster deletion does not remove retained volumes.
+                      description: |-
+                        DeleteOnTermination configures volume retention policy upon instance termination.
+                        The volume is deleted by default. Cluster deletion does not remove retained volumes.
                       type: boolean
                     device:
                       description: Device is an optional device name of the block
@@ -1131,17 +1149,16 @@ spec:
                   group
                 properties:
                   enableLifecycleHook:
-                    description: EnableLifecycleHook determines if an ASG lifecycle
-                      hook will be added ensuring that nodeup runs to completion.
-                      Note that the metadata API must be protected from arbitrary
-                      Pods when this is enabled.
+                    description: |-
+                      EnableLifecycleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
+                      Note that the metadata API must be protected from arbitrary Pods when this is enabled.
                     type: boolean
                   maxSize:
-                    description: MaxSize is the maximum size of the warm pool. The
-                      desired size of the instance group is subtracted from this number
-                      to determine the desired size of the warm pool (unless the resulting
-                      number is smaller than MinSize). The default is the instance
-                      group's MaxSize.
+                    description: |-
+                      MaxSize is the maximum size of the warm pool. The desired size of the instance group
+                      is subtracted from this number to determine the desired size of the warm pool
+                      (unless the resulting number is smaller than MinSize).
+                      The default is the instance group's MaxSize.
                     format: int64
                     type: integer
                   minSize:
@@ -1150,9 +1167,9 @@ spec:
                     type: integer
                 type: object
               zones:
-                description: Zones is the names of the Zones where machines in this
-                  instance group should be placed This is needed for regional subnets
-                  (e.g. GCE), to restrict placement to particular zones
+                description: |-
+                  Zones is the names of the Zones where machines in this instance group should be placed
+                  This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
                 items:
                   type: string
                 type: array
@@ -1161,9 +1178,3 @@ spec:
     served: true
     storage: true
     subresources: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
