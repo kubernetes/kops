@@ -76,8 +76,8 @@ data:
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
         }
-    {{- if GossipName }}
-        hosts /rootfs/etc/hosts k8s.local {
+    {{- if not PublishesDNSRecords }}
+        hosts /rootfs/etc/hosts {{ ClusterDNSDomain }} {
           ttl 30
           fallthrough
         }
@@ -173,7 +173,7 @@ spec:
         - name: config-volume
           mountPath: /etc/coredns
           readOnly: true
-{{- if GossipName }}
+{{- if not PublishesDNSRecords }}
         - name: etc-hosts
           mountPath: /rootfs/etc/hosts
           readOnly: true
@@ -220,7 +220,7 @@ spec:
         - name: config-volume
           configMap:
             name: coredns
-{{- if GossipName }}
+{{- if not PublishesDNSRecords }}
         - name: etc-hosts
           hostPath:
             path: /etc/hosts

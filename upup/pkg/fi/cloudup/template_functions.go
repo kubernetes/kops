@@ -51,7 +51,6 @@ import (
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -134,11 +133,14 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return false
 	}
-	dest["GossipName"] = func() bool {
-		if dns.IsGossipClusterName(cluster.Name) {
-			return true
+	dest["PublishesDNSRecords"] = func() bool {
+		return cluster.PublishesDNSRecords()
+	}
+	dest["ClusterDNSDomain"] = func() string {
+		if cluster.UsesLegacyGossip() {
+			return "k8s.local"
 		}
-		return false
+		return cluster.Name
 	}
 
 	dest["NodeLocalDNSClusterIP"] = func() string {
