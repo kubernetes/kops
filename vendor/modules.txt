@@ -849,7 +849,7 @@ github.com/sagikazarmark/slog-shim
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.23
+# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.23.0.20240206155451-64fcc5bbab4d
 ## explicit; go 1.17
 github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
@@ -860,6 +860,8 @@ github.com/scaleway/scaleway-sdk-go/api/lb/v1
 github.com/scaleway/scaleway-sdk-go/api/marketplace/v1
 github.com/scaleway/scaleway-sdk-go/api/marketplace/v2
 github.com/scaleway/scaleway-sdk-go/api/std
+github.com/scaleway/scaleway-sdk-go/api/vpc/v2
+github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1
 github.com/scaleway/scaleway-sdk-go/internal/async
 github.com/scaleway/scaleway-sdk-go/internal/auth
 github.com/scaleway/scaleway-sdk-go/internal/errors

@@ -34,7 +34,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.6
 	github.com/prometheus/client_golang v1.18.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.23
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.23.0.20240206155451-64fcc5bbab4d
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
