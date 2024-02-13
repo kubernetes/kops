@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -432,7 +432,7 @@ func formatAWSIAMStatement(accountId, partition, oidcProvider, namespace, name s
 			Principal: iam.Principal{
 				Federated: "arn:" + partition + ":iam::" + accountId + ":oidc-provider/" + oidcProvider,
 			},
-			Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+			Action: stringorset.String("sts:AssumeRoleWithWebIdentity"),
 			Condition: map[string]interface{}{
 				condition: map[string]interface{}{
 					oidcProvider + ":sub": "system:serviceaccount:" + namespace + ":" + name,

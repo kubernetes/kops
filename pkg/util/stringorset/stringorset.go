@@ -14,49 +14,58 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package stringorslice
+package stringorset
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// StringOrSlice is a type that holds a []string, but marshals to a []string or a string.
-type StringOrSlice struct {
-	values             []string
+// StringOrSet is a type that holds a []string, but marshals to a []string or a string.
+type StringOrSet struct {
+	values             sets.Set[string]
 	forceEncodeAsArray bool
 }
 
-func (s *StringOrSlice) IsEmpty() bool {
+func (s *StringOrSet) IsEmpty() bool {
 	return len(s.values) == 0
 }
 
-// Slice will build a value that marshals to a JSON array
-func Slice(v []string) StringOrSlice {
-	return StringOrSlice{values: v, forceEncodeAsArray: true}
+// Set will build a value that marshals to a JSON array
+func Set(v []string) StringOrSet {
+	values := sets.Set[string]{}
+	values.Insert(v...)
+	return StringOrSet{values: values, forceEncodeAsArray: true}
 }
 
 // Of will build a value that marshals to a JSON array if len(v) > 1,
 // otherwise to a single string
-func Of(v ...string) StringOrSlice {
+func Of(v ...string) StringOrSet {
 	if v == nil {
 		v = []string{}
 	}
-	return StringOrSlice{values: v}
+	values := sets.Set[string]{}
+	values.Insert(v...)
+	return StringOrSet{values: values}
 }
 
 // String will build a value that marshals to a single string
-func String(v string) StringOrSlice {
-	return StringOrSlice{values: []string{v}, forceEncodeAsArray: false}
+func String(v string) StringOrSet {
+	return StringOrSet{values: sets.New(v), forceEncodeAsArray: false}
 }
 
 // UnmarshalJSON implements the json.Unmarshaller interface.
-func (s *StringOrSlice) UnmarshalJSON(value []byte) error {
+func (s *StringOrSet) UnmarshalJSON(value []byte) error {
 	if value[0] == '[' {
 		s.forceEncodeAsArray = true
-		if err := json.Unmarshal(value, &s.values); err != nil {
+		var vals []string
+		if err := json.Unmarshal(value, &vals); err != nil {
 			return nil
 		}
+		s.values = sets.New(vals...)
 		return nil
 	}
 	s.forceEncodeAsArray = false
@@ -64,46 +73,39 @@ func (s *StringOrSlice) UnmarshalJSON(value []byte) error {
 	if err := json.Unmarshal(value, &stringValue); err != nil {
 		return err
 	}
-	s.values = []string{stringValue}
+	s.values = sets.New(stringValue)
 	return nil
 }
 
 // String returns the string value, or the Itoa of the int value.
-func (s StringOrSlice) String() string {
-	return strings.Join(s.values, ",")
+func (s StringOrSet) String() string {
+	return strings.Join(sets.List[string](s.values), ",")
 }
 
-func (v *StringOrSlice) Value() []string {
-	return v.values
+func (v *StringOrSet) Value() []string {
+	vals := sets.List[string](v.values)
+	sort.Strings(vals)
+	return vals
 }
 
-func (l StringOrSlice) Equal(r StringOrSlice) bool {
-	if len(l.values) != len(r.values) {
-		return false
-	}
-	for i := 0; i < len(l.values); i++ {
-		if l.values[i] != r.values[i] {
-			return false
-		}
-	}
-	return true
+func (l StringOrSet) Equal(r StringOrSet) bool {
+	return l.values.Equal(r.values)
 }
 
 // MarshalJSON implements the json.Marshaller interface.
-func (v StringOrSlice) MarshalJSON() ([]byte, error) {
+func (v StringOrSet) MarshalJSON() ([]byte, error) {
 	encodeAsJSONArray := v.forceEncodeAsArray
 	if len(v.values) > 1 {
 		encodeAsJSONArray = true
 	}
-	values := v.values
+	values := v.Value()
 	if values == nil {
 		values = []string{}
 	}
 	if encodeAsJSONArray {
 		return json.Marshal(values)
-	} else if len(v.values) == 1 {
-		s := v.values[0]
-		return json.Marshal(&s)
+	} else if len(values) == 1 {
+		return json.Marshal(&values[0])
 	} else {
 		return json.Marshal(values)
 	}

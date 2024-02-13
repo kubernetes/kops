@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package stringorslice
+package stringorset
 
 import (
 	"encoding/json"
@@ -25,7 +25,7 @@ import (
 
 func TestRoundTrip(t *testing.T) {
 	grid := []struct {
-		Value StringOrSlice
+		Value StringOrSet
 		JSON  string
 	}{
 		{
@@ -37,7 +37,7 @@ func TestRoundTrip(t *testing.T) {
 			JSON:  "\"a\"",
 		},
 		{
-			Value: Slice([]string{"a"}),
+			Value: Set([]string{"a"}),
 			JSON:  "[\"a\"]",
 		},
 		{
@@ -45,7 +45,7 @@ func TestRoundTrip(t *testing.T) {
 			JSON:  "[\"a\",\"b\"]",
 		},
 		{
-			Value: Slice([]string{"a", "b"}),
+			Value: Set([]string{"a", "b"}),
 			JSON:  "[\"a\",\"b\"]",
 		},
 		{
@@ -53,7 +53,7 @@ func TestRoundTrip(t *testing.T) {
 			JSON:  "[]",
 		},
 		{
-			Value: Slice(nil),
+			Value: Set(nil),
 			JSON:  "[]",
 		},
 	}
@@ -69,7 +69,7 @@ func TestRoundTrip(t *testing.T) {
 			t.Errorf("Unexpected JSON encoding.  Actual=%q, Expected=%q", string(actualJSON), g.JSON)
 		}
 
-		parsed := &StringOrSlice{}
+		parsed := &StringOrSet{}
 		err = json.Unmarshal([]byte(g.JSON), parsed)
 		if err != nil {
 			t.Errorf("error decoding StringOrSlice %s to json: %v", g.JSON, err)

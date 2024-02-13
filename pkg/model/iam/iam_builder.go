@@ -38,7 +38,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/util/pkg/vfs"
@@ -50,9 +50,9 @@ const PolicyDefaultVersion = "2012-10-17"
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
 	clusterName               string
-	unconditionalAction       sets.String
-	clusterTaggedAction       sets.String
-	clusterTaggedCreateAction sets.String
+	unconditionalAction       sets.Set[string]
+	clusterTaggedAction       sets.Set[string]
+	clusterTaggedCreateAction sets.Set[string]
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
@@ -77,8 +77,8 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.String("ec2:CreateTags"),
-			Resource: stringorslice.Slice(actualResources),
+			Action:   stringorset.String("ec2:CreateTags"),
+			Resource: stringorset.Set(actualResources),
 			Condition: Condition{
 				"StringEquals": map[string]interface{}{
 					"aws:RequestTag/KubernetesCluster": p.clusterName,
@@ -89,11 +89,11 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
+			Action: stringorset.Set([]string{
 				"ec2:CreateTags",
 				"ec2:DeleteTags", // aws.go, tag.go
 			}),
-			Resource: stringorslice.Slice(actualResources),
+			Resource: stringorset.Set(actualResources),
 			Condition: Condition{
 				"Null": map[string]string{
 					"aws:RequestTag/KubernetesCluster": "true",
@@ -111,15 +111,15 @@ func (p *Policy) AsJSON() (string, error) {
 	if len(p.unconditionalAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.unconditionalAction.List()...),
-			Resource: stringorslice.String("*"),
+			Action:   stringorset.Of(sets.List(p.unconditionalAction)...),
+			Resource: stringorset.String("*"),
 		})
 	}
 	if len(p.clusterTaggedAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.clusterTaggedAction.List()...),
-			Resource: stringorslice.String("*"),
+			Action:   stringorset.Of(sets.List(p.clusterTaggedAction)...),
+			Resource: stringorset.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:ResourceTag/KubernetesCluster": p.clusterName,
@@ -130,8 +130,8 @@ func (p *Policy) AsJSON() (string, error) {
 	if len(p.clusterTaggedCreateAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.clusterTaggedCreateAction.List()...),
-			Resource: stringorslice.String("*"),
+			Action:   stringorset.Of(sets.List(p.clusterTaggedCreateAction)...),
+			Resource: stringorset.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:RequestTag/KubernetesCluster": p.clusterName,
@@ -143,8 +143,8 @@ func (p *Policy) AsJSON() (string, error) {
 		if p.clusterTaggedCreateAction.Has("ec2:CreateSecurityGroup") {
 			p.Statement = append(p.Statement, &Statement{
 				Effect:   StatementEffectAllow,
-				Action:   stringorslice.Of("ec2:CreateSecurityGroup"),
-				Resource: stringorslice.String(fmt.Sprintf("arn:%s:ec2:*:*:vpc/*", p.partition)),
+				Action:   stringorset.Of("ec2:CreateSecurityGroup"),
+				Resource: stringorset.String(fmt.Sprintf("arn:%s:ec2:*:*:vpc/*", p.partition)),
 			})
 		}
 	}
@@ -176,8 +176,8 @@ type Condition map[string]interface{}
 type Statement struct {
 	Effect    StatementEffect
 	Principal Principal
-	Action    stringorslice.StringOrSlice
-	Resource  stringorslice.StringOrSlice
+	Action    stringorset.StringOrSet
+	Resource  stringorset.StringOrSet
 	Condition Condition
 }
 
@@ -338,9 +338,9 @@ func NewPolicy(clusterName, partition string) *Policy {
 	p := &Policy{
 		Version:                   PolicyDefaultVersion,
 		clusterName:               clusterName,
-		unconditionalAction:       sets.NewString(),
-		clusterTaggedAction:       sets.NewString(),
-		clusterTaggedCreateAction: sets.NewString(),
+		unconditionalAction:       sets.New[string](),
+		clusterTaggedAction:       sets.New[string](),
+		clusterTaggedCreateAction: sets.New[string](),
 		partition:                 partition,
 	}
 	return p
@@ -594,13 +594,13 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	for _, s3Bucket := range s3Buckets.List() {
 		p.Statement = append(p.Statement, &Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
+			Action: stringorset.Of(
 				"s3:GetBucketLocation",
 				"s3:GetEncryptionConfiguration",
 				"s3:ListBucket",
 				"s3:ListBucketVersions",
 			),
-			Resource: stringorslice.Slice([]string{
+			Resource: stringorset.Set([]string{
 				fmt.Sprintf("arn:%v:s3:::%v", p.partition, s3Bucket),
 			}),
 		})
@@ -612,13 +612,13 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
-		Action: stringorslice.Slice([]string{
+		Action: stringorset.Set([]string{
 			"s3:GetObject",
 			"s3:DeleteObject",
 			"s3:DeleteObjectVersion",
 			"s3:PutObject",
 		}),
-		Resource: stringorslice.Of(
+		Resource: stringorset.Of(
 			fmt.Sprintf("arn:%v:s3:::%v/*", p.partition, iamS3Path),
 		),
 	})
@@ -640,8 +640,8 @@ func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error 
 
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"s3:Get*"}),
-			Resource: stringorslice.Of(resources...),
+			Action:   stringorset.Set([]string{"s3:Get*"}),
+			Resource: stringorset.Of(resources...),
 		})
 	}
 	return nil
@@ -800,10 +800,10 @@ func addEtcdManagerPermissions(p *Policy) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
+			Action: stringorset.Of(
 				"ec2:AttachVolume",
 			),
-			Resource: stringorslice.Slice([]string{"*"}),
+			Resource: stringorset.Set([]string{"*"}),
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:ResourceTag/k8s.io/role/master": "1",
@@ -1061,22 +1061,22 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
-		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
+		Action: stringorset.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 			"route53:GetHostedZone"),
-		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::hostedzone/%v", b.Partition, hostedZoneID)}),
+		Resource: stringorset.Set([]string{fmt.Sprintf("arn:%v:route53:::hostedzone/%v", b.Partition, hostedZoneID)}),
 	})
 
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
+		Action:   stringorset.Set([]string{"route53:GetChange"}),
+		Resource: stringorset.Set([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
 	})
 
-	wildcard := stringorslice.Slice([]string{"*"})
+	wildcard := stringorset.Set([]string{"*"})
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones", "route53:ListTagsForResource"}),
+		Action:   stringorset.Set([]string{"route53:ListHostedZones", "route53:ListTagsForResource"}),
 		Resource: wildcard,
 	})
 }
@@ -1169,10 +1169,10 @@ func addAmazonVPCCNIPermissions(p *Policy) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
+			Action: stringorset.Set([]string{
 				"ec2:CreateTags",
 			}),
-			Resource: stringorslice.Slice([]string{
+			Resource: stringorset.Set([]string{
 				strings.Join([]string{"arn:", p.partition, ":ec2:*:*:network-interface/*"}, ""),
 			}),
 		},
