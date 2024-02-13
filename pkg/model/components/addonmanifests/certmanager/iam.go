@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/pkg/util/stringorset"
 )
 
 // ServiceAccount represents the service-account used by cert-manager.
@@ -57,22 +57,22 @@ func addCertManagerPermissions(b *iam.PolicyBuilder, p *iam.Policy) {
 
 	p.Statement = append(p.Statement, &iam.Statement{
 		Effect: iam.StatementEffectAllow,
-		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
+		Action: stringorset.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 		),
-		Resource: stringorslice.Set(zoneResources),
+		Resource: stringorset.Set(zoneResources),
 	})
 
 	p.Statement = append(p.Statement, &iam.Statement{
 		Effect:   iam.StatementEffectAllow,
-		Action:   stringorslice.Set([]string{"route53:GetChange"}),
-		Resource: stringorslice.Set([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
+		Action:   stringorset.Set([]string{"route53:GetChange"}),
+		Resource: stringorset.Set([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
 	})
 
-	wildcard := stringorslice.Set([]string{"*"})
+	wildcard := stringorset.Set([]string{"*"})
 	p.Statement = append(p.Statement, &iam.Statement{
 		Effect:   iam.StatementEffectAllow,
-		Action:   stringorslice.Set([]string{"route53:ListHostedZonesByName"}),
+		Action:   stringorset.Set([]string{"route53:ListHostedZonesByName"}),
 		Resource: wildcard,
 	})
 }

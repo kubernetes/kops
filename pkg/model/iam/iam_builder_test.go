@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
-	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -38,16 +38,16 @@ func TestRoundTrip(t *testing.T) {
 		{
 			IAM: &Statement{
 				Effect:   StatementEffectAllow,
-				Action:   stringorslice.Of("ec2:DescribeRegions"),
-				Resource: stringorslice.Of("*"),
+				Action:   stringorset.Of("ec2:DescribeRegions"),
+				Resource: stringorset.Of("*"),
 			},
 			JSON: "{\"Action\":\"ec2:DescribeRegions\",\"Effect\":\"Allow\",\"Resource\":\"*\"}",
 		},
 		{
 			IAM: &Statement{
 				Effect:   StatementEffectDeny,
-				Action:   stringorslice.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
-				Resource: stringorslice.Of("a", "b"),
+				Action:   stringorset.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
+				Resource: stringorset.Of("a", "b"),
 			},
 			JSON: "{\"Action\":[\"ec2:DescribeInstances\",\"ec2:DescribeRegions\"],\"Effect\":\"Deny\",\"Resource\":[\"a\",\"b\"]}",
 		},

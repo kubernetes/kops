@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/pkg/util/stringorset"
 )
 
 func TestIAMServiceEC2(t *testing.T) {
@@ -70,7 +70,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 				Principal: iam.Principal{
 					Federated: "arn:aws-test:iam::0123456789:oidc-provider/oidc-test",
 				},
-				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+				Action: stringorset.String("sts:AssumeRoleWithWebIdentity"),
 				Condition: map[string]interface{}{
 					"StringEquals": map[string]interface{}{
 						"oidc-test:sub": "system:serviceaccount:test:test",
@@ -104,7 +104,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 				Principal: iam.Principal{
 					Federated: "arn:aws-test:iam::0123456789:oidc-provider/oidc-test",
 				},
-				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+				Action: stringorset.String("sts:AssumeRoleWithWebIdentity"),
 				Condition: map[string]interface{}{
 					"StringLike": map[string]interface{}{
 						"oidc-test:sub": "system:serviceaccount:test-*:test",
