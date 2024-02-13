@@ -78,7 +78,7 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 		&Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorslice.String("ec2:CreateTags"),
-			Resource: stringorslice.Slice(actualResources),
+			Resource: stringorslice.Set(actualResources),
 			Condition: Condition{
 				"StringEquals": map[string]interface{}{
 					"aws:RequestTag/KubernetesCluster": p.clusterName,
@@ -89,11 +89,11 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
+			Action: stringorslice.Set([]string{
 				"ec2:CreateTags",
 				"ec2:DeleteTags", // aws.go, tag.go
 			}),
-			Resource: stringorslice.Slice(actualResources),
+			Resource: stringorslice.Set(actualResources),
 			Condition: Condition{
 				"Null": map[string]string{
 					"aws:RequestTag/KubernetesCluster": "true",
@@ -176,8 +176,8 @@ type Condition map[string]interface{}
 type Statement struct {
 	Effect    StatementEffect
 	Principal Principal
-	Action    stringorslice.StringOrSlice
-	Resource  stringorslice.StringOrSlice
+	Action    stringorslice.StringOrSet
+	Resource  stringorslice.StringOrSet
 	Condition Condition
 }
 
@@ -600,7 +600,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 				"s3:ListBucket",
 				"s3:ListBucketVersions",
 			),
-			Resource: stringorslice.Slice([]string{
+			Resource: stringorslice.Set([]string{
 				fmt.Sprintf("arn:%v:s3:::%v", p.partition, s3Bucket),
 			}),
 		})
@@ -612,7 +612,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
-		Action: stringorslice.Slice([]string{
+		Action: stringorslice.Set([]string{
 			"s3:GetObject",
 			"s3:DeleteObject",
 			"s3:DeleteObjectVersion",
@@ -640,7 +640,7 @@ func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error 
 
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"s3:Get*"}),
+			Action:   stringorslice.Set([]string{"s3:Get*"}),
 			Resource: stringorslice.Of(resources...),
 		})
 	}
@@ -803,7 +803,7 @@ func addEtcdManagerPermissions(p *Policy) {
 			Action: stringorslice.Of(
 				"ec2:AttachVolume",
 			),
-			Resource: stringorslice.Slice([]string{"*"}),
+			Resource: stringorslice.Set([]string{"*"}),
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:ResourceTag/k8s.io/role/master": "1",
@@ -1064,19 +1064,19 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 			"route53:GetHostedZone"),
-		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::hostedzone/%v", b.Partition, hostedZoneID)}),
+		Resource: stringorslice.Set([]string{fmt.Sprintf("arn:%v:route53:::hostedzone/%v", b.Partition, hostedZoneID)}),
 	})
 
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
+		Action:   stringorslice.Set([]string{"route53:GetChange"}),
+		Resource: stringorslice.Set([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
 	})
 
-	wildcard := stringorslice.Slice([]string{"*"})
+	wildcard := stringorslice.Set([]string{"*"})
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones", "route53:ListTagsForResource"}),
+		Action:   stringorslice.Set([]string{"route53:ListHostedZones", "route53:ListTagsForResource"}),
 		Resource: wildcard,
 	})
 }
@@ -1169,10 +1169,10 @@ func addAmazonVPCCNIPermissions(p *Policy) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
+			Action: stringorslice.Set([]string{
 				"ec2:CreateTags",
 			}),
-			Resource: stringorslice.Slice([]string{
+			Resource: stringorslice.Set([]string{
 				strings.Join([]string{"arn:", p.partition, ":ec2:*:*:network-interface/*"}, ""),
 			}),
 		},

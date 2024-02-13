@@ -49,7 +49,7 @@ func TestRoundTrip(t *testing.T) {
 				Action:   stringorslice.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
 				Resource: stringorslice.Of("a", "b"),
 			},
-			JSON: "{\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Effect\":\"Deny\",\"Resource\":[\"a\",\"b\"]}",
+			JSON: "{\"Action\":[\"ec2:DescribeInstances\",\"ec2:DescribeRegions\"],\"Effect\":\"Deny\",\"Resource\":[\"a\",\"b\"]}",
 		},
 		{
 			IAM: &Statement{

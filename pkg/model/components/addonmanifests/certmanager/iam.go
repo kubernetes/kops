@@ -60,19 +60,19 @@ func addCertManagerPermissions(b *iam.PolicyBuilder, p *iam.Policy) {
 		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 		),
-		Resource: stringorslice.Slice(zoneResources),
+		Resource: stringorslice.Set(zoneResources),
 	})
 
 	p.Statement = append(p.Statement, &iam.Statement{
 		Effect:   iam.StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
+		Action:   stringorslice.Set([]string{"route53:GetChange"}),
+		Resource: stringorslice.Set([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
 	})
 
-	wildcard := stringorslice.Slice([]string{"*"})
+	wildcard := stringorslice.Set([]string{"*"})
 	p.Statement = append(p.Statement, &iam.Statement{
 		Effect:   iam.StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZonesByName"}),
+		Action:   stringorslice.Set([]string{"route53:ListHostedZonesByName"}),
 		Resource: wildcard,
 	})
 }
