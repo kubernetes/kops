@@ -50,9 +50,9 @@ const PolicyDefaultVersion = "2012-10-17"
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
 	clusterName               string
-	unconditionalAction       sets.String
-	clusterTaggedAction       sets.String
-	clusterTaggedCreateAction sets.String
+	unconditionalAction       sets.Set[string]
+	clusterTaggedAction       sets.Set[string]
+	clusterTaggedCreateAction sets.Set[string]
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
@@ -111,14 +111,14 @@ func (p *Policy) AsJSON() (string, error) {
 	if len(p.unconditionalAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.unconditionalAction.List()...),
+			Action:   stringorslice.Of(sets.List(p.unconditionalAction)...),
 			Resource: stringorslice.String("*"),
 		})
 	}
 	if len(p.clusterTaggedAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.clusterTaggedAction.List()...),
+			Action:   stringorslice.Of(sets.List(p.clusterTaggedAction)...),
 			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
@@ -130,7 +130,7 @@ func (p *Policy) AsJSON() (string, error) {
 	if len(p.clusterTaggedCreateAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.clusterTaggedCreateAction.List()...),
+			Action:   stringorslice.Of(sets.List(p.clusterTaggedCreateAction)...),
 			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
@@ -338,9 +338,9 @@ func NewPolicy(clusterName, partition string) *Policy {
 	p := &Policy{
 		Version:                   PolicyDefaultVersion,
 		clusterName:               clusterName,
-		unconditionalAction:       sets.NewString(),
-		clusterTaggedAction:       sets.NewString(),
-		clusterTaggedCreateAction: sets.NewString(),
+		unconditionalAction:       sets.New[string](),
+		clusterTaggedAction:       sets.New[string](),
+		clusterTaggedCreateAction: sets.New[string](),
 		partition:                 partition,
 	}
 	return p
