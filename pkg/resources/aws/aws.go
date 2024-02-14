@@ -1613,17 +1613,18 @@ func DumpTargetGroup(op *resources.DumpOperation, r *resources.Resource) error {
 }
 
 func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
-	targetgroups, _, err := DescribeTargetGroups(cloud)
+	targetGroups, err := listMatchingTargetGroups(cloud)
 	if err != nil {
 		return nil, err
 	}
 
 	var resourceTrackers []*resources.Resource
-	for _, tg := range targetgroups {
+	for _, targetGroup := range targetGroups {
+		tg := targetGroup.TargetGroup
 		id := aws.StringValue(tg.TargetGroupName)
 		resourceTracker := &resources.Resource{
 			Name:    id,
-			ID:      string(*tg.TargetGroupArn),
+			ID:      targetGroup.ARN(),
 			Type:    TypeTargetGroup,
 			Deleter: DeleteTargetGroup,
 			Dumper:  DumpTargetGroup,
@@ -1635,62 +1636,27 @@ func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-func DescribeTargetGroups(cloud fi.Cloud) ([]*elbv2.TargetGroup, map[string][]*elbv2.Tag, error) {
+func listMatchingTargetGroups(cloud fi.Cloud) ([]*awsup.TargetGroupInfo, error) {
+	ctx := context.TODO()
+
 	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
 	klog.V(2).Infof("Listing all TargetGroups")
 
-	request := &elbv2.DescribeTargetGroupsInput{}
-	// DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	var targetgroups []*elbv2.TargetGroup
-	targetgroupTags := make(map[string][]*elbv2.Tag)
-
-	var innerError error
-	err := c.ELBV2().DescribeTargetGroupsPages(request, func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
-		if len(p.TargetGroups) == 0 {
-			return true
-		}
-
-		tagRequest := &elbv2.DescribeTagsInput{}
-
-		nameToTargetGroup := make(map[string]*elbv2.TargetGroup)
-		for _, tg := range p.TargetGroups {
-			name := aws.StringValue(tg.TargetGroupArn)
-			nameToTargetGroup[name] = tg
-
-			tagRequest.ResourceArns = append(tagRequest.ResourceArns, tg.TargetGroupArn)
-		}
-
-		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
-		if err != nil {
-			innerError = fmt.Errorf("error listing TargetGroup Tags: %v", err)
-			return false
-		}
-
-		for _, t := range tagResponse.TagDescriptions {
-			tgARN := aws.StringValue(t.ResourceArn)
-			if !matchesElbV2Tags(tags, t.Tags) {
-				continue
-			}
-			targetgroupTags[tgARN] = t.Tags
-
-			tg := nameToTargetGroup[tgARN]
-			targetgroups = append(targetgroups, tg)
-		}
-
-		return true
-	})
+	targetGroups, err := awsup.ListELBV2TargetGroups(ctx, c)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error describing TargetGroups: %v", err)
-	}
-	if innerError != nil {
-		return nil, nil, fmt.Errorf("error describing TargetGroups: %v", innerError)
+		return nil, err
 	}
 
-	return targetgroups, targetgroupTags, nil
+	var matches []*awsup.TargetGroupInfo
+	for _, tg := range targetGroups {
+		if matchesElbV2Tags(tags, tg.Tags) {
+			matches = append(matches, tg)
+		}
+	}
+
+	return matches, nil
 }
 
 func DeleteElasticIP(cloud fi.Cloud, t *resources.Resource) error {

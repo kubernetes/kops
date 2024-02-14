@@ -17,8 +17,10 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
@@ -51,7 +53,7 @@ type TargetGroup struct {
 	// ARN is the Amazon Resource Name for the Target Group
 	ARN *string
 
-	// Shared is set if this is an external LB (one we don't create or own)
+	// Shared is set if this is an external TargetGroup (one we don't create or own)
 	Shared *bool
 
 	Attributes map[string]string
@@ -67,33 +69,95 @@ func (e *TargetGroup) CompareWithID() *string {
 	return e.ARN
 }
 
-func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+func (e *TargetGroup) findTargetGroupByName(ctx context.Context, cloud awsup.AWSCloud) (*awsup.TargetGroupInfo, error) {
+	name := fi.ValueOf(e.Name)
 
-	request := &elbv2.DescribeTargetGroupsInput{}
-	if e.ARN != nil {
-		request.TargetGroupArns = []*string{e.ARN}
-	} else if e.Name != nil {
-		request.Names = []*string{e.Name}
+	targetGroups, err := awsup.ListELBV2TargetGroups(ctx, cloud)
+	if err != nil {
+		return nil, err
 	}
 
-	response, err := cloud.ELBV2().DescribeTargetGroups(request)
-	if err != nil {
+	var latest *awsup.TargetGroupInfo
+	for _, targetGroup := range targetGroups {
+		// We accept the name tag _or_ the TargetGroupName itself, to allow matching groups that might predate tagging.
+		if aws.StringValue(targetGroup.TargetGroup.TargetGroupName) != name && targetGroup.NameTag() != name {
+			continue
+		}
+		if latest != nil {
+			return nil, fmt.Errorf("found multiple TargetGroups with name %q, expected 1", fi.ValueOf(e.Name))
+		}
+		latest = targetGroup
+	}
+
+	return latest, nil
+}
+
+func (e *TargetGroup) findTargetGroupByARN(ctx context.Context, cloud awsup.AWSCloud) (*awsup.TargetGroupInfo, error) {
+	request := &elbv2.DescribeTargetGroupsInput{}
+	request.TargetGroupArns = []*string{e.ARN}
+
+	var targetGroups []*elbv2.TargetGroup
+	if err := cloud.ELBV2().DescribeTargetGroupsPagesWithContext(ctx, request, func(page *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
+		targetGroups = append(targetGroups, page.TargetGroups...)
+		return true
+	}); err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
 			if !fi.ValueOf(e.Shared) {
 				return nil, nil
 			}
 		}
-		return nil, fmt.Errorf("error describing targetgroup %s: %v", *e.Name, err)
+		return nil, fmt.Errorf("error describing targetgroup %s: %w", *e.ARN, err)
+	}
+	if len(targetGroups) > 1 {
+		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(targetGroups), fi.ValueOf(e.Name))
+	} else if len(targetGroups) == 0 {
+		return nil, nil
+	}
+	tg := targetGroups[0]
+
+	tagResponse, err := cloud.ELBV2().DescribeTagsWithContext(ctx, &elbv2.DescribeTagsInput{
+		ResourceArns: []*string{tg.TargetGroupArn},
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	if len(response.TargetGroups) > 1 {
-		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(response.TargetGroups), fi.ValueOf(e.Name))
-	} else if len(response.TargetGroups) == 0 {
+	info := &awsup.TargetGroupInfo{
+		TargetGroup: tg,
+	}
+
+	for _, t := range tagResponse.TagDescriptions {
+		info.Tags = append(info.Tags, t.Tags...)
+	}
+
+	return info, nil
+}
+
+func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
+	ctx := c.Context()
+	cloud := c.T.Cloud.(awsup.AWSCloud)
+
+	var targetGroupInfo *awsup.TargetGroupInfo
+
+	if e.ARN == nil {
+		tgi, err := e.findTargetGroupByName(ctx, cloud)
+		if err != nil {
+			return nil, err
+		}
+		targetGroupInfo = tgi
+	} else {
+		tgi, err := e.findTargetGroupByARN(ctx, cloud)
+		if err != nil {
+			return nil, err
+		}
+		targetGroupInfo = tgi
+	}
+
+	if targetGroupInfo == nil {
 		return nil, nil
 	}
 
-	tg := response.TargetGroups[0]
+	tg := targetGroupInfo.TargetGroup
 
 	actual := &TargetGroup{
 		Name:               tg.TargetGroupName,
@@ -110,17 +174,11 @@ func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 
 	e.ARN = tg.TargetGroupArn
 
-	tagsResp, err := cloud.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
-		ResourceArns: []*string{tg.TargetGroupArn},
-	})
-	if err != nil {
-		return nil, err
-	}
 	tags := make(map[string]string)
-	for _, tagDesc := range tagsResp.TagDescriptions {
-		for _, tag := range tagDesc.Tags {
-			tags[fi.ValueOf(tag.Key)] = fi.ValueOf(tag.Value)
-		}
+	for _, tag := range targetGroupInfo.Tags {
+		k := fi.ValueOf(tag.Key)
+		v := fi.ValueOf(tag.Value)
+		tags[k] = v
 	}
 	actual.Tags = tags
 
@@ -143,6 +201,10 @@ func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle
 	actual.Shared = e.Shared
+
+	if e.Name != nil {
+		actual.Name = e.Name
+	}
 
 	return actual, nil
 }
