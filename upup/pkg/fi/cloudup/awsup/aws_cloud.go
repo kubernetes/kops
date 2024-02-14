@@ -1196,6 +1196,21 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 		return nil, fmt.Errorf("failed to fetch instances: %v", err)
 	}
 
+	scalingReq := &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: g.AutoScalingGroupName,
+	}
+	scalingEvents := make([]cloudinstances.ScalingEvent, 0)
+	c.Autoscaling().DescribeScalingActivitiesPagesWithContext(ctx, scalingReq, func(p *autoscaling.DescribeScalingActivitiesOutput, lastPage bool) bool {
+		for _, activity := range p.Activities {
+			event := cloudinstances.ScalingEvent{
+				Timestamp:   aws.TimeValue(activity.StartTime),
+				Description: aws.StringValue(activity.Description),
+			}
+			scalingEvents = append(scalingEvents, event)
+		}
+		return true
+	})
+
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
@@ -1203,6 +1218,7 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 		TargetSize:    int(aws.Int64Value(g.DesiredCapacity)),
 		MaxSize:       int(aws.Int64Value(g.MaxSize)),
 		Raw:           g,
+		Events:        scalingEvents,
 	}
 
 	for _, i := range g.Instances {
