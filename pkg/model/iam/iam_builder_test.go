@@ -64,7 +64,7 @@ func TestRoundTrip(t *testing.T) {
 		{
 			IAM: &Statement{
 				Effect:    StatementEffectDeny,
-				Principal: Principal{Service: "service"},
+				Principal: Principal{Service: fi.PtrTo(stringorset.Of("service"))},
 				Condition: map[string]interface{}{
 					"bar": "baz",
 				},

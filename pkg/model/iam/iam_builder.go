@@ -278,12 +278,12 @@ func (s *Statement) MarshalJSON() ([]byte, error) {
 }
 
 type Principal struct {
-	Federated string `json:",omitempty"`
-	Service   string `json:",omitempty"`
+	Federated string                   `json:",omitempty"`
+	Service   *stringorset.StringOrSet `json:",omitempty"`
 }
 
 func (p *Principal) IsEmpty() bool {
-	return *p == Principal{}
+	return p.Federated == "" && (p.Service == nil || p.Service.IsEmpty())
 }
 
 // Equal compares two IAM Statements and returns a bool
