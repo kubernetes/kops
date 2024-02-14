@@ -55,9 +55,6 @@ var (
 	# Create a cluster from the configuration specification in a YAML file.
 	kops create -f my-cluster.yaml
 
-	# Create secret from secret spec file.
-	kops create -f secret.yaml
-
 	# Create an instancegroup based on the YAML passed into stdin.
 	cat instancegroup.yaml | kops create -f -
 	`))
