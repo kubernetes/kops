@@ -125,6 +125,10 @@ func (c *instanceGroupManagerClient) List(ctx context.Context, project, zone str
 	return l, nil
 }
 
+func (c *instanceGroupManagerClient) ListErrors(ctx context.Context, project, zone, name string) ([]*compute.InstanceManagedByIgmError, error) {
+	return []*compute.InstanceManagedByIgmError{}, nil
+}
+
 func (c *instanceGroupManagerClient) ListManagedInstances(ctx context.Context, project, zone, name string) ([]*compute.ManagedInstance, error) {
 	var instances []*compute.ManagedInstance
 	return instances, nil

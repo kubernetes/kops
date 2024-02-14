@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"strings"
+	"time"
 
 	compute "google.golang.org/api/compute/v1"
 	v1 "k8s.io/api/core/v1"
@@ -153,6 +154,14 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				continue
 			}
 
+			igmErrors, err := c.Compute().InstanceGroupManagers().ListErrors(ctx, project, zoneName, name)
+			if err != nil {
+				return nil, fmt.Errorf("getting MIG Errors: %v", err)
+			}
+			events, err := igmErrorsToScalingEvents(igmErrors)
+			if err != nil {
+				return nil, fmt.Errorf("error converting MIG errors to scaling events: %v", err)
+			}
 			g := &cloudinstances.CloudInstanceGroup{
 				HumanName:     mig.Name,
 				InstanceGroup: ig,
@@ -160,6 +169,7 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				TargetSize:    int(mig.TargetSize),
 				MaxSize:       int(mig.TargetSize),
 				Raw:           mig,
+				Events:        events,
 			}
 			groups[mig.Name] = g
 
@@ -262,6 +272,24 @@ func matchInstanceGroup(mig *compute.InstanceGroupManager, c *kops.Cluster, inst
 		return nil, fmt.Errorf("found multiple instance groups matching MIG %q", mig.Name)
 	}
 	return matches[0], nil
+}
+
+func igmErrorsToScalingEvents(igmErrors []*compute.InstanceManagedByIgmError) ([]cloudinstances.ScalingEvent, error) {
+	events := make([]cloudinstances.ScalingEvent, 0)
+	for _, error := range igmErrors {
+		ts, err := time.Parse(time.RFC3339, error.Timestamp)
+		if err != nil {
+			return nil, err
+		}
+		if error.Error != nil {
+			activity := cloudinstances.ScalingEvent{
+				Timestamp:   ts,
+				Description: error.Error.Message,
+			}
+			events = append(events, activity)
+		}
+	}
+	return events, nil
 }
 
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *compute.Instance) {
