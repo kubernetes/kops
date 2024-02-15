@@ -78,6 +78,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 		Tags:                  lbTags,
 		Description:           "Load-balancer for kops cluster " + b.ClusterName(),
 		SslCompatibilityLevel: string(lb.SSLCompatibilityLevelSslCompatibilityLevelUnknown),
+		PrivateNetwork:        b.LinkToNetwork(),
 	}
 
 	c.AddTask(loadBalancer)
@@ -88,6 +89,13 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	c.AddTask(lbBackendHttps)
 	lbFrontendHttps.Lifecycle = b.Lifecycle
 	c.AddTask(lbFrontendHttps)
+
+	//if b.Cluster.Spec.Networking.NetworkID != "" {
+	//	loadBalancer.VPCId = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
+	//} else if b.Cluster.Spec.Networking.NetworkCIDR != "" {
+	//	loadBalancer.VPCName = fi.PtrTo(b.ClusterName())
+	//	loadBalancer.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
+	//}
 
 	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 		loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KopsController)

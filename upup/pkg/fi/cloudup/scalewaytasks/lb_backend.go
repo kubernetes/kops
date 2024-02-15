@@ -30,24 +30,27 @@ import (
 
 // +kops:fitask
 type LBBackend struct {
-	Name      *string
-	Lifecycle fi.Lifecycle
+	ID   *string
+	Name *string
+	Zone *string
 
-	ID                   *string
-	Zone                 *string
-	ForwardProtocol      *string
 	ForwardPort          *int32
 	ForwardPortAlgorithm *string
-	StickySessions       *string
+	ForwardProtocol      *string
 	ProxyProtocol        *string
+	StickySessions       *string
 
+	Lifecycle    fi.Lifecycle
 	LoadBalancer *LoadBalancer
 }
 
 var _ fi.CloudupTask = &LBBackend{}
 var _ fi.CompareWithID = &LBBackend{}
-
 var _ fi.CloudupHasDependencies = &LBBackend{}
+
+func (l *LBBackend) CompareWithID() *string {
+	return l.ID
+}
 
 func (l *LBBackend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask
@@ -58,33 +61,33 @@ func (l *LBBackend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudu
 		if _, ok := task.(*Instance); ok {
 			deps = append(deps, task)
 		}
+		if _, ok := task.(*PrivateNIC); ok {
+			deps = append(deps, task)
+		}
 	}
 	return deps
-}
-
-func (l *LBBackend) CompareWithID() *string {
-	return l.ID
 }
 
 func (l *LBBackend) Find(context *fi.CloudupContext) (*LBBackend, error) {
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
-	if l.LoadBalancer.LBID == nil {
+	if l.LoadBalancer.ID == nil {
 		return nil, nil
 	}
 
 	backendResponse, err := lbService.ListBackends(&lb.ZonedAPIListBackendsRequest{
 		Zone: scw.Zone(cloud.Zone()),
-		LBID: fi.ValueOf(l.LoadBalancer.LBID),
+		LBID: fi.ValueOf(l.LoadBalancer.ID),
 		Name: l.Name,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("listing back-ends for load-balancer %s: %w", fi.ValueOf(l.LoadBalancer.LBID), err)
+		return nil, fmt.Errorf("listing back-ends for load-balancer %s: %w", fi.ValueOf(l.LoadBalancer.ID), err)
 	}
-	if backendResponse.TotalCount != 1 {
+	if backendResponse.TotalCount == 0 {
 		return nil, nil
 	}
+
 	backend := backendResponse.Backends[0]
 
 	return &LBBackend{
@@ -97,6 +100,7 @@ func (l *LBBackend) Find(context *fi.CloudupContext) (*LBBackend, error) {
 		ForwardPortAlgorithm: fi.PtrTo(string(backend.ForwardPortAlgorithm)),
 		StickySessions:       fi.PtrTo(string(backend.StickySessions)),
 		ProxyProtocol:        fi.PtrTo(string(backend.ProxyProtocol)),
+		//TODO(Mia-Cross): maybe just assign l.LoadBalancer to LoadBalancer ??
 		LoadBalancer: &LoadBalancer{
 			Name: fi.PtrTo(backend.LB.Name),
 		},
@@ -129,7 +133,7 @@ func (_ *LBBackend) CheckChanges(actual, expected, changes *LBBackend) error {
 	return nil
 }
 
-func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *LBBackend) error {
+func (_ *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *LBBackend) error {
 	lbService := t.Cloud.LBService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 
@@ -167,7 +171,7 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 
 		backendCreated, err := lbService.CreateBackend(&lb.ZonedAPICreateBackendRequest{
 			Zone:                 zone,
-			LBID:                 fi.ValueOf(expected.LoadBalancer.LBID),
+			LBID:                 fi.ValueOf(expected.LoadBalancer.ID),
 			Name:                 fi.ValueOf(expected.Name),
 			ForwardProtocol:      lb.Protocol(fi.ValueOf(expected.ForwardProtocol)),
 			ForwardPort:          fi.ValueOf(expected.ForwardPort),
@@ -192,7 +196,7 @@ func (l *LBBackend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 	}
 
 	_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID: fi.ValueOf(expected.LoadBalancer.LBID),
+		LBID: fi.ValueOf(expected.LoadBalancer.ID),
 		Zone: zone,
 	})
 	if err != nil {
@@ -252,7 +256,7 @@ func getControlPlanesIPs(scwCloud scaleway.ScwCloud, lb *LoadBalancer, zone scw.
 		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleWorker {
 			continue
 		}
-		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
 		if err != nil {
 			return nil, fmt.Errorf("getting IP of server %s for load-balancer's back-end: %w", server.Name, err)
 		}

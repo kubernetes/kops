@@ -17,16 +17,15 @@ limitations under the License.
 package scalewaytasks
 
 import (
-	"bytes"
-	"crypto/sha256"
+	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -47,8 +46,8 @@ type Instance struct {
 	VolumeSize     *int
 	NeedsUpdate    []string
 
-	UserData     *fi.Resource
-	LoadBalancer *LoadBalancer
+	LoadBalancer   *LoadBalancer
+	PrivateNetwork *PrivateNetwork
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -63,7 +62,13 @@ var _ fi.CloudupHasDependencies = &Instance{}
 func (s *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask
 	for _, task := range tasks {
+		if _, ok := task.(*LoadBalancer); ok {
+			deps = append(deps, task)
+		}
 		if _, ok := task.(*Volume); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*PrivateNetwork); ok {
 			deps = append(deps, task)
 		}
 	}
@@ -111,15 +116,6 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 			needsUpdate = append(needsUpdate, server.ID)
 			continue
 		}
-
-		// Check user-data differences
-		diff, err = checkUserDataDifferences(c, cloud, server, s.UserData)
-		if err != nil {
-			return nil, fmt.Errorf("checking user-data differences in server %s (%s): %w", server.Name, server.ID, err)
-		}
-		if diff == true {
-			needsUpdate = append(needsUpdate, server.ID)
-		}
 	}
 
 	server := servers[0]
@@ -141,7 +137,6 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		Tags:           server.Tags,
 		Count:          len(servers),
 		NeedsUpdate:    needsUpdate,
-		UserData:       s.UserData,
 	}, nil
 }
 
@@ -178,13 +173,9 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	cloud := t.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
-
-	userData, err := fi.ResourceAsBytes(*expected.UserData)
-	if err != nil {
-		return fmt.Errorf("error rendering instances: %w", err)
-	}
-
+	clusterName := scaleway.ClusterNameFromTags(expected.Tags)
 	newInstanceCount := expected.Count
+
 	if actual != nil {
 
 		// Add "kops.k8s.io/needs-update" label to servers needing update
@@ -216,18 +207,19 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 		// We create a unique name for each server
-		uniqueName, err := uniqueName(cloud, scaleway.ClusterNameFromTags(expected.Tags), fi.ValueOf(expected.Name))
+		uniqueName, err := uniqueName(cloud, clusterName, fi.ValueOf(expected.Name))
 		if err != nil {
 			return fmt.Errorf("error rendering server group %s: computing unique name for server: %w", fi.ValueOf(expected.Name), err)
 		}
 
 		createServerRequest := instance.CreateServerRequest{
-			Zone:            zone,
-			Name:            uniqueName,
-			CommercialType:  fi.ValueOf(expected.CommercialType),
-			Image:           fi.ValueOf(expected.Image),
-			Tags:            expected.Tags,
-			RoutedIPEnabled: fi.PtrTo(true),
+			Zone:           zone,
+			Name:           uniqueName,
+			CommercialType: fi.ValueOf(expected.CommercialType),
+			Image:          fi.ValueOf(expected.Image),
+			Tags:           expected.Tags,
+			//DynamicIPRequired: fi.PtrTo(false),
+			//RoutedIPEnabled:   fi.PtrTo(true),
 		}
 
 		// We resize the root volume if needed (for instance types with no local storage)
@@ -244,44 +236,18 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		// We create the instance and wait for it to be ready
 		srv, err := instanceService.CreateServer(&createServerRequest)
 		if err != nil {
+			if errors.Is(err, &scw.InvalidArgumentsError{}) {
+				klog.Exitf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
+			}
 			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
+		server := srv.Server
 		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: srv.Server.ID,
+			ServerID: server.ID,
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
-		}
-
-		// We load the cloud-init script in the instance user data
-		err = instanceService.SetServerUserData(&instance.SetServerUserDataRequest{
-			ServerID: srv.Server.ID,
-			Zone:     srv.Server.Zone,
-			Key:      "cloud-init",
-			Content:  bytes.NewBuffer(userData),
-		})
-		if err != nil {
-			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
-		}
-
-		// We start the instance
-		_, err = instanceService.ServerAction(&instance.ServerActionRequest{
-			Zone:     zone,
-			ServerID: srv.Server.ID,
-			Action:   instance.ServerActionPoweron,
-		})
-		if err != nil {
-			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
-		}
-
-		// We wait for the instance to be ready
-		_, err = instanceService.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: srv.Server.ID,
-			Zone:     zone,
-		})
-		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", server.ID, fi.ValueOf(expected.Name), err)
 		}
 	}
 
@@ -338,22 +304,8 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 			ReplaceOnTypeChange: fi.PtrTo(false),
 			Lifecycle:           nil,
 		}
-
-		// We load the cloud-init script in the instance user data
-		if expected.UserData != nil {
-			userDataBytes, err := fi.ResourceAsBytes(fi.ValueOf(expected.UserData))
-			if err != nil {
-				return err
-			}
-			if userDataBytes != nil {
-				tfUserData, err := t.AddFileBytes("scaleway_instance_server", tfName, "user_data", userDataBytes, false)
-				if err != nil {
-					return err
-				}
-				tfInstance.UserData = map[string]*terraformWriter.Literal{
-					"cloud-init": tfUserData,
-				}
-			}
+		if changes != nil {
+			tfInstance.Tags = append(tfInstance.Tags, scaleway.TagNeedsUpdate)
 		}
 
 		// We resize the root volume if needed (for instance types with no local storage)
@@ -406,31 +358,6 @@ func checkImageDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, actual
 	}
 
 	if actualServer.Image.ID != localImage.ID {
-		return true, nil
-	}
-	return false, nil
-}
-
-func checkUserDataDifferences(c *fi.CloudupContext, cloud scaleway.ScwCloud, actualServer *instance.Server, expectedUserData *fi.Resource) (bool, error) {
-	actualUserData, err := cloud.InstanceService().GetServerUserData(&instance.GetServerUserDataRequest{
-		Zone:     actualServer.Zone,
-		ServerID: actualServer.ID,
-		Key:      "cloud-init",
-	}, scw.WithContext(c.Context()))
-	if err != nil {
-		return false, fmt.Errorf("getting actual user-data: %w", err)
-	}
-
-	actualUserDataBytes, err := io.ReadAll(actualUserData)
-	if err != nil {
-		return false, fmt.Errorf("reading actual user-data: %w", err)
-	}
-	expectedUserDataBytes, err := fi.ResourceAsBytes(*expectedUserData)
-	if err != nil {
-		return false, fmt.Errorf("reading expected user-data: %w", err)
-	}
-
-	if sha256.Sum256(actualUserDataBytes) != sha256.Sum256(expectedUserDataBytes) {
 		return true, nil
 	}
 	return false, nil

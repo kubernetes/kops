@@ -699,6 +699,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.DNSModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&scalewaymodel.NetworkModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
 
@@ -744,6 +745,21 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		if err := tf.AddOutputVariable("region", terraformWriter.LiteralFromStringValue(cloud.Region())); err != nil {
 			return err
 		}
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			scwCloud := cloud.(scaleway.ScwCloud)
+			err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwCloud.Zone()))
+			if err != nil {
+				return err
+			}
+		}
+
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			scwCloud := cloud.(scaleway.ScwCloud)
+			err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwCloud.Zone()))
+			if err != nil {
+				return err
+			}
+		}
 
 		if project != "" {
 			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
@@ -764,6 +780,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			shouldPrecreateDNS = true
+		}
 
 		// Terraform tracks & performs deletions itself
 		deletionProcessingMode = fi.DeletionProcessingModeIgnore
@@ -777,6 +796,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+			shouldPrecreateDNS = true
+		}
 
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)

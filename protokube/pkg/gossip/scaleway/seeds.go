@@ -19,6 +19,7 @@ package scaleway
 import (
 	"fmt"
 
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
@@ -42,21 +43,27 @@ func NewSeedProvider(scwClient *scw.Client, clusterName string) (*SeedProvider, 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
-	zone, ok := p.scwClient.GetDefaultZone()
-	if !ok {
-		return nil, fmt.Errorf("could not determine default zone from client")
+	metadataAPI := instance.NewMetadataAPI()
+	metadata, err := metadataAPI.GetMetadata()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve server metadata: %w", err)
+	}
+
+	zone, err := scw.ParseZone(metadata.Location.ZoneID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse Scaleway zone: %w", err)
 	}
 	klog.V(4).Infof("Found zone of the running server: %v", zone)
 
-	region, ok := p.scwClient.GetDefaultRegion()
-	if !ok {
-		return nil, fmt.Errorf("could not determine default region from client")
+	region, err := zone.Region()
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse Scaleway region: %w", err)
 	}
 	klog.V(4).Infof("Found region of the running server: %v", region)
 
 	scwCloud, err := scaleway.NewScwCloud(map[string]string{
 		"region": region.String(),
-		"zone":   zone.String(),
+		"zone":   metadata.Location.ZoneID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not create Scaleway cloud interface: %w", err)
@@ -68,9 +75,9 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	}
 
 	for _, server := range servers {
-		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
 		if err != nil {
-			return nil, fmt.Errorf("getting server IP: %w", err)
+			return nil, fmt.Errorf("getting server private IP: %w", err)
 		}
 		klog.V(4).Infof("Appending gossip seed %s(%s): %q", server.Name, server.ID, ip)
 		seeds = append(seeds, ip)
