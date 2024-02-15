@@ -38,10 +38,6 @@ func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	}
 }
 
-func (t *AWSAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *AWSAPITarget) DefaultCheckExisting() bool {
 	return true
 }

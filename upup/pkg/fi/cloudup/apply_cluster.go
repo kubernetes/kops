@@ -714,6 +714,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	var target fi.CloudupTarget
 	shouldPrecreateDNS := true
 
+	deletionProcessingMode := fi.DeletionProcessingModeDeleteIfNotDeferrred
 	switch c.TargetName {
 	case TargetDirect:
 		switch cluster.Spec.GetCloudProvider() {
@@ -764,6 +765,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
 
+		// Terraform tracks & performs deletions itself
+		deletionProcessingMode = fi.DeletionProcessingModeIgnore
+
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
 		if c.GetAssets {
@@ -786,7 +790,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewCloudupContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, c.TaskMap)
+	context, err := fi.NewCloudupContext(ctx, deletionProcessingMode, target, cluster, cloud, keyStore, secretStore, configBase, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

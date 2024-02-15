@@ -36,10 +36,6 @@ func (t *GCEAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 
-func (t *GCEAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *GCEAPITarget) DefaultCheckExisting() bool {
 	return true
 }

@@ -33,11 +33,6 @@ func (t *LocalTarget) Finish(taskMap map[string]fi.NodeupTask) error {
 	return nil
 }
 
-func (t *LocalTarget) ProcessDeletions() bool {
-	// We don't expect any, but it would be our job to process them
-	return true
-}
-
 func (t *LocalTarget) DefaultCheckExisting() bool {
 	return true
 }

@@ -63,11 +63,6 @@ func (t *TerraformTarget) AddFileResource(resourceType string, resourceName stri
 	return t.AddFileBytes(resourceType, resourceName, key, d, base64)
 }
 
-func (t *TerraformTarget) ProcessDeletions() bool {
-	// Terraform tracks & performs deletions itself
-	return false
-}
-
 func (t *TerraformTarget) DefaultCheckExisting() bool {
 	return false
 }

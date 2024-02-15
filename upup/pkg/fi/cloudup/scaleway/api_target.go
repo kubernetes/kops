@@ -34,10 +34,6 @@ func (s ScwAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 
-func (s ScwAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *ScwAPITarget) DefaultCheckExisting() bool {
 	return true
 }

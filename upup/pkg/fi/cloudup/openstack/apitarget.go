@@ -36,10 +36,6 @@ func (t *OpenstackAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 
-func (t *OpenstackAPITarget) ProcessDeletions() bool {
-	return true
-}
-
 func (t *OpenstackAPITarget) DefaultCheckExisting() bool {
 	return true
 }

@@ -142,7 +142,7 @@ func runTasks(t *testing.T, cloud awsup.AWSCloud, allTasks map[string]fi.Cloudup
 		Cloud: cloud,
 	}
 
-	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
+	context, err := fi.NewCloudupContext(ctx, fi.DeletionProcessingModeDeleteIncludingDeferred, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
