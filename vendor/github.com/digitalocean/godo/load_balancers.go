@@ -14,8 +14,9 @@ const (
 
 // Load Balancer types.
 const (
-	LoadBalancerTypeGlobal   = "GLOBAL"
-	LoadBalancerTypeRegional = "REGIONAL"
+	LoadBalancerTypeGlobal          = "GLOBAL"
+	LoadBalancerTypeRegional        = "REGIONAL"
+	LoadBalancerTypeRegionalNetwork = "REGIONAL_NETWORK"
 )
 
 // LoadBalancersService is an interface for managing load balancers with the DigitalOcean API.
