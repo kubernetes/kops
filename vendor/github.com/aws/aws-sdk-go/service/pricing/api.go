@@ -90,6 +90,9 @@ func (c *Pricing) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 //     An error on the server occurred during the processing of your request. Try
 //     again later.
 //
+//   - ThrottlingException
+//     You've made too many requests exceeding service quotas.
+//
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
 //
@@ -242,6 +245,9 @@ func (c *Pricing) GetAttributeValuesRequest(input *GetAttributeValuesInput) (req
 //     An error on the server occurred during the processing of your request. Try
 //     again later.
 //
+//   - ThrottlingException
+//     You've made too many requests exceeding service quotas.
+//
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
 //
@@ -393,6 +399,9 @@ func (c *Pricing) GetPriceListFileUrlRequest(input *GetPriceListFileUrlInput) (r
 //     An error on the server occurred during the processing of your request. Try
 //     again later.
 //
+//   - ThrottlingException
+//     You've made too many requests exceeding service quotas.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetPriceListFileUrl
 func (c *Pricing) GetPriceListFileUrl(input *GetPriceListFileUrlInput) (*GetPriceListFileUrlOutput, error) {
 	req, out := c.GetPriceListFileUrlRequest(input)
@@ -487,6 +496,9 @@ func (c *Pricing) GetProductsRequest(input *GetProductsInput) (req *request.Requ
 //   - InternalErrorException
 //     An error on the server occurred during the processing of your request. Try
 //     again later.
+//
+//   - ThrottlingException
+//     You've made too many requests exceeding service quotas.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -651,6 +663,9 @@ func (c *Pricing) ListPriceListsRequest(input *ListPriceListsInput) (req *reques
 //   - InternalErrorException
 //     An error on the server occurred during the processing of your request. Try
 //     again later.
+//
+//   - ThrottlingException
+//     You've made too many requests exceeding service quotas.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -2018,6 +2033,70 @@ func (s *Service) SetAttributeNames(v []*string) *Service {
 func (s *Service) SetServiceCode(v string) *Service {
 	s.ServiceCode = &v
 	return s
+}
+
+// You've made too many requests exceeding service quotas.
+type ThrottlingException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) GoString() string {
+	return s.String()
+}
+
+func newErrorThrottlingException(v protocol.ResponseMetadata) error {
+	return &ThrottlingException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ThrottlingException) Code() string {
+	return "ThrottlingException"
+}
+
+// Message returns the exception's message.
+func (s *ThrottlingException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ThrottlingException) OrigErr() error {
+	return nil
+}
+
+func (s *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ThrottlingException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ThrottlingException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 const (

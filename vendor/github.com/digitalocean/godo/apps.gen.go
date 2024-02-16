@@ -98,6 +98,8 @@ type App struct {
 	BuildConfig             *AppBuildConfig `json:"build_config,omitempty"`
 	// The id of the project for the app. This will be empty if there is a fleet (project) lookup failure.
 	ProjectID string `json:"project_id,omitempty"`
+	// The dedicated egress ip addresses associated with the app.
+	DedicatedIps []*AppDedicatedIp `json:"dedicated_ips,omitempty"`
 }
 
 // AppAlertSpec Configuration of an alert for the app or a individual component.
@@ -219,6 +221,26 @@ const (
 	AppDatabaseSpecEngine_PG      AppDatabaseSpecEngine = "PG"
 	AppDatabaseSpecEngine_Redis   AppDatabaseSpecEngine = "REDIS"
 	AppDatabaseSpecEngine_MongoDB AppDatabaseSpecEngine = "MONGODB"
+)
+
+// AppDedicatedIp Represents a dedicated egress ip.
+type AppDedicatedIp struct {
+	// The ip address of the dedicated egress ip.
+	Ip string `json:"ip,omitempty"`
+	// The id of the dedictated egress ip.
+	ID     string               `json:"id,omitempty"`
+	Status AppDedicatedIpStatus `json:"status,omitempty"`
+}
+
+// AppDedicatedIpStatus the model 'AppDedicatedIpStatus'
+type AppDedicatedIpStatus string
+
+// List of AppDedicatedIPStatus
+const (
+	APPDEDICATEDIPSTATUS_Unknown   AppDedicatedIpStatus = "UNKNOWN"
+	APPDEDICATEDIPSTATUS_Assigning AppDedicatedIpStatus = "ASSIGNING"
+	APPDEDICATEDIPSTATUS_Assigned  AppDedicatedIpStatus = "ASSIGNED"
+	APPDEDICATEDIPSTATUS_Removed   AppDedicatedIpStatus = "REMOVED"
 )
 
 // AppDomainSpec struct for AppDomainSpec
@@ -997,6 +1019,41 @@ type AppDomainValidation struct {
 	TXTValue string `json:"txt_value,omitempty"`
 }
 
+// GetAppDatabaseConnectionDetailsResponse struct for GetAppDatabaseConnectionDetailsResponse
+type GetAppDatabaseConnectionDetailsResponse struct {
+	ConnectionDetails []*GetDatabaseConnectionDetailsResponse `json:"connection_details,omitempty"`
+}
+
+// GetDatabaseConnectionDetailsResponse struct for GetDatabaseConnectionDetailsResponse
+type GetDatabaseConnectionDetailsResponse struct {
+	Host          string                                      `json:"host,omitempty"`
+	Port          int64                                       `json:"port,omitempty"`
+	Username      string                                      `json:"username,omitempty"`
+	Password      string                                      `json:"password,omitempty"`
+	DatabaseName  string                                      `json:"database_name,omitempty"`
+	SslMode       string                                      `json:"ssl_mode,omitempty"`
+	DatabaseURL   string                                      `json:"database_url,omitempty"`
+	ComponentName string                                      `json:"component_name,omitempty"`
+	Pools         []*GetDatabaseConnectionDetailsResponsePool `json:"pools,omitempty"`
+}
+
+// GetDatabaseConnectionDetailsResponsePool struct for GetDatabaseConnectionDetailsResponsePool
+type GetDatabaseConnectionDetailsResponsePool struct {
+	PoolName     string `json:"pool_name,omitempty"`
+	Host         string `json:"host,omitempty"`
+	Port         int64  `json:"port,omitempty"`
+	Username     string `json:"username,omitempty"`
+	Password     string `json:"password,omitempty"`
+	DatabaseName string `json:"database_name,omitempty"`
+	SslMode      string `json:"ssl_mode,omitempty"`
+	DatabaseURL  string `json:"database_url,omitempty"`
+}
+
+// GetDatabaseTrustedSourceResponse struct for GetDatabaseTrustedSourceResponse
+type GetDatabaseTrustedSourceResponse struct {
+	IsEnabled bool `json:"is_enabled,omitempty"`
+}
+
 // GitHubSourceSpec struct for GitHubSourceSpec
 type GitHubSourceSpec struct {
 	Repo         string `json:"repo,omitempty"`
@@ -1062,6 +1119,11 @@ type AppInstanceSize struct {
 	TierSlug        string                 `json:"tier_slug,omitempty"`
 	TierUpgradeTo   string                 `json:"tier_upgrade_to,omitempty"`
 	TierDowngradeTo string                 `json:"tier_downgrade_to,omitempty"`
+	// Indicates if the tier instance size can enable autoscaling.
+	Scalable       bool `json:"scalable,omitempty"`
+	FeaturePreview bool `json:"feature_preview,omitempty"`
+	// Indicates if the tier instance size allows more than one instance.
+	SingleInstanceOnly bool `json:"single_instance_only,omitempty"`
 }
 
 // AppInstanceSizeCPUType the model 'AppInstanceSizeCPUType'
@@ -1127,6 +1189,17 @@ type AppRegion struct {
 	Default bool `json:"default,omitempty"`
 }
 
+// ResetDatabasePasswordRequest struct for ResetDatabasePasswordRequest
+type ResetDatabasePasswordRequest struct {
+	AppID         string `json:"app_id,omitempty"`
+	ComponentName string `json:"component_name,omitempty"`
+}
+
+// ResetDatabasePasswordResponse struct for ResetDatabasePasswordResponse
+type ResetDatabasePasswordResponse struct {
+	Deployment *Deployment `json:"deployment,omitempty"`
+}
+
 // AppStringMatch struct for AppStringMatch
 type AppStringMatch struct {
 	// Exact string match. Only 1 of `exact`, `prefix`, or `regex` must be set.
@@ -1142,6 +1215,18 @@ type AppTier struct {
 	Slug                 string `json:"slug,omitempty"`
 	EgressBandwidthBytes string `json:"egress_bandwidth_bytes,omitempty"`
 	BuildSeconds         string `json:"build_seconds,omitempty"`
+}
+
+// ToggleDatabaseTrustedSourceRequest struct for ToggleDatabaseTrustedSourceRequest
+type ToggleDatabaseTrustedSourceRequest struct {
+	AppID         string `json:"app_id,omitempty"`
+	ComponentName string `json:"component_name,omitempty"`
+	Enable        bool   `json:"enable,omitempty"`
+}
+
+// ToggleDatabaseTrustedSourceResponse struct for ToggleDatabaseTrustedSourceResponse
+type ToggleDatabaseTrustedSourceResponse struct {
+	IsEnabled bool `json:"is_enabled,omitempty"`
 }
 
 // UpgradeBuildpackResponse struct for UpgradeBuildpackResponse

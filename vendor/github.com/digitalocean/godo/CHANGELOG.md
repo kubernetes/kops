@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.109.0] - 2024-02-09
+
+- #668 - @greeshmapill - APPS-8315: Update app instance size spec
+- #665 - @jcodybaker - APPS-8263: methods for managing App Platform dev DBs
+- #663 - @dwilsondo - Include replica connection info on DBaaS clusters & DBaaS PG pools
+- #662 - @ddatta-do - load balancer : add regional network as new LB type
+
 ## [v1.108.0] - 2024-01-17
 
 - #660 - @dweinshenker - Enable CRUD operations for replicas with storage_size_mib
