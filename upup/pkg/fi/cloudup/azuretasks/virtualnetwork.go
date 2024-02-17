@@ -36,7 +36,6 @@ type VirtualNetwork struct {
 	ResourceGroup *ResourceGroup
 	CIDR          *string
 	Tags          map[string]*string
-	Subnets       []*network.Subnet
 	Shared        *bool
 }
 
@@ -90,9 +89,8 @@ func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 		ResourceGroup: &ResourceGroup{
 			Name: n.ResourceGroup.Name,
 		},
-		CIDR:    addrPrefixes[0],
-		Tags:    found.Tags,
-		Subnets: found.Properties.Subnets,
+		CIDR: addrPrefixes[0],
+		Tags: found.Tags,
 	}, nil
 }
 
@@ -144,7 +142,6 @@ func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Virtu
 			AddressSpace: &network.AddressSpace{
 				AddressPrefixes: []*string{e.CIDR},
 			},
-			Subnets: e.Subnets,
 		},
 		Tags: e.Tags,
 	}
