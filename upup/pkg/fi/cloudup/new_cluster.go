@@ -696,8 +696,8 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				return nil, err
 			}
 
-			// We create default subnets named the same as the regions
-			subnetName := location
+			// We create default subnets named the same as the cluster
+			subnetName := cluster.Name
 
 			subnet := model.FindSubnet(cluster, subnetName)
 			if subnet == nil {
