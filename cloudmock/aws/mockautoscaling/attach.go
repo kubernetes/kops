@@ -17,6 +17,7 @@ limitations under the License.
 package mockautoscaling
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -52,7 +53,7 @@ func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBala
 	return nil, nil
 }
 
-func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.AttachLoadBalancerTargetGroupsInput) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsWithContext(ctx aws.Context, request *autoscaling.AttachLoadBalancerTargetGroupsInput, opts ...request.Option) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -62,9 +63,13 @@ func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.At
 
 	asg := m.Groups[name]
 	if asg == nil {
-		return nil, fmt.Errorf("Group %q not found", name)
+		return nil, fmt.Errorf("group %q not found", name)
 	}
 
-	asg.TargetGroupARNs = request.TargetGroupARNs
+	asg.TargetGroupARNs = append(asg.TargetGroupARNs, request.TargetGroupARNs...)
 	return &autoscaling.AttachLoadBalancerTargetGroupsOutput{}, nil
+}
+
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.AttachLoadBalancerTargetGroupsInput) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
+	return m.AttachLoadBalancerTargetGroupsWithContext(context.TODO(), request)
 }

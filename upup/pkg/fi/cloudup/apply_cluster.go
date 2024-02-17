@@ -155,6 +155,9 @@ type ApplyClusterCmd struct {
 
 	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
 	AdditionalObjects kubemanifest.ObjectList
+
+	// DeletionProcessing controls whether we process deletions.
+	DeletionProcessing fi.DeletionProcessingMode
 }
 
 func (c *ApplyClusterCmd) Run(ctx context.Context) error {
@@ -714,7 +717,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	var target fi.CloudupTarget
 	shouldPrecreateDNS := true
 
-	deletionProcessingMode := fi.DeletionProcessingModeDeleteIfNotDeferrred
+	deletionProcessingMode := c.DeletionProcessing
 	switch c.TargetName {
 	case TargetDirect:
 		switch cluster.Spec.GetCloudProvider() {

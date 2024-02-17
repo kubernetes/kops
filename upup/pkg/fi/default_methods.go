@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -115,6 +116,17 @@ func defaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
 					return err
 				}
 			} else {
+				if deletion.DeferDeletion() {
+					switch c.deletionProcessingMode {
+					case DeletionProcessingModeDeleteIfNotDeferrred:
+						klog.Infof("not deleting %s/%s because it is marked for deferred-deletion", deletion.TaskName(), deletion.Item())
+						continue
+					case DeletionProcessingModeDeleteIncludingDeferred:
+						klog.V(2).Infof("processing deferred deletion of %s/%s", deletion.TaskName(), deletion.Item())
+					default:
+						klog.Fatalf("unhandled deletionProcessingMode %v", c.deletionProcessingMode)
+					}
+				}
 				if err := deletion.Delete(c.Target); err != nil {
 					return err
 				}

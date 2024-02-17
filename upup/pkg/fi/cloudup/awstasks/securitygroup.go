@@ -222,8 +222,16 @@ func (e *SecurityGroup) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_security_group", *e.Name, "id")
 }
 
+// deleteSecurityGroupRule tracks a securitygrouprule that we're going to delete
+// It implements fi.CloudupDeletion
 type deleteSecurityGroupRule struct {
 	rule *ec2.SecurityGroupRule
+}
+
+func buildDeleteSecurityGroupRule(rule *ec2.SecurityGroupRule) *deleteSecurityGroupRule {
+	d := &deleteSecurityGroupRule{}
+	d.rule = rule
+	return d
 }
 
 var _ fi.CloudupDeletion = &deleteSecurityGroupRule{}
@@ -236,7 +244,7 @@ func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
 	}
 
-	if fi.ValueOf(d.rule.IsEgress) {
+	if aws.BoolValue(d.rule.IsEgress) {
 		request := &ec2.RevokeSecurityGroupEgressInput{
 			GroupId:              d.rule.GroupId,
 			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
@@ -288,6 +296,10 @@ func (d *deleteSecurityGroupRule) Item() string {
 	// s += permissionString
 
 	return s
+}
+
+func (d *deleteSecurityGroupRule) DeferDeletion() bool {
+	return true
 }
 
 func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
@@ -360,9 +372,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 			}
 		}
 		if !found {
-			removals = append(removals, &deleteSecurityGroupRule{
-				rule: permission,
-			})
+			removals = append(removals, buildDeleteSecurityGroupRule(permission))
 		}
 	}
 

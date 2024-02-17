@@ -80,6 +80,12 @@ type UpdateClusterOptions struct {
 	// LifecycleOverrides is a slice of taskName=lifecycle name values.  This slice is used
 	// to populate the LifecycleOverrides struct member in ApplyClusterCmd struct.
 	LifecycleOverrides []string
+
+	// Prune is true if we should clean up any old revisions of objects.
+	// Typically this is done in after we have rolling-updated the cluster.
+	// The goal is that the cluster can keep running even during more disruptive
+	// infrastructure changes.
+	Prune bool
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -90,6 +96,8 @@ func (o *UpdateClusterOptions) InitDefaults() {
 
 	// By default we export a kubecfg, but it doesn't have a static/eternal credential in it any more.
 	o.CreateKubecfg = true
+
+	o.Prune = false
 
 	o.RunTasksOptions.InitDefaults()
 }
@@ -132,6 +140,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	viper.BindPFlag("lifecycle-overrides", cmd.Flags().Lookup("lifecycle-overrides"))
 	viper.BindEnv("lifecycle-overrides", "KOPS_LIFECYCLE_OVERRIDES")
 	cmd.RegisterFlagCompletionFunc("lifecycle-overrides", completeLifecycleOverrides)
+
+	cmd.Flags().BoolVar(&options.Prune, "prune", options.Prune, "Delete old revisions of cloud resources that were needed during an upgrade")
 
 	return cmd
 }
@@ -251,6 +261,11 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		}
 	}
 
+	deletionProcessing := fi.DeletionProcessingModeDeleteIfNotDeferrred
+	if c.Prune {
+		deletionProcessing = fi.DeletionProcessingModeDeleteIncludingDeferred
+	}
+
 	lifecycleOverrideMap := make(map[string]fi.Lifecycle)
 
 	for _, override := range c.LifecycleOverrides {
@@ -287,6 +302,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		TargetName:         targetName,
 		LifecycleOverrides: lifecycleOverrideMap,
 		GetAssets:          c.GetAssets,
+		DeletionProcessing: deletionProcessing,
 	}
 
 	if err := applyCmd.Run(ctx); err != nil {

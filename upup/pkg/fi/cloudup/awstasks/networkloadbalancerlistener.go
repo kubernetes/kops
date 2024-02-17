@@ -31,6 +31,8 @@ import (
 
 // +kops:fitask
 type NetworkLoadBalancerListener struct {
+	// We use the Name tag to find the existing NLB, because we are (more or less) unrestricted when
+	// it comes to tag values, but the LoadBalancerName is length limited
 	Name      *string
 	Lifecycle fi.Lifecycle
 
@@ -203,8 +205,6 @@ func (*NetworkLoadBalancerListener) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 		}
 	}
 
-	// TODO: Tags on the listener?
-
 	return nil
 }
 
@@ -226,7 +226,6 @@ func (_ *NetworkLoadBalancerListener) RenderTerraform(t *terraform.TerraformTarg
 	if e.TargetGroup == nil {
 		return fi.RequiredField("TargetGroup")
 	}
-
 	listenerTF := &terraformNetworkLoadBalancerListener{
 		LoadBalancer: e.NetworkLoadBalancer.TerraformLink(),
 		Port:         int64(e.Port),

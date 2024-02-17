@@ -402,7 +402,7 @@ func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudupContext) (
 }
 
 // deleteLaunchTemplate tracks a LaunchConfiguration that we're going to delete
-// It implements fi.Deletion
+// It implements fi.CloudupDeletion
 type deleteLaunchTemplate struct {
 	lc *ec2.LaunchTemplate
 }
@@ -437,4 +437,8 @@ func (d *deleteLaunchTemplate) Delete(t fi.CloudupTarget) error {
 // String returns a string representation of the task
 func (d *deleteLaunchTemplate) String() string {
 	return d.TaskName() + "-" + d.Item()
+}
+
+func (d *deleteLaunchTemplate) DeferDeletion() bool {
+	return false // TODO: Should we defer deletion?
 }

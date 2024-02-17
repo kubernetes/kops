@@ -20,11 +20,13 @@ type DeletionProcessingMode string
 
 const (
 	// DeletionProcessingModeIgnore will ignore all deletion tasks.
+	// This is typically used when the target implements pruning directly (e.g. terraform)
 	DeletionProcessingModeIgnore DeletionProcessingMode = "Ignore"
-	// TODO: implement deferred-deletion in the tasks!
 	// DeletionProcessingModeDeleteIfNotDeferrred will delete resources only if they are not marked for deferred-deletion.
+	// This corresponds to a cluster update with --prune=false.
 	DeletionProcessingModeDeleteIfNotDeferrred DeletionProcessingMode = "IfNotDeferred"
 	// DeletionProcessingModeDeleteIncludingDeferrred will delete resources including those marked for deferred-deletion.
+	// This corresponds to a cluster update with --prune=true.
 	DeletionProcessingModeDeleteIncludingDeferred DeletionProcessingMode = "DeleteIncludingDeferred"
 )
 
@@ -38,6 +40,7 @@ type Deletion[T SubContext] interface {
 	Delete(target Target[T]) error
 	TaskName() string
 	Item() string
+	DeferDeletion() bool
 }
 
 type CloudupDeletion = Deletion[CloudupSubContext]

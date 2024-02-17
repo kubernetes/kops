@@ -29,12 +29,9 @@ import (
 type TargetGroupInfo struct {
 	TargetGroup *elbv2.TargetGroup
 	Tags        []*elbv2.Tag
-	arn         string
-}
 
-// ARN returns the ARN of the load balancer.
-func (i *TargetGroupInfo) ARN() string {
-	return i.arn
+	// ARN holds the arn (amazon id) of the target group.
+	ARN string
 }
 
 // NameTag returns the value of the tag with the key "Name".
@@ -72,7 +69,7 @@ func ListELBV2TargetGroups(ctx context.Context, cloud AWSCloud) ([]*TargetGroupI
 
 		for _, tg := range p.TargetGroups {
 			arn := aws.StringValue(tg.TargetGroupArn)
-			byARN[arn] = &TargetGroupInfo{TargetGroup: tg, arn: arn}
+			byARN[arn] = &TargetGroupInfo{TargetGroup: tg, ARN: arn}
 
 			tagRequest.ResourceArns = append(tagRequest.ResourceArns, tg.TargetGroupArn)
 		}
