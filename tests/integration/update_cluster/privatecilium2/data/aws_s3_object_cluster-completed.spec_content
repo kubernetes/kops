@@ -229,7 +229,7 @@ spec:
       sidecarIstioProxyImage: cilium/istio_proxy
       toFqdnsDnsRejectResponseCode: refused
       tunnel: vxlan
-      version: v1.15.0
+      version: v1.15.1
   nodeTerminationHandler:
     cpuRequest: 50m
     enableRebalanceDraining: false
