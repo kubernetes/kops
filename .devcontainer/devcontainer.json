@@ -3,7 +3,8 @@
     "name": "Kops environment from dev container",
     // Image to pull when not building from scratch. See .devcontainer/build/devcontainer.json
     // and .github/devcontainer-build-and-push.yml for the instructions on how this image is built
-    "image": "registry.k8s.io/build-image/kube-cross:v1.29.0-go1.21.3-bullseye.0",
+    "image": "debian:bullseye",
+    // "image": "registry.k8s.io/build-image/kube-cross:v1.30.0-go1.22.0-bullseye.0",
     // Setup the go environment and mount into the dev container at the expected location
     "workspaceFolder": "/go/src/k8s.io/kops",
     "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/k8s.io/kops,type=bind,consistency=cached",
@@ -17,10 +18,21 @@
     "otherPortsAttributes": {
         "onAutoForward": "silent"
     },
-    "remoteUser": "root"
+    "remoteUser": "root",
     // Configure tool-specific properties.
     // "customizations": {
     // },
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
+
+    // Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/go:1": {
+			"version": "latest"
+		}
+	}
 }
