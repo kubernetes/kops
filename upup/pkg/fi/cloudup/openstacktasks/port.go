@@ -47,6 +47,12 @@ type Port struct {
 	WellKnownServices []wellknownservices.WellKnownService
 }
 
+var (
+	_ fi.CloudupTask   = &Port{}
+	_ fi.CompareWithID = &Port{}
+	_ fi.HasAddress    = &Port{}
+)
+
 // GetDependencies returns the dependencies of the Port task
 func (e *Port) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask
@@ -63,8 +69,6 @@ func (e *Port) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask
 	}
 	return deps
 }
-
-var _ fi.CompareWithID = &Port{}
 
 func (s *Port) CompareWithID() *string {
 	return s.ID
