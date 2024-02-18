@@ -53,6 +53,7 @@ var (
 	_ fi.CloudupTask          = &LoadBalancer{}
 	_ fi.CompareWithID        = &LoadBalancer{}
 	_ fi.CloudupTaskNormalize = &LoadBalancer{}
+	_ fi.HasAddress           = &LoadBalancer{}
 )
 
 // CompareWithID returns the Name of the LoadBalancer
