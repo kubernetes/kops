@@ -84,7 +84,7 @@ if [[ ${KOPS_IRSA-} = true ]]; then
 fi
 
 # TODO: remove once we stop testing upgrades from kops <1.29
-if [[ "${CLUSTER_NAME}" == "*tests-kops-aws.k8s.io" && "${KOPS_VERSION_A}" =~ v1.2[678].* ]]; then
+if [[ "${CLUSTER_NAME}" == *"tests-kops-aws.k8s.io" && "${KOPS_VERSION_A}" =~ v1.2[678].* ]]; then
   create_args="${create_args} --dns=none"
 fi
 
