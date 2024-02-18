@@ -1113,6 +1113,13 @@ spec:
                   Loose]'
                 pattern: ^(?i)(Disabled|Strict|Loose)?$
                 type: string
+              bpfExcludeCIDRsFromNAT:
+                description: BPFExcludeCIDRsFromNAT is a list of CIDRs that are to
+                  be excluded from NAT resolution so that host can handle them. A
+                  typical usecase is node local DNS cache.
+                items:
+                  type: string
+                type: array
               bpfExtToServiceConnmark:
                 description: 'BPFExtToServiceConnmark in BPF mode, control a 32bit
                   mark that is set on connections from an external client to a local
@@ -4976,7 +4983,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.27.0
+        image: docker.io/calico/node:v3.27.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -5050,7 +5057,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.27.0
+        image: docker.io/calico/cni:v3.27.3
         imagePullPolicy: IfNotPresent
         name: upgrade-ipam
         securityContext:
@@ -5085,7 +5092,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.27.0
+        image: docker.io/calico/cni:v3.27.3
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -5099,7 +5106,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.27.0
+        image: docker.io/calico/node:v3.27.3
         imagePullPolicy: IfNotPresent
         name: mount-bpffs
         securityContext:
@@ -5225,7 +5232,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.27.0
+        image: docker.io/calico/kube-controllers:v3.27.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
