@@ -418,7 +418,7 @@ func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Service, error)
 	}
 
 	// TODO: Should we fall back to read-only?
-	scope := storage.DevstorageReadWriteScope
+	scope := storage.DevstorageFullControlScope
 
 	gcsClient, err := storage.NewService(ctx, option.WithScopes(scope))
 	if err != nil {
