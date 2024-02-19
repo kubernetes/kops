@@ -179,7 +179,8 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
 }
 
 resource "google_compute_address" "api-minimal-gce-plb-example-com" {
-  name = "api-minimal-gce-plb-example-com"
+  name   = "api-minimal-gce-plb-example-com"
+  region = "us-test1"
 }
 
 resource "google_compute_disk" "a-etcd-events-minimal-gce-plb-example-com" {
@@ -429,6 +430,7 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
   load_balancing_scheme = "EXTERNAL"
   name                  = "api-minimal-gce-plb-example-com"
   port_range            = "443-443"
+  region                = "us-test1"
   target                = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
 }
 

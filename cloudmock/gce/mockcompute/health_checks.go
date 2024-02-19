@@ -31,7 +31,7 @@ type healthCheckClient struct {
 	sync.Mutex
 }
 
-var _ gce.RegionHealthChecksClient = &healthCheckClient{}
+var _ gce.HealthChecksClient = &healthCheckClient{}
 
 func newHealthCheckClient() *healthCheckClient {
 	return &healthCheckClient{

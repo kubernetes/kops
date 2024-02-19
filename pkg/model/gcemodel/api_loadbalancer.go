@@ -40,6 +40,12 @@ var _ fi.CloudupModelBuilder = &APILoadBalancerBuilder{}
 // createPublicLB validates the existence of a target pool with the given name,
 // and creates an IP address and forwarding rule pointing to that target pool.
 func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext) error {
+	region := ""
+	for _, subnet := range b.Cluster.Spec.Networking.Subnets {
+		if subnet.Region != "" {
+			region = subnet.Region
+		}
+	}
 	healthCheck := &gcetasks.HTTPHealthcheck{
 		Name:        s(b.NameForHealthcheck("api")),
 		Port:        i64(wellknownports.KubeAPIServerHealthCheck),
@@ -68,6 +74,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		Name: s(b.NameForIPAddress("api")),
 
 		Lifecycle:         b.Lifecycle,
+		Region:            region,
 		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 	}
 	c.AddTask(ipAddress)
@@ -80,6 +87,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 		PortRange:           s(strconv.Itoa(wellknownports.KubeAPIServer) + "-" + strconv.Itoa(wellknownports.KubeAPIServer)),
 		TargetPool:          targetPool,
 		IPAddress:           ipAddress,
+		Region:              region,
 		IPProtocol:          "TCP",
 		LoadBalancingScheme: s("EXTERNAL"),
 		Labels: map[string]string{
@@ -97,6 +105,7 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			TargetPool:          targetPool,
 			IPAddress:           ipAddress,
 			IPProtocol:          "TCP",
+			Region:              region,
 			LoadBalancingScheme: s("EXTERNAL"),
 			Labels: map[string]string{
 				clusterLabel.Key: clusterLabel.Value,
@@ -155,10 +164,20 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
 
+	// internal Loadbalancers are always regional
+	region := ""
+	for _, subnet := range b.Cluster.Spec.Networking.Subnets {
+		if subnet.Region != "" {
+			region = subnet.Region
+		}
+	}
+
 	hc := &gcetasks.HealthCheck{
-		Name:      s(b.NameForHealthCheck("api")),
-		Port:      wellknownports.KubeAPIServer,
-		Lifecycle: b.Lifecycle,
+		Name:        s(b.NameForHealthCheck("api")),
+		Port:        i64(wellknownports.KubeAPIServer),
+		RequestPath: s("/healthz"),
+		Region:      region,
+		Lifecycle:   b.Lifecycle,
 	}
 	c.AddTask(hc)
 	var igms []*gcetasks.InstanceGroupManager
@@ -181,6 +200,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		HealthChecks:          []*gcetasks.HealthCheck{hc},
 		Lifecycle:             b.Lifecycle,
 		LoadBalancingScheme:   s("INTERNAL"),
+		Region:                region,
 		InstanceGroupManagers: igms,
 	}
 	c.AddTask(bs)
@@ -209,6 +229,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			Subnetwork:    subnet,
 
 			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
+			Region:            region,
 			Lifecycle:         b.Lifecycle,
 		}
 		c.AddTask(ipAddress)
@@ -222,6 +243,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			IPProtocol:          "TCP",
 			LoadBalancingScheme: s("INTERNAL"),
 			Network:             network,
+			Region:              region,
 			Subnetwork:          subnet,
 			Labels: map[string]string{
 				clusterLabel.Key: clusterLabel.Value,
@@ -240,6 +262,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				IPProtocol:          "TCP",
 				LoadBalancingScheme: s("INTERNAL"),
 				Network:             network,
+				Region:              region,
 				Subnetwork:          subnet,
 				Labels: map[string]string{
 					clusterLabel.Key: clusterLabel.Value,

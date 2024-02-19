@@ -182,17 +182,8 @@ resource "google_compute_address" "api-us-test1-minimal-gce-with-a-very-very-ver
   address_type = "INTERNAL"
   name         = "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi"
   purpose      = "SHARED_LOADBALANCER_VIP"
+  region       = "us-test1"
   subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
-}
-
-resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
-  backend {
-    group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
-  }
-  health_checks         = [google_compute_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id]
-  load_balancing_scheme = "INTERNAL_SELF_MANAGED"
-  name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
-  protocol              = "TCP"
 }
 
 resource "google_compute_disk" "a-etcd-events-minimal-gce-with-a-very-very-very-very-ver-96dqvi" {
@@ -433,7 +424,7 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
 }
 
 resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
-  backend_service = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
+  backend_service = google_compute_region_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
   ip_address      = google_compute_address.api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi.address
   ip_protocol     = "TCP"
   labels = {
@@ -444,14 +435,8 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-
   name                  = "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi"
   network               = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   ports                 = ["443"]
+  region                = "us-test1"
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
-}
-
-resource "google_compute_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
-  name = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
-  tcp_health_check {
-    port = 443
-  }
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f" {
@@ -579,6 +564,26 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
 resource "google_compute_network" "minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi" {
   auto_create_subnetworks = false
   name                    = "minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi"
+}
+
+resource "google_compute_region_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  backend {
+    group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
+  }
+  health_checks         = [google_compute_region_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id]
+  load_balancing_scheme = "INTERNAL"
+  name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  protocol              = "TCP"
+  region                = "us-test1"
+}
+
+resource "google_compute_region_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  http_health_check {
+    port         = 443
+    request_path = "/healthz"
+  }
+  name   = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  region = "us-test1"
 }
 
 resource "google_compute_router" "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {

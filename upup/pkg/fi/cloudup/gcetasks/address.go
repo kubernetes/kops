@@ -36,6 +36,7 @@ type Address struct {
 	IPAddress     *string
 	IPAddressType *string
 	Purpose       *string
+	Region        string
 
 	Subnetwork *Subnet
 
@@ -51,7 +52,7 @@ func (e *Address) CompareWithID() *string {
 }
 
 func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
-	actual, err := e.find(c.T.Cloud.(gce.GCECloud))
+	actual, err := e.find(c.T.Cloud.(gce.GCECloud), e.Region)
 	if actual != nil && err == nil {
 		if e.IPAddress == nil {
 			e.IPAddress = actual.IPAddress
@@ -64,9 +65,9 @@ func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
 	return actual, err
 }
 
-func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
+func findAddressByIP(cloud gce.GCECloud, ip, region string) (*Address, error) {
 	// Technically this is a regex, but it doesn't matter...
-	addrs, err := cloud.Compute().Addresses().ListWithFilter(cloud.Project(), cloud.Region(), "address eq "+ip)
+	addrs, err := cloud.Compute().Addresses().ListWithFilter(cloud.Project(), region, "address eq "+ip)
 	if err != nil {
 		return nil, fmt.Errorf("error listing IP Addresses: %v", err)
 	}
@@ -87,8 +88,8 @@ func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
 	return actual, nil
 }
 
-func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
-	r, err := cloud.Compute().Addresses().Get(cloud.Project(), cloud.Region(), *e.Name)
+func (e *Address) find(cloud gce.GCECloud, region string) (*Address, error) {
+	r, err := cloud.Compute().Addresses().Get(cloud.Project(), region, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -120,7 +121,7 @@ func (e *Address) GetWellKnownServices() []wellknownservices.WellKnownService {
 }
 
 func (e *Address) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	actual, err := e.find(context.T.Cloud.(gce.GCECloud))
+	actual, err := e.find(context.T.Cloud.(gce.GCECloud), e.Region)
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IP Address: %v", err)
 	}
@@ -153,7 +154,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 		Address:     fi.ValueOf(e.IPAddress),
 		AddressType: fi.ValueOf(e.IPAddressType),
 		Purpose:     fi.ValueOf(e.Purpose),
-		Region:      cloud.Region(),
+		Region:      e.Region,
 	}
 
 	if e.Subnetwork != nil {
@@ -163,7 +164,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Address: %q", addr.Name)
 
-		op, err := cloud.Compute().Addresses().Insert(cloud.Project(), cloud.Region(), addr)
+		op, err := cloud.Compute().Addresses().Insert(cloud.Project(), e.Region, addr)
 		if err != nil {
 			return fmt.Errorf("error creating IP Address: %v", err)
 		}
@@ -183,9 +184,10 @@ type terraformAddress struct {
 	AddressType *string                  `cty:"address_type"`
 	Purpose     *string                  `cty:"purpose"`
 	Subnetwork  *terraformWriter.Literal `cty:"subnetwork"`
+	Region      string                   `cty:"region"`
 }
 
-func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
+func (*Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
 	tf := &terraformAddress{
 		Name:        e.Name,
 		AddressType: e.IPAddressType,
@@ -194,11 +196,17 @@ func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *A
 	if e.Subnetwork != nil {
 		tf.Subnetwork = e.Subnetwork.TerraformLink()
 	}
+	if e.Region == "" {
+		return t.RenderResource("google_compute_global_address", *e.Name, tf)
+	}
+	tf.Region = e.Region
 	return t.RenderResource("google_compute_address", *e.Name, tf)
 }
 
 func (e *Address) TerraformAddress() *terraformWriter.Literal {
 	name := fi.ValueOf(e.Name)
-
+	if e.Region == "" {
+		return terraformWriter.LiteralProperty("google_compute_global_address", name, "address")
+	}
 	return terraformWriter.LiteralProperty("google_compute_address", name, "address")
 }
