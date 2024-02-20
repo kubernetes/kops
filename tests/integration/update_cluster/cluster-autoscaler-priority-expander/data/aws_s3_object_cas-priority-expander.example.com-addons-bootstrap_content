@@ -113,7 +113,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: e6d29c96c8ca8a8739922e3549528a9e1554d3a27e87d973f7370b7f790f4b49
+    manifestHash: dcccc0f94d95cf997a7d89a7aec90c9e1aff1af7667e04e0858ab4a93e2bff40
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
