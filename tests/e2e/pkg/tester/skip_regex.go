@@ -141,6 +141,14 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
 	}
 
+	if k8sVersion.Minor < 28 && cluster.Spec.LegacyCloudProvider == "aws" {
+		// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
+		// Keeping this unskipped in k8s 1.28 so we can still get signal without causing all grid jobs to fail.
+		// ref: https://github.com/kubernetes/kops/issues/16349
+		// ref: https://github.com/kubernetes/kubernetes/issues/123255
+		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+	}
+
 	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
 	}
