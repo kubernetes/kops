@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const (
@@ -125,23 +124,13 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if cluster.Spec.LegacyCloudProvider == "gce" || k8sVersion.Minor <= 23 {
+	if cluster.Spec.LegacyCloudProvider == "gce" {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
 		skipRegex += "|RuntimeClass.should.run"
 		// https://github.com/kubernetes/kubernetes/pull/108694
 		skipRegex += "|Metadata.Concealment"
-	}
-
-	if k8sVersion.Minor == 23 && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
-		// ref: https://github.com/kubernetes/kubernetes/pull/106992
-		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
-	}
-
-	if k8sVersion.Minor == 23 {
-		// beta feature not enabled by default
-		skipRegex += "|Topology.Hints"
 	}
 
 	if k8sVersion.Minor >= 22 {
