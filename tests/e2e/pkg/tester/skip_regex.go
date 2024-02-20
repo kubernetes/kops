@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const (
@@ -125,7 +124,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if cluster.Spec.LegacyCloudProvider == "gce" || k8sVersion.Minor <= 23 {
+	if cluster.Spec.LegacyCloudProvider == "gce" {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
@@ -134,22 +133,20 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Metadata.Concealment"
 	}
 
-	if k8sVersion.Minor == 23 && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
-		// ref: https://github.com/kubernetes/kubernetes/pull/106992
-		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
-	}
-
-	if k8sVersion.Minor == 23 {
-		// beta feature not enabled by default
-		skipRegex += "|Topology.Hints"
-	}
-
 	if k8sVersion.Minor >= 22 {
 		// this test was being skipped automatically because it isn't applicable with CSIMigration=true which is default
 		// but skipping logic has been changed and now the test is planned for removal
 		// Should be skipped on all versions we enable CSI drivers on
 		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
 		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
+	}
+
+	if k8sVersion.Minor < 28 && cluster.Spec.LegacyCloudProvider == "aws" {
+		// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
+		// Keeping this unskipped in k8s 1.28 so we can still get signal without causing all grid jobs to fail.
+		// ref: https://github.com/kubernetes/kops/issues/16349
+		// ref: https://github.com/kubernetes/kubernetes/issues/123255
+		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
 	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
