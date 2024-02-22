@@ -435,7 +435,7 @@ Now that you have a working kOps cluster, read through the [recommendations for 
 
 There's an incredible team behind kOps and we encourage you to reach out to the
 community on the Kubernetes
-Slack(<http://slack.k8s.io/>).  Bring your
+Slack (<http://slack.k8s.io/>).  Bring your
 questions, comments, and requests and meet the people behind the project!
 
 ## Legal
