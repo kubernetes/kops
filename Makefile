@@ -324,12 +324,16 @@ ko-kops-utils-cp-push:
 gomod:
 	go mod tidy
 	go mod vendor
-	cd tests/e2e; go mod tidy
 	cd hack; go mod tidy
+	cd tests/e2e; go mod tidy
+	cd tools/otel/traceserver; go mod tidy
 
 .PHONY: goget
 goget:
 	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all | grep -v spotinst-sdk-go)
+	cd hack; go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all)
+	cd tests/e2e; go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all | grep -v kubetest2)
+	cd tools/otel/traceserver; go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all)
 
 .PHONY: depup
 depup: goget gomod
