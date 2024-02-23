@@ -3,6 +3,10 @@ kind: Cluster
 metadata:
   name: {{.clusterName}}
 spec:
+  api:
+    loadBalancer:
+      class: Network
+      type: Public
   awsLoadBalancerController:
     enabled: true
   kubernetesApiAccess:
@@ -62,6 +66,9 @@ spec:
   {{end}}
   rollingUpdate:
     maxSurge: "100%"
+  topology:
+    dns:
+      type: None
 ---
 
 apiVersion: kops.k8s.io/v1alpha2
