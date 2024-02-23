@@ -118,12 +118,12 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 		GatewayID:        fi.ValueOf(expected.Gateway.ID),
 		PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
 		EnableMasquerade: true,
-		//EnableMasquerade: false,
-		EnableDHCP: scw.BoolPtr(true),
-		DHCP:       nil,
-		Address:    nil,
-		IpamConfig: &vpcgw.IpamConfig{
+		EnableDHCP:       scw.BoolPtr(true),
+		DHCP:             nil,
+		Address:          nil,
+		IpamConfig: &vpcgw.CreateGatewayNetworkRequestIpamConfig{
 			PushDefaultRoute: true,
+			//IpamIPID: expected.PrivateNetwork.
 		},
 	})
 	if err != nil {
