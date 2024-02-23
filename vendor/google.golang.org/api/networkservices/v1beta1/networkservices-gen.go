@@ -779,7 +779,7 @@ func (s *ExtensionChain) MarshalJSON() ([]byte, error) {
 // ExtensionChainExtension: A single extension in the chain to execute
 // for the matching request.
 type ExtensionChainExtension struct {
-	// Authority: Required. The `:authority` header in the gRPC request sent
+	// Authority: Optional. The `:authority` header in the gRPC request sent
 	// from Envoy to the extension service.
 	Authority string `json:"authority,omitempty"`
 
@@ -900,7 +900,7 @@ func (s *ExtensionChainMatchCondition) MarshalJSON() ([]byte, error) {
 // a load balancer. It captures the ip:port over which the services are
 // exposed by the proxy, along with any policy configurations. Routes
 // have reference to to Gateways to dictate how requests should be
-// routed by this Gateway. Next id: 30
+// routed by this Gateway. Next id: 32
 type Gateway struct {
 	// Addresses: Optional. Zero or one IPv4 or IPv6 address on which the
 	// Gateway will receive the traffic. When no address is provided, an IP

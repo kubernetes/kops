@@ -566,6 +566,13 @@ const (
 	// The inventory item size has exceeded the size limit.
 	ErrCodeItemSizeLimitExceededException = "ItemSizeLimitExceededException"
 
+	// ErrCodeMalformedResourcePolicyDocumentException for service response error code
+	// "MalformedResourcePolicyDocumentException".
+	//
+	// The specified policy document is malformed or invalid, or excessive PutResourcePolicy
+	// or DeleteResourcePolicy calls have been made.
+	ErrCodeMalformedResourcePolicyDocumentException = "MalformedResourcePolicyDocumentException"
+
 	// ErrCodeMaxDocumentSizeExceeded for service response error code
 	// "MaxDocumentSizeExceeded".
 	//
@@ -782,6 +789,12 @@ const (
 	// in the Amazon Web Services General Reference.
 	ErrCodeResourceLimitExceededException = "ResourceLimitExceededException"
 
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// The specified parameter to be shared could not be found.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
 	// ErrCodeResourcePolicyConflictException for service response error code
 	// "ResourcePolicyConflictException".
 	//
@@ -804,6 +817,12 @@ const (
 	// than 1024 bytes in size. And only one policy can be attached to OpsItemGroup.
 	// Verify these limits and try again.
 	ErrCodeResourcePolicyLimitExceededException = "ResourcePolicyLimitExceededException"
+
+	// ErrCodeResourcePolicyNotFoundException for service response error code
+	// "ResourcePolicyNotFoundException".
+	//
+	// No policies with the specified policy ID and hash could be found.
+	ErrCodeResourcePolicyNotFoundException = "ResourcePolicyNotFoundException"
 
 	// ErrCodeServiceSettingNotFound for service response error code
 	// "ServiceSettingNotFound".
@@ -998,6 +1017,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvocationDoesNotExist":                         newErrorInvocationDoesNotExist,
 	"ItemContentMismatchException":                   newErrorItemContentMismatchException,
 	"ItemSizeLimitExceededException":                 newErrorItemSizeLimitExceededException,
+	"MalformedResourcePolicyDocumentException":       newErrorMalformedResourcePolicyDocumentException,
 	"MaxDocumentSizeExceeded":                        newErrorMaxDocumentSizeExceeded,
 	"OpsItemAccessDeniedException":                   newErrorOpsItemAccessDeniedException,
 	"OpsItemAlreadyExistsException":                  newErrorOpsItemAlreadyExistsException,
@@ -1028,9 +1048,11 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ResourceDataSyncNotFoundException":              newErrorResourceDataSyncNotFoundException,
 	"ResourceInUseException":                         newErrorResourceInUseException,
 	"ResourceLimitExceededException":                 newErrorResourceLimitExceededException,
+	"ResourceNotFoundException":                      newErrorResourceNotFoundException,
 	"ResourcePolicyConflictException":                newErrorResourcePolicyConflictException,
 	"ResourcePolicyInvalidParameterException":        newErrorResourcePolicyInvalidParameterException,
 	"ResourcePolicyLimitExceededException":           newErrorResourcePolicyLimitExceededException,
+	"ResourcePolicyNotFoundException":                newErrorResourcePolicyNotFoundException,
 	"ServiceSettingNotFound":                         newErrorServiceSettingNotFound,
 	"StatusUnchanged":                                newErrorStatusUnchanged,
 	"SubTypeCountLimitExceededException":             newErrorSubTypeCountLimitExceededException,

@@ -4667,6 +4667,9 @@ type NodeConfig struct {
 	// 'pd-standard'
 	DiskType string `json:"diskType,omitempty"`
 
+	// EnableConfidentialStorage: Optional. Reserved for future use.
+	EnableConfidentialStorage bool `json:"enableConfidentialStorage,omitempty"`
+
 	// EphemeralStorageLocalSsdConfig: Parameters for the node ephemeral
 	// storage using Local SSDs. If unspecified, ephemeral storage is backed
 	// by the boot disk.
@@ -8037,6 +8040,10 @@ type UpdateNodePoolRequest struct {
 	// (https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 	// This field has been deprecated and replaced by the name field.
 	ProjectId string `json:"projectId,omitempty"`
+
+	// QueuedProvisioning: Specifies the configuration of queued
+	// provisioning.
+	QueuedProvisioning *QueuedProvisioning `json:"queuedProvisioning,omitempty"`
 
 	// ResourceLabels: The resource labels for the node pool to use to
 	// annotate any related Google Compute Engine resources.

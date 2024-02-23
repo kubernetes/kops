@@ -10,6 +10,7 @@ import (
 	sg "github.com/google/go-sev-guest/client"
 	tg "github.com/google/go-tdx-guest/client"
 	tabi "github.com/google/go-tdx-guest/client/linuxabi"
+	tpb "github.com/google/go-tdx-guest/proto/tdx"
 	pb "github.com/google/go-tpm-tools/proto/attest"
 )
 
@@ -19,9 +20,9 @@ const (
 )
 
 // TEEDevice is an interface to add an attestation report from a TEE technology's
-// attestation driver.
+// attestation driver or quote provider.
 type TEEDevice interface {
-	// AddAttestation uses the TEE device's attestation driver to collect an
+	// AddAttestation uses the TEE device's attestation driver or quote provider to collect an
 	// attestation report, then adds it to the correct field of `attestation`.
 	AddAttestation(attestation *pb.Attestation, options AttestOpts) error
 	// Close finalizes any resources in use by the TEEDevice.
@@ -144,8 +145,15 @@ type SevSnpDevice struct {
 
 // TdxDevice encapsulates the TDX attestation device to add its attestation quote
 // to a pb.Attestation.
+// Deprecated: TdxDevice is deprecated. It is recommended to use TdxQuoteProvider.
 type TdxDevice struct {
 	Device tg.Device
+}
+
+// TdxQuoteProvider encapsulates the TDX attestation device to add its attestation quote
+// to a pb.Attestation.
+type TdxQuoteProvider struct {
+	QuoteProvider tg.QuoteProvider
 }
 
 // CreateSevSnpDevice opens the SEV-SNP attestation driver and wraps it with behavior
@@ -193,6 +201,8 @@ func (d *SevSnpDevice) Close() error {
 
 // CreateTdxDevice opens the TDX attestation driver and wraps it with behavior
 // that allows it to add an attestation quote to pb.Attestation.
+// Deprecated: TdxDevice is deprecated, and use of CreateTdxQuoteProvider is
+// recommended to create a TEEDevice.
 func CreateTdxDevice() (*TdxDevice, error) {
 	d, err := tg.OpenDevice()
 	if err != nil {
@@ -206,21 +216,15 @@ func CreateTdxDevice() (*TdxDevice, error) {
 // contents of opts.Nonce.
 func (d *TdxDevice) AddAttestation(attestation *pb.Attestation, opts AttestOpts) error {
 	var tdxNonce [tabi.TdReportDataSize]byte
-	if len(opts.TEENonce) == 0 {
-		copy(tdxNonce[:], opts.Nonce)
-	} else if len(opts.TEENonce) != tabi.TdReportDataSize {
-		return fmt.Errorf("the TEENonce size is %d. Intel TDX device requires %d", len(opts.TEENonce), tabi.TdReportDataSize)
-	} else {
-		copy(tdxNonce[:], opts.TEENonce)
+	err := fillTdxNonce(opts, tdxNonce[:])
+	if err != nil {
+		return err
 	}
 	quote, err := tg.GetQuote(d.Device, tdxNonce)
 	if err != nil {
 		return err
 	}
-	attestation.TeeAttestation = &pb.Attestation_TdxAttestation{
-		TdxAttestation: quote,
-	}
-	return nil
+	return setTeeAttestationTdxQuote(quote, attestation)
 }
 
 // Close will free the device handle held by the TdxDevice. Calling more
@@ -230,6 +234,73 @@ func (d *TdxDevice) Close() error {
 		err := d.Device.Close()
 		d.Device = nil
 		return err
+	}
+	return nil
+}
+
+// CreateTdxQuoteProvider creates the TDX quote provider and wraps it with behavior
+// that allows it to add an attestation quote to pb.Attestation.
+func CreateTdxQuoteProvider() (*TdxQuoteProvider, error) {
+	qp, err := tg.GetQuoteProvider()
+	if err != nil {
+		return nil, err
+	}
+	if qp.IsSupported() != nil {
+		// TDX quote provider has a fallback mechanism to fetch attestation quote
+		// via device driver in case ConfigFS is not supported, so checking for TDX
+		// device availability here. Once Device interface is fully removed from
+		// subsequent go-tdx-guest versions, then below OpenDevice call should be
+		// removed as well.
+		d, err2 := tg.OpenDevice()
+		if err2 != nil {
+			return nil, fmt.Errorf("neither TDX device, nor quote provider is supported")
+		}
+		d.Close()
+	}
+
+	return &TdxQuoteProvider{QuoteProvider: qp}, nil
+}
+
+// AddAttestation will get the TDX attestation quote given opts.TEENonce
+// and add them to `attestation`. If opts.TEENonce is empty, then uses
+// contents of opts.Nonce.
+func (qp *TdxQuoteProvider) AddAttestation(attestation *pb.Attestation, opts AttestOpts) error {
+	var tdxNonce [tabi.TdReportDataSize]byte
+	err := fillTdxNonce(opts, tdxNonce[:])
+	if err != nil {
+		return err
+	}
+	quote, err := tg.GetQuote(qp.QuoteProvider, tdxNonce)
+	if err != nil {
+		return err
+	}
+	return setTeeAttestationTdxQuote(quote, attestation)
+}
+
+// Close will free resources held by QuoteProvider.
+func (qp *TdxQuoteProvider) Close() error {
+	return nil
+}
+
+func fillTdxNonce(opts AttestOpts, tdxNonce []byte) error {
+	if len(opts.TEENonce) == 0 {
+		copy(tdxNonce[:], opts.Nonce)
+	} else if len(opts.TEENonce) != tabi.TdReportDataSize {
+		return fmt.Errorf("the TEENonce size is %d. Intel TDX device requires %d", len(opts.TEENonce), tabi.TdReportDataSize)
+	} else {
+		copy(tdxNonce[:], opts.TEENonce)
+	}
+	return nil
+}
+
+func setTeeAttestationTdxQuote(quote any, attestation *pb.Attestation) error {
+	switch q := quote.(type) {
+	case *tpb.QuoteV4:
+		attestation.TeeAttestation = &pb.Attestation_TdxAttestation{
+			TdxAttestation: q,
+		}
+	default:
+		return fmt.Errorf("unsupported quote type: %T", quote)
 	}
 	return nil
 }
@@ -257,11 +328,11 @@ func getTEEAttestationReport(attestation *pb.Attestation, opts AttestOpts) error
 	}
 
 	// Try TDX.
-	if device, err := CreateTdxDevice(); err == nil {
+	if quoteProvider, err := CreateTdxQuoteProvider(); err == nil {
 		// Don't return errors if the attestation collection fails, since
 		// the user didn't specify a TEEDevice.
-		device.AddAttestation(attestation, opts)
-		device.Close()
+		quoteProvider.AddAttestation(attestation, opts)
+		quoteProvider.Close()
 		return nil
 	}
 	// Add more devices here.

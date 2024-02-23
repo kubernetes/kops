@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package internal
+package configfsi
 
-// Version is the current tagged release of the library.
-const Version = "1.23.4"
+import (
+	"strconv"
+	"strings"
+)
+
+// Kstrtouint returns the unsigned integer represented in data, following the same grammar
+// allowances as Linux, i.e., data may have a single trailing newline.
+func Kstrtouint(data []byte, base, bits int) (uint64, error) {
+	return strconv.ParseUint(strings.TrimRight(string(data), "\n"), base, bits)
+}

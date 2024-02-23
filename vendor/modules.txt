@@ -1,4 +1,4 @@
-# cloud.google.com/go/compute v1.23.3
+# cloud.google.com/go/compute v1.23.4
 ## explicit; go 1.19
 cloud.google.com/go/compute/internal
 # cloud.google.com/go/compute/metadata v0.2.3
@@ -139,7 +139,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.50.19
+# github.com/aws/aws-sdk-go v1.50.24
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -414,7 +414,6 @@ github.com/golang-jwt/jwt/v5
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.3
 ## explicit; go 1.9
-github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -438,6 +437,11 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
+# github.com/google/go-configfs-tsm v0.2.2
+## explicit; go 1.19
+github.com/google/go-configfs-tsm/configfs/configfsi
+github.com/google/go-configfs-tsm/configfs/linuxtsm
+github.com/google/go-configfs-tsm/report
 # github.com/google/go-containerregistry v0.19.0
 ## explicit; go 1.18
 github.com/google/go-containerregistry/internal/and
@@ -477,7 +481,7 @@ github.com/google/go-sev-guest/abi
 github.com/google/go-sev-guest/client
 github.com/google/go-sev-guest/client/linuxabi
 github.com/google/go-sev-guest/proto/sevsnp
-# github.com/google/go-tdx-guest v0.2.3-0.20231011100059-4cf02bed9d33
+# github.com/google/go-tdx-guest v0.3.1
 ## explicit; go 1.19
 github.com/google/go-tdx-guest/abi
 github.com/google/go-tdx-guest/client
@@ -488,7 +492,7 @@ github.com/google/go-tdx-guest/proto/tdx
 github.com/google/go-tpm/legacy/tpm2
 github.com/google/go-tpm/tpmutil
 github.com/google/go-tpm/tpmutil/tbs
-# github.com/google/go-tpm-tools v0.4.2
+# github.com/google/go-tpm-tools v0.4.3
 ## explicit; go 1.20
 github.com/google/go-tpm-tools/client
 github.com/google/go-tpm-tools/internal
@@ -534,7 +538,7 @@ github.com/google/uuid
 ## explicit; go 1.19
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
-# github.com/googleapis/gax-go/v2 v2.12.0
+# github.com/googleapis/gax-go/v2 v2.12.1
 ## explicit; go 1.19
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
@@ -849,7 +853,7 @@ github.com/sagikazarmark/slog-shim
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.23
+# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.24
 ## explicit; go 1.17
 github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
@@ -1053,7 +1057,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20240213143201-ec583247a57a
+# golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -1151,7 +1155,7 @@ golang.org/x/tools/internal/versions
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.165.0
+# google.golang.org/api v0.166.0
 ## explicit; go 1.19
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -1188,15 +1192,15 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
+# google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20240205150955-31a09d347014
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240213162025-012b6fc9bca9
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.61.1
+# google.golang.org/grpc v1.62.0
 ## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -1275,6 +1279,7 @@ google.golang.org/protobuf/internal/set
 google.golang.org/protobuf/internal/strs
 google.golang.org/protobuf/internal/version
 google.golang.org/protobuf/proto
+google.golang.org/protobuf/protoadapt
 google.golang.org/protobuf/reflect/protodesc
 google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
@@ -1313,7 +1318,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# helm.sh/helm/v3 v3.14.1
+# helm.sh/helm/v3 v3.14.2
 ## explicit; go 1.21
 helm.sh/helm/v3/internal/sympath
 helm.sh/helm/v3/internal/tlsutil

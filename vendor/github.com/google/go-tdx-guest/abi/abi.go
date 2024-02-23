@@ -105,6 +105,7 @@ const (
 	headerQeVendorIDEnd                     = 0x1C
 	headerUserDataStart                     = headerQeVendorIDEnd
 	headerUserDataEnd                       = 0x30
+	intelQuoteV4Version                     = 4
 	tdTeeTcbSvnStart                        = 0x00
 	tdTeeTcbSvnEnd                          = 0x10
 	tdMrSeamStart                           = tdTeeTcbSvnEnd
@@ -180,29 +181,32 @@ const (
 )
 
 var (
-	// ErrQuoteV4Nil error returned when QuoteV4 is empty
-	ErrQuoteV4Nil = errors.New("QuoteV4 is empty")
+	// ErrQuoteNil error returned when Quote is nil
+	ErrQuoteNil = errors.New("quote is nil")
 
-	// ErrQuoteV4AuthDataNil error returned when QuoteV4 Auth Data is empty
-	ErrQuoteV4AuthDataNil = errors.New("QuoteV4 authData is empty")
+	// ErrQuoteV4Nil error returned when QuoteV4 is nil
+	ErrQuoteV4Nil = errors.New("QuoteV4 is nil")
 
-	// ErrCertificationDataNil error returned when Certification Data is empty
-	ErrCertificationDataNil = errors.New("certification data is empty")
+	// ErrQuoteV4AuthDataNil error returned when QuoteV4 Auth Data is nil
+	ErrQuoteV4AuthDataNil = errors.New("QuoteV4 authData is nil")
 
-	// ErrQeReportCertificationDataNil error returned when QE report certification data is empty
-	ErrQeReportCertificationDataNil = errors.New("QE Report certification data is empty")
+	// ErrCertificationDataNil error returned when Certification Data is nil
+	ErrCertificationDataNil = errors.New("certification data is nil")
 
-	// ErrQeAuthDataNil error returned when QE Auth Data is empty
-	ErrQeAuthDataNil = errors.New("QE AuthData is empty")
+	// ErrQeReportCertificationDataNil error returned when QE report certification data is nil
+	ErrQeReportCertificationDataNil = errors.New("QE Report certification data is nil")
 
-	// ErrQeReportNil error returned when QE Report is empty
-	ErrQeReportNil = errors.New("QE Report is empty")
+	// ErrQeAuthDataNil error returned when QE Auth Data is nil
+	ErrQeAuthDataNil = errors.New("QE AuthData is nil")
 
-	// ErrPckCertChainNil error returned when PCK Certificate Chain is empty
-	ErrPckCertChainNil = errors.New("PCK certificate chain is empty")
+	// ErrQeReportNil error returned when QE Report is nil
+	ErrQeReportNil = errors.New("QE Report is nil")
 
-	// ErrTDQuoteBodyNil error returned when TD quote body is empty
-	ErrTDQuoteBodyNil = errors.New("TD quote body is empty")
+	// ErrPckCertChainNil error returned when PCK Certificate Chain is nil
+	ErrPckCertChainNil = errors.New("PCK certificate chain is nil")
+
+	// ErrTDQuoteBodyNil error returned when TD quote body is nil
+	ErrTDQuoteBodyNil = errors.New("TD quote body is nil")
 
 	// ErrTeeType error returned when TEE type is not TDX
 	ErrTeeType = errors.New("TEE type is not TDX")
@@ -210,8 +214,8 @@ var (
 	// ErrAttestationKeyType error returned when attestation key is not of expected type
 	ErrAttestationKeyType = errors.New("attestation key type not supported")
 
-	// ErrHeaderNil error returned when header is empty
-	ErrHeaderNil = errors.New("header is empty")
+	// ErrHeaderNil error returned when header is nil
+	ErrHeaderNil = errors.New("header is nil")
 )
 
 func clone(b []byte) []byte {
@@ -220,8 +224,34 @@ func clone(b []byte) []byte {
 	return result
 }
 
-// QuoteToProto creates a pb.QuoteV4 from the Intel's attestation quote byte array in Intel's ABI format.
-func QuoteToProto(b []uint8) (*pb.QuoteV4, error) {
+// determineQuoteFormat returns the quote format version from the header.
+func determineQuoteFormat(b []uint8) (uint32, error) {
+	if len(b) < headerVersionEnd {
+		return 0, fmt.Errorf("unable to determine quote format since bytes length is less than %d bytes", headerVersionEnd)
+	}
+	data := clone(b)
+	header := &pb.Header{}
+	header.Version = uint32(binary.LittleEndian.Uint16(data[headerVersionStart:headerVersionEnd]))
+	return header.Version, nil
+}
+
+// QuoteToProto creates a Quote from the Intel's attestation quote byte array in Intel's ABI format.
+// Supported quote formats - QuoteV4.
+func QuoteToProto(b []uint8) (any, error) {
+	quoteFormat, err := determineQuoteFormat(b)
+	if err != nil {
+		return nil, err
+	}
+	switch quoteFormat {
+	case intelQuoteV4Version:
+		return quoteToProtoV4(b)
+	default:
+		return nil, fmt.Errorf("quote format not supported")
+	}
+}
+
+// quoteToProtoV4 creates a pb.QuoteV4 from the Intel's attestation quote byte array in Intel's ABI format.
+func quoteToProtoV4(b []uint8) (*pb.QuoteV4, error) {
 	data := clone(b) // Created an independent copy to make the interface less error-prone
 	if len(data) < QuoteMinSize {
 		return nil, fmt.Errorf("raw quote size is 0x%x, a TDX quote should have size a minimum size of 0x%x", len(data), QuoteMinSize)
@@ -832,11 +862,22 @@ func signedDataToAbiBytes(signedData *pb.Ecdsa256BitQuoteV4AuthData) ([]byte, er
 	return data, nil
 }
 
-// QuoteToAbiBytes translates the QuoteV4 back into its little-endian ABI format
-func QuoteToAbiBytes(quote *pb.QuoteV4) ([]byte, error) {
+// QuoteToAbiBytes translates the Quote back into its little-endian ABI format.
+// Supported quote formats - QuoteV4.
+func QuoteToAbiBytes(quote any) ([]byte, error) {
 	if quote == nil {
-		return nil, ErrQuoteV4Nil
+		return nil, ErrQuoteNil
 	}
+	switch q := quote.(type) {
+	case *pb.QuoteV4:
+		return quoteToAbiBytesV4(q)
+	default:
+		return nil, fmt.Errorf("unsupported quote type: %T", quote)
+	}
+}
+
+// quoteToAbiBytesV4 translates the QuoteV4 back into its little-endian ABI format
+func quoteToAbiBytesV4(quote *pb.QuoteV4) ([]byte, error) {
 	if err := CheckQuoteV4(quote); err != nil {
 		return nil, fmt.Errorf("QuoteV4 invalid: %v", err)
 	}

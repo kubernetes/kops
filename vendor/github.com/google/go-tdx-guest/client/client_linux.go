@@ -22,6 +22,8 @@ import (
 
 	"unsafe"
 
+	"github.com/google/go-configfs-tsm/configfs/linuxtsm"
+	"github.com/google/go-configfs-tsm/report"
 	labi "github.com/google/go-tdx-guest/client/linuxabi"
 	"golang.org/x/sys/unix"
 )
@@ -83,8 +85,9 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 		abi.Finish(sreq)
 		if errno == unix.EBUSY {
 			return 0, errno
-		}
-		if errno != 0 {
+		} else if errno == unix.ENOTTY {
+			return 0, fmt.Errorf("invalid ioctl! use QuoteProvider to fetch attestation quote")
+		} else if errno != 0 {
 			return 0, errno
 		}
 		return result, nil
@@ -96,4 +99,33 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 		return result, nil
 	}
 	return 0, fmt.Errorf("unexpected request value: %v", req)
+}
+
+// LinuxConfigFsQuoteProvider implements the QuoteProvider interface to fetch
+// attestation quote via ConfigFS.
+type LinuxConfigFsQuoteProvider struct{}
+
+// IsSupported checks if TSM client can be created to use ConfigFS system.
+func (p *LinuxConfigFsQuoteProvider) IsSupported() error {
+	_, err := linuxtsm.MakeClient()
+	return err
+}
+
+// GetRawQuote returns byte format attestation quote via ConfigFS.
+func (p *LinuxConfigFsQuoteProvider) GetRawQuote(reportData [64]byte) ([]uint8, error) {
+	req := &report.Request{
+		InBlob:     reportData[:],
+		GetAuxBlob: false,
+	}
+	resp, err := linuxtsm.GetReport(req)
+	if err != nil {
+		return nil, err
+	}
+	tdReport := resp.OutBlob
+	return tdReport, nil
+}
+
+// GetQuoteProvider returns an instance of LinuxConfigFsQuoteProvider.
+func GetQuoteProvider() (*LinuxConfigFsQuoteProvider, error) {
+	return &LinuxConfigFsQuoteProvider{}, nil
 }

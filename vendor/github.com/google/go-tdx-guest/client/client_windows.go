@@ -43,3 +43,21 @@ func (*WindowsDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 	// The GuestAttestation library on Windows is closed source.
 	return 0, fmt.Errorf("Windows is unsupported")
 }
+
+// WindowsConfigFsQuoteProvider implements the QuoteProvider interface to fetch attestation quote via ConfigFS.
+type WindowsConfigFsQuoteProvider struct{}
+
+// IsSupported is not supported on Windows.
+func (p *WindowsConfigFsQuoteProvider) IsSupported() error {
+	return fmt.Errorf("Windows is unsupported")
+}
+
+// GetRawQuote is not supported on Windows.
+func (p *WindowsConfigFsQuoteProvider) GetRawQuote(reportData [64]byte) ([]uint8, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}
+
+// GetQuoteProvider is not supported on Windows.
+func GetQuoteProvider() (*WindowsConfigFsQuoteProvider, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}
