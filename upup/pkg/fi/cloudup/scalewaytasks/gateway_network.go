@@ -2,6 +2,7 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -140,5 +141,46 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 
 	expected.ID = &gwnCreated.ID
 
+	nodesIPs, err := getAllNodesIPs(cloud, expected.Gateway)
+	if err != nil {
+		return err
+	}
+
+	for _, nodeIP := range nodesIPs {
+		_, err = cloud.GatewayService().CreatePATRule(&vpcgw.CreatePATRuleRequest{
+			Zone:        zone,
+			GatewayID:   fi.ValueOf(expected.Gateway.ID),
+			PublicPort:  0,
+			PrivateIP:   net.IP(nodeIP),
+			PrivatePort: 0,
+			Protocol:    vpcgw.PATRuleProtocolBoth,
+		})
+		if err != nil {
+			return fmt.Errorf("creating NAT rule for public gateway %s", fi.ValueOf(expected.Gateway.ID))
+		}
+	}
+
 	return nil
+}
+
+func getAllNodesIPs(scwCloud scaleway.ScwCloud, gw *Gateway) ([]string, error) {
+	var nodePrivateIPs []string
+
+	servers, err := scwCloud.GetClusterServers(scwCloud.ClusterName(gw.Tags), nil)
+	if err != nil {
+		return nil, fmt.Errorf("getting cluster servers for public gateway's NAT rules: %w", err)
+	}
+
+	for _, server := range servers {
+		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleWorker {
+			continue
+		}
+		ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting IP of server %s for public gateway's NAT rules: %w", server.Name, err)
+		}
+		nodePrivateIPs = append(nodePrivateIPs, ip)
+	}
+
+	return nodePrivateIPs, nil
 }
