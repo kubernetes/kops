@@ -23,13 +23,15 @@ REPO_ROOT=$(git rev-parse --show-toplevel);
 KOPSPATH=$REPO_ROOT/.build/dist/$(go env GOOS)/$(go env GOARCH)
 PATH=$KOPSPATH:$PATH
 
-KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=scaleway --cluster-name=e2e-test-scw.k8s.local --kops-binary-path=${KOPSPATH}/kops"
+KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=scaleway --cluster-name=e2e-test.scw --kops-binary-path=${KOPSPATH}/kops"
 #KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
 make test-e2e-install
 
-kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
+rm -r /kops/_artifacts
+
+kubetest2-kops ${KUBETEST2_COMMON_ARGS} \
 		-v 10 \
 		--up --down \
 		--env JOB_NAME=pull-kops-e2e-kubernetes-scw-kubetest2 \
@@ -38,14 +40,14 @@ kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
     --env S3_ENDPOINT=https://s3.fr-par.scw.cloud \
 		--env KOPS_STATE_STORE=scw://kops-state-store-testing \
 		--env KOPS_BASE_URL=https://s3.fr-par.scw.cloud/kops-images-testing/kops/1.29.0-alpha.1 \
-		--create-args "--networking=cilium --node-count=2 --master-count=3" \
+		--create-args "--dns=none --networking=cilium" \
     --kubernetes-version=v1.25.5 \
 		--test=kops \
 		-- \
 		--ginkgo-args="--debug" \
 		--test-package-marker=v1.29.0-alpha.1 \
-		--test-package-version=v1.29.0 \
-		--parallel 25
+		--test-package-version=v1.28.2 \
+		--parallel 25 | tee log-kubetest.txt
 #		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|nfs|NFS|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
 #    --ssh-public-key=$REPO_ROOT/tests/integration/update_cluster/minimal_scaleway/id_rsa.pub \
 #		--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.20/latest-ci.txt \
