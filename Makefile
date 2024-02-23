@@ -711,7 +711,7 @@ dev-upload: dev-upload-linux-amd64 dev-upload-linux-arm64
 .PHONY: crds
 crds:
 	cd "${KOPS_ROOT}/hack" && go build -o "${KOPS_ROOT}/_output/bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
-	"${KOPS_ROOT}/_output/bin/controller-gen" crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
+	"${KOPS_ROOT}/_output/bin/controller-gen" paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
 
 #------------------------------------------------------
 # kops-controller
