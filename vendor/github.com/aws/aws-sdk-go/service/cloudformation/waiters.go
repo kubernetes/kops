@@ -93,6 +93,46 @@ func (c *CloudFormation) WaitUntilStackCreateCompleteWithContext(ctx aws.Context
 				Expected: "CREATE_COMPLETE",
 			},
 			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_COMPLETE",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_IN_PROGRESS",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_FAILED",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_ROLLBACK_IN_PROGRESS",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_ROLLBACK_FAILED",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+			},
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_ROLLBACK_COMPLETE",
+			},
+			{
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Stacks[].StackStatus",
 				Expected: "CREATE_FAILED",
@@ -202,6 +242,11 @@ func (c *CloudFormation) WaitUntilStackDeleteCompleteWithContext(ctx aws.Context
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Stacks[].StackStatus",
 				Expected: "UPDATE_ROLLBACK_COMPLETE",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_COMPLETE",
 			},
 		},
 		Logger: c.Config.Logger,

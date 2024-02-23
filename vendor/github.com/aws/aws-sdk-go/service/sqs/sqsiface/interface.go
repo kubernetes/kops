@@ -64,6 +64,10 @@ type SQSAPI interface {
 	AddPermissionWithContext(aws.Context, *sqs.AddPermissionInput, ...request.Option) (*sqs.AddPermissionOutput, error)
 	AddPermissionRequest(*sqs.AddPermissionInput) (*request.Request, *sqs.AddPermissionOutput)
 
+	CancelMessageMoveTask(*sqs.CancelMessageMoveTaskInput) (*sqs.CancelMessageMoveTaskOutput, error)
+	CancelMessageMoveTaskWithContext(aws.Context, *sqs.CancelMessageMoveTaskInput, ...request.Option) (*sqs.CancelMessageMoveTaskOutput, error)
+	CancelMessageMoveTaskRequest(*sqs.CancelMessageMoveTaskInput) (*request.Request, *sqs.CancelMessageMoveTaskOutput)
+
 	ChangeMessageVisibility(*sqs.ChangeMessageVisibilityInput) (*sqs.ChangeMessageVisibilityOutput, error)
 	ChangeMessageVisibilityWithContext(aws.Context, *sqs.ChangeMessageVisibilityInput, ...request.Option) (*sqs.ChangeMessageVisibilityOutput, error)
 	ChangeMessageVisibilityRequest(*sqs.ChangeMessageVisibilityInput) (*request.Request, *sqs.ChangeMessageVisibilityOutput)
@@ -103,6 +107,10 @@ type SQSAPI interface {
 	ListDeadLetterSourceQueuesPages(*sqs.ListDeadLetterSourceQueuesInput, func(*sqs.ListDeadLetterSourceQueuesOutput, bool) bool) error
 	ListDeadLetterSourceQueuesPagesWithContext(aws.Context, *sqs.ListDeadLetterSourceQueuesInput, func(*sqs.ListDeadLetterSourceQueuesOutput, bool) bool, ...request.Option) error
 
+	ListMessageMoveTasks(*sqs.ListMessageMoveTasksInput) (*sqs.ListMessageMoveTasksOutput, error)
+	ListMessageMoveTasksWithContext(aws.Context, *sqs.ListMessageMoveTasksInput, ...request.Option) (*sqs.ListMessageMoveTasksOutput, error)
+	ListMessageMoveTasksRequest(*sqs.ListMessageMoveTasksInput) (*request.Request, *sqs.ListMessageMoveTasksOutput)
+
 	ListQueueTags(*sqs.ListQueueTagsInput) (*sqs.ListQueueTagsOutput, error)
 	ListQueueTagsWithContext(aws.Context, *sqs.ListQueueTagsInput, ...request.Option) (*sqs.ListQueueTagsOutput, error)
 	ListQueueTagsRequest(*sqs.ListQueueTagsInput) (*request.Request, *sqs.ListQueueTagsOutput)
@@ -137,6 +145,10 @@ type SQSAPI interface {
 	SetQueueAttributes(*sqs.SetQueueAttributesInput) (*sqs.SetQueueAttributesOutput, error)
 	SetQueueAttributesWithContext(aws.Context, *sqs.SetQueueAttributesInput, ...request.Option) (*sqs.SetQueueAttributesOutput, error)
 	SetQueueAttributesRequest(*sqs.SetQueueAttributesInput) (*request.Request, *sqs.SetQueueAttributesOutput)
+
+	StartMessageMoveTask(*sqs.StartMessageMoveTaskInput) (*sqs.StartMessageMoveTaskOutput, error)
+	StartMessageMoveTaskWithContext(aws.Context, *sqs.StartMessageMoveTaskInput, ...request.Option) (*sqs.StartMessageMoveTaskOutput, error)
+	StartMessageMoveTaskRequest(*sqs.StartMessageMoveTaskInput) (*request.Request, *sqs.StartMessageMoveTaskOutput)
 
 	TagQueue(*sqs.TagQueueInput) (*sqs.TagQueueOutput, error)
 	TagQueueWithContext(aws.Context, *sqs.TagQueueInput, ...request.Option) (*sqs.TagQueueOutput, error)
