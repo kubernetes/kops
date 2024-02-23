@@ -2483,7 +2483,7 @@
       }
     }
   },
-  "revision": "20240125",
+  "revision": "20240207",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -2697,7 +2697,7 @@
       "id": "ExtensionChainExtension",
       "properties": {
         "authority": {
-          "description": "Required. The `:authority` header in the gRPC request sent from Envoy to the extension service.",
+          "description": "Optional. The `:authority` header in the gRPC request sent from Envoy to the extension service.",
           "type": "string"
         },
         "failOpen": {
@@ -2760,7 +2760,7 @@
       "type": "object"
     },
     "Gateway": {
-      "description": "Gateway represents the configuration for a proxy, typically a load balancer. It captures the ip:port over which the services are exposed by the proxy, along with any policy configurations. Routes have reference to to Gateways to dictate how requests should be routed by this Gateway. Next id: 30",
+      "description": "Gateway represents the configuration for a proxy, typically a load balancer. It captures the ip:port over which the services are exposed by the proxy, along with any policy configurations. Routes have reference to to Gateways to dictate how requests should be routed by this Gateway. Next id: 32",
       "id": "Gateway",
       "properties": {
         "addresses": {

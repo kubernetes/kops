@@ -90,6 +90,7 @@ const (
 	ResourceTypeRedisCluster        = ResourceType("redis_cluster")
 	ResourceTypeBaremetalServer     = ResourceType("baremetal_server")
 	ResourceTypeBaremetalPrivateNic = ResourceType("baremetal_private_nic")
+	ResourceTypeLlmDeployment       = ResourceType("llm_deployment")
 )
 
 func (enum ResourceType) String() string {
