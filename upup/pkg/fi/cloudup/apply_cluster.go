@@ -1145,6 +1145,13 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			if runcAssetUrl != nil && runcAssetHash != nil {
 				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
 			}
+			nerdctlAssetUrl, nerdctlAssetHash, err := findNerdctlAsset(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			if nerdctlAssetUrl != nil && nerdctlAssetHash != nil {
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(nerdctlAssetUrl, nerdctlAssetHash))
+			}
 		}
 
 		asset, err := NodeUpAsset(assetBuilder, arch)

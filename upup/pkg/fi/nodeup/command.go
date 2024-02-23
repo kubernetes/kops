@@ -314,6 +314,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KopsControllerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.WarmPoolBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.PrefixBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.NerdctlBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &networking.CommonBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
