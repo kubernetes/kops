@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+	"k8s.io/utils/net"
 
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -50,7 +51,7 @@ type LoadBalancer struct {
 	// WellKnownServices indicates which services are supported by this resource.
 	// This field is internal and is not rendered to the cloud.
 	WellKnownServices []wellknownservices.WellKnownService
-	ForAPIServer          bool
+	ForAPIServer      bool
 
 	Lifecycle      fi.Lifecycle
 	PrivateNetwork *PrivateNetwork
@@ -87,7 +88,7 @@ func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, erro
 		return nil, nil
 	}
 	lbFound, err := l.Find(context)
-	if err != nil {
+	if err != nil || lbFound == nil {
 		return nil, err
 	}
 	return lbFound.LBAddresses, nil
@@ -118,7 +119,7 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 		Region:           region,
 		PrivateNetworkID: l.PrivateNetwork.ID,
 		ResourceID:       &loadBalancer.ID,
-		//ResourceName:     l.Name,
+		IsIPv6:           fi.PtrTo(false),
 	}, scw.WithContext(context.Context()), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("listing load-balancer's IPs: %w", err)
@@ -128,14 +129,21 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 		lbIPs = append(lbIPs, ip.Address.IP.String())
 	}
 
+	for _, ip := range loadBalancer.IP {
+		if net.IsIPv6String(ip.IPAddress) {
+			continue
+		}
+		lbIPs = append(lbIPs, ip.IPAddress)
+	}
+
 	return &LoadBalancer{
-		Name:         fi.PtrTo(loadBalancer.Name),
-		ID:           fi.PtrTo(loadBalancer.ID),
-		Zone:         fi.PtrTo(string(loadBalancer.Zone)),
-		LBAddresses:  lbIPs,
-		Tags:         loadBalancer.Tags,
-		Lifecycle:    l.Lifecycle,
-		ForAPIServer: l.ForAPIServer,
+		Name:              fi.PtrTo(loadBalancer.Name),
+		ID:                fi.PtrTo(loadBalancer.ID),
+		Zone:              fi.PtrTo(string(loadBalancer.Zone)),
+		LBAddresses:       lbIPs,
+		Tags:              loadBalancer.Tags,
+		Lifecycle:         l.Lifecycle,
+		ForAPIServer:      l.ForAPIServer,
 		WellKnownServices: l.WellKnownServices,
 	}, nil
 }

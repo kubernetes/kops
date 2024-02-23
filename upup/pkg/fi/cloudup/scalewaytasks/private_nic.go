@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -28,7 +27,8 @@ type PrivateNIC struct {
 var _ fi.CloudupTask = &PrivateNIC{}
 var _ fi.CompareWithID = &PrivateNIC{}
 var _ fi.CloudupHasDependencies = &PrivateNIC{}
-var _ fi.HasAddress = &PrivateNIC{}
+
+//var _ fi.HasAddress = &PrivateNIC{}
 
 func (p *PrivateNIC) CompareWithID() *string {
 	return p.Name
@@ -47,54 +47,55 @@ func (p *PrivateNIC) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloud
 	return deps
 }
 
-func (p *PrivateNIC) IsForAPIServer() bool {
-	return p.ForAPIServer
-}
-
-func (p *PrivateNIC) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	cloud := context.T.Cloud.(scaleway.ScwCloud)
-	region, err := scw.Zone(fi.ValueOf(p.Zone)).Region()
-	if err != nil {
-		return nil, fmt.Errorf("finding private NIC's region: %w", err)
+/*
+	func (p *PrivateNIC) IsForAPIServer() bool {
+		return p.ForAPIServer
 	}
 
-	servers, err := cloud.GetClusterServers(scaleway.ClusterNameFromTags(p.Tags), p.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	var pnicIPs []string
-
-	for _, server := range servers {
-
-		pNICs, err := cloud.InstanceService().ListPrivateNICs(&instance.ListPrivateNICsRequest{
-			Zone:     scw.Zone(cloud.Zone()),
-			Tags:     p.Tags,
-			ServerID: server.ID,
-		}, scw.WithContext(context.Context()), scw.WithAllPages())
+	func (p *PrivateNIC) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+		cloud := context.T.Cloud.(scaleway.ScwCloud)
+		region, err := scw.Zone(fi.ValueOf(p.Zone)).Region()
 		if err != nil {
-			return nil, fmt.Errorf("listing private NICs for instance %q: %w", fi.ValueOf(p.Name), err)
+			return nil, fmt.Errorf("finding private NIC's region: %w", err)
 		}
 
-		for _, pNIC := range pNICs.PrivateNics {
+		servers, err := cloud.GetClusterServers(scaleway.ClusterNameFromTags(p.Tags), p.Name)
+		if err != nil {
+			return nil, err
+		}
 
-			ips, err := cloud.IPAMService().ListIPs(&ipam.ListIPsRequest{
-				Region:           region,
-				PrivateNetworkID: p.PrivateNetwork.ID,
-				ResourceID:       &pNIC.ID,
+		var pnicIPs []string
+
+		for _, server := range servers {
+
+			pNICs, err := cloud.InstanceService().ListPrivateNICs(&instance.ListPrivateNICsRequest{
+				Zone:     scw.Zone(cloud.Zone()),
+				Tags:     p.Tags,
+				ServerID: server.ID,
 			}, scw.WithContext(context.Context()), scw.WithAllPages())
 			if err != nil {
-				return nil, fmt.Errorf("listing private NIC's IPs: %w", err)
+				return nil, fmt.Errorf("listing private NICs for instance %q: %w", fi.ValueOf(p.Name), err)
 			}
 
-			for _, ip := range ips.IPs {
-				pnicIPs = append(pnicIPs, ip.Address.IP.String())
+			for _, pNIC := range pNICs.PrivateNics {
+
+				ips, err := cloud.IPAMService().ListIPs(&ipam.ListIPsRequest{
+					Region:           region,
+					PrivateNetworkID: p.PrivateNetwork.ID,
+					ResourceID:       &pNIC.ID,
+				}, scw.WithContext(context.Context()), scw.WithAllPages())
+				if err != nil {
+					return nil, fmt.Errorf("listing private NIC's IPs: %w", err)
+				}
+
+				for _, ip := range ips.IPs {
+					pnicIPs = append(pnicIPs, ip.Address.IP.String())
+				}
 			}
 		}
+		return pnicIPs, nil
 	}
-	return pnicIPs, nil
-}
-
+*/
 func (p *PrivateNIC) Find(context *fi.CloudupContext) (*PrivateNIC, error) {
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	servers, err := cloud.GetClusterServers(scaleway.ClusterNameFromTags(p.Tags), p.Name)

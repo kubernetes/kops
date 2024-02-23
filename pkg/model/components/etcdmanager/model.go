@@ -171,7 +171,8 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230925
+    # TODO(Mia-Cross): revert this change with the etcd-manager's next release 
+    image: rg.nl-ams.scw.cloud/kops-v2/etcd-manager:latest
     resources:
       requests:
         cpu: 100m

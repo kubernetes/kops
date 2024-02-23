@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/utils/net"
 )
 
 const (
@@ -354,8 +355,35 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 		klog.V(4).Infof("More than 1 load-balancer with the name %s was found", name)
 	}
 
+	//pns, err := s.GetClusterPrivateNetworks(cluster.Name)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if len(pns) > 1 {
+	//	return nil, fmt.Errorf("more than 1 private network found")
+	//}
+	//pn := pns[0]
+
 	for _, loadBalancer := range responseLoadBalancers.LBs {
+		// We add the private IPs
+		//lbIPs, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		//	Region:           s.region,
+		//	PrivateNetworkID: &pn.ID,
+		//	ResourceID:       &loadBalancer.ID,
+		//	IsIPv6:           fi.PtrTo(false),
+		//}, scw.WithAllPages())
+		//if err != nil {
+		//	return nil, fmt.Errorf("listing load-balancer's IPs: %w", err)
+		//}
+		//for _, lbIP := range lbIPs.IPs {
+		//	ingresses = append(ingresses, fi.ApiIngressStatus{IP: lbIP.Address.String()})
+		//}
+
+		// We add the public IPs
 		for _, lbIP := range loadBalancer.IP {
+			if net.IsIPv6String(lbIP.IPAddress) {
+				continue
+			}
 			ingresses = append(ingresses, fi.ApiIngressStatus{IP: lbIP.IPAddress})
 		}
 	}

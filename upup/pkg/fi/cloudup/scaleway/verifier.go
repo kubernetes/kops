@@ -106,22 +106,11 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
 		Region:           region,
 		PrivateNetworkID: fi.PtrTo(server.PrivateNics[0].PrivateNetworkID),
-		ResourceID:       fi.PtrTo(server.PrivateNics[0].ID),
+		//	ResourceID: fi.PtrTo(server.ID),
+		ResourceID: fi.PtrTo(server.PrivateNics[0].ID),
 		//ResourceName: fi.PtrTo(serverName),
 		IsIPv6: fi.PtrTo(false),
-	}, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)
-	}
-	if ips.TotalCount == 0 {
-		return nil, fmt.Errorf("no IP found for server %q: %w", server.Name, err)
-	}
-
-	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
-		Region:     region,
-		ResourceID: fi.PtrTo(server.ID),
-		IsIPv6:     fi.PtrTo(false),
-		Zonal:      fi.PtrTo(zone.String()),
+		//	Zonal:      fi.PtrTo(zone.String()),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)
@@ -142,7 +131,9 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		NodeName:          server.Name,
 		InstanceGroupName: InstanceGroupNameFromTags(server.Tags),
 		CertificateNames:  addresses,
-		ChallengeEndpoint: challengeEndPoints[0],
+	}
+	if len(challengeEndPoints) < 1 {
+		result.ChallengeEndpoint = challengeEndPoints[0]
 	}
 
 	return result, nil

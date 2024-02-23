@@ -213,13 +213,13 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 		}
 
 		createServerRequest := instance.CreateServerRequest{
-			Zone:           zone,
-			Name:           uniqueName,
-			CommercialType: fi.ValueOf(expected.CommercialType),
-			Image:          fi.ValueOf(expected.Image),
-			Tags:           expected.Tags,
+			Zone:            zone,
+			Name:            uniqueName,
+			CommercialType:  fi.ValueOf(expected.CommercialType),
+			Image:           fi.ValueOf(expected.Image),
+			Tags:            expected.Tags,
+			RoutedIPEnabled: fi.PtrTo(true),
 			//DynamicIPRequired: fi.PtrTo(false),
-			//RoutedIPEnabled:   fi.PtrTo(true),
 		}
 
 		// We resize the root volume if needed (for instance types with no local storage)
