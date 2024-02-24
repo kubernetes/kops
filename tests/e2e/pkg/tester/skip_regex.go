@@ -33,12 +33,6 @@ func (t *Tester) setSkipRegexFlag() error {
 		return nil
 	}
 
-	kopsVersion, err := t.getKopsVersion()
-	if err != nil {
-		return err
-	}
-	isPre28 := kopsVersion < "1.28"
-
 	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return err
@@ -58,38 +52,9 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/pull/115977
 		skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
 	}
-	if !isPre28 {
-		// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
-		// https://github.com/kubernetes/kubernetes/pull/117718
-		// https://github.com/cilium/cilium/issues/27358
-		skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
-	}
 
 	networking := cluster.Spec.LegacyNetworking
-	switch {
-	case networking.Kubenet != nil, networking.Canal != nil, networking.Cilium != nil:
-		skipRegex += "|Services.*rejected.*endpoints"
-	}
 	if networking.Cilium != nil {
-		// https://github.com/cilium/cilium/issues/10002
-		skipRegex += "|TCP.CLOSE_WAIT"
-		// https://github.com/cilium/cilium/issues/15361
-		skipRegex += "|external.IP.is.not.assigned.to.a.node"
-		// https://github.com/cilium/cilium/issues/14287
-		skipRegex += "|same.port.number.but.different.protocols"
-		skipRegex += "|same.hostPort.but.different.hostIP.and.protocol"
-		// https://github.com/cilium/cilium/issues/9207
-		skipRegex += "|serve.endpoints.on.same.port.and.different.protocols"
-		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
-		skipRegex += "|should.check.kube-proxy.urls"
-
-		if isPre28 {
-			// These may be fixed in Cilium 1.13 but skipping for now
-			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-			// https://github.com/cilium/cilium/issues/18241
-			skipRegex += "|Services.should.create.endpoints.for.unready.pods"
-			skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
-		}
 		if k8sVersion.Minor < 27 {
 			// Partially implemented in Cilium 1.13 but kops doesn't enable it
 			// Ref: https://github.com/cilium/cilium/pull/20033
@@ -97,12 +62,6 @@ func (t *Tester) setSkipRegexFlag() error {
 			// Ref: https://github.com/kubernetes/kubernetes/pull/113335
 			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
-	} else if networking.KubeRouter != nil {
-		skipRegex += "|load-balancer|hairpin|service\\.kubernetes\\.io|CLOSE_WAIT"
-		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"
-		skipRegex += "|internalTrafficPolicy|externallTrafficPolicy|only.terminating.endpoints"
-	} else if networking.Kubenet != nil {
-		skipRegex += "|Services.*affinity"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
@@ -111,15 +70,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
-		// Firewall tests expect a specific format for cluster and control plane host names
-		// which kOps does not match
-		// ref: https://github.com/kubernetes/kubernetes/blob/1bd00776b5d78828a065b5c21e7003accc308a06/test/e2e/framework/providers/gce/firewall.go#L92-L100
-		skipRegex += "|Firewall"
-		// kube-dns tests are not skipped automatically if a cluster uses CoreDNS instead
-		skipRegex += "|kube-dns"
-		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
-		// ref: https://github.com/kubernetes/test-infra/pull/22190
-		skipRegex += "|should.be.mountable.when.non-attachable"
 		// The in-tree driver and its E2E tests use `topology.kubernetes.io/zone` but the CSI driver uses `topology.gke.io/zone`
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
