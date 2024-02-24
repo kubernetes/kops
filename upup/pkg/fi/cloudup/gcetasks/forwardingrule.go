@@ -95,9 +95,9 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 		}
 	}
 	if r.IPAddress != "" {
-		address, err := findAddressByIP(cloud, r.IPAddress)
+		address, err := findAddressByIP(cloud, r.IPAddress, r.Subnetwork)
 		if err != nil {
-			return nil, fmt.Errorf("error finding Address with IP=%q: %v", r.IPAddress, err)
+			return nil, fmt.Errorf("error finding Address with IP=%q: %w", r.IPAddress, err)
 		}
 		actual.IPAddress = address
 	}
