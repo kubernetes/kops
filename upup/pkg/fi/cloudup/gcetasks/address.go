@@ -64,25 +64,43 @@ func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
 	return actual, err
 }
 
-func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
-	// Technically this is a regex, but it doesn't matter...
+func findAddressByIP(cloud gce.GCECloud, ip string, subnet string) (*Address, error) {
+	// Technically this is a regex, but it doesn't matter, it's a prefilter
 	addrs, err := cloud.Compute().Addresses().ListWithFilter(cloud.Project(), cloud.Region(), "address eq "+ip)
 	if err != nil {
 		return nil, fmt.Errorf("error listing IP Addresses: %v", err)
 	}
 
-	if len(addrs) == 0 {
+	var matches []*compute.Address
+	for _, addr := range addrs {
+		if subnet != "" && addr.Subnetwork != subnet {
+			continue
+		}
+		if addr.Address == ip {
+			matches = append(matches, addr)
+		}
+	}
+
+	if len(matches) == 0 {
 		return nil, nil
 	}
-	if len(addrs) > 1 {
+
+	if len(matches) > 1 {
 		return nil, fmt.Errorf("found multiple Addresses matching %q", ip)
 	}
 
+	addr := matches[0]
+
 	actual := &Address{}
-	actual.IPAddress = &addrs[0].Address
-	actual.IPAddressType = &addrs[0].AddressType
-	actual.Purpose = &addrs[0].Purpose
-	actual.Name = &addrs[0].Name
+	actual.IPAddress = &addr.Address
+	actual.IPAddressType = &addr.AddressType
+	actual.Purpose = &addr.Purpose
+	actual.Name = &addr.Name
+	if addr.Subnetwork != "" {
+		actual.Subnetwork = &Subnet{
+			Name: fi.PtrTo(lastComponent(addr.Subnetwork)),
+		}
+	}
 
 	return actual, nil
 }
