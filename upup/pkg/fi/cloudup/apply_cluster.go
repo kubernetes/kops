@@ -1154,6 +1154,14 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			}
 		}
 
+		crictlAssetUrl, crictlAssetHash, err := findCrictlAsset(c.Cluster, assetBuilder, arch)
+		if err != nil {
+			return err
+		}
+		if crictlAssetUrl != nil && crictlAssetHash != nil {
+			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(crictlAssetUrl, crictlAssetHash))
+		}
+
 		asset, err := NodeUpAsset(assetBuilder, arch)
 		if err != nil {
 			return err
