@@ -185,13 +185,13 @@ resource "google_compute_address" "api-us-test1-minimal-gce-with-a-very-very-ver
   subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
 }
 
-resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {
   backend {
     group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
   }
   health_checks         = [google_compute_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi.id]
   load_balancing_scheme = "INTERNAL_SELF_MANAGED"
-  name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
   protocol              = "TCP"
 }
 
@@ -433,7 +433,7 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
 }
 
 resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
-  backend_service = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
+  backend_service = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi.id
   ip_address      = google_compute_address.api-us-test1-minimal-gce-with-a-very-very-very-very-very-96dqvi.address
   ip_protocol     = "TCP"
   labels = {
