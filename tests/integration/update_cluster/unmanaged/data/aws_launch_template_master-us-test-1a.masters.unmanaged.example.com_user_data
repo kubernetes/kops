@@ -128,7 +128,7 @@ ClusterName: unmanaged.example.com
 ConfigBase: memfs://clusters.example.com/unmanaged.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: XBDDl0pNI9lHhjsMFfBgQpHoxFBmj60xY9yI2o4UCgk=
+NodeupConfigHash: gmx+texi05eMNmNqfwOMI+qILKYPLv7KGBrd9YjySsI=
 
 __EOF_KUBE_ENV
 
