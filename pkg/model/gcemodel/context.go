@@ -101,7 +101,7 @@ func (c *GCEModelContext) NameForTargetPool(id string) string {
 }
 
 func (c *GCEModelContext) NameForHealthCheck(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForBackendService(id string) string {
