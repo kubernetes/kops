@@ -189,7 +189,7 @@ resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very
   backend {
     group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
   }
-  health_checks         = [google_compute_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id]
+  health_checks         = [google_compute_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi.id]
   load_balancing_scheme = "INTERNAL_SELF_MANAGED"
   name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
   protocol              = "TCP"
@@ -447,8 +447,8 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-with-a-very-
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
 }
 
-resource "google_compute_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
-  name = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+resource "google_compute_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {
+  name = "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
   tcp_health_check {
     port = 443
   }
