@@ -182,6 +182,23 @@ resource "google_compute_address" "api-minimal-gce-plb-example-com" {
   name = "api-minimal-gce-plb-example-com"
 }
 
+resource "google_compute_address" "api-us-test1-minimal-gce-plb-example-com" {
+  address_type = "INTERNAL"
+  name         = "api-us-test1-minimal-gce-plb-example-com"
+  purpose      = "SHARED_LOADBALANCER_VIP"
+  subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-plb-example-com.name
+}
+
+resource "google_compute_backend_service" "api-minimal-gce-plb-example-com" {
+  backend {
+    group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-plb-example-com.instance_group
+  }
+  health_checks         = [google_compute_health_check.api-minimal-gce-plb-example-com.id]
+  load_balancing_scheme = "INTERNAL_SELF_MANAGED"
+  name                  = "api-minimal-gce-plb-example-com"
+  protocol              = "TCP"
+}
+
 resource "google_compute_disk" "a-etcd-events-minimal-gce-plb-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
@@ -430,6 +447,28 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
   name                  = "api-minimal-gce-plb-example-com"
   port_range            = "443-443"
   target                = google_compute_target_pool.api-minimal-gce-plb-example-com.self_link
+}
+
+resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-plb-example-com" {
+  backend_service = google_compute_backend_service.api-minimal-gce-plb-example-com.id
+  ip_address      = google_compute_address.api-us-test1-minimal-gce-plb-example-com.address
+  ip_protocol     = "TCP"
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-plb-example-com"
+    "name"                = "api-us-test1"
+  }
+  load_balancing_scheme = "INTERNAL"
+  name                  = "api-us-test1-minimal-gce-plb-example-com"
+  network               = google_compute_network.minimal-gce-plb-example-com.name
+  ports                 = ["443"]
+  subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-example-com.name
+}
+
+resource "google_compute_health_check" "api-minimal-gce-plb-example-com" {
+  name = "api-minimal-gce-plb-example-com"
+  tcp_health_check {
+    port = 443
+  }
 }
 
 resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {

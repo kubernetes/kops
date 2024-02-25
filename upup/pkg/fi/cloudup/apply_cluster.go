@@ -1477,7 +1477,22 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderGCE, kops.CloudProviderAzure:
+	case kops.CloudProviderGCE:
+		// Use the IP address of the internal load balancer (forwarding-rule)
+		// Note that on GCE subnets have IP ranges, networks do not
+		for _, apiserverIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
+				_, cidr, err := net.ParseCIDR(subnet.CIDR)
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to parse subnet CIDR %q: %w", subnet.CIDR, err)
+				}
+				if cidr.Contains(net.ParseIP(apiserverIP)) {
+					controlPlaneIPs = append(controlPlaneIPs, apiserverIP)
+				}
+			}
+		}
+
+	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure:
 		// Use any IP address that is found (including public ones)
 		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			controlPlaneIPs = append(controlPlaneIPs, additionalIP)

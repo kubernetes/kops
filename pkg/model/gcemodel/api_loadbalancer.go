@@ -87,25 +87,8 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			"name":           "api",
 		},
 	})
-	if b.Cluster.UsesNoneDNS() {
-		ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
 
-		c.AddTask(&gcetasks.ForwardingRule{
-			Name:                s(b.NameForForwardingRule("kops-controller")),
-			Lifecycle:           b.Lifecycle,
-			PortRange:           s(strconv.Itoa(wellknownports.KopsControllerPort) + "-" + strconv.Itoa(wellknownports.KopsControllerPort)),
-			TargetPool:          targetPool,
-			IPAddress:           ipAddress,
-			IPProtocol:          "TCP",
-			LoadBalancingScheme: s("EXTERNAL"),
-			Labels: map[string]string{
-				clusterLabel.Key: clusterLabel.Value,
-				"name":           "kops-controller",
-			},
-		})
-	}
-
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderContext) error {
@@ -231,7 +214,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		if b.Cluster.UsesNoneDNS() {
 			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
 
-			c.AddTask(&gcetasks.ForwardingRule{
+			fr := &gcetasks.ForwardingRule{
 				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),
 				Lifecycle:           b.Lifecycle,
 				BackendService:      bs,
@@ -245,10 +228,14 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 					clusterLabel.Key: clusterLabel.Value,
 					"name":           "kops-controller-" + sn.Name,
 				},
-			})
+			}
+			// We previously created a forwarding rule which was external; prune it
+			fr.PruneForwardingRulesWithName(b.NameForForwardingRule("kops-controller")) //, "Removing legacy external load balancer for kops-controller")
+
+			c.AddTask(fr)
 		}
 	}
-	return b.addFirewallRules(c)
+	return nil
 }
 
 func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -264,22 +251,25 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-		return b.createPublicLB(c)
+		if err := b.createPublicLB(c); err != nil {
+			return err
+		}
+		// We always create the internal load balancer also;
+		// it allows us to restrict access to only the nodes.
+		if err := b.createInternalLB(c); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	case kops.LoadBalancerTypeInternal:
-		return b.createInternalLB(c)
+		if err := b.createInternalLB(c); err != nil {
+			return err
+		}
+
+		return b.addFirewallRules(c)
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
-}
-
-// subnetNotSpecified returns true if the given LB subnet is not listed in the list of cluster subnets.
-func subnetNotSpecified(sn kops.LoadBalancerSubnetSpec, subnets []kops.ClusterSubnetSpec) bool {
-	for _, csn := range subnets {
-		if csn.Name == sn.Name || csn.ID == sn.Name {
-			return false
-		}
-	}
-	return true
 }
