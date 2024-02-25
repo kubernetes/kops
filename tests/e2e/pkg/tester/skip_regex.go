@@ -107,7 +107,7 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
 		// https://github.com/kubernetes/kubernetes/issues/121018
-		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
+		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
