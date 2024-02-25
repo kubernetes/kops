@@ -105,7 +105,7 @@ func (c *GCEModelContext) NameForHealthCheck(id string) string {
 }
 
 func (c *GCEModelContext) NameForBackendService(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForForwardingRule(id string) string {
