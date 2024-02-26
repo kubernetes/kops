@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capg-controller-manager
+  namespace: capg-system
+spec:
+  template:
+    spec:
+      containers:
+      - image: registry.k8s.io/cluster-api-gcp/cluster-api-gcp-controller:v1.5.0
+        imagePullPolicy: IfNotPresent
+        name: manager

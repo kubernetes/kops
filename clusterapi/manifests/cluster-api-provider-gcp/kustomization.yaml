@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - https://github.com/kubernetes-sigs/cluster-api-provider-gcp//config/default?ref=v1.5.0
+
+patches:
+  - path: patches/set_feature_gates.yaml
+  - path: patches/delete_gcp_credentials.yaml
+  - path: patches/delete_gcp_credentials_secret.yaml
+  - path: patches/set_manager_image.yaml
+  - path: patches/run_on_control_plane.yaml

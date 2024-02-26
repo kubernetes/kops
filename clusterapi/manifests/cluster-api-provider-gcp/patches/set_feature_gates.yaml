@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capg-controller-manager
+  namespace: capg-system
+spec:
+  template:
+    spec:
+      containers:
+      - args:
+        - --leader-elect
+        #- --feature-gates=GKE=${EXP_CAPG_GKE:=false}
+        - --feature-gates=GKE=false
+        - --metrics-bind-addr=localhost:8080
+        #- --v=${CAPG_LOGLEVEL:=0}
+        - --v=0
+        name: manager
