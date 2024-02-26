@@ -35,7 +35,7 @@ func (b *NvidiaBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Name:    "nvidia-container-toolkit",
 			Keyring: "https://nvidia.github.io/libnvidia-container/gpgkey",
 			Sources: []string{
-				"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
+				"deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /",
 			},
 		})
 		c.AddTask(&nodetasks.Package{Name: "nvidia-container-toolkit"})
