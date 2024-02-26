@@ -127,7 +127,7 @@ ClusterName: minimal-gce-private.example.com
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: VHfjbGW6KEeMxqcxL5yjd6zd+mwfyRiyf+4LQmqbNNA=
+NodeupConfigHash: bjVwg6XtWIeSwGdJDC1eC5HJWM4uI+4dVQ6XYiocJqY=
 
 __EOF_KUBE_ENV
 
