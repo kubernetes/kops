@@ -232,7 +232,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 
 		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, additionalIPs, additionalPrivateIPs); err != nil {
-			return fmt.Errorf("error dumping nodes: %v", err)
+			klog.Warningf("error dumping nodes: %v", err)
 		}
 
 		if kubeConfig != nil && options.K8sResources {
@@ -241,7 +241,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 				return fmt.Errorf("error creating resource dumper: %w", err)
 			}
 			if err := dumper.DumpResources(ctx); err != nil {
-				return fmt.Errorf("error dumping resources: %w", err)
+				klog.Warningf("error dumping resources: %v", err)
 			}
 
 			logDumper, err := dump.NewPodLogDumper(kubeConfig, options.Dir)
@@ -249,7 +249,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 				return fmt.Errorf("error creating pod log dumper: %w", err)
 			}
 			if err := logDumper.DumpLogs(ctx); err != nil {
-				return fmt.Errorf("error dumping pod logs: %w", err)
+				klog.Warningf("error dumping pod logs: %v", err)
 			}
 		}
 	}
