@@ -213,19 +213,22 @@ def get_dates():
 def get_regexs():
     regexs = {}
     # Search for "YEAR" which exists in the boilerplate, but shouldn't in the real thing
-    regexs["year"] = re.compile('YEAR')
-    # get_dates return 2014, 2015, 2016, 2017, or 2018 until the current year as a regex like: "(2014|2015|2016|2017|2018)";
+    regexs["year"] = re.compile("YEAR")
+    # get_dates return 2014, 2015, 2016, 2017, or 2018 until the current year
+    # as a regex like: "(2014|2015|2016|2017|2018)";
     # company holder names can be anything
     regexs["date"] = re.compile(get_dates())
-    # strip // +build \n\n build constraints
+    # strip the following build constraints/tags:
+    # //go:build
+    # // +build \n\n
     regexs["go_build_constraints"] = re.compile(
-        r"^(//go:build.*\n// \+build.*\n)+\n", re.MULTILINE)
+        r"^(//(go:build| \+build).*\n)+\n", re.MULTILINE
+    )
     # strip #!.* from scripts
     regexs["shebang"] = re.compile(r"^(#!.*\n)\n*", re.MULTILINE)
     # Search for generated files
-    regexs["generated"] = re.compile('DO NOT EDIT')
+    regexs["generated"] = re.compile(r"^[/*#]+ +.* DO NOT EDIT\.$", re.MULTILINE)
     return regexs
-
 
 def main():
     regexs = get_regexs()
