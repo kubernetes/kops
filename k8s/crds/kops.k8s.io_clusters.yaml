@@ -3872,7 +3872,8 @@ spec:
                     type: string
                   usePolicyConfigMap:
                     description: UsePolicyConfigMap enable setting the scheduler policy
-                      from a configmap
+                      from a configmap Deprecated - use KubeSchedulerConfiguration
+                      instead
                     type: boolean
                 type: object
               kubelet:

@@ -1212,18 +1212,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.KubeScheduler.UsePolicyConfigMap != nil {
-		key := "scheduler.addons.k8s.io"
-		version := "1.7.0"
-		location := key + "/v" + version + ".yaml"
-
-		addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
-			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
-		})
-	}
-
 	serviceAccounts := make(map[string]iam.Subject)
 
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {

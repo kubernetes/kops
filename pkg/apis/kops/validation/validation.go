@@ -134,6 +134,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeControllerManager(spec.KubeControllerManager, c, fieldPath.Child("kubeControllerManager"), strict)...)
 	}
 
+	if spec.KubeScheduler != nil {
+		allErrs = append(allErrs, validateKubeScheduler(spec.KubeScheduler, c, fieldPath.Child("kubeScheduler"), strict)...)
+	}
+
 	if spec.KubeProxy != nil {
 		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
@@ -837,6 +841,18 @@ func validateKubeControllerManager(v *kops.KubeControllerManagerConfig, c *kops.
 		if c.IsKubernetesGTE("1.25") {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("experimentalClusterSigningDuration"), "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25"))
 		}
+	}
+
+	return allErrs
+}
+
+func validateKubeScheduler(v *kops.KubeSchedulerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// We aren't aiming to do comprehensive validation, but we can add some best-effort validation where it helps guide users.
+	// Users reported encountered this in #16388
+	if v.UsePolicyConfigMap != nil {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("usePolicyConfigMap"), "usePolicyConfigMap is deprecated, use KubeSchedulerConfiguration"))
 	}
 
 	return allErrs
