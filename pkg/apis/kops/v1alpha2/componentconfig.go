@@ -751,6 +751,7 @@ type KubeSchedulerConfig struct {
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// UsePolicyConfigMap enable setting the scheduler policy from a configmap
+	// Deprecated - use KubeSchedulerConfiguration instead
 	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
