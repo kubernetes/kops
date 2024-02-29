@@ -2,6 +2,8 @@ module k8s.io/kops
 
 go 1.22
 
+toolchain go1.22.0
+
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.2

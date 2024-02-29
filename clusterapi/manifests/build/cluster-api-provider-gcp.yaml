@@ -1,0 +1,3891 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+    controller-gen.kubebuilder.io/version: v0.11.3
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpclusters.infrastructure.cluster.x-k8s.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: capg-webhook-service
+          namespace: capg-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPCluster
+    listKind: GCPClusterList
+    plural: gcpclusters
+    singular: gcpcluster
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPCluster belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: Cluster infrastructure is ready for GCE instances
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCP network the cluster is using
+      jsonPath: .spec.network.name
+      name: Network
+      type: string
+    - description: API Endpoint
+      jsonPath: .status.apiEndpoints[0]
+      name: Endpoint
+      priority: 1
+      type: string
+    name: v1alpha3
+    schema:
+      openAPIV3Schema:
+        description: GCPCluster is the Schema for the gcpclusters API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPClusterSpec defines the desired state of GCPCluster.
+            properties:
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  GCP resources managed by the GCP provider, in addition to the ones
+                  added by default.
+                type: object
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              failureDomains:
+                description: FailureDomains is an optional field which is used to
+                  assign selected availability zones to a cluster FailureDomains if
+                  empty, defaults to all the zones in the selected region and if specified
+                  would override the default zones.
+                items:
+                  type: string
+                type: array
+              network:
+                description: NetworkSpec encapsulates all things related to GCP network.
+                properties:
+                  autoCreateSubnetworks:
+                    description: "AutoCreateSubnetworks: When set to true, the VPC
+                      network is created in \"auto\" mode. When set to false, the
+                      VPC network is created in \"custom\" mode. \n An auto mode VPC
+                      network starts with one subnet per region. Each subnet has a
+                      predetermined range as described in Auto mode VPC network IP
+                      ranges. \n Defaults to true."
+                    type: boolean
+                  loadBalancerBackendPort:
+                    description: Allow for configuration of load balancer backend
+                      (useful for changing apiserver port)
+                    format: int32
+                    type: integer
+                  name:
+                    description: Name is the name of the network to be used.
+                    type: string
+                  subnets:
+                    description: Subnets configuration.
+                    items:
+                      description: SubnetSpec configures an GCP Subnet.
+                      properties:
+                        cidrBlock:
+                          description: CidrBlock is the range of internal addresses
+                            that are owned by this subnetwork. Provide this property
+                            when you create the subnetwork. For example, 10.0.0.0/8
+                            or 192.168.0.0/16. Ranges must be unique and non-overlapping
+                            within a network. Only IPv4 is supported. This field can
+                            be set only at resource creation time.
+                          type: string
+                        description:
+                          description: Description is an optional description associated
+                            with the resource.
+                          type: string
+                        name:
+                          description: Name defines a unique identifier to reference
+                            this resource.
+                          type: string
+                        privateGoogleAccess:
+                          description: PrivateGoogleAccess defines whether VMs in
+                            this subnet can access Google services without assigning
+                            external IP addresses
+                          type: boolean
+                        region:
+                          description: Region is the name of the region where the
+                            Subnetwork resides.
+                          type: string
+                        routeTableId:
+                          description: 'EnableFlowLogs: Whether to enable flow logging
+                            for this subnetwork. If this field is not explicitly set,
+                            it will not appear in get listings. If not set the default
+                            behavior is to disable flow logging.'
+                          type: boolean
+                        secondaryCidrBlocks:
+                          additionalProperties:
+                            type: string
+                          description: SecondaryCidrBlocks defines secondary CIDR
+                            ranges, from which secondary IP ranges of a VM may be
+                            allocated
+                          type: object
+                      type: object
+                    type: array
+                type: object
+              project:
+                description: Project is the name of the project to deploy the cluster
+                  to.
+                type: string
+              region:
+                description: The GCP Region the cluster lives in.
+                type: string
+            required:
+            - project
+            - region
+            type: object
+          status:
+            description: GCPClusterStatus defines the observed state of GCPCluster.
+            properties:
+              failureDomains:
+                additionalProperties:
+                  description: FailureDomainSpec is the Schema for Cluster API failure
+                    domains. It allows controllers to understand how many failure
+                    domains a cluster can optionally span across.
+                  properties:
+                    attributes:
+                      additionalProperties:
+                        type: string
+                      description: Attributes is a free form map of attributes an
+                        infrastructure provider might use or require.
+                      type: object
+                    controlPlane:
+                      description: ControlPlane determines if this failure domain
+                        is suitable for use by control plane machines.
+                      type: boolean
+                  type: object
+                description: FailureDomains is a slice of FailureDomains.
+                type: object
+              network:
+                description: Network encapsulates GCP networking resources.
+                properties:
+                  apiServerBackendService:
+                    description: APIServerBackendService is the full reference to
+                      the backend service created for the API Server.
+                    type: string
+                  apiServerForwardingRule:
+                    description: APIServerForwardingRule is the full reference to
+                      the forwarding rule created for the API Server.
+                    type: string
+                  apiServerHealthCheck:
+                    description: APIServerHealthCheck is the full reference to the
+                      health check created for the API Server.
+                    type: string
+                  apiServerInstanceGroups:
+                    additionalProperties:
+                      type: string
+                    description: APIServerInstanceGroups is a map from zone to the
+                      full reference to the instance groups created for the control
+                      plane nodes created in the same zone.
+                    type: object
+                  apiServerIpAddress:
+                    description: APIServerAddress is the IPV4 global address assigned
+                      to the load balancer created for the API Server.
+                    type: string
+                  apiServerTargetProxy:
+                    description: APIServerTargetProxy is the full reference to the
+                      target proxy created for the API Server.
+                    type: string
+                  firewallRules:
+                    additionalProperties:
+                      type: string
+                    description: FirewallRules is a map from the name of the rule
+                      to its full reference.
+                    type: object
+                  router:
+                    description: Router is the full reference to the router created
+                      within the network it'll contain the cloud nat gateway
+                    type: string
+                  selfLink:
+                    description: SelfLink is the link to the Network used for this
+                      cluster.
+                    type: string
+                type: object
+              ready:
+                description: Bastion Instance `json:"bastion,omitempty"`
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPCluster belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: Cluster infrastructure is ready for GCE instances
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCP network the cluster is using
+      jsonPath: .spec.network.name
+      name: Network
+      type: string
+    - description: API Endpoint
+      jsonPath: .status.apiEndpoints[0]
+      name: Endpoint
+      priority: 1
+      type: string
+    name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: GCPCluster is the Schema for the gcpclusters API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPClusterSpec defines the desired state of GCPCluster.
+            properties:
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  GCP resources managed by the GCP provider, in addition to the ones
+                  added by default.
+                type: object
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              failureDomains:
+                description: FailureDomains is an optional field which is used to
+                  assign selected availability zones to a cluster FailureDomains if
+                  empty, defaults to all the zones in the selected region and if specified
+                  would override the default zones.
+                items:
+                  type: string
+                type: array
+              network:
+                description: NetworkSpec encapsulates all things related to GCP network.
+                properties:
+                  autoCreateSubnetworks:
+                    description: "AutoCreateSubnetworks: When set to true, the VPC
+                      network is created in \"auto\" mode. When set to false, the
+                      VPC network is created in \"custom\" mode. \n An auto mode VPC
+                      network starts with one subnet per region. Each subnet has a
+                      predetermined range as described in Auto mode VPC network IP
+                      ranges. \n Defaults to true."
+                    type: boolean
+                  loadBalancerBackendPort:
+                    description: Allow for configuration of load balancer backend
+                      (useful for changing apiserver port)
+                    format: int32
+                    type: integer
+                  name:
+                    description: Name is the name of the network to be used.
+                    type: string
+                  subnets:
+                    description: Subnets configuration.
+                    items:
+                      description: SubnetSpec configures an GCP Subnet.
+                      properties:
+                        cidrBlock:
+                          description: CidrBlock is the range of internal addresses
+                            that are owned by this subnetwork. Provide this property
+                            when you create the subnetwork. For example, 10.0.0.0/8
+                            or 192.168.0.0/16. Ranges must be unique and non-overlapping
+                            within a network. Only IPv4 is supported. This field can
+                            be set only at resource creation time.
+                          type: string
+                        description:
+                          description: Description is an optional description associated
+                            with the resource.
+                          type: string
+                        name:
+                          description: Name defines a unique identifier to reference
+                            this resource.
+                          type: string
+                        privateGoogleAccess:
+                          description: PrivateGoogleAccess defines whether VMs in
+                            this subnet can access Google services without assigning
+                            external IP addresses
+                          type: boolean
+                        region:
+                          description: Region is the name of the region where the
+                            Subnetwork resides.
+                          type: string
+                        routeTableId:
+                          description: 'EnableFlowLogs: Whether to enable flow logging
+                            for this subnetwork. If this field is not explicitly set,
+                            it will not appear in get listings. If not set the default
+                            behavior is to disable flow logging.'
+                          type: boolean
+                        secondaryCidrBlocks:
+                          additionalProperties:
+                            type: string
+                          description: SecondaryCidrBlocks defines secondary CIDR
+                            ranges, from which secondary IP ranges of a VM may be
+                            allocated
+                          type: object
+                      type: object
+                    type: array
+                type: object
+              project:
+                description: Project is the name of the project to deploy the cluster
+                  to.
+                type: string
+              region:
+                description: The GCP Region the cluster lives in.
+                type: string
+            required:
+            - project
+            - region
+            type: object
+          status:
+            description: GCPClusterStatus defines the observed state of GCPCluster.
+            properties:
+              failureDomains:
+                additionalProperties:
+                  description: FailureDomainSpec is the Schema for Cluster API failure
+                    domains. It allows controllers to understand how many failure
+                    domains a cluster can optionally span across.
+                  properties:
+                    attributes:
+                      additionalProperties:
+                        type: string
+                      description: Attributes is a free form map of attributes an
+                        infrastructure provider might use or require.
+                      type: object
+                    controlPlane:
+                      description: ControlPlane determines if this failure domain
+                        is suitable for use by control plane machines.
+                      type: boolean
+                  type: object
+                description: FailureDomains is a slice of FailureDomains.
+                type: object
+              network:
+                description: Network encapsulates GCP networking resources.
+                properties:
+                  apiServerBackendService:
+                    description: APIServerBackendService is the full reference to
+                      the backend service created for the API Server.
+                    type: string
+                  apiServerForwardingRule:
+                    description: APIServerForwardingRule is the full reference to
+                      the forwarding rule created for the API Server.
+                    type: string
+                  apiServerHealthCheck:
+                    description: APIServerHealthCheck is the full reference to the
+                      health check created for the API Server.
+                    type: string
+                  apiServerInstanceGroups:
+                    additionalProperties:
+                      type: string
+                    description: APIServerInstanceGroups is a map from zone to the
+                      full reference to the instance groups created for the control
+                      plane nodes created in the same zone.
+                    type: object
+                  apiServerIpAddress:
+                    description: APIServerAddress is the IPV4 global address assigned
+                      to the load balancer created for the API Server.
+                    type: string
+                  apiServerTargetProxy:
+                    description: APIServerTargetProxy is the full reference to the
+                      target proxy created for the API Server.
+                    type: string
+                  firewallRules:
+                    additionalProperties:
+                      type: string
+                    description: FirewallRules is a map from the name of the rule
+                      to its full reference.
+                    type: object
+                  router:
+                    description: Router is the full reference to the router created
+                      within the network it'll contain the cloud nat gateway
+                    type: string
+                  selfLink:
+                    description: SelfLink is the link to the Network used for this
+                      cluster.
+                    type: string
+                type: object
+              ready:
+                description: Bastion Instance `json:"bastion,omitempty"`
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPCluster belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: Cluster infrastructure is ready for GCE instances
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCP network the cluster is using
+      jsonPath: .spec.network.name
+      name: Network
+      type: string
+    - description: API Endpoint
+      jsonPath: .status.apiEndpoints[0]
+      name: Endpoint
+      priority: 1
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPCluster is the Schema for the gcpclusters API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPClusterSpec defines the desired state of GCPCluster.
+            properties:
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  GCP resources managed by the GCP provider, in addition to the ones
+                  added by default.
+                type: object
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              credentialsRef:
+                description: CredentialsRef is a reference to a Secret that contains
+                  the credentials to use for provisioning this cluster. If not supplied
+                  then the credentials of the controller will be used.
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+              failureDomains:
+                description: FailureDomains is an optional field which is used to
+                  assign selected availability zones to a cluster FailureDomains if
+                  empty, defaults to all the zones in the selected region and if specified
+                  would override the default zones.
+                items:
+                  type: string
+                type: array
+              network:
+                description: NetworkSpec encapsulates all things related to GCP network.
+                properties:
+                  autoCreateSubnetworks:
+                    description: "AutoCreateSubnetworks: When set to true, the VPC
+                      network is created in \"auto\" mode. When set to false, the
+                      VPC network is created in \"custom\" mode. \n An auto mode VPC
+                      network starts with one subnet per region. Each subnet has a
+                      predetermined range as described in Auto mode VPC network IP
+                      ranges. \n Defaults to true."
+                    type: boolean
+                  loadBalancerBackendPort:
+                    description: Allow for configuration of load balancer backend
+                      (useful for changing apiserver port)
+                    format: int32
+                    type: integer
+                  name:
+                    description: Name is the name of the network to be used.
+                    type: string
+                  subnets:
+                    description: Subnets configuration.
+                    items:
+                      description: SubnetSpec configures an GCP Subnet.
+                      properties:
+                        cidrBlock:
+                          description: CidrBlock is the range of internal addresses
+                            that are owned by this subnetwork. Provide this property
+                            when you create the subnetwork. For example, 10.0.0.0/8
+                            or 192.168.0.0/16. Ranges must be unique and non-overlapping
+                            within a network. Only IPv4 is supported. This field can
+                            be set only at resource creation time.
+                          type: string
+                        description:
+                          description: Description is an optional description associated
+                            with the resource.
+                          type: string
+                        enableFlowLogs:
+                          description: 'EnableFlowLogs: Whether to enable flow logging
+                            for this subnetwork. If this field is not explicitly set,
+                            it will not appear in get listings. If not set the default
+                            behavior is to disable flow logging.'
+                          type: boolean
+                        name:
+                          description: Name defines a unique identifier to reference
+                            this resource.
+                          type: string
+                        privateGoogleAccess:
+                          description: PrivateGoogleAccess defines whether VMs in
+                            this subnet can access Google services without assigning
+                            external IP addresses
+                          type: boolean
+                        purpose:
+                          default: PRIVATE_RFC_1918
+                          description: "Purpose: The purpose of the resource. If unspecified,
+                            the purpose defaults to PRIVATE_RFC_1918. The enableFlowLogs
+                            field isn't supported with the purpose field set to INTERNAL_HTTPS_LOAD_BALANCER.
+                            \n Possible values: \"INTERNAL_HTTPS_LOAD_BALANCER\" -
+                            Subnet reserved for Internal HTTP(S) Load Balancing. \"PRIVATE\"
+                            - Regular user created or automatically created subnet.
+                            \"PRIVATE_RFC_1918\" - Regular user created or automatically
+                            created subnet. \"PRIVATE_SERVICE_CONNECT\" - Subnetworks
+                            created for Private Service Connect in the producer network.
+                            \"REGIONAL_MANAGED_PROXY\" - Subnetwork used for Regional
+                            Internal/External HTTP(S) Load Balancing."
+                          enum:
+                          - INTERNAL_HTTPS_LOAD_BALANCER
+                          - PRIVATE_RFC_1918
+                          - PRIVATE
+                          - PRIVATE_SERVICE_CONNECT
+                          - REGIONAL_MANAGED_PROXY
+                          type: string
+                        region:
+                          description: Region is the name of the region where the
+                            Subnetwork resides.
+                          type: string
+                        secondaryCidrBlocks:
+                          additionalProperties:
+                            type: string
+                          description: SecondaryCidrBlocks defines secondary CIDR
+                            ranges, from which secondary IP ranges of a VM may be
+                            allocated
+                          type: object
+                      type: object
+                    type: array
+                type: object
+              project:
+                description: Project is the name of the project to deploy the cluster
+                  to.
+                type: string
+              region:
+                description: The GCP Region the cluster lives in.
+                type: string
+            required:
+            - project
+            - region
+            type: object
+          status:
+            description: GCPClusterStatus defines the observed state of GCPCluster.
+            properties:
+              failureDomains:
+                additionalProperties:
+                  description: FailureDomainSpec is the Schema for Cluster API failure
+                    domains. It allows controllers to understand how many failure
+                    domains a cluster can optionally span across.
+                  properties:
+                    attributes:
+                      additionalProperties:
+                        type: string
+                      description: Attributes is a free form map of attributes an
+                        infrastructure provider might use or require.
+                      type: object
+                    controlPlane:
+                      description: ControlPlane determines if this failure domain
+                        is suitable for use by control plane machines.
+                      type: boolean
+                  type: object
+                description: FailureDomains is a slice of FailureDomains.
+                type: object
+              network:
+                description: Network encapsulates GCP networking resources.
+                properties:
+                  apiServerBackendService:
+                    description: APIServerBackendService is the full reference to
+                      the backend service created for the API Server.
+                    type: string
+                  apiServerForwardingRule:
+                    description: APIServerForwardingRule is the full reference to
+                      the forwarding rule created for the API Server.
+                    type: string
+                  apiServerHealthCheck:
+                    description: APIServerHealthCheck is the full reference to the
+                      health check created for the API Server.
+                    type: string
+                  apiServerInstanceGroups:
+                    additionalProperties:
+                      type: string
+                    description: APIServerInstanceGroups is a map from zone to the
+                      full reference to the instance groups created for the control
+                      plane nodes created in the same zone.
+                    type: object
+                  apiServerIpAddress:
+                    description: APIServerAddress is the IPV4 global address assigned
+                      to the load balancer created for the API Server.
+                    type: string
+                  apiServerTargetProxy:
+                    description: APIServerTargetProxy is the full reference to the
+                      target proxy created for the API Server.
+                    type: string
+                  firewallRules:
+                    additionalProperties:
+                      type: string
+                    description: FirewallRules is a map from the name of the rule
+                      to its full reference.
+                    type: object
+                  router:
+                    description: Router is the full reference to the router created
+                      within the network it'll contain the cloud nat gateway
+                    type: string
+                  selfLink:
+                    description: SelfLink is the link to the Network used for this
+                      cluster.
+                    type: string
+                type: object
+              ready:
+                description: Bastion Instance `json:"bastion,omitempty"`
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+    controller-gen.kubebuilder.io/version: v0.11.3
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpclustertemplates.infrastructure.cluster.x-k8s.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: capg-webhook-service
+          namespace: capg-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPClusterTemplate
+    listKind: GCPClusterTemplateList
+    plural: gcpclustertemplates
+    shortNames:
+    - gcpct
+    singular: gcpclustertemplate
+  scope: Namespaced
+  versions:
+  - name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: GCPClusterTemplate is the Schema for the gcpclustertemplates
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPClusterTemplateSpec defines the desired state of GCPClusterTemplate.
+            properties:
+              template:
+                description: GCPClusterTemplateResource contains spec for GCPClusterSpec.
+                properties:
+                  spec:
+                    description: GCPClusterSpec defines the desired state of GCPCluster.
+                    properties:
+                      additionalLabels:
+                        additionalProperties:
+                          type: string
+                        description: AdditionalLabels is an optional set of tags to
+                          add to GCP resources managed by the GCP provider, in addition
+                          to the ones added by default.
+                        type: object
+                      controlPlaneEndpoint:
+                        description: ControlPlaneEndpoint represents the endpoint
+                          used to communicate with the control plane.
+                        properties:
+                          host:
+                            description: The hostname on which the API server is serving.
+                            type: string
+                          port:
+                            description: The port on which the API server is serving.
+                            format: int32
+                            type: integer
+                        required:
+                        - host
+                        - port
+                        type: object
+                      failureDomains:
+                        description: FailureDomains is an optional field which is
+                          used to assign selected availability zones to a cluster
+                          FailureDomains if empty, defaults to all the zones in the
+                          selected region and if specified would override the default
+                          zones.
+                        items:
+                          type: string
+                        type: array
+                      network:
+                        description: NetworkSpec encapsulates all things related to
+                          GCP network.
+                        properties:
+                          autoCreateSubnetworks:
+                            description: "AutoCreateSubnetworks: When set to true,
+                              the VPC network is created in \"auto\" mode. When set
+                              to false, the VPC network is created in \"custom\" mode.
+                              \n An auto mode VPC network starts with one subnet per
+                              region. Each subnet has a predetermined range as described
+                              in Auto mode VPC network IP ranges. \n Defaults to true."
+                            type: boolean
+                          loadBalancerBackendPort:
+                            description: Allow for configuration of load balancer
+                              backend (useful for changing apiserver port)
+                            format: int32
+                            type: integer
+                          name:
+                            description: Name is the name of the network to be used.
+                            type: string
+                          subnets:
+                            description: Subnets configuration.
+                            items:
+                              description: SubnetSpec configures an GCP Subnet.
+                              properties:
+                                cidrBlock:
+                                  description: CidrBlock is the range of internal
+                                    addresses that are owned by this subnetwork. Provide
+                                    this property when you create the subnetwork.
+                                    For example, 10.0.0.0/8 or 192.168.0.0/16. Ranges
+                                    must be unique and non-overlapping within a network.
+                                    Only IPv4 is supported. This field can be set
+                                    only at resource creation time.
+                                  type: string
+                                description:
+                                  description: Description is an optional description
+                                    associated with the resource.
+                                  type: string
+                                name:
+                                  description: Name defines a unique identifier to
+                                    reference this resource.
+                                  type: string
+                                privateGoogleAccess:
+                                  description: PrivateGoogleAccess defines whether
+                                    VMs in this subnet can access Google services
+                                    without assigning external IP addresses
+                                  type: boolean
+                                region:
+                                  description: Region is the name of the region where
+                                    the Subnetwork resides.
+                                  type: string
+                                routeTableId:
+                                  description: 'EnableFlowLogs: Whether to enable
+                                    flow logging for this subnetwork. If this field
+                                    is not explicitly set, it will not appear in get
+                                    listings. If not set the default behavior is to
+                                    disable flow logging.'
+                                  type: boolean
+                                secondaryCidrBlocks:
+                                  additionalProperties:
+                                    type: string
+                                  description: SecondaryCidrBlocks defines secondary
+                                    CIDR ranges, from which secondary IP ranges of
+                                    a VM may be allocated
+                                  type: object
+                              type: object
+                            type: array
+                        type: object
+                      project:
+                        description: Project is the name of the project to deploy
+                          the cluster to.
+                        type: string
+                      region:
+                        description: The GCP Region the cluster lives in.
+                        type: string
+                    required:
+                    - project
+                    - region
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: false
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPClusterTemplate is the Schema for the gcpclustertemplates
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPClusterTemplateSpec defines the desired state of GCPClusterTemplate.
+            properties:
+              template:
+                description: GCPClusterTemplateResource contains spec for GCPClusterSpec.
+                properties:
+                  metadata:
+                    description: 'Standard object''s metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: 'Annotations is an unstructured key value map
+                          stored with a resource that may be set by external tools
+                          to store and retrieve arbitrary metadata. They are not queryable
+                          and should be preserved when modifying objects. More info:
+                          http://kubernetes.io/docs/user-guide/annotations'
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: 'Map of string keys and values that can be used
+                          to organize and categorize (scope and select) objects. May
+                          match selectors of replication controllers and services.
+                          More info: http://kubernetes.io/docs/user-guide/labels'
+                        type: object
+                    type: object
+                  spec:
+                    description: GCPClusterSpec defines the desired state of GCPCluster.
+                    properties:
+                      additionalLabels:
+                        additionalProperties:
+                          type: string
+                        description: AdditionalLabels is an optional set of tags to
+                          add to GCP resources managed by the GCP provider, in addition
+                          to the ones added by default.
+                        type: object
+                      controlPlaneEndpoint:
+                        description: ControlPlaneEndpoint represents the endpoint
+                          used to communicate with the control plane.
+                        properties:
+                          host:
+                            description: The hostname on which the API server is serving.
+                            type: string
+                          port:
+                            description: The port on which the API server is serving.
+                            format: int32
+                            type: integer
+                        required:
+                        - host
+                        - port
+                        type: object
+                      credentialsRef:
+                        description: CredentialsRef is a reference to a Secret that
+                          contains the credentials to use for provisioning this cluster.
+                          If not supplied then the credentials of the controller will
+                          be used.
+                        properties:
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                            type: string
+                          namespace:
+                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                            type: string
+                        required:
+                        - name
+                        - namespace
+                        type: object
+                      failureDomains:
+                        description: FailureDomains is an optional field which is
+                          used to assign selected availability zones to a cluster
+                          FailureDomains if empty, defaults to all the zones in the
+                          selected region and if specified would override the default
+                          zones.
+                        items:
+                          type: string
+                        type: array
+                      network:
+                        description: NetworkSpec encapsulates all things related to
+                          GCP network.
+                        properties:
+                          autoCreateSubnetworks:
+                            description: "AutoCreateSubnetworks: When set to true,
+                              the VPC network is created in \"auto\" mode. When set
+                              to false, the VPC network is created in \"custom\" mode.
+                              \n An auto mode VPC network starts with one subnet per
+                              region. Each subnet has a predetermined range as described
+                              in Auto mode VPC network IP ranges. \n Defaults to true."
+                            type: boolean
+                          loadBalancerBackendPort:
+                            description: Allow for configuration of load balancer
+                              backend (useful for changing apiserver port)
+                            format: int32
+                            type: integer
+                          name:
+                            description: Name is the name of the network to be used.
+                            type: string
+                          subnets:
+                            description: Subnets configuration.
+                            items:
+                              description: SubnetSpec configures an GCP Subnet.
+                              properties:
+                                cidrBlock:
+                                  description: CidrBlock is the range of internal
+                                    addresses that are owned by this subnetwork. Provide
+                                    this property when you create the subnetwork.
+                                    For example, 10.0.0.0/8 or 192.168.0.0/16. Ranges
+                                    must be unique and non-overlapping within a network.
+                                    Only IPv4 is supported. This field can be set
+                                    only at resource creation time.
+                                  type: string
+                                description:
+                                  description: Description is an optional description
+                                    associated with the resource.
+                                  type: string
+                                enableFlowLogs:
+                                  description: 'EnableFlowLogs: Whether to enable
+                                    flow logging for this subnetwork. If this field
+                                    is not explicitly set, it will not appear in get
+                                    listings. If not set the default behavior is to
+                                    disable flow logging.'
+                                  type: boolean
+                                name:
+                                  description: Name defines a unique identifier to
+                                    reference this resource.
+                                  type: string
+                                privateGoogleAccess:
+                                  description: PrivateGoogleAccess defines whether
+                                    VMs in this subnet can access Google services
+                                    without assigning external IP addresses
+                                  type: boolean
+                                purpose:
+                                  default: PRIVATE_RFC_1918
+                                  description: "Purpose: The purpose of the resource.
+                                    If unspecified, the purpose defaults to PRIVATE_RFC_1918.
+                                    The enableFlowLogs field isn't supported with
+                                    the purpose field set to INTERNAL_HTTPS_LOAD_BALANCER.
+                                    \n Possible values: \"INTERNAL_HTTPS_LOAD_BALANCER\"
+                                    - Subnet reserved for Internal HTTP(S) Load Balancing.
+                                    \"PRIVATE\" - Regular user created or automatically
+                                    created subnet. \"PRIVATE_RFC_1918\" - Regular
+                                    user created or automatically created subnet.
+                                    \"PRIVATE_SERVICE_CONNECT\" - Subnetworks created
+                                    for Private Service Connect in the producer network.
+                                    \"REGIONAL_MANAGED_PROXY\" - Subnetwork used for
+                                    Regional Internal/External HTTP(S) Load Balancing."
+                                  enum:
+                                  - INTERNAL_HTTPS_LOAD_BALANCER
+                                  - PRIVATE_RFC_1918
+                                  - PRIVATE
+                                  - PRIVATE_SERVICE_CONNECT
+                                  - REGIONAL_MANAGED_PROXY
+                                  type: string
+                                region:
+                                  description: Region is the name of the region where
+                                    the Subnetwork resides.
+                                  type: string
+                                secondaryCidrBlocks:
+                                  additionalProperties:
+                                    type: string
+                                  description: SecondaryCidrBlocks defines secondary
+                                    CIDR ranges, from which secondary IP ranges of
+                                    a VM may be allocated
+                                  type: object
+                              type: object
+                            type: array
+                        type: object
+                      project:
+                        description: Project is the name of the project to deploy
+                          the cluster to.
+                        type: string
+                      region:
+                        description: The GCP Region the cluster lives in.
+                        type: string
+                    required:
+                    - project
+                    - region
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: true
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+    controller-gen.kubebuilder.io/version: v0.11.3
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpmachines.infrastructure.cluster.x-k8s.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: capg-webhook-service
+          namespace: capg-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPMachine
+    listKind: GCPMachineList
+    plural: gcpmachines
+    singular: gcpmachine
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPMachine belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: GCE instance state
+      jsonPath: .status.instanceState
+      name: State
+      type: string
+    - description: Machine ready status
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCE instance ID
+      jsonPath: .spec.providerID
+      name: InstanceID
+      type: string
+    - description: Machine object which owns with this GCPMachine
+      jsonPath: .metadata.ownerReferences[?(@.kind=="Machine")].name
+      name: Machine
+      type: string
+    name: v1alpha3
+    schema:
+      openAPIV3Schema:
+        description: GCPMachine is the Schema for the gcpmachines API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineSpec defines the desired state of GCPMachine.
+            properties:
+              additionalDisks:
+                description: AdditionalDisks are optional non-boot attached disks.
+                items:
+                  description: AttachedDiskSpec degined GCP machine disk.
+                  properties:
+                    deviceType:
+                      description: 'DeviceType is a device type of the attached disk.
+                        Supported types of non-root attached volumes: 1. "pd-standard"
+                        - Standard (HDD) persistent disk 2. "pd-ssd" - SSD persistent
+                        disk 3. "local-ssd" - Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                        Default is "pd-standard".'
+                      type: string
+                    size:
+                      description: Size is the size of the disk in GBs. Defaults to
+                        30GB. For "local-ssd" size is always 375GB.
+                      format: int64
+                      type: integer
+                  type: object
+                type: array
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  an instance, in addition to the ones added by default by the GCP
+                  provider. If both the GCPCluster and the GCPMachine specify the
+                  same tag name with different values, the GCPMachine's value takes
+                  precedence.
+                type: object
+              additionalMetadata:
+                description: AdditionalMetadata is an optional set of metadata to
+                  add to an instance, in addition to the ones added by default by
+                  the GCP provider.
+                items:
+                  description: MetadataItem defines a single piece of metadata associated
+                    with an instance.
+                  properties:
+                    key:
+                      description: Key is the identifier for the metadata entry.
+                      type: string
+                    value:
+                      description: Value is the value of the metadata entry.
+                      type: string
+                  required:
+                  - key
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - key
+                x-kubernetes-list-type: map
+              additionalNetworkTags:
+                description: AdditionalNetworkTags is a list of network tags that
+                  should be applied to the instance. These tags are set in addition
+                  to any network tags defined at the cluster level or in the actuator.
+                items:
+                  type: string
+                type: array
+              image:
+                description: Image is the full reference to a valid image to be used
+                  for this machine. Takes precedence over ImageFamily.
+                type: string
+              imageFamily:
+                description: ImageFamily is the full reference to a valid image family
+                  to be used for this machine.
+                type: string
+              instanceType:
+                description: 'InstanceType is the type of instance to create. Example:
+                  n1.standard-2'
+                type: string
+              preemptible:
+                description: Preemptible defines if instance is preemptible
+                type: boolean
+              providerID:
+                description: ProviderID is the unique identifier as specified by the
+                  cloud provider.
+                type: string
+              publicIP:
+                description: PublicIP specifies whether the instance should get a
+                  public IP. Set this to true if you don't have a NAT instances or
+                  Cloud Nat setup.
+                type: boolean
+              rootDeviceSize:
+                description: RootDeviceSize is the size of the root volume in GB.
+                  Defaults to 30.
+                format: int64
+                type: integer
+              rootDeviceType:
+                description: 'RootDeviceType is the type of the root volume. Supported
+                  types of root volumes: 1. "pd-standard" - Standard (HDD) persistent
+                  disk 2. "pd-ssd" - SSD persistent disk Default is "pd-standard".'
+                type: string
+              serviceAccounts:
+                description: 'ServiceAccount specifies the service account email and
+                  which scopes to assign to the machine. Defaults to: email: "default",
+                  scope: []{compute.CloudPlatformScope}'
+                properties:
+                  email:
+                    description: 'Email: Email address of the service account.'
+                    type: string
+                  scopes:
+                    description: 'Scopes: The list of scopes to be made available
+                      for this service account.'
+                    items:
+                      type: string
+                    type: array
+                type: object
+              subnet:
+                description: Subnet is a reference to the subnetwork to use for this
+                  instance. If not specified, the first subnetwork retrieved from
+                  the Cluster Region and Network is picked.
+                type: string
+            required:
+            - instanceType
+            type: object
+          status:
+            description: GCPMachineStatus defines the observed state of GCPMachine.
+            properties:
+              addresses:
+                description: Addresses contains the GCP instance associated addresses.
+                items:
+                  description: NodeAddress contains information for the node's address.
+                  properties:
+                    address:
+                      description: The node address.
+                      type: string
+                    type:
+                      description: Node address type, one of Hostname, ExternalIP
+                        or InternalIP.
+                      type: string
+                  required:
+                  - address
+                  - type
+                  type: object
+                type: array
+              failureMessage:
+                description: "FailureMessage will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a more
+                  verbose string suitable for logging and human consumption. \n This
+                  field should not be set for transitive errors that a controller
+                  faces that are expected to be fixed automatically over time (like
+                  service outages), but instead indicate that something is fundamentally
+                  wrong with the Machine's spec or the configuration of the controller,
+                  and that manual intervention is required. Examples of terminal errors
+                  would be invalid combinations of settings in the spec, values that
+                  are unsupported by the controller, or the responsible controller
+                  itself being critically misconfigured. \n Any transient errors that
+                  occur during the reconciliation of Machines can be added as events
+                  to the Machine object and/or logged in the controller's output."
+                type: string
+              failureReason:
+                description: "FailureReason will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a succinct
+                  value suitable for machine interpretation. \n This field should
+                  not be set for transitive errors that a controller faces that are
+                  expected to be fixed automatically over time (like service outages),
+                  but instead indicate that something is fundamentally wrong with
+                  the Machine's spec or the configuration of the controller, and that
+                  manual intervention is required. Examples of terminal errors would
+                  be invalid combinations of settings in the spec, values that are
+                  unsupported by the controller, or the responsible controller itself
+                  being critically misconfigured. \n Any transient errors that occur
+                  during the reconciliation of Machines can be added as events to
+                  the Machine object and/or logged in the controller's output."
+                type: string
+              instanceState:
+                description: InstanceStatus is the status of the GCP instance for
+                  this machine.
+                type: string
+              ready:
+                description: Ready is true when the provider resource is ready.
+                type: boolean
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPMachine belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: GCE instance state
+      jsonPath: .status.instanceState
+      name: State
+      type: string
+    - description: Machine ready status
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCE instance ID
+      jsonPath: .spec.providerID
+      name: InstanceID
+      type: string
+    - description: Machine object which owns with this GCPMachine
+      jsonPath: .metadata.ownerReferences[?(@.kind=="Machine")].name
+      name: Machine
+      type: string
+    name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: GCPMachine is the Schema for the gcpmachines API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineSpec defines the desired state of GCPMachine.
+            properties:
+              additionalDisks:
+                description: AdditionalDisks are optional non-boot attached disks.
+                items:
+                  description: AttachedDiskSpec degined GCP machine disk.
+                  properties:
+                    deviceType:
+                      description: 'DeviceType is a device type of the attached disk.
+                        Supported types of non-root attached volumes: 1. "pd-standard"
+                        - Standard (HDD) persistent disk 2. "pd-ssd" - SSD persistent
+                        disk 3. "local-ssd" - Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                        Default is "pd-standard".'
+                      type: string
+                    size:
+                      description: Size is the size of the disk in GBs. Defaults to
+                        30GB. For "local-ssd" size is always 375GB.
+                      format: int64
+                      type: integer
+                  type: object
+                type: array
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  an instance, in addition to the ones added by default by the GCP
+                  provider. If both the GCPCluster and the GCPMachine specify the
+                  same tag name with different values, the GCPMachine's value takes
+                  precedence.
+                type: object
+              additionalMetadata:
+                description: AdditionalMetadata is an optional set of metadata to
+                  add to an instance, in addition to the ones added by default by
+                  the GCP provider.
+                items:
+                  description: MetadataItem defines a single piece of metadata associated
+                    with an instance.
+                  properties:
+                    key:
+                      description: Key is the identifier for the metadata entry.
+                      type: string
+                    value:
+                      description: Value is the value of the metadata entry.
+                      type: string
+                  required:
+                  - key
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - key
+                x-kubernetes-list-type: map
+              additionalNetworkTags:
+                description: AdditionalNetworkTags is a list of network tags that
+                  should be applied to the instance. These tags are set in addition
+                  to any network tags defined at the cluster level or in the actuator.
+                items:
+                  type: string
+                type: array
+              image:
+                description: Image is the full reference to a valid image to be used
+                  for this machine. Takes precedence over ImageFamily.
+                type: string
+              imageFamily:
+                description: ImageFamily is the full reference to a valid image family
+                  to be used for this machine.
+                type: string
+              instanceType:
+                description: 'InstanceType is the type of instance to create. Example:
+                  n1.standard-2'
+                type: string
+              preemptible:
+                description: Preemptible defines if instance is preemptible
+                type: boolean
+              providerID:
+                description: ProviderID is the unique identifier as specified by the
+                  cloud provider.
+                type: string
+              publicIP:
+                description: PublicIP specifies whether the instance should get a
+                  public IP. Set this to true if you don't have a NAT instances or
+                  Cloud Nat setup.
+                type: boolean
+              rootDeviceSize:
+                description: RootDeviceSize is the size of the root volume in GB.
+                  Defaults to 30.
+                format: int64
+                type: integer
+              rootDeviceType:
+                description: 'RootDeviceType is the type of the root volume. Supported
+                  types of root volumes: 1. "pd-standard" - Standard (HDD) persistent
+                  disk 2. "pd-ssd" - SSD persistent disk Default is "pd-standard".'
+                type: string
+              serviceAccounts:
+                description: 'ServiceAccount specifies the service account email and
+                  which scopes to assign to the machine. Defaults to: email: "default",
+                  scope: []{compute.CloudPlatformScope}'
+                properties:
+                  email:
+                    description: 'Email: Email address of the service account.'
+                    type: string
+                  scopes:
+                    description: 'Scopes: The list of scopes to be made available
+                      for this service account.'
+                    items:
+                      type: string
+                    type: array
+                type: object
+              subnet:
+                description: Subnet is a reference to the subnetwork to use for this
+                  instance. If not specified, the first subnetwork retrieved from
+                  the Cluster Region and Network is picked.
+                type: string
+            required:
+            - instanceType
+            type: object
+          status:
+            description: GCPMachineStatus defines the observed state of GCPMachine.
+            properties:
+              addresses:
+                description: Addresses contains the GCP instance associated addresses.
+                items:
+                  description: NodeAddress contains information for the node's address.
+                  properties:
+                    address:
+                      description: The node address.
+                      type: string
+                    type:
+                      description: Node address type, one of Hostname, ExternalIP
+                        or InternalIP.
+                      type: string
+                  required:
+                  - address
+                  - type
+                  type: object
+                type: array
+              failureMessage:
+                description: "FailureMessage will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a more
+                  verbose string suitable for logging and human consumption. \n This
+                  field should not be set for transitive errors that a controller
+                  faces that are expected to be fixed automatically over time (like
+                  service outages), but instead indicate that something is fundamentally
+                  wrong with the Machine's spec or the configuration of the controller,
+                  and that manual intervention is required. Examples of terminal errors
+                  would be invalid combinations of settings in the spec, values that
+                  are unsupported by the controller, or the responsible controller
+                  itself being critically misconfigured. \n Any transient errors that
+                  occur during the reconciliation of Machines can be added as events
+                  to the Machine object and/or logged in the controller's output."
+                type: string
+              failureReason:
+                description: "FailureReason will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a succinct
+                  value suitable for machine interpretation. \n This field should
+                  not be set for transitive errors that a controller faces that are
+                  expected to be fixed automatically over time (like service outages),
+                  but instead indicate that something is fundamentally wrong with
+                  the Machine's spec or the configuration of the controller, and that
+                  manual intervention is required. Examples of terminal errors would
+                  be invalid combinations of settings in the spec, values that are
+                  unsupported by the controller, or the responsible controller itself
+                  being critically misconfigured. \n Any transient errors that occur
+                  during the reconciliation of Machines can be added as events to
+                  the Machine object and/or logged in the controller's output."
+                type: string
+              instanceState:
+                description: InstanceStatus is the status of the GCP instance for
+                  this machine.
+                type: string
+              ready:
+                description: Ready is true when the provider resource is ready.
+                type: boolean
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPMachine belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: GCE instance state
+      jsonPath: .status.instanceState
+      name: State
+      type: string
+    - description: Machine ready status
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCE instance ID
+      jsonPath: .spec.providerID
+      name: InstanceID
+      type: string
+    - description: Machine object which owns with this GCPMachine
+      jsonPath: .metadata.ownerReferences[?(@.kind=="Machine")].name
+      name: Machine
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPMachine is the Schema for the gcpmachines API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineSpec defines the desired state of GCPMachine.
+            properties:
+              additionalDisks:
+                description: AdditionalDisks are optional non-boot attached disks.
+                items:
+                  description: AttachedDiskSpec degined GCP machine disk.
+                  properties:
+                    deviceType:
+                      description: 'DeviceType is a device type of the attached disk.
+                        Supported types of non-root attached volumes: 1. "pd-standard"
+                        - Standard (HDD) persistent disk 2. "pd-ssd" - SSD persistent
+                        disk 3. "local-ssd" - Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                        Default is "pd-standard".'
+                      type: string
+                    size:
+                      description: Size is the size of the disk in GBs. Defaults to
+                        30GB. For "local-ssd" size is always 375GB.
+                      format: int64
+                      type: integer
+                  type: object
+                type: array
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  an instance, in addition to the ones added by default by the GCP
+                  provider. If both the GCPCluster and the GCPMachine specify the
+                  same tag name with different values, the GCPMachine's value takes
+                  precedence.
+                type: object
+              additionalMetadata:
+                description: AdditionalMetadata is an optional set of metadata to
+                  add to an instance, in addition to the ones added by default by
+                  the GCP provider.
+                items:
+                  description: MetadataItem defines a single piece of metadata associated
+                    with an instance.
+                  properties:
+                    key:
+                      description: Key is the identifier for the metadata entry.
+                      type: string
+                    value:
+                      description: Value is the value of the metadata entry.
+                      type: string
+                  required:
+                  - key
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - key
+                x-kubernetes-list-type: map
+              additionalNetworkTags:
+                description: AdditionalNetworkTags is a list of network tags that
+                  should be applied to the instance. These tags are set in addition
+                  to any network tags defined at the cluster level or in the actuator.
+                items:
+                  type: string
+                type: array
+              confidentialCompute:
+                description: ConfidentialCompute Defines whether the instance should
+                  have confidential compute enabled. If enabled OnHostMaintenance
+                  is required to be set to "Terminate". If omitted, the platform chooses
+                  a default, which is subject to change over time, currently that
+                  default is false.
+                enum:
+                - Enabled
+                - Disabled
+                type: string
+              image:
+                description: Image is the full reference to a valid image to be used
+                  for this machine. Takes precedence over ImageFamily.
+                type: string
+              imageFamily:
+                description: ImageFamily is the full reference to a valid image family
+                  to be used for this machine.
+                type: string
+              instanceType:
+                description: 'InstanceType is the type of instance to create. Example:
+                  n1.standard-2'
+                type: string
+              ipForwarding:
+                default: Enabled
+                description: IPForwarding Allows this instance to send and receive
+                  packets with non-matching destination or source IPs. This is required
+                  if you plan to use this instance to forward routes. Defaults to
+                  enabled.
+                enum:
+                - Enabled
+                - Disabled
+                type: string
+              onHostMaintenance:
+                description: OnHostMaintenance determines the behavior when a maintenance
+                  event occurs that might cause the instance to reboot. If omitted,
+                  the platform chooses a default, which is subject to change over
+                  time, currently that default is "Migrate".
+                enum:
+                - Migrate
+                - Terminate
+                type: string
+              preemptible:
+                description: Preemptible defines if instance is preemptible
+                type: boolean
+              providerID:
+                description: ProviderID is the unique identifier as specified by the
+                  cloud provider.
+                type: string
+              publicIP:
+                description: PublicIP specifies whether the instance should get a
+                  public IP. Set this to true if you don't have a NAT instances or
+                  Cloud Nat setup.
+                type: boolean
+              rootDeviceSize:
+                description: RootDeviceSize is the size of the root volume in GB.
+                  Defaults to 30.
+                format: int64
+                type: integer
+              rootDeviceType:
+                description: 'RootDeviceType is the type of the root volume. Supported
+                  types of root volumes: 1. "pd-standard" - Standard (HDD) persistent
+                  disk 2. "pd-ssd" - SSD persistent disk Default is "pd-standard".'
+                type: string
+              serviceAccounts:
+                description: 'ServiceAccount specifies the service account email and
+                  which scopes to assign to the machine. Defaults to: email: "default",
+                  scope: []{compute.CloudPlatformScope}'
+                properties:
+                  email:
+                    description: 'Email: Email address of the service account.'
+                    type: string
+                  scopes:
+                    description: 'Scopes: The list of scopes to be made available
+                      for this service account.'
+                    items:
+                      type: string
+                    type: array
+                type: object
+              shieldedInstanceConfig:
+                description: ShieldedInstanceConfig is the Shielded VM configuration
+                  for this machine
+                properties:
+                  integrityMonitoring:
+                    description: IntegrityMonitoring determines whether the instance
+                      should have integrity monitoring that verify the runtime boot
+                      integrity. Compares the most recent boot measurements to the
+                      integrity policy baseline and return a pair of pass/fail results
+                      depending on whether they match or not. If omitted, the platform
+                      chooses a default, which is subject to change over time, currently
+                      that default is Enabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  secureBoot:
+                    description: SecureBoot Defines whether the instance should have
+                      secure boot enabled. Secure Boot verify the digital signature
+                      of all boot components, and halting the boot process if signature
+                      verification fails. If omitted, the platform chooses a default,
+                      which is subject to change over time, currently that default
+                      is Disabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  virtualizedTrustedPlatformModule:
+                    description: VirtualizedTrustedPlatformModule enable virtualized
+                      trusted platform module measurements to create a known good
+                      boot integrity policy baseline. The integrity policy baseline
+                      is used for comparison with measurements from subsequent VM
+                      boots to determine if anything has changed. If omitted, the
+                      platform chooses a default, which is subject to change over
+                      time, currently that default is Enabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                type: object
+              subnet:
+                description: Subnet is a reference to the subnetwork to use for this
+                  instance. If not specified, the first subnetwork retrieved from
+                  the Cluster Region and Network is picked.
+                type: string
+            required:
+            - instanceType
+            type: object
+          status:
+            description: GCPMachineStatus defines the observed state of GCPMachine.
+            properties:
+              addresses:
+                description: Addresses contains the GCP instance associated addresses.
+                items:
+                  description: NodeAddress contains information for the node's address.
+                  properties:
+                    address:
+                      description: The node address.
+                      type: string
+                    type:
+                      description: Node address type, one of Hostname, ExternalIP
+                        or InternalIP.
+                      type: string
+                  required:
+                  - address
+                  - type
+                  type: object
+                type: array
+              failureMessage:
+                description: "FailureMessage will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a more
+                  verbose string suitable for logging and human consumption. \n This
+                  field should not be set for transitive errors that a controller
+                  faces that are expected to be fixed automatically over time (like
+                  service outages), but instead indicate that something is fundamentally
+                  wrong with the Machine's spec or the configuration of the controller,
+                  and that manual intervention is required. Examples of terminal errors
+                  would be invalid combinations of settings in the spec, values that
+                  are unsupported by the controller, or the responsible controller
+                  itself being critically misconfigured. \n Any transient errors that
+                  occur during the reconciliation of Machines can be added as events
+                  to the Machine object and/or logged in the controller's output."
+                type: string
+              failureReason:
+                description: "FailureReason will be set in the event that there is
+                  a terminal problem reconciling the Machine and will contain a succinct
+                  value suitable for machine interpretation. \n This field should
+                  not be set for transitive errors that a controller faces that are
+                  expected to be fixed automatically over time (like service outages),
+                  but instead indicate that something is fundamentally wrong with
+                  the Machine's spec or the configuration of the controller, and that
+                  manual intervention is required. Examples of terminal errors would
+                  be invalid combinations of settings in the spec, values that are
+                  unsupported by the controller, or the responsible controller itself
+                  being critically misconfigured. \n Any transient errors that occur
+                  during the reconciliation of Machines can be added as events to
+                  the Machine object and/or logged in the controller's output."
+                type: string
+              instanceState:
+                description: InstanceStatus is the status of the GCP instance for
+                  this machine.
+                type: string
+              ready:
+                description: Ready is true when the provider resource is ready.
+                type: boolean
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+    controller-gen.kubebuilder.io/version: v0.11.3
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpmachinetemplates.infrastructure.cluster.x-k8s.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: capg-webhook-service
+          namespace: capg-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPMachineTemplate
+    listKind: GCPMachineTemplateList
+    plural: gcpmachinetemplates
+    singular: gcpmachinetemplate
+  scope: Namespaced
+  versions:
+  - name: v1alpha3
+    schema:
+      openAPIV3Schema:
+        description: GCPMachineTemplate is the Schema for the gcpmachinetemplates
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineTemplateSpec defines the desired state of GCPMachineTemplate.
+            properties:
+              template:
+                description: GCPMachineTemplateResource describes the data needed
+                  to create am GCPMachine from a template.
+                properties:
+                  spec:
+                    description: Spec is the specification of the desired behavior
+                      of the machine.
+                    properties:
+                      additionalDisks:
+                        description: AdditionalDisks are optional non-boot attached
+                          disks.
+                        items:
+                          description: AttachedDiskSpec degined GCP machine disk.
+                          properties:
+                            deviceType:
+                              description: 'DeviceType is a device type of the attached
+                                disk. Supported types of non-root attached volumes:
+                                1. "pd-standard" - Standard (HDD) persistent disk
+                                2. "pd-ssd" - SSD persistent disk 3. "local-ssd" -
+                                Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                                Default is "pd-standard".'
+                              type: string
+                            size:
+                              description: Size is the size of the disk in GBs. Defaults
+                                to 30GB. For "local-ssd" size is always 375GB.
+                              format: int64
+                              type: integer
+                          type: object
+                        type: array
+                      additionalLabels:
+                        additionalProperties:
+                          type: string
+                        description: AdditionalLabels is an optional set of tags to
+                          add to an instance, in addition to the ones added by default
+                          by the GCP provider. If both the GCPCluster and the GCPMachine
+                          specify the same tag name with different values, the GCPMachine's
+                          value takes precedence.
+                        type: object
+                      additionalMetadata:
+                        description: AdditionalMetadata is an optional set of metadata
+                          to add to an instance, in addition to the ones added by
+                          default by the GCP provider.
+                        items:
+                          description: MetadataItem defines a single piece of metadata
+                            associated with an instance.
+                          properties:
+                            key:
+                              description: Key is the identifier for the metadata
+                                entry.
+                              type: string
+                            value:
+                              description: Value is the value of the metadata entry.
+                              type: string
+                          required:
+                          - key
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - key
+                        x-kubernetes-list-type: map
+                      additionalNetworkTags:
+                        description: AdditionalNetworkTags is a list of network tags
+                          that should be applied to the instance. These tags are set
+                          in addition to any network tags defined at the cluster level
+                          or in the actuator.
+                        items:
+                          type: string
+                        type: array
+                      image:
+                        description: Image is the full reference to a valid image
+                          to be used for this machine. Takes precedence over ImageFamily.
+                        type: string
+                      imageFamily:
+                        description: ImageFamily is the full reference to a valid
+                          image family to be used for this machine.
+                        type: string
+                      instanceType:
+                        description: 'InstanceType is the type of instance to create.
+                          Example: n1.standard-2'
+                        type: string
+                      preemptible:
+                        description: Preemptible defines if instance is preemptible
+                        type: boolean
+                      providerID:
+                        description: ProviderID is the unique identifier as specified
+                          by the cloud provider.
+                        type: string
+                      publicIP:
+                        description: PublicIP specifies whether the instance should
+                          get a public IP. Set this to true if you don't have a NAT
+                          instances or Cloud Nat setup.
+                        type: boolean
+                      rootDeviceSize:
+                        description: RootDeviceSize is the size of the root volume
+                          in GB. Defaults to 30.
+                        format: int64
+                        type: integer
+                      rootDeviceType:
+                        description: 'RootDeviceType is the type of the root volume.
+                          Supported types of root volumes: 1. "pd-standard" - Standard
+                          (HDD) persistent disk 2. "pd-ssd" - SSD persistent disk
+                          Default is "pd-standard".'
+                        type: string
+                      serviceAccounts:
+                        description: 'ServiceAccount specifies the service account
+                          email and which scopes to assign to the machine. Defaults
+                          to: email: "default", scope: []{compute.CloudPlatformScope}'
+                        properties:
+                          email:
+                            description: 'Email: Email address of the service account.'
+                            type: string
+                          scopes:
+                            description: 'Scopes: The list of scopes to be made available
+                              for this service account.'
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      subnet:
+                        description: Subnet is a reference to the subnetwork to use
+                          for this instance. If not specified, the first subnetwork
+                          retrieved from the Cluster Region and Network is picked.
+                        type: string
+                    required:
+                    - instanceType
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: false
+  - name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: GCPMachineTemplate is the Schema for the gcpmachinetemplates
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineTemplateSpec defines the desired state of GCPMachineTemplate.
+            properties:
+              template:
+                description: GCPMachineTemplateResource describes the data needed
+                  to create am GCPMachine from a template.
+                properties:
+                  spec:
+                    description: Spec is the specification of the desired behavior
+                      of the machine.
+                    properties:
+                      additionalDisks:
+                        description: AdditionalDisks are optional non-boot attached
+                          disks.
+                        items:
+                          description: AttachedDiskSpec degined GCP machine disk.
+                          properties:
+                            deviceType:
+                              description: 'DeviceType is a device type of the attached
+                                disk. Supported types of non-root attached volumes:
+                                1. "pd-standard" - Standard (HDD) persistent disk
+                                2. "pd-ssd" - SSD persistent disk 3. "local-ssd" -
+                                Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                                Default is "pd-standard".'
+                              type: string
+                            size:
+                              description: Size is the size of the disk in GBs. Defaults
+                                to 30GB. For "local-ssd" size is always 375GB.
+                              format: int64
+                              type: integer
+                          type: object
+                        type: array
+                      additionalLabels:
+                        additionalProperties:
+                          type: string
+                        description: AdditionalLabels is an optional set of tags to
+                          add to an instance, in addition to the ones added by default
+                          by the GCP provider. If both the GCPCluster and the GCPMachine
+                          specify the same tag name with different values, the GCPMachine's
+                          value takes precedence.
+                        type: object
+                      additionalMetadata:
+                        description: AdditionalMetadata is an optional set of metadata
+                          to add to an instance, in addition to the ones added by
+                          default by the GCP provider.
+                        items:
+                          description: MetadataItem defines a single piece of metadata
+                            associated with an instance.
+                          properties:
+                            key:
+                              description: Key is the identifier for the metadata
+                                entry.
+                              type: string
+                            value:
+                              description: Value is the value of the metadata entry.
+                              type: string
+                          required:
+                          - key
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - key
+                        x-kubernetes-list-type: map
+                      additionalNetworkTags:
+                        description: AdditionalNetworkTags is a list of network tags
+                          that should be applied to the instance. These tags are set
+                          in addition to any network tags defined at the cluster level
+                          or in the actuator.
+                        items:
+                          type: string
+                        type: array
+                      image:
+                        description: Image is the full reference to a valid image
+                          to be used for this machine. Takes precedence over ImageFamily.
+                        type: string
+                      imageFamily:
+                        description: ImageFamily is the full reference to a valid
+                          image family to be used for this machine.
+                        type: string
+                      instanceType:
+                        description: 'InstanceType is the type of instance to create.
+                          Example: n1.standard-2'
+                        type: string
+                      preemptible:
+                        description: Preemptible defines if instance is preemptible
+                        type: boolean
+                      providerID:
+                        description: ProviderID is the unique identifier as specified
+                          by the cloud provider.
+                        type: string
+                      publicIP:
+                        description: PublicIP specifies whether the instance should
+                          get a public IP. Set this to true if you don't have a NAT
+                          instances or Cloud Nat setup.
+                        type: boolean
+                      rootDeviceSize:
+                        description: RootDeviceSize is the size of the root volume
+                          in GB. Defaults to 30.
+                        format: int64
+                        type: integer
+                      rootDeviceType:
+                        description: 'RootDeviceType is the type of the root volume.
+                          Supported types of root volumes: 1. "pd-standard" - Standard
+                          (HDD) persistent disk 2. "pd-ssd" - SSD persistent disk
+                          Default is "pd-standard".'
+                        type: string
+                      serviceAccounts:
+                        description: 'ServiceAccount specifies the service account
+                          email and which scopes to assign to the machine. Defaults
+                          to: email: "default", scope: []{compute.CloudPlatformScope}'
+                        properties:
+                          email:
+                            description: 'Email: Email address of the service account.'
+                            type: string
+                          scopes:
+                            description: 'Scopes: The list of scopes to be made available
+                              for this service account.'
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      subnet:
+                        description: Subnet is a reference to the subnetwork to use
+                          for this instance. If not specified, the first subnetwork
+                          retrieved from the Cluster Region and Network is picked.
+                        type: string
+                    required:
+                    - instanceType
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: false
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPMachineTemplate is the Schema for the gcpmachinetemplates
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPMachineTemplateSpec defines the desired state of GCPMachineTemplate.
+            properties:
+              template:
+                description: GCPMachineTemplateResource describes the data needed
+                  to create am GCPMachine from a template.
+                properties:
+                  metadata:
+                    description: 'Standard object''s metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: 'Annotations is an unstructured key value map
+                          stored with a resource that may be set by external tools
+                          to store and retrieve arbitrary metadata. They are not queryable
+                          and should be preserved when modifying objects. More info:
+                          http://kubernetes.io/docs/user-guide/annotations'
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: 'Map of string keys and values that can be used
+                          to organize and categorize (scope and select) objects. May
+                          match selectors of replication controllers and services.
+                          More info: http://kubernetes.io/docs/user-guide/labels'
+                        type: object
+                    type: object
+                  spec:
+                    description: Spec is the specification of the desired behavior
+                      of the machine.
+                    properties:
+                      additionalDisks:
+                        description: AdditionalDisks are optional non-boot attached
+                          disks.
+                        items:
+                          description: AttachedDiskSpec degined GCP machine disk.
+                          properties:
+                            deviceType:
+                              description: 'DeviceType is a device type of the attached
+                                disk. Supported types of non-root attached volumes:
+                                1. "pd-standard" - Standard (HDD) persistent disk
+                                2. "pd-ssd" - SSD persistent disk 3. "local-ssd" -
+                                Local SSD disk (https://cloud.google.com/compute/docs/disks/local-ssd).
+                                Default is "pd-standard".'
+                              type: string
+                            size:
+                              description: Size is the size of the disk in GBs. Defaults
+                                to 30GB. For "local-ssd" size is always 375GB.
+                              format: int64
+                              type: integer
+                          type: object
+                        type: array
+                      additionalLabels:
+                        additionalProperties:
+                          type: string
+                        description: AdditionalLabels is an optional set of tags to
+                          add to an instance, in addition to the ones added by default
+                          by the GCP provider. If both the GCPCluster and the GCPMachine
+                          specify the same tag name with different values, the GCPMachine's
+                          value takes precedence.
+                        type: object
+                      additionalMetadata:
+                        description: AdditionalMetadata is an optional set of metadata
+                          to add to an instance, in addition to the ones added by
+                          default by the GCP provider.
+                        items:
+                          description: MetadataItem defines a single piece of metadata
+                            associated with an instance.
+                          properties:
+                            key:
+                              description: Key is the identifier for the metadata
+                                entry.
+                              type: string
+                            value:
+                              description: Value is the value of the metadata entry.
+                              type: string
+                          required:
+                          - key
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - key
+                        x-kubernetes-list-type: map
+                      additionalNetworkTags:
+                        description: AdditionalNetworkTags is a list of network tags
+                          that should be applied to the instance. These tags are set
+                          in addition to any network tags defined at the cluster level
+                          or in the actuator.
+                        items:
+                          type: string
+                        type: array
+                      confidentialCompute:
+                        description: ConfidentialCompute Defines whether the instance
+                          should have confidential compute enabled. If enabled OnHostMaintenance
+                          is required to be set to "Terminate". If omitted, the platform
+                          chooses a default, which is subject to change over time,
+                          currently that default is false.
+                        enum:
+                        - Enabled
+                        - Disabled
+                        type: string
+                      image:
+                        description: Image is the full reference to a valid image
+                          to be used for this machine. Takes precedence over ImageFamily.
+                        type: string
+                      imageFamily:
+                        description: ImageFamily is the full reference to a valid
+                          image family to be used for this machine.
+                        type: string
+                      instanceType:
+                        description: 'InstanceType is the type of instance to create.
+                          Example: n1.standard-2'
+                        type: string
+                      ipForwarding:
+                        default: Enabled
+                        description: IPForwarding Allows this instance to send and
+                          receive packets with non-matching destination or source
+                          IPs. This is required if you plan to use this instance to
+                          forward routes. Defaults to enabled.
+                        enum:
+                        - Enabled
+                        - Disabled
+                        type: string
+                      onHostMaintenance:
+                        description: OnHostMaintenance determines the behavior when
+                          a maintenance event occurs that might cause the instance
+                          to reboot. If omitted, the platform chooses a default, which
+                          is subject to change over time, currently that default is
+                          "Migrate".
+                        enum:
+                        - Migrate
+                        - Terminate
+                        type: string
+                      preemptible:
+                        description: Preemptible defines if instance is preemptible
+                        type: boolean
+                      providerID:
+                        description: ProviderID is the unique identifier as specified
+                          by the cloud provider.
+                        type: string
+                      publicIP:
+                        description: PublicIP specifies whether the instance should
+                          get a public IP. Set this to true if you don't have a NAT
+                          instances or Cloud Nat setup.
+                        type: boolean
+                      rootDeviceSize:
+                        description: RootDeviceSize is the size of the root volume
+                          in GB. Defaults to 30.
+                        format: int64
+                        type: integer
+                      rootDeviceType:
+                        description: 'RootDeviceType is the type of the root volume.
+                          Supported types of root volumes: 1. "pd-standard" - Standard
+                          (HDD) persistent disk 2. "pd-ssd" - SSD persistent disk
+                          Default is "pd-standard".'
+                        type: string
+                      serviceAccounts:
+                        description: 'ServiceAccount specifies the service account
+                          email and which scopes to assign to the machine. Defaults
+                          to: email: "default", scope: []{compute.CloudPlatformScope}'
+                        properties:
+                          email:
+                            description: 'Email: Email address of the service account.'
+                            type: string
+                          scopes:
+                            description: 'Scopes: The list of scopes to be made available
+                              for this service account.'
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      shieldedInstanceConfig:
+                        description: ShieldedInstanceConfig is the Shielded VM configuration
+                          for this machine
+                        properties:
+                          integrityMonitoring:
+                            description: IntegrityMonitoring determines whether the
+                              instance should have integrity monitoring that verify
+                              the runtime boot integrity. Compares the most recent
+                              boot measurements to the integrity policy baseline and
+                              return a pair of pass/fail results depending on whether
+                              they match or not. If omitted, the platform chooses
+                              a default, which is subject to change over time, currently
+                              that default is Enabled.
+                            enum:
+                            - Enabled
+                            - Disabled
+                            type: string
+                          secureBoot:
+                            description: SecureBoot Defines whether the instance should
+                              have secure boot enabled. Secure Boot verify the digital
+                              signature of all boot components, and halting the boot
+                              process if signature verification fails. If omitted,
+                              the platform chooses a default, which is subject to
+                              change over time, currently that default is Disabled.
+                            enum:
+                            - Enabled
+                            - Disabled
+                            type: string
+                          virtualizedTrustedPlatformModule:
+                            description: VirtualizedTrustedPlatformModule enable virtualized
+                              trusted platform module measurements to create a known
+                              good boot integrity policy baseline. The integrity policy
+                              baseline is used for comparison with measurements from
+                              subsequent VM boots to determine if anything has changed.
+                              If omitted, the platform chooses a default, which is
+                              subject to change over time, currently that default
+                              is Enabled.
+                            enum:
+                            - Enabled
+                            - Disabled
+                            type: string
+                        type: object
+                      subnet:
+                        description: Subnet is a reference to the subnetwork to use
+                          for this instance. If not specified, the first subnetwork
+                          retrieved from the Cluster Region and Network is picked.
+                        type: string
+                    required:
+                    - instanceType
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: true
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpmanagedclusters.infrastructure.cluster.x-k8s.io
+spec:
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPManagedCluster
+    listKind: GCPManagedClusterList
+    plural: gcpmanagedclusters
+    shortNames:
+    - gcpmc
+    singular: gcpmanagedcluster
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPCluster belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: Cluster infrastructure is ready for GCE instances
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: GCP network the cluster is using
+      jsonPath: .spec.network.name
+      name: Network
+      type: string
+    - description: API Endpoint
+      jsonPath: .status.apiEndpoints[0]
+      name: Endpoint
+      priority: 1
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPManagedCluster is the Schema for the gcpmanagedclusters API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPManagedClusterSpec defines the desired state of GCPManagedCluster.
+            properties:
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  GCP resources managed by the GCP provider, in addition to the ones
+                  added by default.
+                type: object
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              credentialsRef:
+                description: CredentialsRef is a reference to a Secret that contains
+                  the credentials to use for provisioning this cluster. If not supplied
+                  then the credentials of the controller will be used.
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+              network:
+                description: NetworkSpec encapsulates all things related to the GCP
+                  network.
+                properties:
+                  autoCreateSubnetworks:
+                    description: "AutoCreateSubnetworks: When set to true, the VPC
+                      network is created in \"auto\" mode. When set to false, the
+                      VPC network is created in \"custom\" mode. \n An auto mode VPC
+                      network starts with one subnet per region. Each subnet has a
+                      predetermined range as described in Auto mode VPC network IP
+                      ranges. \n Defaults to true."
+                    type: boolean
+                  loadBalancerBackendPort:
+                    description: Allow for configuration of load balancer backend
+                      (useful for changing apiserver port)
+                    format: int32
+                    type: integer
+                  name:
+                    description: Name is the name of the network to be used.
+                    type: string
+                  subnets:
+                    description: Subnets configuration.
+                    items:
+                      description: SubnetSpec configures an GCP Subnet.
+                      properties:
+                        cidrBlock:
+                          description: CidrBlock is the range of internal addresses
+                            that are owned by this subnetwork. Provide this property
+                            when you create the subnetwork. For example, 10.0.0.0/8
+                            or 192.168.0.0/16. Ranges must be unique and non-overlapping
+                            within a network. Only IPv4 is supported. This field can
+                            be set only at resource creation time.
+                          type: string
+                        description:
+                          description: Description is an optional description associated
+                            with the resource.
+                          type: string
+                        enableFlowLogs:
+                          description: 'EnableFlowLogs: Whether to enable flow logging
+                            for this subnetwork. If this field is not explicitly set,
+                            it will not appear in get listings. If not set the default
+                            behavior is to disable flow logging.'
+                          type: boolean
+                        name:
+                          description: Name defines a unique identifier to reference
+                            this resource.
+                          type: string
+                        privateGoogleAccess:
+                          description: PrivateGoogleAccess defines whether VMs in
+                            this subnet can access Google services without assigning
+                            external IP addresses
+                          type: boolean
+                        purpose:
+                          default: PRIVATE_RFC_1918
+                          description: "Purpose: The purpose of the resource. If unspecified,
+                            the purpose defaults to PRIVATE_RFC_1918. The enableFlowLogs
+                            field isn't supported with the purpose field set to INTERNAL_HTTPS_LOAD_BALANCER.
+                            \n Possible values: \"INTERNAL_HTTPS_LOAD_BALANCER\" -
+                            Subnet reserved for Internal HTTP(S) Load Balancing. \"PRIVATE\"
+                            - Regular user created or automatically created subnet.
+                            \"PRIVATE_RFC_1918\" - Regular user created or automatically
+                            created subnet. \"PRIVATE_SERVICE_CONNECT\" - Subnetworks
+                            created for Private Service Connect in the producer network.
+                            \"REGIONAL_MANAGED_PROXY\" - Subnetwork used for Regional
+                            Internal/External HTTP(S) Load Balancing."
+                          enum:
+                          - INTERNAL_HTTPS_LOAD_BALANCER
+                          - PRIVATE_RFC_1918
+                          - PRIVATE
+                          - PRIVATE_SERVICE_CONNECT
+                          - REGIONAL_MANAGED_PROXY
+                          type: string
+                        region:
+                          description: Region is the name of the region where the
+                            Subnetwork resides.
+                          type: string
+                        secondaryCidrBlocks:
+                          additionalProperties:
+                            type: string
+                          description: SecondaryCidrBlocks defines secondary CIDR
+                            ranges, from which secondary IP ranges of a VM may be
+                            allocated
+                          type: object
+                      type: object
+                    type: array
+                type: object
+              project:
+                description: Project is the name of the project to deploy the cluster
+                  to.
+                type: string
+              region:
+                description: The GCP Region the cluster lives in.
+                type: string
+            required:
+            - project
+            - region
+            type: object
+          status:
+            description: GCPManagedClusterStatus defines the observed state of GCPManagedCluster.
+            properties:
+              conditions:
+                description: Conditions specifies the conditions for the managed control
+                  plane
+                items:
+                  description: Condition defines an observation of a Cluster API resource
+                    operational state.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another. This should be when the underlying condition changed.
+                        If that is not known, then using the time when the API field
+                        changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human readable message indicating details about
+                        the transition. This field may be empty.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition
+                        in CamelCase. The specific API may choose whether or not this
+                        field is considered a guaranteed API. This field may not be
+                        empty.
+                      type: string
+                    severity:
+                      description: Severity provides an explicit classification of
+                        Reason code, so the users or machines can immediately understand
+                        the current situation and act accordingly. The Severity field
+                        MUST be set only when Status=False.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition in CamelCase or in foo.example.com/CamelCase.
+                        Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - status
+                  - type
+                  type: object
+                type: array
+              failureDomains:
+                additionalProperties:
+                  description: FailureDomainSpec is the Schema for Cluster API failure
+                    domains. It allows controllers to understand how many failure
+                    domains a cluster can optionally span across.
+                  properties:
+                    attributes:
+                      additionalProperties:
+                        type: string
+                      description: Attributes is a free form map of attributes an
+                        infrastructure provider might use or require.
+                      type: object
+                    controlPlane:
+                      description: ControlPlane determines if this failure domain
+                        is suitable for use by control plane machines.
+                      type: boolean
+                  type: object
+                description: FailureDomains is a slice of FailureDomains.
+                type: object
+              network:
+                description: Network encapsulates GCP networking resources.
+                properties:
+                  apiServerBackendService:
+                    description: APIServerBackendService is the full reference to
+                      the backend service created for the API Server.
+                    type: string
+                  apiServerForwardingRule:
+                    description: APIServerForwardingRule is the full reference to
+                      the forwarding rule created for the API Server.
+                    type: string
+                  apiServerHealthCheck:
+                    description: APIServerHealthCheck is the full reference to the
+                      health check created for the API Server.
+                    type: string
+                  apiServerInstanceGroups:
+                    additionalProperties:
+                      type: string
+                    description: APIServerInstanceGroups is a map from zone to the
+                      full reference to the instance groups created for the control
+                      plane nodes created in the same zone.
+                    type: object
+                  apiServerIpAddress:
+                    description: APIServerAddress is the IPV4 global address assigned
+                      to the load balancer created for the API Server.
+                    type: string
+                  apiServerTargetProxy:
+                    description: APIServerTargetProxy is the full reference to the
+                      target proxy created for the API Server.
+                    type: string
+                  firewallRules:
+                    additionalProperties:
+                      type: string
+                    description: FirewallRules is a map from the name of the rule
+                      to its full reference.
+                    type: object
+                  router:
+                    description: Router is the full reference to the router created
+                      within the network it'll contain the cloud nat gateway
+                    type: string
+                  selfLink:
+                    description: SelfLink is the link to the Network used for this
+                      cluster.
+                    type: string
+                type: object
+              ready:
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpmanagedcontrolplanes.infrastructure.cluster.x-k8s.io
+spec:
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPManagedControlPlane
+    listKind: GCPManagedControlPlaneList
+    plural: gcpmanagedcontrolplanes
+    shortNames:
+    - gcpmcp
+    singular: gcpmanagedcontrolplane
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Cluster to which this GCPManagedControlPlane belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - description: Control plane is ready
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: The current Kubernetes version
+      jsonPath: .status.currentVersion
+      name: CurrentVersion
+      type: string
+    - description: API Endpoint
+      jsonPath: .spec.endpoint
+      name: Endpoint
+      priority: 1
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPManagedControlPlane is the Schema for the gcpmanagedcontrolplanes
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPManagedControlPlaneSpec defines the desired state of GCPManagedControlPlane.
+            properties:
+              clusterName:
+                description: ClusterName allows you to specify the name of the GKE
+                  cluster. If you don't specify a name then a default name will be
+                  created based on the namespace and name of the managed control plane.
+                type: string
+              controlPlaneVersion:
+                description: ControlPlaneVersion represents the control plane version
+                  of the GKE cluster. If not specified, the default version currently
+                  supported by GKE will be used.
+                type: string
+              enableAutopilot:
+                description: EnableAutopilot indicates whether to enable autopilot
+                  for this GKE cluster.
+                type: boolean
+              endpoint:
+                description: Endpoint represents the endpoint used to communicate
+                  with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              location:
+                description: Location represents the location (region or zone) in
+                  which the GKE cluster will be created.
+                type: string
+              master_authorized_networks_config:
+                description: MasterAuthorizedNetworksConfig represents configuration
+                  options for master authorized networks feature of the GKE cluster.
+                  This feature is disabled if this field is not specified.
+                properties:
+                  cidr_blocks:
+                    description: cidr_blocks define up to 50 external networks that
+                      could access Kubernetes master through HTTPS.
+                    items:
+                      description: MasterAuthorizedNetworksConfigCidrBlock contains
+                        an optional name and one CIDR block.
+                      properties:
+                        cidr_block:
+                          description: cidr_block must be specified in CIDR notation.
+                          pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$|^([a-fA-F0-9:]+:+)+[a-fA-F0-9]+\/[0-9]{1,3}$
+                          type: string
+                        display_name:
+                          description: display_name is an field for users to identify
+                            CIDR blocks.
+                          type: string
+                      type: object
+                    type: array
+                  gcp_public_cidrs_access_enabled:
+                    description: Whether master is accessible via Google Compute Engine
+                      Public IP addresses.
+                    type: boolean
+                type: object
+              project:
+                description: Project is the name of the project to deploy the cluster
+                  to.
+                type: string
+              releaseChannel:
+                description: ReleaseChannel represents the release channel of the
+                  GKE cluster.
+                enum:
+                - rapid
+                - regular
+                - stable
+                type: string
+            required:
+            - location
+            - project
+            type: object
+          status:
+            description: GCPManagedControlPlaneStatus defines the observed state of
+              GCPManagedControlPlane.
+            properties:
+              conditions:
+                description: Conditions specifies the conditions for the managed control
+                  plane
+                items:
+                  description: Condition defines an observation of a Cluster API resource
+                    operational state.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another. This should be when the underlying condition changed.
+                        If that is not known, then using the time when the API field
+                        changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human readable message indicating details about
+                        the transition. This field may be empty.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition
+                        in CamelCase. The specific API may choose whether or not this
+                        field is considered a guaranteed API. This field may not be
+                        empty.
+                      type: string
+                    severity:
+                      description: Severity provides an explicit classification of
+                        Reason code, so the users or machines can immediately understand
+                        the current situation and act accordingly. The Severity field
+                        MUST be set only when Status=False.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition in CamelCase or in foo.example.com/CamelCase.
+                        Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - status
+                  - type
+                  type: object
+                type: array
+              currentVersion:
+                description: CurrentVersion shows the current version of the GKE control
+                  plane.
+                type: string
+              initialized:
+                description: Initialized is true when the control plane is available
+                  for initial contact. This may occur before the control plane is
+                  fully ready.
+                type: boolean
+              ready:
+                default: false
+                description: Ready denotes that the GCPManagedControlPlane API Server
+                  is ready to receive requests.
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    cluster.x-k8s.io/v1beta1: v1beta1
+  name: gcpmanagedmachinepools.infrastructure.cluster.x-k8s.io
+spec:
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: GCPManagedMachinePool
+    listKind: GCPManagedMachinePoolList
+    plural: gcpmanagedmachinepools
+    shortNames:
+    - gcpmmp
+    singular: gcpmanagedmachinepool
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.mode
+      name: Mode
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GCPManagedMachinePool is the Schema for the gcpmanagedmachinepools
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GCPManagedMachinePoolSpec defines the desired state of GCPManagedMachinePool.
+            properties:
+              additionalLabels:
+                additionalProperties:
+                  type: string
+                description: AdditionalLabels is an optional set of tags to add to
+                  GCP resources managed by the GCP provider, in addition to the ones
+                  added by default.
+                type: object
+              kubernetesLabels:
+                additionalProperties:
+                  type: string
+                description: KubernetesLabels specifies the labels to apply to the
+                  nodes of the node pool.
+                type: object
+              kubernetesTaints:
+                description: KubernetesTaints specifies the taints to apply to the
+                  nodes of the node pool.
+                items:
+                  description: Taint represents a Kubernetes taint.
+                  properties:
+                    effect:
+                      description: Effect specifies the effect for the taint.
+                      enum:
+                      - NoSchedule
+                      - NoExecute
+                      - PreferNoSchedule
+                      type: string
+                    key:
+                      description: Key is the key of the taint
+                      type: string
+                    value:
+                      description: Value is the value of the taint
+                      type: string
+                  required:
+                  - effect
+                  - key
+                  - value
+                  type: object
+                type: array
+              nodePoolName:
+                description: NodePoolName specifies the name of the GKE node pool
+                  corresponding to this MachinePool. If you don't specify a name then
+                  a default name will be created based on the namespace and name of
+                  the managed machine pool.
+                type: string
+              providerIDList:
+                description: ProviderIDList are the provider IDs of instances in the
+                  managed instance group corresponding to the nodegroup represented
+                  by this machine pool
+                items:
+                  type: string
+                type: array
+              scaling:
+                description: Scaling specifies scaling for the node pool
+                properties:
+                  maxCount:
+                    format: int32
+                    type: integer
+                  minCount:
+                    format: int32
+                    type: integer
+                type: object
+            type: object
+          status:
+            description: GCPManagedMachinePoolStatus defines the observed state of
+              GCPManagedMachinePool.
+            properties:
+              conditions:
+                description: Conditions specifies the cpnditions for the managed machine
+                  pool
+                items:
+                  description: Condition defines an observation of a Cluster API resource
+                    operational state.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another. This should be when the underlying condition changed.
+                        If that is not known, then using the time when the API field
+                        changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human readable message indicating details about
+                        the transition. This field may be empty.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition
+                        in CamelCase. The specific API may choose whether or not this
+                        field is considered a guaranteed API. This field may not be
+                        empty.
+                      type: string
+                    severity:
+                      description: Severity provides an explicit classification of
+                        Reason code, so the users or machines can immediately understand
+                        the current situation and act accordingly. The Severity field
+                        MUST be set only when Status=False.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition in CamelCase or in foo.example.com/CamelCase.
+                        Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - status
+                  - type
+                  type: object
+                type: array
+              ready:
+                type: boolean
+              replicas:
+                description: Replicas is the most recently observed number of replicas.
+                format: int32
+                type: integer
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-manager
+  namespace: capg-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-leader-election-role
+  namespace: capg-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - clusters
+  - clusters/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - machinepools
+  - machinepools/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - machines
+  - machines/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmachines
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmachines/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedcontrolplanes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedcontrolplanes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedcontrolplanes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedmachinepools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedmachinepools/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmanagedmachinepools/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-leader-election-rolebinding
+  namespace: capg-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: capg-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: capg-manager
+  namespace: capg-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: capg-manager-role
+subjects:
+- kind: ServiceAccount
+  name: capg-manager
+  namespace: capg-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-webhook-service
+  namespace: capg-system
+spec:
+  ports:
+  - port: 443
+    targetPort: webhook-server
+  selector:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+    control-plane: capg-controller-manager
+  name: capg-controller-manager
+  namespace: capg-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/provider: infrastructure-gcp
+      control-plane: capg-controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        cluster.x-k8s.io/provider: infrastructure-gcp
+        control-plane: capg-controller-manager
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      containers:
+      - args:
+        - --leader-elect
+        - --feature-gates=GKE=false
+        - --metrics-bind-addr=localhost:8080
+        - --v=0
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: registry.k8s.io/cluster-api-gcp/cluster-api-gcp-controller:v1.5.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: manager
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        - containerPort: 9440
+          name: healthz
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          runAsGroup: 65532
+          runAsUser: 65532
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+      serviceAccountName: capg-manager
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: capg-webhook-service-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-serving-cert
+  namespace: capg-system
+spec:
+  dnsNames:
+  - capg-webhook-service.capg-system.svc
+  - capg-webhook-service.capg-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: capg-selfsigned-issuer
+  secretName: capg-webhook-service-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-selfsigned-issuer
+  namespace: capg-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpcluster
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.gcpcluster.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpclustertemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.gcpclustertemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpclustertemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmachine
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.gcpmachine.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmachinetemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.gcpmachinetemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmachinetemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedcluster
+  failurePolicy: Fail
+  name: mgcpmanagedcluster.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedcontrolplane
+  failurePolicy: Fail
+  name: mgcpmanagedcontrolplane.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedmachinepool
+  failurePolicy: Fail
+  name: mgcpmanagedmachinepool.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedmachinepools
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: capg-system/capg-serving-cert
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-gcp
+  name: capg-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpcluster
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.gcpcluster.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpclustertemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.gcpclustertemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpclustertemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmachine
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.gcpmachine.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmachinetemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.gcpmachinetemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmachinetemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedcluster
+  failurePolicy: Fail
+  name: vgcpmanagedcluster.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedcontrolplane
+  failurePolicy: Fail
+  name: vgcpmanagedcontrolplane.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: capg-webhook-service
+      namespace: capg-system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1beta1-gcpmanagedmachinepool
+  failurePolicy: Fail
+  name: vgcpmanagedmachinepool.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gcpmanagedmachinepools
+  sideEffects: None
