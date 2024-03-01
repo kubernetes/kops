@@ -1,6 +1,10 @@
 package tokens
 
-import "github.com/gophercloud/gophercloud"
+import (
+	"context"
+
+	"github.com/gophercloud/gophercloud"
+)
 
 // PasswordCredentialsV2 represents the required options to authenticate
 // with a username and password.
@@ -77,17 +81,17 @@ func (opts AuthOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 	return b, nil
 }
 
-// Create authenticates to the identity service and attempts to acquire a Token.
+// CreateWithContext authenticates to the identity service and attempts to acquire a Token.
 // Generally, rather than interact with this call directly, end users should
 // call openstack.AuthenticatedClient(), which abstracts all of the gory details
 // about navigating service catalogs and such.
-func Create(client *gophercloud.ServiceClient, auth AuthOptionsBuilder) (r CreateResult) {
+func CreateWithContext(ctx context.Context, client *gophercloud.ServiceClient, auth AuthOptionsBuilder) (r CreateResult) {
 	b, err := auth.ToTokenV2CreateMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Post(CreateURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.PostWithContext(ctx, CreateURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes:     []int{200, 203},
 		OmitHeaders: []string{"X-Auth-Token"},
 	})
@@ -95,11 +99,21 @@ func Create(client *gophercloud.ServiceClient, auth AuthOptionsBuilder) (r Creat
 	return
 }
 
-// Get validates and retrieves information for user's token.
-func Get(client *gophercloud.ServiceClient, token string) (r GetResult) {
+// Create is a compatibility wrapper around CreateWithContext
+func Create(client *gophercloud.ServiceClient, auth AuthOptionsBuilder) (r CreateResult) {
+	return CreateWithContext(context.Background(), client, auth)
+}
+
+// GetWithContext validates and retrieves information for user's token.
+func GetWithContext(ctx context.Context, client *gophercloud.ServiceClient, token string) (r GetResult) {
 	resp, err := client.Get(GetURL(client, token), &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 203},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// Get is a compatibility wrapper around GetWithContext
+func Get(client *gophercloud.ServiceClient, token string) (r GetResult) {
+	return GetWithContext(context.Background(), client, token)
 }

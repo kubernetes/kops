@@ -1,3 +1,13 @@
+## v1.10.0 (2024-02-27)
+
+* [GH-2893](https://github.com/gophercloud/gophercloud/pull/2893) [v1] authentication: Add WithContext functions
+* [GH-2894](https://github.com/gophercloud/gophercloud/pull/2894) [v1] pager: Add WithContext functions
+* [GH-2899](https://github.com/gophercloud/gophercloud/pull/2899) [v1] Authenticate with a clouds.yaml
+* [GH-2917](https://github.com/gophercloud/gophercloud/pull/2917) [v1] Add ParseOption type to made clouds.Parse() more usable for optional With* funcs
+* [GH-2924](https://github.com/gophercloud/gophercloud/pull/2924) [v1] build(deps): bump EmilienM/devstack-action from 0.11 to 0.14
+* [GH-2933](https://github.com/gophercloud/gophercloud/pull/2933) [v1]  Fix AllowReauth reauthentication
+* [GH-2950](https://github.com/gophercloud/gophercloud/pull/2950) [v1] compute: Use volumeID, not attachmentID for volume attachments
+
 ## v1.9.0 (2024-02-02)
 
 New features and improvements:
