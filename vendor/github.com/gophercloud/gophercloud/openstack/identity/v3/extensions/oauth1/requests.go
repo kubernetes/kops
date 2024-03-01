@@ -1,6 +1,7 @@
 package oauth1
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -133,9 +134,9 @@ func (opts AuthOptions) ToTokenV3CreateMap(map[string]interface{}) (map[string]i
 	return gophercloud.BuildRequestBody(req, "")
 }
 
-// Create authenticates and either generates a new OpenStack token from an
-// OAuth1 token.
-func Create(client *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
+// CreateWithContext authenticates and either generates a new OpenStack token
+// from an OAuth1 token.
+func CreateWithContext(ctx context.Context, client *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
 	b, err := opts.ToTokenV3CreateMap(nil)
 	if err != nil {
 		r.Err = err
@@ -153,12 +154,17 @@ func Create(client *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (
 		return
 	}
 
-	resp, err := client.Post(authURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.PostWithContext(ctx, authURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		MoreHeaders: h,
 		OkCodes:     []int{201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// Create is a compatibility wrapper around CreateWithContext.
+func Create(client *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
+	return CreateWithContext(context.Background(), client, opts)
 }
 
 // CreateConsumerOptsBuilder allows extensions to add additional parameters to
@@ -178,25 +184,35 @@ func (opts CreateConsumerOpts) ToOAuth1CreateConsumerMap() (map[string]interface
 	return gophercloud.BuildRequestBody(opts, "consumer")
 }
 
-// Create creates a new Consumer.
-func CreateConsumer(client *gophercloud.ServiceClient, opts CreateConsumerOptsBuilder) (r CreateConsumerResult) {
+// CreateConsumerWithContext creates a new Consumer.
+func CreateConsumerWithContext(ctx context.Context, client *gophercloud.ServiceClient, opts CreateConsumerOptsBuilder) (r CreateConsumerResult) {
 	b, err := opts.ToOAuth1CreateConsumerMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Post(consumersURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.PostWithContext(ctx, consumersURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
-// Delete deletes a Consumer.
-func DeleteConsumer(client *gophercloud.ServiceClient, id string) (r DeleteConsumerResult) {
-	resp, err := client.Delete(consumerURL(client, id), nil)
+// CreateConsumer is a compatibility wrapper around CreateConsumerWithContext.
+func CreateConsumer(client *gophercloud.ServiceClient, opts CreateConsumerOptsBuilder) (r CreateConsumerResult) {
+	return CreateConsumerWithContext(context.Background(), client, opts)
+}
+
+// DeleteConsumerWithContext deletes a Consumer.
+func DeleteConsumerWithContext(ctx context.Context, client *gophercloud.ServiceClient, id string) (r DeleteConsumerResult) {
+	resp, err := client.DeleteWithContext(ctx, consumerURL(client, id), nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// DeleteConsumer is a compatibility wrapper around DeleteConsumerWithContext.
+func DeleteConsumer(client *gophercloud.ServiceClient, id string) (r DeleteConsumerResult) {
+	return DeleteConsumerWithContext(context.Background(), client, id)
 }
 
 // List enumerates Consumers.
@@ -206,11 +222,16 @@ func ListConsumers(client *gophercloud.ServiceClient) pagination.Pager {
 	})
 }
 
-// GetConsumer retrieves details on a single Consumer by ID.
-func GetConsumer(client *gophercloud.ServiceClient, id string) (r GetConsumerResult) {
-	resp, err := client.Get(consumerURL(client, id), &r.Body, nil)
+// GetConsumerWithContext retrieves details on a single Consumer by ID.
+func GetConsumerWithContext(ctx context.Context, client *gophercloud.ServiceClient, id string) (r GetConsumerResult) {
+	resp, err := client.GetWithContext(ctx, consumerURL(client, id), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// GetConsumer is a compatibility wrapper around GetConsumerWithContext.
+func GetConsumer(client *gophercloud.ServiceClient, id string) (r GetConsumerResult) {
+	return GetConsumerWithContext(context.Background(), client, id)
 }
 
 // UpdateConsumerOpts provides options used to update a consumer.
@@ -225,18 +246,23 @@ func (opts UpdateConsumerOpts) ToOAuth1UpdateConsumerMap() (map[string]interface
 	return gophercloud.BuildRequestBody(opts, "consumer")
 }
 
-// UpdateConsumer updates an existing Consumer.
-func UpdateConsumer(client *gophercloud.ServiceClient, id string, opts UpdateConsumerOpts) (r UpdateConsumerResult) {
+// UpdateConsumerWithContext updates an existing Consumer.
+func UpdateConsumerWithContext(ctx context.Context, client *gophercloud.ServiceClient, id string, opts UpdateConsumerOpts) (r UpdateConsumerResult) {
 	b, err := opts.ToOAuth1UpdateConsumerMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Patch(consumerURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.PatchWithContext(ctx, consumerURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// UpdateConsumer is a compatibility wrapper around UpdateConsumerWithContext.
+func UpdateConsumer(client *gophercloud.ServiceClient, id string, opts UpdateConsumerOpts) (r UpdateConsumerResult) {
+	return UpdateConsumerWithContext(context.Background(), client, id, opts)
 }
 
 // RequestTokenOptsBuilder allows extensions to add additional parameters to the
@@ -297,15 +323,15 @@ func (opts RequestTokenOpts) ToOAuth1RequestTokenHeaders(method, u string) (map[
 	return h, nil
 }
 
-// RequestToken requests an unauthorized OAuth1 Token.
-func RequestToken(client *gophercloud.ServiceClient, opts RequestTokenOptsBuilder) (r TokenResult) {
+// RequestTokenWithContext requests an unauthorized OAuth1 Token.
+func RequestTokenWithContext(ctx context.Context, client *gophercloud.ServiceClient, opts RequestTokenOptsBuilder) (r TokenResult) {
 	h, err := opts.ToOAuth1RequestTokenHeaders("POST", requestTokenURL(client))
 	if err != nil {
 		r.Err = err
 		return
 	}
 
-	resp, err := client.Post(requestTokenURL(client), nil, nil, &gophercloud.RequestOpts{
+	resp, err := client.PostWithContext(ctx, requestTokenURL(client), nil, nil, &gophercloud.RequestOpts{
 		MoreHeaders:      h,
 		OkCodes:          []int{201},
 		KeepResponseBody: true,
@@ -321,6 +347,11 @@ func RequestToken(client *gophercloud.ServiceClient, opts RequestTokenOptsBuilde
 	}
 	r.Body, r.Err = ioutil.ReadAll(resp.Body)
 	return
+}
+
+// RequestToken is a compatibility wrapper around RequestTokenWithContext.
+func RequestToken(client *gophercloud.ServiceClient, opts RequestTokenOptsBuilder) (r TokenResult) {
+	return RequestTokenWithContext(context.Background(), client, opts)
 }
 
 // AuthorizeTokenOptsBuilder allows extensions to add additional parameters to
@@ -351,18 +382,23 @@ func (opts AuthorizeTokenOpts) ToOAuth1AuthorizeTokenMap() (map[string]interface
 	return gophercloud.BuildRequestBody(opts, "")
 }
 
-// AuthorizeToken authorizes an unauthorized consumer token.
-func AuthorizeToken(client *gophercloud.ServiceClient, id string, opts AuthorizeTokenOptsBuilder) (r AuthorizeTokenResult) {
+// AuthorizeTokenWithContext authorizes an unauthorized consumer token.
+func AuthorizeTokenWithContext(ctx context.Context, client *gophercloud.ServiceClient, id string, opts AuthorizeTokenOptsBuilder) (r AuthorizeTokenResult) {
 	b, err := opts.ToOAuth1AuthorizeTokenMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	resp, err := client.Put(authorizeTokenURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.PutWithContext(ctx, authorizeTokenURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// AuthorizeToken is a compatibility wrapper around AuthorizeTokenWithContext.
+func AuthorizeToken(client *gophercloud.ServiceClient, id string, opts AuthorizeTokenOptsBuilder) (r AuthorizeTokenResult) {
+	return AuthorizeTokenWithContext(context.Background(), client, id, opts)
 }
 
 // CreateAccessTokenOptsBuilder allows extensions to add additional parameters
@@ -425,15 +461,15 @@ func (opts CreateAccessTokenOpts) ToOAuth1CreateAccessTokenHeaders(method, u str
 	return headers, nil
 }
 
-// CreateAccessToken creates a new OAuth1 Access Token
-func CreateAccessToken(client *gophercloud.ServiceClient, opts CreateAccessTokenOptsBuilder) (r TokenResult) {
+// CreateAccessTokenWithContext creates a new OAuth1 Access Token
+func CreateAccessTokenWithContext(ctx context.Context, client *gophercloud.ServiceClient, opts CreateAccessTokenOptsBuilder) (r TokenResult) {
 	h, err := opts.ToOAuth1CreateAccessTokenHeaders("POST", createAccessTokenURL(client))
 	if err != nil {
 		r.Err = err
 		return
 	}
 
-	resp, err := client.Post(createAccessTokenURL(client), nil, nil, &gophercloud.RequestOpts{
+	resp, err := client.PostWithContext(ctx, createAccessTokenURL(client), nil, nil, &gophercloud.RequestOpts{
 		MoreHeaders:      h,
 		OkCodes:          []int{201},
 		KeepResponseBody: true,
@@ -451,18 +487,33 @@ func CreateAccessToken(client *gophercloud.ServiceClient, opts CreateAccessToken
 	return
 }
 
-// GetAccessToken retrieves details on a single OAuth1 access token by an ID.
-func GetAccessToken(client *gophercloud.ServiceClient, userID string, id string) (r GetAccessTokenResult) {
-	resp, err := client.Get(userAccessTokenURL(client, userID, id), &r.Body, nil)
+// CreateAccessToken is a compatibility wrapper around CreateAccessTokenWithContext.
+func CreateAccessToken(client *gophercloud.ServiceClient, opts CreateAccessTokenOptsBuilder) (r TokenResult) {
+	return CreateAccessTokenWithContext(context.Background(), client, opts)
+}
+
+// GetAccessTokenWithContext retrieves details on a single OAuth1 access token by an ID.
+func GetAccessTokenWithContext(ctx context.Context, client *gophercloud.ServiceClient, userID string, id string) (r GetAccessTokenResult) {
+	resp, err := client.GetWithContext(ctx, userAccessTokenURL(client, userID, id), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
-// RevokeAccessToken revokes an OAuth1 access token.
-func RevokeAccessToken(client *gophercloud.ServiceClient, userID string, id string) (r RevokeAccessTokenResult) {
-	resp, err := client.Delete(userAccessTokenURL(client, userID, id), nil)
+// GetAccessToken is a compatibility wrapper around GetAccessTokenWithContext.
+func GetAccessToken(client *gophercloud.ServiceClient, userID string, id string) (r GetAccessTokenResult) {
+	return GetAccessTokenWithContext(context.Background(), client, userID, id)
+}
+
+// RevokeAccessTokenWithContext revokes an OAuth1 access token.
+func RevokeAccessTokenWithContext(ctx context.Context, client *gophercloud.ServiceClient, userID string, id string) (r RevokeAccessTokenResult) {
+	resp, err := client.DeleteWithContext(ctx, userAccessTokenURL(client, userID, id), nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// RevokeAccessToken is a compatibility wrapper around RevokeAccessTokenWithContext.
+func RevokeAccessToken(client *gophercloud.ServiceClient, userID string, id string) (r RevokeAccessTokenResult) {
+	return RevokeAccessTokenWithContext(context.Background(), client, userID, id)
 }
 
 // ListAccessTokens enumerates authorized access tokens.
@@ -481,12 +532,17 @@ func ListAccessTokenRoles(client *gophercloud.ServiceClient, userID string, id s
 	})
 }
 
-// GetAccessTokenRole retrieves details on a single OAuth1 access token role by
+// GetAccessTokenRoleWithContext retrieves details on a single OAuth1 access token role by
 // an ID.
-func GetAccessTokenRole(client *gophercloud.ServiceClient, userID string, id string, roleID string) (r GetAccessTokenRoleResult) {
-	resp, err := client.Get(userAccessTokenRoleURL(client, userID, id, roleID), &r.Body, nil)
+func GetAccessTokenRoleWithContext(ctx context.Context, client *gophercloud.ServiceClient, userID string, id string, roleID string) (r GetAccessTokenRoleResult) {
+	resp, err := client.GetWithContext(ctx, userAccessTokenRoleURL(client, userID, id, roleID), &r.Body, nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// GetAccessTokenRole is a compatibility wrapper around GetAccessTokenRoleWithContext.
+func GetAccessTokenRole(client *gophercloud.ServiceClient, userID string, id string, roleID string) (r GetAccessTokenRoleResult) {
+	return GetAccessTokenRoleWithContext(context.Background(), client, userID, id, roleID)
 }
 
 // The following are small helper functions used to help build the signature.
