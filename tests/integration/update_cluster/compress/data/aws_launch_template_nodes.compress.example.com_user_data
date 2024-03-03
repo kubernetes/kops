@@ -41,9 +41,11 @@ function ensure-install-dir() {
 
 # Retry a download until we get it. args: name, sha, urls
 download-or-bust() {
+  echo "== Downloading $1 with hash $2 from $3 =="
   local -r file="$1"
   local -r hash="$2"
-  local -r urls=( $(split-commas "$3") )
+  local -a urls
+  mapfile -t urls < <(split-commas "$3")
 
   if [[ -f "${file}" ]]; then
     if ! validate-hash "${file}" "${hash}"; then
@@ -56,28 +58,28 @@ download-or-bust() {
   while true; do
     for url in "${urls[@]}"; do
       commands=(
-        "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
       )
       for cmd in "${commands[@]}"; do
-        echo "Attempting download with: ${cmd} {url}"
+        echo "== Downloading ${url} using ${cmd} =="
         if ! (${cmd} "${url}"); then
-          echo "== Download failed with ${cmd} =="
+          echo "== Failed to download ${url} using ${cmd} =="
           continue
         fi
         if ! validate-hash "${file}" "${hash}"; then
-          echo "== Hash validation of ${url} failed. Retrying. =="
+          echo "== Failed to validate hash for ${url} =="
           rm -f "${file}"
         else
-          echo "== Downloaded ${url} (SHA256 = ${hash}) =="
+          echo "== Downloaded ${url} with hash ${hash} =="
           return 0
         fi
       done
     done
 
-    echo "All downloads failed; sleeping before retrying"
+    echo "== All downloads failed; sleeping before retrying =="
     sleep 60
   done
 }
@@ -87,15 +89,15 @@ validate-hash() {
   local -r expected="$2"
   local actual
 
-  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
+  actual=$(sha256sum "${file}" | awk '{ print $1 }') || true
   if [[ "${actual}" != "${expected}" ]]; then
-    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
+    echo "== File ${file} is corrupted; hash ${actual} doesn't match expected ${expected} =="
     return 1
   fi
 }
 
 function split-commas() {
-  echo $1 | tr "," "\n"
+  echo "$1" | tr "," "\n"
 }
 
 function download-release() {
@@ -119,14 +121,14 @@ function download-release() {
 
   chmod +x nodeup
 
-  echo "Running nodeup"
+  echo "== Running nodeup =="
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
   ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
 }
 
 ####################################################################################
 
-/bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+/bin/systemd-machine-id-setup || echo "== Failed to initialize the machine ID; ensure machine-id configured =="
 
 echo "== nodeup node config starting =="
 ensure-install-dir
