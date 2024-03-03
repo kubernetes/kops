@@ -132,6 +132,9 @@ kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 # Sleep to ensure channels has done its thing
 sleep 120s
 
+# Make sure configuration B has been applied (e.g. new load balancer is ready)
+"${KOPS_B}" validate cluster --wait=10m
+
 ${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
 
 "${KOPS_B}" rolling-update cluster
