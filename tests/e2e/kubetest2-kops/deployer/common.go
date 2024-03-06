@@ -102,12 +102,6 @@ func (d *deployer) initialize() error {
 		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
 			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
-	}
-
-	if d.commonOptions.ShouldBuild() {
-		if err := d.verifyBuildFlags(); err != nil {
-			return fmt.Errorf("init failed to check build flags: %v", err)
-		}
 	case "scaleway":
 		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
 			publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
@@ -119,6 +113,12 @@ func (d *deployer) initialize() error {
 		}
 		if d.SSHUser == "" {
 			d.SSHUser = "root"
+		}
+	}
+
+	if d.commonOptions.ShouldBuild() {
+		if err := d.verifyBuildFlags(); err != nil {
+			return fmt.Errorf("init failed to check build flags: %v", err)
 		}
 	}
 
