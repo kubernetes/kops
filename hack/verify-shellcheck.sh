@@ -36,6 +36,8 @@ disabled=(
   1090
   # this lint prefers command -v to which, they are not the same
   2230
+  # this lint tries to open ./common.sh and fails
+  1091
 )
 # comma separate for passing to shellcheck
 join_by() {
