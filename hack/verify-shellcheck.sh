@@ -22,9 +22,9 @@ set -o pipefail
 
 # required version for this script, if not installed on the host we will
 # use the official docker image instead. keep this in sync with SHELLCHECK_IMAGE
-SHELLCHECK_VERSION="0.7.1"
+SHELLCHECK_VERSION="0.9.0"
 # upstream shellcheck latest stable image as of September 1st, 2020
-SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.7.1@sha256:6093ec552a8c918483dca0544d44ad56a43c4dbf1d85447f2316f8e3b15e3cb6"
+SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.9.0@sha256:e19ed93c22423970d56568e171b4512c9244fc75dd9114045016b4a0073ac4b7"
 
 # fixed name for the shellcheck docker container so we can reliably clean it up
 SHELLCHECK_CONTAINER="k8s-shellcheck"
