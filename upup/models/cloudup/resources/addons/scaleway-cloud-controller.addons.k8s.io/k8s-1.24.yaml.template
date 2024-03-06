@@ -15,6 +15,8 @@ stringData:
   SCW_DEFAULT_REGION: {{ SCW_DEFAULT_REGION }}
   # Zone is where your servers and volumes will be created, ex: fr-par-1, nl-ams-2
   SCW_DEFAULT_ZONE: {{ SCW_DEFAULT_ZONE }}
+   # The ID of the private network of the cluster
+  PN_ID: {{ SCW_PN_ID }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -48,14 +50,20 @@ spec:
           effect: NoSchedule
         - key: "node-role.kubernetes.io/control-plane"
           effect: NoSchedule
-        - key: node.kubernetes.io/not-ready
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
-        - key: node.kubernetes.io/unreachable
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+                - key: kops.k8s.io/kops-controller-pki
+                  operator: Exists
+              - matchExpressions:
+                - key: node-role.kubernetes.io/master
+                  operator: Exists
+                - key: kops.k8s.io/kops-controller-pki
+                  operator: Exists
       containers:
         - name: scaleway-cloud-controller-manager
           image: scaleway/scaleway-cloud-controller-manager:latest
