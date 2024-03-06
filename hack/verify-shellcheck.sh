@@ -71,7 +71,8 @@ cd "${KOPS_ROOT}"
 # - ./vendor* - Vendored code should be fixed upstream instead.
 # - ./third_party/*, but re-include ./third_party/forked/*  - only code we
 #    forked should be linted and fixed.
-all_shell_scripts=()
+#    include also output from bootstrap script tests
+mapfile -t all_shell_scripts < <(ls -1 pkg/model/tests/data/bootstrapscript_*.txt)
 while IFS=$'\n' read -r script;
   do git check-ignore -q "$script" || all_shell_scripts+=("$script");
 done < <(find . -type f -name "*.sh" \
