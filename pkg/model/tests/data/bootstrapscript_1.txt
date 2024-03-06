@@ -11,20 +11,20 @@ NODEUP_HASH_ARM64=e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c
 export AWS_REGION=eu-west-1
 
 
-echo "http_proxy=http://example.com:80" >> /etc/environment
-echo "https_proxy=http://example.com:80" >> /etc/environment
-echo "no_proxy=" >> /etc/environment
-echo "NO_PROXY=" >> /etc/environment
+{
+  echo "http_proxy=http://example.com:80"
+  echo "https_proxy=http://example.com:80"
+  echo "no_proxy="
+  echo "NO_PROXY="
+} >> /etc/environment
 while read -r in; do export "${in?}"; done < /etc/environment
 case $(cat /proc/version) in
-*[Dd]ebian*)
-  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;
-*[Uu]buntu*)
-  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;
+*[Dd]ebian* | *[Uu]buntu*)
+  echo "Acquire::http::Proxy \"http://example.com:80\";" > /etc/apt/apt.conf.d/30proxy ;;
 *[Rr]ed[Hh]at*)
-  echo "proxy=${http_proxy}" >> /etc/yum.conf ;;
+  echo "proxy=http://example.com:80" >> /etc/yum.conf ;;
 esac
-echo "DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\" \"NO_PROXY=${no_proxy}\" \"no_proxy=${no_proxy}\"" >> /etc/systemd/system.conf
+echo "DefaultEnvironment=\"http_proxy=http://example.com:80\" \"https_proxy=http://example.com:80\" \"NO_PROXY=\" \"no_proxy=\"" >> /etc/systemd/system.conf
 systemctl daemon-reload
 systemctl daemon-reexec
 
