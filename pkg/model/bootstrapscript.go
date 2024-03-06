@@ -398,28 +398,28 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) (string, erro
 		}
 
 		// Set env variables for base environment
-		buffer.WriteString(`echo "http_proxy=` + httpProxyURL + `" >> /etc/environment` + "\n")
-		buffer.WriteString(`echo "https_proxy=` + httpProxyURL + `" >> /etc/environment` + "\n")
-		buffer.WriteString(`echo "no_proxy=` + ps.ProxyExcludes + `" >> /etc/environment` + "\n")
-		buffer.WriteString(`echo "NO_PROXY=` + ps.ProxyExcludes + `" >> /etc/environment` + "\n")
+		buffer.WriteString(`{` + "\n")
+		buffer.WriteString(`  echo "http_proxy=` + httpProxyURL + `"` + "\n")
+		buffer.WriteString(`  echo "https_proxy=` + httpProxyURL + `"` + "\n")
+		buffer.WriteString(`  echo "no_proxy=` + ps.ProxyExcludes + `"` + "\n")
+		buffer.WriteString(`  echo "NO_PROXY=` + ps.ProxyExcludes + `"` + "\n")
+		buffer.WriteString(`} >> /etc/environment` + "\n")
 
 		// Load the proxy environment variables
-		buffer.WriteString("while read in; do export $in; done < /etc/environment\n")
+		buffer.WriteString("while read -r in; do export \"${in?}\"; done < /etc/environment\n")
 
 		// Set env variables for package manager depending on OS Distribution (N/A for Flatcar)
 		// Note: Nodeup will source the `/etc/environment` file within docker config in the correct location
-		buffer.WriteString("case `cat /proc/version` in\n")
-		buffer.WriteString("*[Dd]ebian*)\n")
-		buffer.WriteString(`  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
-		buffer.WriteString("*[Uu]buntu*)\n")
-		buffer.WriteString(`  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
+		buffer.WriteString("case $(cat /proc/version) in\n")
+		buffer.WriteString("*[Dd]ebian* | *[Uu]buntu*)\n")
+		buffer.WriteString(`  echo "Acquire::http::Proxy \"` + httpProxyURL + `\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
 		buffer.WriteString("*[Rr]ed[Hh]at*)\n")
-		buffer.WriteString(`  echo "proxy=${http_proxy}" >> /etc/yum.conf ;;` + "\n")
+		buffer.WriteString(`  echo "proxy=` + httpProxyURL + `" >> /etc/yum.conf ;;` + "\n")
 		buffer.WriteString("esac\n")
 
 		// Set env variables for systemd
-		buffer.WriteString(`echo "DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\"`)
-		buffer.WriteString(` \"NO_PROXY=${no_proxy}\" \"no_proxy=${no_proxy}\""`)
+		buffer.WriteString(`echo "DefaultEnvironment=\"http_proxy=` + httpProxyURL + `\" \"https_proxy=` + httpProxyURL + `\"`)
+		buffer.WriteString(` \"NO_PROXY=` + ps.ProxyExcludes + `\" \"no_proxy=` + ps.ProxyExcludes + `\""`)
 		buffer.WriteString(" >> /etc/systemd/system.conf\n")
 
 		// Restart stuff

@@ -22,9 +22,9 @@ set -o pipefail
 
 # required version for this script, if not installed on the host we will
 # use the official docker image instead. keep this in sync with SHELLCHECK_IMAGE
-SHELLCHECK_VERSION="0.7.1"
+SHELLCHECK_VERSION="0.9.0"
 # upstream shellcheck latest stable image as of September 1st, 2020
-SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.7.1@sha256:6093ec552a8c918483dca0544d44ad56a43c4dbf1d85447f2316f8e3b15e3cb6"
+SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.9.0@sha256:e19ed93c22423970d56568e171b4512c9244fc75dd9114045016b4a0073ac4b7"
 
 # fixed name for the shellcheck docker container so we can reliably clean it up
 SHELLCHECK_CONTAINER="k8s-shellcheck"
@@ -36,6 +36,8 @@ disabled=(
   1090
   # this lint prefers command -v to which, they are not the same
   2230
+  # this lint tries to open ./common.sh and fails
+  1091
 )
 # comma separate for passing to shellcheck
 join_by() {
@@ -71,7 +73,8 @@ cd "${KOPS_ROOT}"
 # - ./vendor* - Vendored code should be fixed upstream instead.
 # - ./third_party/*, but re-include ./third_party/forked/*  - only code we
 #    forked should be linted and fixed.
-all_shell_scripts=()
+#    include also output from bootstrap script tests
+mapfile -t all_shell_scripts < <(ls -1 pkg/model/tests/data/bootstrapscript_*.txt)
 while IFS=$'\n' read -r script;
   do git check-ignore -q "$script" || all_shell_scripts+=("$script");
 done < <(find . -type f -name "*.sh" \
