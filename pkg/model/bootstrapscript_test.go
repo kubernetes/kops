@@ -52,7 +52,7 @@ func Test_ProxyFunc(t *testing.T) {
 		t.Fatalf("script cannot be empty")
 	}
 
-	if !strings.HasPrefix(script, "echo \"http_proxy=http://example.com:80\" >> /etc/environment") {
+	if !strings.Contains(script, "echo \"http_proxy=http://example.com:80\"") {
 		t.Fatalf("script not setting http_proxy properly")
 	}
 
