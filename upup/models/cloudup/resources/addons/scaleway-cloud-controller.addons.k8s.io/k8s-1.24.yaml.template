@@ -50,20 +50,6 @@ spec:
           effect: NoSchedule
         - key: "node-role.kubernetes.io/control-plane"
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
-                  - key: kops.k8s.io/kops-controller-pki
-                    operator: Exists
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/master
-                    operator: Exists
-                  - key: kops.k8s.io/kops-controller-pki
-                    operator: Exists
       containers:
         - name: scaleway-cloud-controller-manager
           image: scaleway/scaleway-cloud-controller-manager:latest
