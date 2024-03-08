@@ -860,11 +860,8 @@ func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGrou
 // about updating this limit, see Quotas for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
-// For introductory exercises for creating an Auto Scaling group, see Getting
-// started with Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/GettingStartedTutorial.html)
-// and Tutorial: Set up a scaled and load-balanced application (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-register-lbs-with-asg.html)
-// in the Amazon EC2 Auto Scaling User Guide. For more information, see Auto
-// Scaling groups (https://docs.aws.amazon.com/autoscaling/ec2/userguide/AutoScalingGroup.html)
+// If you're new to Amazon EC2 Auto Scaling, see the introductory tutorials
+// in Get started with Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/get-started-with-ec2-auto-scaling.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Every Auto Scaling group has three size properties (DesiredCapacity, MaxSize,
@@ -14868,16 +14865,17 @@ type InstanceRequirements struct {
 	// The parameter accepts an integer, which Amazon EC2 Auto Scaling interprets
 	// as a percentage.
 	//
-	// To indicate no price protection threshold, specify a high value, such as
-	// 999999.
-	//
 	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
 	// threshold is based on the per-vCPU or per-memory price instead of the per
 	// instance price.
 	//
 	// Only one of SpotMaxPricePercentageOverLowestPrice or MaxSpotPriceAsPercentageOfOptimalOnDemandPrice
-	// can be specified. If you don't specify either, then SpotMaxPricePercentageOverLowestPrice
-	// is used and the value for that parameter defaults to 100.
+	// can be specified. If you don't specify either, Amazon EC2 Auto Scaling will
+	// automatically apply optimal price protection to consistently select from
+	// a wide range of instance types. To indicate no price protection threshold
+	// for Spot Instances, meaning you want to consider all instance types that
+	// match your attributes, include one of these parameters and specify a high
+	// value, such as 999999.
 	MaxSpotPriceAsPercentageOfOptimalOnDemandPrice *int64 `type:"integer"`
 
 	// The minimum and maximum amount of memory per vCPU for an instance type, in
@@ -14944,16 +14942,17 @@ type InstanceRequirements struct {
 	// The parameter accepts an integer, which Amazon EC2 Auto Scaling interprets
 	// as a percentage.
 	//
-	// To turn off price protection, specify a high value, such as 999999.
-	//
 	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
 	// threshold is based on the per-vCPU or per-memory price instead of the per
 	// instance price.
 	//
 	// Only one of SpotMaxPricePercentageOverLowestPrice or MaxSpotPriceAsPercentageOfOptimalOnDemandPrice
-	// can be specified.
-	//
-	// Default: 100
+	// can be specified. If you don't specify either, Amazon EC2 Auto Scaling will
+	// automatically apply optimal price protection to consistently select from
+	// a wide range of instance types. To indicate no price protection threshold
+	// for Spot Instances, meaning you want to consider all instance types that
+	// match your attributes, include one of these parameters and specify a high
+	// value, such as 999999.
 	SpotMaxPricePercentageOverLowestPrice *int64 `type:"integer"`
 
 	// The minimum and maximum total local storage size for an instance type, in

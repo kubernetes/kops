@@ -10,13 +10,11 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
-	"github.com/gophercloud/gophercloud/internal/ctxt"
 )
 
 // DefaultUserAgent is the default User-Agent string set in the request header.
 const (
-	DefaultUserAgent         = "gophercloud/v1.10.0"
+	DefaultUserAgent         = "gophercloud/v1.11.0"
 	DefaultMaxBackoffRetries = 60
 )
 
@@ -90,9 +88,7 @@ type ProviderClient struct {
 	// with the token and reauth func zeroed. Such client can be used to perform reauthorization.
 	Throwaway bool
 
-	// Context is the context passed to the HTTP request. Values set on the
-	// per-call context, when available, override values set on this
-	// context.
+	// Context is the context passed to the HTTP request.
 	Context context.Context
 
 	// Retry backoff func is called when rate limited.
@@ -356,20 +352,15 @@ type requestState struct {
 
 var applicationJSON = "application/json"
 
-// RequestWithContext performs an HTTP request using the ProviderClient's
-// current HTTPClient. An authentication header will automatically be provided.
-func (client *ProviderClient) RequestWithContext(ctx context.Context, method, url string, options *RequestOpts) (*http.Response, error) {
-	return client.doRequest(ctx, method, url, options, &requestState{
+// Request performs an HTTP request using the ProviderClient's current HTTPClient. An authentication
+// header will automatically be provided.
+func (client *ProviderClient) Request(method, url string, options *RequestOpts) (*http.Response, error) {
+	return client.doRequest(method, url, options, &requestState{
 		hasReauthenticated: false,
 	})
 }
 
-// Request is a compatibility wrapper for Request.
-func (client *ProviderClient) Request(method, url string, options *RequestOpts) (*http.Response, error) {
-	return client.RequestWithContext(context.Background(), method, url, options)
-}
-
-func (client *ProviderClient) doRequest(ctx context.Context, method, url string, options *RequestOpts, state *requestState) (*http.Response, error) {
+func (client *ProviderClient) doRequest(method, url string, options *RequestOpts, state *requestState) (*http.Response, error) {
 	var body io.Reader
 	var contentType *string
 
@@ -398,15 +389,13 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 		body = options.RawBody
 	}
 
-	if client.Context != nil {
-		var cancel context.CancelFunc
-		ctx, cancel = ctxt.Merge(ctx, client.Context)
-		defer cancel()
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	// Construct the http.Request.
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
+	}
+	if client.Context != nil {
+		req = req.WithContext(client.Context)
 	}
 
 	// Populate the request headers.
@@ -443,12 +432,12 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 		if client.RetryFunc != nil {
 			var e error
 			state.retries = state.retries + 1
-			e = client.RetryFunc(ctx, method, url, options, err, state.retries)
+			e = client.RetryFunc(client.Context, method, url, options, err, state.retries)
 			if e != nil {
 				return nil, e
 			}
 
-			return client.doRequest(ctx, method, url, options, state)
+			return client.doRequest(method, url, options, state)
 		}
 		return nil, err
 	}
@@ -502,7 +491,7 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 					}
 				}
 				state.hasReauthenticated = true
-				resp, err = client.doRequest(ctx, method, url, options, state)
+				resp, err = client.doRequest(method, url, options, state)
 				if err != nil {
 					switch err.(type) {
 					case *ErrUnexpectedResponseCode:
@@ -567,7 +556,7 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 					return resp, e
 				}
 
-				return client.doRequest(ctx, method, url, options, state)
+				return client.doRequest(method, url, options, state)
 			}
 		case http.StatusInternalServerError:
 			err = ErrDefault500{respErr}
@@ -603,7 +592,7 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 				return resp, e
 			}
 
-			return client.doRequest(ctx, method, url, options, state)
+			return client.doRequest(method, url, options, state)
 		}
 
 		return resp, err
@@ -627,7 +616,7 @@ func (client *ProviderClient) doRequest(ctx context.Context, method, url string,
 					return resp, e
 				}
 
-				return client.doRequest(ctx, method, url, options, state)
+				return client.doRequest(method, url, options, state)
 			}
 			return nil, err
 		}

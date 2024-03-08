@@ -1,7 +1,6 @@
 package ec2tokens
 
 import (
-	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -288,8 +287,8 @@ func (opts *AuthOptions) ToTokenV3CreateMap(map[string]interface{}) (map[string]
 	return b, nil
 }
 
-// CreateWithContext authenticates and either generates a new token from EC2 credentials
-func CreateWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
+// Create authenticates and either generates a new token from EC2 credentials
+func Create(c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
 	b, err := opts.ToTokenV3CreateMap(nil)
 	if err != nil {
 		r.Err = err
@@ -299,7 +298,7 @@ func CreateWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts t
 	// delete "token" element, since it is used in s3tokens
 	deleteBodyElements(b, "token")
 
-	resp, err := c.PostWithContext(ctx, ec2tokensURL(c), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Post(ec2tokensURL(c), b, &r.Body, &gophercloud.RequestOpts{
 		MoreHeaders: map[string]string{"X-Auth-Token": ""},
 		OkCodes:     []int{200},
 	})
@@ -307,15 +306,9 @@ func CreateWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts t
 	return
 }
 
-// Create is a compatibility wrapper around CreateWithContext
-func Create(c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
-	return CreateWithContext(context.Background(), c, opts)
-}
-
-// ValidateS3TokenWithContext authenticates an S3 request using EC2
-// credentials. Doesn't generate a new token ID, but returns a
-// tokens.CreateResult.
-func ValidateS3TokenWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
+// ValidateS3Token authenticates an S3 request using EC2 credentials. Doesn't
+// generate a new token ID, but returns a tokens.CreateResult.
+func ValidateS3Token(c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
 	b, err := opts.ToTokenV3CreateMap(nil)
 	if err != nil {
 		r.Err = err
@@ -325,17 +318,12 @@ func ValidateS3TokenWithContext(ctx context.Context, c *gophercloud.ServiceClien
 	// delete unused element, since it is used in ec2tokens only
 	deleteBodyElements(b, "body_hash", "headers", "host", "params", "path", "verb")
 
-	resp, err := c.PostWithContext(ctx, s3tokensURL(c), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Post(s3tokensURL(c), b, &r.Body, &gophercloud.RequestOpts{
 		MoreHeaders: map[string]string{"X-Auth-Token": ""},
 		OkCodes:     []int{200},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
-}
-
-// ValidateS3Token is a compatibility wrapper around ValidateS3TokenWithContext
-func ValidateS3Token(c *gophercloud.ServiceClient, opts tokens.AuthOptionsBuilder) (r tokens.CreateResult) {
-	return ValidateS3TokenWithContext(context.Background(), c, opts)
 }
 
 // The following are small helper functions used to help build the signature.

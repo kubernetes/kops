@@ -4792,6 +4792,10 @@ type NodeConfig struct {
 	// SandboxConfig: Sandbox configuration for this node.
 	SandboxConfig *SandboxConfig `json:"sandboxConfig,omitempty"`
 
+	// SecondaryBootDisks: List of secondary boot disks attached to the
+	// nodes.
+	SecondaryBootDisks []*SecondaryBootDisk `json:"secondaryBootDisks,omitempty"`
+
 	// ServiceAccount: The Google Cloud Platform Service Account to be used
 	// by the node VMs. Specify the email address of the Service Account;
 	// otherwise, if no Service Account is specified, the "default" service
@@ -6501,6 +6505,43 @@ type SandboxConfig struct {
 
 func (s *SandboxConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod SandboxConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SecondaryBootDisk: SecondaryBootDisk represents a persistent disk
+// attached to a node with special configurations based on its mode.
+type SecondaryBootDisk struct {
+	// DiskImage: Fully-qualified resource ID for an existing disk image.
+	DiskImage string `json:"diskImage,omitempty"`
+
+	// Mode: Disk mode (container image cache, etc.)
+	//
+	// Possible values:
+	//   "MODE_UNSPECIFIED" - MODE_UNSPECIFIED is when mode is not set.
+	//   "CONTAINER_IMAGE_CACHE" - CONTAINER_IMAGE_CACHE is for using the
+	// secondary boot disk as a container image cache.
+	Mode string `json:"mode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DiskImage") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DiskImage") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SecondaryBootDisk) MarshalJSON() ([]byte, error) {
+	type NoMethod SecondaryBootDisk
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

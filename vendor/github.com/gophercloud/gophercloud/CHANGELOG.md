@@ -1,4 +1,10 @@
-## v1.10.0 (2024-02-27)
+## v1.11.0 (2024-03-07)
+
+This version reverts the inclusion of Context in the v1 branch. This inclusion
+didn't add much value because no packages were using it; on the other hand, it
+introduced a bug when using the Context property of the Provider client.
+
+## v1.10.0 (2024-02-27) **RETRACTED**: see https://github.com/gophercloud/gophercloud/issues/2969
 
 * [GH-2893](https://github.com/gophercloud/gophercloud/pull/2893) [v1] authentication: Add WithContext functions
 * [GH-2894](https://github.com/gophercloud/gophercloud/pull/2894) [v1] pager: Add WithContext functions
@@ -8,7 +14,7 @@
 * [GH-2933](https://github.com/gophercloud/gophercloud/pull/2933) [v1]  Fix AllowReauth reauthentication
 * [GH-2950](https://github.com/gophercloud/gophercloud/pull/2950) [v1] compute: Use volumeID, not attachmentID for volume attachments
 
-## v1.9.0 (2024-02-02)
+## v1.9.0 (2024-02-02) **RETRACTED**: see https://github.com/gophercloud/gophercloud/issues/2969
 
 New features and improvements:
 

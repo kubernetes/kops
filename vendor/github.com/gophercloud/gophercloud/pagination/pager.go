@@ -1,7 +1,6 @@
 package pagination
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -70,8 +69,8 @@ func (p Pager) WithPageCreator(createPage func(r PageResult) Page) Pager {
 	}
 }
 
-func (p Pager) fetchNextPage(ctx context.Context, url string) (Page, error) {
-	resp, err := RequestWithContext(ctx, p.client, p.Headers, url)
+func (p Pager) fetchNextPage(url string) (Page, error) {
+	resp, err := Request(p.client, p.Headers, url)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +83,9 @@ func (p Pager) fetchNextPage(ctx context.Context, url string) (Page, error) {
 	return p.createPage(remembered), nil
 }
 
-// EachPageWithContext iterates over each page returned by a Pager, yielding
-// one at a time to a handler function. Return "false" from the handler to
-// prematurely stop iterating.
-func (p Pager) EachPageWithContext(ctx context.Context, handler func(context.Context, Page) (bool, error)) error {
+// EachPage iterates over each page returned by a Pager, yielding one at a time to a handler function.
+// Return "false" from the handler to prematurely stop iterating.
+func (p Pager) EachPage(handler func(Page) (bool, error)) error {
 	if p.Err != nil {
 		return p.Err
 	}
@@ -101,7 +99,7 @@ func (p Pager) EachPageWithContext(ctx context.Context, handler func(context.Con
 			p.firstPage = nil
 		} else {
 			var err error
-			currentPage, err = p.fetchNextPage(ctx, currentURL)
+			currentPage, err = p.fetchNextPage(currentURL)
 			if err != nil {
 				return err
 			}
@@ -115,7 +113,7 @@ func (p Pager) EachPageWithContext(ctx context.Context, handler func(context.Con
 			return nil
 		}
 
-		ok, err := handler(ctx, currentPage)
+		ok, err := handler(currentPage)
 		if err != nil {
 			return err
 		}
@@ -133,16 +131,9 @@ func (p Pager) EachPageWithContext(ctx context.Context, handler func(context.Con
 	}
 }
 
-// EachPage is a compatibility wrapper around EachPageWithContext.
-func (p Pager) EachPage(handler func(Page) (bool, error)) error {
-	return p.EachPageWithContext(context.Background(), func(_ context.Context, p Page) (bool, error) {
-		return handler(p)
-	})
-}
-
-// AllPagesWithContext returns all the pages from a `List` operation in a single page,
+// AllPages returns all the pages from a `List` operation in a single page,
 // allowing the user to retrieve all the pages at once.
-func (p Pager) AllPagesWithContext(ctx context.Context) (Page, error) {
+func (p Pager) AllPages() (Page, error) {
 	if p.Err != nil {
 		return nil, p.Err
 	}
@@ -152,7 +143,7 @@ func (p Pager) AllPagesWithContext(ctx context.Context) (Page, error) {
 	var body reflect.Value
 
 	// Grab a first page to ascertain the page body type.
-	firstPage, err := p.fetchNextPage(ctx, p.initialURL)
+	firstPage, err := p.fetchNextPage(p.initialURL)
 	if err != nil {
 		return nil, err
 	}
@@ -260,9 +251,4 @@ func (p Pager) AllPagesWithContext(ctx context.Context) (Page, error) {
 	// Type assert the page to a Page interface so that the type assertion in the
 	// `Extract*` methods will work.
 	return page.Elem().Interface().(Page), err
-}
-
-// AllPages is a compatibility wrapper around AllPagesWithContext.
-func (p Pager) AllPages() (Page, error) {
-	return p.AllPagesWithContext(context.Background())
 }
