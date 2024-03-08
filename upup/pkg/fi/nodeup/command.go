@@ -139,6 +139,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error parsing BootConfig config response: %v", err)
 		}
 		nodeupConfigHash = sha256.Sum256([]byte(nodeConfig.NodeupConfig))
+		if nodeupConfig.CAs == nil {
+			nodeupConfig.CAs = make(map[string]string)
+		}
 		nodeupConfig.CAs[fi.CertificateIDCA] = bootConfig.ConfigServer.CACertificates
 	case bootConfig.InstanceGroupName != "":
 		nodeupConfigLocation := configBase.Join("igconfig", bootConfig.InstanceGroupRole.ToLowerString(), bootConfig.InstanceGroupName, "nodeupconfig.yaml")

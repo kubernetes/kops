@@ -36,6 +36,7 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -47,10 +48,12 @@ type tpmVerifier struct {
 	opt gcetpm.TPMVerifierOptions
 
 	computeClient *compute.Service
+
+	capiManager *clusterapi.Manager
 }
 
 // NewTPMVerifier constructs a new TPM verifier for GCE.
-func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions) (bootstrap.Verifier, error) {
+func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions, capiManager *clusterapi.Manager) (bootstrap.Verifier, error) {
 	ctx := context.Background()
 
 	computeClient, err := compute.NewService(ctx)
@@ -61,6 +64,7 @@ func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions) (bootstrap.Verifier, error) 
 	return &tpmVerifier{
 		opt:           *opt,
 		computeClient: computeClient,
+		capiManager:   capiManager,
 	}, nil
 }
 
@@ -121,7 +125,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		return nil, fmt.Errorf("projectID does not match expected: got %q, want %q", tokenData.GCPProjectID, v.opt.ProjectID)
 	}
 
-	instance, err := v.computeClient.Instances.Get(tokenData.GCPProjectID, tokenData.Zone, tokenData.Instance).Do()
+	instance, err := v.computeClient.Instances.Get(tokenData.GCPProjectID, tokenData.Zone, tokenData.Instance).Context(ctx).Do()
 	if err != nil {
 		if isNotFound(err) {
 			return nil, fmt.Errorf("unable to find instance in compute API: %w", err)
@@ -144,6 +148,8 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		}
 	}
 
+	capgRole := instance.Labels[gce.LabelKeyCAPIRoleName]
+
 	if clusterName == "" {
 		return nil, fmt.Errorf("could not determine cluster for instance %s", instance.SelfLink)
 	}
@@ -151,8 +157,22 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	if clusterName != v.opt.ClusterName {
 		return nil, fmt.Errorf("clusterName does not match expected: got %q, want %q", clusterName, v.opt.ClusterName)
 	}
-	if instanceGroupName == "" {
-		return nil, fmt.Errorf("could not determine instance group for instance %s", instance.SelfLink)
+
+	var capiMachine *clusterapi.Machine
+
+	if v.capiManager != nil && capgRole != "" {
+		providerID := "gce://" + tokenData.GCPProjectID + "/" + tokenData.Zone + "/" + tokenData.Instance
+
+		m, err := v.capiManager.FindMachineByProviderID(ctx, providerID)
+		if err != nil {
+			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
+		}
+		capiMachine = m
+	}
+
+	// Check if this is a CAPG managed instance
+	if instanceGroupName == "" && capiMachine == nil {
+		return nil, fmt.Errorf("could not determine ownership for instance %s", instance.SelfLink)
 	}
 
 	// Verify the token has a valid GCE TPM signature.
@@ -178,6 +198,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	result := &bootstrap.VerifyResult{
 		NodeName:          instance.Name,
 		InstanceGroupName: instanceGroupName,
+		CAPIMachine:       capiMachine,
 		CertificateNames:  sans,
 		ChallengeEndpoint: challengeEndpoint,
 	}
