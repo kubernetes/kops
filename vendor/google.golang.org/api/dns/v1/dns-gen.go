@@ -2303,6 +2303,10 @@ type Quota struct {
 	// can be attached to a network.
 	ManagedZonesPerNetwork int64 `json:"managedZonesPerNetwork,omitempty"`
 
+	// NameserversPerDelegation: Maximum number of nameservers per
+	// delegation, meant to prevent abuse
+	NameserversPerDelegation int64 `json:"nameserversPerDelegation,omitempty"`
+
 	// NetworksPerManagedZone: Maximum allowed number of networks to which a
 	// privately scoped zone can be attached.
 	NetworksPerManagedZone int64 `json:"networksPerManagedZone,omitempty"`

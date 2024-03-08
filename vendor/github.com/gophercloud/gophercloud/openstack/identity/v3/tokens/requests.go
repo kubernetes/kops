@@ -1,10 +1,6 @@
 package tokens
 
-import (
-	"context"
-
-	"github.com/gophercloud/gophercloud"
-)
+import "github.com/gophercloud/gophercloud"
 
 // Scope allows a created token to be limited to a specific domain or project.
 type Scope struct {
@@ -123,9 +119,9 @@ func subjectTokenHeaders(subjectToken string) map[string]string {
 	}
 }
 
-// CreateWithContext authenticates and either generates a new token, or changes the Scope
+// Create authenticates and either generates a new token, or changes the Scope
 // of an existing token.
-func CreateWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts AuthOptionsBuilder) (r CreateResult) {
+func Create(c *gophercloud.ServiceClient, opts AuthOptionsBuilder) (r CreateResult) {
 	scope, err := opts.ToTokenV3ScopeMap()
 	if err != nil {
 		r.Err = err
@@ -138,21 +134,16 @@ func CreateWithContext(ctx context.Context, c *gophercloud.ServiceClient, opts A
 		return
 	}
 
-	resp, err := c.PostWithContext(ctx, tokenURL(c), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Post(tokenURL(c), b, &r.Body, &gophercloud.RequestOpts{
 		OmitHeaders: []string{"X-Auth-Token"},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
-// Create is a compatibility wrapper around CreateWithContext
-func Create(c *gophercloud.ServiceClient, opts AuthOptionsBuilder) (r CreateResult) {
-	return CreateWithContext(context.Background(), c, opts)
-}
-
-// GetGetWithContext validates and retrieves information about another token.
-func GetWithContext(ctx context.Context, c *gophercloud.ServiceClient, token string) (r GetResult) {
-	resp, err := c.GetWithContext(ctx, tokenURL(c), &r.Body, &gophercloud.RequestOpts{
+// Get validates and retrieves information about another token.
+func Get(c *gophercloud.ServiceClient, token string) (r GetResult) {
+	resp, err := c.Get(tokenURL(c), &r.Body, &gophercloud.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(token),
 		OkCodes:     []int{200, 203},
 	})
@@ -160,14 +151,9 @@ func GetWithContext(ctx context.Context, c *gophercloud.ServiceClient, token str
 	return
 }
 
-// Get is a compatibility wrapper around GetWithContext
-func Get(c *gophercloud.ServiceClient, token string) (r GetResult) {
-	return GetWithContext(context.Background(), c, token)
-}
-
-// ValidateWithContext determines if a specified token is valid or not.
-func ValidateWithContext(ctx context.Context, c *gophercloud.ServiceClient, token string) (bool, error) {
-	resp, err := c.HeadWithContext(ctx, tokenURL(c), &gophercloud.RequestOpts{
+// Validate determines if a specified token is valid or not.
+func Validate(c *gophercloud.ServiceClient, token string) (bool, error) {
+	resp, err := c.Head(tokenURL(c), &gophercloud.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(token),
 		OkCodes:     []int{200, 204, 404},
 	})
@@ -178,21 +164,11 @@ func ValidateWithContext(ctx context.Context, c *gophercloud.ServiceClient, toke
 	return resp.StatusCode == 200 || resp.StatusCode == 204, nil
 }
 
-// Validate is a compatibility wrapper around ValidateWithContext
-func Validate(c *gophercloud.ServiceClient, token string) (bool, error) {
-	return ValidateWithContext(context.Background(), c, token)
-}
-
-// RevokeWithContext immediately makes specified token invalid.
-func RevokeWithContext(ctx context.Context, c *gophercloud.ServiceClient, token string) (r RevokeResult) {
-	resp, err := c.DeleteWithContext(ctx, tokenURL(c), &gophercloud.RequestOpts{
+// Revoke immediately makes specified token invalid.
+func Revoke(c *gophercloud.ServiceClient, token string) (r RevokeResult) {
+	resp, err := c.Delete(tokenURL(c), &gophercloud.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(token),
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
-}
-
-// Revoke is a compatibility wrapper around RevokeWithContext
-func Revoke(c *gophercloud.ServiceClient, token string) (r RevokeResult) {
-	return RevokeWithContext(context.Background(), c, token)
 }

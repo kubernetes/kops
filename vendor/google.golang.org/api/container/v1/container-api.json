@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240206",
+  "revision": "20240214",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -5266,6 +5266,13 @@
           "$ref": "SandboxConfig",
           "description": "Sandbox configuration for this node."
         },
+        "secondaryBootDisks": {
+          "description": "List of secondary boot disks attached to the nodes.",
+          "items": {
+            "$ref": "SecondaryBootDisk"
+          },
+          "type": "array"
+        },
         "serviceAccount": {
           "description": "The Google Cloud Platform Service Account to be used by the node VMs. Specify the email address of the Service Account; otherwise, if no Service Account is specified, the \"default\" service account is used.",
           "type": "string"
@@ -6273,6 +6280,29 @@
           "enumDescriptions": [
             "Default value. This should not be used.",
             "Run sandbox using gvisor."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SecondaryBootDisk": {
+      "description": "SecondaryBootDisk represents a persistent disk attached to a node with special configurations based on its mode.",
+      "id": "SecondaryBootDisk",
+      "properties": {
+        "diskImage": {
+          "description": "Fully-qualified resource ID for an existing disk image.",
+          "type": "string"
+        },
+        "mode": {
+          "description": "Disk mode (container image cache, etc.)",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "CONTAINER_IMAGE_CACHE"
+          ],
+          "enumDescriptions": [
+            "MODE_UNSPECIFIED is when mode is not set.",
+            "CONTAINER_IMAGE_CACHE is for using the secondary boot disk as a container image cache."
           ],
           "type": "string"
         }

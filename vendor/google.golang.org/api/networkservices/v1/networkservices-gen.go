@@ -909,19 +909,19 @@ func (s *ExtensionChain) MarshalJSON() ([]byte, error) {
 // for the matching request.
 type ExtensionChainExtension struct {
 	// Authority: Optional. The `:authority` header in the gRPC request sent
-	// from Envoy to the extension service.
+	// from Envoy to the extension service. Required for Callout extensions.
 	Authority string `json:"authority,omitempty"`
 
 	// FailOpen: Optional. Determines how the proxy behaves if the call to
 	// the extension fails or times out. When set to `TRUE`, request or
 	// response processing continues without error. Any subsequent
 	// extensions in the extension chain are also executed. When set to
-	// `FALSE`: * If response headers have not been delivered to the
-	// downstream client, a generic 500 error is returned to the client. The
-	// error response can be tailored by configuring a custom error response
-	// in the load balancer. * If response headers have been delivered, then
-	// the HTTP stream to the downstream client is reset. Default is
-	// `FALSE`.
+	// `FALSE` or the default setting of `FALSE` is used, one of the
+	// following happens: * If response headers have not been delivered to
+	// the downstream client, a generic 500 error is returned to the client.
+	// The error response can be tailored by configuring a custom error
+	// response in the load balancer. * If response headers have been
+	// delivered, then the HTTP stream to the downstream client is reset.
 	FailOpen bool `json:"failOpen,omitempty"`
 
 	// ForwardHeaders: Optional. List of the HTTP headers to forward to the
@@ -937,8 +937,8 @@ type ExtensionChainExtension struct {
 	Name string `json:"name,omitempty"`
 
 	// Service: Required. The reference to the service that runs the
-	// extension. Currently only Callout extensions are supported here. To
-	// configure a Callout extension, `service` must be a fully-qualified
+	// extension. Currently only callout extensions are supported here. To
+	// configure a callout extension, `service` must be a fully-qualified
 	// reference to a backend service
 	// (https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)
 	// in the format:
@@ -963,10 +963,15 @@ type ExtensionChainExtension struct {
 	// extension is called when the HTTP response headers arrive.
 	//   "RESPONSE_BODY" - If included in `supported_events`, the extension
 	// is called when the HTTP response body arrives.
+	//   "REQUEST_TRAILERS" - If included in `supported_events`, the
+	// extension is called when the HTTP request trailers arrives.
+	//   "RESPONSE_TRAILERS" - If included in `supported_events`, the
+	// extension is called when the HTTP response trailers arrives.
 	SupportedEvents []string `json:"supportedEvents,omitempty"`
 
-	// Timeout: Required. Specifies the timeout for each individual message
+	// Timeout: Optional. Specifies the timeout for each individual message
 	// on the stream. The timeout must be between 10-1000 milliseconds.
+	// Required for Callout extensions.
 	Timeout string `json:"timeout,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Authority") to
@@ -998,8 +1003,7 @@ type ExtensionChainMatchCondition struct {
 	// CelExpression: Required. A Common Expression Language (CEL)
 	// expression that is used to match requests for which the extension
 	// chain is executed. For more information, see CEL matcher language
-	// reference
-	// (https://cloud.google.com/service-extensions/docs/cel-matcher-language-reference).
+	// reference (/service-extensions/docs/cel-matcher-language-reference).
 	CelExpression string `json:"celExpression,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CelExpression") to
@@ -2693,8 +2697,9 @@ type LbRouteExtension struct {
 
 	// Labels: Optional. Set of labels associated with the
 	// `LbRouteExtension` resource. The format must comply with the
-	// following requirements
-	// (/compute/docs/labeling-resources#requirements).
+	// requirements for labels
+	// (/compute/docs/labeling-resources#requirements) for Google Cloud
+	// resources.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// LoadBalancingScheme: Required. All backend services and forwarding
@@ -2774,8 +2779,9 @@ type LbTrafficExtension struct {
 
 	// Labels: Optional. Set of labels associated with the
 	// `LbTrafficExtension` resource. The format must comply with the
-	// following requirements
-	// (/compute/docs/labeling-resources#requirements).
+	// requirements for labels
+	// (/compute/docs/labeling-resources#requirements) for Google Cloud
+	// resources.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// LoadBalancingScheme: Required. All backend services and forwarding

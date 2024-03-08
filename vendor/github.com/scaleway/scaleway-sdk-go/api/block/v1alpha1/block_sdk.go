@@ -124,8 +124,8 @@ const (
 	ReferenceStatusDetaching = ReferenceStatus("detaching")
 	// When the reference is detached from a volume - the reference ceases to exist.
 	ReferenceStatusDetached = ReferenceStatus("detached")
-	// Reference undergoing snapshotting operation (transient).
-	ReferenceStatusSnapshotting = ReferenceStatus("snapshotting")
+	// Reference under creation which can be rolled back if an error occurs (transient).
+	ReferenceStatusCreating = ReferenceStatus("creating")
 	// Error status.
 	ReferenceStatusError = ReferenceStatus("error")
 )
