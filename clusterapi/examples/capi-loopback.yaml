@@ -1,0 +1,42 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: root-reader
+rules:
+# Needed for a probe; but this feels like a poor choice - /api would more open by default
+# TODO: File bug, also error handling is poor and usually prints "Unknown"
+- nonResourceURLs: ["/"]
+  verbs: ["get"]
+
+# Pods
+- resources: ["pods"]
+  apiGroups: [""]
+  verbs:
+  # Needed for "checking if we're running on workload cluster"
+  - "get"
+
+# Nodes
+- resources: ["nodes"]
+  apiGroups: [""]
+  verbs:
+  # We monitor in-cluster nodes
+  - get
+  - list
+  - watch
+  # We patch nodes with our labels
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: root-reader-capi-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: root-reader
+subjects:
+- kind: ServiceAccount
+  name: capi-manager
+  namespace: capi-system

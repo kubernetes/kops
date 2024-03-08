@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package clusterapi
 
 import (
 	"bytes"
@@ -28,15 +28,21 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/clusterapi/bootstrap/kops/api/v1beta1"
+	capikops "k8s.io/kops/clusterapi/controlplane/kops/api/v1beta1"
 	clusterv1 "k8s.io/kops/clusterapi/snapshot/cluster-api/api/v1beta1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
+	kopsapi "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/pkg/nodemodel"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -77,7 +83,22 @@ func (r *KopsConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	data, err := r.buildBootstrapData(ctx)
+	capiCluster, err := getCAPIClusterFromCAPIObject(ctx, r.client, obj)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	cluster, err := getKopsClusterFromCAPICluster(ctx, r.client, capiCluster)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	kopsControlPlane, err := getKopsControlPlaneFromCAPICluster(ctx, r.client, capiCluster)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	data, err := r.buildBootstrapData(ctx, cluster, kopsControlPlane)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -154,44 +175,101 @@ func (r *KopsConfigReconciler) storeBootstrapData(ctx context.Context, parent *a
 	return nil
 }
 
-func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, error) {
+func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context, cluster *kopsapi.Cluster, kopsControlPlane *capikops.KopsControlPlane) ([]byte, error) {
+
+	config, err := BuildNodeupConfig(ctx, cluster, kopsControlPlane)
+	if err != nil {
+		return nil, err
+	}
+	return config.NodeupScript, nil
+}
+
+type NodeupConfig struct {
+	NodeupScript []byte
+	NodeupConfig *nodeup.Config
+}
+
+// TODO: Dedup with b.builder.NodeUpConfigBuilder.BuildConfig
+func BuildNodeupConfig(ctx context.Context, cluster *kopsapi.Cluster, kopsControlPlane *capikops.KopsControlPlane) (*NodeupConfig, error) {
 	// tf := &TemplateFunctions{
 	// 	KopsModelContext: *modelContext,
 	// 	cloud:            cloud,
 	// }
-	// TODO: Make dynamic
-	clusterName := "clusterapi.k8s.local"
-	clusterStoreBasePath := "gs://kops-state-justinsb-root-20220725"
-
 	wellKnownAddresses := model.WellKnownAddresses{}
-	wellKnownAddresses[wellknownservices.KopsController] = append(wellKnownAddresses[wellknownservices.KopsController], "10.0.16.2")
-	wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], "10.0.16.2")
-
-	vfsContext := vfs.NewVFSContext()
-	basePath, err := vfsContext.BuildVfsPath(clusterStoreBasePath)
-	if err != nil {
-		return nil, fmt.Errorf("parsing vfs base path: %w", err)
+	for _, systemEndpoint := range kopsControlPlane.Status.SystemEndpoints {
+		switch systemEndpoint.Type {
+		case capikops.SystemEndpointTypeKopsController:
+			wellKnownAddresses[wellknownservices.KopsController] = append(wellKnownAddresses[wellknownservices.KopsController], systemEndpoint.Endpoint)
+		case capikops.SystemEndpointTypeKubeAPIServer:
+			wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], systemEndpoint.Endpoint)
+		}
 	}
+
+	// TODO: Sync with other nodeup config builder
+	clusterInternal := &kops.Cluster{}
+	if err := kopscodecs.Scheme.Convert(cluster, clusterInternal, nil); err != nil {
+		return nil, fmt.Errorf("converting cluster object: %w", err)
+	}
+	// TODO: Fix validation
+	clusterInternal.Namespace = ""
+
+	// if clusterInternal.Spec.KubeAPIServer == nil {
+	// 	clusterInternal.Spec.KubeAPIServer = &kops.KubeAPIServerConfig{}
+	// }
 
 	// cluster := &kops.Cluster{}
 	// cluster.Spec.KubernetesVersion = "1.28.3"
 	// cluster.Spec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 
-	vfsClientset := vfsclientset.NewVFSClientset(vfsContext, basePath)
-	cluster, err := vfsClientset.GetCluster(ctx, clusterName)
+	// if cluster.Spec.KubeAPIServer == nil {
+	// 	cluster.Spec.KubeAPIServer = &kopsapi.KubeAPIServerConfig{}
+	// }
+
+	vfsContext := vfs.NewVFSContext()
+
+	basePath, err := registry.ConfigBase(vfsContext, clusterInternal)
 	if err != nil {
-		return nil, fmt.Errorf("getting cluster %q: %w", clusterName, err)
+		return nil, fmt.Errorf("parsing vfs base path: %w", err)
 	}
 
-	if cluster.Spec.KubeAPIServer == nil {
-		cluster.Spec.KubeAPIServer = &kops.KubeAPIServerConfig{}
-	}
+	clientset := vfsclientset.NewVFSClientset(vfsContext, basePath)
 
 	ig := &kops.InstanceGroup{}
+	// TODO: Name
+	ig.SetName("todo-ig-name")
 	ig.Spec.Role = kops.InstanceGroupRoleNode
 
 	getAssets := false
-	assetBuilder := assets.NewAssetBuilder(vfsContext, cluster.Spec.Assets, getAssets)
+	assetBuilder := assets.NewAssetBuilder(vfsContext, clusterInternal.Spec.Assets, getAssets)
+
+	cloud, err := cloudup.BuildCloud(clusterInternal)
+	if err != nil {
+		return nil, fmt.Errorf("building cloud: %w", err)
+	}
+
+	// assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	var instanceGroups []*kops.InstanceGroup
+	instanceGroups = append(instanceGroups, ig)
+
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, clusterInternal, instanceGroups, cloud, assetBuilder)
+	if err != nil {
+		return nil, fmt.Errorf("building full cluster spec: %w", err)
+	}
+
+	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), fullCluster)
+	if err != nil {
+		// TODO: Maybe this should be a warning
+		return nil, fmt.Errorf("building channel for cluster: %w", err)
+	}
+
+	var fullInstanceGroups []*kops.InstanceGroup
+	for _, instanceGroup := range instanceGroups {
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, instanceGroup, cloud, channel)
+		if err != nil {
+			return nil, fmt.Errorf("building full instance group spec: %w", err)
+		}
+		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
+	}
 
 	encryptionConfigSecretHash := ""
 	// if fi.ValueOf(c.Cluster.Spec.EncryptionConfig) {
@@ -214,9 +292,9 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 		return nil, err
 	}
 
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(fullCluster, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("building node config: %w", err)
 	}
 
 	// bootstrapScript := &model.BootstrapScript{
@@ -228,7 +306,24 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 
 	keysets := make(map[string]*fi.Keyset)
 
-	keystore, err := vfsClientset.KeyStore(cluster)
+	// var keystoreBase vfs.Path
+
+	// if cluster.Spec.ConfigStore.Keypairs == "" {
+	// 	configBase, err := registry.ConfigBase(vfsContext, clusterInternal)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	keystoreBase = configBase.Join("pki")
+	// } else {
+	// 	storePath, err := vfsContext.BuildVfsPath(cluster.Spec.ConfigStore.Keypairs)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	keystoreBase = storePath
+	// }
+
+	// keystore := fi.NewVFSCAStore(clusterInternal, keystoreBase)
+	keystore, err := clientset.KeyStore(fullCluster)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +341,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 		keysets[keyName] = keyset
 	}
 
-	_, bootConfig, err := configBuilder.BuildConfig(ig, wellKnownAddresses, keysets)
+	nodeupConfig, bootConfig, err := configBuilder.BuildConfig(fullInstanceGroups[0], wellKnownAddresses, keysets)
 	if err != nil {
 		return nil, err
 	}
@@ -261,6 +356,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 
 	var nodeupScript resources.NodeUpScript
 	nodeupScript.NodeUpAssets = nodeUpAssets.NodeUpAssets
+	// nodeupScript.NodeUpAssets = configBuilder.NodeUpAssets()
 	nodeupScript.BootConfig = bootConfig
 
 	{
@@ -298,7 +394,8 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	// TODO: nodeupScript.SetSysctls = setSysctls()
 
-	nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
+	// nodeupScript.CloudProvider = string(cluster.Spec.GetCloudProvider())
+	nodeupScript.CloudProvider = string(clusterInternal.GetCloudProvider())
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {
@@ -310,5 +407,8 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 		return nil, err
 	}
 
-	return b, nil
+	return &NodeupConfig{
+		NodeupScript: b,
+		NodeupConfig: nodeupConfig,
+	}, nil
 }

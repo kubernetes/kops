@@ -685,6 +685,13 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.CacheNodeidentityInfo = true
 	}
 
+	if featureflag.ClusterAPI.Enabled() {
+		enabled := true
+		config.CAPI = &kopscontrollerconfig.CAPIOptions{
+			Enabled: &enabled,
+		}
+	}
+
 	{
 		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}

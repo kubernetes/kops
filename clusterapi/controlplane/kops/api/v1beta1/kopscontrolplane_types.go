@@ -40,6 +40,56 @@ type KopsControlPlaneMachineTemplate struct {
 
 // KopsControlPlaneStatus defines the observed state of KopsControlPlane.
 type KopsControlPlaneStatus struct {
+	// initialization provides observations of the KopsControlPlane initialization process.
+	// NOTE: Fields in this struct are part of the Cluster API contract and are used to orchestrate initial Machine provisioning.
+	// +optional
+	Initialization KopsControlPlaneInitializationStatus `json:"initialization,omitempty,omitzero"`
+
+	// KopsControllerEndpoint represents the endpoints used to communicate with the control plane.
+	SystemEndpoints []SystemEndpoint `json:"systemEndpoints,omitempty"`
+}
+
+// KopsControlPlaneInitializationStatus provides observations of the KopsControlPlane initialization process.
+// +kubebuilder:validation:MinProperties=1
+type KopsControlPlaneInitializationStatus struct {
+	// controlPlaneInitialized is true when the KopsControlPlane provider reports that the Kubernetes control plane is initialized;
+	// A control plane is considered initialized when it can accept requests, no matter if this happens before
+	// the control plane is fully provisioned or not.
+	// NOTE: this field is part of the Cluster API contract, and it is used to orchestrate initial Machine provisioning.
+	// +optional
+	ControlPlaneInitialized *bool `json:"controlPlaneInitialized,omitempty"`
+}
+
+// SystemEndpointType identifies the service that the SystemEndpoint is describing.
+type SystemEndpointType string
+
+const (
+	// SystemEndpointTypeKubeAPIServer indicates that the endpoint is for the Kubernetes API server.
+	SystemEndpointTypeKubeAPIServer SystemEndpointType = "kube-apiserver"
+	// SystemEndpointTypeKopsController indicates that the endpoint is for the kops-controller.
+	SystemEndpointTypeKopsController SystemEndpointType = "kops-controller"
+)
+
+// SystemEndpointScope describes whether an endpoint is intended for internal or external use.
+type SystemEndpointScope string
+
+const (
+	// SystemEndpointScopeInternal indicates that the endpoint is intended for internal use.
+	SystemEndpointScopeInternal SystemEndpointScope = "internal"
+	// SystemEndpointScopeExternal indicates that the endpoint is intended for external use.
+	SystemEndpointScopeExternal SystemEndpointScope = "external"
+)
+
+// SystemEndpoint represents a reachable Kubernetes API endpoint.
+type SystemEndpoint struct {
+	// The type of the endpoint
+	Type SystemEndpointType `json:"type"`
+
+	// The hostname or IP on which the API server is serving.
+	Endpoint string `json:"endpoint"`
+
+	// Whether the endpoint is intended for internal or external use.
+	Scope SystemEndpointScope `json:"scope"`
 }
 
 // +kubebuilder:object:root=true
@@ -47,6 +97,7 @@ type KopsControlPlaneStatus struct {
 // +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
+// +kubebuilder:metadata:labels=cluster.x-k8s.io/v1beta2=v1beta1
 // +kubebuilder:printcolumn:name="Cluster",type="string",JSONPath=".metadata.labels['cluster\\.x-k8s\\.io/cluster-name']",description="Cluster"
 // +kubebuilder:printcolumn:name="Initialized",type=boolean,JSONPath=".status.initialized",description="This denotes whether or not the control plane has the uploaded kops-config configmap"
 // +kubebuilder:printcolumn:name="API Server Available",type=boolean,JSONPath=".status.ready",description="KopsControlPlane API Server is ready to receive requests"
