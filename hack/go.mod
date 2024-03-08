@@ -2,6 +2,8 @@ module k8s.io/kops/hack
 
 go 1.25.0
 
+toolchain go1.25.0
+
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint/v2 v2.4.0

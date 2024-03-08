@@ -90,6 +90,28 @@ spec:
             type: object
           status:
             description: KopsControlPlaneStatus defines the observed state of KopsControlPlane.
+            properties:
+              systemEndpoints:
+                description: KopsControllerEndpoint represents the endpoints used
+                  to communicate with the control plane.
+                items:
+                  description: SystemEndpoint represents a reachable Kubernetes API
+                    endpoint.
+                  properties:
+                    host:
+                      description: The hostname on which the API server is serving.
+                      type: string
+                    scope:
+                      type: string
+                    type:
+                      description: The hostname on which the API server is serving.
+                      type: string
+                  required:
+                  - host
+                  - scope
+                  - type
+                  type: object
+                type: array
             type: object
         type: object
     served: true

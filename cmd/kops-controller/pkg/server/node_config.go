@@ -28,7 +28,13 @@ import (
 )
 
 func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest, identity *bootstrap.VerifyResult) (*nodeup.NodeConfig, error) {
-	klog.Infof("getting node config for %+v", req)
+	log := klog.FromContext(ctx)
+
+	if identity == nil {
+		return nil, fmt.Errorf("node identity is required")
+	}
+
+	log.Info("getting node config", "req", req, "identity", identity)
 
 	instanceGroupName := identity.InstanceGroupName
 	if instanceGroupName == "" {
@@ -36,6 +42,25 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	}
 
 	nodeConfig := &nodeup.NodeConfig{}
+
+	// useClusterAPICRDs := true
+	// if useClusterAPICRDs {
+	// 	config, err := controllers.BuildNodeupConfigFromScratch(ctx, s.uncachedClient, s.opt.ClusterName)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error building nodeup config: %w", err)
+	// 	}
+	// 	log.Info("nodeupConfig", "config", config.NodeupConfig)
+
+	// 	configData, err := utils.YamlMarshal(config.NodeupConfig)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error converting nodeup config to yaml: %w", err)
+	// 	}
+
+	// 	nodeConfig.NodeupConfig = string(configData)
+	// 	log.Info("nodeupConfig", "config", string(configData))
+	// }
+
+	// if !useClusterAPICRDs {
 
 	if s.opt.Cloud == "metal" {
 		bootstrapData, err := s.buildNodeupConfig(ctx, s.opt.ClusterName, identity.InstanceGroupName)
@@ -48,7 +73,6 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 		}
 		nodeConfig.NodeupConfig = string(nodeupConfig)
 	} else {
-
 		// Note: For now, we're assuming there is only a single cluster, and it is ours.
 		// We therefore use the configured base path
 
@@ -76,6 +100,7 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 			}
 		}
 	}
+	// }
 
 	return nodeConfig, nil
 }

@@ -82,7 +82,7 @@ spec:
     spec:
       clusterName: "${CLUSTER_NAME}"
       version: "${KUBERNETES_VERSION}"
-      failureDomain: "${GCP_ZONE}" 
+      failureDomain: "${GCP_ZONE}"
       bootstrap:
         configRef:
           name: "${CLUSTER_NAME}-md-0"

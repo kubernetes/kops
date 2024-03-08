@@ -2,6 +2,8 @@ module k8s.io/kops/tests/e2e
 
 go 1.25.0
 
+toolchain go1.25.0
+
 replace k8s.io/kops => ../../.
 
 require (

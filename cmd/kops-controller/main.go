@@ -29,6 +29,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
+	bootstrapapi "k8s.io/kops/clusterapi/bootstrap/kops/api/v1beta1"
+	controlplaneapi "k8s.io/kops/clusterapi/controlplane/kops/api/v1beta1"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
@@ -258,6 +260,13 @@ func buildScheme() (*runtime.Scheme, error) {
 	if err := coordinationv1.AddToScheme(scheme); err != nil {
 		return nil, fmt.Errorf("error registering coordinationv1: %v", err)
 	}
+	// TODO: Only if using clusterapi
+	if err := bootstrapapi.AddToScheme(scheme); err != nil {
+		return nil, fmt.Errorf("error registering kops bootstrap cluster API: %v", err)
+	}
+	if err := controlplaneapi.AddToScheme(scheme); err != nil {
+		return nil, fmt.Errorf("error registering kops control-plane cluster API: %v", err)
+	}
 	return scheme, nil
 }
 
@@ -269,43 +278,43 @@ func addNodeController(ctx context.Context, mgr manager.Manager, vfsContext *vfs
 	case "aws":
 		identifier, err = nodeidentityaws.New(ctx, opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "gce":
-		legacyIdentifier, err = nodeidentitygce.New()
+		identifier, err = nodeidentitygce.New(opt.ClusterName)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "openstack":
 		identifier, err = nodeidentityos.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "digitalocean":
 		legacyIdentifier, err = nodeidentitydo.New()
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "hetzner":
 		identifier, err = nodeidentityhetzner.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %w", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "azure":
 		identifier, err = nodeidentityazure.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "scaleway":
 		identifier, err = nodeidentityscw.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %w", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "metal":

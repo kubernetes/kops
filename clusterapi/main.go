@@ -28,9 +28,10 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
-	"k8s.io/kops/clusterapi/bootstrap/controllers"
 	bootstrapapi "k8s.io/kops/clusterapi/bootstrap/kops/api/v1beta1"
+	"k8s.io/kops/clusterapi/controllers"
 	controlplaneapi "k8s.io/kops/clusterapi/controlplane/kops/api/v1beta1"
+	kopsapi "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	// +kubebuilder:scaffold:imports
@@ -77,12 +78,18 @@ func run(ctx context.Context) error {
 		BindAddress: metricsAddress,
 	}
 	mgr, err := ctrl.NewManager(kubeConfig, options)
-
 	if err != nil {
 		return fmt.Errorf("error starting manager: %w", err)
 	}
 
 	if err := controllers.NewKopsConfigReconciler(mgr); err != nil {
+		return fmt.Errorf("error creating controller: %w", err)
+	}
+
+	if err := controllers.NewInstanceGroupReconciler(mgr); err != nil {
+		return fmt.Errorf("error creating controller: %w", err)
+	}
+	if err := controllers.NewClusterReconciler(mgr); err != nil {
 		return fmt.Errorf("error creating controller: %w", err)
 	}
 
@@ -95,6 +102,10 @@ func run(ctx context.Context) error {
 func buildScheme() error {
 	if err := corev1.AddToScheme(scheme); err != nil {
 		return fmt.Errorf("error registering corev1: %v", err)
+	}
+
+	if err := kopsapi.AddToScheme(scheme); err != nil {
+		return fmt.Errorf("error registering api: %w", err)
 	}
 
 	if err := bootstrapapi.AddToScheme(scheme); err != nil {

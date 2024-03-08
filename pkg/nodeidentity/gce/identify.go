@@ -27,7 +27,10 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
+	"k8s.io/kops/pkg/nodelabels"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 // MetadataKeyInstanceGroupName is the key for the metadata that specifies the instance group name
@@ -41,10 +44,13 @@ type nodeIdentifier struct {
 
 	// project is our GCE project; we require that instances be in this project
 	project string
+
+	// clusterName is the metadata.name of our cluster
+	clusterName string
 }
 
-// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
-func New() (nodeidentity.LegacyIdentifier, error) {
+// New creates and returns a nodeidentity.Identifier for Nodes running on GCE
+func New(clusterName string) (nodeidentity.Identifier, error) {
 	ctx := context.Background()
 
 	computeService, err := compute.NewService(ctx)
@@ -71,11 +77,14 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	return &nodeIdentifier{
 		computeService: computeService,
 		project:        project,
+		clusterName:    clusterName,
 	}, nil
 }
 
 // IdentifyNode queries GCE for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
+	// log := klog.FromContext(ctx)
+
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
@@ -111,6 +120,8 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	// We instead look at the MIG configuration
 	createdBy := getMetadataValue(instance.Metadata, "created-by")
 	if createdBy == "" {
+		// HERE - NEED TO Match GCPMachine?  spec.providerID = gce://<project>/<zone>/<instance-name>
+
 		return nil, fmt.Errorf("instance %q did not have created-by metadata label set", instanceName)
 	}
 
@@ -143,8 +154,32 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 	}
 
-	info := &nodeidentity.LegacyInfo{}
-	info.InstanceGroup = igName
+	info := &nodeidentity.Info{}
+	// info.InstanceID TODO: InstanceID is only used by the provider?
+
+	tagToRole := make(map[string]kops.InstanceGroupRole)
+	for _, role := range kops.AllInstanceGroupRoles {
+		tag := gce.TagForRole(i.clusterName, role)
+		tagToRole[tag] = role
+	}
+
+	labels := make(map[string]string)
+	for _, tag := range instance.Tags.Items {
+		role, found := tagToRole[tag]
+		if found {
+			switch role {
+			case kops.InstanceGroupRoleControlPlane:
+				labels[nodelabels.RoleLabelControlPlane20] = ""
+			case kops.InstanceGroupRoleNode:
+				labels[nodelabels.RoleLabelNode16] = ""
+			case kops.InstanceGroupRoleAPIServer:
+				labels[nodelabels.RoleLabelAPIServer16] = ""
+			default:
+				klog.Warningf("unknown node role %q for server %q", role, instance.SelfLink)
+			}
+		}
+	}
+	info.Labels = labels
 	return info, nil
 }
 
@@ -152,7 +187,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 func (i *nodeIdentifier) getInstance(zone string, instanceName string) (*compute.Instance, error) {
 	instance, err := i.computeService.Instances.Get(i.project, zone, instanceName).Do()
 	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance: %v", err)
+		return nil, fmt.Errorf("error fetching GCE instance: %w", err)
 	}
 
 	return instance, nil

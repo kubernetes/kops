@@ -285,6 +285,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 	var nodeupScript resources.NodeUpScript
 	nodeupScript.NodeUpAssets = b.builder.NodeUpAssets
+	// nodeupScript.NodeUpAssets = b.builder.NodeUpConfigBuilder.NodeUpAssets()
 	nodeupScript.BootConfig = bootConfig
 
 	nodeupScript.WithEnvironmentVariables(b.cluster, b.ig)
