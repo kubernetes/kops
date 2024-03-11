@@ -23,12 +23,12 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
-	"github.com/mitchellh/mapstructure"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"

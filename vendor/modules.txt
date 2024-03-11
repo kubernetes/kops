@@ -400,6 +400,9 @@ github.com/go-openapi/jsonreference/internal
 # github.com/go-openapi/swag v0.22.7
 ## explicit; go 1.19
 github.com/go-openapi/swag
+# github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
+## explicit; go 1.18
+github.com/go-viper/mapstructure/v2
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
 github.com/gogo/protobuf/gogoproto
