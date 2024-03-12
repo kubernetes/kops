@@ -23,6 +23,7 @@ require (
 	github.com/digitalocean/godo v1.109.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.4.1
+	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.0
@@ -32,7 +33,6 @@ require (
 	github.com/gophercloud/gophercloud v1.11.0
 	github.com/hetznercloud/hcloud-go v1.53.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.6
 	github.com/prometheus/client_golang v1.19.0
@@ -174,6 +174,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
