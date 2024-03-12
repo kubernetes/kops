@@ -142,7 +142,7 @@ spec:
 {{ if WithDefaultBool .MetricsServer.Insecure true }}
           - --kubelet-insecure-tls
 {{ end }}
-        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.6.2" }}
+        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.6.4" }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
