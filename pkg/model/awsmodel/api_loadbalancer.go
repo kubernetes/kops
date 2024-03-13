@@ -144,6 +144,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			nlbListeners = append(nlbListeners, listener443)
 		} else {
+			// When using a custom certificate, we create a secondary listener on 8443, which does _not_ use the custom certificate.
+			// This is because client certificates cannot be used in conjunction with custom certificates on NLBs.
 			listener8443 := &awstasks.NetworkLoadBalancerListener{
 				Name:                fi.PtrTo(b.NLBListenerName("api", 8443)),
 				Lifecycle:           b.Lifecycle,
@@ -153,6 +155,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			nlbListeners = append(nlbListeners, listener8443)
 
+			// The primary listener _does_ use the custom certificate.
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 			listener443 := &awstasks.NetworkLoadBalancerListener{
 				Name:                fi.PtrTo(b.NLBListenerName("api", 443)),
@@ -164,6 +167,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			if lbSpec.SSLPolicy != nil {
 				listener443.SSLPolicy = *lbSpec.SSLPolicy
+			} else {
+				listener443.SSLPolicy = "ELBSecurityPolicy-2016-08" // The AWS default
 			}
 			nlbListeners = append(nlbListeners, listener443)
 		}
@@ -431,6 +436,22 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					SecurityGroup: lbSG,
 					ToPort:        fi.PtrTo(int64(443)),
 				}
+				t.SetCidrOrPrefix(cidr)
+				AddDirectionalGroupRule(c, t)
+			}
+
+			// If we have opened a secondary listener on 8443, allow it also
+			if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo("https-api-elb-8443-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.PtrTo(int64(8443)),
+					ToPort:        fi.PtrTo(int64(8443)),
+					Protocol:      fi.PtrTo("tcp"),
+					SecurityGroup: lbSG,
+				}
+				lbSG.RemoveExtraRules = append(lbSG.RemoveExtraRules, "port=8443")
+
 				t.SetCidrOrPrefix(cidr)
 				AddDirectionalGroupRule(c, t)
 			}
