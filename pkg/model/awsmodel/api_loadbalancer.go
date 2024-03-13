@@ -160,6 +160,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 			if lbSpec.SSLPolicy != nil {
 				nlbListener.SSLPolicy = *lbSpec.SSLPolicy
+			} else {
+				nlbListener.SSLPolicy = "ELBSecurityPolicy-2016-08" // The AWS default
 			}
 			nlbListeners = append(nlbListeners, nlbListener)
 		}
@@ -458,6 +460,22 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.PtrTo(int64(443)),
 					}
+					t.SetCidrOrPrefix(cidr)
+					AddDirectionalGroupRule(c, t)
+				}
+
+				// If we have opened a secondary listener on 8443, allow it also
+				if b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo("https-api-elb-8443-" + cidr),
+						Lifecycle:     b.SecurityLifecycle,
+						FromPort:      fi.PtrTo(int64(8443)),
+						ToPort:        fi.PtrTo(int64(8443)),
+						Protocol:      fi.PtrTo("tcp"),
+						SecurityGroup: lbSG,
+					}
+					lbSG.RemoveExtraRules = append(lbSG.RemoveExtraRules, "port=8443")
+
 					t.SetCidrOrPrefix(cidr)
 					AddDirectionalGroupRule(c, t)
 				}
