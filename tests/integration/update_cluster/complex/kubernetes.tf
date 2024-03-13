@@ -1037,12 +1037,30 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-api-elb
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-8443to8443-api-elb-complex-example-com" {
+  from_port         = 8443
+  prefix_list_ids   = ["pl-44444444"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 8443
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-1-1-1-0--24-ingress-tcp-443to443-api-elb-complex-example-com" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 443
   protocol          = "tcp"
   security_group_id = aws_security_group.api-elb-complex-example-com.id
   to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-1-1-1-0--24-ingress-tcp-8443to8443-api-elb-complex-example-com" {
+  cidr_blocks       = ["1.1.1.0/24"]
+  from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 8443
   type              = "ingress"
 }
 
