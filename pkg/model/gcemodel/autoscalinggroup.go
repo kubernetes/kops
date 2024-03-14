@@ -190,8 +190,12 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			if gce.UsesIPAliases(b.Cluster) {
 				t.CanIPForward = fi.PtrTo(false)
 
+				nodeCIDRMaskSize := int32(24)
+				if b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize != nil {
+					nodeCIDRMaskSize = *b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize
+				}
 				t.AliasIPRanges = map[string]string{
-					b.NameForIPAliasRange("pods"): "/24",
+					b.NameForIPAliasRange("pods"): fmt.Sprintf("/%d", nodeCIDRMaskSize),
 				}
 			} else {
 				t.CanIPForward = fi.PtrTo(true)
