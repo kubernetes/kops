@@ -139,7 +139,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.50.34
+# github.com/aws/aws-sdk-go v1.51.0
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -220,7 +220,7 @@ github.com/beorn7/perks/quantile
 # github.com/blang/semver/v4 v4.0.0
 ## explicit; go 1.14
 github.com/blang/semver/v4
-# github.com/cert-manager/cert-manager v1.14.3
+# github.com/cert-manager/cert-manager v1.14.4
 ## explicit; go 1.21
 github.com/cert-manager/cert-manager/pkg/apis/acme
 github.com/cert-manager/cert-manager/pkg/apis/acme/v1
@@ -262,7 +262,7 @@ github.com/charmbracelet/lipgloss
 # github.com/containerd/console v1.0.3
 ## explicit; go 1.13
 github.com/containerd/console
-# github.com/containerd/containerd v1.7.11
+# github.com/containerd/containerd v1.7.12
 ## explicit; go 1.19
 github.com/containerd/containerd/archive/compression
 github.com/containerd/containerd/content
@@ -296,7 +296,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/digitalocean/godo v1.109.0
+# github.com/digitalocean/godo v1.110.0
 ## explicit; go 1.20
 github.com/digitalocean/godo
 github.com/digitalocean/godo/metrics
@@ -445,7 +445,7 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/go-configfs-tsm/configfs/configfsi
 github.com/google/go-configfs-tsm/configfs/linuxtsm
 github.com/google/go-configfs-tsm/report
-# github.com/google/go-containerregistry v0.19.0
+# github.com/google/go-containerregistry v0.19.1
 ## explicit; go 1.18
 github.com/google/go-containerregistry/internal/and
 github.com/google/go-containerregistry/internal/compression
@@ -1056,7 +1056,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
+# golang.org/x/exp v0.0.0-20240314144324-c7f7c6466f7f
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -1155,7 +1155,7 @@ golang.org/x/tools/internal/versions
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.169.0
+# google.golang.org/api v0.170.0
 ## explicit; go 1.19
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -1195,7 +1195,7 @@ google.golang.org/appengine/urlfetch
 # google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20240304161311-37d4d3c04a78
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
@@ -1321,7 +1321,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# helm.sh/helm/v3 v3.14.2
+# helm.sh/helm/v3 v3.14.3
 ## explicit; go 1.21
 helm.sh/helm/v3/internal/sympath
 helm.sh/helm/v3/internal/tlsutil
@@ -1831,7 +1831,7 @@ k8s.io/component-helpers/node/util
 # k8s.io/csi-translation-lib v0.29.0
 ## explicit; go 1.21
 k8s.io/csi-translation-lib/plugins
-# k8s.io/gengo v0.0.0-20240228010128-51d4e06bde70
+# k8s.io/gengo v0.0.0-20240310015720-9cff6334dab4
 ## explicit; go 1.13
 k8s.io/gengo/args
 k8s.io/gengo/generator
@@ -1884,7 +1884,7 @@ k8s.io/kubelet/config/v1beta1
 # k8s.io/mount-utils v0.29.2
 ## explicit; go 1.21
 k8s.io/mount-utils
-# k8s.io/utils v0.0.0-20240102154912-e7106e64919e
+# k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock

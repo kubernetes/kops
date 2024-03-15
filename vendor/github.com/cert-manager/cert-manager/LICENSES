@@ -135,7 +135,7 @@ google.golang.org/api/internal/third_party/uritemplates,https://github.com/googl
 google.golang.org/genproto/googleapis/api,https://github.com/googleapis/go-genproto/blob/50ed04b92917/googleapis/api/LICENSE,Apache-2.0
 google.golang.org/genproto/googleapis/rpc,https://github.com/googleapis/go-genproto/blob/50ed04b92917/googleapis/rpc/LICENSE,Apache-2.0
 google.golang.org/grpc,https://github.com/grpc/grpc-go/blob/v1.60.1/LICENSE,Apache-2.0
-google.golang.org/protobuf,https://github.com/protocolbuffers/protobuf-go/blob/v1.32.0/LICENSE,BSD-3-Clause
+google.golang.org/protobuf,https://github.com/protocolbuffers/protobuf-go/blob/v1.33.0/LICENSE,BSD-3-Clause
 gopkg.in/inf.v0,https://github.com/go-inf/inf/blob/v0.9.1/LICENSE,BSD-3-Clause
 gopkg.in/ini.v1,https://github.com/go-ini/ini/blob/v1.67.0/LICENSE,Apache-2.0
 gopkg.in/natefinch/lumberjack.v2,https://github.com/natefinch/lumberjack/blob/v2.2.1/LICENSE,MIT

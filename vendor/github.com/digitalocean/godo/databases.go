@@ -34,6 +34,7 @@ const (
 	databasePromoteReplicaToPrimaryPath = databaseReplicaPath + "/promote"
 	databaseTopicPath                   = databaseBasePath + "/%s/topics/%s"
 	databaseTopicsPath                  = databaseBasePath + "/%s/topics"
+	databaseMetricsCredentialsPath      = databaseBasePath + "/metrics/credentials"
 )
 
 // SQL Mode constants allow for MySQL-specific SQL flavor configuration.
@@ -154,6 +155,8 @@ type DatabasesService interface {
 	GetTopic(context.Context, string, string) (*DatabaseTopic, *Response, error)
 	DeleteTopic(context.Context, string, string) (*Response, error)
 	UpdateTopic(context.Context, string, string, *DatabaseUpdateTopicRequest) (*Response, error)
+	GetMetricsCredentials(context.Context) (*DatabaseMetricsCredentials, *Response, error)
+	UpdateMetricsCredentials(context.Context, *DatabaseUpdateMetricsCredentialsRequest) (*Response, error)
 }
 
 // DatabasesServiceOp handles communication with the Databases related methods
@@ -190,6 +193,7 @@ type Database struct {
 	Tags                     []string                   `json:"tags,omitempty"`
 	ProjectID                string                     `json:"project_id,omitempty"`
 	StorageSizeMib           uint64                     `json:"storage_size_mib,omitempty"`
+	MetricsEndpoints         []*ServiceAddress          `json:"metrics_endpoints,omitempty"`
 }
 
 // DatabaseCA represents a database ca.
@@ -208,6 +212,12 @@ type DatabaseConnection struct {
 	Password         string            `json:"password,omitempty"`
 	SSL              bool              `json:"ssl,omitempty"`
 	ApplicationPorts map[string]uint32 `json:"application_ports,omitempty"`
+}
+
+// ServiceAddress represents a host:port for a generic service (e.g. metrics endpoint)
+type ServiceAddress struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
 }
 
 // DatabaseUser represents a user in the database
@@ -664,6 +674,19 @@ type databaseTopicRoot struct {
 
 type databaseTopicsRoot struct {
 	Topics []DatabaseTopic `json:"topics"`
+}
+
+type databaseMetricsCredentialsRoot struct {
+	Credentials *DatabaseMetricsCredentials `json:"credentials"`
+}
+
+type DatabaseMetricsCredentials struct {
+	BasicAuthUsername string `json:"basic_auth_username"`
+	BasicAuthPassword string `json:"basic_auth_password"`
+}
+
+type DatabaseUpdateMetricsCredentialsRequest struct {
+	Credentials *DatabaseMetricsCredentials `json:"credentials"`
 }
 
 // DatabaseOptions represents the available database engines
@@ -1457,6 +1480,34 @@ func (svc *DatabasesServiceOp) UpdateTopic(ctx context.Context, databaseID strin
 func (svc *DatabasesServiceOp) DeleteTopic(ctx context.Context, databaseID, name string) (*Response, error) {
 	path := fmt.Sprintf(databaseTopicPath, databaseID, name)
 	req, err := svc.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+// GetMetricsCredentials gets the credentials required to access a user's metrics endpoints
+func (svc *DatabasesServiceOp) GetMetricsCredentials(ctx context.Context) (*DatabaseMetricsCredentials, *Response, error) {
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, databaseMetricsCredentialsPath, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(databaseMetricsCredentialsRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.Credentials, resp, nil
+}
+
+// UpdateMetricsAuth updates the credentials required to access a user's metrics endpoints
+func (svc *DatabasesServiceOp) UpdateMetricsCredentials(ctx context.Context, updateCreds *DatabaseUpdateMetricsCredentialsRequest) (*Response, error) {
+	req, err := svc.client.NewRequest(ctx, http.MethodPut, databaseMetricsCredentialsPath, updateCreds)
 	if err != nil {
 		return nil, err
 	}

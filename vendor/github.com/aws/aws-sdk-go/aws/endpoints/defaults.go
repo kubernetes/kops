@@ -14990,6 +14990,9 @@ var awsPartition = partition{
 					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
+					Region: "ca-west-1",
+				}: endpoint{},
+				endpointKey{
 					Region: "eu-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -16312,16 +16315,6 @@ var awsPartition = partition{
 			},
 		},
 		"iotfleetwise": service{
-			Endpoints: serviceEndpoints{
-				endpointKey{
-					Region: "eu-central-1",
-				}: endpoint{},
-				endpointKey{
-					Region: "us-east-1",
-				}: endpoint{},
-			},
-		},
-		"iotroborunner": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
 					Region: "eu-central-1",
@@ -18285,6 +18278,9 @@ var awsPartition = partition{
 				}: endpoint{},
 				endpointKey{
 					Region: "ca-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ca-west-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-central-1",
@@ -25486,6 +25482,9 @@ var awsPartition = partition{
 				}: endpoint{},
 				endpointKey{
 					Region: "ca-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ca-west-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-central-1",
@@ -36200,6 +36199,16 @@ var awscnPartition = partition{
 				},
 			},
 		},
+		"network-firewall": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "cn-north-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "cn-northwest-1",
+				}: endpoint{},
+			},
+		},
 		"oam": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
@@ -43779,6 +43788,9 @@ var awsisoPartition = partition{
 			Endpoints: serviceEndpoints{
 				endpointKey{
 					Region: "us-iso-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-iso-west-1",
 				}: endpoint{},
 			},
 		},
