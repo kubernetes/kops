@@ -1013,6 +1013,14 @@ func (a *AppIngressSpecRuleStringMatch) GetPrefix() string {
 	return a.Prefix
 }
 
+// GetBandwidthAllowanceGib returns the BandwidthAllowanceGib field.
+func (a *AppInstanceSize) GetBandwidthAllowanceGib() string {
+	if a == nil {
+		return ""
+	}
+	return a.BandwidthAllowanceGib
+}
+
 // GetCPUs returns the CPUs field.
 func (a *AppInstanceSize) GetCPUs() string {
 	if a == nil {
@@ -1027,6 +1035,14 @@ func (a *AppInstanceSize) GetCPUType() AppInstanceSizeCPUType {
 		return ""
 	}
 	return a.CPUType
+}
+
+// GetDeprecationIntent returns the DeprecationIntent field.
+func (a *AppInstanceSize) GetDeprecationIntent() bool {
+	if a == nil {
+		return false
+	}
+	return a.DeprecationIntent
 }
 
 // GetFeaturePreview returns the FeaturePreview field.

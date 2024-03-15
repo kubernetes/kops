@@ -1124,6 +1124,10 @@ type AppInstanceSize struct {
 	FeaturePreview bool `json:"feature_preview,omitempty"`
 	// Indicates if the tier instance size allows more than one instance.
 	SingleInstanceOnly bool `json:"single_instance_only,omitempty"`
+	// Indicates if the tier instance size is intended for deprecation.
+	DeprecationIntent bool `json:"deprecation_intent,omitempty"`
+	// The bandwidth allowance in GiB for the tier instance size.
+	BandwidthAllowanceGib string `json:"bandwidth_allowance_gib,omitempty"`
 }
 
 // AppInstanceSizeCPUType the model 'AppInstanceSizeCPUType'
