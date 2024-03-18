@@ -56,11 +56,23 @@ func addCertManagerPermissions(b *iam.PolicyBuilder, p *iam.Policy) {
 	}
 
 	p.Statement = append(p.Statement, &iam.Statement{
-		Effect: iam.StatementEffectAllow,
-		Action: stringorset.Of("route53:ChangeResourceRecordSets",
-			"route53:ListResourceRecordSets",
-		),
+		Effect:   iam.StatementEffectAllow,
+		Action:   stringorset.Of("route53:ListResourceRecordSets"),
 		Resource: stringorset.Set(zoneResources),
+	})
+
+	p.Statement = append(p.Statement, &iam.Statement{
+		Effect:   iam.StatementEffectAllow,
+		Action:   stringorset.Of("route53:ChangeResourceRecordSets"),
+		Resource: stringorset.Set(zoneResources),
+		Condition: iam.Condition{
+			"ForAllValues:StringLike": map[string]interface{}{
+				"route53:ChangeResourceRecordSetsNormalizedRecordNames": []string{"_acme-challenge.*"},
+			},
+			"ForAllValues:StringEquals": map[string]interface{}{
+				"route53:ChangeResourceRecordSetsRecordTypes": []string{"TXT"},
+			},
+		},
 	})
 
 	p.Statement = append(p.Statement, &iam.Statement{
