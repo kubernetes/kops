@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/utils/net"
 )
 
 const (
@@ -333,6 +334,9 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 
 	for _, loadBalancer := range responseLoadBalancers.LBs {
 		for _, lbIP := range loadBalancer.IP {
+			if net.IsIPv6String(lbIP.IPAddress) {
+				continue
+			}
 			ingresses = append(ingresses, fi.ApiIngressStatus{IP: lbIP.IPAddress})
 		}
 	}

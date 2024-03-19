@@ -92,3 +92,9 @@ _output
 # Used by E2E testing
 _artifacts
 _rundir
+zzz-dev-Mia-Cross
+zzz-testing
+zzz-dev-Mia-Cross
+zzz-testing
+hack/upload
+logs

@@ -78,6 +78,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane)
 			instance.Role = fi.PtrTo(scaleway.TagRoleControlPlane)
 		} else {
+			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleWorker)
 			instance.Role = fi.PtrTo(scaleway.TagRoleWorker)
 		}
 
