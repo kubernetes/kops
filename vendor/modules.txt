@@ -139,7 +139,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.51.0
+# github.com/aws/aws-sdk-go v1.51.5
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -415,8 +415,8 @@ github.com/golang-jwt/jwt/v5
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 ## explicit
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.5.3
-## explicit; go 1.9
+# github.com/golang/protobuf v1.5.4
+## explicit; go 1.17
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -541,7 +541,7 @@ github.com/google/uuid
 ## explicit; go 1.19
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
-# github.com/googleapis/gax-go/v2 v2.12.2
+# github.com/googleapis/gax-go/v2 v2.12.3
 ## explicit; go 1.19
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
@@ -1056,7 +1056,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20240314144324-c7f7c6466f7f
+# golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -1064,7 +1064,7 @@ golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal
 golang.org/x/exp/slog/internal/buffer
-# golang.org/x/mod v0.15.0
+# golang.org/x/mod v0.16.0
 ## explicit; go 1.18
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
@@ -1129,14 +1129,15 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.5.0
 ## explicit; go 1.18
 golang.org/x/time/rate
-# golang.org/x/tools v0.18.0
-## explicit; go 1.18
+# golang.org/x/tools v0.19.0
+## explicit; go 1.19
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/packagesdriver
 golang.org/x/tools/go/packages
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/imports
+golang.org/x/tools/internal/aliases
 golang.org/x/tools/internal/event
 golang.org/x/tools/internal/event/core
 golang.org/x/tools/internal/event/keys
@@ -1155,7 +1156,7 @@ golang.org/x/tools/internal/versions
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.170.0
+# google.golang.org/api v0.171.0
 ## explicit; go 1.19
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -1192,10 +1193,10 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
+# google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
@@ -1339,7 +1340,7 @@ helm.sh/helm/v3/pkg/plugin
 helm.sh/helm/v3/pkg/registry
 helm.sh/helm/v3/pkg/strvals
 helm.sh/helm/v3/pkg/time
-# k8s.io/api v0.29.2
+# k8s.io/api v0.29.3
 ## explicit; go 1.21
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -1400,7 +1401,7 @@ k8s.io/api/storage/v1beta1
 ## explicit; go 1.21
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
-# k8s.io/apimachinery v0.29.2
+# k8s.io/apimachinery v0.29.3
 ## explicit; go 1.21
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -1460,13 +1461,13 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/cli-runtime v0.29.2
+# k8s.io/cli-runtime v0.29.3
 ## explicit; go 1.21
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/genericiooptions
 k8s.io/cli-runtime/pkg/printers
 k8s.io/cli-runtime/pkg/resource
-# k8s.io/client-go v0.29.2
+# k8s.io/client-go v0.29.3
 ## explicit; go 1.21
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1alpha1
@@ -1809,7 +1810,7 @@ k8s.io/cloud-provider-aws/pkg/providers/v1
 # k8s.io/cloud-provider-gcp/providers v0.28.2
 ## explicit; go 1.20
 k8s.io/cloud-provider-gcp/providers/gce
-# k8s.io/component-base v0.29.2
+# k8s.io/component-base v0.29.3
 ## explicit; go 1.21
 k8s.io/component-base/cli/flag
 k8s.io/component-base/config
@@ -1825,7 +1826,7 @@ k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/metrics/prometheusextension
 k8s.io/component-base/tracing/api/v1
 k8s.io/component-base/version
-# k8s.io/component-helpers v0.29.2
+# k8s.io/component-helpers v0.29.3
 ## explicit; go 1.21
 k8s.io/component-helpers/node/util
 # k8s.io/csi-translation-lib v0.29.0
@@ -1863,7 +1864,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/proto/validation
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubectl v0.29.2
+# k8s.io/kubectl v0.29.3
 ## explicit; go 1.21
 k8s.io/kubectl/pkg/cmd/util
 k8s.io/kubectl/pkg/cmd/util/editor
@@ -1878,10 +1879,10 @@ k8s.io/kubectl/pkg/util/slice
 k8s.io/kubectl/pkg/util/templates
 k8s.io/kubectl/pkg/util/term
 k8s.io/kubectl/pkg/validation
-# k8s.io/kubelet v0.29.2
+# k8s.io/kubelet v0.29.3
 ## explicit; go 1.21
 k8s.io/kubelet/config/v1beta1
-# k8s.io/mount-utils v0.29.2
+# k8s.io/mount-utils v0.29.3
 ## explicit; go 1.21
 k8s.io/mount-utils
 # k8s.io/utils v0.0.0-20240310230437-4693a0247e57

@@ -2646,6 +2646,49 @@ func (s *QueryTestablePermissionsResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ReconciliationOperationMetadata: Operation metadata returned by the
+// CLH during resource state reconciliation.
+type ReconciliationOperationMetadata struct {
+	// DeleteResource: DEPRECATED. Use exclusive_action instead.
+	DeleteResource bool `json:"deleteResource,omitempty"`
+
+	// ExclusiveAction: Excluisive action returned by the CLH.
+	//
+	// Possible values:
+	//   "UNKNOWN_REPAIR_ACTION" - Unknown repair action.
+	//   "DELETE" - The resource has to be deleted. When using this bit, the
+	// CLH should fail the operation. DEPRECATED. Instead use
+	// DELETE_RESOURCE OperationSignal in SideChannel.
+	//   "RETRY" - This resource could not be repaired but the repair should
+	// be tried again at a later time. This can happen if there is a
+	// dependency that needs to be resolved first- e.g. if a parent resource
+	// must be repaired before a child resource.
+	ExclusiveAction string `json:"exclusiveAction,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DeleteResource") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DeleteResource") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ReconciliationOperationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod ReconciliationOperationMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Role: A role in the Identity and Access Management API.
 type Role struct {
 	// Deleted: The current deleted state of the role. This field is read
@@ -2666,9 +2709,9 @@ type Role struct {
 	// role name must not be set. When `Role` is used in output and other
 	// input such as `UpdateRole`, the role name is the complete path. For
 	// example, `roles/logging.viewer` for predefined roles,
-	// `organizations/{ORGANIZATION_ID}/roles/my-role` for
-	// organization-level custom roles, and
-	// `projects/{PROJECT_ID}/roles/my-role` for project-level custom roles.
+	// `organizations/{ORGANIZATION_ID}/roles/myRole` for organization-level
+	// custom roles, and `projects/{PROJECT_ID}/roles/myRole` for
+	// project-level custom roles.
 	Name string `json:"name,omitempty"`
 
 	// Stage: The current launch stage of the role. If the `ALPHA` launch
@@ -2723,21 +2766,20 @@ func (s *Role) MarshalJSON() ([]byte, error) {
 
 // Saml: Represents an SAML 2.0 identity provider.
 type Saml struct {
-	// IdpMetadataXml: Required. SAML Identity provider configuration
-	// metadata xml doc. The xml document should comply with SAML 2.0
+	// IdpMetadataXml: Required. SAML identity provider (IdP) configuration
+	// metadata XML doc. The XML document must comply with the SAML 2.0
 	// specification
-	// (https://www.oasis-open.org/committees/download.php/56785/sstc-saml-metadata-errata-2.0-wd-05.pdf).
-	// The max size of the acceptable xml document will be bounded to 128k
-	// characters. The metadata xml document should satisfy the following
-	// constraints: 1) Must contain an Identity Provider Entity ID. 2) Must
-	// contain at least one non-expired signing key certificate. 3) For each
-	// signing key: a) Valid from should be no more than 7 days from now. b)
-	// Valid to should be no more than 15 years in the future. 4) Upto 3 IdP
-	// signing keys are allowed in the metadata xml. When updating the
-	// provider's metadata xml, at lease one non-expired signing key must
-	// overlap with the existing metadata. This requirement is skipped if
-	// there are no non-expired signing keys present in the existing
-	// metadata
+	// (https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf).
+	// The maximum size of an acceptable XML document is 128K characters.
+	// The SAML metadata XML document must satisfy the following
+	// constraints: * Must contain an IdP Entity ID. * Must contain at least
+	// one non-expired signing certificate. * For each signing certificate,
+	// the expiration must be: * From no more than 7 days in the future. *
+	// To no more than 15 years in the future. * Up to three IdP signing
+	// keys are allowed. When updating the provider's metadata XML, at least
+	// one non-expired signing key must overlap with the existing metadata.
+	// This requirement is skipped if there are no non-expired signing keys
+	// present in the existing metadata.
 	IdpMetadataXml string `json:"idpMetadataXml,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "IdpMetadataXml") to
@@ -3552,8 +3594,8 @@ type WorkforcePoolProvider struct {
 	// optional field. When set, the image will be visible as the user's
 	// profile picture. If not set, a generic user icon will be displayed
 	// instead. This attribute cannot be referenced in IAM bindings. *
-	// `google.posix_username`: The linux username used by OS login. This is
-	// an optional field and the mapped posix username cannot exceed 32
+	// `google.posix_username`: The Linux username used by OS Login. This is
+	// an optional field and the mapped POSIX username cannot exceed 32
 	// characters, The key must match the regex "^a-zA-Z0-9._{0,31}$". This
 	// attribute cannot be referenced in IAM bindings. You can also provide
 	// custom attributes by specifying `attribute.{custom_attribute}`, where
@@ -3889,6 +3931,9 @@ type WorkloadIdentityPoolProvider struct {
 	// permanently deleted.
 	State string `json:"state,omitempty"`
 
+	// X509: An X.509-type identity provider.
+	X509 *X509 `json:"x509,omitempty"`
+
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -3978,6 +4023,12 @@ func (s *WorkloadIdentityPoolProviderKey) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPoolProviderKey
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// X509: An X.509-type identity provider represents a CA. It is trusted
+// to assert a client identity if the client has a certificate that
+// chains up to this CA.
+type X509 struct {
 }
 
 // method id "iam.iamPolicies.lintPolicy":

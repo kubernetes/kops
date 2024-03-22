@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240214",
+  "revision": "20240304",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3534,8 +3534,16 @@
           "$ref": "DNSConfig",
           "description": "DNSConfig contains clusterDNS config for this cluster."
         },
+        "desiredEnableCiliumClusterwideNetworkPolicy": {
+          "description": "Enable/Disable Cilium Clusterwide Network Policy for the cluster.",
+          "type": "boolean"
+        },
         "desiredEnableFqdnNetworkPolicy": {
           "description": "Enable/Disable FQDN Network Policy for the cluster.",
+          "type": "boolean"
+        },
+        "desiredEnableMultiNetworking": {
+          "description": "Enable/Disable Multi-Networking for the cluster",
           "type": "boolean"
         },
         "desiredEnablePrivateEndpoint": {
@@ -4965,6 +4973,10 @@
           "$ref": "DNSConfig",
           "description": "DNSConfig contains clusterDNS config for this cluster."
         },
+        "enableCiliumClusterwideNetworkPolicy": {
+          "description": "Whether CiliumClusterwideNetworkPolicy is enabled on this cluster.",
+          "type": "boolean"
+        },
         "enableFqdnNetworkPolicy": {
           "description": "Whether FQDN Network Policy is enabled on this cluster.",
           "type": "boolean"
@@ -5265,6 +5277,10 @@
         "sandboxConfig": {
           "$ref": "SandboxConfig",
           "description": "Sandbox configuration for this node."
+        },
+        "secondaryBootDiskUpdateStrategy": {
+          "$ref": "SecondaryBootDiskUpdateStrategy",
+          "description": "Secondary boot disk update strategy."
         },
         "secondaryBootDisks": {
           "description": "List of secondary boot disks attached to the nodes.",
@@ -6307,6 +6323,12 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "SecondaryBootDiskUpdateStrategy": {
+      "description": "SecondaryBootDiskUpdateStrategy is a placeholder which will be extended in the future to define different options for updating secondary boot disks.",
+      "id": "SecondaryBootDiskUpdateStrategy",
+      "properties": {},
       "type": "object"
     },
     "SecurityBulletinEvent": {
