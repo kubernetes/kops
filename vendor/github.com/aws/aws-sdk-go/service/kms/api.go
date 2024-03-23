@@ -5255,9 +5255,7 @@ func (c *KMS) ImportKeyMaterialRequest(input *ImportKeyMaterialInput) (req *requ
 // into that KMS key, but you cannot import different key material. You might
 // reimport key material to replace key material that expired or key material
 // that you deleted. You might also reimport key material to change the expiration
-// model or expiration date of the key material. Before reimporting key material,
-// if necessary, call DeleteImportedKeyMaterial to delete the current imported
-// key material.
+// model or expiration date of the key material.
 //
 // Each time you import key material into KMS, you can determine whether (ExpirationModel)
 // and when (ValidTo) the key material expires. To change the expiration of
@@ -7330,7 +7328,7 @@ func (c *KMS) RevokeGrantRequest(input *RevokeGrantInput) (req *request.Request,
 //
 // Deletes the specified grant. You revoke a grant to terminate the permissions
 // that the grant allows. For more information, see Retiring and revoking grants
-// (https://docs.aws.amazon.com/kms/latest/developerguide/managing-grants.html#grant-delete)
+// (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete)
 // in the Key Management Service Developer Guide .
 //
 // When you create, retire, or revoke a grant, there might be a brief delay,
@@ -14463,11 +14461,10 @@ type GetKeyPolicyInput struct {
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
 
-	// Specifies the name of the key policy. The only valid name is default. To
-	// get the names of key policies, use ListKeyPolicies.
-	//
-	// PolicyName is a required field
-	PolicyName *string `min:"1" type:"string" required:"true"`
+	// Specifies the name of the key policy. If no policy name is specified, the
+	// default value is default. The only valid name is default. To get the names
+	// of key policies, use ListKeyPolicies.
+	PolicyName *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -14497,9 +14494,6 @@ func (s *GetKeyPolicyInput) Validate() error {
 	if s.KeyId != nil && len(*s.KeyId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
 	}
-	if s.PolicyName == nil {
-		invalidParams.Add(request.NewErrParamRequired("PolicyName"))
-	}
 	if s.PolicyName != nil && len(*s.PolicyName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PolicyName", 1))
 	}
@@ -14527,6 +14521,9 @@ type GetKeyPolicyOutput struct {
 
 	// A key policy document in JSON format.
 	Policy *string `min:"1" type:"string"`
+
+	// The name of the key policy. The only valid value is default.
+	PolicyName *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -14550,6 +14547,12 @@ func (s GetKeyPolicyOutput) GoString() string {
 // SetPolicy sets the Policy field's value.
 func (s *GetKeyPolicyOutput) SetPolicy(v string) *GetKeyPolicyOutput {
 	s.Policy = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *GetKeyPolicyOutput) SetPolicyName(v string) *GetKeyPolicyOutput {
+	s.PolicyName = &v
 	return s
 }
 
@@ -18006,10 +18009,9 @@ type PutKeyPolicyInput struct {
 	// Policy is a required field
 	Policy *string `min:"1" type:"string" required:"true"`
 
-	// The name of the key policy. The only valid value is default.
-	//
-	// PolicyName is a required field
-	PolicyName *string `min:"1" type:"string" required:"true"`
+	// The name of the key policy. If no policy name is specified, the default value
+	// is default. The only valid value is default.
+	PolicyName *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -18044,9 +18046,6 @@ func (s *PutKeyPolicyInput) Validate() error {
 	}
 	if s.Policy != nil && len(*s.Policy) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Policy", 1))
-	}
-	if s.PolicyName == nil {
-		invalidParams.Add(request.NewErrParamRequired("PolicyName"))
 	}
 	if s.PolicyName != nil && len(*s.PolicyName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PolicyName", 1))

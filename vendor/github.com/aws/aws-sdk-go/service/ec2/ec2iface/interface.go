@@ -1387,6 +1387,13 @@ type EC2API interface {
 	DescribeLockedSnapshotsWithContext(aws.Context, *ec2.DescribeLockedSnapshotsInput, ...request.Option) (*ec2.DescribeLockedSnapshotsOutput, error)
 	DescribeLockedSnapshotsRequest(*ec2.DescribeLockedSnapshotsInput) (*request.Request, *ec2.DescribeLockedSnapshotsOutput)
 
+	DescribeMacHosts(*ec2.DescribeMacHostsInput) (*ec2.DescribeMacHostsOutput, error)
+	DescribeMacHostsWithContext(aws.Context, *ec2.DescribeMacHostsInput, ...request.Option) (*ec2.DescribeMacHostsOutput, error)
+	DescribeMacHostsRequest(*ec2.DescribeMacHostsInput) (*request.Request, *ec2.DescribeMacHostsOutput)
+
+	DescribeMacHostsPages(*ec2.DescribeMacHostsInput, func(*ec2.DescribeMacHostsOutput, bool) bool) error
+	DescribeMacHostsPagesWithContext(aws.Context, *ec2.DescribeMacHostsInput, func(*ec2.DescribeMacHostsOutput, bool) bool, ...request.Option) error
+
 	DescribeManagedPrefixLists(*ec2.DescribeManagedPrefixListsInput) (*ec2.DescribeManagedPrefixListsOutput, error)
 	DescribeManagedPrefixListsWithContext(aws.Context, *ec2.DescribeManagedPrefixListsInput, ...request.Option) (*ec2.DescribeManagedPrefixListsOutput, error)
 	DescribeManagedPrefixListsRequest(*ec2.DescribeManagedPrefixListsInput) (*request.Request, *ec2.DescribeManagedPrefixListsOutput)
