@@ -402,6 +402,9 @@ func (c *Pricing) GetPriceListFileUrlRequest(input *GetPriceListFileUrlInput) (r
 //   - ThrottlingException
 //     You've made too many requests exceeding service quotas.
 //
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetPriceListFileUrl
 func (c *Pricing) GetPriceListFileUrl(input *GetPriceListFileUrlInput) (*GetPriceListFileUrlOutput, error) {
 	req, out := c.GetPriceListFileUrlRequest(input)
@@ -666,6 +669,9 @@ func (c *Pricing) ListPriceListsRequest(input *ListPriceListsInput) (req *reques
 //
 //   - ThrottlingException
 //     You've made too many requests exceeding service quotas.
+//
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
 //   - ExpiredNextTokenException
 //     The pagination token expired. Try again without a pagination token.
@@ -1989,6 +1995,70 @@ func (s *PriceList) SetPriceListArn(v string) *PriceList {
 func (s *PriceList) SetRegionCode(v string) *PriceList {
 	s.RegionCode = &v
 	return s
+}
+
+// The requested resource can't be found.
+type ResourceNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourceNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourceNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourceNotFoundException) Code() string {
+	return "ResourceNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourceNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourceNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourceNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourceNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The metadata for a service, such as the service code and available attribute
