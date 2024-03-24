@@ -19,8 +19,8 @@ package awsmodel
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"

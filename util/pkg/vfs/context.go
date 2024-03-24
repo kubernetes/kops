@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/gophercloud/gophercloud"
 	"google.golang.org/api/option"
 	storage "google.golang.org/api/storage/v1"
@@ -217,17 +217,21 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 // readAWSMetadata reads the specified path from the AWS EC2 metadata service
 func (c *VFSContext) readAWSMetadata(ctx context.Context, path string) ([]byte, error) {
-	awsSession, err := session.NewSession()
+	config, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error building AWS session: %v", err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
-	client := ec2metadata.New(awsSession)
+
+	client := imds.NewFromConfig(config)
+
 	if strings.HasPrefix(path, "/meta-data/") {
-		s, err := client.GetMetadataWithContext(ctx, strings.TrimPrefix(path, "/meta-data/"))
+		s, err := client.GetMetadata(ctx, &imds.GetMetadataInput{
+			Path: strings.TrimPrefix(path, "/meta-data/"),
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error reading from AWS metadata service: %v", err)
 		}
-		return []byte(s), nil
+		return io.ReadAll(s.Content)
 	}
 	// There are others (e.g. user-data), but as we don't use them yet let's not expose them
 	return nil, fmt.Errorf("unhandled aws metadata path %q", path)
