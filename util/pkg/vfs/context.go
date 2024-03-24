@@ -231,6 +231,7 @@ func (c *VFSContext) readAWSMetadata(ctx context.Context, path string) ([]byte, 
 		if err != nil {
 			return nil, fmt.Errorf("error reading from AWS metadata service: %v", err)
 		}
+		defer s.Content.Close()
 		return io.ReadAll(s.Content)
 	}
 	// There are others (e.g. user-data), but as we don't use them yet let's not expose them
