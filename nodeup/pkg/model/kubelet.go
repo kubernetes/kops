@@ -18,15 +18,17 @@ package model
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -66,7 +68,8 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet server cert: %v", err)
 	}
 
-	kubeletConfig, err := b.buildKubeletConfigSpec()
+	ctx := c.Context()
+	kubeletConfig, err := b.buildKubeletConfigSpec(ctx)
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
@@ -75,9 +78,12 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// Set the provider ID to help speed node registration on large clusters
 		var providerID string
 		if b.CloudProvider() == kops.CloudProviderAWS {
-			sess := session.Must(session.NewSession())
-			metadata := ec2metadata.New(sess)
-			instanceIdentity, err := metadata.GetInstanceIdentityDocument()
+			config, err := awsconfig.LoadDefaultConfig(ctx)
+			if err != nil {
+				return fmt.Errorf("error loading AWS config: %v", err)
+			}
+			metadata := imds.NewFromConfig(config)
+			instanceIdentity, err := metadata.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
 			if err != nil {
 				return err
 			}
@@ -93,7 +99,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	{
-		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
+		t, err := b.buildSystemdEnvironmentFile(c.Context(), kubeletConfig)
 		if err != nil {
 			return err
 		}
@@ -310,7 +316,7 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 }
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
-func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+func (b *KubeletBuilder) buildSystemdEnvironmentFile(ctx context.Context, kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
@@ -323,7 +329,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	flags += " --cloud-config=" + InTreeCloudConfigFilePath
 
 	if b.UsesSecondaryIP() {
-		localIP, err := b.GetMetadataLocalIP()
+		localIP, err := b.GetMetadataLocalIP(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -627,7 +633,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext
 // once that is part of core k8s.
 
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
-func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
+func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.KubeletConfigSpec, error) {
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
 
@@ -635,13 +641,23 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	// Respect any MaxPods value the user sets explicitly.
 	if (b.NodeupConfig.Networking.AmazonVPC != nil || (b.NodeupConfig.Networking.Cilium != nil && b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni)) && c.MaxPods == nil {
-		sess := session.Must(session.NewSession())
-		metadata := ec2metadata.New(sess)
-
-		// Get the actual instance type by querying the EC2 instance metadata service.
-		instanceTypeName, err := metadata.GetMetadata("instance-type")
+		config, err := awsconfig.LoadDefaultConfig(ctx)
 		if err != nil {
-			// Otherwise, fall back to the Instance Group spec.
+			return nil, fmt.Errorf("error loading AWS config: %v", err)
+		}
+		metadata := imds.NewFromConfig(config)
+
+		var instanceTypeName string
+		// Get the actual instance type by querying the EC2 instance metadata service.
+		resp, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{Path: "instance-type"})
+		if err == nil {
+			defer resp.Content.Close()
+			itName, err := io.ReadAll(resp.Content)
+			if err == nil {
+				instanceTypeName = string(itName)
+			}
+		}
+		if instanceTypeName == "" {
 			instanceTypeName = *b.NodeupConfig.DefaultMachineType
 		}
 
@@ -727,7 +743,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 	name := "kubelet-server"
 	dir := b.PathSrvKubernetes()
 
-	names, err := b.kubeletNames()
+	names, err := b.kubeletNames(c.Context())
 	if err != nil {
 		return err
 	}
@@ -771,7 +787,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 	return nil
 }
 
-func (b *KubeletBuilder) kubeletNames() ([]string, error) {
+func (b *KubeletBuilder) kubeletNames(ctx context.Context) ([]string, error) {
 	if b.CloudProvider() != kops.CloudProviderAWS {
 		name, err := os.Hostname()
 		if err != nil {
@@ -784,22 +800,25 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 	}
 
 	addrs := []string{b.InstanceID}
-	sess := session.Must(session.NewSession())
-	metadata := ec2metadata.New(sess)
+	config, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error loading AWS config: %v", err)
+	}
+	metadata := imds.NewFromConfig(config)
 
-	if localHostname, err := metadata.GetMetadata("local-hostname"); err == nil {
+	if localHostname, err := getMetadata(ctx, metadata, "local-hostname"); err == nil {
 		klog.V(2).Infof("Local Hostname: %s", localHostname)
 		addrs = append(addrs, localHostname)
 	}
-	if localIPv4, err := metadata.GetMetadata("local-ipv4"); err == nil {
+	if localIPv4, err := getMetadata(ctx, metadata, "local-ipv4"); err == nil {
 		klog.V(2).Infof("Local IPv4: %s", localIPv4)
 		addrs = append(addrs, localIPv4)
 	}
-	if publicIPv4, err := metadata.GetMetadata("public-ipv4"); err == nil {
+	if publicIPv4, err := getMetadata(ctx, metadata, "public-ipv4"); err == nil {
 		klog.V(2).Infof("Public IPv4: %s", publicIPv4)
 		addrs = append(addrs, publicIPv4)
 	}
-	if publicIPv6, err := metadata.GetMetadata("ipv6"); err == nil {
+	if publicIPv6, err := getMetadata(ctx, metadata, "ipv6"); err == nil {
 		klog.V(2).Infof("Public IPv6: %s", publicIPv6)
 		addrs = append(addrs, publicIPv6)
 	}
@@ -823,4 +842,17 @@ func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
 	}
 
 	return service
+}
+
+func getMetadata(ctx context.Context, client *imds.Client, path string) (string, error) {
+	resp, err := client.GetMetadata(ctx, &imds.GetMetadataInput{Path: path})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Content.Close()
+	data, err := io.ReadAll(resp.Content)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }

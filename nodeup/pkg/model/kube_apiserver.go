@@ -68,7 +68,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	if b.CloudProvider() == kops.CloudProviderHetzner {
-		localIP, err := b.GetMetadataLocalIP()
+		localIP, err := b.GetMetadataLocalIP(c.Context())
 		if err != nil {
 			return err
 		}
@@ -420,7 +420,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		alternateNames = append(alternateNames, "127.0.0.1")
 
 		if b.CloudProvider() == kops.CloudProviderHetzner {
-			localIP, err := b.GetMetadataLocalIP()
+			localIP, err := b.GetMetadataLocalIP(c.Context())
 			if err != nil {
 				return err
 			}
