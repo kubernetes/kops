@@ -31,8 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"

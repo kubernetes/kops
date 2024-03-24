@@ -31,12 +31,12 @@ import (
 	"strings"
 	"time"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/kms"
 	"go.uber.org/multierr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -254,7 +254,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			}
 		}
 
-		modelContext.MachineType, err = getMachineType()
+		modelContext.MachineType, err = getMachineType(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get machine type: %w", err)
 		}
@@ -381,19 +381,26 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	return nil
 }
 
-func getMachineType() (string, error) {
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
+func getMachineType(ctx context.Context) (string, error) {
+	config, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to load AWS config: %w", err)
+	}
 
-	sess := session.Must(session.NewSession(config))
-	metadata := ec2metadata.New(sess)
+	metadata := imds.NewFromConfig(config)
 
 	// Get the actual instance type by querying the EC2 instance metadata service.
-	instanceTypeName, err := metadata.GetMetadata("instance-type")
+	result, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{
+		Path: "instance-type",
+	})
 	if err != nil {
 		return "", fmt.Errorf("failed to get instance metadata type: %w", err)
 	}
-	return instanceTypeName, err
+	instanceTypeName, err := io.ReadAll(result.Content)
+	if err != nil {
+		return "", fmt.Errorf("failed to read instance metadata response: %w", err)
+	}
+	return string(instanceTypeName), err
 }
 
 func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
@@ -579,14 +586,15 @@ func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, erro
 func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) error {
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
-		config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
-		sess, err := session.NewSession(config)
+		cfg, err := awsconfig.LoadDefaultConfig(context.TODO(),
+			awsconfig.WithRegion(region),
+		)
 		if err != nil {
 			return err
 		}
 
-		random, err := kms.New(sess, config).GenerateRandom(&kms.GenerateRandomInput{
-			NumberOfBytes: aws.Int64(64),
+		random, err := kms.NewFromConfig(cfg).GenerateRandom(ctx, &kms.GenerateRandomInput{
+			NumberOfBytes: aws.Int32(64),
 		})
 		if err != nil {
 			return fmt.Errorf("generating random seed: %v", err)

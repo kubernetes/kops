@@ -27,9 +27,10 @@ import (
 	"sync"
 	"time"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -362,24 +363,23 @@ func getRegionFromMetadata(ctx context.Context) (string, error) {
 
 	// Use an even shorter timeout, to minimize impact when not running on EC2
 	// Note that we still retry a few times, this works out a little under a 1s delay
-	shortTimeout := &aws.Config{
-		HTTPClient: &http.Client{
-			Timeout: 100 * time.Millisecond,
-		},
+	shortTimeout := &http.Client{
+		Timeout: 100 * time.Millisecond,
 	}
 
-	metadataSession, err := session.NewSession(shortTimeout)
+	config, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithHTTPClient(shortTimeout))
 	if err != nil {
-		return "", fmt.Errorf("building AWS metadata session: %w", err)
+		return "", fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
-	metadata := ec2metadata.New(metadataSession)
-	metadataRegion, err := metadata.RegionWithContext(ctx)
+	client := imds.NewFromConfig(config)
+
+	metadataRegion, err := client.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
 		return "", fmt.Errorf("getting AWS region from metadata: %w", err)
 	}
 
-	return metadataRegion, nil
+	return metadataRegion.Region, nil
 }
 
 func VFSPath(url string) (string, error) {
