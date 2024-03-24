@@ -219,7 +219,7 @@ func main() {
 	}
 
 	if opt.EnableCloudIPAM {
-		if err := setupCloudIPAM(mgr, &opt); err != nil {
+		if err := setupCloudIPAM(ctx, mgr, &opt); err != nil {
 			setupLog.Error(err, "unable to setup cloud IPAM")
 			os.Exit(1)
 
@@ -369,12 +369,12 @@ type Reconciler interface {
 	SetupWithManager(mgr manager.Manager) error
 }
 
-func setupCloudIPAM(mgr manager.Manager, opt *config.Options) error {
+func setupCloudIPAM(ctx context.Context, mgr manager.Manager, opt *config.Options) error {
 	setupLog.Info("enabling IPAM controller")
 	var controller Reconciler
 	switch opt.Cloud {
 	case "aws":
-		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
+		ipamController, err := controllers.NewAWSIPAMReconciler(ctx, mgr)
 		if err != nil {
 			return fmt.Errorf("creating aws IPAM controller: %w", err)
 		}
