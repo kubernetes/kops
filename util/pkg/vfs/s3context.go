@@ -27,13 +27,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/klog/v2"
 )
 
@@ -64,18 +63,18 @@ type S3BucketDetails struct {
 
 type S3Context struct {
 	mutex         sync.Mutex
-	clients       map[string]*s3.S3
+	clients       map[string]*s3.Client
 	bucketDetails map[string]*S3BucketDetails
 }
 
 func NewS3Context() *S3Context {
 	return &S3Context{
-		clients:       make(map[string]*s3.S3),
+		clients:       make(map[string]*s3.Client),
 		bucketDetails: make(map[string]*S3BucketDetails),
 	}
 }
 
-func (s *S3Context) getClient(ctx context.Context, region string) (*s3.S3, error) {
+func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -84,54 +83,52 @@ func (s *S3Context) getClient(ctx context.Context, region string) (*s3.S3, error
 		_, span := tracer.Start(ctx, "S3Context::getClient")
 		defer span.End()
 
-		var config *aws.Config
+		var config aws.Config
 		var err error
 		endpoint := os.Getenv("S3_ENDPOINT")
 		if endpoint == "" {
-			config = aws.NewConfig().WithRegion(region).WithUseDualStack(true)
-			config = config.WithCredentialsChainVerboseErrors(true)
+			config, err = awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region), awsconfig.WithUseDualStackEndpoint(aws.DualStackEndpointStateEnabled))
+			if err != nil {
+				return nil, fmt.Errorf("error loading AWS config: %v", err)
+			}
 		} else {
 			// Use customized S3 storage
 			klog.V(2).Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
-			config, err = getCustomS3Config(endpoint, region)
+			config, err = getCustomS3Config(ctx, region)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		sess, err := session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
+		s3Client = s3.NewFromConfig(config, func(o *s3.Options) {
+			if endpoint != "" {
+				o.BaseEndpoint = aws.String(endpoint)
+				o.UsePathStyle = true
+			}
 		})
-		if err != nil {
-			return nil, fmt.Errorf("error starting new AWS session: %v", err)
-		}
-
-		s3Client = s3.New(sess, config)
 		s.clients[region] = s3Client
 	}
 
 	return s3Client, nil
 }
 
-func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
+func getCustomS3Config(ctx context.Context, region string) (aws.Config, error) {
 	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
 	if accessKeyID == "" {
-		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
+		return aws.Config{}, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
 	}
 	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
 	if secretAccessKey == "" {
-		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+		return aws.Config{}, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
 	}
 
-	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
-		Endpoint:         aws.String(endpoint),
-		Region:           aws.String(region),
-		S3ForcePathStyle: aws.Bool(true),
+	s3Config, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
+		awsconfig.WithRegion(region),
+	)
+	if err != nil {
+		return aws.Config{}, fmt.Errorf("error loading AWS config: %v", err)
 	}
-	s3Config = s3Config.WithCredentialsChainVerboseErrors(true)
-
 	return s3Config, nil
 }
 
@@ -193,23 +190,23 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 		return bucketDetails, fmt.Errorf("error connecting to S3: %s", err)
 	}
 	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
-	response, err = s3Client.GetBucketLocationWithContext(ctx, request)
+	response, err = s3Client.GetBucketLocation(ctx, request)
 
 	// and fallback to brute-forcing if it fails
 	if err != nil {
 		klog.V(2).Infof("unable to get bucket location from region %q; scanning all regions: %v", awsRegion, err)
-		response, err = bruteforceBucketLocation(ctx, &awsRegion, request)
+		response, err = bruteforceBucketLocation(ctx, awsRegion, request)
 	}
 
 	if err != nil {
 		return bucketDetails, err
 	}
 
-	if response.LocationConstraint == nil {
+	if len(response.LocationConstraint) == 0 {
 		// US Classic does not return a region
 		bucketDetails.region = "us-east-1"
 	} else {
-		bucketDetails.region = *response.LocationConstraint
+		bucketDetails.region = string(response.LocationConstraint)
 		// Another special case: "EU" can mean eu-west-1
 		if bucketDetails.region == "EU" {
 			bucketDetails.region = "eu-west-1"
@@ -254,7 +251,7 @@ func (b *S3BucketDetails) hasServerSideEncryptionByDefault(ctx context.Context) 
 
 	klog.V(8).Infof("Calling S3 GetBucketEncryption Bucket=%q", b.name)
 
-	result, err := client.GetBucketEncryptionWithContext(ctx, request)
+	result, err := client.GetBucketEncryption(ctx, request)
 	if err != nil {
 		// the following cases might lead to the operation failing:
 		// 1. A deny policy on s3:GetEncryptionConfiguration
@@ -289,22 +286,17 @@ out the first result.
 
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
-func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+func bruteforceBucketLocation(ctx context.Context, region string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
 	ctx, span := tracer.Start(ctx, "bruteforceBucketLocation")
 	defer span.End()
 
-	config := &aws.Config{Region: region}
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	session, err := session.NewSessionWithOptions(session.Options{
-		Config:            *config,
-		SharedConfigState: session.SharedConfigEnable,
-	})
+	config, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
 	if err != nil {
-		return nil, fmt.Errorf("creating aws session: %w", err)
+		return nil, fmt.Errorf("creating aws config: %w", err)
 	}
+	//config, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(*config.Region), awsconfig.WithSharedCredentialsFiles())
 
-	regions, err := ec2.New(session).DescribeRegions(nil)
+	regions, err := ec2.NewFromConfig(config).DescribeRegions(ctx, &ec2.DescribeRegionsInput{})
 	if err != nil {
 		return nil, fmt.Errorf("listing AWS regions: %w", err)
 	}
@@ -314,12 +306,15 @@ func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.G
 	out := make(chan *s3.GetBucketLocationOutput, len(regions.Regions))
 	for _, region := range regions.Regions {
 		go func(regionName string) {
-			klog.V(8).Infof("Doing GetBucketLocation in %q", regionName)
-			s3Client := s3.New(session, &aws.Config{Region: aws.String(regionName)})
-			result, bucketError := s3Client.GetBucketLocationWithContext(ctx, request)
-			if bucketError == nil {
-				klog.V(8).Infof("GetBucketLocation succeeded in %q", regionName)
-				out <- result
+			config, err = awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(regionName))
+			if err == nil {
+				klog.V(8).Infof("Doing GetBucketLocation in %q", regionName)
+				s3Client := s3.NewFromConfig(config)
+				result, bucketError := s3Client.GetBucketLocation(ctx, request)
+				if bucketError == nil {
+					klog.V(8).Infof("GetBucketLocation succeeded in %q", regionName)
+					out <- result
+				}
 			}
 		}(*region.RegionName)
 	}

@@ -79,7 +79,7 @@ func TestTaintsApplied(t *testing.T) {
 			t.Error(err)
 		}
 
-		c, err := b.buildKubeletConfigSpec()
+		c, err := b.buildKubeletConfigSpec(context.TODO())
 
 		if g.expectError {
 			if err == nil {
@@ -189,7 +189,7 @@ func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, node
 
 	builder := KubeletBuilder{NodeupModelContext: nodeupModelContext}
 
-	kubeletConfig, err := builder.buildKubeletConfigSpec()
+	kubeletConfig, err := builder.buildKubeletConfigSpec(context.Context())
 	if err != nil {
 		t.Fatalf("error from KubeletBuilder buildKubeletConfig: %v", err)
 		return
@@ -204,7 +204,7 @@ func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, node
 		context.AddTask(fileTask)
 	}
 	{
-		fileTask, err := builder.buildSystemdEnvironmentFile(kubeletConfig)
+		fileTask, err := builder.buildSystemdEnvironmentFile(context.Context(), kubeletConfig)
 		if err != nil {
 			t.Fatalf("error from KubeletBuilder buildSystemdEnvironmentFile: %v", err)
 			return

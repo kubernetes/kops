@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -24,8 +25,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/blang/semver/v4"
 	hcloudmetadata "github.com/hetznercloud/hcloud-go/hcloud/metadata"
 	"k8s.io/klog/v2"
@@ -560,14 +561,17 @@ func (c *NodeupModelContext) RunningOnAzure() bool {
 }
 
 // GetMetadataLocalIP returns the local IP address read from metadata
-func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
+func (c *NodeupModelContext) GetMetadataLocalIP(ctx context.Context) (string, error) {
 	var internalIP string
 
 	switch c.BootConfig.CloudProvider {
 	case kops.CloudProviderAWS:
-		sess := session.Must(session.NewSession())
-		metadata := ec2metadata.New(sess)
-		localIPv4, err := metadata.GetMetadata("local-ipv4")
+		config, err := awsconfig.LoadDefaultConfig(ctx)
+		if err != nil {
+			return "", fmt.Errorf("failed to load AWS config: %w", err)
+		}
+		metadata := imds.NewFromConfig(config)
+		localIPv4, err := getMetadata(ctx, metadata, "local-ipv4")
 		if err != nil {
 			return "", fmt.Errorf("failed to get local-ipv4 address from ec2 metadata: %w", err)
 		}

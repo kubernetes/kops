@@ -396,6 +396,7 @@ func getMachineType(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get instance metadata type: %w", err)
 	}
+	defer result.Content.Close()
 	instanceTypeName, err := io.ReadAll(result.Content)
 	if err != nil {
 		return "", fmt.Errorf("failed to read instance metadata response: %w", err)
