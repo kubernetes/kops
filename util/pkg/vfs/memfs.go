@@ -258,7 +258,10 @@ func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name str
 		if !ok {
 			return fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
 		}
-		requestAcl = s3Acl.RequestACL
+		if s3Acl != nil && s3Acl.RequestACL != nil {
+			aclVal := string(*s3Acl.RequestACL)
+			requestAcl = &aclVal
+		}
 	}
 
 	tf := &terraformMemFSFile{

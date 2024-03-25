@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"k8s.io/kops/pkg/featureflag"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -127,19 +128,20 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 func (e *ManagedFile) getACL(c *fi.CloudupContext, p vfs.Path) (vfs.ACL, error) {
 	ctx := c.Context()
 
+	publicRead := s3types.ObjectCannedACLPublicRead
 	var acl vfs.ACL
 	if fi.ValueOf(e.PublicACL) {
 		switch p := p.(type) {
 		case *vfs.S3Path:
 			acl = &vfs.S3Acl{
-				RequestACL: fi.PtrTo("public-read"),
+				RequestACL: &publicRead,
 			}
 		case *vfs.MemFSPath:
 			if !p.IsClusterReadable() {
 				return nil, fmt.Errorf("the %q path is intended for use in tests", p.Path())
 			}
 			acl = &vfs.S3Acl{
-				RequestACL: fi.PtrTo("public-read"),
+				RequestACL: &publicRead,
 			}
 		default:
 			return nil, fmt.Errorf("the %q path does not support public ACL", p.Path())
