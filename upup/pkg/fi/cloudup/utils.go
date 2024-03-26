@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,6 +37,7 @@ import (
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	var cloud fi.Cloud
+	ctx := context.TODO()
 
 	region := ""
 	project := ""
@@ -75,7 +77,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 
-			err = awsup.ValidateRegion(region)
+			err = awsup.ValidateRegion(ctx, region)
 			if err != nil {
 				return nil, err
 			}
