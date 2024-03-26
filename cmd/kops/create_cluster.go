@@ -26,7 +26,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
@@ -1052,7 +1052,12 @@ func completeSecurityGroup(cmd *cobra.Command, args []string, toComplete string)
 }
 
 func completeTenancy(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return ec2.Tenancy_Values(), cobra.ShellCompDirectiveNoFileComp
+	tenancies := ec2types.Tenancy("").Values()
+	values := make([]string, len(tenancies))
+	for i, v := range tenancies {
+		values[i] = string(v)
+	}
+	return values, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeSSLCertificate(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
