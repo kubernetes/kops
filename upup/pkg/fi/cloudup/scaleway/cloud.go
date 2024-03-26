@@ -82,6 +82,7 @@ type ScwCloud interface {
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 	GetServerIP(serverID string, zone scw.Zone) (string, error)
+	GetServerPrivateIP(serverID string, zone scw.Zone) (string, error)
 
 	DeleteDNSRecord(record *domain.Record, clusterName string) error
 	DeleteLoadBalancer(loadBalancer *lb.LB) error
@@ -411,11 +412,20 @@ func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*in
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
 		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
-		ip, err := s.GetServerIP(server.ID, server.Zone)
+
+		externalIP, err := s.GetServerIP(server.ID, server.Zone)
 		if err != nil {
-			return nil, fmt.Errorf("getting server IP: %w", err)
+			return nil, fmt.Errorf("getting server public IP: %w", err)
 		}
-		cloudInstance.PrivateIP = ip
+		cloudInstance.ExternalIP = externalIP
+		privateIP, err := s.GetServerPrivateIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting server private IP: %w", err)
+		}
+		cloudInstance.PrivateIP = privateIP
+		if privateIP == "" {
+			cloudInstance.PrivateIP = externalIP
+		}
 	}
 
 	return cloudInstanceGroup, nil
@@ -509,7 +519,7 @@ func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (st
 		Region:     region,
 		IsIPv6:     fi.PtrTo(false),
 		ResourceID: &serverID,
-		Zonal:      fi.PtrTo(zone.String()),
+		Zonal:      fi.PtrTo(zone.String()), // not useful according to tests made on this route with the CLI
 	}, scw.WithAllPages())
 	if err != nil {
 		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
@@ -517,6 +527,48 @@ func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (st
 
 	if len(ips.IPs) < 1 {
 		return "", fmt.Errorf("could not find IP for server %s", serverID)
+	}
+	if len(ips.IPs) > 1 {
+		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
+	}
+
+	return ips.IPs[0].Address.IP.String(), nil
+}
+
+func (s *scwCloudImplementation) GetServerPrivateIP(serverID string, zone scw.Zone) (string, error) {
+	region, err := zone.Region()
+	if err != nil {
+		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
+	}
+
+	server, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("getting server %s: %w", serverID, err)
+	}
+
+	if len(server.Server.PrivateNics) == 0 {
+		// If there is no private NIC, there is no private IP so no need to return an error
+		return "", nil
+	}
+	if len(server.Server.PrivateNics) > 1 {
+		return "", fmt.Errorf("expected 1 private nic for server %s, got %d", serverID, len(server.Server.PrivateNics))
+	}
+	privateNicID := server.Server.PrivateNics[0].ID
+
+	ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		IsIPv6:     fi.PtrTo(false),
+		ResourceID: &privateNicID,
+	}, scw.WithAllPages())
+	if err != nil {
+		return "", fmt.Errorf("listing IPs for private nic %s: %w", privateNicID, err)
+	}
+
+	if len(ips.IPs) < 1 {
+		return "", fmt.Errorf("could not find IP for private nic %s", privateNicID)
 	}
 	if len(ips.IPs) > 1 {
 		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
