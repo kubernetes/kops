@@ -30,7 +30,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
-	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
@@ -43,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockAWSCloud struct {
@@ -87,7 +87,7 @@ type MockCloud struct {
 	MockELBV2       elbv2iface.ELBV2API
 	MockSpotinst    spotinst.Cloud
 	MockSQS         sqsiface.SQSAPI
-	MockEventBridge eventbridgeiface.EventBridgeAPI
+	MockEventBridge awsinterfaces.EventBridgeAPI
 	MockSSM         ssmiface.SSMAPI
 }
 
@@ -295,7 +295,7 @@ func (c *MockAWSCloud) SQS() sqsiface.SQSAPI {
 	return c.MockSQS
 }
 
-func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
+func (c *MockAWSCloud) EventBridge() awsinterfaces.EventBridgeAPI {
 	if c.MockEventBridge == nil {
 		klog.Fatalf("MockEventBridgess not set")
 	}

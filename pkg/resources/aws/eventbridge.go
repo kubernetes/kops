@@ -17,10 +17,11 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/resources"
@@ -44,22 +45,22 @@ func EventBridgeRuleDeleter(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func DeleteEventBridgeRule(cloud fi.Cloud, ruleName string) error {
-
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	targets, err := c.EventBridge().ListTargetsByRule(&eventbridge.ListTargetsByRuleInput{
+	targets, err := c.EventBridge().ListTargetsByRule(ctx, &eventbridge.ListTargetsByRuleInput{
 		Rule: aws.String(ruleName),
 	})
 	if err != nil {
 		return fmt.Errorf("listing targets for EventBridge rule %q: %w", ruleName, err)
 	}
 	if len(targets.Targets) > 0 {
-		var ids []*string
+		var ids []string
 		for _, target := range targets.Targets {
-			ids = append(ids, target.Id)
+			ids = append(ids, aws.ToString(target.Id))
 		}
 		klog.V(2).Infof("Removing EventBridge Targets for rule %q", ruleName)
-		_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
+		_, err = c.EventBridge().RemoveTargets(ctx, &eventbridge.RemoveTargetsInput{
 			Ids:  ids,
 			Rule: aws.String(ruleName),
 		})
@@ -72,7 +73,7 @@ func DeleteEventBridgeRule(cloud fi.Cloud, ruleName string) error {
 	request := &eventbridge.DeleteRuleInput{
 		Name: aws.String(ruleName),
 	}
-	_, err = c.EventBridge().DeleteRule(request)
+	_, err = c.EventBridge().DeleteRule(ctx, request)
 	if err != nil {
 		return fmt.Errorf("deleting EventBridge rule %q: %w", ruleName, err)
 	}
@@ -80,6 +81,7 @@ func DeleteEventBridgeRule(cloud fi.Cloud, ruleName string) error {
 }
 
 func ListEventBridgeRules(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing EventBridge rules")
@@ -91,7 +93,7 @@ func ListEventBridgeRules(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 		Limit:        nil,
 		NamePrefix:   aws.String(clusterNamePrefix),
 	}
-	response, err := c.EventBridge().ListRules(request)
+	response, err := c.EventBridge().ListRules(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Eventbridge rules: %v", err)
 	}

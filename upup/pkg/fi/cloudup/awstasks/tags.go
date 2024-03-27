@@ -19,9 +19,9 @@ package awstasks
 import (
 	"strings"
 
+	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
@@ -67,7 +67,7 @@ func mapToIAMTags(tags map[string]string) []*iam.Tag {
 	return m
 }
 
-func mapEventBridgeTagsToMap(tags []*eventbridge.Tag) map[string]string {
+func mapEventBridgeTagsToMap(tags []eventbridgetypes.Tag) map[string]string {
 	if tags == nil {
 		return nil
 	}

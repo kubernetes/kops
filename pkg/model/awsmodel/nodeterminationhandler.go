@@ -19,9 +19,9 @@ package awsmodel
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
@@ -200,7 +200,7 @@ func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderC
 	request := &eventbridge.ListRulesInput{
 		NamePrefix: ruleName,
 	}
-	response, err := eventBridge.ListRules(request)
+	response, err := eventBridge.ListRules(c.Context(), request)
 	if err != nil {
 		return fmt.Errorf("listing EventBridge rules: %w", err)
 	}
@@ -213,7 +213,7 @@ func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderC
 
 	rule := response.Rules[0]
 
-	tagResponse, err := eventBridge.ListTagsForResource(&eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
+	tagResponse, err := eventBridge.ListTagsForResource(c.Context(), &eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
 	if err != nil {
 		return fmt.Errorf("listing tags for EventBridge rule: %w", err)
 	}

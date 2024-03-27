@@ -17,13 +17,15 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -65,7 +67,7 @@ func (eb *EventBridgeTarget) Find(c *fi.CloudupContext) (*EventBridgeTarget, err
 		Rule: eb.Rule.Name,
 	}
 
-	response, err := cloud.EventBridge().ListTargetsByRule(request)
+	response, err := cloud.EventBridge().ListTargetsByRule(c.Context(), request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing EventBridge targets: %v", err)
 	}
@@ -107,17 +109,17 @@ func (_ *EventBridgeTarget) CheckChanges(a, e, changes *EventBridgeTarget) error
 
 func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EventBridgeTarget) error {
 	if a == nil {
-		target := &eventbridge.Target{
+		target := eventbridgetypes.Target{
 			Arn: eb.SQSQueue.ARN,
 			Id:  aws.String("1"),
 		}
 
 		request := &eventbridge.PutTargetsInput{
 			Rule:    eb.Rule.Name,
-			Targets: []*eventbridge.Target{target},
+			Targets: []eventbridgetypes.Target{target},
 		}
 
-		_, err := t.Cloud.EventBridge().PutTargets(request)
+		_, err := t.Cloud.EventBridge().PutTargets(context.TODO(), request)
 		if err != nil {
 			return fmt.Errorf("error creating EventBridge target: %v", err)
 		}
