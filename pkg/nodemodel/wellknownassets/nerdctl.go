@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package wellknownassets
 
 import (
 	"fmt"
@@ -33,7 +33,7 @@ const (
 	nerdctlAssetHashArm64 = "d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d"
 )
 
-func findNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	var assetURL, assetHash string
 	switch arch {
 	case architectures.ArchitectureAmd64:
