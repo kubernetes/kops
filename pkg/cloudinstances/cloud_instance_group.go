@@ -19,6 +19,7 @@ package cloudinstances
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -35,9 +36,19 @@ type CloudInstanceGroup struct {
 	MinSize       int
 	TargetSize    int
 	MaxSize       int
+	Events        []ScalingEvent
 
 	// Raw allows for the implementer to attach an object, for tracking additional state
 	Raw interface{}
+}
+
+type ScalingEvent struct {
+	Timestamp   time.Time
+	Description string
+}
+
+func (e ScalingEvent) String() string {
+	return fmt.Sprintf("%s: %s", e.Timestamp.Format(time.RFC3339), e.Description)
 }
 
 // NewCloudInstance creates a new CloudInstance

@@ -301,6 +301,16 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					cloudGroup.TargetSize),
 				InstanceGroup: cloudGroup.InstanceGroup,
 			})
+			if klog.V(4).Enabled() {
+				// Log scaling events
+				klog.V(4).Infof("Scaling events for instance group: %v", cloudGroup.InstanceGroup.Name)
+				sort.Slice(cloudGroup.Events, func(i, j int) bool {
+					return cloudGroup.Events[i].Timestamp.Before(cloudGroup.Events[j].Timestamp)
+				})
+				for _, event := range cloudGroup.Events {
+					klog.Infof("%v", event)
+				}
+			}
 		}
 
 		for _, member := range allMembers {
