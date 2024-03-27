@@ -463,12 +463,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				location := key + "/k8s-1.12.yaml"
 				id := "k8s-1.12"
 
-				addons.Add(&channelsapi.AddonSpec{
+				addon := addons.Add(&channelsapi.AddonSpec{
 					Name:     fi.PtrTo(key),
 					Selector: map[string]string{"k8s-addon": key},
 					Manifest: fi.PtrTo(location),
 					Id:       id,
 				})
+				addon.BuildPrune = true
 			}
 
 			// Generate dns-controller ServiceAccount IAM permissions.
@@ -496,6 +497,21 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 					serviceAccountRoles = append(serviceAccountRoles, &externaldns.ServiceAccount{})
 				}
 			}
+		}
+	} else {
+		// Prune the dns-controller if it was installed previously (or might have been installed previously)
+		{
+			key := "dns-controller.addons.k8s.io"
+			location := key + "/not-enabled.yaml"
+			id := "not-enabled"
+
+			addon := addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+			addon.BuildPrune = true
 		}
 	}
 

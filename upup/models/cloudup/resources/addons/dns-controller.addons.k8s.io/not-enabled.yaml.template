@@ -1,0 +1,143 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: dns-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+    k8s-app: dns-controller
+    version: v{{ KopsVersion }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      k8s-app: dns-controller
+  template:
+    metadata:
+      labels:
+        k8s-addon: dns-controller.addons.k8s.io
+        k8s-app: dns-controller
+        version: v{{ KopsVersion }}
+    spec:
+      priorityClassName: system-cluster-critical
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      serviceAccount: dns-controller
+      nodeSelector: null
+      containers:
+      - name: dns-controller
+        image: registry.k8s.io/kops/dns-controller:{{ KopsVersion }}
+        args:
+{{ range $arg := DnsControllerArgv }}
+        - "{{ $arg }}"
+{{ end }}
+        command: null
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+{{ range $name, $value := DNSControllerEnvs }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
+{{- if .Networking.EgressProxy }}
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
+{{- end }}
+{{- if eq GetCloudProvider "digitalocean" }}
+        - name: DIGITALOCEAN_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: digitalocean
+              key: access-token
+{{- end }}
+{{- if eq GetCloudProvider "scaleway" }}
+        envFrom:
+          - secretRef:
+              name: scaleway-secret
+{{- end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        securityContext:
+          runAsNonRoot: true
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dns-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - ingress
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "networking.k8s.io"
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:dns-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:dns-controller
