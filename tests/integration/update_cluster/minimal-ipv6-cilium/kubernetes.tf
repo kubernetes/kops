@@ -1149,6 +1149,15 @@ resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-
   type                     = "ingress"
 }
 
+resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-icmp-8to8-masters-minimal-ipv6-example-com" {
+  from_port                = 8
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
+  source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
+  to_port                  = 8
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-tcp-1to2379-masters-minimal-ipv6-example-com" {
   from_port                = 1
   protocol                 = "tcp"
