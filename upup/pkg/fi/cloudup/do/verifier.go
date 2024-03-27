@@ -98,20 +98,12 @@ func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.
 
 	// The node challenge is important here though, verifying the caller has control of the IP address.
 
-	nodeName := ""
-	if len(addresses) == 0 {
-		// Name seems a better default than the first IP, but we have to match what other components are expecting
-		nodeName = droplet.Name
-	} else {
-		nodeName = addresses[0]
-	}
-
 	if len(challengeEndpoints) == 0 {
 		return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", serverID)
 	}
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          nodeName,
+		NodeName:          strconv.Itoa(droplet.ID),
 		CertificateNames:  addresses,
 		ChallengeEndpoint: challengeEndpoints[0],
 	}

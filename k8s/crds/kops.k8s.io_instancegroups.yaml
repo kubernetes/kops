@@ -728,6 +728,10 @@ spec:
                       Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
                       (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
                     type: boolean
+                  providerID:
+                    description: ProviderID specifies the unique ID of the instance
+                      that an external provider can use to identify a specific node.
+                    type: string
                   readOnlyPort:
                     description: ReadOnlyPort is the port used by the kubelet api
                       for read-only access (default 10255)

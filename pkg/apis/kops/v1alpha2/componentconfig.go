@@ -242,6 +242,8 @@ type KubeletConfigSpec struct {
 	// MemorySwapBehavior defines how swap is used by container workloads.
 	// Supported values: LimitedSwap, "UnlimitedSwap.
 	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
+	// ProviderID specifies the unique ID of the instance that an external provider can use to identify a specific node.
+	ProviderID string `json:"providerID,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
