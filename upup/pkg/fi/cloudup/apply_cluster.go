@@ -57,6 +57,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/scalewaymodel"
+	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
@@ -1130,7 +1131,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 
 		if c.Cluster.Spec.Containerd == nil || !c.Cluster.Spec.Containerd.SkipInstall {
-			containerdAssetUrl, containerdAssetHash, err := findContainerdAsset(c.Cluster, assetBuilder, arch)
+			containerdAssetUrl, containerdAssetHash, err := wellknownassets.FindContainerdAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
@@ -1138,14 +1139,14 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerdAssetUrl, containerdAssetHash))
 			}
 
-			runcAssetUrl, runcAssetHash, err := findRuncAsset(c.Cluster, assetBuilder, arch)
+			runcAssetUrl, runcAssetHash, err := wellknownassets.FindRuncAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
 			if runcAssetUrl != nil && runcAssetHash != nil {
 				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
 			}
-			nerdctlAssetUrl, nerdctlAssetHash, err := findNerdctlAsset(c.Cluster, assetBuilder, arch)
+			nerdctlAssetUrl, nerdctlAssetHash, err := wellknownassets.FindNerdctlAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
@@ -1154,7 +1155,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			}
 		}
 
-		crictlAssetUrl, crictlAssetHash, err := findCrictlAsset(c.Cluster, assetBuilder, arch)
+		crictlAssetUrl, crictlAssetHash, err := wellknownassets.FindCrictlAsset(c.Cluster, assetBuilder, arch)
 		if err != nil {
 			return err
 		}

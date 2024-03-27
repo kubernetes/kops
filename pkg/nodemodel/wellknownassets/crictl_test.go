@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package wellknownassets
 
 import (
 	"testing"
@@ -33,7 +33,7 @@ func Test_FindCrictlVersionHash(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.29.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	crictlAsset, crictlAssetHash, err := findCrictlAsset(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	crictlAsset, crictlAssetHash, err := FindCrictlAsset(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse crictl version %s", err)
 	}
