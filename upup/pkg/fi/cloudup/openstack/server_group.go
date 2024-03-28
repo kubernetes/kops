@@ -113,6 +113,7 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		status := cloudinstances.CloudInstanceStatusUpToDate
 		if generationName != observedName || instance.Status == errorStatus {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			fmt.Printf("InstanceGroup %s instance %s generationName and observedName mismatch or instance in error\n", cg.HumanName, instance.ID)
 		}
 		cm, err := cg.NewCloudInstance(instance.ID, status, nodeMap[instance.ID])
 		if err != nil {

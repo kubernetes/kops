@@ -88,6 +88,7 @@ func (group *CloudInstanceGroup) AdjustNeedUpdate() {
 			if makeNotReady {
 				group.NeedUpdate = append(group.NeedUpdate, member)
 				member.Status = CloudInstanceStatusNeedsUpdate
+				fmt.Printf("InstanceGroup %s node %s has needs-update annotation\n", group.HumanName, member.Node.Name)
 			} else {
 				newReady = append(newReady, member)
 			}
