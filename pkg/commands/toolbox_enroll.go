@@ -49,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -424,8 +425,7 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 
 	nodeUpAssets := make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	for _, arch := range architectures.GetSupported() {
-
-		asset, err := cloudup.NodeUpAsset(assetBuilder, arch)
+		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
