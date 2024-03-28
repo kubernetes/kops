@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package wellknownassets
 
 import (
 	"fmt"
@@ -47,7 +47,7 @@ const (
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
 )
 
-func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	// Override CNI packages from env vars
 	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
 	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package wellknownassets
 
 import (
 	"testing"
@@ -36,7 +36,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	cniAsset, cniAssetHash, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -58,7 +58,7 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.22.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	cniAsset, cniAssetHash, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
