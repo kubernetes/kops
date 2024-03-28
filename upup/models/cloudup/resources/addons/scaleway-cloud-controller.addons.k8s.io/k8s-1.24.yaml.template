@@ -46,16 +46,6 @@ spec:
           operator: "Exists"
         - key: "node-role.kubernetes.io/master"
           effect: NoSchedule
-        - key: "node-role.kubernetes.io/control-plane"
-          effect: NoSchedule
-        - key: node.kubernetes.io/not-ready
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
-        - key: node.kubernetes.io/unreachable
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
       containers:
         - name: scaleway-cloud-controller-manager
           image: scaleway/scaleway-cloud-controller-manager:latest

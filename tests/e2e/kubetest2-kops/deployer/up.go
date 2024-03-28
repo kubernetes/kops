@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/scaleway"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
@@ -201,6 +202,9 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	case "digitalocean":
 		args = appendIfUnset(args, "--master-size", "c2-16vcpu-32gb")
 		args = appendIfUnset(args, "--node-size", "c2-16vcpu-32gb")
+	case "scaleway":
+		args = appendIfUnset(args, "--master-size", "PRO2-S")
+		args = appendIfUnset(args, "--node-size", "PRO2-S")
 	}
 
 	args = appendIfUnset(args, "--master-volume-size", "48")
@@ -341,6 +345,8 @@ func (d *deployer) zones() ([]string, error) {
 		return gce.RandomZones(1)
 	case "digitalocean":
 		return do.RandomZones(1)
+	case "scaleway":
+		return scaleway.RandomZones(1)
 	}
 	return nil, fmt.Errorf("unsupported CloudProvider: %v", d.CloudProvider)
 }

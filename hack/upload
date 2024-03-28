@@ -56,10 +56,24 @@ fi
 
 if [[ "${DEST:0:6}" == "scw://" ]]; then
   SCW_BUCKET=$(echo "${DEST}" | cut -c 7-)
-  echo "--> s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress"
-  s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress
-  exit 0
-fi
+  if [[ $(pwd) == "/home/leila/Desktop/kops" ]]; then
+      REGION="par"
+    elif [[ $(pwd) == "/home/leila/Desktop/kops_v2" ]]; then
+      REGION="ams"
+    fi
+    if [[ $SCW_BUCKET == "kops-images-testing" ]]; then
+      PROFILE="kops"
+      REGION="par"
+    else
+      PROFILE="normal"
+    fi
+    echo "--> rclone sync ${SRC} $PROFILE-$REGION://$SCW_BUCKET --progress"
+    rclone sync ${SRC} $PROFILE-$REGION://$SCW_BUCKET --progress
+  #    echo "--> s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress"
+  #    s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress
+  #  fi
+    exit 0
+  fi
 
 echo "Unsupported destination - supports s3://, gs:// and oss:// urls: ${DEST}"
 exit 1
