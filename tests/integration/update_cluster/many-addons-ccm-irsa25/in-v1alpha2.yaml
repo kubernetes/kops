@@ -35,7 +35,7 @@ spec:
     useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.25.0-rc.1
+  kubernetesVersion: v1.25.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
