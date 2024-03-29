@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -86,7 +85,7 @@ type MockCloud struct {
 	MockELB         elbiface.ELBAPI
 	MockELBV2       elbv2iface.ELBV2API
 	MockSpotinst    spotinst.Cloud
-	MockSQS         sqsiface.SQSAPI
+	MockSQS         awsinterfaces.SQSAPI
 	MockEventBridge awsinterfaces.EventBridgeAPI
 	MockSSM         ssmiface.SSMAPI
 }
@@ -288,7 +287,7 @@ func (c *MockAWSCloud) Spotinst() spotinst.Cloud {
 	return c.MockSpotinst
 }
 
-func (c *MockAWSCloud) SQS() sqsiface.SQSAPI {
+func (c *MockAWSCloud) SQS() awsinterfaces.SQSAPI {
 	if c.MockSQS == nil {
 		klog.Fatalf("MockSQS not set")
 	}

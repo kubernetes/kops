@@ -28,8 +28,7 @@ import (
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
@@ -136,7 +135,7 @@ type AWSCloud interface {
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
-	SQS() sqsiface.SQSAPI
+	SQS() awsinterfaces.SQSAPI
 	EventBridge() awsinterfaces.EventBridgeAPI
 	SSM() ssmiface.SSMAPI
 
@@ -206,7 +205,7 @@ type awsCloudImplementation struct {
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
 	sts         *sts.STS
-	sqs         *sqs.SQS
+	sqs         *sqs.Client
 	eventbridge *eventbridge.Client
 	ssm         *ssm.SSM
 
@@ -408,17 +407,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			}
 		}
 
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.sqs = sqs.New(sess, config)
-		c.sqs.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.sqs.Handlers)
-
+		c.sqs = sqs.NewFromConfig(cfgV2)
 		c.eventbridge = eventbridge.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
@@ -2233,7 +2222,7 @@ func (c *awsCloudImplementation) Spotinst() spotinst.Cloud {
 	return c.spotinst
 }
 
-func (c *awsCloudImplementation) SQS() sqsiface.SQSAPI {
+func (c *awsCloudImplementation) SQS() awsinterfaces.SQSAPI {
 	return c.sqs
 }
 
