@@ -2171,6 +2171,10 @@ type EC2API interface {
 	GetImageBlockPublicAccessStateWithContext(aws.Context, *ec2.GetImageBlockPublicAccessStateInput, ...request.Option) (*ec2.GetImageBlockPublicAccessStateOutput, error)
 	GetImageBlockPublicAccessStateRequest(*ec2.GetImageBlockPublicAccessStateInput) (*request.Request, *ec2.GetImageBlockPublicAccessStateOutput)
 
+	GetInstanceMetadataDefaults(*ec2.GetInstanceMetadataDefaultsInput) (*ec2.GetInstanceMetadataDefaultsOutput, error)
+	GetInstanceMetadataDefaultsWithContext(aws.Context, *ec2.GetInstanceMetadataDefaultsInput, ...request.Option) (*ec2.GetInstanceMetadataDefaultsOutput, error)
+	GetInstanceMetadataDefaultsRequest(*ec2.GetInstanceMetadataDefaultsInput) (*request.Request, *ec2.GetInstanceMetadataDefaultsOutput)
+
 	GetInstanceTypesFromInstanceRequirements(*ec2.GetInstanceTypesFromInstanceRequirementsInput) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 	GetInstanceTypesFromInstanceRequirementsWithContext(aws.Context, *ec2.GetInstanceTypesFromInstanceRequirementsInput, ...request.Option) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 	GetInstanceTypesFromInstanceRequirementsRequest(*ec2.GetInstanceTypesFromInstanceRequirementsInput) (*request.Request, *ec2.GetInstanceTypesFromInstanceRequirementsOutput)
@@ -2477,6 +2481,10 @@ type EC2API interface {
 	ModifyInstanceMaintenanceOptions(*ec2.ModifyInstanceMaintenanceOptionsInput) (*ec2.ModifyInstanceMaintenanceOptionsOutput, error)
 	ModifyInstanceMaintenanceOptionsWithContext(aws.Context, *ec2.ModifyInstanceMaintenanceOptionsInput, ...request.Option) (*ec2.ModifyInstanceMaintenanceOptionsOutput, error)
 	ModifyInstanceMaintenanceOptionsRequest(*ec2.ModifyInstanceMaintenanceOptionsInput) (*request.Request, *ec2.ModifyInstanceMaintenanceOptionsOutput)
+
+	ModifyInstanceMetadataDefaults(*ec2.ModifyInstanceMetadataDefaultsInput) (*ec2.ModifyInstanceMetadataDefaultsOutput, error)
+	ModifyInstanceMetadataDefaultsWithContext(aws.Context, *ec2.ModifyInstanceMetadataDefaultsInput, ...request.Option) (*ec2.ModifyInstanceMetadataDefaultsOutput, error)
+	ModifyInstanceMetadataDefaultsRequest(*ec2.ModifyInstanceMetadataDefaultsInput) (*request.Request, *ec2.ModifyInstanceMetadataDefaultsOutput)
 
 	ModifyInstanceMetadataOptions(*ec2.ModifyInstanceMetadataOptionsInput) (*ec2.ModifyInstanceMetadataOptionsOutput, error)
 	ModifyInstanceMetadataOptionsWithContext(aws.Context, *ec2.ModifyInstanceMetadataOptionsInput, ...request.Option) (*ec2.ModifyInstanceMetadataOptionsOutput, error)

@@ -1003,7 +1003,8 @@ type ExtensionChainMatchCondition struct {
 	// CelExpression: Required. A Common Expression Language (CEL)
 	// expression that is used to match requests for which the extension
 	// chain is executed. For more information, see CEL matcher language
-	// reference (/service-extensions/docs/cel-matcher-language-reference).
+	// reference
+	// (https://cloud.google.com/service-extensions/docs/cel-matcher-language-reference).
 	CelExpression string `json:"celExpression,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CelExpression") to
@@ -2698,8 +2699,8 @@ type LbRouteExtension struct {
 	// Labels: Optional. Set of labels associated with the
 	// `LbRouteExtension` resource. The format must comply with the
 	// requirements for labels
-	// (/compute/docs/labeling-resources#requirements) for Google Cloud
-	// resources.
+	// (https://cloud.google.com/compute/docs/labeling-resources#requirements)
+	// for Google Cloud resources.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// LoadBalancingScheme: Required. All backend services and forwarding
@@ -2780,8 +2781,8 @@ type LbTrafficExtension struct {
 	// Labels: Optional. Set of labels associated with the
 	// `LbTrafficExtension` resource. The format must comply with the
 	// requirements for labels
-	// (/compute/docs/labeling-resources#requirements) for Google Cloud
-	// resources.
+	// (https://cloud.google.com/compute/docs/labeling-resources#requirements)
+	// for Google Cloud resources.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// LoadBalancingScheme: Required. All backend services and forwarding

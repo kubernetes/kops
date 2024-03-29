@@ -2756,7 +2756,7 @@
       }
     }
   },
-  "revision": "20240224",
+  "revision": "20240315",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -3073,7 +3073,7 @@
       "id": "ExtensionChainMatchCondition",
       "properties": {
         "celExpression": {
-          "description": "Required. A Common Expression Language (CEL) expression that is used to match requests for which the extension chain is executed. For more information, see [CEL matcher language reference](/service-extensions/docs/cel-matcher-language-reference).",
+          "description": "Required. A Common Expression Language (CEL) expression that is used to match requests for which the extension chain is executed. For more information, see [CEL matcher language reference](https://cloud.google.com/service-extensions/docs/cel-matcher-language-reference).",
           "type": "string"
         }
       },
@@ -4091,7 +4091,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Optional. Set of labels associated with the `LbRouteExtension` resource. The format must comply with [the requirements for labels](/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
+          "description": "Optional. Set of labels associated with the `LbRouteExtension` resource. The format must comply with [the requirements for labels](https://cloud.google.com/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
           "type": "object"
         },
         "loadBalancingScheme": {
@@ -4153,7 +4153,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Optional. Set of labels associated with the `LbTrafficExtension` resource. The format must comply with [the requirements for labels](/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
+          "description": "Optional. Set of labels associated with the `LbTrafficExtension` resource. The format must comply with [the requirements for labels](https://cloud.google.com/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
           "type": "object"
         },
         "loadBalancingScheme": {

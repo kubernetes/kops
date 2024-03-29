@@ -17,12 +17,12 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-	github.com/aws/aws-sdk-go v1.51.6
+	github.com/aws/aws-sdk-go v1.51.10
 	github.com/aws/aws-sdk-go-v2 v1.26.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.9
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.152.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.155.0
 	github.com/aws/aws-sdk-go-v2/service/kms v1.30.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.0
 	github.com/aws/smithy-go v1.20.1
@@ -60,12 +60,12 @@ require (
 	go.opentelemetry.io/proto/otlp v1.1.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/crypto v0.21.0
-	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	golang.org/x/net v0.22.0
 	golang.org/x/oauth2 v0.18.0
 	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.18.0
-	google.golang.org/api v0.171.0
+	google.golang.org/api v0.172.0
 	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/gcfg.v1 v1.2.3
@@ -79,7 +79,7 @@ require (
 	k8s.io/cloud-provider-aws v1.29.2
 	k8s.io/cloud-provider-gcp/providers v0.28.2
 	k8s.io/component-base v0.29.3
-	k8s.io/gengo v0.0.0-20240310015720-9cff6334dab4
+	k8s.io/gengo v0.0.0-20240326000052-a8d123592b5a
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kubectl v0.29.3
 	k8s.io/kubelet v0.29.3
@@ -249,7 +249,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

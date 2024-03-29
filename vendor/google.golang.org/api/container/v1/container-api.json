@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240304",
+  "revision": "20240313",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3935,9 +3935,48 @@
       "description": "Configuration of etcd encryption.",
       "id": "DatabaseEncryption",
       "properties": {
+        "currentState": {
+          "description": "Output only. The current state of etcd encryption.",
+          "enum": [
+            "CURRENT_STATE_UNSPECIFIED",
+            "CURRENT_STATE_ENCRYPTED",
+            "CURRENT_STATE_DECRYPTED",
+            "CURRENT_STATE_ENCRYPTION_PENDING",
+            "CURRENT_STATE_ENCRYPTION_ERROR",
+            "CURRENT_STATE_DECRYPTION_PENDING",
+            "CURRENT_STATE_DECRYPTION_ERROR"
+          ],
+          "enumDescriptions": [
+            "Should never be set",
+            "Secrets in etcd are encrypted.",
+            "Secrets in etcd are stored in plain text (at etcd level) - this is unrelated to Compute Engine level full disk encryption.",
+            "Encryption (or re-encryption with a different CloudKMS key) of Secrets is in progress.",
+            "Encryption (or re-encryption with a different CloudKMS key) of Secrets in etcd encountered an error.",
+            "De-crypting Secrets to plain text in etcd is in progress.",
+            "De-crypting Secrets to plain text in etcd encountered an error."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "decryptionKeys": {
+          "description": "Output only. Keys in use by the cluster for decrypting existing objects, in addition to the key in `key_name`. Each item is a CloudKMS key resource.",
+          "items": {
+            "type": "string"
+          },
+          "readOnly": true,
+          "type": "array"
+        },
         "keyName": {
           "description": "Name of CloudKMS key to use for the encryption of secrets in etcd. Ex. projects/my-project/locations/global/keyRings/my-ring/cryptoKeys/my-key",
           "type": "string"
+        },
+        "lastOperationErrors": {
+          "description": "Output only. Records errors seen during DatabaseEncryption update operations.",
+          "items": {
+            "$ref": "OperationError"
+          },
+          "readOnly": true,
+          "type": "array"
         },
         "state": {
           "description": "The desired state of etcd encryption.",
@@ -5872,6 +5911,26 @@
         "zone": {
           "deprecated": true,
           "description": "The name of the Google Compute Engine [zone](https://cloud.google.com/compute/docs/zones#available) in which the operation is taking place. This field is deprecated, use location instead.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "OperationError": {
+      "description": "OperationError records errors seen from CloudKMS keys encountered during updates to DatabaseEncryption configuration.",
+      "id": "OperationError",
+      "properties": {
+        "errorMessage": {
+          "description": "Description of the error seen during the operation.",
+          "type": "string"
+        },
+        "keyName": {
+          "description": "CloudKMS key resource that had the error.",
+          "type": "string"
+        },
+        "timestamp": {
+          "description": "Time when the CloudKMS error was seen.",
+          "format": "google-datetime",
           "type": "string"
         }
       },
