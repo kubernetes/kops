@@ -15078,10 +15078,11 @@ type ObjectsRestoreCall struct {
 //   - generation: Selects a specific revision of this object.
 //   - object: Name of the object. For information about how to URL encode
 //     object names to be path safe, see Encoding URI Path Parts.
-func (r *ObjectsService) Restore(bucket string, object string) *ObjectsRestoreCall {
+func (r *ObjectsService) Restore(bucket string, object string, generation int64) *ObjectsRestoreCall {
 	c := &ObjectsRestoreCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.bucket = bucket
 	c.object = object
+	c.urlParams_.Set("generation", fmt.Sprint(generation))
 	return c
 }
 
@@ -15240,7 +15241,8 @@ func (c *ObjectsRestoreCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//   "id": "storage.objects.restore",
 	//   "parameterOrder": [
 	//     "bucket",
-	//     "object"
+	//     "object",
+	//     "generation"
 	//   ],
 	//   "parameters": {
 	//     "bucket": {

@@ -19981,10 +19981,28 @@ var awsPartition = partition{
 		"media-pipelines-chime": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
+					Region: "ap-northeast-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-northeast-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ap-south-1",
+				}: endpoint{},
+				endpointKey{
 					Region: "ap-southeast-1",
 				}: endpoint{},
 				endpointKey{
+					Region: "ap-southeast-2",
+				}: endpoint{},
+				endpointKey{
+					Region: "ca-central-1",
+				}: endpoint{},
+				endpointKey{
 					Region: "eu-central-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-west-2",
 				}: endpoint{},
 				endpointKey{
 					Region: "us-east-1",
@@ -20190,6 +20208,9 @@ var awsPartition = partition{
 					Deprecated: boxedTrue,
 				},
 				endpointKey{
+					Region: "me-central-1",
+				}: endpoint{},
+				endpointKey{
 					Region: "sa-east-1",
 				}: endpoint{},
 				endpointKey{
@@ -20245,6 +20266,9 @@ var awsPartition = partition{
 					Region: "ap-south-1",
 				}: endpoint{},
 				endpointKey{
+					Region: "ap-south-2",
+				}: endpoint{},
+				endpointKey{
 					Region: "ap-southeast-1",
 				}: endpoint{},
 				endpointKey{
@@ -20298,6 +20322,9 @@ var awsPartition = partition{
 					},
 					Deprecated: boxedTrue,
 				},
+				endpointKey{
+					Region: "me-central-1",
+				}: endpoint{},
 				endpointKey{
 					Region: "sa-east-1",
 				}: endpoint{},
@@ -41155,6 +41182,13 @@ var awsusgovPartition = partition{
 				},
 			},
 		},
+		"models-v2-lex": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-gov-west-1",
+				}: endpoint{},
+			},
+		},
 		"models.lex": service{
 			Defaults: endpointDefaults{
 				defaultKey{}: endpoint{
@@ -42042,6 +42076,13 @@ var awsusgovPartition = partition{
 
 					Deprecated: boxedTrue,
 				},
+			},
+		},
+		"runtime-v2-lex": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-gov-west-1",
+				}: endpoint{},
 			},
 		},
 		"runtime.lex": service{
@@ -45412,6 +45453,20 @@ var awsisobPartition = partition{
 			},
 		},
 		"logs": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-isob-east-1",
+				}: endpoint{},
+			},
+		},
+		"medialive": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-isob-east-1",
+				}: endpoint{},
+			},
+		},
+		"mediapackage": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
 					Region: "us-isob-east-1",

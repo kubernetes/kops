@@ -1,3 +1,15 @@
+# v1.155.0 (2024-03-28)
+
+* **Feature**: Amazon EC2 C7gd, M7gd and R7gd metal instances with up to 3.8 TB of local NVMe-based SSD block-level storage have up to 45% improved real-time NVMe storage performance than comparable Graviton2-based instances.
+
+# v1.154.0 (2024-03-26)
+
+* **Feature**: Documentation updates for Elastic Compute Cloud (EC2).
+
+# v1.153.0 (2024-03-25)
+
+* **Feature**: Added support for ModifyInstanceMetadataDefaults and GetInstanceMetadataDefaults to set Instance Metadata Service account defaults
+
 # v1.152.0 (2024-03-19)
 
 * **Feature**: This release adds the new DescribeMacHosts API operation for getting information about EC2 Mac Dedicated Hosts. Users can now see the latest macOS versions that their underlying Apple Mac can support without needing to be updated.
