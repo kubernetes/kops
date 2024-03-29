@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
@@ -57,7 +58,7 @@ var _ fi.Cloud = (*MockAWSCloud)(nil)
 func InstallMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 	i := BuildMockAWSCloud(region, zoneLetters)
 	updateAwsCloudInstances(region, i)
-	allRegions = []*ec2.Region{
+	allRegions = []ec2types.Region{
 		{RegionName: aws.String(region)},
 	}
 	return i

@@ -17,15 +17,17 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 	"strings"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -54,12 +56,12 @@ func (e *Prefix) Find(c *fi.NodeupContext) (*Prefix, error) {
 		return nil, fmt.Errorf("unsupported cloud provider: %s", c.T.BootConfig.CloudProvider)
 	}
 
-	mac, err := getInstanceMetadataFirstValue("mac")
+	mac, err := getInstanceMetadataFirstValue(c.Context(), "mac")
 	if err != nil {
 		return nil, err
 	}
 
-	prefixes, err := getInstanceMetadataList(path.Join("network/interfaces/macs/", mac, "/ipv6-prefix"))
+	prefixes, err := getInstanceMetadataList(c.Context(), path.Join("network/interfaces/macs/", mac, "/ipv6-prefix"))
 	if err != nil {
 		return nil, err
 	}
@@ -83,12 +85,13 @@ func (_ *Prefix) CheckChanges(a, e, changes *Prefix) error {
 }
 
 func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error {
-	mac, err := getInstanceMetadataFirstValue("mac")
+	ctx := context.TODO()
+	mac, err := getInstanceMetadataFirstValue(ctx, "mac")
 	if err != nil {
 		return err
 	}
 
-	interfaceId, err := getInstanceMetadataFirstValue(path.Join("network/interfaces/macs/", mac, "/interface-id"))
+	interfaceId, err := getInstanceMetadataFirstValue(ctx, path.Join("network/interfaces/macs/", mac, "/interface-id"))
 	if err != nil {
 		return err
 	}
@@ -105,8 +108,8 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 	return nil
 }
 
-func getInstanceMetadataFirstValue(category string) (string, error) {
-	values, err := getInstanceMetadataList(category)
+func getInstanceMetadataFirstValue(ctx context.Context, category string) (string, error) {
+	values, err := getInstanceMetadataList(ctx, category)
 	if err != nil {
 		return "", err
 	}
@@ -117,10 +120,13 @@ func getInstanceMetadataFirstValue(category string) (string, error) {
 	return values[0], nil
 }
 
-func getInstanceMetadataList(category string) ([]string, error) {
-	sess := session.Must(session.NewSession())
-	metadata := ec2metadata.New(sess)
-	linesStr, err := metadata.GetMetadata(category)
+func getInstanceMetadataList(ctx context.Context, category string) ([]string, error) {
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load aws config: %v", err)
+	}
+	metadata := imds.NewFromConfig(cfg)
+	resp, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{Path: category})
 	if err != nil {
 		var aerr awserr.RequestFailure
 		if errors.As(err, &aerr) && aerr.StatusCode() == http.StatusNotFound {
@@ -129,9 +135,14 @@ func getInstanceMetadataList(category string) ([]string, error) {
 			return nil, fmt.Errorf("failed to get %q from ec2 meta-data: %v", category, err)
 		}
 	}
+	defer resp.Content.Close()
+	lines, err := io.ReadAll(resp.Content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %q from ec2 meta-data: %v", category, err)
+	}
 
 	var values []string
-	for _, line := range strings.Split(linesStr, "\n") {
+	for _, line := range strings.Split(string(lines), "\n") {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			values = append(values, line)

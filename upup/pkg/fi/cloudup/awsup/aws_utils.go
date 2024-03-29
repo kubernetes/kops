@@ -17,16 +17,19 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
 
+	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -37,54 +40,34 @@ import (
 )
 
 // allRegions is the list of all regions; tests will set the values
-var allRegions []*ec2.Region
+var allRegions []ec2types.Region
 var allRegionsMutex sync.Mutex
 
-// isRegionCompiledInToAWSSDK checks if the specified region is in the AWS SDK
-func isRegionCompiledInToAWSSDK(region string) bool {
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-	for _, p := range partitions {
-		for _, r := range p.Regions() {
-			if r.ID() == region {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // ValidateRegion checks that an AWS region name is valid
-func ValidateRegion(region string) error {
-	if isRegionCompiledInToAWSSDK(region) {
-		return nil
-	}
-
+func ValidateRegion(ctx context.Context, region string) error {
 	allRegionsMutex.Lock()
 	defer allRegionsMutex.Unlock()
 
 	if allRegions == nil {
 		klog.V(2).Infof("Querying EC2 for all valid regions")
 
-		request := &ec2.DescribeRegionsInput{}
+		request := &ec2v2.DescribeRegionsInput{}
 		awsRegion := os.Getenv("AWS_REGION")
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
 		}
-		config := aws.NewConfig().WithRegion(awsRegion)
-		config = config.WithCredentialsChainVerboseErrors(true)
+		cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(awsRegion))
+		if err != nil {
+			return fmt.Errorf("error loading AWS config: %v", err)
+		}
 
-		sess, err := session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
 		if err != nil {
 			return fmt.Errorf("error starting a new AWS session: %v", err)
 		}
 
-		client := ec2.New(sess, config)
+		client := ec2v2.NewFromConfig(cfg)
 
-		response, err := client.DescribeRegions(request)
+		response, err := client.DescribeRegions(ctx, request)
 		if err != nil {
 			return fmt.Errorf("got an error while querying for valid regions (verify your AWS credentials?): %v", err)
 		}
@@ -92,7 +75,7 @@ func ValidateRegion(region string) error {
 	}
 
 	for _, r := range allRegions {
-		name := aws.StringValue(r.RegionName)
+		name := awsv2.ToString(r.RegionName)
 		if name == region {
 			return nil
 		}

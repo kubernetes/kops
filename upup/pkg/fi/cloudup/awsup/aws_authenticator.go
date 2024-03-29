@@ -23,8 +23,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -41,20 +42,17 @@ var _ bootstrap.Authenticator = &awsAuthenticator{}
 
 // RegionFromMetadata returns the current region from the aws metdata
 func RegionFromMetadata(ctx context.Context) (string, error) {
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to load default aws config: %w", err)
 	}
-	metadata := ec2metadata.New(s, config)
+	metadata := imds.NewFromConfig(cfg)
 
-	region, err := metadata.RegionWithContext(ctx)
+	resp, err := metadata.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
 		return "", fmt.Errorf("failed to get region from ec2 metadata: %w", err)
 	}
-	return region, nil
+	return resp.Region, nil
 }
 
 func NewAWSAuthenticator(region string) (bootstrap.Authenticator, error) {
