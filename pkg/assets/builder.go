@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
-	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -337,7 +336,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		}
 
 		for _, ext := range []string{".sha256", ".sha256sum"} {
-			for _, mirror := range mirrors.FindURLMirrors(u.String()) {
+			for _, mirror := range FindURLMirrors(u.String()) {
 				hashURL := mirror + ext
 				klog.V(3).Infof("Trying to read hash fie: %q", hashURL)
 				b, err := a.vfsContext.ReadFile(hashURL, vfs.WithBackoff(backoff))

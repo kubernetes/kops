@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -37,7 +38,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type NodeUpConfigBuilder interface {
@@ -51,7 +51,7 @@ type WellKnownAddresses map[wellknownservices.WellKnownService][]string
 type BootstrapScriptBuilder struct {
 	*KopsModelContext
 	Lifecycle           fi.Lifecycle
-	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
+	NodeUpAssets        map[architectures.Architecture]*assets.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
