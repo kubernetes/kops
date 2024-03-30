@@ -30,7 +30,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
-	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -79,7 +78,7 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 type MockCloud struct {
 	MockAutoscaling autoscalingiface.AutoScalingAPI
 	MockEC2         ec2iface.EC2API
-	MockIAM         iamiface.IAMAPI
+	MockIAM         awsinterfaces.IAMAPI
 	MockRoute53     route53iface.Route53API
 	MockELB         elbiface.ELBAPI
 	MockELBV2       elbv2iface.ELBV2API
@@ -244,7 +243,7 @@ func (c *MockAWSCloud) EC2() ec2iface.EC2API {
 	return c.MockEC2
 }
 
-func (c *MockAWSCloud) IAM() iamiface.IAMAPI {
+func (c *MockAWSCloud) IAM() awsinterfaces.IAMAPI {
 	if c.MockIAM == nil {
 		klog.Fatalf("MockAWSCloud MockIAM not set")
 	}

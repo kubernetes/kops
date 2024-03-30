@@ -21,10 +21,10 @@ import (
 	"sort"
 	"testing"
 
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/pkg/resources"
@@ -101,11 +101,11 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
 
 	c := &mockiam.MockIAM{
-		InstanceProfiles: make(map[string]*iam.InstanceProfile),
+		InstanceProfiles: make(map[string]*iamtypes.InstanceProfile),
 	}
 	cloud.MockIAM = c
 
-	tags := []*iam.Tag{
+	tags := []iamtypes.Tag{
 		{
 			Key:   &ownershipTagKey,
 			Value: fi.PtrTo("owned"),
@@ -115,7 +115,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 	{
 		name := "prefixed." + clusterName
 
-		c.InstanceProfiles[name] = &iam.InstanceProfile{
+		c.InstanceProfiles[name] = &iamtypes.InstanceProfile{
 			InstanceProfileName: &name,
 			Tags:                tags,
 		}
@@ -124,7 +124,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 
 		name := clusterName + ".not-prefixed"
 
-		c.InstanceProfiles[name] = &iam.InstanceProfile{
+		c.InstanceProfiles[name] = &iamtypes.InstanceProfile{
 			InstanceProfileName: &name,
 			Tags:                tags,
 		}
@@ -132,9 +132,9 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 	{
 		name := "prefixed2." + clusterName
 		owner := "kubernetes.io/cluster/foo." + clusterName
-		c.InstanceProfiles[name] = &iam.InstanceProfile{
+		c.InstanceProfiles[name] = &iamtypes.InstanceProfile{
 			InstanceProfileName: &name,
-			Tags: []*iam.Tag{
+			Tags: []iamtypes.Tag{
 				{
 					Key:   &owner,
 					Value: fi.PtrTo("owned"),
@@ -145,7 +145,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 
 	{
 		name := "prefixed3." + clusterName
-		c.InstanceProfiles[name] = &iam.InstanceProfile{
+		c.InstanceProfiles[name] = &iamtypes.InstanceProfile{
 			InstanceProfileName: &name,
 		}
 	}
@@ -153,7 +153,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 	// This is a special entity that will appear in list, but not in get
 	{
 		name := "__no_entity__." + clusterName
-		c.InstanceProfiles[name] = &iam.InstanceProfile{
+		c.InstanceProfiles[name] = &iamtypes.InstanceProfile{
 			InstanceProfileName: &name,
 		}
 	}
@@ -175,11 +175,11 @@ func TestListIAMRoles(t *testing.T) {
 	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
 
 	c := &mockiam.MockIAM{
-		Roles: make(map[string]*iam.Role),
+		Roles: make(map[string]*iamtypes.Role),
 	}
 	cloud.MockIAM = c
 
-	tags := []*iam.Tag{
+	tags := []iamtypes.Tag{
 		{
 			Key:   &ownershipTagKey,
 			Value: fi.PtrTo("owned"),
@@ -189,7 +189,7 @@ func TestListIAMRoles(t *testing.T) {
 	{
 		name := "prefixed." + clusterName
 
-		c.Roles[name] = &iam.Role{
+		c.Roles[name] = &iamtypes.Role{
 			RoleName: &name,
 			Tags:     tags,
 		}
@@ -198,7 +198,7 @@ func TestListIAMRoles(t *testing.T) {
 
 		name := clusterName + ".not-prefixed"
 
-		c.Roles[name] = &iam.Role{
+		c.Roles[name] = &iamtypes.Role{
 			RoleName: &name,
 			Tags:     tags,
 		}
@@ -206,9 +206,9 @@ func TestListIAMRoles(t *testing.T) {
 	{
 		name := "prefixed2." + clusterName
 		owner := "kubernetes.io/cluster/foo." + clusterName
-		c.Roles[name] = &iam.Role{
+		c.Roles[name] = &iamtypes.Role{
 			RoleName: &name,
-			Tags: []*iam.Tag{
+			Tags: []iamtypes.Tag{
 				{
 					Key:   &owner,
 					Value: fi.PtrTo("owned"),
@@ -219,7 +219,7 @@ func TestListIAMRoles(t *testing.T) {
 
 	{
 		name := "prefixed3." + clusterName
-		c.Roles[name] = &iam.Role{
+		c.Roles[name] = &iamtypes.Role{
 			RoleName: &name,
 		}
 	}

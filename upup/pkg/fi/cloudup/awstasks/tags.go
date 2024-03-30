@@ -20,9 +20,9 @@ import (
 	"strings"
 
 	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 func mapEC2TagsToMap(tags []*ec2.Tag) map[string]string {
@@ -39,7 +39,7 @@ func mapEC2TagsToMap(tags []*ec2.Tag) map[string]string {
 	return m
 }
 
-func mapIAMTagsToMap(tags []*iam.Tag) map[string]string {
+func mapIAMTagsToMap(tags []iamtypes.Tag) map[string]string {
 	if tags == nil {
 		return nil
 	}
@@ -53,13 +53,13 @@ func mapIAMTagsToMap(tags []*iam.Tag) map[string]string {
 	return m
 }
 
-func mapToIAMTags(tags map[string]string) []*iam.Tag {
+func mapToIAMTags(tags map[string]string) []iamtypes.Tag {
 	if tags == nil {
 		return nil
 	}
-	m := make([]*iam.Tag, 0)
+	m := make([]iamtypes.Tag, 0)
 	for k, v := range tags {
-		m = append(m, &iam.Tag{
+		m = append(m, iamtypes.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})

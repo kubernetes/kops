@@ -21,23 +21,24 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockIAM struct {
 	// Mock out interface
-	iamiface.IAMAPI
+	awsinterfaces.IAMAPI
 
 	mutex            sync.Mutex
-	InstanceProfiles map[string]*iam.InstanceProfile
-	Roles            map[string]*iam.Role
+	InstanceProfiles map[string]*iamtypes.InstanceProfile
+	Roles            map[string]*iamtypes.Role
 	OIDCProviders    map[string]*iam.GetOpenIDConnectProviderOutput
 	RolePolicies     []*rolePolicy
-	AttachedPolicies map[string][]*iam.AttachedPolicy
+	AttachedPolicies map[string][]iamtypes.AttachedPolicy
 }
 
-var _ iamiface.IAMAPI = &MockIAM{}
+var _ awsinterfaces.IAMAPI = &MockIAM{}
 
 func (m *MockIAM) createID() string {
 	return "AID" + fmt.Sprintf("%x", rand.Int63())

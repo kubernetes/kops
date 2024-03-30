@@ -42,12 +42,6 @@ func (b *OIDCProviderBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	fingerprints := getFingerprints()
 
-	thumbprints := []*string{}
-
-	for _, fingerprint := range fingerprints {
-		thumbprints = append(thumbprints, fi.PtrTo(fingerprint))
-	}
-
 	audiences := []string{defaultAudience}
 	if b.Cluster.Spec.ServiceAccountIssuerDiscovery.AdditionalAudiences != nil {
 		audiences = append(audiences, b.Cluster.Spec.ServiceAccountIssuerDiscovery.AdditionalAudiences...)
@@ -57,9 +51,9 @@ func (b *OIDCProviderBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Name:        fi.PtrTo(b.ClusterName()),
 		Lifecycle:   b.Lifecycle,
 		URL:         b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer,
-		ClientIDs:   fi.StringSlice(audiences),
+		ClientIDs:   audiences,
 		Tags:        b.CloudTags(b.ClusterName(), false),
-		Thumbprints: thumbprints,
+		Thumbprints: fingerprints,
 	})
 
 	return nil

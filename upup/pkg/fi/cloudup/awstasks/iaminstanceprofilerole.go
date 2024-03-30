@@ -17,11 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -39,6 +41,7 @@ type IAMInstanceProfileRole struct {
 }
 
 func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfileRole, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	if e.Role == nil || e.Role.ID == nil {
@@ -49,11 +52,10 @@ func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfile
 
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: e.InstanceProfile.Name}
 
-	response, err := cloud.IAM().GetInstanceProfile(request)
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
-			return nil, nil
-		}
+	response, err := cloud.IAM().GetInstanceProfile(ctx, request)
+	var nse *iamtypes.NoSuchEntityException
+	if errors.As(err, &nse) {
+		return nil, nil
 	}
 
 	if err != nil {
@@ -62,7 +64,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfile
 
 	ip := response.InstanceProfile
 	for _, role := range ip.Roles {
-		if aws.StringValue(role.RoleId) != roleID {
+		if aws.ToString(role.RoleId) != roleID {
 			continue
 		}
 		actual := &IAMInstanceProfileRole{}
@@ -95,13 +97,14 @@ func (s *IAMInstanceProfileRole) CheckChanges(a, e, changes *IAMInstanceProfileR
 }
 
 func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfileRole) error {
+	ctx := context.TODO()
 	if a == nil {
 		request := &iam.AddRoleToInstanceProfileInput{
 			InstanceProfileName: e.InstanceProfile.Name,
 			RoleName:            e.Role.Name,
 		}
 
-		_, err := t.Cloud.IAM().AddRoleToInstanceProfile(request)
+		_, err := t.Cloud.IAM().AddRoleToInstanceProfile(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMInstanceProfileRole: %v", err)
 		}

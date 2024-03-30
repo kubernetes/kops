@@ -23,14 +23,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/smithy-go"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
@@ -300,7 +301,7 @@ func matchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
 	return true
 }
 
-func matchesIAMTags(tags map[string]string, actual []*iam.Tag) bool {
+func matchesIAMTags(tags map[string]string, actual []iamtypes.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -1827,7 +1828,8 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 }
 
 func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
-	var attachedPolicies []*iam.AttachedPolicy
+	ctx := context.TODO()
+	var attachedPolicies []iamtypes.AttachedPolicy
 	var policyNames []string
 
 	c := cloud.(awsup.AWSCloud)
@@ -1838,19 +1840,20 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		request := &iam.ListRolePoliciesInput{
 			RoleName: aws.String(roleName),
 		}
-		err := c.IAM().ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+		paginator := iam.NewListRolePoliciesPaginator(c.IAM(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				var nse *iamtypes.NoSuchEntityException
+				if errors.As(err, &nse) {
+					klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
+					return nil
+				}
+				return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+			}
 			for _, policy := range page.PolicyNames {
-				policyNames = append(policyNames, aws.StringValue(policy))
+				policyNames = append(policyNames, policy)
 			}
-			return true
-		})
-		if err != nil {
-			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
-				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
-				return nil
-			}
-
-			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 		}
 	}
 
@@ -1859,17 +1862,18 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		request := &iam.ListAttachedRolePoliciesInput{
 			RoleName: aws.String(roleName),
 		}
-		err := c.IAM().ListAttachedRolePoliciesPages(request, func(page *iam.ListAttachedRolePoliciesOutput, lastPage bool) bool {
-			attachedPolicies = append(attachedPolicies, page.AttachedPolicies...)
-			return true
-		})
-		if err != nil {
-			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
-				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-detached", roleName)
-				return nil
+		paginator := iam.NewListAttachedRolePoliciesPaginator(c.IAM(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				var nse *iamtypes.NoSuchEntityException
+				if errors.As(err, &nse) {
+					klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
+					return nil
+				}
+				return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 			}
-
-			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+			attachedPolicies = append(attachedPolicies, page.AttachedPolicies...)
 		}
 	}
 
@@ -1880,7 +1884,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 			RoleName:   aws.String(r.Name),
 			PolicyName: aws.String(policyName),
 		}
-		_, err := c.IAM().DeleteRolePolicy(request)
+		_, err := c.IAM().DeleteRolePolicy(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
 		}
@@ -1888,12 +1892,12 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 
 	// Detach Managed Policies
 	for _, policy := range attachedPolicies {
-		klog.V(2).Infof("Detaching IAM role policy %q %q", roleName, policy)
+		klog.V(2).Infof("Detaching IAM role policy %q %v", roleName, policy)
 		request := &iam.DetachRolePolicyInput{
 			RoleName:  aws.String(r.Name),
 			PolicyArn: policy.PolicyArn,
 		}
-		_, err := c.IAM().DetachRolePolicy(request)
+		_, err := c.IAM().DetachRolePolicy(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error detaching IAM role policy %q %q: %v", roleName, *policy.PolicyArn, err)
 		}
@@ -1905,7 +1909,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		request := &iam.DeleteRoleInput{
 			RoleName: aws.String(r.Name),
 		}
-		_, err := c.IAM().DeleteRole(request)
+		_, err := c.IAM().DeleteRole(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM role %q: %v", r.Name, err)
 		}
@@ -1915,33 +1919,35 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	var resourceTrackers []*resources.Resource
 	// Find roles owned by the cluster
 	{
-		var getRoleErr error
 		ownershipTag := "kubernetes.io/cluster/" + clusterName
 		request := &iam.ListRolesInput{}
-		err := c.IAM().ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
-			for _, r := range p.Roles {
+		paginator := iam.NewListRolesPaginator(c.IAM(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error listing IAM roles: %v", err)
+			}
+			for _, r := range page.Roles {
 				name := aws.StringValue(r.RoleName)
 
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
-				roleOutput, err := c.IAM().GetRole(getRequest)
+				roleOutput, err := c.IAM().GetRole(ctx, getRequest)
 				if err != nil {
-					if awserror, ok := err.(awserr.RequestFailure); ok {
-						if awserror.StatusCode() == 403 {
-							klog.Warningf("failed to determine ownership of %q: %v", *r.RoleName, awserror)
-
-							continue
-						} else if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
-							klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, awserror)
-							continue
-						}
+					var nse *iamtypes.NoSuchEntityException
+					if errors.As(err, &nse) {
+						klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, nse)
+						continue
+					} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
+						klog.Warningf("failed to determine ownership of %q: %v", name, awserror)
+						continue
 					}
-					getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
-					return false
+					return nil, fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
 				}
 				for _, tag := range roleOutput.Role.Tags {
 					if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
@@ -1955,13 +1961,6 @@ func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 					}
 				}
 			}
-			return true
-		})
-		if getRoleErr != nil {
-			return nil, getRoleErr
-		}
-		if err != nil {
-			return nil, fmt.Errorf("error listing IAM roles: %v", err)
 		}
 	}
 
@@ -1969,9 +1968,10 @@ func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 }
 
 func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	profile := r.Obj.(*iam.InstanceProfile)
+	profile := r.Obj.(iamtypes.InstanceProfile)
 	name := aws.StringValue(profile.InstanceProfileName)
 
 	// Remove roles
@@ -1982,7 +1982,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 				InstanceProfileName: profile.InstanceProfileName,
 				RoleName:            role.RoleName,
 			}
-			_, err := c.IAM().RemoveRoleFromInstanceProfile(request)
+			_, err := c.IAM().RemoveRoleFromInstanceProfile(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.StringValue(role.RoleName), name, err)
 			}
@@ -1995,7 +1995,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 		request := &iam.DeleteInstanceProfileInput{
 			InstanceProfileName: profile.InstanceProfileName,
 		}
-		_, err := c.IAM().DeleteInstanceProfile(request)
+		_, err := c.IAM().DeleteInstanceProfile(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM instance profile %q: %v", name, err)
 		}
@@ -2005,28 +2005,34 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	var getProfileErr error
-	var profiles []*iam.InstanceProfile
+	var profiles []iamtypes.InstanceProfile
 	ownershipTag := "kubernetes.io/cluster/" + clusterName
 
 	request := &iam.ListInstanceProfilesInput{}
-	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
-		for _, p := range p.InstanceProfiles {
+	paginator := iam.NewListInstanceProfilesPaginator(c.IAM(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error listing IAM instance profiles: %v", err)
+		}
+		for _, p := range page.InstanceProfiles {
 			name := aws.StringValue(p.InstanceProfileName)
 
 			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
-			profileOutput, err := c.IAM().GetInstanceProfile(getRequest)
+			profileOutput, err := c.IAM().GetInstanceProfile(ctx, getRequest)
 			if err != nil {
-				if awserror, ok := err.(awserr.Error); ok {
-					if awserror.Code() == iam.ErrCodeNoSuchEntityException {
-						klog.Warningf("could not find instance profile %q. Resource may already have been deleted: %v", *p.InstanceProfileName, awserror)
-						continue
-					}
+				var nse *iamtypes.NoSuchEntityException
+				if errors.As(err, &nse) {
+					klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, nse)
+					continue
+				} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
+					klog.Warningf("failed to determine ownership of %q: %v", *p.InstanceProfileName, awserror)
+					continue
 				}
-				getProfileErr = fmt.Errorf("calling IAM GetInstanceProfile on %s: %w", name, err)
-				return false
+				return nil, fmt.Errorf("calling IAM GetInstanceProfile on %s: %w", name, err)
 			}
 			for _, tag := range profileOutput.InstanceProfile.Tags {
 				if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
@@ -2034,13 +2040,6 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*reso
 				}
 			}
 		}
-		return true
-	})
-	if getProfileErr != nil {
-		return nil, getProfileErr
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error listing IAM instance profiles: %v", err)
 	}
 
 	var resourceTrackers []*resources.Resource
@@ -2063,13 +2062,14 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*reso
 }
 
 func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
 	var providers []*string
 	{
 		request := &iam.ListOpenIDConnectProvidersInput{}
-		response, err := c.IAM().ListOpenIDConnectProviders(request)
+		response, err := c.IAM().ListOpenIDConnectProviders(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing IAM OIDC Providers: %v", err)
 		}
@@ -2078,11 +2078,17 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 			descReq := &iam.GetOpenIDConnectProviderInput{
 				OpenIDConnectProviderArn: arn,
 			}
-			resp, err := c.IAM().GetOpenIDConnectProvider(descReq)
-			if err != nil && awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
-				continue
-			} else if err != nil {
-				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
+			resp, err := c.IAM().GetOpenIDConnectProvider(ctx, descReq)
+			if err != nil {
+				var nse *iamtypes.NoSuchEntityException
+				if errors.As(err, &nse) {
+					klog.Warningf("could not find IAM OIDC Provider %q. Resource may already have been deleted: %v", aws.StringValue(arn), nse)
+					continue
+				} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
+					klog.Warningf("failed to determine ownership of %q: %v", aws.StringValue(arn), awserror)
+					continue
+				}
+				return nil, fmt.Errorf("error getting IAM OIDC Provider %q: %w", aws.StringValue(arn), err)
 			}
 			if !matchesIAMTags(tags, resp.Tags) {
 				continue
@@ -2107,6 +2113,7 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 }
 
 func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 	arn := fi.PtrTo(r.ID)
 	{
@@ -2114,13 +2121,13 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 		request := &iam.DeleteOpenIDConnectProviderInput{
 			OpenIDConnectProviderArn: arn,
 		}
-		_, err := c.IAM().DeleteOpenIDConnectProvider(request)
+		_, err := c.IAM().DeleteOpenIDConnectProvider(ctx, request)
 		if err != nil {
-			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
+			var nse *iamtypes.NoSuchEntityException
+			if errors.As(err, &nse) {
 				klog.V(2).Infof("Got NoSuchEntity deleting IAM OIDC Provider %v; will treat as already-deleted", arn)
 				return nil
 			}
-
 			return fmt.Errorf("error deleting IAM OIDC Provider %v: %v", arn, err)
 		}
 	}

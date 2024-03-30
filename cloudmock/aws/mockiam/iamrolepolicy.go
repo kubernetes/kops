@@ -17,12 +17,12 @@ limitations under the License.
 package mockiam
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 )
 
@@ -32,16 +32,16 @@ type rolePolicy struct {
 	RoleName       string
 }
 
-func (m *MockIAM) GetRolePolicy(request *iam.GetRolePolicyInput) (*iam.GetRolePolicyOutput, error) {
+func (m *MockIAM) GetRolePolicy(ctx context.Context, request *iam.GetRolePolicyInput, optFns ...func(*iam.Options)) (*iam.GetRolePolicyOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	for _, rp := range m.RolePolicies {
-		if rp.PolicyName != aws.StringValue(request.PolicyName) {
+		if rp.PolicyName != aws.ToString(request.PolicyName) {
 			// TODO: check regex?
 			continue
 		}
-		if rp.RoleName != aws.StringValue(request.RoleName) {
+		if rp.RoleName != aws.ToString(request.RoleName) {
 			// TODO: check regex?
 			continue
 		}
@@ -53,55 +53,39 @@ func (m *MockIAM) GetRolePolicy(request *iam.GetRolePolicyInput) (*iam.GetRolePo
 		}
 		return response, nil
 	}
-	return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
+	return nil, &iamtypes.NoSuchEntityException{}
 }
 
-func (m *MockIAM) GetRolePolicyWithContext(aws.Context, *iam.GetRolePolicyInput, ...request.Option) (*iam.GetRolePolicyOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) GetRolePolicyRequest(*iam.GetRolePolicyInput) (*request.Request, *iam.GetRolePolicyOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) PutRolePolicy(request *iam.PutRolePolicyInput) (*iam.PutRolePolicyOutput, error) {
+func (m *MockIAM) PutRolePolicy(ctx context.Context, request *iam.PutRolePolicyInput, optFns ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("PutRolePolicy: %v", request)
 
 	for _, rp := range m.RolePolicies {
-		if rp.PolicyName != aws.StringValue(request.PolicyName) {
+		if rp.PolicyName != aws.ToString(request.PolicyName) {
 			// TODO: check regex?
 			continue
 		}
-		if rp.RoleName != aws.StringValue(request.RoleName) {
+		if rp.RoleName != aws.ToString(request.RoleName) {
 			// TODO: check regex?
 			continue
 		}
 
-		rp.PolicyDocument = aws.StringValue(request.PolicyDocument)
+		rp.PolicyDocument = aws.ToString(request.PolicyDocument)
 		return &iam.PutRolePolicyOutput{}, nil
 	}
 
 	m.RolePolicies = append(m.RolePolicies, &rolePolicy{
-		PolicyDocument: aws.StringValue(request.PolicyDocument),
-		PolicyName:     aws.StringValue(request.PolicyName),
-		RoleName:       aws.StringValue(request.RoleName),
+		PolicyDocument: aws.ToString(request.PolicyDocument),
+		PolicyName:     aws.ToString(request.PolicyName),
+		RoleName:       aws.ToString(request.RoleName),
 	})
 
 	return &iam.PutRolePolicyOutput{}, nil
 }
 
-func (m *MockIAM) PutRolePolicyWithContext(aws.Context, *iam.PutRolePolicyInput, ...request.Option) (*iam.PutRolePolicyOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) PutRolePolicyRequest(*iam.PutRolePolicyInput) (*request.Request, *iam.PutRolePolicyOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRolePolicies(request *iam.ListRolePoliciesInput) (*iam.ListRolePoliciesOutput, error) {
+func (m *MockIAM) ListRolePolicies(ctx context.Context, request *iam.ListRolePoliciesInput, optFns ...func(*iam.Options)) (*iam.ListRolePoliciesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -111,7 +95,7 @@ func (m *MockIAM) ListRolePolicies(request *iam.ListRolePoliciesInput) (*iam.Lis
 
 	for _, r := range m.RolePolicies {
 		if request.RoleName != nil {
-			if r.RoleName != aws.StringValue(request.RoleName) {
+			if r.RoleName != aws.ToString(request.RoleName) {
 				continue
 			}
 		}
@@ -119,37 +103,13 @@ func (m *MockIAM) ListRolePolicies(request *iam.ListRolePoliciesInput) (*iam.Lis
 	}
 
 	response := &iam.ListRolePoliciesOutput{
-		PolicyNames: aws.StringSlice(policyNames),
+		PolicyNames: policyNames,
 	}
 
 	return response, nil
 }
 
-func (m *MockIAM) ListRolePoliciesWithContext(aws.Context, *iam.ListRolePoliciesInput, ...request.Option) (*iam.ListRolePoliciesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRolePoliciesRequest(*iam.ListRolePoliciesInput) (*request.Request, *iam.ListRolePoliciesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRolePoliciesPages(request *iam.ListRolePoliciesInput, callback func(*iam.ListRolePoliciesOutput, bool) bool) error {
-	// For the mock, we just send everything in one page
-	page, err := m.ListRolePolicies(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockIAM) ListRolePoliciesPagesWithContext(aws.Context, *iam.ListRolePoliciesInput, func(*iam.ListRolePoliciesOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteRolePolicy(request *iam.DeleteRolePolicyInput) (*iam.DeleteRolePolicyOutput, error) {
+func (m *MockIAM) DeleteRolePolicy(ctx context.Context, request *iam.DeleteRolePolicyInput, optFns ...func(*iam.Options)) (*iam.DeleteRolePolicyOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -158,7 +118,7 @@ func (m *MockIAM) DeleteRolePolicy(request *iam.DeleteRolePolicyInput) (*iam.Del
 	found := false
 	var newRolePolicies []*rolePolicy
 	for _, rp := range m.RolePolicies {
-		if rp.PolicyName == aws.StringValue(request.PolicyName) && rp.RoleName == aws.StringValue(request.RoleName) {
+		if rp.PolicyName == aws.ToString(request.PolicyName) && rp.RoleName == aws.ToString(request.RoleName) {
 			found = true
 			continue
 		}
@@ -170,12 +130,4 @@ func (m *MockIAM) DeleteRolePolicy(request *iam.DeleteRolePolicyInput) (*iam.Del
 	m.RolePolicies = newRolePolicies
 
 	return &iam.DeleteRolePolicyOutput{}, nil
-}
-
-func (m *MockIAM) DeleteRolePolicyWithContext(aws.Context, *iam.DeleteRolePolicyInput, ...request.Option) (*iam.DeleteRolePolicyOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteRolePolicyRequest(*iam.DeleteRolePolicyInput) (*request.Request, *iam.DeleteRolePolicyOutput) {
-	panic("Not implemented")
 }

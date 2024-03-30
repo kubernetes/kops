@@ -17,22 +17,22 @@ limitations under the License.
 package mockiam
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error) {
+func (m *MockIAM) GetRole(ctx context.Context, request *iam.GetRoleInput, optFns ...func(*iam.Options)) (*iam.GetRoleOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	role := m.Roles[aws.StringValue(request.RoleName)]
-	if role == nil {
-		return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
+	role, ok := m.Roles[aws.ToString(request.RoleName)]
+	if !ok {
+		return nil, &iamtypes.NoSuchEntityException{}
 	}
 	response := &iam.GetRoleOutput{
 		Role: role,
@@ -40,24 +40,16 @@ func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error)
 	return response, nil
 }
 
-func (m *MockIAM) GetRoleWithContext(aws.Context, *iam.GetRoleInput, ...request.Option) (*iam.GetRoleOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) GetRoleRequest(*iam.GetRoleInput) (*request.Request, *iam.GetRoleOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutput, error) {
+func (m *MockIAM) CreateRole(ctx context.Context, request *iam.CreateRoleInput, optFns ...func(*iam.Options)) (*iam.CreateRoleOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	roleID := m.createID()
-	r := &iam.Role{
+	r := iamtypes.Role{
 		AssumeRolePolicyDocument: request.AssumeRolePolicyDocument,
 		Description:              request.Description,
 		Path:                     request.Path,
-		PermissionsBoundary: &iam.AttachedPermissionsBoundary{
+		PermissionsBoundary: &iamtypes.AttachedPermissionsBoundary{
 			PermissionsBoundaryArn: request.PermissionsBoundary,
 		},
 		RoleName: request.RoleName,
@@ -66,23 +58,15 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 	}
 
 	if m.Roles == nil {
-		m.Roles = make(map[string]*iam.Role)
+		m.Roles = make(map[string]*iamtypes.Role)
 	}
-	m.Roles[*r.RoleName] = r
+	m.Roles[*r.RoleName] = &r
 
-	copy := *r
+	copy := r
 	return &iam.CreateRoleOutput{Role: &copy}, nil
 }
 
-func (m *MockIAM) CreateRoleWithContext(aws.Context, *iam.CreateRoleInput, ...request.Option) (*iam.CreateRoleOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) CreateRoleRequest(*iam.CreateRoleInput) (*request.Request, *iam.CreateRoleOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, error) {
+func (m *MockIAM) ListRoles(ctx context.Context, request *iam.ListRolesInput, optFns ...func(*iam.Options)) (*iam.ListRolesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -92,11 +76,11 @@ func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, 
 		klog.Fatalf("MockIAM ListRoles PathPrefix not implemented")
 	}
 
-	var roles []*iam.Role
+	var roles []iamtypes.Role
 
 	for _, r := range m.Roles {
 		copy := *r
-		roles = append(roles, &copy)
+		roles = append(roles, copy)
 	}
 
 	response := &iam.ListRolesOutput{
@@ -106,39 +90,15 @@ func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, 
 	return response, nil
 }
 
-func (m *MockIAM) ListRolesWithContext(aws.Context, *iam.ListRolesInput, ...request.Option) (*iam.ListRolesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRolesRequest(*iam.ListRolesInput) (*request.Request, *iam.ListRolesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListRolesPages(request *iam.ListRolesInput, callback func(*iam.ListRolesOutput, bool) bool) error {
-	// For the mock, we just send everything in one page
-	page, err := m.ListRoles(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockIAM) ListRolesPagesWithContext(aws.Context, *iam.ListRolesInput, func(*iam.ListRolesOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutput, error) {
+func (m *MockIAM) DeleteRole(ctx context.Context, request *iam.DeleteRoleInput, optFns ...func(*iam.Options)) (*iam.DeleteRoleOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteRole: %v", request)
 
-	id := aws.StringValue(request.RoleName)
-	o := m.Roles[id]
-	if o == nil {
+	id := aws.ToString(request.RoleName)
+	_, ok := m.Roles[id]
+	if !ok {
 		return nil, fmt.Errorf("Role %q not found", id)
 	}
 	delete(m.Roles, id)
@@ -146,23 +106,15 @@ func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutpu
 	return &iam.DeleteRoleOutput{}, nil
 }
 
-func (m *MockIAM) DeleteRoleWithContext(aws.Context, *iam.DeleteRoleInput, ...request.Option) (*iam.DeleteRoleOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteRoleRequest(*iam.DeleteRoleInput) (*request.Request, *iam.DeleteRoleOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListAttachedRolePolicies(input *iam.ListAttachedRolePoliciesInput) (*iam.ListAttachedRolePoliciesOutput, error) {
+func (m *MockIAM) ListAttachedRolePolicies(ctx context.Context, request *iam.ListAttachedRolePoliciesInput, optFns ...func(*iam.Options)) (*iam.ListAttachedRolePoliciesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("ListAttachedRolePolicies: %s", aws.StringValue(input.RoleName))
+	klog.Infof("ListAttachedRolePolicies: %s", aws.ToString(request.RoleName))
 
 	for _, r := range m.Roles {
-		if r.RoleName == input.RoleName {
-			role := aws.StringValue(r.RoleName)
+		if r.RoleName == request.RoleName {
+			role := aws.ToString(r.RoleName)
 
 			return &iam.ListAttachedRolePoliciesOutput{
 				AttachedPolicies: m.AttachedPolicies[role],
@@ -171,21 +123,4 @@ func (m *MockIAM) ListAttachedRolePolicies(input *iam.ListAttachedRolePoliciesIn
 	}
 
 	return &iam.ListAttachedRolePoliciesOutput{}, nil
-}
-
-func (m *MockIAM) ListAttachedRolePoliciesPages(input *iam.ListAttachedRolePoliciesInput, pager func(*iam.ListAttachedRolePoliciesOutput, bool) bool) error {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	klog.Infof("ListAttachedRolePolicies: %s", aws.StringValue(input.RoleName))
-
-	role := aws.StringValue(input.RoleName)
-
-	if pager(&iam.ListAttachedRolePoliciesOutput{
-		AttachedPolicies: m.AttachedPolicies[role],
-	}, true) {
-		return nil
-	}
-
-	return nil
 }
