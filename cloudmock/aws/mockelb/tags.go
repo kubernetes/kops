@@ -20,23 +20,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELB) DescribeTags(request *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error) {
-	return m.DescribeTagsWithContext(context.TODO(), request)
-}
-
-func (m *MockELB) DescribeTagsWithContext(ctx aws.Context, request *elb.DescribeTagsInput, opt ...request.Option) (*elb.DescribeTagsOutput, error) {
+func (m *MockELB) DescribeTags(ctx context.Context, request *elb.DescribeTagsInput, optFns ...func(*elb.Options)) (*elb.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeTags %v", request)
 
-	var tags []*elb.TagDescription
+	var tags []elbtypes.TagDescription
 
 	for k, lb := range m.LoadBalancers {
 		match := false
@@ -44,7 +40,7 @@ func (m *MockELB) DescribeTagsWithContext(ctx aws.Context, request *elb.Describe
 			match = true
 		} else {
 			for _, name := range request.LoadBalancerNames {
-				if *name == k {
+				if name == k {
 					match = true
 				}
 			}
@@ -54,11 +50,11 @@ func (m *MockELB) DescribeTagsWithContext(ctx aws.Context, request *elb.Describe
 			continue
 		}
 
-		tagDescription := &elb.TagDescription{
+		tagDescription := elbtypes.TagDescription{
 			LoadBalancerName: aws.String(k),
 		}
 		for k, v := range lb.tags {
-			tagDescription.Tags = append(tagDescription.Tags, &elb.Tag{
+			tagDescription.Tags = append(tagDescription.Tags, elbtypes.Tag{
 				Key:   aws.String(k),
 				Value: aws.String(v),
 			})
@@ -73,16 +69,16 @@ func (m *MockELB) DescribeTagsWithContext(ctx aws.Context, request *elb.Describe
 	return response, nil
 }
 
-func (m *MockELB) AddTags(request *elb.AddTagsInput) (*elb.AddTagsOutput, error) {
+func (m *MockELB) AddTags(ctx context.Context, request *elb.AddTagsInput, optFns ...func(*elb.Options)) (*elb.AddTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("AddTags %v", request)
 
 	for _, name := range request.LoadBalancerNames {
-		elb := m.LoadBalancers[*name]
+		elb := m.LoadBalancers[name]
 		if elb == nil {
-			return nil, fmt.Errorf("ELB %q not found", *name)
+			return nil, fmt.Errorf("ELB %q not found", name)
 		}
 		for _, tag := range request.Tags {
 			elb.tags[*tag.Key] = *tag.Value

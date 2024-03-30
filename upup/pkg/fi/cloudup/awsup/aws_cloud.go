@@ -34,6 +34,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -46,8 +48,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -128,7 +128,7 @@ type AWSCloud interface {
 	Session() (*session.Session, error)
 	EC2() ec2iface.EC2API
 	IAM() awsinterfaces.IAMAPI
-	ELB() elbiface.ELBAPI
+	ELB() awsinterfaces.ELBAPI
 	ELBV2() awsinterfaces.ELBV2API
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
@@ -161,8 +161,8 @@ type AWSCloud interface {
 	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 	RemoveELBV2Tags(ResourceArn string, tags map[string]string) error
-	FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error)
-	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
+	FindELBByNameTag(findNameTag string) (*elbtypes.LoadBalancerDescription, error)
+	DescribeELBTags(loadBalancerNames []string) (map[string][]elbtypes.Tag, error)
 	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
 	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]elbv2types.Tag, error)
 	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
@@ -197,7 +197,7 @@ type AWSCloud interface {
 type awsCloudImplementation struct {
 	ec2         *ec2.EC2
 	iam         *iam.Client
-	elb         *elb.ELB
+	elb         *elb.Client
 	elbv2       *elbv2.Client
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
@@ -333,18 +333,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.addHandlers(region, &c.ec2.Handlers)
 
 		c.iam = iam.NewFromConfig(cfgV2)
-
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.elb = elb.New(sess, config)
-		c.elb.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.elb.Handlers)
-
+		c.elb = elb.NewFromConfig(cfgV2)
 		c.elbv2 = elbv2.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
@@ -635,7 +624,7 @@ func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.Cloud
 
 	if len(loadBalancerNames) != 0 {
 		eg.Go(func() error {
-			return deregisterInstanceFromClassicLoadBalancer(c, loadBalancerNames, i.ID)
+			return deregisterInstanceFromClassicLoadBalancer(ctx, c, loadBalancerNames, i.ID)
 		})
 	}
 
@@ -653,15 +642,15 @@ func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.Cloud
 }
 
 // deregisterInstanceFromClassicLoadBalancer ensures that connectionDraining completes for the associated classic loadBalancer to ensure no dropped connections.
-func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, loadBalancerNames []string, instanceId string) error {
+func deregisterInstanceFromClassicLoadBalancer(ctx context.Context, c AWSCloud, loadBalancerNames []string, instanceId string) error {
 	klog.Infof("Deregistering instance from classic loadBalancers: %v", loadBalancerNames)
 
 	for {
 		instanceDraining := false
 		for _, loadBalancerName := range loadBalancerNames {
-			response, err := c.ELB().DescribeInstanceHealth(&elb.DescribeInstanceHealthInput{
+			response, err := c.ELB().DescribeInstanceHealth(ctx, &elb.DescribeInstanceHealthInput{
 				LoadBalancerName: aws.String(loadBalancerName),
-				Instances: []*elb.Instance{{
+				Instances: []elbtypes.Instance{{
 					InstanceId: aws.String(instanceId),
 				}},
 			})
@@ -676,9 +665,9 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, loadBalancerNames []s
 
 			// there will be only one instance in the DescribeInstanceHealth response.
 			if aws.StringValue(response.InstanceStates[0].State) == instanceInServiceState {
-				c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
+				c.ELB().DeregisterInstancesFromLoadBalancer(ctx, &elb.DeregisterInstancesFromLoadBalancerInput{
 					LoadBalancerName: aws.String(loadBalancerName),
-					Instances: []*elb.Instance{{
+					Instances: []elbtypes.Instance{{
 						InstanceId: aws.String(instanceId),
 					}},
 				})
@@ -1577,12 +1566,13 @@ func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string
 }
 
 func getELBTags(c AWSCloud, loadBalancerName string) (map[string]string, error) {
+	ctx := context.TODO()
 	tags := map[string]string{}
 
 	request := &elb.DescribeTagsInput{
-		LoadBalancerNames: []*string{&loadBalancerName},
+		LoadBalancerNames: []string{loadBalancerName},
 	}
-	response, err := c.ELB().DescribeTags(request)
+	response, err := c.ELB().DescribeTags(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing tags on %v: %v", loadBalancerName, err)
 	}
@@ -1605,18 +1595,19 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	if len(tags) == 0 {
 		return nil
 	}
+	ctx := context.TODO()
 
-	elbTags := []*elb.Tag{}
+	elbTags := []elbtypes.Tag{}
 	for k, v := range tags {
-		elbTags = append(elbTags, &elb.Tag{Key: aws.String(k), Value: aws.String(v)})
+		elbTags = append(elbTags, elbtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 
 	request := &elb.AddTagsInput{
 		Tags:              elbTags,
-		LoadBalancerNames: []*string{&loadBalancerName},
+		LoadBalancerNames: []string{loadBalancerName},
 	}
 
-	_, err := c.ELB().AddTags(request)
+	_, err := c.ELB().AddTags(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
 	}
@@ -1633,18 +1624,19 @@ func removeELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	if len(tags) == 0 {
 		return nil
 	}
+	ctx := context.TODO()
 
-	elbTagKeysOnly := []*elb.TagKeyOnly{}
+	elbTagKeysOnly := []elbtypes.TagKeyOnly{}
 	for k := range tags {
-		elbTagKeysOnly = append(elbTagKeysOnly, &elb.TagKeyOnly{Key: aws.String(k)})
+		elbTagKeysOnly = append(elbTagKeysOnly, elbtypes.TagKeyOnly{Key: aws.String(k)})
 	}
 
 	request := &elb.RemoveTagsInput{
 		Tags:              elbTagKeysOnly,
-		LoadBalancerNames: []*string{&loadBalancerName},
+		LoadBalancerNames: []string{loadBalancerName},
 	}
 
-	_, err := c.ELB().RemoveTags(request)
+	_, err := c.ELB().RemoveTags(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
 	}
@@ -1758,31 +1750,36 @@ func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 	}
 }
 
-func (c *awsCloudImplementation) FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error) {
+func (c *awsCloudImplementation) FindELBByNameTag(findNameTag string) (*elbtypes.LoadBalancerDescription, error) {
 	return findELBByNameTag(c, findNameTag)
 }
 
-func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
+func findELBByNameTag(c AWSCloud, findNameTag string) (*elbtypes.LoadBalancerDescription, error) {
+	ctx := context.TODO()
 	// TODO: Any way around this?
 	klog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
 
 	request := &elb.DescribeLoadBalancersInput{}
 	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
+	request.PageSize = aws.Int32(20)
 
-	var found []*elb.LoadBalancerDescription
+	var found []elbtypes.LoadBalancerDescription
 
-	var innerError error
-	err := c.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancerDescriptions) == 0 {
-			return true
+	paginator := elb.NewDescribeLoadBalancersPaginator(c.ELB(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error describing LoadBalancers: %w", err)
+		}
+		if len(page.LoadBalancerDescriptions) == 0 {
+			continue
 		}
 
 		// TODO: Filter by cluster?
 
 		var names []string
-		nameToELB := make(map[string]*elb.LoadBalancerDescription)
-		for _, elb := range p.LoadBalancerDescriptions {
+		nameToELB := make(map[string]elbtypes.LoadBalancerDescription)
+		for _, elb := range page.LoadBalancerDescriptions {
 			name := aws.StringValue(elb.LoadBalancerName)
 			nameToELB[name] = elb
 			names = append(names, name)
@@ -1790,8 +1787,7 @@ func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescript
 
 		tagMap, err := c.DescribeELBTags(names)
 		if err != nil {
-			innerError = err
-			return false
+			return nil, fmt.Errorf("error describing LoadBalancer tags: %w", err)
 		}
 
 		for loadBalancerName, tags := range tagMap {
@@ -1803,13 +1799,6 @@ func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescript
 			elb := nameToELB[loadBalancerName]
 			found = append(found, elb)
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
 	}
 
 	if len(found) == 0 {
@@ -1820,27 +1809,28 @@ func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescript
 		return nil, fmt.Errorf("Found multiple ELBs with Name %q", findNameTag)
 	}
 
-	return found[0], nil
+	return &found[0], nil
 }
 
-func (c *awsCloudImplementation) DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+func (c *awsCloudImplementation) DescribeELBTags(loadBalancerNames []string) (map[string][]elbtypes.Tag, error) {
 	return describeELBTags(c, loadBalancerNames)
 }
 
-func describeELBTags(c AWSCloud, loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+func describeELBTags(c AWSCloud, loadBalancerNames []string) (map[string][]elbtypes.Tag, error) {
+	ctx := context.TODO()
 	// TODO: Filter by cluster?
 
 	request := &elb.DescribeTagsInput{}
-	request.LoadBalancerNames = aws.StringSlice(loadBalancerNames)
+	request.LoadBalancerNames = loadBalancerNames
 
 	// TODO: Cache?
 	klog.V(2).Infof("Querying ELB tags for %s", loadBalancerNames)
-	response, err := c.ELB().DescribeTags(request)
+	response, err := c.ELB().DescribeTags(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
-	tagMap := make(map[string][]*elb.Tag)
+	tagMap := make(map[string][]elbtypes.Tag)
 	for _, tagset := range response.TagDescriptions {
 		tagMap[aws.StringValue(tagset.LoadBalancerName)] = tagset.Tags
 	}
@@ -2175,7 +2165,7 @@ func (c *awsCloudImplementation) IAM() awsinterfaces.IAMAPI {
 	return c.iam
 }
 
-func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
+func (c *awsCloudImplementation) ELB() awsinterfaces.ELBAPI {
 	return c.elb
 }
 

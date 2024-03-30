@@ -17,20 +17,22 @@ limitations under the License.
 package mockelb
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 const elbZoneID = "FAKEZONE-CLOUDMOCK-ELB"
 
 type MockELB struct {
-	elbiface.ELBAPI
+	awsinterfaces.ELBAPI
 
 	mutex sync.Mutex
 
@@ -38,12 +40,12 @@ type MockELB struct {
 }
 
 type loadBalancer struct {
-	description elb.LoadBalancerDescription
-	attributes  elb.LoadBalancerAttributes
+	description elbtypes.LoadBalancerDescription
+	attributes  elbtypes.LoadBalancerAttributes
 	tags        map[string]string
 }
 
-func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
+func (m *MockELB) DescribeLoadBalancers(ctx context.Context, request *elb.DescribeLoadBalancersInput, optFns ...func(*elb.Options)) (*elb.DescribeLoadBalancersOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -56,13 +58,13 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 		klog.Fatalf("Marker not implemented")
 	}
 
-	var elbs []*elb.LoadBalancerDescription
+	var elbs []elbtypes.LoadBalancerDescription
 	for _, elb := range m.LoadBalancers {
 		match := false
 
 		if len(request.LoadBalancerNames) > 0 {
 			for _, name := range request.LoadBalancerNames {
-				if aws.StringValue(elb.description.LoadBalancerName) == aws.StringValue(name) {
+				if aws.ToString(elb.description.LoadBalancerName) == name {
 					match = true
 				}
 			}
@@ -71,7 +73,7 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 		}
 
 		if match {
-			elbs = append(elbs, &elb.description)
+			elbs = append(elbs, elb.description)
 		}
 	}
 
@@ -80,19 +82,7 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 	}, nil
 }
 
-func (m *MockELB) DescribeLoadBalancersPages(request *elb.DescribeLoadBalancersInput, callback func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
-	// For the mock, we just send everything in one page
-	page, err := m.DescribeLoadBalancers(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb.CreateLoadBalancerOutput, error) {
+func (m *MockELB) CreateLoadBalancer(ctx context.Context, request *elb.CreateLoadBalancerInput, optFns ...func(*elb.Options)) (*elb.CreateLoadBalancerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -102,7 +92,7 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 	dnsName := *request.LoadBalancerName + ".elb.cloudmock.com"
 
 	lb := &loadBalancer{
-		description: elb.LoadBalancerDescription{
+		description: elbtypes.LoadBalancerDescription{
 			AvailabilityZones: request.AvailabilityZones,
 			CreatedTime:       &createdTime,
 			LoadBalancerName:  request.LoadBalancerName,
@@ -117,8 +107,8 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 	}
 
 	for _, listener := range request.Listeners {
-		lb.description.ListenerDescriptions = append(lb.description.ListenerDescriptions, &elb.ListenerDescription{
-			Listener: listener,
+		lb.description.ListenerDescriptions = append(lb.description.ListenerDescriptions, elbtypes.ListenerDescription{
+			Listener: &listener,
 		})
 	}
 
@@ -142,13 +132,13 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 	}, nil
 }
 
-func (m *MockELB) DeleteLoadBalancer(request *elb.DeleteLoadBalancerInput) (*elb.DeleteLoadBalancerOutput, error) {
+func (m *MockELB) DeleteLoadBalancer(ctx context.Context, request *elb.DeleteLoadBalancerInput, optFns ...func(*elb.Options)) (*elb.DeleteLoadBalancerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteLoadBalancer: %v", request)
 
-	id := aws.StringValue(request.LoadBalancerName)
+	id := aws.ToString(request.LoadBalancerName)
 	o := m.LoadBalancers[id]
 	if o == nil {
 		return nil, fmt.Errorf("LoadBalancer %q not found", id)

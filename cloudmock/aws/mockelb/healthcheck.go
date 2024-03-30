@@ -17,20 +17,21 @@ limitations under the License.
 package mockelb
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELB) ConfigureHealthCheck(request *elb.ConfigureHealthCheckInput) (*elb.ConfigureHealthCheckOutput, error) {
+func (m *MockELB) ConfigureHealthCheck(ctx context.Context, request *elb.ConfigureHealthCheckInput, optFns ...func(*elb.Options)) (*elb.ConfigureHealthCheckOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("ConfigureHealthCheck: %v", request)
 
-	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
+	lb := m.LoadBalancers[aws.ToString(request.LoadBalancerName)]
 	if lb == nil {
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}

@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
@@ -740,12 +740,13 @@ func (d deleteClassicLoadBalancer) DeferDeletion() bool {
 }
 
 func (d deleteClassicLoadBalancer) Delete(t fi.CloudupTarget) error {
+	ctx := context.TODO()
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
 	}
 
-	_, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(&elb.DeleteLoadBalancerInput{
+	_, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(ctx, &elb.DeleteLoadBalancerInput{
 		LoadBalancerName: d.LoadBalancerName,
 	})
 	if err != nil {

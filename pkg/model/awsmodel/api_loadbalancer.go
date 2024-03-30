@@ -232,19 +232,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.ClassicLoadBalancerHealthCheck{
 				Target:             fi.PtrTo("SSL:443"),
-				Timeout:            fi.PtrTo(int64(5)),
-				Interval:           fi.PtrTo(int64(10)),
-				HealthyThreshold:   fi.PtrTo(int64(2)),
-				UnhealthyThreshold: fi.PtrTo(int64(2)),
+				Timeout:            fi.PtrTo(int32(5)),
+				Interval:           fi.PtrTo(int32(10)),
+				HealthyThreshold:   fi.PtrTo(int32(2)),
+				UnhealthyThreshold: fi.PtrTo(int32(2)),
 			},
 
 			ConnectionSettings: &awstasks.ClassicLoadBalancerConnectionSettings{
-				IdleTimeout: fi.PtrTo(int64(idleTimeout.Seconds())),
+				IdleTimeout: fi.PtrTo(int32(idleTimeout.Seconds())),
 			},
 
 			ConnectionDraining: &awstasks.ClassicLoadBalancerConnectionDraining{
 				Enabled: fi.PtrTo(true),
-				Timeout: fi.PtrTo(int64(300)),
+				Timeout: fi.PtrTo(int32(300)),
 			},
 
 			Tags:              tags,
@@ -276,7 +276,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		if lbSpec.AccessLog != nil {
 			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
-				EmitInterval:   fi.PtrTo(int64(lbSpec.AccessLog.Interval)),
+				EmitInterval:   fi.PtrTo(int32(lbSpec.AccessLog.Interval)),
 				Enabled:        fi.PtrTo(true),
 				S3BucketName:   lbSpec.AccessLog.Bucket,
 				S3BucketPrefix: lbSpec.AccessLog.BucketPrefix,

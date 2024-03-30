@@ -21,10 +21,10 @@ import (
 	"sort"
 	"testing"
 
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/pkg/resources"
@@ -345,12 +345,12 @@ func TestSharedVolume(t *testing.T) {
 func TestMatchesElbTags(t *testing.T) {
 	tc := []struct {
 		tags     map[string]string
-		actual   []*elb.Tag
+		actual   []elbtypes.Tag
 		expected bool
 	}{
 		{
 			tags: map[string]string{"tagkey1": "tagvalue1"},
-			actual: []*elb.Tag{
+			actual: []elbtypes.Tag{
 				{
 					Key:   fi.PtrTo("tagkey1"),
 					Value: fi.PtrTo("tagvalue1"),
@@ -364,7 +364,7 @@ func TestMatchesElbTags(t *testing.T) {
 		},
 		{
 			tags: map[string]string{"tagkey2": "tagvalue2"},
-			actual: []*elb.Tag{
+			actual: []elbtypes.Tag{
 				{
 					Key:   fi.PtrTo("tagkey1"),
 					Value: fi.PtrTo("tagvalue1"),
@@ -378,7 +378,7 @@ func TestMatchesElbTags(t *testing.T) {
 		},
 		{
 			tags: map[string]string{"tagkey3": "tagvalue3"},
-			actual: []*elb.Tag{
+			actual: []elbtypes.Tag{
 				{
 					Key:   fi.PtrTo("tagkey1"),
 					Value: fi.PtrTo("tagvalue1"),
