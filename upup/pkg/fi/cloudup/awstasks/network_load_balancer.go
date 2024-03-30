@@ -24,9 +24,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
@@ -62,15 +63,15 @@ type NetworkLoadBalancer struct {
 	SubnetMappings []*SubnetMapping
 	SecurityGroups []*SecurityGroup
 
-	Scheme *string
+	Scheme elbv2types.LoadBalancerSchemeEnum
 
 	CrossZoneLoadBalancing *bool
 
-	IpAddressType *string
+	IpAddressType elbv2types.IpAddressType
 
 	Tags map[string]string
 
-	Type *string
+	Type elbv2types.LoadBalancerTypeEnum
 
 	VPC       *VPC
 	AccessLog *NetworkLoadBalancerAccessLog
@@ -104,26 +105,26 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
-func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elbv2.LoadBalancer, error) {
+func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elbv2types.LoadBalancer, error) {
 	ctx := context.TODO()
 
 	// TODO: Any way to avoid listing all NLBs?
 	request := &elbv2.DescribeLoadBalancersInput{}
 
-	dnsName := aws.StringValue(alias.DNSName)
+	dnsName := aws.ToString(alias.DNSName)
 	matchDnsName := strings.TrimSuffix(dnsName, ".")
 	if matchDnsName == "" {
 		return nil, fmt.Errorf("DNSName not set on AliasTarget")
 	}
 
-	matchHostedZoneId := aws.StringValue(alias.HostedZoneId)
+	matchHostedZoneId := aws.ToString(alias.HostedZoneId)
 
-	found, err := describeNetworkLoadBalancers(ctx, cloud, request, func(lb *elbv2.LoadBalancer) bool {
-		if matchHostedZoneId != aws.StringValue(lb.CanonicalHostedZoneId) {
+	found, err := describeNetworkLoadBalancers(ctx, cloud, request, func(lb elbv2types.LoadBalancer) bool {
+		if matchHostedZoneId != aws.ToString(lb.CanonicalHostedZoneId) {
 			return false
 		}
 
-		lbDnsName := aws.StringValue(lb.DNSName)
+		lbDnsName := aws.ToString(lb.DNSName)
 		lbDnsName = strings.TrimSuffix(lbDnsName, ".")
 		return lbDnsName == matchDnsName || "dualstack."+lbDnsName == matchDnsName
 	})
@@ -139,22 +140,22 @@ func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTa
 		return nil, fmt.Errorf("Found multiple NLBs with DNSName %q", dnsName)
 	}
 
-	return found[0], nil
+	return &found[0], nil
 }
 
-func describeNetworkLoadBalancers(ctx context.Context, cloud awsup.AWSCloud, request *elbv2.DescribeLoadBalancersInput, filter func(*elbv2.LoadBalancer) bool) ([]*elbv2.LoadBalancer, error) {
-	var found []*elbv2.LoadBalancer
-	err := cloud.ELBV2().DescribeLoadBalancersPagesWithContext(ctx, request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
-		for _, lb := range p.LoadBalancers {
+func describeNetworkLoadBalancers(ctx context.Context, cloud awsup.AWSCloud, request *elbv2.DescribeLoadBalancersInput, filter func(elbv2types.LoadBalancer) bool) ([]elbv2types.LoadBalancer, error) {
+	var found []elbv2types.LoadBalancer
+	paginator := elbv2.NewDescribeLoadBalancersPaginator(cloud.ELBV2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing NLBs: %v", err)
+		}
+		for _, lb := range page.LoadBalancers {
 			if filter(lb) {
 				found = append(found, lb)
 			}
 		}
-
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing NLBs: %v", err)
 	}
 
 	return found, nil
@@ -216,14 +217,14 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 
 	actual.Tags = make(map[string]string)
 	for _, tag := range latest.Tags {
-		k := aws.StringValue(tag.Key)
+		k := aws.ToString(tag.Key)
 		if strings.HasPrefix(k, "aws:cloudformation:") {
 			continue
 		}
 		if k == awsup.KopsResourceRevisionTag {
 			continue
 		}
-		actual.Tags[k] = aws.StringValue(tag.Value)
+		actual.Tags[k] = aws.ToString(tag.Value)
 	}
 
 	for _, az := range lb.AvailabilityZones {
@@ -248,11 +249,11 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	}
 
 	for _, sg := range lb.SecurityGroups {
-		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: sg})
+		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: aws.String(sg)})
 	}
 
 	{
-		lbAttributes, err := findNetworkLoadBalancerAttributes(cloud, loadBalancerArn)
+		lbAttributes, err := findNetworkLoadBalancerAttributes(ctx, cloud, loadBalancerArn)
 		if err != nil {
 			return nil, err
 		}
@@ -310,7 +311,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	}
 
 	// An existing internal NLB can't be updated to dualstack.
-	if fi.ValueOf(actual.Scheme) == elbv2.LoadBalancerSchemeEnumInternal && fi.ValueOf(actual.IpAddressType) == elbv2.IpAddressTypeIpv4 {
+	if actual.Scheme == elbv2types.LoadBalancerSchemeEnumInternal && actual.IpAddressType == elbv2types.IpAddressTypeIpv4 {
 		e.IpAddressType = actual.IpAddressType
 	}
 
@@ -320,7 +321,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	actual.LoadBalancerBaseName = e.LoadBalancerBaseName
 
 	// Store state for other tasks
-	e.loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
+	e.loadBalancerArn = aws.ToString(lb.LoadBalancerArn)
 	actual.loadBalancerArn = e.loadBalancerArn
 	e.revision, _ = latest.GetTag(awsup.KopsResourceRevisionTag)
 	actual.revision = e.revision
@@ -370,9 +371,9 @@ func (e *NetworkLoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, err
 			}
 
 			if cluster.UsesNoneDNS() {
-				nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), aws.StringValue(lb.LoadBalancer.LoadBalancerName))
+				nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), aws.ToString(lb.LoadBalancer.LoadBalancerName))
 				if err != nil {
-					return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", aws.StringValue(lb.LoadBalancer.LoadBalancerName), err)
+					return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", aws.ToString(lb.LoadBalancer.LoadBalancerName), err)
 				}
 				for _, ni := range nis {
 					if fi.ValueOf(ni.PrivateIpAddress) != "" {
@@ -396,11 +397,11 @@ func (e *NetworkLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
 
-	e.IpAddressType = fi.PtrTo("dualstack")
+	e.IpAddressType = elbv2types.IpAddressTypeDualstack
 	for _, subnet := range e.SubnetMappings {
 		for _, clusterSubnet := range c.T.Cluster.Spec.Networking.Subnets {
 			if clusterSubnet.Name == fi.ValueOf(subnet.Subnet.ShortName) && clusterSubnet.IPv6CIDR == "" {
-				e.IpAddressType = fi.PtrTo("ipv4")
+				e.IpAddressType = elbv2types.IpAddressTypeIpv4
 			}
 		}
 	}
@@ -501,7 +502,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			request.Tags = awsup.ELBv2Tags(tags)
 
 			for _, subnetMapping := range e.SubnetMappings {
-				request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
+				request.SubnetMappings = append(request.SubnetMappings, elbv2types.SubnetMapping{
 					SubnetId:           subnetMapping.Subnet.ID,
 					AllocationId:       subnetMapping.AllocationID,
 					PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
@@ -509,12 +510,12 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 
 			for _, sg := range e.SecurityGroups {
-				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
+				request.SecurityGroups = append(request.SecurityGroups, aws.ToString(sg.ID))
 			}
 
 			klog.V(2).Infof("Creating NLB %q", loadBalancerName)
 
-			response, err := t.Cloud.ELBV2().CreateLoadBalancer(request)
+			response, err := t.Cloud.ELBV2().CreateLoadBalancer(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error creating NLB %q: %w", loadBalancerName, err)
 			}
@@ -526,7 +527,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			e.DNSName = lb.DNSName
 			e.HostedZoneId = lb.CanonicalHostedZoneId
 			e.VPC = &VPC{ID: lb.VpcId}
-			loadBalancerArn = aws.StringValue(lb.LoadBalancerArn)
+			loadBalancerArn = aws.ToString(lb.LoadBalancerArn)
 			e.loadBalancerArn = loadBalancerArn
 			e.revision = revision
 		}
@@ -534,10 +535,10 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		if e.waitForLoadBalancerReady {
 			klog.Infof("Waiting for load balancer %q to be created...", loadBalancerName)
 			request := &elbv2.DescribeLoadBalancersInput{
-				Names: []*string{&loadBalancerName},
+				Names: []string{loadBalancerName},
 			}
 
-			err := t.Cloud.ELBV2().WaitUntilLoadBalancerAvailableWithContext(ctx, request)
+			err := elbv2.NewLoadBalancerAvailableWaiter(t.Cloud.ELBV2()).Wait(ctx, request, 15*time.Minute)
 			if err != nil {
 				return fmt.Errorf("error waiting for NLB %q: %w", loadBalancerName, err)
 			}
@@ -546,12 +547,12 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 	} else {
 		loadBalancerArn = a.loadBalancerArn
 
-		if changes.IpAddressType != nil {
+		if len(changes.IpAddressType) > 0 {
 			request := &elbv2.SetIpAddressTypeInput{
 				IpAddressType:   e.IpAddressType,
 				LoadBalancerArn: &loadBalancerArn,
 			}
-			if _, err := t.Cloud.ELBV2().SetIpAddressType(request); err != nil {
+			if _, err := t.Cloud.ELBV2().SetIpAddressType(ctx, request); err != nil {
 				return fmt.Errorf("error setting the IP addresses type: %v", err)
 			}
 		}
@@ -568,14 +569,14 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				}
 			}
 
-			var awsSubnetMappings []*elbv2.SubnetMapping
+			var awsSubnetMappings []elbv2types.SubnetMapping
 			hasChanges := false
 			for _, s := range e.SubnetMappings {
 				aIP, ok := actualSubnets[*s.Subnet.ID]
 				if !ok || (fi.ValueOf(s.PrivateIPv4Address) != fi.ValueOf(aIP) && fi.ValueOf(s.AllocationID) != fi.ValueOf(aIP)) {
 					hasChanges = true
 				}
-				awsSubnetMappings = append(awsSubnetMappings, &elbv2.SubnetMapping{
+				awsSubnetMappings = append(awsSubnetMappings, elbv2types.SubnetMapping{
 					SubnetId:           s.Subnet.ID,
 					AllocationId:       s.AllocationID,
 					PrivateIPv4Address: s.PrivateIPv4Address,
@@ -584,11 +585,11 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 			if hasChanges {
 				request := &elbv2.SetSubnetsInput{}
-				request.SetLoadBalancerArn(loadBalancerArn)
-				request.SetSubnetMappings(awsSubnetMappings)
+				request.LoadBalancerArn = aws.String(loadBalancerArn)
+				request.SubnetMappings = awsSubnetMappings
 
 				klog.V(2).Infof("Attaching Load Balancer to new subnets")
-				if _, err := t.Cloud.ELBV2().SetSubnets(request); err != nil {
+				if _, err := t.Cloud.ELBV2().SetSubnets(ctx, request); err != nil {
 					return fmt.Errorf("error attaching load balancer to new subnets: %v", err)
 				}
 			}
@@ -599,11 +600,11 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				LoadBalancerArn: &loadBalancerArn,
 			}
 			for _, sg := range e.SecurityGroups {
-				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
+				request.SecurityGroups = append(request.SecurityGroups, aws.ToString(sg.ID))
 			}
 
 			klog.V(2).Infof("Updating Load Balancer Security Groups")
-			if _, err := t.Cloud.ELBV2().SetSecurityGroups(request); err != nil {
+			if _, err := t.Cloud.ELBV2().SetSecurityGroups(ctx, request); err != nil {
 				return fmt.Errorf("Error updating security groups on Load Balancer: %v", err)
 			}
 		}
@@ -627,8 +628,8 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 type terraformNetworkLoadBalancer struct {
 	Name                   string                                      `cty:"name"`
 	Internal               bool                                        `cty:"internal"`
-	Type                   string                                      `cty:"load_balancer_type"`
-	IPAddressType          *string                                     `cty:"ip_address_type"`
+	Type                   elbv2types.LoadBalancerTypeEnum             `cty:"load_balancer_type"`
+	IPAddressType          *elbv2types.IpAddressType                   `cty:"ip_address_type"`
 	SecurityGroups         []*terraformWriter.Literal                  `cty:"security_groups"`
 	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `cty:"enable_cross_zone_load_balancing"`
@@ -646,13 +647,13 @@ type terraformNetworkLoadBalancerSubnetMapping struct {
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
 		Name:                   *e.LoadBalancerBaseName,
-		Internal:               fi.ValueOf(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
-		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
+		Internal:               e.Scheme == elbv2types.LoadBalancerSchemeEnumInternal,
+		Type:                   elbv2types.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
 		CrossZoneLoadBalancing: fi.ValueOf(e.CrossZoneLoadBalancing),
 	}
-	if fi.ValueOf(e.IpAddressType) == "dualstack" {
-		nlbTF.IPAddressType = e.IpAddressType
+	if e.IpAddressType == elbv2types.IpAddressTypeDualstack {
+		nlbTF.IPAddressType = &e.IpAddressType
 	}
 
 	for _, subnetMapping := range e.SubnetMappings {
@@ -712,7 +713,7 @@ func (e *NetworkLoadBalancer) FindDeletions(context *fi.CloudupContext) ([]fi.Cl
 		}
 
 		if lb != nil {
-			klog.V(4).Infof("Found CLB %v", aws.StringValue(lb.LoadBalancerName))
+			klog.V(4).Infof("Found CLB %v", aws.ToString(lb.LoadBalancerName))
 			deletions = append(deletions, &deleteClassicLoadBalancer{LoadBalancerName: e.CLBName})
 		}
 	}
@@ -778,7 +779,7 @@ func (d *deleteNLB) Delete(t fi.CloudupTarget) error {
 
 	arn := d.obj.ARN()
 	klog.V(2).Infof("deleting load balancer %q", arn)
-	if _, err := awsTarget.Cloud.ELBV2().DeleteLoadBalancerWithContext(ctx, &elbv2.DeleteLoadBalancerInput{
+	if _, err := awsTarget.Cloud.ELBV2().DeleteLoadBalancer(ctx, &elbv2.DeleteLoadBalancerInput{
 		LoadBalancerArn: &arn,
 	}); err != nil {
 		return fmt.Errorf("error deleting ELB LoadBalancer %q: %w", arn, err)

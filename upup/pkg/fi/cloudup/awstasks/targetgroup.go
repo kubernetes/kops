@@ -18,12 +18,13 @@ package awstasks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,8 +50,8 @@ type TargetGroup struct {
 	Lifecycle fi.Lifecycle
 	VPC       *VPC
 	Tags      map[string]string
-	Port      *int64
-	Protocol  *string
+	Port      *int32
+	Protocol  elbv2types.ProtocolEnum
 
 	// networkLoadBalancer, if set, will create a new Target Group for each revision of the Network Load Balancer
 	networkLoadBalancer *NetworkLoadBalancer
@@ -63,9 +64,9 @@ type TargetGroup struct {
 
 	Attributes map[string]string
 
-	Interval           *int64
-	HealthyThreshold   *int64
-	UnhealthyThreshold *int64
+	Interval           *int32
+	HealthyThreshold   *int32
+	UnhealthyThreshold *int32
 
 	info     *awsup.TargetGroupInfo
 	revision string
@@ -112,7 +113,7 @@ func (e *TargetGroup) findLatestTargetGroupByName(ctx context.Context, cloud aws
 	var latestRevision int
 	for _, targetGroup := range targetGroups {
 		// We accept the name tag _or_ the TargetGroupName itself, to allow matching groups that might predate tagging.
-		if aws.StringValue(targetGroup.TargetGroup.TargetGroupName) != name && targetGroup.NameTag() != name {
+		if aws.ToString(targetGroup.TargetGroup.TargetGroupName) != name && targetGroup.NameTag() != name {
 			continue
 		}
 		revisionTag, _ := targetGroup.GetTag(awsup.KopsResourceRevisionTag)
@@ -151,7 +152,7 @@ func (e *TargetGroup) findLatestTargetGroupByName(ctx context.Context, cloud aws
 
 	// Record deletions for later
 	for _, targetGroup := range targetGroups {
-		if aws.StringValue(targetGroup.TargetGroup.TargetGroupName) != name && targetGroup.NameTag() != name {
+		if aws.ToString(targetGroup.TargetGroup.TargetGroupName) != name && targetGroup.NameTag() != name {
 			continue
 		}
 		if latest != nil && latest.ARN == targetGroup.ARN {
@@ -166,19 +167,22 @@ func (e *TargetGroup) findLatestTargetGroupByName(ctx context.Context, cloud aws
 
 func (e *TargetGroup) findTargetGroupByARN(ctx context.Context, cloud awsup.AWSCloud) (*awsup.TargetGroupInfo, error) {
 	request := &elbv2.DescribeTargetGroupsInput{}
-	request.TargetGroupArns = []*string{e.ARN}
+	request.TargetGroupArns = []string{aws.ToString(e.ARN)}
 
-	var targetGroups []*elbv2.TargetGroup
-	if err := cloud.ELBV2().DescribeTargetGroupsPagesWithContext(ctx, request, func(page *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
-		targetGroups = append(targetGroups, page.TargetGroups...)
-		return true
-	}); err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
-			if !fi.ValueOf(e.Shared) {
-				return nil, nil
+	var targetGroups []elbv2types.TargetGroup
+	paginator := elbv2.NewDescribeTargetGroupsPaginator(cloud.ELBV2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			var nfe *elbv2types.TargetGroupNotFoundException
+			if errors.As(err, &nfe) {
+				if !fi.ValueOf(e.Shared) {
+					return nil, nil
+				}
 			}
+			return nil, fmt.Errorf("error describing targetgroup %s: %w", *e.ARN, err)
 		}
-		return nil, fmt.Errorf("error describing targetgroup %s: %w", *e.ARN, err)
+		targetGroups = append(targetGroups, page.TargetGroups...)
 	}
 	if len(targetGroups) > 1 {
 		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(targetGroups), fi.ValueOf(e.Name))
@@ -187,8 +191,8 @@ func (e *TargetGroup) findTargetGroupByARN(ctx context.Context, cloud awsup.AWSC
 	}
 	tg := targetGroups[0]
 
-	tagResponse, err := cloud.ELBV2().DescribeTagsWithContext(ctx, &elbv2.DescribeTagsInput{
-		ResourceArns: []*string{tg.TargetGroupArn},
+	tagResponse, err := cloud.ELBV2().DescribeTags(ctx, &elbv2.DescribeTagsInput{
+		ResourceArns: []string{aws.ToString(tg.TargetGroupArn)},
 	})
 	if err != nil {
 		return nil, err
@@ -196,7 +200,7 @@ func (e *TargetGroup) findTargetGroupByARN(ctx context.Context, cloud awsup.AWSC
 
 	info := &awsup.TargetGroupInfo{
 		TargetGroup: tg,
-		ARN:         aws.StringValue(tg.TargetGroupArn),
+		ARN:         aws.ToString(tg.TargetGroupArn),
 	}
 
 	for _, t := range tagResponse.TagDescriptions {
@@ -263,7 +267,7 @@ func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 	}
 	actual.Tags = tags
 
-	attrResp, err := cloud.ELBV2().DescribeTargetGroupAttributes(&elbv2.DescribeTargetGroupAttributesInput{
+	attrResp, err := cloud.ELBV2().DescribeTargetGroupAttributes(ctx, &elbv2.DescribeTargetGroupAttributesInput{
 		TargetGroupArn: tg.TargetGroupArn,
 	})
 	if err != nil {
@@ -306,6 +310,7 @@ func (s *TargetGroup) CheckChanges(a, e, changes *TargetGroup) error {
 }
 
 func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGroup) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
@@ -360,12 +365,12 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		}
 
 		klog.V(2).Infof("Creating Target Group for NLB")
-		response, err := t.Cloud.ELBV2().CreateTargetGroup(request)
+		response, err := t.Cloud.ELBV2().CreateTargetGroup(ctx, request)
 		if err != nil {
 			return fmt.Errorf("creating NLB target group: %w", err)
 		}
 
-		if err := ModifyTargetGroupAttributes(t.Cloud, response.TargetGroups[0].TargetGroupArn, e.Attributes); err != nil {
+		if err := ModifyTargetGroupAttributes(ctx, t.Cloud, response.TargetGroups[0].TargetGroupArn, e.Attributes); err != nil {
 			return err
 		}
 
@@ -378,7 +383,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 			if err := t.AddELBV2Tags(fi.ValueOf(a.ARN), e.Tags); err != nil {
 				return err
 			}
-			if err := ModifyTargetGroupAttributes(t.Cloud, a.ARN, e.Attributes); err != nil {
+			if err := ModifyTargetGroupAttributes(ctx, t.Cloud, a.ARN, e.Attributes); err != nil {
 				return err
 			}
 		}
@@ -386,19 +391,19 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
-func ModifyTargetGroupAttributes(cloud awsup.AWSCloud, arn *string, attributes map[string]string) error {
+func ModifyTargetGroupAttributes(ctx context.Context, cloud awsup.AWSCloud, arn *string, attributes map[string]string) error {
 	klog.V(2).Infof("Modifying Target Group attributes for NLB")
 	attrReq := &elbv2.ModifyTargetGroupAttributesInput{
-		Attributes:     []*elbv2.TargetGroupAttribute{},
+		Attributes:     []elbv2types.TargetGroupAttribute{},
 		TargetGroupArn: arn,
 	}
 	for k, v := range attributes {
-		attrReq.Attributes = append(attrReq.Attributes, &elbv2.TargetGroupAttribute{
+		attrReq.Attributes = append(attrReq.Attributes, elbv2types.TargetGroupAttribute{
 			Key:   fi.PtrTo(k),
 			Value: fi.PtrTo(v),
 		})
 	}
-	if _, err := cloud.ELBV2().ModifyTargetGroupAttributes(attrReq); err != nil {
+	if _, err := cloud.ELBV2().ModifyTargetGroupAttributes(ctx, attrReq); err != nil {
 		return fmt.Errorf("error modifying target group attributes for NLB : %v", err)
 	}
 	return nil
@@ -415,8 +420,8 @@ func (a OrderTargetGroupsByName) Less(i, j int) bool {
 
 type terraformTargetGroup struct {
 	Name                  string                          `cty:"name"`
-	Port                  int64                           `cty:"port"`
-	Protocol              string                          `cty:"protocol"`
+	Port                  int32                           `cty:"port"`
+	Protocol              elbv2types.ProtocolEnum         `cty:"protocol"`
 	VPCID                 *terraformWriter.Literal        `cty:"vpc_id"`
 	ConnectionTermination string                          `cty:"connection_termination"`
 	DeregistrationDelay   string                          `cty:"deregistration_delay"`
@@ -425,10 +430,10 @@ type terraformTargetGroup struct {
 }
 
 type terraformTargetGroupHealthCheck struct {
-	Interval           int64  `cty:"interval"`
-	HealthyThreshold   int64  `cty:"healthy_threshold"`
-	UnhealthyThreshold int64  `cty:"unhealthy_threshold"`
-	Protocol           string `cty:"protocol"`
+	Interval           int32                   `cty:"interval"`
+	HealthyThreshold   int32                   `cty:"healthy_threshold"`
+	UnhealthyThreshold int32                   `cty:"unhealthy_threshold"`
+	Protocol           elbv2types.ProtocolEnum `cty:"protocol"`
 }
 
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
@@ -444,14 +449,14 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	tf := &terraformTargetGroup{
 		Name:     *e.Name,
 		Port:     *e.Port,
-		Protocol: *e.Protocol,
+		Protocol: e.Protocol,
 		VPCID:    e.VPC.TerraformLink(),
 		Tags:     e.Tags,
 		HealthCheck: terraformTargetGroupHealthCheck{
 			Interval:           *e.Interval,
 			HealthyThreshold:   *e.HealthyThreshold,
 			UnhealthyThreshold: *e.UnhealthyThreshold,
-			Protocol:           elbv2.ProtocolEnumTcp,
+			Protocol:           elbv2types.ProtocolEnumTcp,
 		},
 	}
 
@@ -512,7 +517,7 @@ func (d *deleteTargetGroup) Delete(t fi.CloudupTarget) error {
 
 	arn := d.obj.ARN
 	klog.V(2).Infof("deleting target group %q", arn)
-	if _, err := awsTarget.Cloud.ELBV2().DeleteTargetGroupWithContext(ctx, &elbv2.DeleteTargetGroupInput{
+	if _, err := awsTarget.Cloud.ELBV2().DeleteTargetGroup(ctx, &elbv2.DeleteTargetGroupInput{
 		TargetGroupArn: &arn,
 	}); err != nil {
 		return fmt.Errorf("error deleting ELB TargetGroup %q: %w", arn, err)

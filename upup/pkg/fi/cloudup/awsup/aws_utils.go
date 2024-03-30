@@ -28,12 +28,12 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
-	elbv2 "github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/truncate"
@@ -143,7 +143,7 @@ func FindELBTag(tags []*elb.Tag, key string) (string, bool) {
 }
 
 // FindELBV2Tag find the value of the tag with the specified key
-func FindELBV2Tag(tags []*elbv2.Tag, key string) (string, bool) {
+func FindELBV2Tag(tags []elbv2types.Tag, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.StringValue(tag.Key) {
 			return aws.StringValue(tag.Value), true
@@ -188,13 +188,13 @@ func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.Tag
 }
 
 // ELBv2Tags converts a map of tags to ELBv2 Tags
-func ELBv2Tags(tags map[string]string) []*elbv2.Tag {
+func ELBv2Tags(tags map[string]string) []elbv2types.Tag {
 	if len(tags) == 0 {
 		return nil
 	}
-	elbv2Tags := make([]*elbv2.Tag, 0)
+	elbv2Tags := make([]elbv2types.Tag, 0)
 	for k, v := range tags {
-		elbv2Tags = append(elbv2Tags, &elbv2.Tag{
+		elbv2Tags = append(elbv2Tags, elbv2types.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})

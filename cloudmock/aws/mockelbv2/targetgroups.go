@@ -20,14 +20,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) DescribeTargetGroupsWithContext(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, opts ...request.Option) (*elbv2.DescribeTargetGroupsOutput, error) {
+func (m *MockELBV2) DescribeTargetGroups(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeTargetGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -40,23 +39,23 @@ func (m *MockELBV2) DescribeTargetGroupsWithContext(ctx context.Context, request
 		klog.Fatalf("Marker not implemented")
 	}
 
-	var tgs []*elbv2.TargetGroup
+	var tgs []elbv2types.TargetGroup
 	for _, tg := range m.TargetGroups {
 		match := false
 
 		if len(request.TargetGroupArns) > 0 {
 			for _, name := range request.TargetGroupArns {
-				if aws.StringValue(tg.description.TargetGroupArn) == aws.StringValue(name) {
+				if aws.ToString(tg.description.TargetGroupArn) == name {
 					match = true
 				}
 			}
 		} else if request.LoadBalancerArn != nil {
-			if len(tg.description.LoadBalancerArns) > 0 && aws.StringValue(tg.description.LoadBalancerArns[0]) == aws.StringValue(request.LoadBalancerArn) {
+			if len(tg.description.LoadBalancerArns) > 0 && tg.description.LoadBalancerArns[0] == aws.ToString(request.LoadBalancerArn) {
 				match = true
 			}
 		} else if len(request.Names) > 0 {
 			for _, name := range request.Names {
-				if aws.StringValue(tg.description.TargetGroupName) == aws.StringValue(name) {
+				if aws.ToString(tg.description.TargetGroupName) == name {
 					match = true
 				}
 			}
@@ -65,12 +64,12 @@ func (m *MockELBV2) DescribeTargetGroupsWithContext(ctx context.Context, request
 		}
 
 		if match {
-			tgs = append(tgs, &tg.description)
+			tgs = append(tgs, tg.description)
 		}
 	}
 
 	if len(tgs) == 0 && len(request.TargetGroupArns) > 0 || request.LoadBalancerArn != nil {
-		return nil, awserr.New(elbv2.ErrCodeTargetGroupNotFoundException, "target group not found", nil)
+		return nil, &elbv2types.TargetGroupNotFoundException{}
 	}
 
 	return &elbv2.DescribeTargetGroupsOutput{
@@ -78,28 +77,13 @@ func (m *MockELBV2) DescribeTargetGroupsWithContext(ctx context.Context, request
 	}, nil
 }
 
-func (m *MockELBV2) DescribeTargetGroupsPagesWithContext(ctx context.Context, request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool), opt ...request.Option) error {
-	page, err := m.DescribeTargetGroupsWithContext(ctx, request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockELBV2) DescribeTargetGroupsPages(request *elbv2.DescribeTargetGroupsInput, callback func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) (shouldContinue bool)) error {
-	return m.DescribeTargetGroupsPagesWithContext(context.TODO(), request, callback)
-}
-
-func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*elbv2.CreateTargetGroupOutput, error) {
+func (m *MockELBV2) CreateTargetGroup(ctx context.Context, request *elbv2.CreateTargetGroupInput, optFns ...func(*elbv2.Options)) (*elbv2.CreateTargetGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("CreateTargetGroup %v", request)
 
-	tg := elbv2.TargetGroup{
+	tg := elbv2types.TargetGroup{
 		TargetGroupName:         request.Name,
 		Port:                    request.Port,
 		Protocol:                request.Protocol,
@@ -109,52 +93,52 @@ func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*e
 	}
 
 	m.tgCount++
-	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/%v/%v", aws.StringValue(request.Name), m.tgCount)
+	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/%v/%v", aws.ToString(request.Name), m.tgCount)
 	tg.TargetGroupArn = aws.String(arn)
 
 	if m.TargetGroups == nil {
 		m.TargetGroups = make(map[string]*targetGroup)
 	}
 	if m.Tags == nil {
-		m.Tags = make(map[string]*elbv2.TagDescription)
+		m.Tags = make(map[string]elbv2types.TagDescription)
 	}
 
 	m.TargetGroups[arn] = &targetGroup{description: tg}
-	m.Tags[arn] = &elbv2.TagDescription{
+	m.Tags[arn] = elbv2types.TagDescription{
 		ResourceArn: aws.String(arn),
 		Tags:        request.Tags,
 	}
-	return &elbv2.CreateTargetGroupOutput{TargetGroups: []*elbv2.TargetGroup{&tg}}, nil
+	return &elbv2.CreateTargetGroupOutput{TargetGroups: []elbv2types.TargetGroup{tg}}, nil
 }
 
-func (m *MockELBV2) DeleteTargetGroup(request *elbv2.DeleteTargetGroupInput) (*elbv2.DeleteTargetGroupOutput, error) {
+func (m *MockELBV2) DeleteTargetGroup(ctx context.Context, request *elbv2.DeleteTargetGroupInput, optFns ...func(*elbv2.Options)) (*elbv2.DeleteTargetGroupOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteTargetGroup %v", request)
 
-	arn := aws.StringValue(request.TargetGroupArn)
+	arn := aws.ToString(request.TargetGroupArn)
 	delete(m.TargetGroups, arn)
 	return &elbv2.DeleteTargetGroupOutput{}, nil
 }
 
-func (m *MockELBV2) DescribeTargetGroupAttributes(request *elbv2.DescribeTargetGroupAttributesInput) (*elbv2.DescribeTargetGroupAttributesOutput, error) {
+func (m *MockELBV2) DescribeTargetGroupAttributes(ctx context.Context, request *elbv2.DescribeTargetGroupAttributesInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeTargetGroupAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeTargetGroupAttributes %v", request)
 
-	arn := aws.StringValue(request.TargetGroupArn)
+	arn := aws.ToString(request.TargetGroupArn)
 	return &elbv2.DescribeTargetGroupAttributesOutput{Attributes: m.TargetGroups[arn].attributes}, nil
 }
 
-func (m *MockELBV2) ModifyTargetGroupAttributes(request *elbv2.ModifyTargetGroupAttributesInput) (*elbv2.ModifyTargetGroupAttributesOutput, error) {
+func (m *MockELBV2) ModifyTargetGroupAttributes(ctx context.Context, request *elbv2.ModifyTargetGroupAttributesInput, optFns ...func(*elbv2.Options)) (*elbv2.ModifyTargetGroupAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("ModifyTargetGroupAttributes %v", request)
 
-	arn := aws.StringValue(request.TargetGroupArn)
+	arn := aws.ToString(request.TargetGroupArn)
 	m.TargetGroups[arn].attributes = request.Attributes
 	return &elbv2.ModifyTargetGroupAttributesOutput{Attributes: request.Attributes}, nil
 }

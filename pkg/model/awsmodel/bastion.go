@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"sort"
 
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -347,18 +349,18 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			},
 			Tags:          tags,
 			VPC:           b.LinkToVPC(),
-			Type:          fi.PtrTo("network"),
-			IpAddressType: fi.PtrTo("ipv4"),
+			Type:          elbv2types.LoadBalancerTypeEnumNetwork,
+			IpAddressType: elbv2types.IpAddressTypeIpv4,
 		}
 		if useIPv6ForBastion(b) {
-			nlb.IpAddressType = fi.PtrTo("dualstack")
+			nlb.IpAddressType = elbv2types.IpAddressTypeDualstack
 		}
 		// Set the NLB Scheme according to load balancer Type
 		switch bastionLoadBalancerType {
 		case kops.LoadBalancerTypeInternal:
-			nlb.Scheme = fi.PtrTo("internal")
+			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternal
 		case kops.LoadBalancerTypePublic:
-			nlb.Scheme = fi.PtrTo("internet-facing")
+			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternetFacing
 		default:
 			return fmt.Errorf("unhandled bastion LoadBalancer type %q", bastionLoadBalancerType)
 		}
@@ -379,12 +381,12 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle:          b.Lifecycle,
 			VPC:                b.LinkToVPC(),
 			Tags:               sshGroupTags,
-			Protocol:           fi.PtrTo("TCP"),
-			Port:               fi.PtrTo(int64(22)),
+			Protocol:           elbv2types.ProtocolEnumTcp,
+			Port:               fi.PtrTo(int32(22)),
 			Attributes:         groupAttrs,
-			Interval:           fi.PtrTo(int64(10)),
-			HealthyThreshold:   fi.PtrTo(int64(2)),
-			UnhealthyThreshold: fi.PtrTo(int64(2)),
+			Interval:           fi.PtrTo(int32(10)),
+			HealthyThreshold:   fi.PtrTo(int32(2)),
+			UnhealthyThreshold: fi.PtrTo(int32(2)),
 			Shared:             fi.PtrTo(false),
 		}
 		tg.CreateNewRevisionsWith(nlb)

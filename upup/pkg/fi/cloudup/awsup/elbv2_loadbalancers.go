@@ -18,17 +18,17 @@ package awsup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 )
 
 type LoadBalancerInfo struct {
-	LoadBalancer *elbv2.LoadBalancer
-	Tags         []*elbv2.Tag
+	LoadBalancer elbv2types.LoadBalancer
+	Tags         []elbv2types.Tag
 	arn          string
 }
 
@@ -46,8 +46,8 @@ func (i *LoadBalancerInfo) NameTag() string {
 // GetTag returns the value of the tag with the given key.
 func (i *LoadBalancerInfo) GetTag(key string) (string, bool) {
 	for _, tag := range i.Tags {
-		if aws.StringValue(tag.Key) == key {
-			return aws.StringValue(tag.Value), true
+		if aws.ToString(tag.Key) == key {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false
@@ -59,35 +59,38 @@ func ListELBV2LoadBalancers(ctx context.Context, cloud AWSCloud) ([]*LoadBalance
 
 	request := &elbv2.DescribeLoadBalancersInput{}
 	// ELBV2 DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
+	request.PageSize = aws.Int32(20)
 
 	byARN := make(map[string]*LoadBalancerInfo)
 
-	var errs []error
-	err := cloud.ELBV2().DescribeLoadBalancersPagesWithContext(ctx, request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancers) == 0 {
-			return true
+	paginator := elbv2.NewDescribeLoadBalancersPaginator(cloud.ELBV2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing ELB LoadBalancers: %w", err)
+		}
+		if len(page.LoadBalancers) == 0 {
+			break
 		}
 
 		tagRequest := &elbv2.DescribeTagsInput{}
 
-		for _, elb := range p.LoadBalancers {
-			arn := aws.StringValue(elb.LoadBalancerArn)
+		for _, elb := range page.LoadBalancers {
+			arn := aws.ToString(elb.LoadBalancerArn)
 			byARN[arn] = &LoadBalancerInfo{LoadBalancer: elb, arn: arn}
 
 			// TODO: Any way to filter by cluster here?
 
-			tagRequest.ResourceArns = append(tagRequest.ResourceArns, elb.LoadBalancerArn)
+			tagRequest.ResourceArns = append(tagRequest.ResourceArns, aws.ToString(elb.LoadBalancerArn))
 		}
 
-		tagResponse, err := cloud.ELBV2().DescribeTags(tagRequest)
+		tagResponse, err := cloud.ELBV2().DescribeTags(ctx, tagRequest)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("listing ELB tags: %w", err))
-			return false
+			return nil, fmt.Errorf("listing ELB tags: %w", err)
 		}
 
 		for _, t := range tagResponse.TagDescriptions {
-			arn := aws.StringValue(t.ResourceArn)
+			arn := aws.ToString(t.ResourceArn)
 
 			info := byARN[arn]
 			if info == nil {
@@ -96,14 +99,6 @@ func ListELBV2LoadBalancers(ctx context.Context, cloud AWSCloud) ([]*LoadBalance
 
 			info.Tags = append(info.Tags, t.Tags...)
 		}
-
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("listing ELB LoadBalancers: %w", err)
-	}
-	if len(errs) != 0 {
-		return nil, fmt.Errorf("listing ELB LoadBalancers: %w", errors.Join(errs...))
 	}
 
 	cloudTags := cloud.Tags()
@@ -118,12 +113,12 @@ func ListELBV2LoadBalancers(ctx context.Context, cloud AWSCloud) ([]*LoadBalance
 	return results, nil
 }
 
-func MatchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
+func MatchesElbV2Tags(tags map[string]string, actual []elbv2types.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
+			if aws.ToString(a.Key) == k {
+				if aws.ToString(a.Value) == v {
 					found = true
 					break
 				}

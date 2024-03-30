@@ -20,8 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -67,23 +68,25 @@ func (e *NetworkLoadBalancerListener) Find(c *fi.CloudupContext) (*NetworkLoadBa
 		return nil, nil
 	}
 
-	var l *elbv2.Listener
+	var l *elbv2types.Listener
 	{
 		request := &elbv2.DescribeListenersInput{
 			LoadBalancerArn: &loadBalancerArn,
 		}
 		// TODO: Move to lbInfo?
-		var allListeners []*elbv2.Listener
-		if err := cloud.ELBV2().DescribeListenersPagesWithContext(ctx, request, func(page *elbv2.DescribeListenersOutput, lastPage bool) bool {
+		var allListeners []elbv2types.Listener
+		paginator := elbv2.NewDescribeListenersPaginator(cloud.ELBV2(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
+			}
 			allListeners = append(allListeners, page.Listeners...)
-			return true
-		}); err != nil {
-			return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
 		}
 
-		var matches []*elbv2.Listener
+		var matches []elbv2types.Listener
 		for _, listener := range allListeners {
-			if aws.Int64Value(listener.Port) == int64(e.Port) {
+			if aws.ToInt32(listener.Port) == int32(e.Port) {
 				matches = append(matches, listener)
 			}
 		}
@@ -93,17 +96,17 @@ func (e *NetworkLoadBalancerListener) Find(c *fi.CloudupContext) (*NetworkLoadBa
 		if len(matches) > 1 {
 			return nil, fmt.Errorf("found multiple listeners matching %+v", e)
 		}
-		l = matches[0]
+		l = &matches[0]
 	}
 
 	actual := &NetworkLoadBalancerListener{}
-	actual.listenerArn = aws.StringValue(l.ListenerArn)
+	actual.listenerArn = aws.ToString(l.ListenerArn)
 
-	actual.Port = int(aws.Int64Value(l.Port))
+	actual.Port = int(aws.ToInt32(l.Port))
 	if len(l.Certificates) != 0 {
-		actual.SSLCertificateID = aws.StringValue(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
+		actual.SSLCertificateID = aws.ToString(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
 		if l.SslPolicy != nil {
-			actual.SSLPolicy = aws.StringValue(l.SslPolicy)
+			actual.SSLPolicy = aws.ToString(l.SslPolicy)
 		}
 	}
 
@@ -157,7 +160,7 @@ func (*NetworkLoadBalancerListener) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 		klog.Warningf("deleting ELB listener %q for required changes (%+v)", a.listenerArn, changes)
 
 		// delete the listener before recreating it
-		_, err := t.Cloud.ELBV2().DeleteListenerWithContext(ctx, &elbv2.DeleteListenerInput{
+		_, err := t.Cloud.ELBV2().DeleteListener(ctx, &elbv2.DeleteListenerInput{
 			ListenerArn: &a.listenerArn,
 		})
 		if err != nil {
@@ -175,31 +178,31 @@ func (*NetworkLoadBalancerListener) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 			return fmt.Errorf("target group not yet created (arn not set)")
 		}
 		request := &elbv2.CreateListenerInput{
-			DefaultActions: []*elbv2.Action{
+			DefaultActions: []elbv2types.Action{
 				{
 					TargetGroupArn: aws.String(targetGroupARN),
-					Type:           aws.String(elbv2.ActionTypeEnumForward),
+					Type:           elbv2types.ActionTypeEnumForward,
 				},
 			},
 			LoadBalancerArn: aws.String(loadBalancerArn),
-			Port:            aws.Int64(int64(e.Port)),
+			Port:            aws.Int32(int32(e.Port)),
 		}
 
 		if e.SSLCertificateID != "" {
-			request.Certificates = []*elbv2.Certificate{}
-			request.Certificates = append(request.Certificates, &elbv2.Certificate{
+			request.Certificates = []elbv2types.Certificate{}
+			request.Certificates = append(request.Certificates, elbv2types.Certificate{
 				CertificateArn: aws.String(e.SSLCertificateID),
 			})
-			request.Protocol = aws.String(elbv2.ProtocolEnumTls)
+			request.Protocol = elbv2types.ProtocolEnumTls
 			if e.SSLPolicy != "" {
 				request.SslPolicy = aws.String(e.SSLPolicy)
 			}
 		} else {
-			request.Protocol = aws.String(elbv2.ProtocolEnumTcp)
+			request.Protocol = elbv2types.ProtocolEnumTcp
 		}
 
 		klog.V(2).Infof("Creating Listener for NLB with port %v", e.Port)
-		_, err := t.Cloud.ELBV2().CreateListenerWithContext(ctx, request)
+		_, err := t.Cloud.ELBV2().CreateListener(ctx, request)
 		if err != nil {
 			return fmt.Errorf("creating listener for NLB on port %v: %w", e.Port, err)
 		}
@@ -211,15 +214,15 @@ func (*NetworkLoadBalancerListener) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 type terraformNetworkLoadBalancerListener struct {
 	LoadBalancer   *terraformWriter.Literal                     `cty:"load_balancer_arn"`
 	Port           int64                                        `cty:"port"`
-	Protocol       string                                       `cty:"protocol"`
+	Protocol       elbv2types.ProtocolEnum                      `cty:"protocol"`
 	CertificateARN *string                                      `cty:"certificate_arn"`
 	SSLPolicy      *string                                      `cty:"ssl_policy"`
 	DefaultAction  []terraformNetworkLoadBalancerListenerAction `cty:"default_action"`
 }
 
 type terraformNetworkLoadBalancerListenerAction struct {
-	Type           string                   `cty:"type"`
-	TargetGroupARN *terraformWriter.Literal `cty:"target_group_arn"`
+	Type           elbv2types.ActionTypeEnum `cty:"type"`
+	TargetGroupARN *terraformWriter.Literal  `cty:"target_group_arn"`
 }
 
 func (_ *NetworkLoadBalancerListener) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancerListener) error {
@@ -231,19 +234,19 @@ func (_ *NetworkLoadBalancerListener) RenderTerraform(t *terraform.TerraformTarg
 		Port:         int64(e.Port),
 		DefaultAction: []terraformNetworkLoadBalancerListenerAction{
 			{
-				Type:           elbv2.ActionTypeEnumForward,
+				Type:           elbv2types.ActionTypeEnumForward,
 				TargetGroupARN: e.TargetGroup.TerraformLink(),
 			},
 		},
 	}
 	if e.SSLCertificateID != "" {
 		listenerTF.CertificateARN = &e.SSLCertificateID
-		listenerTF.Protocol = elbv2.ProtocolEnumTls
+		listenerTF.Protocol = elbv2types.ProtocolEnumTls
 		if e.SSLPolicy != "" {
 			listenerTF.SSLPolicy = &e.SSLPolicy
 		}
 	} else {
-		listenerTF.Protocol = elbv2.ProtocolEnumTcp
+		listenerTF.Protocol = elbv2types.ProtocolEnumTcp
 	}
 
 	err := t.RenderResource("aws_lb_listener", e.TerraformName(), listenerTF)

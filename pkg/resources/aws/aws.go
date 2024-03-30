@@ -23,13 +23,14 @@ import (
 	"strings"
 	"sync"
 
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/smithy-go"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -283,7 +284,7 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	return true
 }
 
-func matchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
+func matchesElbV2Tags(tags map[string]string, actual []elbv2types.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -1429,6 +1430,7 @@ func DeleteELB(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 	id := r.ID
 
@@ -1436,7 +1438,7 @@ func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
 	request := &elbv2.DeleteLoadBalancerInput{
 		LoadBalancerArn: aws.String(id),
 	}
-	_, err := c.ELBV2().DeleteLoadBalancer(request)
+	_, err := c.ELBV2().DeleteLoadBalancer(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1447,6 +1449,7 @@ func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func DeleteTargetGroup(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 	id := r.ID
 
@@ -1454,7 +1457,7 @@ func DeleteTargetGroup(cloud fi.Cloud, r *resources.Resource) error {
 	request := &elbv2.DeleteTargetGroupInput{
 		TargetGroupArn: aws.String(id),
 	}
-	_, err := c.ELBV2().DeleteTargetGroup(request)
+	_, err := c.ELBV2().DeleteTargetGroup(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1591,7 +1594,7 @@ func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resourc
 
 		var blocks []string
 		for _, sg := range elb.SecurityGroups {
-			blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+			blocks = append(blocks, "security-group:"+sg)
 		}
 
 		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VpcId))
@@ -2160,7 +2163,7 @@ func FindELBName(tags []*elb.Tag) string {
 	return ""
 }
 
-func FindELBV2Name(tags []*elbv2.Tag) string {
+func FindELBV2Name(tags []elbv2types.Tag) string {
 	if name, found := awsup.FindELBV2Tag(tags, "Name"); found {
 		return name
 	}

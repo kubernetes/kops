@@ -17,47 +17,47 @@ limitations under the License.
 package mockelbv2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) DescribeListenersPagesWithContext(ctx aws.Context, request *elbv2.DescribeListenersInput, callback func(*elbv2.DescribeListenersOutput, bool) bool, options ...request.Option) error {
+func (m *MockELBV2) DescribeListeners(ctx context.Context, request *elbv2.DescribeListenersInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeListenersOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeListenersPagesWithContext v2 %v", request)
 
 	page := &elbv2.DescribeListenersOutput{
-		Listeners: make([]*elbv2.Listener, 0),
+		Listeners: make([]elbv2types.Listener, 0),
 	}
 	for _, l := range m.Listeners {
 		listener := l.description
-		if aws.StringValue(request.LoadBalancerArn) == aws.StringValue(listener.LoadBalancerArn) {
-			page.Listeners = append(page.Listeners, &listener)
+		if aws.ToString(request.LoadBalancerArn) == aws.ToString(listener.LoadBalancerArn) {
+			page.Listeners = append(page.Listeners, listener)
 		} else {
 			for _, reqARN := range request.ListenerArns {
-				if aws.StringValue(reqARN) == aws.StringValue(listener.ListenerArn) {
-					page.Listeners = append(page.Listeners, &listener)
+				if reqARN == aws.ToString(listener.ListenerArn) {
+					page.Listeners = append(page.Listeners, listener)
 				}
 			}
 		}
 	}
-	callback(page, true)
-	return nil
+	return page, nil
 }
 
-func (m *MockELBV2) CreateListenerWithContext(ctx aws.Context, request *elbv2.CreateListenerInput, opts ...request.Option) (*elbv2.CreateListenerOutput, error) {
+func (m *MockELBV2) CreateListener(ctx context.Context, request *elbv2.CreateListenerInput, optFns ...func(*elbv2.Options)) (*elbv2.CreateListenerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("CreateListenerWithContext v2 %v", request)
 
-	l := elbv2.Listener{
+	l := elbv2types.Listener{
 		DefaultActions:  request.DefaultActions,
 		LoadBalancerArn: request.LoadBalancerArn,
 		Port:            request.Port,
@@ -66,9 +66,9 @@ func (m *MockELBV2) CreateListenerWithContext(ctx aws.Context, request *elbv2.Cr
 		SslPolicy:       request.SslPolicy,
 	}
 
-	lbARN := aws.StringValue(request.LoadBalancerArn)
+	lbARN := aws.ToString(request.LoadBalancerArn)
 	if _, ok := m.LoadBalancers[lbARN]; !ok {
-		return nil, fmt.Errorf("LoadBalancerArn not found %v", aws.StringValue(request.LoadBalancerArn))
+		return nil, fmt.Errorf("LoadBalancerArn not found %v", aws.ToString(request.LoadBalancerArn))
 	}
 
 	m.listenerCount++
@@ -79,32 +79,32 @@ func (m *MockELBV2) CreateListenerWithContext(ctx aws.Context, request *elbv2.Cr
 		m.Listeners = make(map[string]*listener)
 	}
 
-	tgARN := aws.StringValue(l.DefaultActions[0].TargetGroupArn)
+	tgARN := aws.ToString(l.DefaultActions[0].TargetGroupArn)
 
 	if _, ok := m.TargetGroups[tgARN]; ok {
 		found := false
 		for _, lb := range m.TargetGroups[tgARN].description.LoadBalancerArns {
-			if aws.StringValue(lb) == lbARN {
+			if lb == lbARN {
 				found = true
 				break
 			}
 		}
 		if !found {
-			m.TargetGroups[tgARN].description.LoadBalancerArns = append(m.TargetGroups[tgARN].description.LoadBalancerArns, aws.String(lbARN))
+			m.TargetGroups[tgARN].description.LoadBalancerArns = append(m.TargetGroups[tgARN].description.LoadBalancerArns, lbARN)
 		}
 	}
 
 	m.Listeners[arn] = &listener{description: l}
-	return &elbv2.CreateListenerOutput{Listeners: []*elbv2.Listener{&l}}, nil
+	return &elbv2.CreateListenerOutput{Listeners: []elbv2types.Listener{l}}, nil
 }
 
-func (m *MockELBV2) DeleteListenerWithContext(ctx aws.Context, request *elbv2.DeleteListenerInput, opts ...request.Option) (*elbv2.DeleteListenerOutput, error) {
+func (m *MockELBV2) DeleteListener(ctx context.Context, request *elbv2.DeleteListenerInput, optFns ...func(*elbv2.Options)) (*elbv2.DeleteListenerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteListenerWithContext v2 %v", request)
 
-	lARN := aws.StringValue(request.ListenerArn)
+	lARN := aws.ToString(request.ListenerArn)
 	if _, ok := m.Listeners[lARN]; !ok {
 		return nil, fmt.Errorf("Listener not found %v", lARN)
 	}
