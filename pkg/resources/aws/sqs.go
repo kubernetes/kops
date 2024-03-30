@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,7 +49,7 @@ func DeleteSQSQueue(cloud fi.Cloud, r *resources.Resource) error {
 	request := &sqs.DeleteQueueInput{
 		QueueUrl: &url,
 	}
-	if _, err := c.SQS().DeleteQueueWithContext(ctx, request); err != nil {
+	if _, err := c.SQS().DeleteQueue(ctx, request); err != nil {
 		if awsup.AWSErrorCode(err) == "AWS.SimpleQueueService.NonExistentQueue" {
 			// Concurrently deleted
 			return nil
@@ -68,7 +68,7 @@ func ListSQSQueues(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 	request := &sqs.ListQueuesInput{
 		QueueNamePrefix: &queuePrefix,
 	}
-	response, err := c.SQS().ListQueues(request)
+	response, err := c.SQS().ListQueues(context.TODO(), request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SQS queues: %v", err)
 	}
@@ -80,8 +80,8 @@ func ListSQSQueues(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 
 	for _, queueUrl := range response.QueueUrls {
 		resourceTracker := &resources.Resource{
-			Name:    *queueUrl,
-			ID:      *queueUrl,
+			Name:    queueUrl,
+			ID:      queueUrl,
 			Type:    "sqs",
 			Deleter: DeleteSQSQueue,
 			Dumper:  DumpSQSQueue,

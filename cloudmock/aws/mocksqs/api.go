@@ -17,17 +17,17 @@ limitations under the License.
 package mocksqs
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockSQS struct {
-	sqsiface.SQSAPI
+	awsinterfaces.SQSAPI
 	mutex sync.Mutex
 
 	Queues map[string]mockQueue
@@ -39,9 +39,9 @@ type mockQueue struct {
 	tags       map[string]*string
 }
 
-var _ sqsiface.SQSAPI = &MockSQS{}
+var _ awsinterfaces.SQSAPI = &MockSQS{}
 
-func (m *MockSQS) CreateQueue(input *sqs.CreateQueueInput) (*sqs.CreateQueueOutput, error) {
+func (m *MockSQS) CreateQueue(ctx context.Context, input *sqs.CreateQueueInput, optFns ...func(*sqs.Options)) (*sqs.CreateQueueOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -53,11 +53,11 @@ func (m *MockSQS) CreateQueue(input *sqs.CreateQueueInput) (*sqs.CreateQueueOutp
 	}
 	queue := mockQueue{
 		url:        &url,
-		attributes: input.Attributes,
-		tags:       input.Tags,
+		attributes: aws.StringMap(input.Attributes),
+		tags:       aws.StringMap(input.Tags),
 	}
 
-	arn := fmt.Sprintf("arn:aws-test:sqs:us-test-1:000000000000:queue/%v", aws.StringValue(input.QueueName))
+	arn := fmt.Sprintf("arn:aws-test:sqs:us-test-1:000000000000:queue/%v", aws.ToString(input.QueueName))
 	queue.attributes["QueueArn"] = &arn
 
 	m.Queues[name] = queue
@@ -68,19 +68,19 @@ func (m *MockSQS) CreateQueue(input *sqs.CreateQueueInput) (*sqs.CreateQueueOutp
 	return response, nil
 }
 
-func (m *MockSQS) ListQueues(input *sqs.ListQueuesInput) (*sqs.ListQueuesOutput, error) {
+func (m *MockSQS) ListQueues(ctx context.Context, input *sqs.ListQueuesInput, optFns ...func(*sqs.Options)) (*sqs.ListQueuesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	response := &sqs.ListQueuesOutput{}
 
 	if queue, ok := m.Queues[*input.QueueNamePrefix]; ok {
-		response.QueueUrls = []*string{queue.url}
+		response.QueueUrls = []string{aws.ToString(queue.url)}
 	}
 	return response, nil
 }
 
-func (m *MockSQS) GetQueueAttributes(input *sqs.GetQueueAttributesInput) (*sqs.GetQueueAttributesOutput, error) {
+func (m *MockSQS) GetQueueAttributes(ctx context.Context, input *sqs.GetQueueAttributesInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -88,14 +88,14 @@ func (m *MockSQS) GetQueueAttributes(input *sqs.GetQueueAttributesInput) (*sqs.G
 
 	for _, v := range m.Queues {
 		if *v.url == *input.QueueUrl {
-			response.Attributes = v.attributes
+			response.Attributes = aws.ToStringMap(v.attributes)
 			return response, nil
 		}
 	}
 	return response, nil
 }
 
-func (m *MockSQS) ListQueueTags(input *sqs.ListQueueTagsInput) (*sqs.ListQueueTagsOutput, error) {
+func (m *MockSQS) ListQueueTags(ctx context.Context, input *sqs.ListQueueTagsInput, optFns ...func(*sqs.Options)) (*sqs.ListQueueTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -103,13 +103,13 @@ func (m *MockSQS) ListQueueTags(input *sqs.ListQueueTagsInput) (*sqs.ListQueueTa
 
 	for _, v := range m.Queues {
 		if *v.url == *input.QueueUrl {
-			response.Tags = v.tags
+			response.Tags = aws.ToStringMap(v.tags)
 			return response, nil
 		}
 	}
 	return response, nil
 }
 
-func (m *MockSQS) DeleteQueueWithContext(aws.Context, *sqs.DeleteQueueInput, ...request.Option) (*sqs.DeleteQueueOutput, error) {
+func (m *MockSQS) DeleteQueue(ctx context.Context, input *sqs.DeleteQueueInput, optFns ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error) {
 	panic("Not implemented")
 }
