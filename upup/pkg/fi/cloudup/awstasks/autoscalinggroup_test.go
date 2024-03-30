@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,27 +40,27 @@ func TestGetASGTagsToDelete(t *testing.T) {
 
 	cases := []struct {
 		CurrentTags          map[string]string
-		ExpectedTagsToDelete []*autoscaling.Tag
+		ExpectedTagsToDelete []autoscalingtypes.Tag
 	}{
 		{
 			CurrentTags: map[string]string{
 				"KubernetesCluster": "MyCluster",
 				"Name":              "nodes.cluster.k8s.local",
 			},
-			ExpectedTagsToDelete: []*autoscaling.Tag{},
+			ExpectedTagsToDelete: []autoscalingtypes.Tag{},
 		},
 		{
 			CurrentTags: map[string]string{
 				"KubernetesCluster": "MyCluster",
 				"Name":              "nodes.cluster.k8s.locall",
 			},
-			ExpectedTagsToDelete: []*autoscaling.Tag{},
+			ExpectedTagsToDelete: []autoscalingtypes.Tag{},
 		},
 		{
 			CurrentTags: map[string]string{
 				"KubernetesCluster": "MyCluster",
 			},
-			ExpectedTagsToDelete: []*autoscaling.Tag{},
+			ExpectedTagsToDelete: []autoscalingtypes.Tag{},
 		},
 		{
 			CurrentTags: map[string]string{
@@ -68,7 +68,7 @@ func TestGetASGTagsToDelete(t *testing.T) {
 				"Name":              "nodes.cluster.k8s.local",
 				"OldTag":            "OldValue",
 			},
-			ExpectedTagsToDelete: []*autoscaling.Tag{
+			ExpectedTagsToDelete: []autoscalingtypes.Tag{
 				{
 					Key:          aws.String("OldTag"),
 					Value:        aws.String("OldValue"),
@@ -84,7 +84,7 @@ func TestGetASGTagsToDelete(t *testing.T) {
 				"MyCustomTag":       "MyCustomValue",
 				"k8s.io/cluster-autoscaler/node-template/taint/sometaint": "somevalue:NoSchedule",
 			},
-			ExpectedTagsToDelete: []*autoscaling.Tag{
+			ExpectedTagsToDelete: []autoscalingtypes.Tag{
 				{
 					Key:          aws.String("MyCustomTag"),
 					Value:        aws.String("MyCustomValue"),
@@ -205,9 +205,9 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 				Name:           fi.PtrTo("test"),
 				Granularity:    fi.PtrTo("5min"),
 				LaunchTemplate: &LaunchTemplate{Name: fi.PtrTo("test_lc")},
-				MaxSize:        fi.PtrTo(int64(10)),
+				MaxSize:        fi.PtrTo(int32(10)),
 				Metrics:        []string{"test"},
-				MinSize:        fi.PtrTo(int64(1)),
+				MinSize:        fi.PtrTo(int32(1)),
 				Subnets: []*Subnet{
 					{
 						Name: fi.PtrTo("test-sg"),
@@ -261,12 +261,12 @@ terraform {
 			Resource: &AutoscalingGroup{
 				Name:                        fi.PtrTo("test1"),
 				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
-				MaxSize:                     fi.PtrTo(int64(10)),
+				MaxSize:                     fi.PtrTo(int32(10)),
 				Metrics:                     []string{"test"},
-				MinSize:                     fi.PtrTo(int64(5)),
+				MinSize:                     fi.PtrTo(int32(5)),
 				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:           fi.PtrTo(int64(4)),
-				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
+				MixedOnDemandBase:           fi.PtrTo(int32(4)),
+				MixedOnDemandAboveBase:      fi.PtrTo(int32(30)),
 				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
 				Subnets: []*Subnet{
 					{
@@ -335,17 +335,17 @@ terraform {
 			Resource: &AutoscalingGroup{
 				Name:                        fi.PtrTo("test1"),
 				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
-				MaxSize:                     fi.PtrTo(int64(10)),
+				MaxSize:                     fi.PtrTo(int32(10)),
 				Metrics:                     []string{"test"},
-				MinSize:                     fi.PtrTo(int64(5)),
+				MinSize:                     fi.PtrTo(int32(5)),
 				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:           fi.PtrTo(int64(4)),
-				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
+				MixedOnDemandBase:           fi.PtrTo(int32(4)),
+				MixedOnDemandAboveBase:      fi.PtrTo(int32(30)),
 				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
 				WarmPool: &WarmPool{
 					Enabled: fi.PtrTo(true),
 					MinSize: 3,
-					MaxSize: fi.PtrTo(int64(5)),
+					MaxSize: fi.PtrTo(int32(5)),
 				},
 				Subnets: []*Subnet{
 					{
@@ -420,60 +420,60 @@ terraform {
 }
 
 func TestTGsARNsChunks(t *testing.T) {
-	var tgsARNs []*string
+	var tgsARNs []string
 	for i := 0; i < 30; i++ {
-		tgsARNs = append(tgsARNs, fi.PtrTo(fmt.Sprintf("arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/00000000000000%02d", i)))
+		tgsARNs = append(tgsARNs, fmt.Sprintf("arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/00000000000000%02d", i))
 	}
 
 	tests := []struct {
-		tgsARNs   []*string
+		tgsARNs   []string
 		chunkSize int
-		expected  [][]*string
+		expected  [][]string
 	}{
 		{
 			tgsARNs:   tgsARNs[0:1],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:1]},
+			expected:  [][]string{tgsARNs[0:1]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:5],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:5]},
+			expected:  [][]string{tgsARNs[0:5]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:10],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10]},
+			expected:  [][]string{tgsARNs[0:10]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:11],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:11]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:11]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:15],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:15]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:15]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:20],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:20]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:21],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:21]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:21]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:25],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:25]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:25]},
 		},
 		{
 			tgsARNs:   tgsARNs[0:30],
 			chunkSize: 10,
-			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:30]},
+			expected:  [][]string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:30]},
 		},
 	}
 

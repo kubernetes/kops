@@ -34,9 +34,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"go.uber.org/multierr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -408,9 +408,9 @@ func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, m
 	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
 	svc := cloud.Autoscaling()
-	hooks, err := svc.DescribeLifecycleHooksWithContext(ctx, &autoscaling.DescribeLifecycleHooksInput{
+	hooks, err := svc.DescribeLifecycleHooks(ctx, &autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: &asgName,
-		LifecycleHookNames:   []*string{&hookName},
+		LifecycleHookNames:   []string{hookName},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to find lifecycle hook %q: %w", hookName, err)
@@ -418,7 +418,7 @@ func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, m
 
 	if len(hooks.LifecycleHooks) > 0 {
 		klog.Info("Found ASG lifecycle hook")
-		_, err := svc.CompleteLifecycleActionWithContext(ctx, &autoscaling.CompleteLifecycleActionInput{
+		_, err := svc.CompleteLifecycleAction(ctx, &autoscaling.CompleteLifecycleActionInput{
 			AutoScalingGroupName:  &asgName,
 			InstanceId:            &modelContext.InstanceID,
 			LifecycleHookName:     &hookName,

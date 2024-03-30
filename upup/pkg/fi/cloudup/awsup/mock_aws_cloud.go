@@ -25,7 +25,6 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
@@ -74,7 +73,7 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 type MockCloud struct {
-	MockAutoscaling autoscalingiface.AutoScalingAPI
+	MockAutoscaling awsinterfaces.AutoScalingAPI
 	MockEC2         ec2iface.EC2API
 	MockIAM         awsinterfaces.IAMAPI
 	MockRoute53     route53iface.Route53API
@@ -262,7 +261,7 @@ func (c *MockAWSCloud) ELBV2() awsinterfaces.ELBV2API {
 	return c.MockELBV2
 }
 
-func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {
+func (c *MockAWSCloud) Autoscaling() awsinterfaces.AutoScalingAPI {
 	if c.MockAutoscaling == nil {
 		klog.Fatalf("MockAWSCloud Autoscaling not set")
 	}

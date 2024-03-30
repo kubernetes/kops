@@ -20,13 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockAutoscaling) AttachLoadBalancers(request *autoscaling.AttachLoadBalancersInput) (*autoscaling.AttachLoadBalancersOutput, error) {
+func (m *MockAutoscaling) AttachLoadBalancers(ctx context.Context, request *autoscaling.AttachLoadBalancersInput, optFns ...func(*autoscaling.Options)) (*autoscaling.AttachLoadBalancersOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -43,17 +41,7 @@ func (m *MockAutoscaling) AttachLoadBalancers(request *autoscaling.AttachLoadBal
 	return &autoscaling.AttachLoadBalancersOutput{}, nil
 }
 
-func (m *MockAutoscaling) AttachLoadBalancersWithContext(aws.Context, *autoscaling.AttachLoadBalancersInput, ...request.Option) (*autoscaling.AttachLoadBalancersOutput, error) {
-	klog.Fatalf("Not implemented")
-	return nil, nil
-}
-
-func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBalancersInput) (*request.Request, *autoscaling.AttachLoadBalancersOutput) {
-	klog.Fatalf("Not implemented")
-	return nil, nil
-}
-
-func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsWithContext(ctx aws.Context, request *autoscaling.AttachLoadBalancerTargetGroupsInput, opts ...request.Option) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(ctx context.Context, request *autoscaling.AttachLoadBalancerTargetGroupsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -68,8 +56,4 @@ func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsWithContext(ctx aws.Cont
 
 	asg.TargetGroupARNs = append(asg.TargetGroupARNs, request.TargetGroupARNs...)
 	return &autoscaling.AttachLoadBalancerTargetGroupsOutput{}, nil
-}
-
-func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.AttachLoadBalancerTargetGroupsInput) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
-	return m.AttachLoadBalancerTargetGroupsWithContext(context.TODO(), request)
 }

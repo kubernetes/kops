@@ -19,7 +19,7 @@ package instancegroups
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/stretchr/testify/assert"
@@ -82,13 +82,12 @@ func makeGroupWithWarmPool(groups map[string]*cloudinstances.CloudInstanceGroup,
 
 	group := groups[name]
 
-	wpInstances := []*autoscaling.Instance{}
-	warmStoppedState := autoscaling.LifecycleStateWarmedStopped
+	wpInstances := []autoscalingtypes.Instance{}
 	for i := 0; i < warmCount; i++ {
 		id := name + "-wp-" + string(rune('a'+i))
-		instance := &autoscaling.Instance{
+		instance := autoscalingtypes.Instance{
 			InstanceId:     &id,
-			LifecycleState: &warmStoppedState,
+			LifecycleState: autoscalingtypes.LifecycleStateWarmedStopped,
 		}
 		wpInstances = append(wpInstances, instance)
 

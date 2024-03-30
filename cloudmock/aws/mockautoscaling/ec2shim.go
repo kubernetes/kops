@@ -17,8 +17,10 @@ limitations under the License.
 package mockautoscaling
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
@@ -36,6 +38,7 @@ func (m *MockAutoscaling) GetEC2Shim(e ec2iface.EC2API) ec2iface.EC2API {
 }
 
 func (e *ec2Shim) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+	ctx := context.TODO()
 	if input.DryRun != nil && *input.DryRun {
 		return &ec2.TerminateInstancesOutput{}, nil
 	}
@@ -44,7 +47,7 @@ func (e *ec2Shim) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.T
 			InstanceId:                     id,
 			ShouldDecrementDesiredCapacity: aws.Bool(false),
 		}
-		if _, err := e.mockAutoscaling.TerminateInstanceInAutoScalingGroup(request); err != nil {
+		if _, err := e.mockAutoscaling.TerminateInstanceInAutoScalingGroup(ctx, request); err != nil {
 			return nil, err
 		}
 	}

@@ -102,7 +102,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.CloudupModelBuilderCo
 		Lifecycle:           b.Lifecycle,
 		AutoscalingGroup:    b.LinkToAutoscalingGroup(ig),
 		DefaultResult:       aws.String("CONTINUE"),
-		HeartbeatTimeout:    aws.Int64(DefaultMessageRetentionPeriod),
+		HeartbeatTimeout:    aws.Int32(DefaultMessageRetentionPeriod),
 		LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_TERMINATING"),
 		Enabled:             aws.Bool(true),
 	}

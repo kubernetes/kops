@@ -99,8 +99,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 			}
 			if warmPool.IsEnabled() {
-				warmPoolTask.MinSize = warmPool.MinSize
-				warmPoolTask.MaxSize = warmPool.MaxSize
+				warmPoolTask.MinSize = int32(warmPool.MinSize)
+				if warmPool.MaxSize != nil {
+					warmPoolTask.MaxSize = fi.PtrTo(int32(aws.ToInt64(warmPool.MaxSize)))
+				}
 				tsk.WarmPool = warmPoolTask
 			} else {
 				tsk.WarmPool = nil
@@ -120,7 +122,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				DefaultResult:    aws.String("ABANDON"),
 				// We let nodeup have 10 min to complete. Normally this should happen much faster,
 				// but CP nodes need 5 min or so to start on new clusters, and we need to wait for that.
-				HeartbeatTimeout:    aws.Int64(600),
+				HeartbeatTimeout:    aws.Int32(600),
 				LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_LAUNCHING"),
 				Enabled:             &enableHook,
 			}
@@ -407,17 +409,17 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 		InstanceProtection: fi.PtrTo(false),
 	}
 
-	minSize := fi.PtrTo(int64(1))
-	maxSize := fi.PtrTo(int64(1))
+	minSize := fi.PtrTo(int32(1))
+	maxSize := fi.PtrTo(int32(1))
 	if ig.Spec.MinSize != nil {
-		minSize = fi.PtrTo(int64(*ig.Spec.MinSize))
+		minSize = fi.PtrTo(int32(*ig.Spec.MinSize))
 	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		minSize = fi.PtrTo(int64(2))
+		minSize = fi.PtrTo(int32(2))
 	}
 	if ig.Spec.MaxSize != nil {
-		maxSize = fi.PtrTo(int64(*ig.Spec.MaxSize))
+		maxSize = fi.PtrTo(int32(*ig.Spec.MaxSize))
 	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		maxSize = fi.PtrTo(int64(2))
+		maxSize = fi.PtrTo(int32(2))
 	}
 
 	t.MinSize = minSize
@@ -521,38 +523,44 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 			if cpu != nil {
 				if cpu.Max != nil {
 					cpuMax, _ := spec.InstanceRequirements.CPU.Max.AsInt64()
-					ir.CPUMax = &cpuMax
+					ir.CPUMax = fi.PtrTo(int32(cpuMax))
 				}
 				if cpu.Min != nil {
 					cpuMin, _ := spec.InstanceRequirements.CPU.Min.AsInt64()
-					ir.CPUMin = &cpuMin
+					ir.CPUMin = fi.PtrTo(int32(cpuMin))
 				}
 			} else {
-				ir.CPUMin = fi.PtrTo(int64(0))
+				ir.CPUMin = fi.PtrTo(int32(0))
 			}
 
 			memory := spec.InstanceRequirements.Memory
 			if memory != nil {
 				if memory.Max != nil {
 					memoryMax := spec.InstanceRequirements.Memory.Max.ScaledValue(resource.Mega)
-					ir.MemoryMax = &memoryMax
+					ir.MemoryMax = fi.PtrTo(int32(memoryMax))
 				}
 				if memory.Min != nil {
 					memoryMin := spec.InstanceRequirements.Memory.Min.ScaledValue(resource.Mega)
-					ir.MemoryMin = &memoryMin
+					ir.MemoryMin = fi.PtrTo(int32(memoryMin))
 				}
 			} else {
-				ir.MemoryMin = fi.PtrTo(int64(0))
+				ir.MemoryMin = fi.PtrTo(int32(0))
 			}
 			t.InstanceRequirements = ir
 		}
 
 		t.MixedInstanceOverrides = spec.Instances
-		t.MixedOnDemandAboveBase = spec.OnDemandAboveBase
+		if spec.OnDemandAboveBase != nil {
+			t.MixedOnDemandAboveBase = aws.Int32(int32(aws.ToInt64(spec.OnDemandAboveBase)))
+		}
 		t.MixedOnDemandAllocationStrategy = spec.OnDemandAllocationStrategy
-		t.MixedOnDemandBase = spec.OnDemandBase
+		if spec.OnDemandBase != nil {
+			t.MixedOnDemandBase = aws.Int32(int32(aws.ToInt64(spec.OnDemandBase)))
+		}
 		t.MixedSpotAllocationStrategy = spec.SpotAllocationStrategy
-		t.MixedSpotInstancePools = spec.SpotInstancePools
+		if spec.SpotInstancePools != nil {
+			t.MixedSpotInstancePools = aws.Int32(int32(aws.ToInt64(spec.SpotInstancePools)))
+		}
 		// In order to unset maxprice, the value needs to be ""
 		if ig.Spec.MaxPrice == nil {
 			t.MixedSpotMaxPrice = fi.PtrTo("")
@@ -562,10 +570,10 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 	}
 
 	if ig.Spec.MaxInstanceLifetime != nil {
-		lifetimeSec := int64(ig.Spec.MaxInstanceLifetime.Seconds())
+		lifetimeSec := int32(ig.Spec.MaxInstanceLifetime.Seconds())
 		t.MaxInstanceLifetime = fi.PtrTo(lifetimeSec)
 	} else {
-		t.MaxInstanceLifetime = fi.PtrTo(int64(0))
+		t.MaxInstanceLifetime = fi.PtrTo(int32(0))
 	}
 	return t, nil
 }
