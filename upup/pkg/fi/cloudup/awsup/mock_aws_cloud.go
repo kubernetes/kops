@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
-	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -87,7 +86,7 @@ type MockCloud struct {
 	MockSpotinst    spotinst.Cloud
 	MockSQS         awsinterfaces.SQSAPI
 	MockEventBridge awsinterfaces.EventBridgeAPI
-	MockSSM         ssmiface.SSMAPI
+	MockSSM         awsinterfaces.SSMAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -228,7 +227,7 @@ func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 }
 
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
-	return resolveImage(c.MockSSM, c.MockEC2, name)
+	return resolveImage(context.TODO(), c.MockSSM, c.MockEC2, name)
 }
 
 func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
@@ -301,7 +300,7 @@ func (c *MockAWSCloud) EventBridge() awsinterfaces.EventBridgeAPI {
 	return c.MockEventBridge
 }
 
-func (c *MockAWSCloud) SSM() ssmiface.SSMAPI {
+func (c *MockAWSCloud) SSM() awsinterfaces.SSMAPI {
 	if c.MockSSM == nil {
 		klog.Fatalf("MockSSM not set")
 	}
