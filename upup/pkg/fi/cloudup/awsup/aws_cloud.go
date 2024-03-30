@@ -25,13 +25,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/eventbridge"
-	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
+	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -67,6 +69,7 @@ import (
 	identity_aws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -134,7 +137,7 @@ type AWSCloud interface {
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
 	SQS() sqsiface.SQSAPI
-	EventBridge() eventbridgeiface.EventBridgeAPI
+	EventBridge() awsinterfaces.EventBridgeAPI
 	SSM() ssmiface.SSMAPI
 
 	// TODO: Document and rationalize these tags/filters methods
@@ -204,7 +207,7 @@ type awsCloudImplementation struct {
 	spotinst    spotinst.Cloud
 	sts         *sts.STS
 	sqs         *sqs.SQS
-	eventbridge *eventbridge.EventBridge
+	eventbridge *eventbridge.Client
 	ssm         *ssm.SSM
 
 	region string
@@ -281,6 +284,7 @@ func getCloudInstancesFromRegion(region string) AWSCloud {
 }
 
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
+	ctx := context.TODO()
 	raw := getCloudInstancesFromRegion(region)
 
 	if raw == nil {
@@ -292,6 +296,18 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			instanceTypes: &instanceTypes{
 				typeMap: make(map[string]*ec2.InstanceTypeInfo),
 			},
+		}
+
+		cfgV2, err := awsconfig.LoadDefaultConfig(ctx,
+			awsconfig.WithRegion(region),
+			awsconfig.WithClientLogMode(awsv2.LogRetries),
+			awsconfig.WithLogger(awsLogger{}),
+			awsconfig.WithRetryer(func() awsv2.Retryer {
+				return retry.NewStandard()
+			}),
+		)
+		if err != nil {
+			return c, fmt.Errorf("failed to load default aws config: %w", err)
 		}
 
 		config := aws.NewConfig().WithRegion(region)
@@ -403,16 +419,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.sqs.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.sqs.Handlers)
 
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.eventbridge = eventbridge.New(sess, config)
-		c.eventbridge.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.eventbridge.Handlers)
+		c.eventbridge = eventbridge.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
 			Config:            *config,
@@ -2230,7 +2237,7 @@ func (c *awsCloudImplementation) SQS() sqsiface.SQSAPI {
 	return c.sqs
 }
 
-func (c *awsCloudImplementation) EventBridge() eventbridgeiface.EventBridgeAPI {
+func (c *awsCloudImplementation) EventBridge() awsinterfaces.EventBridgeAPI {
 	return c.eventbridge
 }
 

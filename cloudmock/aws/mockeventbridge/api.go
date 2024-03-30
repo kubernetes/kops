@@ -17,39 +17,41 @@ limitations under the License.
 package mockeventbridge
 
 import (
+	"context"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/eventbridge"
-	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockEventBridge struct {
-	eventbridgeiface.EventBridgeAPI
+	awsinterfaces.EventBridgeAPI
 	mutex sync.Mutex
 
-	Rules         map[string]*eventbridge.Rule
-	TagsByArn     map[string][]*eventbridge.Tag
-	TargetsByRule map[string][]*eventbridge.Target
+	Rules         map[string]*eventbridgetypes.Rule
+	TagsByArn     map[string][]eventbridgetypes.Tag
+	TargetsByRule map[string][]eventbridgetypes.Target
 }
 
-var _ eventbridgeiface.EventBridgeAPI = &MockEventBridge{}
+var _ awsinterfaces.EventBridgeAPI = &MockEventBridge{}
 
-func (m *MockEventBridge) PutRule(input *eventbridge.PutRuleInput) (*eventbridge.PutRuleOutput, error) {
+func (m *MockEventBridge) PutRule(ctx context.Context, input *eventbridge.PutRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.PutRuleOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	name := *input.Name
 	arn := "arn:aws-test:events:us-east-1:012345678901:rule/" + name
 
-	rule := &eventbridge.Rule{
+	rule := &eventbridgetypes.Rule{
 		Arn:          &arn,
 		EventPattern: input.EventPattern,
 	}
 	if m.Rules == nil {
-		m.Rules = make(map[string]*eventbridge.Rule)
+		m.Rules = make(map[string]*eventbridgetypes.Rule)
 	}
 	if m.TagsByArn == nil {
-		m.TagsByArn = make(map[string][]*eventbridge.Tag)
+		m.TagsByArn = make(map[string][]eventbridgetypes.Tag)
 	}
 	m.Rules[name] = rule
 	m.TagsByArn[arn] = input.Tags
@@ -60,7 +62,7 @@ func (m *MockEventBridge) PutRule(input *eventbridge.PutRuleInput) (*eventbridge
 	return response, nil
 }
 
-func (m *MockEventBridge) ListRules(input *eventbridge.ListRulesInput) (*eventbridge.ListRulesOutput, error) {
+func (m *MockEventBridge) ListRules(ctx context.Context, input *eventbridge.ListRulesInput, optFns ...func(*eventbridge.Options)) (*eventbridge.ListRulesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -70,15 +72,15 @@ func (m *MockEventBridge) ListRules(input *eventbridge.ListRulesInput) (*eventbr
 	if rule == nil {
 		return response, nil
 	}
-	response.Rules = []*eventbridge.Rule{rule}
+	response.Rules = []eventbridgetypes.Rule{*rule}
 	return response, nil
 }
 
-func (m *MockEventBridge) DeleteRule(*eventbridge.DeleteRuleInput) (*eventbridge.DeleteRuleOutput, error) {
+func (m *MockEventBridge) DeleteRule(ctx context.Context, input *eventbridge.DeleteRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.DeleteRuleOutput, error) {
 	panic("Not implemented")
 }
 
-func (m *MockEventBridge) ListTagsForResource(input *eventbridge.ListTagsForResourceInput) (*eventbridge.ListTagsForResourceOutput, error) {
+func (m *MockEventBridge) ListTagsForResource(ctx context.Context, input *eventbridge.ListTagsForResourceInput, optFns ...func(*eventbridge.Options)) (*eventbridge.ListTagsForResourceOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -88,19 +90,19 @@ func (m *MockEventBridge) ListTagsForResource(input *eventbridge.ListTagsForReso
 	return response, nil
 }
 
-func (m *MockEventBridge) PutTargets(input *eventbridge.PutTargetsInput) (*eventbridge.PutTargetsOutput, error) {
+func (m *MockEventBridge) PutTargets(ctx context.Context, input *eventbridge.PutTargetsInput, optFns ...func(*eventbridge.Options)) (*eventbridge.PutTargetsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	if m.TargetsByRule == nil {
-		m.TargetsByRule = make(map[string][]*eventbridge.Target)
+		m.TargetsByRule = make(map[string][]eventbridgetypes.Target)
 	}
 	m.TargetsByRule[*input.Rule] = input.Targets
 
 	return &eventbridge.PutTargetsOutput{}, nil
 }
 
-func (m *MockEventBridge) ListTargetsByRule(input *eventbridge.ListTargetsByRuleInput) (*eventbridge.ListTargetsByRuleOutput, error) {
+func (m *MockEventBridge) ListTargetsByRule(ctx context.Context, input *eventbridge.ListTargetsByRuleInput, optFns ...func(*eventbridge.Options)) (*eventbridge.ListTargetsByRuleOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -110,6 +112,6 @@ func (m *MockEventBridge) ListTargetsByRule(input *eventbridge.ListTargetsByRule
 	return response, nil
 }
 
-func (m *MockEventBridge) RemoveTargets(*eventbridge.RemoveTargetsInput) (*eventbridge.RemoveTargetsOutput, error) {
+func (m *MockEventBridge) RemoveTargets(ctx context.Context, input *eventbridge.RemoveTargetsInput, optFns ...func(*eventbridge.Options)) (*eventbridge.RemoveTargetsOutput, error) {
 	panic("Not implemented")
 }

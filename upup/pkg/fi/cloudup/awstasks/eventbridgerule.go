@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	awsResources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
@@ -57,7 +59,7 @@ func (eb *EventBridgeRule) Find(c *fi.CloudupContext) (*EventBridgeRule, error) 
 	request := &eventbridge.ListRulesInput{
 		NamePrefix: eb.Name,
 	}
-	response, err := cloud.EventBridge().ListRules(request)
+	response, err := cloud.EventBridge().ListRules(c.Context(), request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing EventBridge rules: %v", err)
 	}
@@ -70,7 +72,7 @@ func (eb *EventBridgeRule) Find(c *fi.CloudupContext) (*EventBridgeRule, error) 
 
 	rule := response.Rules[0]
 
-	tagResponse, err := cloud.EventBridge().ListTagsForResource(&eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
+	tagResponse, err := cloud.EventBridge().ListTagsForResource(c.Context(), &eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
 	if err != nil {
 		return nil, fmt.Errorf("error listing tags for EventBridge rule: %v", err)
 	}
@@ -106,9 +108,9 @@ func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Event
 	}
 
 	if a == nil {
-		var tags []*eventbridge.Tag
+		var tags []eventbridgetypes.Tag
 		for k, v := range eb.Tags {
-			tags = append(tags, &eventbridge.Tag{
+			tags = append(tags, eventbridgetypes.Tag{
 				Key:   aws.String(k),
 				Value: aws.String(v),
 			})
@@ -120,7 +122,7 @@ func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Event
 			Tags:         tags,
 		}
 
-		_, err := t.Cloud.EventBridge().PutRule(request)
+		_, err := t.Cloud.EventBridge().PutRule(context.TODO(), request)
 		if err != nil {
 			return fmt.Errorf("error creating EventBridge rule: %v", err)
 		}
