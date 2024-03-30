@@ -87,7 +87,11 @@ func TestContainerdVersionUrl(t *testing.T) {
 				t.Errorf("actual error %q differs from expected error %q", err, test.err)
 				return
 			}
-			if url != test.url {
+			got := ""
+			if url != nil {
+				got = url.String()
+			}
+			if got != test.url {
 				t.Errorf("actual url %q differs from expected url %q", url, test.url)
 				return
 			}

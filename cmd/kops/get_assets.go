@@ -132,7 +132,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		file := File{
 			Canonical: fileAsset.CanonicalURL.String(),
 			Download:  fileAsset.DownloadURL.String(),
-			SHA:       fileAsset.SHAValue,
+			SHA:       fileAsset.SHAValue.Hex(),
 		}
 		if !seen[file.Canonical] {
 			result.Files = append(result.Files, &file)

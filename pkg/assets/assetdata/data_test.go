@@ -26,7 +26,22 @@ func TestGetHash(t *testing.T) {
 		Name string
 		Hash string
 	}{
-		{Name: "https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet", Hash: "sha256:b64949fe696c77565edbe4100a315b6bf8f0e2325daeb762f7e865f16a6e54b5"},
+		{
+			Name: "https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet",
+			Hash: "b64949fe696c77565edbe4100a315b6bf8f0e2325daeb762f7e865f16a6e54b5",
+		},
+		{
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64",
+			Hash: "ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb",
+		},
+		{
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.arm64",
+			Hash: "9ec8e68feabc4e7083a4cfa45ebe4d529467391e0b03ee7de7ddda5770b05e68",
+		},
+		{
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64",
+			Hash: "aadeef400b8f05645768c1476d1023f7875b78f52c7ff1967a6dbce236b8cbd8",
+		},
 	}
 
 	for _, g := range grid {
@@ -41,7 +56,7 @@ func TestGetHash(t *testing.T) {
 		if !found {
 			t.Fatalf("hash for %q was not found", g.Name)
 		}
-		got := h.String()
+		got := h.Hex()
 		want := g.Hash
 		if got != g.Hash {
 			t.Errorf("unexpected hash for %q; got %q, want %q", g.Name, got, want)

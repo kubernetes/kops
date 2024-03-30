@@ -56,7 +56,12 @@ func Test_BuildMirroredAsset(t *testing.T) {
 				t.Errorf("cannot parse URL: %s", fmt.Sprintf(tc.url, kops.Version))
 				return
 			}
-			actual := assets.BuildMirroredAsset(u, h)
+			asset := &assets.FileAsset{
+				DownloadURL:  u,
+				CanonicalURL: u,
+				SHAValue:     h,
+			}
+			actual := assets.BuildMirroredAsset(asset)
 
 			if !reflect.DeepEqual(actual.Locations, tc.expected) {
 				t.Errorf("Locations differ:\nActual: %+v\nExpect: %+v", actual.Locations, tc.expected)

@@ -17,7 +17,6 @@ limitations under the License.
 package assets
 
 import (
-	"net/url"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -30,12 +29,14 @@ type MirroredAsset struct {
 }
 
 // BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
-func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
+func BuildMirroredAsset(asset *FileAsset) *MirroredAsset {
+	u := asset.DownloadURL
+
 	a := &MirroredAsset{
-		Hash: hash,
+		Hash: asset.SHAValue,
 	}
 
-	if hash == nil {
+	if asset.SHAValue == nil {
 		klog.Warningf("not using mirrors for asset %s as it does not have a known hash", u)
 		a.Locations = []string{u.String()}
 	} else {

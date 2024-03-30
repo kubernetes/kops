@@ -32,6 +32,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets/assetdata"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
@@ -97,7 +98,7 @@ type FileAsset struct {
 	// CanonicalURL is the canonical location of the asset, for example as distributed by the kops project
 	CanonicalURL *url.URL
 	// SHAValue is the SHA hash of the FileAsset.
-	SHAValue string
+	SHAValue *hashing.Hash
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
@@ -235,73 +236,49 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	return image + "@" + digest, nil
 }
 
-// RemapFileAndSHA returns a remapped URL for the file, if AssetsLocation is defined.
-// It also returns the SHA hash of the file.
-func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
-	if fileURL == nil {
-		return nil, nil, fmt.Errorf("unable to remap a nil URL")
-	}
-
-	fileAsset := &FileAsset{
-		DownloadURL:  fileURL,
-		CanonicalURL: fileURL,
-	}
-
-	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-
-		normalizedFile, err := a.remapURL(fileURL)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if fileURL.Host != normalizedFile.Host {
-			fileAsset.DownloadURL = normalizedFile
-			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
-		}
-	}
-
-	h, err := a.findHash(fileAsset)
-	if err != nil {
-		return nil, nil, err
-	}
-	fileAsset.SHAValue = h.Hex()
-
-	klog.V(8).Infof("adding file: %+v", fileAsset)
-	a.FileAssets = append(a.FileAssets, fileAsset)
-
-	return fileAsset.DownloadURL, h, nil
-}
-
-// RemapFileAndSHAValue returns a remapped URL for the file without a SHA file in object storage, if AssetsLocation is defined.
-func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (*url.URL, error) {
-	if fileURL == nil {
+// RemapFile returns a remapped URL for the file, if AssetsLocation is defined.
+// It is returns in a FileAsset, alongside the SHA hash of the file.
+// The SHA hash is is knownHash is provided, and otherwise will be found first by
+// checking the canonical URL against our well-known hashes, and failing that via download.
+func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash) (*FileAsset, error) {
+	if canonicalURL == nil {
 		return nil, fmt.Errorf("unable to remap a nil URL")
 	}
 
 	fileAsset := &FileAsset{
-		DownloadURL:  fileURL,
-		CanonicalURL: fileURL,
-		SHAValue:     shaValue,
+		DownloadURL:  canonicalURL,
+		CanonicalURL: canonicalURL,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		normalizedFile, err := a.remapURL(fileURL)
+		normalizedFile, err := a.remapURL(canonicalURL)
 		if err != nil {
 			return nil, err
 		}
-		if fileURL.Host != normalizedFile.Host {
+
+		if canonicalURL.Host != normalizedFile.Host {
 			fileAsset.DownloadURL = normalizedFile
 			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 		}
 	}
 
+	if knownHash == nil {
+		h, err := a.findHash(fileAsset)
+		if err != nil {
+			return nil, err
+		}
+		knownHash = h
+	}
+
+	fileAsset.SHAValue = knownHash
+
 	klog.V(8).Infof("adding file: %+v", fileAsset)
 	a.FileAssets = append(a.FileAssets, fileAsset)
 
-	return fileAsset.DownloadURL, nil
+	return fileAsset, nil
 }
 
-// FindHash returns the hash value of a FileAsset.
+// findHash returns the hash value of a FileAsset.
 func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	// If the phase is "assets" we use the CanonicalFileURL,
 	// but during other phases we use the hash from the FileRepository or the base kops path.
@@ -324,6 +301,16 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		return nil, fmt.Errorf("file url is not defined")
 	}
 
+	knownHash, found, err := assetdata.GetHash(file.CanonicalURL)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		return knownHash, nil
+	}
+
+	klog.Infof("asset %q is not well-known, downloading hash", file.CanonicalURL)
+
 	// We now prefer sha256 hashes
 	for backoffSteps := 1; backoffSteps <= 3; backoffSteps++ {
 		// We try first with a short backoff, so we don't
@@ -338,7 +325,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		for _, ext := range []string{".sha256", ".sha256sum"} {
 			for _, mirror := range FindURLMirrors(u.String()) {
 				hashURL := mirror + ext
-				klog.V(3).Infof("Trying to read hash fie: %q", hashURL)
+				klog.V(3).Infof("Trying to read hash file: %q", hashURL)
 				b, err := a.vfsContext.ReadFile(hashURL, vfs.WithBackoff(backoff))
 				if err != nil {
 					// Try to log without being too alarming - issue #7550

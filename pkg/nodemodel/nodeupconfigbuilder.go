@@ -117,14 +117,14 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					asset, err := assetBuilder.RemapFile(baseURL, nil)
 					if err != nil {
 						return nil, err
 					}
 
 					image := &nodeup.Image{
-						Sources: []string{u.String()},
-						Hash:    hash.Hex(),
+						Sources: []string{asset.DownloadURL.String()},
+						Hash:    asset.SHAValue.Hex(),
 					}
 					images[role][arch] = append(images[role][arch], image)
 				}
@@ -143,14 +143,14 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					asset, err := assetBuilder.RemapFile(baseURL, nil)
 					if err != nil {
 						return nil, err
 					}
 
 					image := &nodeup.Image{
-						Sources: []string{u.String()},
-						Hash:    hash.Hex(),
+						Sources: []string{asset.DownloadURL.String()},
+						Hash:    asset.SHAValue.Hex(),
 					}
 					images[role][arch] = append(images[role][arch], image)
 				}
@@ -166,14 +166,14 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					asset, err := assetBuilder.RemapFile(baseURL, nil)
 					if err != nil {
 						return nil, err
 					}
 
 					image := &nodeup.Image{
-						Sources: []string{u.String()},
-						Hash:    hash.Hex(),
+						Sources: []string{asset.DownloadURL.String()},
+						Hash:    asset.SHAValue.Hex(),
 					}
 					images[role][arch] = append(images[role][arch], image)
 				}

@@ -33,14 +33,14 @@ func Test_FindCrictlVersionHash(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.29.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	crictlAsset, crictlAssetHash, err := FindCrictlAsset(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	crictlAsset, err := FindCrictlAsset(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse crictl version %s", err)
 	}
-	if crictlAsset.String() != desiredCrictlURL {
-		t.Errorf("Expected crictl version %q, but got %q instead", desiredCrictlURL, crictlAsset)
+	if crictlAsset.DownloadURL.String() != desiredCrictlURL {
+		t.Errorf("Expected crictl version %q, but got %q instead", desiredCrictlURL, crictlAsset.DownloadURL)
 	}
-	if crictlAssetHash.String() != desiredCirctlHash {
-		t.Errorf("Expected crictl version hash %q, but got %q instead", desiredCirctlHash, crictlAssetHash)
+	if crictlAsset.SHAValue.String() != desiredCirctlHash {
+		t.Errorf("Expected crictl version hash %q, but got %q instead", desiredCirctlHash, crictlAsset.SHAValue)
 	}
 }

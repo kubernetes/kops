@@ -37,53 +37,49 @@ const (
 	containerdBundleUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-amd64.tar.gz"
 )
 
-func FindContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	if c.Spec.Containerd == nil {
-		return nil, nil, fmt.Errorf("unable to find containerd config")
+		return nil, fmt.Errorf("unable to find containerd config")
 	}
 	containerd := c.Spec.Containerd
 
+	canonicalURL := ""
+	knownHash := ""
+
 	if containerd.Packages != nil {
 		if arch == architectures.ArchitectureAmd64 && containerd.Packages.UrlAmd64 != nil && containerd.Packages.HashAmd64 != nil {
-			assetUrl := fi.ValueOf(containerd.Packages.UrlAmd64)
-			assetHash := fi.ValueOf(containerd.Packages.HashAmd64)
-			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+			canonicalURL = fi.ValueOf(containerd.Packages.UrlAmd64)
+			knownHash = fi.ValueOf(containerd.Packages.HashAmd64)
 		}
 		if arch == architectures.ArchitectureArm64 && containerd.Packages.UrlArm64 != nil && containerd.Packages.HashArm64 != nil {
-			assetUrl := fi.ValueOf(containerd.Packages.UrlArm64)
-			assetHash := fi.ValueOf(containerd.Packages.HashArm64)
-			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+			canonicalURL = fi.ValueOf(containerd.Packages.UrlArm64)
+			knownHash = fi.ValueOf(containerd.Packages.HashArm64)
 		}
 	}
 
-	version := fi.ValueOf(containerd.Version)
-	if version == "" {
-		return nil, nil, fmt.Errorf("unable to find containerd version")
+	if canonicalURL == "" {
+		version := fi.ValueOf(containerd.Version)
+		if version == "" {
+			return nil, fmt.Errorf("unable to find containerd version")
+		}
+
+		assetURL, err := findContainerdVersionUrl(arch, version)
+		if err != nil {
+			return nil, err
+		}
+		canonicalURL = assetURL.String()
 	}
 
-	return findContainerdVersionUrlHash(assetBuilder, arch, version)
+	return buildFileAsset(assetBuilder, canonicalURL, knownHash)
 }
 
-func findContainerdVersionUrlHash(assetBuilder *assets.AssetBuilder, arch architectures.Architecture, version string) (u *url.URL, h *hashing.Hash, e error) {
-	assetUrl, err := findContainerdVersionUrl(arch, version)
-	if err != nil {
-		return nil, nil, err
-	}
-	fileUrl, err := url.Parse(assetUrl)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return assetBuilder.RemapFileAndSHA(fileUrl)
-}
-
-func findContainerdVersionUrl(arch architectures.Architecture, version string) (string, error) {
+func findContainerdVersionUrl(arch architectures.Architecture, version string) (*url.URL, error) {
 	sv, err := semver.ParseTolerant(version)
 	if err != nil {
-		return "", fmt.Errorf("unable to parse version string: %q", version)
+		return nil, fmt.Errorf("unable to parse version string: %q", version)
 	}
 	if sv.LT(semver.MustParse("1.4.0")) {
-		return "", fmt.Errorf("unsupported legacy containerd version: %q", version)
+		return nil, fmt.Errorf("unsupported legacy containerd version: %q", version)
 	}
 
 	var u string
@@ -99,31 +95,35 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 			u = fmt.Sprintf(containerdReleaseUrlArm64, version, version)
 		}
 	default:
-		return "", fmt.Errorf("unknown arch: %q", arch)
+		return nil, fmt.Errorf("unknown arch: %q", arch)
 	}
 
 	if u == "" {
-		return "", fmt.Errorf("unknown url for containerd version: %s - %s", arch, version)
+		return nil, fmt.Errorf("unknown url for containerd version: %s - %s", arch, version)
 	}
 
-	return u, nil
+	return url.Parse(u)
 }
 
-func findAssetsUrlHash(assetBuilder *assets.AssetBuilder, assetUrl string, assetHash string) (*url.URL, *hashing.Hash, error) {
-	u, err := url.Parse(assetUrl)
+func buildFileAsset(assetBuilder *assets.AssetBuilder, canonicalURL string, knownHashString string) (*assets.FileAsset, error) {
+	u, err := url.Parse(canonicalURL)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse asset URL %q: %v", assetUrl, err)
+		return nil, fmt.Errorf("unable to parse asset URL %q: %w", canonicalURL, err)
 	}
 
-	h, err := hashing.FromString(assetHash)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse asset hash %q: %v", assetHash, err)
+	var knownHash *hashing.Hash
+	if knownHashString != "" {
+		h, err := hashing.FromString(knownHashString)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse asset hash %q: %w", knownHashString, err)
+		}
+		knownHash = h
 	}
 
-	u, err = assetBuilder.RemapFileAndSHAValue(u, assetHash)
+	asset, err := assetBuilder.RemapFile(u, knownHash)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to remap asset: %v", err)
+		return nil, fmt.Errorf("unable to remap asset: %w", err)
 	}
 
-	return u, h, nil
+	return asset, nil
 }
