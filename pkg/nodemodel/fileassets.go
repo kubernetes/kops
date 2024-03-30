@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
-	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type FileAssets struct {
@@ -38,10 +37,10 @@ type FileAssets struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets map[architectures.Architecture][]*mirrors.MirroredAsset
+	Assets map[architectures.Architecture][]*assets.MirroredAsset
 
 	// NodeUpAssets are the assets for downloading nodeup
-	NodeUpAssets map[architectures.Architecture]*mirrors.MirroredAsset
+	NodeUpAssets map[architectures.Architecture]*assets.MirroredAsset
 
 	Cluster *kops.Cluster
 }
@@ -55,10 +54,10 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 		baseURL = "https://dl.k8s.io/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
-	c.Assets = make(map[architectures.Architecture][]*mirrors.MirroredAsset)
-	c.NodeUpAssets = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+	c.Assets = make(map[architectures.Architecture][]*assets.MirroredAsset)
+	c.NodeUpAssets = make(map[architectures.Architecture]*assets.MirroredAsset)
 	for _, arch := range architectures.GetSupported() {
-		c.Assets[arch] = []*mirrors.MirroredAsset{}
+		c.Assets[arch] = []*assets.MirroredAsset{}
 
 		k8sAssetsNames := []string{
 			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
@@ -80,7 +79,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
 		}
 
 		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
@@ -112,7 +111,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 					return err
 				}
 
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
 			case kops.CloudProviderAWS:
 				binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
 				if binaryLocation == nil {
@@ -128,7 +127,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 					return err
 				}
 
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
 			}
 		}
 
@@ -137,7 +136,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(cniAsset, cniAssetHash))
 		}
 
 		if c.Cluster.Spec.Containerd == nil || !c.Cluster.Spec.Containerd.SkipInstall {
@@ -146,7 +145,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 				return err
 			}
 			if containerdAssetUrl != nil && containerdAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerdAssetUrl, containerdAssetHash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(containerdAssetUrl, containerdAssetHash))
 			}
 
 			runcAssetUrl, runcAssetHash, err := wellknownassets.FindRuncAsset(c.Cluster, assetBuilder, arch)
@@ -154,14 +153,14 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 				return err
 			}
 			if runcAssetUrl != nil && runcAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
 			}
 			nerdctlAssetUrl, nerdctlAssetHash, err := wellknownassets.FindNerdctlAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
 			if nerdctlAssetUrl != nil && nerdctlAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(nerdctlAssetUrl, nerdctlAssetHash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(nerdctlAssetUrl, nerdctlAssetHash))
 			}
 		}
 
@@ -170,7 +169,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 			return err
 		}
 		if crictlAssetUrl != nil && crictlAssetHash != nil {
-			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(crictlAssetUrl, crictlAssetHash))
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(crictlAssetUrl, crictlAssetHash))
 		}
 
 		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)

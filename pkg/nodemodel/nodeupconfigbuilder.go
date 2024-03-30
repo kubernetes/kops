@@ -37,7 +37,6 @@ import (
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -46,7 +45,7 @@ type nodeUpConfigBuilder struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	assets map[architectures.Architecture][]*mirrors.MirroredAsset
+	assets map[architectures.Architecture][]*assets.MirroredAsset
 
 	assetBuilder               *assets.AssetBuilder
 	channels                   []string
@@ -54,12 +53,12 @@ type nodeUpConfigBuilder struct {
 	cluster                    *kops.Cluster
 	etcdManifests              map[string][]string
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
-	protokubeAsset             map[architectures.Architecture][]*mirrors.MirroredAsset
-	channelsAsset              map[architectures.Architecture][]*mirrors.MirroredAsset
+	protokubeAsset             map[architectures.Architecture][]*assets.MirroredAsset
+	channelsAsset              map[architectures.Architecture][]*assets.MirroredAsset
 	encryptionConfigSecretHash string
 }
 
-func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, nodeAssets map[architectures.Architecture][]*assets.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
@@ -75,8 +74,8 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	etcdManifests := map[string][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
-	protokubeAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
-	channelsAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
+	protokubeAsset := map[architectures.Architecture][]*assets.MirroredAsset{}
+	channelsAsset := map[architectures.Architecture][]*assets.MirroredAsset{}
 
 	for _, arch := range architectures.GetSupported() {
 		asset, err := wellknownassets.ProtokubeAsset(assetBuilder, arch)
@@ -194,7 +193,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	configBuilder := nodeUpConfigBuilder{
 		assetBuilder:               assetBuilder,
-		assets:                     assets,
+		assets:                     nodeAssets,
 		channels:                   channels,
 		configBase:                 configBase,
 		cluster:                    cluster,

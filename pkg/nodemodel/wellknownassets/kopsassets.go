@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
-	"k8s.io/kops/util/pkg/mirrors"
 )
 
 const (
@@ -37,13 +36,13 @@ const (
 var kopsBaseURL *url.URL
 
 // nodeUpAsset caches the nodeup binary download url/hash
-var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
+var nodeUpAsset map[architectures.Architecture]*assets.MirroredAsset
 
 // protokubeAsset caches the protokube binary download url/hash
-var protokubeAsset map[architectures.Architecture]*mirrors.MirroredAsset
+var protokubeAsset map[architectures.Architecture]*assets.MirroredAsset
 
 // channelsAsset caches the channels binary download url/hash
-var channelsAsset map[architectures.Architecture]*mirrors.MirroredAsset
+var channelsAsset map[architectures.Architecture]*assets.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -84,9 +83,9 @@ func copyBaseURL(base *url.URL) (*url.URL, error) {
 }
 
 // NodeUpAsset returns the asset for where nodeup should be downloaded
-func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if nodeUpAsset == nil {
-		nodeUpAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+		nodeUpAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
 	}
 	if nodeUpAsset[arch] != nil {
 		// Avoid repeated logging
@@ -98,16 +97,16 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 	if err != nil {
 		return nil, err
 	}
-	nodeUpAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	nodeUpAsset[arch] = assets.BuildMirroredAsset(u, hash)
 	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
 
 	return nodeUpAsset[arch], nil
 }
 
 // ProtokubeAsset returns the url and hash of the protokube binary
-func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if protokubeAsset == nil {
-		protokubeAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+		protokubeAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
 	}
 	if protokubeAsset[arch] != nil {
 		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeAsset[arch].Locations)
@@ -118,16 +117,16 @@ func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archi
 	if err != nil {
 		return nil, err
 	}
-	protokubeAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	protokubeAsset[arch] = assets.BuildMirroredAsset(u, hash)
 	klog.V(8).Infof("Using default protokube location for %s: %q", arch, u.String())
 
 	return protokubeAsset[arch], nil
 }
 
 // ChannelsAsset returns the url and hash of the channels binary
-func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if channelsAsset == nil {
-		channelsAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+		channelsAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
 	}
 	if channelsAsset[arch] != nil {
 		klog.V(8).Infof("Using cached channels binary location for %s: %v", arch, channelsAsset[arch].Locations)
@@ -138,7 +137,7 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 	if err != nil {
 		return nil, err
 	}
-	channelsAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	channelsAsset[arch] = assets.BuildMirroredAsset(u, hash)
 	klog.V(8).Infof("Using default channels location for %s: %q", arch, u.String())
 
 	return channelsAsset[arch], nil

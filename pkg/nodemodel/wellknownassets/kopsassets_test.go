@@ -23,8 +23,8 @@ import (
 	"testing"
 
 	"k8s.io/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/hashing"
-	"k8s.io/kops/util/pkg/mirrors"
 )
 
 func Test_BuildMirroredAsset(t *testing.T) {
@@ -56,7 +56,7 @@ func Test_BuildMirroredAsset(t *testing.T) {
 				t.Errorf("cannot parse URL: %s", fmt.Sprintf(tc.url, kops.Version))
 				return
 			}
-			actual := mirrors.BuildMirroredAsset(u, h)
+			actual := assets.BuildMirroredAsset(u, h)
 
 			if !reflect.DeepEqual(actual.Locations, tc.expected) {
 				t.Errorf("Locations differ:\nActual: %+v\nExpect: %+v", actual.Locations, tc.expected)

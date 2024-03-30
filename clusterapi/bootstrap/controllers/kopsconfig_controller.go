@@ -39,7 +39,6 @@ import (
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -212,7 +211,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	// 	encryptionConfigSecretHash = base64.URLEncoding.EncodeToString(hashBytes[:])
 	// }
 
-	nodeUpAssets := make(map[architectures.Architecture]*mirrors.MirroredAsset)
+	nodeUpAssets := make(map[architectures.Architecture]*assets.MirroredAsset)
 	for _, arch := range architectures.GetSupported() {
 		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)
 		if err != nil {
@@ -221,7 +220,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 		nodeUpAssets[arch] = asset
 	}
 
-	assets := make(map[architectures.Architecture][]*mirrors.MirroredAsset)
+	assets := make(map[architectures.Architecture][]*assets.MirroredAsset)
 	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, assets, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err

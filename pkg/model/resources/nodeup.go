@@ -29,10 +29,10 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/mirrors"
 )
 
 var nodeUpTemplate = `#!/bin/bash
@@ -176,7 +176,7 @@ echo "== nodeup node config done =="
 
 // NodeUpScript is responsible for creating the nodeup script
 type NodeUpScript struct {
-	NodeUpAssets         map[architectures.Architecture]*mirrors.MirroredAsset
+	NodeUpAssets         map[architectures.Architecture]*assets.MirroredAsset
 	BootConfig           *nodeup.BootConfig
 	CompressUserData     bool
 	SetSysctls           string
