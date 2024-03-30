@@ -196,8 +196,6 @@ github.com/aws/aws-sdk-go/service/pricing
 github.com/aws/aws-sdk-go/service/pricing/pricingiface
 github.com/aws/aws-sdk-go/service/route53
 github.com/aws/aws-sdk-go/service/route53/route53iface
-github.com/aws/aws-sdk-go/service/ssm
-github.com/aws/aws-sdk-go/service/ssm/ssmiface
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/ssooidc
@@ -307,6 +305,11 @@ github.com/aws/aws-sdk-go-v2/service/s3/types
 github.com/aws/aws-sdk-go-v2/service/sqs
 github.com/aws/aws-sdk-go-v2/service/sqs/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/sqs/types
+# github.com/aws/aws-sdk-go-v2/service/ssm v1.49.5
+## explicit; go 1.20
+github.com/aws/aws-sdk-go-v2/service/ssm
+github.com/aws/aws-sdk-go-v2/service/ssm/internal/endpoints
+github.com/aws/aws-sdk-go-v2/service/ssm/types
 # github.com/aws/aws-sdk-go-v2/service/sso v1.20.3
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/sso

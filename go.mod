@@ -27,6 +27,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/kms v1.30.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.4
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.49.5
 	github.com/aws/smithy-go v1.20.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.14.4
