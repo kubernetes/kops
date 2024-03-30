@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -24,9 +26,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 )
 
@@ -49,14 +51,13 @@ func (e *IAMInstanceProfile) CompareWithID() *string {
 
 // findIAMInstanceProfile retrieves the InstanceProfile with specified name
 // It returns nil,nil if not found
-func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstanceProfile, error) {
+func findIAMInstanceProfile(ctx context.Context, cloud awsup.AWSCloud, name string) (*iamtypes.InstanceProfile, error) {
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: aws.String(name)}
 
-	response, err := cloud.IAM().GetInstanceProfile(request)
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
-			return nil, nil
-		}
+	response, err := cloud.IAM().GetInstanceProfile(ctx, request)
+	var nse *iamtypes.NoSuchEntityException
+	if errors.As(err, &nse) {
+		return nil, nil
 	}
 
 	if err != nil {
@@ -67,9 +68,10 @@ func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstancePro
 }
 
 func (e *IAMInstanceProfile) Find(c *fi.CloudupContext) (*IAMInstanceProfile, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
-	p, err := findIAMInstanceProfile(cloud, *e.Name)
+	p, err := findIAMInstanceProfile(ctx, cloud, *e.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +110,7 @@ func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) err
 }
 
 func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
+	ctx := context.TODO()
 	if fi.ValueOf(e.Shared) {
 		if a == nil {
 			return fmt.Errorf("instance role profile with id %q not found", fi.ValueOf(e.ID))
@@ -119,7 +122,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 			InstanceProfileName: e.Name,
 		}
 
-		response, err := t.Cloud.IAM().CreateInstanceProfile(request)
+		response, err := t.Cloud.IAM().CreateInstanceProfile(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMInstanceProfile: %v", err)
 		}
@@ -128,7 +131,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 			InstanceProfileName: e.Name,
 			Tags:                mapToIAMTags(e.Tags),
 		}
-		_, err = t.Cloud.IAM().TagInstanceProfile(tagRequest)
+		_, err = t.Cloud.IAM().TagInstanceProfile(ctx, tagRequest)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == awsup.AWSErrCodeInvalidAction {
 				klog.Warningf("Ignoring unsupported IAMInstanceProfile tagging %v", *a.Name)
@@ -142,15 +145,15 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 	} else {
 		if changes.Tags != nil {
 			if len(a.Tags) > 0 {
-				existingTagKeys := make([]*string, 0)
+				existingTagKeys := make([]string, 0)
 				for k := range a.Tags {
-					existingTagKeys = append(existingTagKeys, &k)
+					existingTagKeys = append(existingTagKeys, k)
 				}
 				untagRequest := &iam.UntagInstanceProfileInput{
 					InstanceProfileName: a.Name,
 					TagKeys:             existingTagKeys,
 				}
-				_, err := t.Cloud.IAM().UntagInstanceProfile(untagRequest)
+				_, err := t.Cloud.IAM().UntagInstanceProfile(ctx, untagRequest)
 				if err != nil {
 					return fmt.Errorf("error untagging IAMInstanceProfile: %v", err)
 				}
@@ -160,7 +163,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 					InstanceProfileName: a.Name,
 					Tags:                mapToIAMTags(e.Tags),
 				}
-				_, err := t.Cloud.IAM().TagInstanceProfile(tagRequest)
+				_, err := t.Cloud.IAM().TagInstanceProfile(ctx, tagRequest)
 				if err != nil {
 					if awsup.AWSErrorCode(err) == awsup.AWSErrCodeInvalidAction {
 						klog.Warningf("Ignoring unsupported IAMInstanceProfile tagging %v", *a.Name)

@@ -17,6 +17,7 @@ limitations under the License.
 package testutils
 
 import (
+	"context"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,10 +27,10 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
@@ -132,6 +133,7 @@ func (h *IntegrationTestHarness) Close() {
 }
 
 func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
+	ctx := context.TODO()
 	cloud := awsup.InstallMockAWSCloud("us-test-1", "abc")
 	mockEC2 := &mockec2.MockEC2{}
 	cloud.MockEC2 = mockEC2
@@ -265,13 +267,13 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Name: aws.String("my-external-tg-3"),
 	})
 
-	mockIAM.CreateRole(&iam.CreateRoleInput{
+	mockIAM.CreateRole(ctx, &iam.CreateRoleInput{
 		RoleName: aws.String("kops-custom-node-role"),
 	})
-	mockIAM.CreateInstanceProfile(&iam.CreateInstanceProfileInput{
+	mockIAM.CreateInstanceProfile(ctx, &iam.CreateInstanceProfileInput{
 		InstanceProfileName: aws.String("kops-custom-node-role"),
 	})
-	mockIAM.AddRoleToInstanceProfile(&iam.AddRoleToInstanceProfileInput{
+	mockIAM.AddRoleToInstanceProfile(ctx, &iam.AddRoleToInstanceProfileInput{
 		InstanceProfileName: aws.String("kops-custom-node-role"),
 		RoleName:            aws.String("kops-custom-node-role"),
 	})

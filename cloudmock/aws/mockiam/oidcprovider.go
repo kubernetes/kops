@@ -20,19 +20,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockIAM) ListOpenIDConnectProviders(request *iam.ListOpenIDConnectProvidersInput) (*iam.ListOpenIDConnectProvidersOutput, error) {
+func (m *MockIAM) ListOpenIDConnectProviders(ctx context.Context, params *iam.ListOpenIDConnectProvidersInput, optFns ...func(*iam.Options)) (*iam.ListOpenIDConnectProvidersOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	providers := make([]*iam.OpenIDConnectProviderListEntry, 0)
+	providers := make([]iamtypes.OpenIDConnectProviderListEntry, 0)
 	for arn := range m.OIDCProviders {
-		providers = append(providers, &iam.OpenIDConnectProviderListEntry{
+		providers = append(providers, iamtypes.OpenIDConnectProviderListEntry{
 			Arn: &arn,
 		})
 	}
@@ -42,22 +42,14 @@ func (m *MockIAM) ListOpenIDConnectProviders(request *iam.ListOpenIDConnectProvi
 	return response, nil
 }
 
-func (m *MockIAM) ListOpenIDConnectProvidersWithContext(aws.Context, *iam.ListOpenIDConnectProvidersInput, ...request.Option) (*iam.ListOpenIDConnectProvidersOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) ListOpenIDConnectProvidersRequest(*iam.ListOpenIDConnectProvidersInput) (*request.Request, *iam.ListOpenIDConnectProvidersOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) GetOpenIDConnectProviderWithContext(ctx aws.Context, request *iam.GetOpenIDConnectProviderInput, options ...request.Option) (*iam.GetOpenIDConnectProviderOutput, error) {
+func (m *MockIAM) GetOpenIDConnectProvider(ctx context.Context, request *iam.GetOpenIDConnectProviderInput, optFns ...func(*iam.Options)) (*iam.GetOpenIDConnectProviderOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	arn := aws.StringValue(request.OpenIDConnectProviderArn)
+	arn := aws.ToString(request.OpenIDConnectProviderArn)
 
-	provider := m.OIDCProviders[arn]
-	if provider == nil {
+	provider, ok := m.OIDCProviders[arn]
+	if !ok {
 		return nil, fmt.Errorf("OpenIDConnectProvider with arn=%q not found", arn)
 	}
 
@@ -71,15 +63,7 @@ func (m *MockIAM) GetOpenIDConnectProviderWithContext(ctx aws.Context, request *
 	return response, nil
 }
 
-func (m *MockIAM) GetOpenIDConnectProvider(request *iam.GetOpenIDConnectProviderInput) (*iam.GetOpenIDConnectProviderOutput, error) {
-	return m.GetOpenIDConnectProviderWithContext(context.Background(), request)
-}
-
-func (m *MockIAM) GetOpenIDConnectProviderRequest(*iam.GetOpenIDConnectProviderInput) (*request.Request, *iam.GetOpenIDConnectProviderOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectProviderInput) (*iam.CreateOpenIDConnectProviderOutput, error) {
+func (m *MockIAM) CreateOpenIDConnectProvider(ctx context.Context, request *iam.CreateOpenIDConnectProviderInput, optFns ...func(*iam.Options)) (*iam.CreateOpenIDConnectProviderOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -87,7 +71,7 @@ func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectPr
 
 	arn := fmt.Sprintf("arn:aws-test:iam::0000000000:oidc-provider/%s", *request.Url)
 
-	p := &iam.GetOpenIDConnectProviderOutput{
+	p := iam.GetOpenIDConnectProviderOutput{
 		ClientIDList:   request.ClientIDList,
 		Tags:           request.Tags,
 		ThumbprintList: request.ThumbprintList,
@@ -97,28 +81,20 @@ func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectPr
 	if m.OIDCProviders == nil {
 		m.OIDCProviders = make(map[string]*iam.GetOpenIDConnectProviderOutput)
 	}
-	m.OIDCProviders[arn] = p
+	m.OIDCProviders[arn] = &p
 
 	return &iam.CreateOpenIDConnectProviderOutput{OpenIDConnectProviderArn: &arn}, nil
 }
 
-func (m *MockIAM) CreateOpenIDConnectProviderWithContext(aws.Context, *iam.CreateOpenIDConnectProviderInput, ...request.Option) (*iam.CreateOpenIDConnectProviderOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) CreateOpenIDConnectProviderRequest(*iam.CreateOpenIDConnectProviderInput) (*request.Request, *iam.CreateOpenIDConnectProviderOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteOpenIDConnectProvider(request *iam.DeleteOpenIDConnectProviderInput) (*iam.DeleteOpenIDConnectProviderOutput, error) {
+func (m *MockIAM) DeleteOpenIDConnectProvider(ctx context.Context, request *iam.DeleteOpenIDConnectProviderInput, optFns ...func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteOpenIDConnectProvider: %v", request)
 
-	arn := aws.StringValue(request.OpenIDConnectProviderArn)
-	o := m.OIDCProviders[arn]
-	if o == nil {
+	arn := aws.ToString(request.OpenIDConnectProviderArn)
+	_, ok := m.OIDCProviders[arn]
+	if !ok {
 		return nil, fmt.Errorf("OIDCProvider %q not found", arn)
 	}
 	delete(m.OIDCProviders, arn)
@@ -126,22 +102,6 @@ func (m *MockIAM) DeleteOpenIDConnectProvider(request *iam.DeleteOpenIDConnectPr
 	return &iam.DeleteOpenIDConnectProviderOutput{}, nil
 }
 
-func (m *MockIAM) DeleteOpenIDConnectProviderWithContext(aws.Context, *iam.DeleteOpenIDConnectProviderInput, ...request.Option) (*iam.DeleteOpenIDConnectProviderOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) DeleteOpenIDConnectProviderRequest(*iam.DeleteOpenIDConnectProviderInput) (*request.Request, *iam.DeleteOpenIDConnectProviderOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) UpdateOpenIDConnectProviderThumbprint(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) UpdateOpenIDConnectProviderThumbprintWithContext(aws.Context, *iam.UpdateOpenIDConnectProviderThumbprintInput, ...request.Option) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockIAM) UpdateOpenIDConnectProviderThumbprintRequest(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*request.Request, *iam.UpdateOpenIDConnectProviderThumbprintOutput) {
+func (m *MockIAM) UpdateOpenIDConnectProviderThumbprint(ctx context.Context, params *iam.UpdateOpenIDConnectProviderThumbprintInput, optFns ...func(*iam.Options)) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
 	panic("Not implemented")
 }

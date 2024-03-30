@@ -21,8 +21,8 @@ import (
 	"sort"
 	"strings"
 
+	awsIam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	awsIam "github.com/aws/aws-sdk-go/service/iam"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -473,20 +473,25 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 }
 
 func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
+	ctx := context.Context()
 	iamapi := cloud.(awsup.AWSCloud).IAM()
 	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
 	request := &awsIam.ListRolesInput{}
 	var getRoleErr error
-	err := iamapi.ListRolesPages(request, func(p *awsIam.ListRolesOutput, lastPage bool) bool {
-		for _, role := range p.Roles {
+	paginator := awsIam.NewListRolesPaginator(iamapi, request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("listing IAM roles: %w", err)
+		}
+		for _, role := range page.Roles {
 			if !strings.HasSuffix(fi.ValueOf(role.RoleName), "."+b.Cluster.ObjectMeta.Name) {
 				continue
 			}
 			getRequest := &awsIam.GetRoleInput{RoleName: role.RoleName}
-			roleOutput, err := iamapi.GetRole(getRequest)
+			roleOutput, err := iamapi.GetRole(ctx, getRequest)
 			if err != nil {
-				getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", fi.ValueOf(role.RoleName), err)
-				return false
+				return fmt.Errorf("calling IAM GetRole on %s: %w", fi.ValueOf(role.RoleName), err)
 			}
 			for _, tag := range roleOutput.Role.Tags {
 				if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
@@ -500,13 +505,9 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 				}
 			}
 		}
-		return true
-	})
+	}
 	if getRoleErr != nil {
 		return getRoleErr
-	}
-	if err != nil {
-		return fmt.Errorf("listing IAM roles: %w", err)
 	}
 	return nil
 }
