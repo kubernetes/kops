@@ -1,0 +1,9 @@
+filestores:
+- base: https://github.com/kubernetes-sigs/cri-tools/releases/download/
+
+# Manually constructed, though we could quickly get the hash by downloading the .sha256 file for each asset
+files:
+- name: v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
+  sha256: d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb
+- name: v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
+  sha256: 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925
