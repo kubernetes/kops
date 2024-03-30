@@ -21,6 +21,7 @@ import (
 	"sort"
 	"time"
 
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -208,7 +209,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Tags:              tags,
 			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
 			VPC:               b.LinkToVPC(),
-			Type:              fi.PtrTo("network"),
+			Type:              elbv2types.LoadBalancerTypeEnumNetwork,
 		}
 
 		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
@@ -265,10 +266,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
 			clb.Scheme = fi.PtrTo("internal")
-			nlb.Scheme = fi.PtrTo("internal")
+			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternal
 		case kops.LoadBalancerTypePublic:
 			clb.Scheme = nil
-			nlb.Scheme = fi.PtrTo("internet-facing")
+			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternetFacing
 		default:
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
@@ -314,12 +315,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               groupTags,
-					Protocol:           fi.PtrTo("TCP"),
-					Port:               fi.PtrTo(int64(443)),
+					Protocol:           elbv2types.ProtocolEnumTcp,
+					Port:               fi.PtrTo(int32(443)),
 					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int64(10)),
-					HealthyThreshold:   fi.PtrTo(int64(2)),
-					UnhealthyThreshold: fi.PtrTo(int64(2)),
+					Interval:           fi.PtrTo(int32(10)),
+					HealthyThreshold:   fi.PtrTo(int32(2)),
+					UnhealthyThreshold: fi.PtrTo(int32(2)),
 					Shared:             fi.PtrTo(false),
 				}
 				tg.CreateNewRevisionsWith(nlb)
@@ -338,12 +339,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               groupTags,
-					Protocol:           fi.PtrTo("TCP"),
-					Port:               fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					Protocol:           elbv2types.ProtocolEnumTcp,
+					Port:               fi.PtrTo(int32(wellknownports.KopsControllerPort)),
 					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int64(10)),
-					HealthyThreshold:   fi.PtrTo(int64(2)),
-					UnhealthyThreshold: fi.PtrTo(int64(2)),
+					Interval:           fi.PtrTo(int32(10)),
+					HealthyThreshold:   fi.PtrTo(int32(2)),
+					UnhealthyThreshold: fi.PtrTo(int32(2)),
 					Shared:             fi.PtrTo(false),
 				}
 				tg.CreateNewRevisionsWith(nlb)
@@ -362,12 +363,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               tlsGroupTags,
-					Protocol:           fi.PtrTo("TLS"),
-					Port:               fi.PtrTo(int64(443)),
+					Protocol:           elbv2types.ProtocolEnumTls,
+					Port:               fi.PtrTo(int32(443)),
 					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int64(10)),
-					HealthyThreshold:   fi.PtrTo(int64(2)),
-					UnhealthyThreshold: fi.PtrTo(int64(2)),
+					Interval:           fi.PtrTo(int32(10)),
+					HealthyThreshold:   fi.PtrTo(int32(2)),
+					UnhealthyThreshold: fi.PtrTo(int32(2)),
 					Shared:             fi.PtrTo(false),
 				}
 				secondaryTG.CreateNewRevisionsWith(nlb)

@@ -188,7 +188,6 @@ github.com/aws/aws-sdk-go/service/ec2/ec2iface
 github.com/aws/aws-sdk-go/service/elb
 github.com/aws/aws-sdk-go/service/elb/elbiface
 github.com/aws/aws-sdk-go/service/elbv2
-github.com/aws/aws-sdk-go/service/elbv2/elbv2iface
 github.com/aws/aws-sdk-go/service/kms
 github.com/aws/aws-sdk-go/service/pricing
 github.com/aws/aws-sdk-go/service/pricing/pricingiface
@@ -266,6 +265,11 @@ github.com/aws/aws-sdk-go-v2/internal/v4a/internal/v4
 github.com/aws/aws-sdk-go-v2/service/ec2
 github.com/aws/aws-sdk-go-v2/service/ec2/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/ec2/types
+# github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.30.5
+## explicit; go 1.20
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/internal/endpoints
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types
 # github.com/aws/aws-sdk-go-v2/service/eventbridge v1.30.3
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/eventbridge

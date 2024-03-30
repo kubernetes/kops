@@ -34,6 +34,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -46,8 +48,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
-	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -129,7 +129,7 @@ type AWSCloud interface {
 	EC2() ec2iface.EC2API
 	IAM() awsinterfaces.IAMAPI
 	ELB() elbiface.ELBAPI
-	ELBV2() elbv2iface.ELBV2API
+	ELBV2() awsinterfaces.ELBV2API
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
@@ -164,7 +164,7 @@ type AWSCloud interface {
 	FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error)
 	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
 	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
-	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]*elbv2.Tag, error)
+	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]elbv2types.Tag, error)
 	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
 
 	// DescribeInstance is a helper that queries for the specified instance by id
@@ -198,7 +198,7 @@ type awsCloudImplementation struct {
 	ec2         *ec2.EC2
 	iam         *iam.Client
 	elb         *elb.ELB
-	elbv2       *elbv2.ELBV2
+	elbv2       *elbv2.Client
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
@@ -345,16 +345,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.elb.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.elb.Handlers)
 
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.elbv2 = elbv2.New(sess, config)
-		c.elbv2.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.elbv2.Handlers)
+		c.elbv2 = elbv2.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
 			Config:            *config,
@@ -650,7 +641,7 @@ func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.Cloud
 
 	if len(targetGroupArns) != 0 {
 		eg.Go(func() error {
-			return deregisterInstanceFromTargetGroups(c, targetGroupArns, i.ID)
+			return deregisterInstanceFromTargetGroups(ctx, c, targetGroupArns, i.ID)
 		})
 	}
 
@@ -706,13 +697,13 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, loadBalancerNames []s
 
 // deregisterInstanceFromTargetGroups ensures that instances are fully unused in the corresponding targetGroups before instance termination.
 // this ensures that connections are fully drained from the instance before terminating.
-func deregisterInstanceFromTargetGroups(c AWSCloud, targetGroupArns []string, instanceId string) error {
+func deregisterInstanceFromTargetGroups(ctx context.Context, c AWSCloud, targetGroupArns []string, instanceId string) error {
 	eg, _ := errgroup.WithContext(context.Background())
 
 	for _, targetGroupArn := range targetGroupArns {
 		arn := targetGroupArn
 		eg.Go(func() error {
-			return deregisterInstanceFromTargetGroup(c, arn, instanceId)
+			return deregisterInstanceFromTargetGroup(ctx, c, arn, instanceId)
 		})
 	}
 
@@ -723,15 +714,15 @@ func deregisterInstanceFromTargetGroups(c AWSCloud, targetGroupArns []string, in
 	return nil
 }
 
-func deregisterInstanceFromTargetGroup(c AWSCloud, targetGroupArn string, instanceId string) error {
+func deregisterInstanceFromTargetGroup(ctx context.Context, c AWSCloud, targetGroupArn string, instanceId string) error {
 	klog.Infof("Deregistering instance from targetGroup: %s", targetGroupArn)
 
 	for {
 		instanceDraining := false
 
-		response, err := c.ELBV2().DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{
+		response, err := c.ELBV2().DescribeTargetHealth(ctx, &elbv2.DescribeTargetHealthInput{
 			TargetGroupArn: aws.String(targetGroupArn),
-			Targets: []*elbv2.TargetDescription{{
+			Targets: []elbv2types.TargetDescription{{
 				Id: aws.String(instanceId),
 			}},
 		})
@@ -742,10 +733,10 @@ func deregisterInstanceFromTargetGroup(c AWSCloud, targetGroupArn string, instan
 		// there will be only one target in the DescribeTargetHealth response.
 		// DescribeTargetHealth response will contain a target even if the targetId doesn't exist.
 		// all other states besides TargetHealthStateUnused means that the instance may still be serving traffic.
-		if aws.StringValue(response.TargetHealthDescriptions[0].TargetHealth.State) != elbv2.TargetHealthStateEnumUnused {
-			_, err = c.ELBV2().DeregisterTargets(&elbv2.DeregisterTargetsInput{
+		if response.TargetHealthDescriptions[0].TargetHealth.State != elbv2types.TargetHealthStateEnumUnused {
+			_, err = c.ELBV2().DeregisterTargets(ctx, &elbv2.DeregisterTargetsInput{
 				TargetGroupArn: aws.String(targetGroupArn),
-				Targets: []*elbv2.TargetDescription{{
+				Targets: []elbv2types.TargetDescription{{
 					Id: aws.String(instanceId),
 				}},
 			})
@@ -1666,21 +1657,22 @@ func (c *awsCloudImplementation) RemoveELBV2Tags(ResourceArn string, tags map[st
 }
 
 func removeELBV2Tags(c AWSCloud, ResourceArn string, tags map[string]string) error {
+	ctx := context.TODO()
 	if len(tags) == 0 {
 		return nil
 	}
 
-	elbTagKeysOnly := []*string{}
+	elbTagKeysOnly := []string{}
 	for k := range tags {
-		elbTagKeysOnly = append(elbTagKeysOnly, aws.String(k))
+		elbTagKeysOnly = append(elbTagKeysOnly, k)
 	}
 
 	request := &elbv2.RemoveTagsInput{
 		TagKeys:      elbTagKeysOnly,
-		ResourceArns: []*string{&ResourceArn},
+		ResourceArns: []string{ResourceArn},
 	}
 
-	_, err := c.ELBV2().RemoveTags(request)
+	_, err := c.ELBV2().RemoveTags(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating tags on %v: %v", ResourceArn, err)
 	}
@@ -1693,12 +1685,13 @@ func (c *awsCloudImplementation) GetELBV2Tags(ResourceArn string) (map[string]st
 }
 
 func getELBV2Tags(c AWSCloud, ResourceArn string) (map[string]string, error) {
+	ctx := context.TODO()
 	tags := map[string]string{}
 
 	request := &elbv2.DescribeTagsInput{
-		ResourceArns: []*string{&ResourceArn},
+		ResourceArns: []string{ResourceArn},
 	}
-	response, err := c.ELBV2().DescribeTags(request)
+	response, err := c.ELBV2().DescribeTags(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing tags on %v: %v", ResourceArn, err)
 	}
@@ -1717,20 +1710,21 @@ func (c *awsCloudImplementation) CreateELBV2Tags(ResourceArn string, tags map[st
 }
 
 func createELBV2Tags(c AWSCloud, ResourceArn string, tags map[string]string) error {
+	ctx := context.TODO()
 	if len(tags) == 0 {
 		return nil
 	}
 
-	elbv2Tags := []*elbv2.Tag{}
+	elbv2Tags := []elbv2types.Tag{}
 	for k, v := range tags {
-		elbv2Tags = append(elbv2Tags, &elbv2.Tag{Key: aws.String(k), Value: aws.String(v)})
+		elbv2Tags = append(elbv2Tags, elbv2types.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 	request := &elbv2.AddTagsInput{
 		Tags:         elbv2Tags,
-		ResourceArns: []*string{&ResourceArn},
+		ResourceArns: []string{ResourceArn},
 	}
 
-	_, err := c.ELBV2().AddTags(request)
+	_, err := c.ELBV2().AddTags(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating tags on %v: %v", ResourceArn, err)
 	}
@@ -1912,24 +1906,24 @@ func findELBV2NetworkInterfaces(c AWSCloud, vpcID, lbName string) ([]*ec2.Networ
 	return found, nil
 }
 
-func (c *awsCloudImplementation) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
+func (c *awsCloudImplementation) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]elbv2types.Tag, error) {
 	return describeELBV2Tags(c, loadBalancerArns)
 }
 
-func describeELBV2Tags(c AWSCloud, loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
+func describeELBV2Tags(c AWSCloud, loadBalancerArns []string) (map[string][]elbv2types.Tag, error) {
 	// TODO: Filter by cluster?
-
+	ctx := context.TODO()
 	request := &elbv2.DescribeTagsInput{}
-	request.ResourceArns = aws.StringSlice(loadBalancerArns)
+	request.ResourceArns = loadBalancerArns
 
 	// TODO: Cache?
 	klog.V(2).Infof("Querying ELBV2 api for tags for %s", loadBalancerArns)
-	response, err := c.ELBV2().DescribeTags(request)
+	response, err := c.ELBV2().DescribeTags(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
-	tagMap := make(map[string][]*elbv2.Tag)
+	tagMap := make(map[string][]elbv2types.Tag)
 	for _, tagset := range response.TagDescriptions {
 		tagMap[aws.StringValue(tagset.ResourceArn)] = tagset.Tags
 	}
@@ -2185,7 +2179,7 @@ func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
 	return c.elb
 }
 
-func (c *awsCloudImplementation) ELBV2() elbv2iface.ELBV2API {
+func (c *awsCloudImplementation) ELBV2() awsinterfaces.ELBV2API {
 	return c.elbv2
 }
 

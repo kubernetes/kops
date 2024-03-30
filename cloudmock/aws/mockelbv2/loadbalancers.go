@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersInput) (*elbv2.DescribeLoadBalancersOutput, error) {
+func (m *MockELBV2) DescribeLoadBalancers(ctx context.Context, request *elbv2.DescribeLoadBalancersInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeLoadBalancersOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -40,13 +40,13 @@ func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersIn
 		klog.Fatalf("Marker not implemented")
 	}
 
-	var elbs []*elbv2.LoadBalancer
+	var elbs []elbv2types.LoadBalancer
 	for _, elb := range m.LoadBalancers {
 		match := false
 
 		if len(request.LoadBalancerArns) > 0 {
 			for _, name := range request.LoadBalancerArns {
-				if aws.StringValue(elb.description.LoadBalancerArn) == aws.StringValue(name) {
+				if aws.ToString(elb.description.LoadBalancerArn) == name {
 					match = true
 				}
 			}
@@ -55,7 +55,7 @@ func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersIn
 		}
 
 		if match {
-			elbs = append(elbs, &elb.description)
+			elbs = append(elbs, elb.description)
 		}
 	}
 
@@ -64,59 +64,43 @@ func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersIn
 	}, nil
 }
 
-func (m *MockELBV2) DescribeLoadBalancersPages(request *elbv2.DescribeLoadBalancersInput, callback func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
-	// For the mock, we just send everything in one page
-	page, err := m.DescribeLoadBalancers(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockELBV2) DescribeLoadBalancersPagesWithContext(ctx context.Context, request *elbv2.DescribeLoadBalancersInput, callback func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool), opts ...request.Option) error {
-	return m.DescribeLoadBalancersPages(request, callback)
-}
-
-func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (*elbv2.CreateLoadBalancerOutput, error) {
+func (m *MockELBV2) CreateLoadBalancer(ctx context.Context, request *elbv2.CreateLoadBalancerInput, optFns ...func(*elbv2.Options)) (*elbv2.CreateLoadBalancerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("CreateLoadBalancer v2 %v", request)
 
-	lb := elbv2.LoadBalancer{
+	lb := elbv2types.LoadBalancer{
 		LoadBalancerName:      request.Name,
 		Scheme:                request.Scheme,
 		SecurityGroups:        request.SecurityGroups,
 		Type:                  request.Type,
 		IpAddressType:         request.IpAddressType,
-		DNSName:               aws.String(fmt.Sprintf("%v.amazonaws.com", aws.StringValue(request.Name))),
+		DNSName:               aws.String(fmt.Sprintf("%v.amazonaws.com", aws.ToString(request.Name))),
 		CanonicalHostedZoneId: aws.String("HZ123456"),
 	}
-	zones := make([]*elbv2.AvailabilityZone, 0)
+	zones := make([]elbv2types.AvailabilityZone, 0)
 	vpc := "vpc-1"
 	for _, subnet := range request.Subnets {
-		zones = append(zones, &elbv2.AvailabilityZone{
-			SubnetId: subnet,
+		zones = append(zones, elbv2types.AvailabilityZone{
+			SubnetId: aws.String(subnet),
 		})
 		subnetsOutput, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
-			SubnetIds: []*string{subnet},
+			SubnetIds: []*string{aws.String(subnet)},
 		})
 		if err == nil {
 			vpc = *subnetsOutput.Subnets[0].VpcId
 		}
 	}
 	for _, subnetMapping := range request.SubnetMappings {
-		var lbAddrs []*elbv2.LoadBalancerAddress
+		var lbAddrs []elbv2types.LoadBalancerAddress
 		if subnetMapping.PrivateIPv4Address != nil {
-			lbAddrs = append(lbAddrs, &elbv2.LoadBalancerAddress{PrivateIPv4Address: subnetMapping.PrivateIPv4Address})
+			lbAddrs = append(lbAddrs, elbv2types.LoadBalancerAddress{PrivateIPv4Address: subnetMapping.PrivateIPv4Address})
 		}
 		if subnetMapping.AllocationId != nil {
-			lbAddrs = append(lbAddrs, &elbv2.LoadBalancerAddress{AllocationId: subnetMapping.AllocationId})
+			lbAddrs = append(lbAddrs, elbv2types.LoadBalancerAddress{AllocationId: subnetMapping.AllocationId})
 		}
-		zones = append(zones, &elbv2.AvailabilityZone{
+		zones = append(zones, elbv2types.AvailabilityZone{
 			SubnetId:              subnetMapping.SubnetId,
 			LoadBalancerAddresses: lbAddrs,
 		})
@@ -132,7 +116,7 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 	lb.VpcId = aws.String(vpc)
 
 	m.lbCount++
-	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:loadbalancer/net/%v/%v", aws.StringValue(request.Name), m.lbCount)
+	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:loadbalancer/net/%v/%v", aws.ToString(request.Name), m.lbCount)
 
 	lb.LoadBalancerArn = aws.String(arn)
 
@@ -140,52 +124,52 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 		m.LoadBalancers = make(map[string]*loadBalancer)
 	}
 	if m.LBAttributes == nil {
-		m.LBAttributes = make(map[string][]*elbv2.LoadBalancerAttribute)
+		m.LBAttributes = make(map[string][]elbv2types.LoadBalancerAttribute)
 	}
 	if m.Tags == nil {
-		m.Tags = make(map[string]*elbv2.TagDescription)
+		m.Tags = make(map[string]elbv2types.TagDescription)
 	}
 
 	m.LoadBalancers[arn] = &loadBalancer{description: lb}
-	m.LBAttributes[arn] = make([]*elbv2.LoadBalancerAttribute, 0)
-	m.Tags[arn] = &elbv2.TagDescription{
+	m.LBAttributes[arn] = make([]elbv2types.LoadBalancerAttribute, 0)
+	m.Tags[arn] = elbv2types.TagDescription{
 		ResourceArn: aws.String(arn),
 		Tags:        request.Tags,
 	}
 
-	return &elbv2.CreateLoadBalancerOutput{LoadBalancers: []*elbv2.LoadBalancer{&lb}}, nil
+	return &elbv2.CreateLoadBalancerOutput{LoadBalancers: []elbv2types.LoadBalancer{lb}}, nil
 }
 
-func (m *MockELBV2) DescribeLoadBalancerAttributes(request *elbv2.DescribeLoadBalancerAttributesInput) (*elbv2.DescribeLoadBalancerAttributesOutput, error) {
+func (m *MockELBV2) DescribeLoadBalancerAttributes(ctx context.Context, request *elbv2.DescribeLoadBalancerAttributesInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeLoadBalancerAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeLoadBalancerAttributes v2 %v", request)
 
-	if attr, ok := m.LBAttributes[aws.StringValue(request.LoadBalancerArn)]; ok {
+	if attr, ok := m.LBAttributes[aws.ToString(request.LoadBalancerArn)]; ok {
 		return &elbv2.DescribeLoadBalancerAttributesOutput{
 			Attributes: attr,
 		}, nil
 	}
-	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.StringValue(request.LoadBalancerArn))
+	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.ToString(request.LoadBalancerArn))
 }
 
-func (m *MockELBV2) ModifyLoadBalancerAttributes(request *elbv2.ModifyLoadBalancerAttributesInput) (*elbv2.ModifyLoadBalancerAttributesOutput, error) {
+func (m *MockELBV2) ModifyLoadBalancerAttributes(ctx context.Context, request *elbv2.ModifyLoadBalancerAttributesInput, optFns ...func(*elbv2.Options)) (*elbv2.ModifyLoadBalancerAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("ModifyLoadBalancerAttributes v2 %v", request)
 
 	if m.LBAttributes == nil {
-		m.LBAttributes = make(map[string][]*elbv2.LoadBalancerAttribute)
+		m.LBAttributes = make(map[string][]elbv2types.LoadBalancerAttribute)
 	}
 
-	arn := aws.StringValue(request.LoadBalancerArn)
+	arn := aws.ToString(request.LoadBalancerArn)
 	if _, ok := m.LBAttributes[arn]; ok {
 		for _, reqAttr := range request.Attributes {
 			found := false
 			for _, lbAttr := range m.LBAttributes[arn] {
-				if aws.StringValue(reqAttr.Key) == aws.StringValue(lbAttr.Key) {
+				if aws.ToString(reqAttr.Key) == aws.ToString(lbAttr.Key) {
 					lbAttr.Value = reqAttr.Value
 					found = true
 				}
@@ -198,39 +182,39 @@ func (m *MockELBV2) ModifyLoadBalancerAttributes(request *elbv2.ModifyLoadBalanc
 			Attributes: m.LBAttributes[arn],
 		}, nil
 	}
-	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.StringValue(request.LoadBalancerArn))
+	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.ToString(request.LoadBalancerArn))
 }
 
-func (m *MockELBV2) SetSecurityGroups(request *elbv2.SetSecurityGroupsInput) (*elbv2.SetSecurityGroupsOutput, error) {
+func (m *MockELBV2) SetSecurityGroups(ctx context.Context, request *elbv2.SetSecurityGroupsInput, optFns ...func(*elbv2.Options)) (*elbv2.SetSecurityGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	arn := aws.StringValue(request.LoadBalancerArn)
+	arn := aws.ToString(request.LoadBalancerArn)
 	if lb, ok := m.LoadBalancers[arn]; ok {
 		lb.description.SecurityGroups = request.SecurityGroups
 		return &elbv2.SetSecurityGroupsOutput{
 			SecurityGroupIds: request.SecurityGroups,
 		}, nil
 	}
-	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.StringValue(request.LoadBalancerArn))
+	return nil, fmt.Errorf("LoadBalancerNotFound: %v", aws.ToString(request.LoadBalancerArn))
 }
 
-func (m *MockELBV2) SetSubnets(request *elbv2.SetSubnetsInput) (*elbv2.SetSubnetsOutput, error) {
+func (m *MockELBV2) SetSubnets(ctx context.Context, request *elbv2.SetSubnetsInput, optFns ...func(*elbv2.Options)) (*elbv2.SetSubnetsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	klog.Fatalf("elbv2.SetSubnets() not implemented")
 	return nil, nil
 }
 
-func (m *MockELBV2) DeleteLoadBalancer(request *elbv2.DeleteLoadBalancerInput) (*elbv2.DeleteLoadBalancerOutput, error) {
+func (m *MockELBV2) DeleteLoadBalancer(ctx context.Context, request *elbv2.DeleteLoadBalancerInput, optFns ...func(*elbv2.Options)) (*elbv2.DeleteLoadBalancerOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteLoadBalancer %v", request)
 
-	arn := aws.StringValue(request.LoadBalancerArn)
+	arn := aws.ToString(request.LoadBalancerArn)
 	delete(m.LoadBalancers, arn)
 	for listenerARN, listener := range m.Listeners {
-		if aws.StringValue(listener.description.LoadBalancerArn) == arn {
+		if aws.ToString(listener.description.LoadBalancerArn) == arn {
 			delete(m.Listeners, listenerARN)
 		}
 	}

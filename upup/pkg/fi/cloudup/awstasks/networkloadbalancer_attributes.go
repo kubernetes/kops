@@ -17,11 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -43,12 +45,12 @@ type terraformNetworkLoadBalancerAccessLog struct {
 	S3BucketPrefix *string `cty:"prefix"`
 }
 
-func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn string) ([]*elbv2.LoadBalancerAttribute, error) {
+func findNetworkLoadBalancerAttributes(ctx context.Context, cloud awsup.AWSCloud, LoadBalancerArn string) ([]elbv2types.LoadBalancerAttribute, error) {
 	request := &elbv2.DescribeLoadBalancerAttributesInput{
 		LoadBalancerArn: aws.String(LoadBalancerArn),
 	}
 
-	response, err := cloud.ELBV2().DescribeLoadBalancerAttributes(request)
+	response, err := cloud.ELBV2().DescribeLoadBalancerAttributes(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +69,8 @@ func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn str
 }
 
 func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer, loadBalancerArn string) error {
+	ctx := context.TODO()
+
 	if changes.CrossZoneLoadBalancing == nil && changes.AccessLog == nil {
 		klog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
 		return nil
@@ -76,33 +80,33 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		LoadBalancerArn: aws.String(loadBalancerArn),
 	}
 
-	var attributes []*elbv2.LoadBalancerAttribute
+	var attributes []elbv2types.LoadBalancerAttribute
 
-	attribute := &elbv2.LoadBalancerAttribute{}
+	attribute := elbv2types.LoadBalancerAttribute{}
 	attribute.Key = aws.String("load_balancing.cross_zone.enabled")
 	if e.CrossZoneLoadBalancing == nil {
 		attribute.Value = aws.String("false")
 	} else {
-		attribute.Value = aws.String(strconv.FormatBool(aws.BoolValue(e.CrossZoneLoadBalancing)))
+		attribute.Value = aws.String(strconv.FormatBool(aws.ToBool(e.CrossZoneLoadBalancing)))
 	}
 	attributes = append(attributes, attribute)
 
 	if e.AccessLog != nil {
-		attr := &elbv2.LoadBalancerAttribute{
+		attr := elbv2types.LoadBalancerAttribute{
 			Key:   aws.String("access_logs.s3.enabled"),
-			Value: aws.String(strconv.FormatBool(aws.BoolValue(e.AccessLog.Enabled))),
+			Value: aws.String(strconv.FormatBool(aws.ToBool(e.AccessLog.Enabled))),
 		}
 		attributes = append(attributes, attr)
 	}
 	if e.AccessLog != nil && e.AccessLog.S3BucketName != nil {
-		attr := &elbv2.LoadBalancerAttribute{
+		attr := elbv2types.LoadBalancerAttribute{
 			Key:   aws.String("access_logs.s3.bucket"),
 			Value: e.AccessLog.S3BucketName,
 		}
 		attributes = append(attributes, attr)
 	}
 	if e.AccessLog != nil && e.AccessLog.S3BucketPrefix != nil {
-		attr := &elbv2.LoadBalancerAttribute{
+		attr := elbv2types.LoadBalancerAttribute{
 			Key:   aws.String("access_logs.s3.prefix"),
 			Value: e.AccessLog.S3BucketPrefix,
 		}
@@ -113,7 +117,7 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 
 	klog.V(2).Infof("Configuring NLB attributes for NLB %q", loadBalancerArn)
 
-	response, err := t.Cloud.ELBV2().ModifyLoadBalancerAttributes(request)
+	response, err := t.Cloud.ELBV2().ModifyLoadBalancerAttributes(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error configuring NLB attributes for NLB %q: %v", loadBalancerArn, err)
 	}

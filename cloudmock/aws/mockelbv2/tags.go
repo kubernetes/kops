@@ -19,39 +19,39 @@ package mockelbv2
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELBV2) AddTags(request *elbv2.AddTagsInput) (*elbv2.AddTagsOutput, error) {
+func (m *MockELBV2) AddTags(ctx context.Context, request *elbv2.AddTagsInput, optFns ...func(*elbv2.Options)) (*elbv2.AddTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("AddTags v2 %v", request)
 
 	if m.Tags == nil {
-		m.Tags = make(map[string]*elbv2.TagDescription)
+		m.Tags = make(map[string]elbv2types.TagDescription)
 	}
 
-	for _, reqARN := range request.ResourceArns {
-		arn := aws.StringValue(reqARN)
+	for _, arn := range request.ResourceArns {
 		if t, ok := m.Tags[arn]; ok {
 			for _, reqTag := range request.Tags {
 				found := false
 				for _, tag := range t.Tags {
-					if aws.StringValue(reqTag.Key) == aws.StringValue(tag.Key) {
+					if aws.ToString(reqTag.Key) == aws.ToString(tag.Key) {
 						tag.Value = reqTag.Value
 					}
 				}
 				if !found {
-					m.Tags[arn].Tags = append(m.Tags[arn].Tags, reqTag)
+					tags := m.Tags[arn]
+					tags.Tags = append(m.Tags[arn].Tags, reqTag)
 				}
 			}
 		} else {
-			m.Tags[arn] = &elbv2.TagDescription{
-				ResourceArn: reqARN,
+			m.Tags[arn] = elbv2types.TagDescription{
+				ResourceArn: aws.String(arn),
 				Tags:        request.Tags,
 			}
 		}
@@ -60,25 +60,21 @@ func (m *MockELBV2) AddTags(request *elbv2.AddTagsInput) (*elbv2.AddTagsOutput, 
 	return &elbv2.AddTagsOutput{}, nil
 }
 
-func (m *MockELBV2) DescribeTagsWithContext(ctx aws.Context, request *elbv2.DescribeTagsInput, opts ...request.Option) (*elbv2.DescribeTagsOutput, error) {
+func (m *MockELBV2) DescribeTags(ctx context.Context, request *elbv2.DescribeTagsInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeTags v2 %v", request)
 
 	resp := &elbv2.DescribeTagsOutput{
-		TagDescriptions: make([]*elbv2.TagDescription, 0),
+		TagDescriptions: make([]elbv2types.TagDescription, 0),
 	}
 	for tagARN, tagDesc := range m.Tags {
 		for _, reqARN := range request.ResourceArns {
-			if tagARN == aws.StringValue(reqARN) {
+			if tagARN == reqARN {
 				resp.TagDescriptions = append(resp.TagDescriptions, tagDesc)
 			}
 		}
 	}
 	return resp, nil
-}
-
-func (m *MockELBV2) DescribeTags(request *elbv2.DescribeTagsInput) (*elbv2.DescribeTagsOutput, error) {
-	return m.DescribeTagsWithContext(context.TODO(), request)
 }

@@ -27,10 +27,10 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
@@ -257,13 +257,13 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		AllocationId: aws.String("eipalloc-b2345678"),
 	}, "nat-b2345678")
 
-	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
+	mockELBV2.CreateTargetGroup(ctx, &elbv2.CreateTargetGroupInput{
 		Name: aws.String("my-external-tg-1"),
 	})
-	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
+	mockELBV2.CreateTargetGroup(ctx, &elbv2.CreateTargetGroupInput{
 		Name: aws.String("my-external-tg-2"),
 	})
-	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
+	mockELBV2.CreateTargetGroup(ctx, &elbv2.CreateTargetGroupInput{
 		Name: aws.String("my-external-tg-3"),
 	})
 

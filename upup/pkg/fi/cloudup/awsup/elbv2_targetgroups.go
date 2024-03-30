@@ -18,17 +18,17 @@ package awsup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/klog/v2"
 )
 
 type TargetGroupInfo struct {
-	TargetGroup *elbv2.TargetGroup
-	Tags        []*elbv2.Tag
+	TargetGroup elbv2types.TargetGroup
+	Tags        []elbv2types.Tag
 
 	// ARN holds the arn (amazon id) of the target group.
 	ARN string
@@ -43,8 +43,8 @@ func (i *TargetGroupInfo) NameTag() string {
 // GetTag returns the value of the tag with the given key.
 func (i *TargetGroupInfo) GetTag(key string) (string, bool) {
 	for _, tag := range i.Tags {
-		if aws.StringValue(tag.Key) == key {
-			return aws.StringValue(tag.Value), true
+		if aws.ToString(tag.Key) == key {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false
@@ -55,33 +55,36 @@ func ListELBV2TargetGroups(ctx context.Context, cloud AWSCloud) ([]*TargetGroupI
 
 	request := &elbv2.DescribeTargetGroupsInput{}
 	// ELBV2 DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
+	request.PageSize = aws.Int32(20)
 
 	byARN := make(map[string]*TargetGroupInfo)
 
-	var errs []error
-	err := cloud.ELBV2().DescribeTargetGroupsPagesWithContext(ctx, request, func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
-		if len(p.TargetGroups) == 0 {
-			return true
+	paginator := elbv2.NewDescribeTargetGroupsPaginator(cloud.ELBV2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing ELB TargetGroups: %w", err)
+		}
+		if len(page.TargetGroups) == 0 {
+			break
 		}
 
 		tagRequest := &elbv2.DescribeTagsInput{}
 
-		for _, tg := range p.TargetGroups {
-			arn := aws.StringValue(tg.TargetGroupArn)
+		for _, tg := range page.TargetGroups {
+			arn := aws.ToString(tg.TargetGroupArn)
 			byARN[arn] = &TargetGroupInfo{TargetGroup: tg, ARN: arn}
 
-			tagRequest.ResourceArns = append(tagRequest.ResourceArns, tg.TargetGroupArn)
+			tagRequest.ResourceArns = append(tagRequest.ResourceArns, aws.ToString(tg.TargetGroupArn))
 		}
 
-		tagResponse, err := cloud.ELBV2().DescribeTagsWithContext(ctx, tagRequest)
+		tagResponse, err := cloud.ELBV2().DescribeTags(ctx, tagRequest)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("listing ELB tags: %w", err))
-			return false
+			return nil, fmt.Errorf("listing ELB TargetGroup tags: %w", err)
 		}
 
 		for _, t := range tagResponse.TagDescriptions {
-			arn := aws.StringValue(t.ResourceArn)
+			arn := aws.ToString(t.ResourceArn)
 
 			info := byARN[arn]
 			if info == nil {
@@ -90,14 +93,6 @@ func ListELBV2TargetGroups(ctx context.Context, cloud AWSCloud) ([]*TargetGroupI
 
 			info.Tags = append(info.Tags, t.Tags...)
 		}
-
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("listing ELB TargetGroups: %w", err)
-	}
-	if len(errs) != 0 {
-		return nil, fmt.Errorf("listing ELB TargetGroups: %w", errors.Join(errs...))
 	}
 
 	cloudTags := cloud.Tags()
