@@ -1849,9 +1849,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 				}
 				return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 			}
-			for _, policy := range page.PolicyNames {
-				policyNames = append(policyNames, policy)
-			}
+			policyNames = append(policyNames, page.PolicyNames...)
 		}
 	}
 

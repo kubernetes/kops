@@ -175,9 +175,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 					}
 					return fmt.Errorf("error listing IAM role policies: %v", err)
 				}
-				for _, policy := range page.PolicyNames {
-					policyNames = append(policyNames, policy)
-				}
+				policyNames = append(policyNames, page.PolicyNames...)
 			}
 		}
 
