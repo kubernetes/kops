@@ -477,7 +477,6 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 	iamapi := cloud.(awsup.AWSCloud).IAM()
 	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
 	request := &awsiam.ListRolesInput{}
-	var getRoleErr error
 	paginator := awsiam.NewListRolesPaginator(iamapi, request)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
@@ -505,9 +504,6 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 				}
 			}
 		}
-	}
-	if getRoleErr != nil {
-		return getRoleErr
 	}
 	return nil
 }
