@@ -39,6 +39,7 @@ import (
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -50,7 +51,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
@@ -191,7 +191,7 @@ type AWSCloud interface {
 	DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error)
 
 	// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
-	AccountInfo() (string, string, error)
+	AccountInfo(ctx context.Context) (string, string, error)
 }
 
 type awsCloudImplementation struct {
@@ -202,7 +202,7 @@ type awsCloudImplementation struct {
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
-	sts         *sts.STS
+	sts         *sts.Client
 	sqs         *sqs.Client
 	eventbridge *eventbridge.Client
 	ssm         *ssm.Client
@@ -332,20 +332,15 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ec2.Handlers)
 
+		cfgV2, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+		if err != nil {
+			return c, fmt.Errorf("failed to load default aws config: %w", err)
+		}
+
 		c.iam = iam.NewFromConfig(cfgV2)
 		c.elb = elb.NewFromConfig(cfgV2)
 		c.elbv2 = elbv2.NewFromConfig(cfgV2)
-
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.sts = sts.New(sess, config)
-		c.sts.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.sts.Handlers)
+		c.sts = sts.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
 			Config:            *config,
@@ -2407,17 +2402,17 @@ func describeInstanceType(c AWSCloud, instanceType string) (*ec2.InstanceTypeInf
 }
 
 // AccountInfo returns the AWS account ID and AWS partition that we are deploying into
-func (c *awsCloudImplementation) AccountInfo() (string, string, error) {
+func (c *awsCloudImplementation) AccountInfo(ctx context.Context) (string, string, error) {
 	request := &sts.GetCallerIdentityInput{}
 
-	response, err := c.sts.GetCallerIdentity(request)
+	response, err := c.sts.GetCallerIdentity(ctx, request)
 	if err != nil {
 		return "", "", fmt.Errorf("error getting AWS account ID: %v", err)
 	}
 
 	arn, err := arn.Parse(aws.StringValue(response.Arn))
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to parse GetCallerIdentity ARN")
+		return "", "", fmt.Errorf("failed to parse GetCallerIdentity ARN: %w", err)
 	}
 
 	if arn.AccountID == "" {

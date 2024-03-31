@@ -427,7 +427,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
 
-			accountID, partition, err := awsCloud.AccountInfo()
+			accountID, partition, err := awsCloud.AccountInfo(ctx)
 			if err != nil {
 				return err
 			}
