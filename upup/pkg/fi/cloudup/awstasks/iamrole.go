@@ -19,7 +19,6 @@ package awstasks
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -69,8 +68,7 @@ func (e *IAMRole) Find(c *fi.CloudupContext) (*IAMRole, error) {
 	request := &iam.GetRoleInput{RoleName: e.Name}
 
 	response, err := cloud.IAM().GetRole(ctx, request)
-	var nse *iamtypes.NoSuchEntityException
-	if errors.As(err, &nse) {
+	if awsup.IsIAMNoSuchEntityException(err) {
 		return nil, nil
 	}
 	if err != nil {
@@ -171,8 +169,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			for paginator.HasMorePages() {
 				page, err := paginator.NextPage(ctx)
 				if err != nil {
-					var nse *iamtypes.NoSuchEntityException
-					if errors.As(err, &nse) {
+					if awsup.IsIAMNoSuchEntityException(err) {
 						klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy; will treat as already-deleted")
 						return nil
 					}
@@ -193,8 +190,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			for paginator.HasMorePages() {
 				page, err := paginator.NextPage(ctx)
 				if err != nil {
-					var nse *iamtypes.NoSuchEntityException
-					if errors.As(err, &nse) {
+					if awsup.IsIAMNoSuchEntityException(err) {
 						klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy; will treat as already-deleted")
 						return nil
 					}

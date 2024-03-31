@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,8 +54,7 @@ func findIAMInstanceProfile(ctx context.Context, cloud awsup.AWSCloud, name stri
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: aws.String(name)}
 
 	response, err := cloud.IAM().GetInstanceProfile(ctx, request)
-	var nse *iamtypes.NoSuchEntityException
-	if errors.As(err, &nse) {
+	if awsup.IsIAMNoSuchEntityException(err) {
 		return nil, nil
 	}
 

@@ -19,7 +19,6 @@ package awstasks
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"net/url"
@@ -28,7 +27,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
@@ -68,8 +66,7 @@ func (e *IAMRolePolicy) Find(c *fi.CloudupContext) (*IAMRolePolicy, error) {
 
 		response, err := cloud.IAM().ListAttachedRolePolicies(ctx, request)
 		if err != nil {
-			var nse *iamtypes.NoSuchEntityException
-			if errors.As(err, &nse) {
+			if awsup.IsIAMNoSuchEntityException(err) {
 				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy; will treat as already-deleted")
 				return nil, nil
 			}
@@ -102,8 +99,7 @@ func (e *IAMRolePolicy) Find(c *fi.CloudupContext) (*IAMRolePolicy, error) {
 
 	response, err := cloud.IAM().GetRolePolicy(ctx, request)
 	if err != nil {
-		var nse *iamtypes.NoSuchEntityException
-		if errors.As(err, &nse) {
+		if awsup.IsIAMNoSuchEntityException(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error getting role: %v", err)
@@ -238,8 +234,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		klog.V(2).Infof("Deleting role policy %s/%s", aws.ToString(e.Role.Name), aws.ToString(e.Name))
 		_, err = t.Cloud.IAM().DeleteRolePolicy(ctx, request)
 		if err != nil {
-			var nse *iamtypes.NoSuchEntityException
-			if errors.As(err, &nse) {
+			if awsup.IsIAMNoSuchEntityException(err) {
 				klog.V(2).Infof("Got NoSuchEntity deleting role policy %s/%s; assuming does not exist", aws.ToString(e.Role.Name), aws.ToString(e.Name))
 				return nil
 			}

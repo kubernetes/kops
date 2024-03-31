@@ -18,12 +18,10 @@ package awstasks
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -53,8 +51,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfile
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: e.InstanceProfile.Name}
 
 	response, err := cloud.IAM().GetInstanceProfile(ctx, request)
-	var nse *iamtypes.NoSuchEntityException
-	if errors.As(err, &nse) {
+	if awsup.IsIAMNoSuchEntityException(err) {
 		return nil, nil
 	}
 
