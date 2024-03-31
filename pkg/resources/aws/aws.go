@@ -23,6 +23,8 @@ import (
 	"strings"
 	"sync"
 
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -30,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/smithy-go"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -266,7 +267,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
+func matchesElbTags(tags map[string]string, actual []elbtypes.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -1411,6 +1412,7 @@ func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource)
 }
 
 func DeleteELB(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
@@ -1419,7 +1421,7 @@ func DeleteELB(cloud fi.Cloud, r *resources.Resource) error {
 	request := &elb.DeleteLoadBalancerInput{
 		LoadBalancerName: &id,
 	}
-	_, err := c.ELB().DeleteLoadBalancer(request)
+	_, err := c.ELB().DeleteLoadBalancer(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1496,10 +1498,10 @@ func ListELBs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 
 		var blocks []string
 		for _, sg := range elb.SecurityGroups {
-			blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+			blocks = append(blocks, "security-group:"+sg)
 		}
 		for _, s := range elb.Subnets {
-			blocks = append(blocks, "subnet:"+aws.StringValue(s))
+			blocks = append(blocks, "subnet:"+s)
 		}
 		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
 
@@ -1511,7 +1513,8 @@ func ListELBs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 	return resourceTrackers, nil
 }
 
-func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]*elb.Tag, error) {
+func DescribeELBs(cloud fi.Cloud) ([]elbtypes.LoadBalancerDescription, map[string][]elbtypes.Tag, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
@@ -1519,31 +1522,33 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 	request := &elb.DescribeLoadBalancersInput{}
 	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
+	request.PageSize = aws.Int32(20)
 
-	var elbs []*elb.LoadBalancerDescription
-	elbTags := make(map[string][]*elb.Tag)
+	var elbs []elbtypes.LoadBalancerDescription
+	elbTags := make(map[string][]elbtypes.Tag)
 
-	var innerError error
-	err := c.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancerDescriptions) == 0 {
-			return true
+	paginator := elb.NewDescribeLoadBalancersPaginator(c.ELB(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error listing elbs: %v", err)
 		}
-
+		if len(page.LoadBalancerDescriptions) == 0 {
+			continue
+		}
 		tagRequest := &elb.DescribeTagsInput{}
 
-		nameToELB := make(map[string]*elb.LoadBalancerDescription)
-		for _, elb := range p.LoadBalancerDescriptions {
+		nameToELB := make(map[string]elbtypes.LoadBalancerDescription)
+		for _, elb := range page.LoadBalancerDescriptions {
 			name := aws.StringValue(elb.LoadBalancerName)
 			nameToELB[name] = elb
 
-			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
+			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, aws.StringValue(elb.LoadBalancerName))
 		}
 
-		tagResponse, err := c.ELB().DescribeTags(tagRequest)
+		tagResponse, err := c.ELB().DescribeTags(ctx, tagRequest)
 		if err != nil {
-			innerError = fmt.Errorf("error listing elb Tags: %v", err)
-			return false
+			return nil, nil, fmt.Errorf("error listing elb Tags: %v", err)
 		}
 
 		for _, t := range tagResponse.TagDescriptions {
@@ -1558,14 +1563,6 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 			elb := nameToELB[elbName]
 			elbs = append(elbs, elb)
 		}
-
-		return true
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
 	}
 	return elbs, elbTags, nil
 }
@@ -2156,7 +2153,7 @@ func FindASGName(tags []*autoscaling.TagDescription) string {
 	return ""
 }
 
-func FindELBName(tags []*elb.Tag) string {
+func FindELBName(tags []elbtypes.Tag) string {
 	if name, found := awsup.FindELBTag(tags, "Name"); found {
 		return name
 	}

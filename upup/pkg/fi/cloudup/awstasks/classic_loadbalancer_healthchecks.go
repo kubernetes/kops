@@ -17,18 +17,18 @@ limitations under the License.
 package awstasks
 
 import (
-	"github.com/aws/aws-sdk-go/service/elb"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type ClassicLoadBalancerHealthCheck struct {
 	Target *string
 
-	HealthyThreshold   *int64
-	UnhealthyThreshold *int64
+	HealthyThreshold   *int32
+	UnhealthyThreshold *int32
 
-	Interval *int64
-	Timeout  *int64
+	Interval *int32
+	Timeout  *int32
 }
 
 var _ fi.CloudupHasDependencies = &ClassicLoadBalancerListener{}
@@ -37,7 +37,7 @@ func (e *ClassicLoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Clo
 	return nil
 }
 
-func findHealthCheck(lb *elb.LoadBalancerDescription) (*ClassicLoadBalancerHealthCheck, error) {
+func findHealthCheck(lb *elbtypes.LoadBalancerDescription) (*ClassicLoadBalancerHealthCheck, error) {
 	if lb == nil || lb.HealthCheck == nil {
 		return nil, nil
 	}

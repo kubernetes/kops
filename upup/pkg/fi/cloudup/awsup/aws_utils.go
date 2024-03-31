@@ -28,12 +28,12 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/truncate"
@@ -133,7 +133,7 @@ func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
 }
 
 // FindELBTag find the value of the tag with the specified key
-func FindELBTag(tags []*elb.Tag, key string) (string, bool) {
+func FindELBTag(tags []elbtypes.Tag, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.StringValue(tag.Key) {
 			return aws.StringValue(tag.Value), true

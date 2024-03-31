@@ -17,20 +17,21 @@ limitations under the License.
 package mockelb
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockELB) ModifyLoadBalancerAttributes(request *elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error) {
+func (m *MockELB) ModifyLoadBalancerAttributes(ctx context.Context, request *elb.ModifyLoadBalancerAttributesInput, optFns ...func(*elb.Options)) (*elb.ModifyLoadBalancerAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("ModifyLoadBalancerAttributes: %v", request)
 
-	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
+	lb := m.LoadBalancers[aws.ToString(request.LoadBalancerName)]
 	if lb == nil {
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}
@@ -45,13 +46,13 @@ func (m *MockELB) ModifyLoadBalancerAttributes(request *elb.ModifyLoadBalancerAt
 	}, nil
 }
 
-func (m *MockELB) DescribeLoadBalancerAttributes(request *elb.DescribeLoadBalancerAttributesInput) (*elb.DescribeLoadBalancerAttributesOutput, error) {
+func (m *MockELB) DescribeLoadBalancerAttributes(ctx context.Context, request *elb.DescribeLoadBalancerAttributesInput, optFns ...func(*elb.Options)) (*elb.DescribeLoadBalancerAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeLoadBalancerAttributes: %v", request)
 
-	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
+	lb := m.LoadBalancers[aws.ToString(request.LoadBalancerName)]
 	if lb == nil {
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}

@@ -17,17 +17,19 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 type ClassicLoadBalancerAccessLog struct {
-	EmitInterval   *int64
+	EmitInterval   *int32
 	Enabled        *bool
 	S3BucketName   *string
 	S3BucketPrefix *string
@@ -38,7 +40,7 @@ func (_ *ClassicLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Cloud
 }
 
 type terraformLoadBalancerAccessLog struct {
-	EmitInterval   *int64  `cty:"interval"`
+	EmitInterval   *int32  `cty:"interval"`
 	Enabled        *bool   `cty:"enabled"`
 	S3BucketName   *string `cty:"bucket"`
 	S3BucketPrefix *string `cty:"bucket_prefix"`
@@ -55,7 +57,7 @@ type terraformLoadBalancerAccessLog struct {
 
 type ClassicLoadBalancerConnectionDraining struct {
 	Enabled *bool
-	Timeout *int64
+	Timeout *int32
 }
 
 func (_ *ClassicLoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
@@ -71,19 +73,19 @@ func (_ *ClassicLoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[st
 }
 
 type ClassicLoadBalancerConnectionSettings struct {
-	IdleTimeout *int64
+	IdleTimeout *int32
 }
 
 func (_ *ClassicLoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
-func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttributes, error) {
+func findELBAttributes(ctx context.Context, cloud awsup.AWSCloud, name string) (*elbtypes.LoadBalancerAttributes, error) {
 	request := &elb.DescribeLoadBalancerAttributesInput{
 		LoadBalancerName: aws.String(name),
 	}
 
-	response, err := cloud.ELB().DescribeLoadBalancerAttributes(request)
+	response, err := cloud.ELB().DescribeLoadBalancerAttributes(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -102,34 +104,35 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		klog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
 		return nil
 	}
+	ctx := context.TODO()
 
 	loadBalancerName := fi.ValueOf(e.LoadBalancerName)
 
 	request := &elb.ModifyLoadBalancerAttributesInput{}
 	request.LoadBalancerName = e.LoadBalancerName
-	request.LoadBalancerAttributes = &elb.LoadBalancerAttributes{}
+	request.LoadBalancerAttributes = &elbtypes.LoadBalancerAttributes{}
 
 	// Setting mandatory attributes to default values if empty
-	request.LoadBalancerAttributes.AccessLog = &elb.AccessLog{}
+	request.LoadBalancerAttributes.AccessLog = &elbtypes.AccessLog{}
 	if e.AccessLog == nil || e.AccessLog.Enabled == nil {
-		request.LoadBalancerAttributes.AccessLog.Enabled = fi.PtrTo(false)
+		request.LoadBalancerAttributes.AccessLog.Enabled = false
 	}
-	request.LoadBalancerAttributes.ConnectionDraining = &elb.ConnectionDraining{}
+	request.LoadBalancerAttributes.ConnectionDraining = &elbtypes.ConnectionDraining{}
 	if e.ConnectionDraining == nil || e.ConnectionDraining.Enabled == nil {
-		request.LoadBalancerAttributes.ConnectionDraining.Enabled = fi.PtrTo(false)
+		request.LoadBalancerAttributes.ConnectionDraining.Enabled = false
 	}
 	if e.ConnectionDraining == nil || e.ConnectionDraining.Timeout == nil {
-		request.LoadBalancerAttributes.ConnectionDraining.Timeout = fi.PtrTo(int64(300))
+		request.LoadBalancerAttributes.ConnectionDraining.Timeout = aws.Int32(300)
 	}
-	request.LoadBalancerAttributes.ConnectionSettings = &elb.ConnectionSettings{}
+	request.LoadBalancerAttributes.ConnectionSettings = &elbtypes.ConnectionSettings{}
 	if e.ConnectionSettings == nil || e.ConnectionSettings.IdleTimeout == nil {
-		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = fi.PtrTo(int64(60))
+		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = aws.Int32(60)
 	}
-	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elb.CrossZoneLoadBalancing{}
+	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elbtypes.CrossZoneLoadBalancing{}
 	if e.CrossZoneLoadBalancing == nil || e.CrossZoneLoadBalancing.Enabled == nil {
-		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.PtrTo(false)
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = false
 	} else {
-		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = e.CrossZoneLoadBalancing.Enabled
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = aws.ToBool(e.CrossZoneLoadBalancing.Enabled)
 	}
 
 	// Setting non mandatory values only if not empty
@@ -147,7 +150,7 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 	//}
 
 	if e.AccessLog != nil && e.AccessLog.Enabled != nil {
-		request.LoadBalancerAttributes.AccessLog.Enabled = e.AccessLog.Enabled
+		request.LoadBalancerAttributes.AccessLog.Enabled = aws.ToBool(e.AccessLog.Enabled)
 	}
 	if e.AccessLog != nil && e.AccessLog.EmitInterval != nil {
 		request.LoadBalancerAttributes.AccessLog.EmitInterval = e.AccessLog.EmitInterval
@@ -159,7 +162,7 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		request.LoadBalancerAttributes.AccessLog.S3BucketPrefix = e.AccessLog.S3BucketPrefix
 	}
 	if e.ConnectionDraining != nil && e.ConnectionDraining.Enabled != nil {
-		request.LoadBalancerAttributes.ConnectionDraining.Enabled = e.ConnectionDraining.Enabled
+		request.LoadBalancerAttributes.ConnectionDraining.Enabled = aws.ToBool(e.ConnectionDraining.Enabled)
 	}
 	if e.ConnectionDraining != nil && e.ConnectionDraining.Timeout != nil {
 		request.LoadBalancerAttributes.ConnectionDraining.Timeout = e.ConnectionDraining.Timeout
@@ -170,7 +173,7 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 
 	klog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
 
-	response, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
+	response, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", loadBalancerName, err)
 	}

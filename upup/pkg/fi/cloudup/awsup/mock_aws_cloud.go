@@ -21,14 +21,13 @@ import (
 	"fmt"
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -79,7 +78,7 @@ type MockCloud struct {
 	MockEC2         ec2iface.EC2API
 	MockIAM         awsinterfaces.IAMAPI
 	MockRoute53     route53iface.Route53API
-	MockELB         elbiface.ELBAPI
+	MockELB         awsinterfaces.ELBAPI
 	MockELBV2       awsinterfaces.ELBV2API
 	MockSpotinst    spotinst.Cloud
 	MockSQS         awsinterfaces.SQSAPI
@@ -200,11 +199,11 @@ func (c *MockAWSCloud) RemoveELBV2Tags(ResourceArn string, tags map[string]strin
 	return removeELBV2Tags(c, ResourceArn, tags)
 }
 
-func (c *MockAWSCloud) FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error) {
+func (c *MockAWSCloud) FindELBByNameTag(findNameTag string) (*elbtypes.LoadBalancerDescription, error) {
 	return findELBByNameTag(c, findNameTag)
 }
 
-func (c *MockAWSCloud) DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+func (c *MockAWSCloud) DescribeELBTags(loadBalancerNames []string) (map[string][]elbtypes.Tag, error) {
 	return describeELBTags(c, loadBalancerNames)
 }
 
@@ -249,7 +248,7 @@ func (c *MockAWSCloud) IAM() awsinterfaces.IAMAPI {
 	return c.MockIAM
 }
 
-func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
+func (c *MockAWSCloud) ELB() awsinterfaces.ELBAPI {
 	if c.MockELB == nil {
 		klog.Fatalf("MockAWSCloud MockELB not set")
 	}
