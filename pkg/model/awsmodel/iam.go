@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	awsIam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -476,9 +476,9 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 	ctx := context.Context()
 	iamapi := cloud.(awsup.AWSCloud).IAM()
 	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
-	request := &awsIam.ListRolesInput{}
+	request := &awsiam.ListRolesInput{}
 	var getRoleErr error
-	paginator := awsIam.NewListRolesPaginator(iamapi, request)
+	paginator := awsiam.NewListRolesPaginator(iamapi, request)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
@@ -488,7 +488,7 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 			if !strings.HasSuffix(fi.ValueOf(role.RoleName), "."+b.Cluster.ObjectMeta.Name) {
 				continue
 			}
-			getRequest := &awsIam.GetRoleInput{RoleName: role.RoleName}
+			getRequest := &awsiam.GetRoleInput{RoleName: role.RoleName}
 			roleOutput, err := iamapi.GetRole(ctx, getRequest)
 			if err != nil {
 				return fmt.Errorf("calling IAM GetRole on %s: %w", fi.ValueOf(role.RoleName), err)
