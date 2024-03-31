@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -84,7 +84,7 @@ func (s *VPCAmazonIPv6CIDRBlock) CheckChanges(a, e, changes *VPCAmazonIPv6CIDRBl
 }
 
 func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
-	shared := aws.BoolValue(e.Shared)
+	shared := aws.ToBool(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
 		// Verify that the Amazon IPv6 provided CIDR block was found.
@@ -111,7 +111,7 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a
 }
 
 func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
-	vpc, err := cloud.DescribeVPC(aws.StringValue(vpcID))
+	vpc, err := cloud.DescribeVPC(aws.ToString(vpcID))
 	if err != nil {
 		return nil, err
 	}
@@ -124,11 +124,11 @@ func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
 		}
 
 		// Ipv6CidrBlock is available only when state is "associated"
-		if aws.StringValue(association.Ipv6CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+		if aws.ToString(association.Ipv6CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
 			continue
 		}
 
-		if aws.StringValue(association.Ipv6Pool) == "Amazon" {
+		if aws.ToString(association.Ipv6Pool) == "Amazon" {
 			return association.Ipv6CidrBlock, nil
 		}
 

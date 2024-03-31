@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
@@ -104,12 +104,12 @@ func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 			continue
 		}
 
-		state := aws.StringValue(association.Ipv6CidrBlockState.State)
+		state := aws.ToString(association.Ipv6CidrBlockState.State)
 		if state != ec2.VpcCidrBlockStateCodeAssociated && state != ec2.VpcCidrBlockStateCodeAssociating {
 			continue
 		}
 
-		pool := aws.StringValue(association.Ipv6Pool)
+		pool := aws.ToString(association.Ipv6Pool)
 		if pool == "Amazon" {
 			actual.AmazonIPv6 = aws.Bool(true)
 			actual.IPv6CIDR = association.Ipv6CidrBlock

@@ -17,7 +17,7 @@ limitations under the License.
 package route53
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
@@ -60,7 +60,7 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 	var list []dnsprovider.ResourceRecordSet
 	err := rrsets.zone.zones.interface_.service.ListResourceRecordSetsPages(&input, func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 		for _, rrset := range page.ResourceRecordSets {
-			if aws.StringValue(rrset.Name) != name {
+			if aws.ToString(rrset.Name) != name {
 				return false
 			}
 			list = append(list, &ResourceRecordSet{rrset, &rrsets})

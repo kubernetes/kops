@@ -19,7 +19,7 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
@@ -44,7 +44,7 @@ func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.Ro
 		}
 
 		for _, rt := range response.RouteTables {
-			routeTables[aws.StringValue(rt.RouteTableId)] = rt
+			routeTables[aws.ToString(rt.RouteTableId)] = rt
 		}
 	}
 
@@ -79,7 +79,7 @@ func dumpRouteTable(op *resources.DumpOperation, r *resources.Resource) error {
 func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resources.Resource {
 	resourceTracker := &resources.Resource{
 		Name:    FindName(rt.Tags),
-		ID:      aws.StringValue(rt.RouteTableId),
+		ID:      aws.ToString(rt.RouteTableId),
 		Type:    ec2.ResourceTypeRouteTable,
 		Obj:     rt,
 		Dumper:  dumpRouteTable,
@@ -90,10 +90,10 @@ func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resource
 	var blocks []string
 	var blocked []string
 
-	blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
+	blocks = append(blocks, "vpc:"+aws.ToString(rt.VpcId))
 
 	for _, a := range rt.Associations {
-		blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
+		blocked = append(blocked, "subnet:"+aws.ToString(a.SubnetId))
 	}
 
 	resourceTracker.Blocks = blocks

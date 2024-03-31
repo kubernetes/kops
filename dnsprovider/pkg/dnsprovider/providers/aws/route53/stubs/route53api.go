@@ -20,7 +20,7 @@ package stubs
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 )
 
@@ -107,7 +107,7 @@ func (r *Route53APIStub) ListHostedZonesPages(input *route53.ListHostedZonesInpu
 }
 
 func (r *Route53APIStub) CreateHostedZone(input *route53.CreateHostedZoneInput) (*route53.CreateHostedZoneOutput, error) {
-	name := aws.StringValue(input.Name)
+	name := aws.ToString(input.Name)
 	id := "/hostedzone/" + name
 	if _, ok := r.zones[id]; ok {
 		return nil, fmt.Errorf("error creating hosted DNS zone: %s already exists", id)

@@ -21,7 +21,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"k8s.io/klog/v2"
 )
 
@@ -106,5 +106,5 @@ func GetMachineTypeInfo(c AWSCloud, machineType string) (*AWSMachineTypeInfo, er
 }
 
 func intValue(v *int64) int {
-	return int(aws.Int64Value(v))
+	return int(aws.ToInt64(v))
 }

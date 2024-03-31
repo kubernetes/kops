@@ -19,7 +19,7 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
@@ -112,7 +112,7 @@ func ListSecurityGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 		}
 
 		var blocks []string
-		blocks = append(blocks, "vpc:"+aws.StringValue(sg.VpcId))
+		blocks = append(blocks, "vpc:"+aws.ToString(sg.VpcId))
 
 		resourceTracker.Blocks = blocks
 
@@ -137,7 +137,7 @@ func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]*ec2
 		}
 
 		for _, group := range response.SecurityGroups {
-			groups[aws.StringValue(group.GroupId)] = group
+			groups[aws.ToString(group.GroupId)] = group
 		}
 	}
 

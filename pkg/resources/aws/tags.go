@@ -17,7 +17,7 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -29,7 +29,7 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 
 	var found *ec2.Tag
 	for _, tag := range tags {
-		if aws.StringValue(tag.Key) != tagKey {
+		if aws.ToString(tag.Key) != tagKey {
 			continue
 		}
 
@@ -37,7 +37,7 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 	}
 
 	if found != nil {
-		tagValue := aws.StringValue(found.Value)
+		tagValue := aws.ToString(found.Value)
 		switch tagValue {
 		case "owned":
 			return true
@@ -52,7 +52,7 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 
 	// Look for legacy tag - we assume that implies ownership
 	for _, tag := range tags {
-		if aws.StringValue(tag.Key) != awsup.TagClusterName {
+		if aws.ToString(tag.Key) != awsup.TagClusterName {
 			continue
 		}
 

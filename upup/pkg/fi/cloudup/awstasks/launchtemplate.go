@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -125,12 +125,12 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 		EbsVolumeThroughput:    t.RootVolumeThroughput,
 		EbsEncrypted:           t.RootVolumeEncryption,
 	}
-	if aws.BoolValue(t.RootVolumeEncryption) && aws.StringValue(t.RootVolumeKmsKey) != "" {
+	if aws.ToBool(t.RootVolumeEncryption) && aws.ToString(t.RootVolumeKmsKey) != "" {
 		b.EbsKmsKey = t.RootVolumeKmsKey
 	}
 
 	bm := map[string]*BlockDeviceMapping{
-		aws.StringValue(img.RootDeviceName): b,
+		aws.ToString(img.RootDeviceName): b,
 	}
 
 	return bm, nil
@@ -170,7 +170,7 @@ func (t *LaunchTemplate) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeleti
 	}
 
 	for _, lt := range list {
-		if aws.StringValue(lt.LaunchTemplateName) != aws.StringValue(t.Name) {
+		if aws.ToString(lt.LaunchTemplateName) != aws.ToString(t.Name) {
 			removals = append(removals, &deleteLaunchTemplate{lc: lt})
 		}
 	}

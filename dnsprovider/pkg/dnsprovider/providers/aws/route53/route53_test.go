@@ -27,7 +27,7 @@ import (
 	route53testing "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/tests"
 )

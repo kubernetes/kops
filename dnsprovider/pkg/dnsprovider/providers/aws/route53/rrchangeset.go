@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -142,7 +142,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 		if klog.V(8).Enabled() {
 			var sb bytes.Buffer
 			for _, change := range batch {
-				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))
+				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.ToString(change.Action), aws.ToString(change.ResourceRecordSet.Type), aws.ToString(change.ResourceRecordSet.Name)))
 			}
 
 			klog.V(8).Infof("Route53 MaxBatchSize: %v\n", MaxBatchSize)

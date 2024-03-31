@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
@@ -103,7 +103,7 @@ func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, erro
 			Tags: intersectTags(foundRule.Tags, e.Tags),
 		}
 
-		if aws.StringValue(actual.Protocol) == "-1" {
+		if aws.ToString(actual.Protocol) == "-1" {
 			actual.Protocol = nil
 		}
 
@@ -154,7 +154,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 	if e.FromPort != nil {
 		matchFromPort = *e.FromPort
 	}
-	if aws.Int64Value(rule.FromPort) != matchFromPort {
+	if aws.ToInt64(rule.FromPort) != matchFromPort {
 		return false
 	}
 
@@ -162,7 +162,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 	if e.ToPort != nil {
 		matchToPort = *e.ToPort
 	}
-	if aws.Int64Value(rule.ToPort) != matchToPort {
+	if aws.ToInt64(rule.ToPort) != matchToPort {
 		return false
 	}
 
@@ -170,7 +170,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 	if e.Protocol != nil {
 		matchProtocol = *e.Protocol
 	}
-	if aws.StringValue(rule.IpProtocol) != matchProtocol {
+	if aws.ToString(rule.IpProtocol) != matchProtocol {
 		return false
 	}
 

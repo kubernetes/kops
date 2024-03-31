@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
@@ -106,7 +106,7 @@ func (e *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 	} else if len(ngw.NatGatewayAddresses) == 1 {
 		actual.ElasticIP = &ElasticIP{ID: ngw.NatGatewayAddresses[0].AllocationId}
 	} else {
-		return nil, fmt.Errorf("found multiple elastic IPs attached to NatGateway %q", aws.StringValue(ngw.NatGatewayId))
+		return nil, fmt.Errorf("found multiple elastic IPs attached to NatGateway %q", aws.ToString(ngw.NatGatewayId))
 	}
 
 	// NATGateways now have names and tags so lets pull from there instead.
@@ -186,15 +186,15 @@ func findNatGatewayById(cloud awsup.AWSCloud, id *string) (*ec2.NatGateway, erro
 	request.NatGatewayIds = []*string{id}
 	response, err := cloud.EC2().DescribeNatGateways(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing NatGateway %q: %v", aws.StringValue(id), err)
+		return nil, fmt.Errorf("error listing NatGateway %q: %v", aws.ToString(id), err)
 	}
 
 	if response == nil || len(response.NatGateways) == 0 {
-		klog.V(2).Infof("Unable to find NatGateway %q", aws.StringValue(id))
+		klog.V(2).Infof("Unable to find NatGateway %q", aws.ToString(id))
 		return nil, nil
 	}
 	if len(response.NatGateways) != 1 {
-		return nil, fmt.Errorf("found multiple NatGateways with id %q", aws.StringValue(id))
+		return nil, fmt.Errorf("found multiple NatGateways with id %q", aws.ToString(id))
 	}
 	return response.NatGateways[0], nil
 }

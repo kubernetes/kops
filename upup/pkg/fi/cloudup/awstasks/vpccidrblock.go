@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -42,7 +42,7 @@ type VPCCIDRBlock struct {
 func (e *VPCCIDRBlock) Find(c *fi.CloudupContext) (*VPCCIDRBlock, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
-	vpcID := aws.StringValue(e.VPC.ID)
+	vpcID := aws.ToString(e.VPC.ID)
 
 	// If the VPC doesn't (yet) exist, there is no association
 	if vpcID == "" {
@@ -61,12 +61,12 @@ func (e *VPCCIDRBlock) Find(c *fi.CloudupContext) (*VPCCIDRBlock, error) {
 				continue
 			}
 
-			state := aws.StringValue(cba.CidrBlockState.State)
+			state := aws.ToString(cba.CidrBlockState.State)
 			if state != ec2.VpcCidrBlockStateCodeAssociated && state != ec2.VpcCidrBlockStateCodeAssociating {
 				continue
 			}
 
-			if aws.StringValue(cba.CidrBlock) == aws.StringValue(e.CIDRBlock) {
+			if aws.ToString(cba.CidrBlock) == aws.ToString(e.CIDRBlock) {
 				found = true
 				break
 			}
@@ -116,11 +116,11 @@ func (s *VPCCIDRBlock) CheckChanges(a, e, changes *VPCCIDRBlock) error {
 }
 
 func (_ *VPCCIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCCIDRBlock) error {
-	shared := aws.BoolValue(e.Shared)
+	shared := aws.ToBool(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
 		// Verify that the CIDR block was found.
-		return fmt.Errorf("CIDR block %q not found", aws.StringValue(e.CIDRBlock))
+		return fmt.Errorf("CIDR block %q not found", aws.ToString(e.CIDRBlock))
 	}
 
 	if changes.CIDRBlock != nil {
@@ -144,11 +144,11 @@ type terraformVPCCIDRBlock struct {
 }
 
 func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCCIDRBlock) error {
-	shared := aws.BoolValue(e.Shared)
+	shared := aws.ToBool(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
 		// Verify that the CIDR block was found.
-		return fmt.Errorf("CIDR block %q not found", aws.StringValue(e.CIDRBlock))
+		return fmt.Errorf("CIDR block %q not found", aws.ToString(e.CIDRBlock))
 	}
 
 	// When this has been enabled please fix test TestAdditionalCIDR in integration_test.go to run runTestAWS.

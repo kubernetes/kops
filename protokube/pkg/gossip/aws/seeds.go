@@ -19,7 +19,7 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"k8s.io/kops/protokube/pkg/gossip"
@@ -50,7 +50,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	err := p.ec2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
 		for _, r := range p.Reservations {
 			for _, i := range r.Instances {
-				ip := aws.StringValue(i.PrivateIpAddress)
+				ip := aws.ToString(i.PrivateIpAddress)
 				if ip != "" {
 					seeds = append(seeds, ip)
 				}

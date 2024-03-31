@@ -17,7 +17,7 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"k8s.io/kops/pkg/resources"
@@ -32,8 +32,8 @@ func DumpSubnet(op *resources.DumpOperation, r *resources.Resource) error {
 
 	ec2Subnet := r.Obj.(*ec2.Subnet)
 	s := &resources.Subnet{
-		ID:   aws.StringValue(ec2Subnet.SubnetId),
-		Zone: aws.StringValue(ec2Subnet.AvailabilityZone),
+		ID:   aws.ToString(ec2Subnet.SubnetId),
+		Zone: aws.ToString(ec2Subnet.AvailabilityZone),
 	}
 	op.Dump.Subnets = append(op.Dump.Subnets, s)
 

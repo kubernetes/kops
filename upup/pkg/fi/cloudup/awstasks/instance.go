@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -125,7 +125,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId, err)
 		}
 		if response.UserData != nil {
-			b, err := base64.StdEncoding.DecodeString(aws.StringValue(response.UserData.Value))
+			b, err := base64.StdEncoding.DecodeString(aws.ToString(response.UserData.Value))
 			if err != nil {
 				return nil, fmt.Errorf("error decoding EC2 UserData: %v", err)
 			}
@@ -146,7 +146,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 
 	associatePublicIpAddress := false
 	for _, ni := range i.NetworkInterfaces {
-		if aws.StringValue(ni.Association.PublicIp) != "" {
+		if aws.ToString(ni.Association.PublicIp) != "" {
 			associatePublicIpAddress = true
 		}
 	}
@@ -170,7 +170,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 			klog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
 		} else if image == nil {
 			klog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
-		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
+		} else if aws.ToString(image.ImageId) == *actual.ImageID {
 			klog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
 			actual.ImageID = e.ImageID
 		}

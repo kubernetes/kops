@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -244,7 +244,7 @@ func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
 	}
 
-	if aws.BoolValue(d.rule.IsEgress) {
+	if aws.ToBool(d.rule.IsEgress) {
 		request := &ec2.RevokeSecurityGroupEgressInput{
 			GroupId:              d.rule.GroupId,
 			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
@@ -278,20 +278,20 @@ func (d *deleteSecurityGroupRule) TaskName() string {
 func (d *deleteSecurityGroupRule) Item() string {
 	s := fi.ValueOf(d.rule.GroupId) + ":"
 	p := d.rule
-	if aws.Int64Value(p.FromPort) != 0 {
-		s += fmt.Sprintf(" port=%d", aws.Int64Value(p.FromPort))
-		if aws.Int64Value(p.ToPort) != aws.Int64Value(p.FromPort) {
-			s += fmt.Sprintf("-%d", aws.Int64Value(p.ToPort))
+	if aws.ToInt64(p.FromPort) != 0 {
+		s += fmt.Sprintf(" port=%d", aws.ToInt64(p.FromPort))
+		if aws.ToInt64(p.ToPort) != aws.ToInt64(p.FromPort) {
+			s += fmt.Sprintf("-%d", aws.ToInt64(p.ToPort))
 		}
 	}
-	if aws.StringValue(p.IpProtocol) != "-1" {
-		s += fmt.Sprintf(" protocol=%s", aws.StringValue(p.IpProtocol))
+	if aws.ToString(p.IpProtocol) != "-1" {
+		s += fmt.Sprintf(" protocol=%s", aws.ToString(p.IpProtocol))
 	}
 	if p.ReferencedGroupInfo != nil {
-		s += fmt.Sprintf(" group=%s", aws.StringValue(p.ReferencedGroupInfo.GroupId))
+		s += fmt.Sprintf(" group=%s", aws.ToString(p.ReferencedGroupInfo.GroupId))
 	}
-	s += fmt.Sprintf(" ip=%s", aws.StringValue(p.CidrIpv4))
-	s += fmt.Sprintf(" ipv6=%s", aws.StringValue(p.CidrIpv6))
+	s += fmt.Sprintf(" ip=%s", aws.ToString(p.CidrIpv4))
+	s += fmt.Sprintf(" ipv6=%s", aws.ToString(p.CidrIpv6))
 	// permissionString := fi.DebugAsJsonString(d.permission)
 	// s += permissionString
 

@@ -17,7 +17,7 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"k8s.io/kops/pkg/resources"
@@ -33,7 +33,7 @@ func DumpNatGateway(op *resources.DumpOperation, r *resources.Resource) error {
 }
 
 func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName string) *resources.Resource {
-	id := aws.StringValue(ngw.NatGatewayId)
+	id := aws.ToString(ngw.NatGatewayId)
 
 	r := &resources.Resource{
 		Name:    id,
@@ -52,7 +52,7 @@ func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName 
 	// The NAT gateway blocks deletion of any associated Elastic IPs
 	for _, address := range ngw.NatGatewayAddresses {
 		if address.AllocationId != nil {
-			r.Blocks = append(r.Blocks, TypeElasticIp+":"+aws.StringValue(address.AllocationId))
+			r.Blocks = append(r.Blocks, TypeElasticIp+":"+aws.ToString(address.AllocationId))
 		}
 	}
 
