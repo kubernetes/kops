@@ -30,8 +30,8 @@ func (m *MockIAM) GetRole(ctx context.Context, request *iam.GetRoleInput, optFns
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	role, ok := m.Roles[aws.ToString(request.RoleName)]
-	if !ok {
+	role := m.Roles[aws.ToString(request.RoleName)]
+	if role == nil {
 		return nil, &iamtypes.NoSuchEntityException{}
 	}
 	response := &iam.GetRoleOutput{
@@ -97,9 +97,9 @@ func (m *MockIAM) DeleteRole(ctx context.Context, request *iam.DeleteRoleInput, 
 	klog.Infof("DeleteRole: %v", request)
 
 	id := aws.ToString(request.RoleName)
-	_, ok := m.Roles[id]
-	if !ok {
-		return nil, fmt.Errorf("Role %q not found", id)
+	o := m.Roles[id]
+	if o == nil {
+		return nil, fmt.Errorf("role %q not found", id)
 	}
 	delete(m.Roles, id)
 

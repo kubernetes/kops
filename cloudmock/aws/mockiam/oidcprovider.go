@@ -93,8 +93,8 @@ func (m *MockIAM) DeleteOpenIDConnectProvider(ctx context.Context, request *iam.
 	klog.Infof("DeleteOpenIDConnectProvider: %v", request)
 
 	arn := aws.ToString(request.OpenIDConnectProviderArn)
-	_, ok := m.OIDCProviders[arn]
-	if !ok {
+	provider := m.OIDCProviders[arn]
+	if provider == nil {
 		return nil, fmt.Errorf("OIDCProvider %q not found", arn)
 	}
 	delete(m.OIDCProviders, arn)
