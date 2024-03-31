@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -30,10 +31,12 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/truncate"
@@ -152,18 +155,24 @@ func FindELBV2Tag(tags []elbv2types.Tag, key string) (string, bool) {
 	return "", false
 }
 
-// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
+// AWSErrorCode returns the aws error code, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Code()
 	}
+	if awserror, ok := err.(smithy.APIError); ok {
+		return awserror.ErrorCode()
+	}
 	return ""
 }
 
-// AWSErrorMessage returns the aws error message, if it is an awserr.Error, otherwise ""
+// AWSErrorMessage returns the aws error message, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorMessage(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Message()
+	}
+	if awserror, ok := err.(smithy.APIError); ok {
+		return awserror.ErrorMessage()
 	}
 	return ""
 }
@@ -235,4 +244,12 @@ func NameForExternalTargetGroup(targetGroupARN string) (string, error) {
 		return "", fmt.Errorf("error parsing target group ARN resource: %q", parsed.Resource)
 	}
 	return resource[1], nil
+}
+
+func IsIAMNoSuchEntityException(err error) bool {
+	if err == nil {
+		return false
+	}
+	var nse *iamtypes.NoSuchEntityException
+	return errors.As(err, &nse)
 }

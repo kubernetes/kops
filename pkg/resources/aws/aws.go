@@ -33,7 +33,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/aws/smithy-go"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
@@ -1844,16 +1843,13 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		for paginator.HasMorePages() {
 			page, err := paginator.NextPage(ctx)
 			if err != nil {
-				var nse *iamtypes.NoSuchEntityException
-				if errors.As(err, &nse) {
+				if awsup.IsIAMNoSuchEntityException(err) {
 					klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
 					return nil
 				}
 				return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 			}
-			for _, policy := range page.PolicyNames {
-				policyNames = append(policyNames, policy)
-			}
+			policyNames = append(policyNames, page.PolicyNames...)
 		}
 	}
 
@@ -1866,8 +1862,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		for paginator.HasMorePages() {
 			page, err := paginator.NextPage(ctx)
 			if err != nil {
-				var nse *iamtypes.NoSuchEntityException
-				if errors.As(err, &nse) {
+				if awsup.IsIAMNoSuchEntityException(err) {
 					klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
 					return nil
 				}
@@ -1939,12 +1934,11 @@ func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
 				roleOutput, err := c.IAM().GetRole(ctx, getRequest)
 				if err != nil {
-					var nse *iamtypes.NoSuchEntityException
-					if errors.As(err, &nse) {
-						klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, nse)
+					if awsup.IsIAMNoSuchEntityException(err) {
+						klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, err)
 						continue
-					} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
-						klog.Warningf("failed to determine ownership of %q: %v", name, awserror)
+					} else if awsup.AWSErrorCode(err) == "403" {
+						klog.Warningf("failed to determine ownership of %q: %v", name, err)
 						continue
 					}
 					return nil, fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
@@ -2024,12 +2018,11 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*reso
 			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
 			profileOutput, err := c.IAM().GetInstanceProfile(ctx, getRequest)
 			if err != nil {
-				var nse *iamtypes.NoSuchEntityException
-				if errors.As(err, &nse) {
-					klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, nse)
+				if awsup.IsIAMNoSuchEntityException(err) {
+					klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, err)
 					continue
-				} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
-					klog.Warningf("failed to determine ownership of %q: %v", *p.InstanceProfileName, awserror)
+				} else if awsup.AWSErrorCode(err) == "403" {
+					klog.Warningf("failed to determine ownership of %q: %v", *p.InstanceProfileName, err)
 					continue
 				}
 				return nil, fmt.Errorf("calling IAM GetInstanceProfile on %s: %w", name, err)
@@ -2080,12 +2073,11 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 			}
 			resp, err := c.IAM().GetOpenIDConnectProvider(ctx, descReq)
 			if err != nil {
-				var nse *iamtypes.NoSuchEntityException
-				if errors.As(err, &nse) {
-					klog.Warningf("could not find IAM OIDC Provider %q. Resource may already have been deleted: %v", aws.StringValue(arn), nse)
+				if awsup.IsIAMNoSuchEntityException(err) {
+					klog.Warningf("could not find IAM OIDC Provider %q. Resource may already have been deleted: %v", aws.StringValue(arn), err)
 					continue
-				} else if awserror, ok := err.(smithy.APIError); ok && awserror.ErrorCode() == "403" {
-					klog.Warningf("failed to determine ownership of %q: %v", aws.StringValue(arn), awserror)
+				} else if awsup.AWSErrorCode(err) == "403" {
+					klog.Warningf("failed to determine ownership of %q: %v", aws.StringValue(arn), err)
 					continue
 				}
 				return nil, fmt.Errorf("error getting IAM OIDC Provider %q: %w", aws.StringValue(arn), err)
@@ -2123,8 +2115,7 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 		}
 		_, err := c.IAM().DeleteOpenIDConnectProvider(ctx, request)
 		if err != nil {
-			var nse *iamtypes.NoSuchEntityException
-			if errors.As(err, &nse) {
+			if awsup.IsIAMNoSuchEntityException(err) {
 				klog.V(2).Infof("Got NoSuchEntity deleting IAM OIDC Provider %v; will treat as already-deleted", arn)
 				return nil
 			}

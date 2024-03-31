@@ -31,8 +31,8 @@ func (m *MockIAM) GetInstanceProfile(ctx context.Context, request *iam.GetInstan
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	ip, ok := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
-	if !ok || strings.Contains(aws.ToString(ip.InstanceProfileName), "__no_entity__") {
+	ip := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
+	if ip == nil || strings.Contains(aws.ToString(ip.InstanceProfileName), "__no_entity__") {
 		return nil, &iamtypes.NoSuchEntityException{}
 	}
 	response := &iam.GetInstanceProfileOutput{
@@ -83,8 +83,8 @@ func (m *MockIAM) TagInstanceProfile(ctx context.Context, request *iam.TagInstan
 
 	klog.Infof("CreateInstanceProfile: %v", request)
 
-	ip, ok := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
-	if !ok {
+	ip := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
+	if ip == nil {
 		return nil, fmt.Errorf("InstanceProfile not found")
 	}
 
@@ -111,13 +111,13 @@ func (m *MockIAM) AddRoleToInstanceProfile(ctx context.Context, request *iam.Add
 
 	klog.Infof("AddRoleToInstanceProfile: %v", request)
 
-	ip, ok := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
-	if !ok {
-		return nil, fmt.Errorf("InstanceProfile not found")
+	ip := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
+	if ip == nil {
+		return nil, fmt.Errorf("instance profile not found")
 	}
-	r, ok := m.Roles[aws.ToString(request.RoleName)]
-	if !ok {
-		return nil, fmt.Errorf("Role not found")
+	r := m.Roles[aws.ToString(request.RoleName)]
+	if r == nil {
+		return nil, fmt.Errorf("role not found")
 	}
 
 	ip.Roles = append(ip.Roles, *r)
@@ -131,9 +131,9 @@ func (m *MockIAM) RemoveRoleFromInstanceProfile(ctx context.Context, request *ia
 
 	klog.Infof("RemoveRoleFromInstanceProfile: %v", request)
 
-	ip, ok := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
-	if !ok {
-		return nil, fmt.Errorf("InstanceProfile not found")
+	ip := m.InstanceProfiles[aws.ToString(request.InstanceProfileName)]
+	if ip == nil {
+		return nil, fmt.Errorf("instance profile not found")
 	}
 
 	found := false
@@ -147,7 +147,7 @@ func (m *MockIAM) RemoveRoleFromInstanceProfile(ctx context.Context, request *ia
 	}
 
 	if !found {
-		return nil, fmt.Errorf("Role not found")
+		return nil, fmt.Errorf("role not found")
 	}
 	ip.Roles = newRoles
 
@@ -185,8 +185,8 @@ func (m *MockIAM) DeleteInstanceProfile(ctx context.Context, request *iam.Delete
 	klog.Infof("DeleteInstanceProfile: %v", request)
 
 	id := aws.ToString(request.InstanceProfileName)
-	_, ok := m.InstanceProfiles[id]
-	if !ok {
+	o := m.InstanceProfiles[id]
+	if o == nil {
 		return nil, fmt.Errorf("InstanceProfile %q not found", id)
 	}
 	delete(m.InstanceProfiles, id)
