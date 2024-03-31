@@ -155,18 +155,24 @@ func FindELBV2Tag(tags []elbv2types.Tag, key string) (string, bool) {
 	return "", false
 }
 
-// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
+// AWSErrorCode returns the aws error code, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Code()
 	}
+	if awserror, ok := err.(smithy.APIError); ok {
+		return awserror.ErrorCode()
+	}
 	return ""
 }
 
-// AWSErrorMessage returns the aws error message, if it is an awserr.Error, otherwise ""
+// AWSErrorMessage returns the aws error message, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorMessage(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Message()
+	}
+	if awserror, ok := err.(smithy.APIError); ok {
+		return awserror.ErrorMessage()
 	}
 	return ""
 }
