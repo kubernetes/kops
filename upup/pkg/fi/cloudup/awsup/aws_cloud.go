@@ -34,6 +34,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
+	stscredsv2 "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -295,16 +296,13 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			},
 		}
 
-		cfgV2, err := awsconfig.LoadDefaultConfig(ctx,
+		loadOptions := []func(*awsconfig.LoadOptions) error{
 			awsconfig.WithRegion(region),
 			awsconfig.WithClientLogMode(awsv2.LogRetries),
 			awsconfig.WithLogger(awsLogger{}),
 			awsconfig.WithRetryer(func() awsv2.Retryer {
 				return retry.NewStandard()
 			}),
-		)
-		if err != nil {
-			return c, fmt.Errorf("failed to load default aws config: %w", err)
 		}
 
 		config := aws.NewConfig().WithRegion(region)
@@ -323,6 +321,15 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		// assumes the role before executing commands
 		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
 		if roleARN != "" {
+			cfgV2, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+			if err != nil {
+				return c, fmt.Errorf("failed to load default aws config: %w", err)
+			}
+			stsClient := sts.NewFromConfig(cfgV2)
+			assumeRoleProvider := stscredsv2.NewAssumeRoleProvider(stsClient, roleARN)
+
+			loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(assumeRoleProvider))
+
 			creds := stscreds.NewCredentials(sess, roleARN)
 			config = &aws.Config{Credentials: creds}
 			config = setConfig(config).WithRegion(region)
