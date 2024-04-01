@@ -160,8 +160,9 @@ func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Code()
 	}
-	if awserror, ok := err.(smithy.APIError); ok {
-		return awserror.ErrorCode()
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.ErrorCode()
 	}
 	return ""
 }
@@ -171,8 +172,9 @@ func AWSErrorMessage(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Message()
 	}
-	if awserror, ok := err.(smithy.APIError); ok {
-		return awserror.ErrorMessage()
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.ErrorMessage()
 	}
 	return ""
 }
