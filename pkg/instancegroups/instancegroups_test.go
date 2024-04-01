@@ -17,16 +17,18 @@ limitations under the License.
 package instancegroups
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 )
 
 func TestWarmPoolOnlyRoll(t *testing.T) {
+	ctx := context.Background()
 	c, cloud := getTestSetup()
 
 	groupName := "warmPoolOnly"
@@ -45,9 +47,9 @@ func TestWarmPoolOnlyRoll(t *testing.T) {
 		MaxSurge: &maxSurge,
 	}
 
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
+	cloud.Autoscaling().AttachInstances(ctx, &autoscaling.AttachInstancesInput{
 		AutoScalingGroupName: &groupName,
-		InstanceIds:          []*string{&instanceID},
+		InstanceIds:          []string{instanceID},
 	})
 
 	instance, err := group.NewCloudInstance("node-1", cloudinstances.CloudInstanceStatusNeedsUpdate, nil)

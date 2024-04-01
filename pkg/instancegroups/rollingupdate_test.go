@@ -25,10 +25,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/stretchr/testify/assert"
@@ -44,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 const (
@@ -57,7 +57,7 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud) {
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{
-		WarmPoolInstances: make(map[string][]*autoscaling.Instance),
+		WarmPoolInstances: make(map[string][]autoscalingtypes.Instance),
 	}
 	mockcloud.MockAutoscaling = mockAutoscaling
 	mockcloud.MockEC2 = mockAutoscaling.GetEC2Shim(mockcloud.MockEC2)
@@ -152,18 +152,18 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 				Role: role,
 			},
 		},
-		Raw: &autoscaling.Group{AutoScalingGroupName: aws.String("asg-" + name)},
+		Raw: &autoscalingtypes.AutoScalingGroup{AutoScalingGroupName: aws.String("asg-" + name)},
 	}
 	groups[name] = group
 
-	cloud.Autoscaling().CreateAutoScalingGroupWithContext(ctx, &autoscaling.CreateAutoScalingGroupInput{
+	cloud.Autoscaling().CreateAutoScalingGroup(ctx, &autoscaling.CreateAutoScalingGroupInput{
 		AutoScalingGroupName: aws.String(name),
-		DesiredCapacity:      aws.Int64(int64(count)),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
+		DesiredCapacity:      aws.Int32(int32(count)),
+		MinSize:              aws.Int32(1),
+		MaxSize:              aws.Int32(5),
 	})
 
-	var instanceIds []*string
+	var instanceIds []string
 	for i := 0; i < count; i++ {
 		id := name + string(rune('a'+i))
 		var node *v1.Node
@@ -183,9 +183,9 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 
 		group.NewCloudInstance(id, status, node)
 
-		instanceIds = append(instanceIds, aws.String(id))
+		instanceIds = append(instanceIds, id)
 	}
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
+	cloud.Autoscaling().AttachInstances(ctx, &autoscaling.AttachInstancesInput{
 		AutoScalingGroupName: aws.String(name),
 		InstanceIds:          instanceIds,
 	})
@@ -210,6 +210,7 @@ func getGroupsAllNeedUpdate(k8sClient kubernetes.Interface, cloud awsup.AWSCloud
 }
 
 func TestRollingUpdateAllNeedUpdate(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 
 	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
@@ -255,13 +256,14 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		}
 	}
 
-	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Emptyf(t, group.Instances, "Not all instances terminated in group %s", group.AutoScalingGroupName)
 	}
 }
 
 func TestRollingUpdateAllNeedUpdateCloudonly(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 
 	c.CloudOnly = true
@@ -273,13 +275,14 @@ func TestRollingUpdateAllNeedUpdateCloudonly(t *testing.T) {
 
 	assert.Empty(t, c.K8sClient.(*fake.Clientset).Actions())
 
-	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Emptyf(t, group.Instances, "Not all instances terminated in group %s", group.AutoScalingGroupName)
 	}
 }
 
 func TestRollingUpdateAllNeedUpdateNoFailOnValidate(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 
 	c.FailOnValidate = false
@@ -289,7 +292,7 @@ func TestRollingUpdateAllNeedUpdateNoFailOnValidate(t *testing.T) {
 	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
-	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Emptyf(t, group.Instances, "Not all instances terminated in group %s", group.AutoScalingGroupName)
 	}
@@ -311,6 +314,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 }
 
 func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 	groups := getGroups(c.K8sClient, cloud)
 
@@ -319,7 +323,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
-	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Emptyf(t, group.Instances, "Not all instances terminated in group %s", group.AutoScalingGroupName)
 	}
@@ -417,11 +421,12 @@ type failAfterOneNodeClusterValidator struct {
 }
 
 func (v *failAfterOneNodeClusterValidator) Validate() (*validation.ValidationCluster, error) {
-	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(v.Group)},
+	ctx := context.TODO()
+	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []string{v.Group},
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
-		if int64(len(group.Instances)) < *group.DesiredCapacity {
+		if int32(len(group.Instances)) < *group.DesiredCapacity {
 			if v.ReturnError {
 				return nil, errors.New("testing validation error")
 			}
@@ -631,8 +636,9 @@ type flappingClusterValidator struct {
 }
 
 func (v *flappingClusterValidator) Validate() (*validation.ValidationCluster, error) {
-	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String("master-1")},
+	ctx := context.TODO()
+	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []string{"master-1"},
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		switch len(group.Instances) {
@@ -935,18 +941,18 @@ func TestRollingUpdateDisabled(t *testing.T) {
 }
 
 type disabledSurgeTest struct {
-	autoscalingiface.AutoScalingAPI
+	awsinterfaces.AutoScalingAPI
 	t           *testing.T
 	mutex       sync.Mutex
 	numDetached int
 }
 
-func (m *disabledSurgeTest) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+func (m *disabledSurgeTest) DetachInstances(ctx context.Context, input *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	for _, id := range input.InstanceIds {
-		assert.NotContains(m.t, *id, "master")
+		assert.NotContains(m.t, id, "master")
 		m.numDetached++
 	}
 	return &autoscaling.DetachInstancesOutput{}, nil
@@ -1232,11 +1238,11 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
 }
 
 type concurrentTestAutoscaling struct {
-	autoscalingiface.AutoScalingAPI
+	awsinterfaces.AutoScalingAPI
 	ConcurrentTest *concurrentTest
 }
 
-func (m *concurrentTestAutoscaling) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+func (m *concurrentTestAutoscaling) DetachInstances(ctx context.Context, input *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error) {
 	m.ConcurrentTest.mutex.Lock()
 	defer m.ConcurrentTest.mutex.Unlock()
 
@@ -1245,8 +1251,8 @@ func (m *concurrentTestAutoscaling) DetachInstancesWithContext(ctx context.Conte
 
 	for _, id := range input.InstanceIds {
 		assert.Less(m.ConcurrentTest.t, len(m.ConcurrentTest.detached), m.ConcurrentTest.surge, "Number of detached instances")
-		assert.False(m.ConcurrentTest.t, m.ConcurrentTest.detached[*id], *id+" already detached")
-		m.ConcurrentTest.detached[*id] = true
+		assert.False(m.ConcurrentTest.t, m.ConcurrentTest.detached[id], id+" already detached")
+		m.ConcurrentTest.detached[id] = true
 	}
 	return &autoscaling.DetachInstancesOutput{}, nil
 }
@@ -1314,11 +1320,11 @@ func TestRollingUpdateMaxSurgeAllButOneNeedUpdate(t *testing.T) {
 }
 
 type countDetach struct {
-	autoscalingiface.AutoScalingAPI
+	awsinterfaces.AutoScalingAPI
 	Count int
 }
 
-func (c *countDetach) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+func (c *countDetach) DetachInstances(ctx context.Context, input *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error) {
 	c.Count += len(input.InstanceIds)
 	return &autoscaling.DetachInstancesOutput{}, nil
 }
@@ -1345,10 +1351,10 @@ func TestRollingUpdateMaxSurgeGreaterThanNeedUpdate(t *testing.T) {
 }
 
 type failDetachAutoscaling struct {
-	autoscalingiface.AutoScalingAPI
+	awsinterfaces.AutoScalingAPI
 }
 
-func (m *failDetachAutoscaling) DetachInstancesWithContext(ctx context.Context, input *autoscaling.DetachInstancesInput, option ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+func (m *failDetachAutoscaling) DetachInstances(ctx context.Context, input *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error) {
 	return nil, fmt.Errorf("testing error")
 }
 
@@ -1452,18 +1458,18 @@ func (t *alreadyDetachedTest) TerminateInstances(input *ec2.TerminateInstancesIn
 }
 
 type alreadyDetachedTestAutoscaling struct {
-	autoscalingiface.AutoScalingAPI
+	awsinterfaces.AutoScalingAPI
 	AlreadyDetachedTest *alreadyDetachedTest
 }
 
-func (m *alreadyDetachedTestAutoscaling) DetachInstancesWithContext(ctx aws.Context, input *autoscaling.DetachInstancesInput, options ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+func (m *alreadyDetachedTestAutoscaling) DetachInstances(ctx context.Context, input *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error) {
 	m.AlreadyDetachedTest.mutex.Lock()
 	defer m.AlreadyDetachedTest.mutex.Unlock()
 
 	for _, id := range input.InstanceIds {
 		assert.Less(m.AlreadyDetachedTest.t, len(m.AlreadyDetachedTest.detached), 3, "Number of detached instances")
-		assert.False(m.AlreadyDetachedTest.t, m.AlreadyDetachedTest.detached[*id], *id+" already detached")
-		m.AlreadyDetachedTest.detached[*id] = true
+		assert.False(m.AlreadyDetachedTest.t, m.AlreadyDetachedTest.detached[id], id+" already detached")
+		m.AlreadyDetachedTest.detached[id] = true
 	}
 	return &autoscaling.DetachInstancesOutput{}, nil
 }
@@ -1550,8 +1556,8 @@ func assertTaint(t *testing.T, action testingclient.PatchAction) {
 }
 
 func assertGroupInstanceCount(t *testing.T, cloud awsup.AWSCloud, groupName string, expected int) {
-	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(groupName)},
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(context.Background(), &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []string{groupName},
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Lenf(t, group.Instances, expected, "%s instances", groupName)

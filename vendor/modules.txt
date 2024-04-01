@@ -182,7 +182,6 @@ github.com/aws/aws-sdk-go/private/protocol/restjson
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/autoscaling
-github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface
 github.com/aws/aws-sdk-go/service/ec2
 github.com/aws/aws-sdk-go/service/ec2/ec2iface
 github.com/aws/aws-sdk-go/service/elb
@@ -259,6 +258,11 @@ github.com/aws/aws-sdk-go-v2/internal/ini
 github.com/aws/aws-sdk-go-v2/internal/v4a
 github.com/aws/aws-sdk-go-v2/internal/v4a/internal/crypto
 github.com/aws/aws-sdk-go-v2/internal/v4a/internal/v4
+# github.com/aws/aws-sdk-go-v2/service/autoscaling v1.40.5
+## explicit; go 1.20
+github.com/aws/aws-sdk-go-v2/service/autoscaling
+github.com/aws/aws-sdk-go-v2/service/autoscaling/internal/endpoints
+github.com/aws/aws-sdk-go-v2/service/autoscaling/types
 # github.com/aws/aws-sdk-go-v2/service/ec2 v1.155.0
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/ec2

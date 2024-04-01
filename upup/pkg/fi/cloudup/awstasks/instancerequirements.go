@@ -17,17 +17,17 @@ limitations under the License.
 package awstasks
 
 import (
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type InstanceRequirements struct {
 	Architecture *string
-	CPUMin       *int64
-	CPUMax       *int64
-	MemoryMin    *int64
-	MemoryMax    *int64
+	CPUMin       *int32
+	CPUMax       *int32
+	MemoryMin    *int32
+	MemoryMax    *int32
 }
 
 var _ fi.CloudupHasDependencies = &InstanceRequirements{}
@@ -36,7 +36,7 @@ func (e *InstanceRequirements) GetDependencies(tasks map[string]fi.CloudupTask) 
 	return nil
 }
 
-func findInstanceRequirements(asg *autoscaling.Group) (*InstanceRequirements, error) {
+func findInstanceRequirements(asg *autoscalingtypes.AutoScalingGroup) (*InstanceRequirements, error) {
 	actual := &InstanceRequirements{}
 	if asg.MixedInstancesPolicy != nil {
 		for _, override := range asg.MixedInstancesPolicy.LaunchTemplate.Overrides {
@@ -56,18 +56,18 @@ func findInstanceRequirements(asg *autoscaling.Group) (*InstanceRequirements, er
 	return nil, nil
 }
 
-func overridesFromInstanceRequirements(ir *InstanceRequirements) *autoscaling.LaunchTemplateOverrides {
-	return &autoscaling.LaunchTemplateOverrides{
-		InstanceRequirements: &autoscaling.InstanceRequirements{
-			VCpuCount: &autoscaling.VCpuCountRequest{
+func overridesFromInstanceRequirements(ir *InstanceRequirements) autoscalingtypes.LaunchTemplateOverrides {
+	return autoscalingtypes.LaunchTemplateOverrides{
+		InstanceRequirements: &autoscalingtypes.InstanceRequirements{
+			VCpuCount: &autoscalingtypes.VCpuCountRequest{
 				Max: ir.CPUMax,
 				Min: ir.CPUMin,
 			},
-			MemoryMiB: &autoscaling.MemoryMiBRequest{
+			MemoryMiB: &autoscalingtypes.MemoryMiBRequest{
 				Max: ir.MemoryMax,
 				Min: ir.MemoryMin,
 			},
-			BurstablePerformance: fi.PtrTo("included"),
+			BurstablePerformance: autoscalingtypes.BurstablePerformanceIncluded,
 		},
 	}
 }

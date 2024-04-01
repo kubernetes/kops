@@ -28,13 +28,13 @@ import (
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
@@ -126,7 +126,7 @@ func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
 }
 
 // FindASGTag find the value of the tag with the specified key
-func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
+func FindASGTag(tags []autoscalingtypes.TagDescription, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.ToString(tag.Key) {
 			return aws.ToString(tag.Value), true
@@ -160,8 +160,9 @@ func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Code()
 	}
-	if awserror, ok := err.(smithy.APIError); ok {
-		return awserror.ErrorCode()
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.ErrorCode()
 	}
 	return ""
 }
@@ -171,8 +172,9 @@ func AWSErrorMessage(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Message()
 	}
-	if awserror, ok := err.(smithy.APIError); ok {
-		return awserror.ErrorMessage()
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.ErrorMessage()
 	}
 	return ""
 }

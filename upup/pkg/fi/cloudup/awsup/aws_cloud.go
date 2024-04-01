@@ -35,6 +35,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	stscredsv2 "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -46,8 +48,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -131,7 +131,7 @@ type AWSCloud interface {
 	IAM() awsinterfaces.IAMAPI
 	ELB() awsinterfaces.ELBAPI
 	ELBV2() awsinterfaces.ELBV2API
-	Autoscaling() autoscalingiface.AutoScalingAPI
+	Autoscaling() awsinterfaces.AutoScalingAPI
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
 	SQS() awsinterfaces.SQSAPI
@@ -200,7 +200,7 @@ type awsCloudImplementation struct {
 	iam         *iam.Client
 	elb         *elb.Client
 	elbv2       *elbv2.Client
-	autoscaling *autoscaling.AutoScaling
+	autoscaling *autoscaling.Client
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
 	sts         *sts.Client
@@ -349,16 +349,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.elbv2 = elbv2.NewFromConfig(cfgV2)
 		c.sts = sts.NewFromConfig(cfgV2)
 
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.autoscaling = autoscaling.New(sess, config)
-		c.autoscaling.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.autoscaling.Handlers)
+		c.autoscaling = autoscaling.NewFromConfig(cfgV2)
 
 		sess, err = session.NewSessionWithOptions(session.Options{
 			Config:            *config,
@@ -466,7 +457,7 @@ func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGrou
 
 	if c.spotinst != nil {
 		if featureflag.SpotinstHybrid.Enabled() {
-			if _, ok := g.Raw.(*autoscaling.Group); ok {
+			if _, ok := g.Raw.(*autoscalingtypes.AutoScalingGroup); ok {
 				return deleteGroup(ctx, c, g)
 			}
 		}
@@ -478,7 +469,7 @@ func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGrou
 }
 
 func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
-	asg := g.Raw.(*autoscaling.Group)
+	asg := g.Raw.(*autoscalingtypes.AutoScalingGroup)
 
 	name := aws.StringValue(asg.AutoScalingGroupName)
 	template := aws.StringValue(asg.LaunchConfigurationName)
@@ -511,7 +502,7 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 			AutoScalingGroupName: aws.String(name),
 			ForceDelete:          aws.Bool(true),
 		}
-		_, err := c.Autoscaling().DeleteAutoScalingGroupWithContext(ctx, request)
+		_, err := c.Autoscaling().DeleteAutoScalingGroup(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error deleting autoscaling group %q: %v", name, err)
 		}
@@ -537,7 +528,7 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 			request := &autoscaling.DeleteLaunchConfigurationInput{
 				LaunchConfigurationName: aws.String(template),
 			}
-			_, err := c.Autoscaling().DeleteLaunchConfigurationWithContext(ctx, request)
+			_, err := c.Autoscaling().DeleteLaunchConfiguration(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
 			}
@@ -553,7 +544,7 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	if c.spotinst != nil {
 		if featureflag.SpotinstHybrid.Enabled() {
-			if _, ok := i.CloudInstanceGroup.Raw.(*autoscaling.Group); ok {
+			if _, ok := i.CloudInstanceGroup.Raw.(*autoscalingtypes.AutoScalingGroup); ok {
 				return deleteInstance(c, i)
 			}
 		}
@@ -605,10 +596,10 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 
 // deregisterInstance ensures that the instance is fully drained/removed from all associated loadBalancers and targetGroups before termination.
 func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.CloudInstance) error {
-	asg := i.CloudInstanceGroup.Raw.(*autoscaling.Group)
+	asg := i.CloudInstanceGroup.Raw.(*autoscalingtypes.AutoScalingGroup)
 
-	asgDetails, err := c.Autoscaling().DescribeAutoScalingGroupsWithContext(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{asg.AutoScalingGroupName},
+	asgDetails, err := c.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []string{aws.StringValue(asg.AutoScalingGroupName)},
 	})
 	if err != nil {
 		return fmt.Errorf("error describing autoScalingGroups: %v", err)
@@ -619,8 +610,8 @@ func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.Cloud
 	}
 
 	// there will always be only one ASG in the DescribeAutoScalingGroups response.
-	loadBalancerNames := aws.StringValueSlice(asgDetails.AutoScalingGroups[0].LoadBalancerNames)
-	targetGroupArns := aws.StringValueSlice(asgDetails.AutoScalingGroups[0].TargetGroupARNs)
+	loadBalancerNames := asgDetails.AutoScalingGroups[0].LoadBalancerNames
+	targetGroupArns := asgDetails.AutoScalingGroups[0].TargetGroupARNs
 
 	eg, _ := errgroup.WithContext(context.Background())
 
@@ -771,7 +762,7 @@ func detachInstance(ctx context.Context, c AWSCloud, i *cloudinstances.CloudInst
 		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
-	asg := i.CloudInstanceGroup.Raw.(*autoscaling.Group)
+	asg := i.CloudInstanceGroup.Raw.(*autoscalingtypes.AutoScalingGroup)
 	if err := c.CreateTags(id, map[string]string{tagNameDetachedInstance: *asg.AutoScalingGroupName}); err != nil {
 		return fmt.Errorf("error tagging instance %q: %v", id, err)
 	}
@@ -780,11 +771,11 @@ func detachInstance(ctx context.Context, c AWSCloud, i *cloudinstances.CloudInst
 
 	input := &autoscaling.DetachInstancesInput{
 		AutoScalingGroupName:           aws.String(i.CloudInstanceGroup.HumanName),
-		InstanceIds:                    []*string{aws.String(id)},
+		InstanceIds:                    []string{id},
 		ShouldDecrementDesiredCapacity: aws.Bool(false),
 	}
 
-	if _, err := c.Autoscaling().DetachInstancesWithContext(ctx, input); err != nil {
+	if _, err := c.Autoscaling().DetachInstances(ctx, input); err != nil {
 		return fmt.Errorf("error detaching instance %q: %v", id, err)
 	}
 
@@ -977,40 +968,40 @@ func getCloudGroups(ctx context.Context, c AWSCloud, cluster *kops.Cluster, inst
 
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags
 // This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
-func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
+func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscalingtypes.AutoScalingGroup, error) {
 	ctx := context.TODO()
 
-	var asgs []*autoscaling.Group
+	var asgs []*autoscalingtypes.AutoScalingGroup
 
 	klog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
-	var asgNames []*string
+	var asgNames []string
 	{
-		var asFilters []*autoscaling.Filter
+		var asFilters []autoscalingtypes.Filter
 		for _, v := range tags {
 			// Not an exact match, but likely the best we can do
-			asFilters = append(asFilters, &autoscaling.Filter{
+			asFilters = append(asFilters, autoscalingtypes.Filter{
 				Name:   aws.String("value"),
-				Values: []*string{aws.String(v)},
+				Values: []string{v},
 			})
 		}
 		request := &autoscaling.DescribeTagsInput{
 			Filters: asFilters,
 		}
 
-		err := c.Autoscaling().DescribeTagsPagesWithContext(ctx, request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
-			for _, t := range p.Tags {
+		paginator := autoscaling.NewDescribeTagsPaginator(c.Autoscaling(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
+			}
+			for _, t := range page.Tags {
 				switch *t.ResourceType {
 				case "auto-scaling-group":
-					asgNames = append(asgNames, t.ResourceId)
+					asgNames = append(asgNames, aws.StringValue(t.ResourceId))
 				default:
 					klog.Warningf("Unknown resource type: %v", *t.ResourceType)
-
 				}
 			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
 		}
 	}
 
@@ -1020,8 +1011,13 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 			request := &autoscaling.DescribeAutoScalingGroupsInput{
 				AutoScalingGroupNames: batch,
 			}
-			err := c.Autoscaling().DescribeAutoScalingGroupsPagesWithContext(ctx, request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
-				for _, asg := range p.AutoScalingGroups {
+			paginator := autoscaling.NewDescribeAutoScalingGroupsPaginator(c.Autoscaling(), request)
+			for paginator.HasMorePages() {
+				page, err := paginator.NextPage(ctx)
+				if err != nil {
+					return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+				}
+				for _, asg := range page.AutoScalingGroups {
 					if !matchesAsgTags(tags, asg.Tags) {
 						// We used an inexact filter above
 						continue
@@ -1031,12 +1027,8 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 						klog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
 						continue
 					}
-					asgs = append(asgs, asg)
+					asgs = append(asgs, &asg)
 				}
-				return true
-			})
-			if err != nil {
-				return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
 			}
 		}
 	}
@@ -1053,7 +1045,7 @@ func minInt(a int, b int) int {
 }
 
 // matchesAsgTags is used to filter an asg by tags
-func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+func matchesAsgTags(tags map[string]string, actual []autoscalingtypes.TagDescription) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -1072,14 +1064,14 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 }
 
 // findAutoscalingGroupLaunchConfiguration is responsible for finding the launch - which could be a launchconfiguration, a template or a mixed instance policy template
-func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (string, error) {
+func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscalingtypes.AutoScalingGroup) (string, error) {
 	name := aws.StringValue(g.LaunchConfigurationName)
 	if name != "" {
 		return name, nil
 	}
 
 	// @check the launch template then
-	var launchTemplate *autoscaling.LaunchTemplateSpecification
+	var launchTemplate *autoscalingtypes.LaunchTemplateSpecification
 	if g.LaunchTemplate != nil {
 		launchTemplate = g.LaunchTemplate
 	} else if g.MixedInstancesPolicy != nil && g.MixedInstancesPolicy.LaunchTemplate != nil && g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
@@ -1120,7 +1112,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 }
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
-func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
+func findInstanceLaunchConfiguration(i autoscalingtypes.Instance) string {
 	name := aws.StringValue(i.LaunchConfigurationName)
 	if name != "" {
 		return name
@@ -1139,7 +1131,7 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 	return ""
 }
 
-func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g *autoscalingtypes.AutoScalingGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newConfigName, err := findAutoscalingGroupLaunchConfiguration(c, g)
 	if err != nil {
 		return nil, err
@@ -1154,9 +1146,9 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
-		MinSize:       int(aws.Int64Value(g.MinSize)),
-		TargetSize:    int(aws.Int64Value(g.DesiredCapacity)),
-		MaxSize:       int(aws.Int64Value(g.MaxSize)),
+		MinSize:       int(aws.Int32Value(g.MinSize)),
+		TargetSize:    int(aws.Int32Value(g.DesiredCapacity)),
+		MaxSize:       int(aws.Int32Value(g.MaxSize)),
 		Raw:           g,
 	}
 
@@ -1167,7 +1159,7 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 		}
 	}
 
-	result, err := c.Autoscaling().DescribeWarmPoolWithContext(ctx, &autoscaling.DescribeWarmPoolInput{
+	result, err := c.Autoscaling().DescribeWarmPool(ctx, &autoscaling.DescribeWarmPoolInput{
 		AutoScalingGroupName: g.AutoScalingGroupName,
 	})
 	if err != nil {
@@ -1204,7 +1196,7 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 	return cg, nil
 }
 
-func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Instance, instanceSeen map[string]bool, nodeMap map[string]*v1.Node, cg *cloudinstances.CloudInstanceGroup, newConfigName string) error {
+func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2.Instance, instanceSeen map[string]bool, nodeMap map[string]*v1.Node, cg *cloudinstances.CloudInstanceGroup, newConfigName string) error {
 	id := aws.StringValue(i.InstanceId)
 	if id == "" {
 		klog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
@@ -1212,7 +1204,7 @@ func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Insta
 	}
 	instanceSeen[id] = true
 	// @step: check if the instance is terminating
-	if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
+	if i.LifecycleState == autoscalingtypes.LifecycleStateTerminating {
 		klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
 		return nil
 	}
@@ -1228,7 +1220,7 @@ func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Insta
 	if err != nil {
 		return fmt.Errorf("error creating cloud instance group member: %v", err)
 	}
-	if strings.HasPrefix(*i.LifecycleState, "Warmed") {
+	if strings.HasPrefix(string(i.LifecycleState), "Warmed") {
 		cm.State = cloudinstances.WarmPool
 	}
 
@@ -1278,7 +1270,7 @@ func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance
 	return instances, nil
 }
 
-func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
+func findDetachedInstances(c AWSCloud, g *autoscalingtypes.AutoScalingGroup) ([]*string, error) {
 	clusterName := c.Tags()[TagClusterName]
 	req := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
@@ -2175,7 +2167,7 @@ func (c *awsCloudImplementation) ELBV2() awsinterfaces.ELBV2API {
 	return c.elbv2
 }
 
-func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {
+func (c *awsCloudImplementation) Autoscaling() awsinterfaces.AutoScalingAPI {
 	return c.autoscaling
 }
 

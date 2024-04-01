@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -37,9 +37,9 @@ type WarmPool struct {
 
 	Enabled *bool
 	// MaxSize is the max number of nodes in the warm pool.
-	MaxSize *int64
+	MaxSize *int32
 	// MinSize is the smallest number of nodes in the warm pool.
-	MinSize int64
+	MinSize int32
 
 	AutoscalingGroup *AutoscalingGroup
 }
@@ -49,7 +49,7 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	svc := cloud.Autoscaling()
-	warmPool, err := svc.DescribeWarmPoolWithContext(ctx, &autoscaling.DescribeWarmPoolInput{
+	warmPool, err := svc.DescribeWarmPool(ctx, &autoscaling.DescribeWarmPoolInput{
 		AutoScalingGroupName: e.AutoscalingGroup.Name,
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			minSize := e.MinSize
 			maxSize := e.MaxSize
 			if maxSize == nil {
-				maxSize = fi.PtrTo(int64(-1))
+				maxSize = fi.PtrTo(int32(-1))
 			}
 			request := &autoscaling.PutWarmPoolInput{
 				AutoScalingGroupName:     e.AutoscalingGroup.Name,
@@ -102,7 +102,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				MinSize:                  fi.PtrTo(minSize),
 			}
 
-			_, err := svc.PutWarmPoolWithContext(ctx, request)
+			_, err := svc.PutWarmPool(ctx, request)
 			if err != nil {
 				if awsup.AWSErrorCode(err) == "ValidationError" {
 					return fi.NewTryAgainLaterError("waiting for ASG to become ready").WithError(err)
@@ -110,7 +110,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				return fmt.Errorf("error modifying warm pool: %w", err)
 			}
 		} else if a != nil {
-			_, err := svc.DeleteWarmPoolWithContext(ctx, &autoscaling.DeleteWarmPoolInput{
+			_, err := svc.DeleteWarmPool(ctx, &autoscaling.DeleteWarmPoolInput{
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				// We don't need to do any cleanup so, the faster the better
 				ForceDelete: fi.PtrTo(true),

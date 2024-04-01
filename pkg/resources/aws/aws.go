@@ -24,13 +24,14 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -1205,7 +1206,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {
 		AutoScalingGroupName: &id,
 		ForceDelete:          aws.Bool(true),
 	}
-	_, err := c.Autoscaling().DeleteAutoScalingGroupWithContext(ctx, request)
+	_, err := c.Autoscaling().DeleteAutoScalingGroup(ctx, request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -2137,7 +2138,7 @@ func FindName(tags []*ec2.Tag) string {
 	return ""
 }
 
-func FindASGName(tags []*autoscaling.TagDescription) string {
+func FindASGName(tags []autoscalingtypes.TagDescription) string {
 	if name, found := awsup.FindASGTag(tags, "Name"); found {
 		return name
 	}

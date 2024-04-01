@@ -20,7 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -41,7 +42,7 @@ type AutoscalingLifecycleHook struct {
 
 	AutoscalingGroup    *AutoscalingGroup
 	DefaultResult       *string
-	HeartbeatTimeout    *int64
+	HeartbeatTimeout    *int32
 	LifecycleTransition *string
 
 	Enabled *bool
@@ -59,10 +60,10 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifec
 
 	request := &autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: h.AutoscalingGroup.Name,
-		LifecycleHookNames:   []*string{h.GetHookName()},
+		LifecycleHookNames:   []string{aws.ToString(h.GetHookName())},
 	}
 
-	response, err := cloud.Autoscaling().DescribeLifecycleHooksWithContext(ctx, request)
+	response, err := cloud.Autoscaling().DescribeLifecycleHooks(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ASG Lifecycle Hooks: %v", err)
 	}
@@ -122,7 +123,7 @@ func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 				LifecycleHookName:    e.GetHookName(),
 				LifecycleTransition:  e.LifecycleTransition,
 			}
-			_, err := t.Cloud.Autoscaling().PutLifecycleHookWithContext(ctx, request)
+			_, err := t.Cloud.Autoscaling().PutLifecycleHook(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -131,7 +132,7 @@ func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				LifecycleHookName:    e.GetHookName(),
 			}
-			_, err := t.Cloud.Autoscaling().DeleteLifecycleHookWithContext(ctx, request)
+			_, err := t.Cloud.Autoscaling().DeleteLifecycleHook(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -145,7 +146,7 @@ type terraformASGLifecycleHook struct {
 	Name                 *string                  `cty:"name"`
 	AutoScalingGroupName *terraformWriter.Literal `cty:"autoscaling_group_name"`
 	DefaultResult        *string                  `cty:"default_result"`
-	HeartbeatTimeout     *int64                   `cty:"heartbeat_timeout"`
+	HeartbeatTimeout     *int32                   `cty:"heartbeat_timeout"`
 	LifecycleTransition  *string                  `cty:"lifecycle_transition"`
 }
 
