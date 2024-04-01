@@ -62,7 +62,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v1.6.0
+        image: docker.io/cloudnativelabs/kube-router:v2.1.0
         args:
         - --run-router=true
         - --run-firewall=true
@@ -70,11 +70,17 @@ spec:
         - --bgp-graceful-restart=true
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         - --metrics-port=12013
+        - --runtime-endpoint=unix:///run/containerd/containerd.sock
+        - --hairpin-mode=true
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: KUBE_ROUTER_CNI_CONF_FILE
           value: /etc/cni/net.d/10-kuberouter.conflist
         livenessProbe:
@@ -101,6 +107,12 @@ spec:
         - name: xtables-lock
           mountPath: /run/xtables.lock
           readOnly: false
+        - name: rt-tables
+          mountPath: /etc/iproute2/rt_tables
+          readOnly: false
+        - name: containerd-sock
+          mountPath: /run/containerd/containerd.sock
+          readOnly: true
       initContainers:
       - name: install-cni
         image: docker.io/cloudnativelabs/kube-router:v1.6.0
@@ -122,6 +134,7 @@ spec:
         - mountPath: /etc/kube-router
           name: kube-router-cfg
       hostNetwork: true
+      hostPID: true
       tolerations:
       - operator: Exists
       volumes:
@@ -141,6 +154,13 @@ spec:
         hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
+      - name: rt-tables
+        hostPath:
+          path: /etc/iproute2/rt_tables
+          type: FileOrCreate
+      - name: containerd-sock
+        hostPath:
+          path: /run/containerd/containerd.sock
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -177,6 +197,28 @@ rules:
     - extensions
     resources:
       - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - get
+      - create
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - services/status
+    verbs:
+      - update
+  - apiGroups:
+      - "discovery.k8s.io"
+    resources:
+      - endpointslices
     verbs:
       - get
       - list

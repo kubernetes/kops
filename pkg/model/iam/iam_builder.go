@@ -468,6 +468,10 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	if b.Cluster.Spec.Networking.KubeRouter != nil {
+		addKubeRouterSrcDstCheckPermissions(p)
+	}
+
 	return p, nil
 }
 
@@ -766,6 +770,12 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances",
 		"ec2:ModifyNetworkInterfaceAttribute",
+	)
+}
+
+func addKubeRouterSrcDstCheckPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:ModifyInstanceAttribute",
 	)
 }
 
