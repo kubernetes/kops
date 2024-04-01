@@ -98,9 +98,7 @@ func (t *Tester) setSkipRegexFlag() error {
 			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
 	} else if networking.KubeRouter != nil {
-		skipRegex += "|load-balancer|hairpin|service\\.kubernetes\\.io|CLOSE_WAIT"
-		skipRegex += "|EndpointSlice.should.support.a.Service.with.multiple"
-		skipRegex += "|internalTrafficPolicy|externallTrafficPolicy|only.terminating.endpoints"
+		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
 	}
