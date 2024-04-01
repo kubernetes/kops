@@ -26,8 +26,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -151,7 +151,7 @@ func findLoadBalancerByLoadBalancerName(ctx context.Context, cloud awsup.AWSClou
 	return &found[0], nil
 }
 
-func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elbtypes.LoadBalancerDescription, error) {
+func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53types.AliasTarget) (*elbtypes.LoadBalancerDescription, error) {
 	ctx := context.TODO()
 	// TODO: Any way to avoid listing all ELBs?
 	request := &elb.DescribeLoadBalancersInput{}

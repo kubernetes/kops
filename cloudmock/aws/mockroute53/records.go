@@ -20,25 +20,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput) {
-	panic("MockRoute53 ListResourceRecordSetsRequest not implemented")
-}
-
-func (m *MockRoute53) ListResourceRecordSetsWithContext(aws.Context, *route53.ListResourceRecordSetsInput, ...request.Option) (*route53.ListResourceRecordSetsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
-	panic("MockRoute53 ListResourceRecordSets not implemented")
-}
-
-func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(ctx aws.Context, request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool, opts ...request.Option) error {
+func (m *MockRoute53) ListResourceRecordSets(ctx context.Context, request *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -46,10 +34,10 @@ func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(ctx aws.Context, re
 
 	if request.HostedZoneId == nil {
 		// TODO: Use correct error
-		return fmt.Errorf("HostedZoneId required")
+		return nil, fmt.Errorf("HostedZoneId required")
 	}
 
-	if request.StartRecordIdentifier != nil || request.StartRecordName != nil || request.StartRecordType != nil || request.MaxItems != nil {
+	if request.StartRecordIdentifier != nil || request.StartRecordName != nil || len(request.StartRecordType) > 0 || request.MaxItems != nil {
 		klog.Fatalf("Unsupported options: %v", request)
 	}
 
@@ -57,33 +45,19 @@ func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(ctx aws.Context, re
 
 	if zone == nil {
 		// TODO: Use correct error
-		return fmt.Errorf("NOT FOUND")
+		return nil, fmt.Errorf("NOT FOUND")
 	}
 
 	page := &route53.ListResourceRecordSetsOutput{}
 	for _, r := range zone.records {
 		copy := *r
-		page.ResourceRecordSets = append(page.ResourceRecordSets, &copy)
+		page.ResourceRecordSets = append(page.ResourceRecordSets, copy)
 	}
-	lastPage := true
-	callback(page, lastPage)
 
-	return nil
+	return page, nil
 }
 
-func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
-	return m.ListResourceRecordSetsPagesWithContext(context.TODO(), request, callback)
-}
-
-func (m *MockRoute53) ChangeResourceRecordSetsRequest(*route53.ChangeResourceRecordSetsInput) (*request.Request, *route53.ChangeResourceRecordSetsOutput) {
-	panic("MockRoute53 ChangeResourceRecordSetsRequest not implemented")
-}
-
-func (m *MockRoute53) ChangeResourceRecordSetsWithContext(aws.Context, *route53.ChangeResourceRecordSetsInput, ...request.Option) (*route53.ChangeResourceRecordSetsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRecordSetsInput) (*route53.ChangeResourceRecordSetsOutput, error) {
+func (m *MockRoute53) ChangeResourceRecordSets(ctx context.Context, request *route53.ChangeResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ChangeResourceRecordSetsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -100,33 +74,33 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 	}
 
 	response := &route53.ChangeResourceRecordSetsOutput{
-		ChangeInfo: &route53.ChangeInfo{},
+		ChangeInfo: &route53types.ChangeInfo{},
 	}
 	for _, change := range request.ChangeBatch.Changes {
-		changeType := aws.StringValue(change.ResourceRecordSet.Type)
-		changeName := aws.StringValue(change.ResourceRecordSet.Name)
+		changeType := change.ResourceRecordSet.Type
+		changeName := aws.ToString(change.ResourceRecordSet.Name)
 
 		foundIndex := -1
 		for i, rr := range zone.records {
-			if aws.StringValue(rr.Type) != changeType {
+			if rr.Type != changeType {
 				continue
 			}
-			if aws.StringValue(rr.Name) != changeName {
+			if aws.ToString(rr.Name) != changeName {
 				continue
 			}
 			foundIndex = i
 			break
 		}
 
-		switch aws.StringValue(change.Action) {
-		case "UPSERT":
+		switch change.Action {
+		case route53types.ChangeActionUpsert:
 			if foundIndex == -1 {
 				zone.records = append(zone.records, change.ResourceRecordSet)
 			} else {
 				zone.records[foundIndex] = change.ResourceRecordSet
 			}
 
-		case "CREATE":
+		case route53types.ChangeActionCreate:
 			if foundIndex == -1 {
 				zone.records = append(zone.records, change.ResourceRecordSet)
 			} else {
@@ -134,7 +108,7 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 				return nil, fmt.Errorf("duplicate record %s %q", changeType, changeName)
 			}
 
-		case "DELETE":
+		case route53types.ChangeActionDelete:
 			if foundIndex == -1 {
 				// TODO: Use correct error
 				return nil, fmt.Errorf("record not found %s %q", changeType, changeName)
@@ -143,7 +117,7 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 
 		default:
 			// TODO: Use correct error
-			return nil, fmt.Errorf("Unsupported action: %q", aws.StringValue(change.Action))
+			return nil, fmt.Errorf("Unsupported action: %q", change.Action)
 		}
 	}
 

@@ -225,7 +225,7 @@ func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType
 				hostedZone := awsZone.Route53HostedZone()
 				if hostedZone.Config != nil {
 					zoneDNSType := kops.DNSTypePublic
-					if fi.ValueOf(hostedZone.Config.PrivateZone) {
+					if hostedZone.Config.PrivateZone {
 						zoneDNSType = kops.DNSTypePrivate
 					}
 					if zoneDNSType != dnsType {

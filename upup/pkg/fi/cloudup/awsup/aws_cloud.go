@@ -42,6 +42,7 @@ import (
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -50,8 +51,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
@@ -132,7 +131,7 @@ type AWSCloud interface {
 	ELB() awsinterfaces.ELBAPI
 	ELBV2() awsinterfaces.ELBV2API
 	Autoscaling() awsinterfaces.AutoScalingAPI
-	Route53() route53iface.Route53API
+	Route53() awsinterfaces.Route53API
 	Spotinst() spotinst.Cloud
 	SQS() awsinterfaces.SQSAPI
 	EventBridge() awsinterfaces.EventBridgeAPI
@@ -201,7 +200,7 @@ type awsCloudImplementation struct {
 	elb         *elb.Client
 	elbv2       *elbv2.Client
 	autoscaling *autoscaling.Client
-	route53     *route53.Route53
+	route53     *route53.Client
 	spotinst    spotinst.Cloud
 	sts         *sts.Client
 	sqs         *sqs.Client
@@ -348,19 +347,8 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.elb = elb.NewFromConfig(cfgV2)
 		c.elbv2 = elbv2.NewFromConfig(cfgV2)
 		c.sts = sts.NewFromConfig(cfgV2)
-
 		c.autoscaling = autoscaling.NewFromConfig(cfgV2)
-
-		sess, err = session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
-		}
-		c.route53 = route53.New(sess, config)
-		c.route53.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.route53.Handlers)
+		c.route53 = route53.NewFromConfig(cfgV2)
 
 		if featureflag.Spotinst.Enabled() {
 			c.spotinst, err = spotinst.NewCloud(kops.CloudProviderAWS)
@@ -2171,7 +2159,7 @@ func (c *awsCloudImplementation) Autoscaling() awsinterfaces.AutoScalingAPI {
 	return c.autoscaling
 }
 
-func (c *awsCloudImplementation) Route53() route53iface.Route53API {
+func (c *awsCloudImplementation) Route53() awsinterfaces.Route53API {
 	return c.route53
 }
 

@@ -17,11 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -74,39 +76,38 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 		// TODO: Start at correct name?
 	}
 
-	var found *route53.ResourceRecordSet
+	var found *route53types.ResourceRecordSet
 
-	err := cloud.Route53().ListResourceRecordSetsPagesWithContext(ctx, request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
-		for _, rr := range p.ResourceRecordSets {
-			resourceType := aws.ToString(rr.Type)
+	paginator := route53.NewListResourceRecordSetsPaginator(cloud.Route53(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error listing DNS ResourceRecords: %v", err)
+		}
+		for _, rr := range page.ResourceRecordSets {
+			resourceType := rr.Type
 			name := aws.ToString(rr.Name)
 
 			klog.V(4).Infof("Found DNS resource %q %q", resourceType, name)
 
-			if findType != resourceType {
+			if findType != string(resourceType) {
 				continue
 			}
 
 			name = strings.TrimSuffix(name, ".")
 
 			if name == findName {
-				found = rr
+				found = &rr
 				break
 			}
 		}
-
-		// TODO: Also exit if we are on the 'next' name?
-
-		return found == nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing DNS ResourceRecords: %v", err)
 	}
 
 	if found == nil {
 		return nil, nil
 	}
 
+	var err error
 	actual := &DNSName{}
 	actual.Name = e.Name
 	actual.Zone = e.Zone
@@ -127,7 +128,7 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 	return actual, nil
 }
 
-func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
 	// TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
 	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
 		return nil, err
@@ -144,7 +145,7 @@ func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsNa
 	return nil, nil
 }
 
-func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
 	lb, err := findNetworkLoadBalancerByAlias(cloud, aliasTarget)
 	if err != nil {
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
@@ -166,7 +167,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	return nil, nil
 }
 
-func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
 	lb, err := findLoadBalancerByAlias(cloud, aliasTarget)
 	if err != nil {
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
@@ -210,26 +211,26 @@ func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 }
 
 func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
-	rrs := &route53.ResourceRecordSet{
+	rrs := &route53types.ResourceRecordSet{
 		Name: e.ResourceName,
-		Type: e.ResourceType,
+		Type: route53types.RRType(aws.ToString(e.ResourceType)),
 	}
 
 	if e.TargetLoadBalancer != nil {
-		rrs.AliasTarget = &route53.AliasTarget{
+		rrs.AliasTarget = &route53types.AliasTarget{
 			DNSName:              e.TargetLoadBalancer.getDNSName(),
-			EvaluateTargetHealth: aws.Bool(false),
+			EvaluateTargetHealth: false,
 			HostedZoneId:         e.TargetLoadBalancer.getHostedZoneId(),
 		}
 	}
 
-	change := &route53.Change{
-		Action:            aws.String("UPSERT"),
+	change := route53types.Change{
+		Action:            route53types.ChangeActionUpsert,
 		ResourceRecordSet: rrs,
 	}
 
-	changeBatch := &route53.ChangeBatch{}
-	changeBatch.Changes = []*route53.Change{change}
+	changeBatch := &route53types.ChangeBatch{}
+	changeBatch.Changes = []route53types.Change{change}
 
 	request := &route53.ChangeResourceRecordSetsInput{}
 	request.HostedZoneId = e.Zone.ZoneID
@@ -237,7 +238,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 
 	klog.V(2).Infof("Updating DNS record %q", *e.ResourceName)
 
-	response, err := t.Cloud.Route53().ChangeResourceRecordSets(request)
+	response, err := t.Cloud.Route53().ChangeResourceRecordSets(context.TODO(), request)
 	if err != nil {
 		return fmt.Errorf("error creating ResourceRecordSets: %v", err)
 	}

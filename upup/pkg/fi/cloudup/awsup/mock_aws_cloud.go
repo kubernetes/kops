@@ -27,7 +27,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -76,7 +75,7 @@ type MockCloud struct {
 	MockAutoscaling awsinterfaces.AutoScalingAPI
 	MockEC2         ec2iface.EC2API
 	MockIAM         awsinterfaces.IAMAPI
-	MockRoute53     route53iface.Route53API
+	MockRoute53     awsinterfaces.Route53API
 	MockELB         awsinterfaces.ELBAPI
 	MockELBV2       awsinterfaces.ELBV2API
 	MockSpotinst    spotinst.Cloud
@@ -268,7 +267,7 @@ func (c *MockAWSCloud) Autoscaling() awsinterfaces.AutoScalingAPI {
 	return c.MockAutoscaling
 }
 
-func (c *MockAWSCloud) Route53() route53iface.Route53API {
+func (c *MockAWSCloud) Route53() awsinterfaces.Route53API {
 	if c.MockRoute53 == nil {
 		klog.Fatalf("MockRoute53 not set")
 	}

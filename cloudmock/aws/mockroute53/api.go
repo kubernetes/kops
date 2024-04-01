@@ -20,27 +20,27 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type zoneInfo struct {
 	ID         string
-	hostedZone *route53.HostedZone
-	records    []*route53.ResourceRecordSet
-	vpcs       []*route53.VPC
+	hostedZone *route53types.HostedZone
+	records    []*route53types.ResourceRecordSet
+	vpcs       []*route53types.VPC
 }
 
 type MockRoute53 struct {
 	// Mock out interface
-	route53iface.Route53API
+	awsinterfaces.Route53API
 
 	mutex sync.Mutex
 	Zones []*zoneInfo
 }
 
-var _ route53iface.Route53API = &MockRoute53{}
+var _ awsinterfaces.Route53API = &MockRoute53{}
 
 func (m *MockRoute53) findZone(hostedZoneId string) *zoneInfo {
 	if !strings.Contains(hostedZoneId, "/") {
@@ -55,12 +55,12 @@ func (m *MockRoute53) findZone(hostedZoneId string) *zoneInfo {
 	return nil
 }
 
-func (m *MockRoute53) MockCreateZone(z *route53.HostedZone, vpcs []*route53.VPC) {
+func (m *MockRoute53) MockCreateZone(z *route53types.HostedZone, vpcs []*route53types.VPC) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	zi := &zoneInfo{
-		ID:         aws.StringValue(z.Id),
+		ID:         aws.ToString(z.Id),
 		hostedZone: z,
 		vpcs:       vpcs,
 	}

@@ -17,23 +17,15 @@ limitations under the License.
 package mockroute53
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
-	panic("MockRoute53 GetHostedZoneRequest not implemented")
-}
-
-func (m *MockRoute53) GetHostedZoneWithContext(aws.Context, *route53.GetHostedZoneInput, ...request.Option) (*route53.GetHostedZoneOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
+func (m *MockRoute53) GetHostedZone(ctx context.Context, request *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -48,45 +40,21 @@ func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route
 		// TODO: Use correct error
 		return nil, fmt.Errorf("NOT FOUND")
 	}
+	vpcs := make([]route53types.VPC, len(zone.vpcs))
+	for i := range zone.vpcs {
+		vpcs[i] = *zone.vpcs[i]
+	}
 
 	copy := *zone.hostedZone
 	response := &route53.GetHostedZoneOutput{
 		// DelegationSet ???
 		HostedZone: &copy,
-		VPCs:       zone.vpcs,
+		VPCs:       vpcs,
 	}
 	return response, nil
 }
 
-func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
-	panic("MockRoute53 GetHostedZoneCountRequest not implemented")
-}
-
-func (m *MockRoute53) GetHostedZoneCountWithContext(aws.Context, *route53.GetHostedZoneCountInput, ...request.Option) (*route53.GetHostedZoneCountOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
-	panic("MockRoute53 GetHostedZoneCount not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesRequest(*route53.ListHostedZonesInput) (*request.Request, *route53.ListHostedZonesOutput) {
-	panic("MockRoute53 ListHostedZonesRequest not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesWithContext(aws.Context, *route53.ListHostedZonesInput, ...request.Option) (*route53.ListHostedZonesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ListHostedZones(*route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
-	panic("MockRoute53 ListHostedZones not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesPagesWithContext(aws.Context, *route53.ListHostedZonesInput, func(*route53.ListHostedZonesOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput, callback func(*route53.ListHostedZonesOutput, bool) bool) error {
+func (m *MockRoute53) ListHostedZones(ctx context.Context, request *route53.ListHostedZonesInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -95,30 +63,20 @@ func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput
 	page := &route53.ListHostedZonesOutput{}
 	for _, zone := range m.Zones {
 		copy := *zone.hostedZone
-		page.HostedZones = append(page.HostedZones, &copy)
+		page.HostedZones = append(page.HostedZones, copy)
 	}
-	lastPage := true
-	callback(page, lastPage)
 
-	return nil
+	return page, nil
 }
 
-func (m *MockRoute53) ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput) {
-	panic("MockRoute53 ListHostedZonesByNameRequest not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesByNameWithContext(aws.Context, *route53.ListHostedZonesByNameInput, ...request.Option) (*route53.ListHostedZonesByNameOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
+func (m *MockRoute53) ListHostedZonesByName(ctx context.Context, request *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var zones []*route53.HostedZone
+	var zones []route53types.HostedZone
 
 	for _, z := range m.Zones {
-		zones = append(zones, z.hostedZone)
+		zones = append(zones, *z.hostedZone)
 	}
 
 	return &route53.ListHostedZonesByNameOutput{

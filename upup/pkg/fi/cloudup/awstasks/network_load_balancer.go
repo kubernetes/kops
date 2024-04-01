@@ -28,7 +28,7 @@ import (
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"github.com/aws/aws-sdk-go/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownservices"
@@ -105,7 +105,7 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
-func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elbv2types.LoadBalancer, error) {
+func findNetworkLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53types.AliasTarget) (*elbv2types.LoadBalancer, error) {
 	ctx := context.TODO()
 
 	// TODO: Any way to avoid listing all NLBs?

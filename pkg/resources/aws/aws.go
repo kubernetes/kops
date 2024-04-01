@@ -32,8 +32,9 @@ import (
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
@@ -1703,29 +1704,29 @@ func DeleteNatGateway(cloud fi.Cloud, t *resources.Resource) error {
 	return nil
 }
 
-func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrackers []*resources.Resource) error {
+func deleteRoute53Records(ctx context.Context, cloud fi.Cloud, zone route53types.HostedZone, resourceTrackers []*resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
-	var changes []*route53.Change
+	var changes []route53types.Change
 	var names []string
 	for _, resourceTracker := range resourceTrackers {
 		names = append(names, resourceTracker.Name)
-		changes = append(changes, &route53.Change{
-			Action:            aws.String("DELETE"),
-			ResourceRecordSet: resourceTracker.Obj.(*route53.ResourceRecordSet),
+		changes = append(changes, route53types.Change{
+			Action:            route53types.ChangeActionDelete,
+			ResourceRecordSet: resourceTracker.Obj.(*route53types.ResourceRecordSet),
 		})
 	}
 	human := strings.Join(names, ", ")
 	klog.V(2).Infof("Deleting route53 records %q", human)
 
-	changeBatch := &route53.ChangeBatch{
+	changeBatch := &route53types.ChangeBatch{
 		Changes: changes,
 	}
 	request := &route53.ChangeResourceRecordSetsInput{
 		HostedZoneId: zone.Id,
 		ChangeBatch:  changeBatch,
 	}
-	_, err := c.Route53().ChangeResourceRecordSets(request)
+	_, err := c.Route53().ChangeResourceRecordSets(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error deleting route53 record %q: %v", human, err)
 	}
@@ -1733,6 +1734,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrac
 }
 
 func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	var resourceTrackers []*resources.Resource
 
 	c := cloud.(awsup.AWSCloud)
@@ -1741,13 +1743,18 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 	clusterName = "." + strings.TrimSuffix(clusterName, ".")
 
 	// TODO: If we have the zone id in the cluster spec, use it!
-	var zones []*route53.HostedZone
+	var zones []route53types.HostedZone
 	{
 		klog.V(2).Infof("Querying for all route53 zones")
 
 		request := &route53.ListHostedZonesInput{}
-		err := c.Route53().ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
-			for _, zone := range p.HostedZones {
+		paginator := route53.NewListHostedZonesPaginator(c.Route53(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error querying for route53 zones: %w", err)
+			}
+			for _, zone := range page.HostedZones {
 				zoneName := aws.ToString(zone.Name)
 				zoneName = "." + strings.TrimSuffix(zoneName, ".")
 
@@ -1755,10 +1762,6 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 					zones = append(zones, zone)
 				}
 			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error querying for route53 zones: %v", err)
 		}
 	}
 
@@ -1772,11 +1775,16 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 		request := &route53.ListResourceRecordSetsInput{
 			HostedZoneId: zone.Id,
 		}
-		err := c.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
-			for _, rrs := range p.ResourceRecordSets {
-				if aws.ToString(rrs.Type) != "A" &&
-					aws.ToString(rrs.Type) != "AAAA" &&
-					aws.ToString(rrs.Type) != "TXT" {
+		paginator := route53.NewListResourceRecordSetsPaginator(c.Route53(), request)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.ToString(zone.Name), err)
+			}
+			for _, rrs := range page.ResourceRecordSets {
+				if rrs.Type != route53types.RRTypeA &&
+					rrs.Type != route53types.RRTypeAaaa &&
+					rrs.Type != route53types.RRTypeTxt {
 					continue
 				}
 
@@ -1789,7 +1797,7 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 				prefix := strings.TrimSuffix(name, clusterName)
 
 				// Also trim ownership records for AAAA records
-				if aws.ToString(rrs.Type) == "TXT" && strings.HasPrefix(prefix, ".aaaa-") {
+				if rrs.Type == route53types.RRTypeTxt && strings.HasPrefix(prefix, ".aaaa-") {
 					prefix = "." + strings.TrimPrefix(prefix, ".aaaa-")
 				}
 
@@ -1807,20 +1815,16 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 
 				resourceTracker := &resources.Resource{
 					Name:     aws.ToString(rrs.Name),
-					ID:       hostedZoneID + "/" + aws.ToString(rrs.Type) + "/" + aws.ToString(rrs.Name),
+					ID:       hostedZoneID + "/" + string(rrs.Type) + "/" + aws.ToString(rrs.Name),
 					Type:     "route53-record",
 					GroupKey: hostedZoneID,
 					GroupDeleter: func(cloud fi.Cloud, resourceTrackers []*resources.Resource) error {
-						return deleteRoute53Records(cloud, zone, resourceTrackers)
+						return deleteRoute53Records(ctx, cloud, zone, resourceTrackers)
 					},
-					Obj: rrs,
+					Obj: &rrs,
 				}
 				resourceTrackers = append(resourceTrackers, resourceTracker)
 			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.ToString(zone.Name), err)
 		}
 	}
 

@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/tests"
 )
 
@@ -46,7 +46,7 @@ func newFakeInterface() (dnsprovider.Interface, error) {
 		CallerReference: aws.String("Nonce"),       // Required
 		Name:            aws.String("example.com"), // Required
 	}
-	_, err := iface.service.CreateHostedZone(params)
+	_, err := iface.service.CreateHostedZone(context.TODO(), params)
 	if err != nil {
 		return nil, err
 	}

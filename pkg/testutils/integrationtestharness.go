@@ -30,8 +30,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
@@ -152,29 +152,29 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	mockEventBridge := &mockeventbridge.MockEventBridge{}
 	cloud.MockEventBridge = mockEventBridge
 
-	mockRoute53.MockCreateZone(&route53.HostedZone{
+	mockRoute53.MockCreateZone(&route53types.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
 		Name: aws.String("example.com."),
-		Config: &route53.HostedZoneConfig{
-			PrivateZone: aws.Bool(false),
+		Config: &route53types.HostedZoneConfig{
+			PrivateZone: false,
 		},
 	}, nil)
-	mockRoute53.MockCreateZone(&route53.HostedZone{
+	mockRoute53.MockCreateZone(&route53types.HostedZone{
 		Id:   aws.String("/hostedzone/Z2AFAKE1ZON3NO"),
 		Name: aws.String("internal.example.com."),
-		Config: &route53.HostedZoneConfig{
-			PrivateZone: aws.Bool(true),
+		Config: &route53types.HostedZoneConfig{
+			PrivateZone: true,
 		},
-	}, []*route53.VPC{{
+	}, []*route53types.VPC{{
 		VPCId: aws.String("vpc-23456789"),
 	}})
-	mockRoute53.MockCreateZone(&route53.HostedZone{
+	mockRoute53.MockCreateZone(&route53types.HostedZone{
 		Id:   aws.String("/hostedzone/Z3AFAKE1ZOMORE"),
 		Name: aws.String("private.example.com."),
-		Config: &route53.HostedZoneConfig{
-			PrivateZone: aws.Bool(true),
+		Config: &route53types.HostedZoneConfig{
+			PrivateZone: true,
 		},
-	}, []*route53.VPC{{
+	}, []*route53types.VPC{{
 		VPCId: aws.String("vpc-12345678"),
 	}})
 
