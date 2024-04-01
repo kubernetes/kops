@@ -18,14 +18,16 @@ limitations under the License.
 package route53
 
 import (
+	"context"
+	"fmt"
 	"io"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/route53"
-	"k8s.io/klog/v2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/util/pkg/awslog"
 )
 
 const (
@@ -37,48 +39,26 @@ var MaxBatchSize = 900
 
 func init() {
 	dnsprovider.RegisterDNSProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
-		return newRoute53(config)
+		return newRoute53()
 	})
-}
-
-// route53HandlerLogger is a request handler for aws-sdk-go that logs route53 requests
-func route53HandlerLogger(req *request.Request) {
-	service := req.ClientInfo.ServiceName
-
-	name := "?"
-	if req.Operation != nil {
-		name = req.Operation.Name
-	}
-
-	klog.V(4).Infof("AWS request: %s %s", service, name)
 }
 
 // newRoute53 creates a new instance of an AWS Route53 DNS Interface.
-func newRoute53(config io.Reader) (*Interface, error) {
+func newRoute53() (*Interface, error) {
+	ctx := context.TODO()
 	// Connect to AWS Route53 - TODO: Do more sophisticated auth
 
-	awsConfig := aws.NewConfig()
-
-	// This avoids a confusing error message when we fail to get credentials
-	// e.g. https://github.com/kubernetes/kops/issues/605
-	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
-
-	// To avoid API throttling on busier accounts
-	awsConfig = awsConfig.WithMaxRetries(5)
-
-	sess, err := session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	})
+	cfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithClientLogMode(aws.LogRetries),
+		awslog.WithAWSLogger(),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
+		}))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load default aws config: %w", err)
 	}
-	svc := route53.New(sess, awsConfig)
 
-	// Add our handler that will log requests
-	svc.Handlers.Sign.PushFrontNamed(request.NamedHandler{
-		Name: "k8s/logger",
-		Fn:   route53HandlerLogger,
-	})
+	svc := route53.NewFromConfig(cfg)
 
 	return New(svc), nil
 }

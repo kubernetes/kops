@@ -17,8 +17,12 @@ limitations under the License.
 package route53
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
@@ -31,19 +35,20 @@ type ResourceRecordSets struct {
 }
 
 func (rrsets ResourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
-	input := route53.ListResourceRecordSetsInput{
+	input := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: rrsets.zone.impl.Id,
 	}
 
 	var list []dnsprovider.ResourceRecordSet
-	err := rrsets.zone.zones.interface_.service.ListResourceRecordSetsPages(&input, func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
-		for _, rrset := range page.ResourceRecordSets {
-			list = append(list, &ResourceRecordSet{rrset, &rrsets})
+	paginator := route53.NewListResourceRecordSetsPaginator(rrsets.zone.zones.interface_.service, input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("error listing resource record sets: %w", err)
 		}
-		return true
-	})
-	if err != nil {
-		return nil, err
+		for _, rrset := range page.ResourceRecordSets {
+			list = append(list, &ResourceRecordSet{&rrset, &rrsets})
+		}
 	}
 	return list, nil
 }
@@ -52,25 +57,25 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 	// This list implementation is very similar to the one implemented in
 	// the List() method above, but it restricts the retrieved list to
 	// the records whose name match the given `name`.
-	input := route53.ListResourceRecordSetsInput{
+	input := &route53.ListResourceRecordSetsInput{
 		HostedZoneId:    rrsets.zone.impl.Id,
 		StartRecordName: aws.String(name),
 	}
 
 	var list []dnsprovider.ResourceRecordSet
-	err := rrsets.zone.zones.interface_.service.ListResourceRecordSetsPages(&input, func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
+	paginator := route53.NewListResourceRecordSetsPaginator(rrsets.zone.zones.interface_.service, input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("error listing resource record sets: %w", err)
+		}
 		for _, rrset := range page.ResourceRecordSets {
 			if aws.ToString(rrset.Name) != name {
-				return false
+				continue
 			}
-			list = append(list, &ResourceRecordSet{rrset, &rrsets})
+			list = append(list, &ResourceRecordSet{&rrset, &rrsets})
 		}
-		return true
-	})
-	if err != nil {
-		return nil, err
 	}
-
 	return list, nil
 }
 
@@ -83,13 +88,13 @@ func (r ResourceRecordSets) StartChangeset() dnsprovider.ResourceRecordChangeset
 
 func (r ResourceRecordSets) New(name string, rrdatas []string, ttl int64, rrstype rrstype.RrsType) dnsprovider.ResourceRecordSet {
 	rrstypeStr := string(rrstype)
-	rrs := &route53.ResourceRecordSet{
+	rrs := &route53types.ResourceRecordSet{
 		Name: &name,
-		Type: &rrstypeStr,
+		Type: route53types.RRType(rrstypeStr),
 		TTL:  &ttl,
 	}
 	for _, rrdata := range rrdatas {
-		rrs.ResourceRecords = append(rrs.ResourceRecords, &route53.ResourceRecord{
+		rrs.ResourceRecords = append(rrs.ResourceRecords, route53types.ResourceRecord{
 			Value: aws.String(rrdata),
 		})
 	}

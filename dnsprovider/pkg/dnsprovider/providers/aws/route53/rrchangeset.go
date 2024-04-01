@@ -22,7 +22,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
@@ -55,18 +56,18 @@ func (c *ResourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 }
 
 // buildChange converts a dnsprovider.ResourceRecordSet to a route53.Change request
-func buildChange(action string, rrs dnsprovider.ResourceRecordSet) *route53.Change {
-	change := &route53.Change{
-		Action: aws.String(action),
-		ResourceRecordSet: &route53.ResourceRecordSet{
+func buildChange(action route53types.ChangeAction, rrs dnsprovider.ResourceRecordSet) route53types.Change {
+	change := route53types.Change{
+		Action: action,
+		ResourceRecordSet: &route53types.ResourceRecordSet{
 			Name: aws.String(rrs.Name()),
-			Type: aws.String(string(rrs.Type())),
+			Type: route53types.RRType(rrs.Type()),
 			TTL:  aws.Int64(rrs.Ttl()),
 		},
 	}
 
 	for _, rrdata := range rrs.Rrdatas() {
-		rr := &route53.ResourceRecord{
+		rr := route53types.ResourceRecord{
 			Value: aws.String(rrdata),
 		}
 		change.ResourceRecordSet.ResourceRecords = append(change.ResourceRecordSet.ResourceRecords, rr)
@@ -82,19 +83,19 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 
 	hostedZoneID := c.zone.impl.Id
 
-	removals := make(map[string]*route53.Change)
+	removals := make(map[string]route53types.Change)
 	for _, removal := range c.removals {
-		removals[string(removal.Type())+"::"+removal.Name()] = buildChange(route53.ChangeActionDelete, removal)
+		removals[string(removal.Type())+"::"+removal.Name()] = buildChange(route53types.ChangeActionDelete, removal)
 	}
 
-	additions := make(map[string]*route53.Change)
+	additions := make(map[string]route53types.Change)
 	for _, addition := range c.additions {
-		additions[string(addition.Type())+"::"+addition.Name()] = buildChange(route53.ChangeActionCreate, addition)
+		additions[string(addition.Type())+"::"+addition.Name()] = buildChange(route53types.ChangeActionCreate, addition)
 	}
 
-	upserts := make(map[string]*route53.Change)
+	upserts := make(map[string]route53types.Change)
 	for _, upsert := range c.upserts {
-		upserts[string(upsert.Type())+"::"+upsert.Name()] = buildChange(route53.ChangeActionUpsert, upsert)
+		upserts[string(upsert.Type())+"::"+upsert.Name()] = buildChange(route53types.ChangeActionUpsert, upsert)
 	}
 
 	doneKeys := make(map[string]bool)
@@ -111,7 +112,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 	}
 
 	for {
-		var batch []*route53.Change
+		var batch []route53types.Change
 		// We group the changes so that changes with the same key are in the same batch
 		for k := range keys {
 			if doneKeys[k] {
@@ -122,13 +123,13 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 				break
 			}
 
-			if change := removals[k]; change != nil {
+			if change, ok := removals[k]; ok {
 				batch = append(batch, change)
 			}
-			if change := additions[k]; change != nil {
+			if change, ok := additions[k]; ok {
 				batch = append(batch, change)
 			}
-			if change := upserts[k]; change != nil {
+			if change, ok := upserts[k]; ok {
 				batch = append(batch, change)
 			}
 			doneKeys[k] = true
@@ -142,7 +143,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 		if klog.V(8).Enabled() {
 			var sb bytes.Buffer
 			for _, change := range batch {
-				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.ToString(change.Action), aws.ToString(change.ResourceRecordSet.Type), aws.ToString(change.ResourceRecordSet.Name)))
+				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", change.Action, change.ResourceRecordSet.Type, aws.ToString(change.ResourceRecordSet.Name)))
 			}
 
 			klog.V(8).Infof("Route53 MaxBatchSize: %v\n", MaxBatchSize)
@@ -152,14 +153,14 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 		service := c.zone.zones.interface_.service
 
 		request := &route53.ChangeResourceRecordSetsInput{
-			ChangeBatch: &route53.ChangeBatch{
+			ChangeBatch: &route53types.ChangeBatch{
 				Changes: batch,
 			},
 			HostedZoneId: hostedZoneID,
 		}
 
 		// The aws-sdk-go does backoff for PriorRequestNotComplete
-		_, err := service.ChangeResourceRecordSets(request)
+		_, err := service.ChangeResourceRecordSets(ctx, request)
 		if err != nil {
 			// Cast err to awserr.Error to get the Code and
 			// Message from an error.

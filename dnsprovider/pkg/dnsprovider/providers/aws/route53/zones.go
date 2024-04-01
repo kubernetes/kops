@@ -17,7 +17,11 @@ limitations under the License.
 package route53
 
 import (
-	"github.com/aws/aws-sdk-go/service/route53"
+	"context"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -33,15 +37,16 @@ type Zones struct {
 func (zones Zones) List() ([]dnsprovider.Zone, error) {
 	var zoneList []dnsprovider.Zone
 
-	input := route53.ListHostedZonesInput{}
-	err := zones.interface_.service.ListHostedZonesPages(&input, func(page *route53.ListHostedZonesOutput, lastPage bool) bool {
-		for _, zone := range page.HostedZones {
-			zoneList = append(zoneList, &Zone{zone, &zones})
+	input := &route53.ListHostedZonesInput{}
+	paginator := route53.NewListHostedZonesPaginator(zones.interface_.service, input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return []dnsprovider.Zone{}, fmt.Errorf("error listing hosted zones: %w", err)
 		}
-		return true
-	})
-	if err != nil {
-		return []dnsprovider.Zone{}, err
+		for _, zone := range page.HostedZones {
+			zoneList = append(zoneList, &Zone{&zone, &zones})
+		}
 	}
 	return zoneList, nil
 }
@@ -50,7 +55,7 @@ func (zones Zones) Add(zone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	dnsName := zone.Name()
 	callerReference := string(uuid.NewUUID())
 	input := route53.CreateHostedZoneInput{Name: &dnsName, CallerReference: &callerReference}
-	output, err := zones.interface_.service.CreateHostedZone(&input)
+	output, err := zones.interface_.service.CreateHostedZone(context.TODO(), &input)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +65,7 @@ func (zones Zones) Add(zone dnsprovider.Zone) (dnsprovider.Zone, error) {
 func (zones Zones) Remove(zone dnsprovider.Zone) error {
 	zoneId := zone.(*Zone).impl.Id
 	input := route53.DeleteHostedZoneInput{Id: zoneId}
-	_, err := zones.interface_.service.DeleteHostedZone(&input)
+	_, err := zones.interface_.service.DeleteHostedZone(context.TODO(), &input)
 	if err != nil {
 		return err
 	}
@@ -69,6 +74,6 @@ func (zones Zones) Remove(zone dnsprovider.Zone) error {
 
 func (zones Zones) New(name string) (dnsprovider.Zone, error) {
 	id := string(uuid.NewUUID())
-	managedZone := route53.HostedZone{Id: &id, Name: &name}
+	managedZone := route53types.HostedZone{Id: &id, Name: &name}
 	return &Zone{&managedZone, &zones}, nil
 }

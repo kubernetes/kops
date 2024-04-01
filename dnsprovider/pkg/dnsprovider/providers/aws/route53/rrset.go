@@ -21,14 +21,14 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 )
 
 // Compile time check for interface adherence
 var _ dnsprovider.ResourceRecordSet = ResourceRecordSet{}
 
 type ResourceRecordSet struct {
-	impl   *route53.ResourceRecordSet
+	impl   *route53types.ResourceRecordSet
 	rrsets *ResourceRecordSets
 }
 
@@ -50,7 +50,7 @@ func (rrset ResourceRecordSet) Ttl() int64 {
 }
 
 func (rrset ResourceRecordSet) Type() rrstype.RrsType {
-	return rrstype.RrsType(aws.ToString(rrset.impl.Type))
+	return rrstype.RrsType(rrset.impl.Type)
 }
 
 // Route53ResourceRecordSet returns the route53 ResourceRecordSet object for the ResourceRecordSet
@@ -58,6 +58,6 @@ func (rrset ResourceRecordSet) Type() rrstype.RrsType {
 // without having to requery it, so that we can expose AWS specific functionality.
 // Using this method should be avoided where possible; instead prefer to add functionality
 // to the cross-provider ResourceRecordSet interface.
-func (rrset ResourceRecordSet) Route53ResourceRecordSet() *route53.ResourceRecordSet {
+func (rrset ResourceRecordSet) Route53ResourceRecordSet() *route53types.ResourceRecordSet {
 	return rrset.impl
 }
