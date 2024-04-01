@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -75,14 +75,14 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 	}
 
 	for _, volume := range volumes {
-		volumeID := aws.StringValue(volume.VolumeId)
+		volumeID := aws.ToString(volume.VolumeId)
 
 		etcdClusterName := ""
 		var etcdClusterSpec *etcd.EtcdClusterSpec
 		master := false
 		for _, tag := range volume.Tags {
-			k := aws.StringValue(tag.Key)
-			v := aws.StringValue(tag.Value)
+			k := aws.ToString(tag.Key)
+			v := aws.ToString(tag.Value)
 
 			if strings.HasPrefix(k, TagNameEtcdClusterPrefix) {
 				etcdClusterName = strings.TrimPrefix(k, TagNameEtcdClusterPrefix)
@@ -109,7 +109,7 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 		memberName := etcdClusterSpec.NodeName
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     memberName,
-			VolumeID: aws.StringValue(volume.VolumeId),
+			VolumeID: aws.ToString(volume.VolumeId),
 		})
 	}
 

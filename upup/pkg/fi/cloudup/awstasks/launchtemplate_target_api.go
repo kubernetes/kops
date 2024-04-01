@@ -22,7 +22,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
@@ -222,7 +222,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 
 	// @step: check if any of the interfaces are public facing
 	for _, x := range lt.LaunchTemplateData.NetworkInterfaces {
-		if aws.BoolValue(x.AssociatePublicIpAddress) {
+		if aws.ToBool(x.AssociatePublicIpAddress) {
 			actual.AssociatePublicIP = fi.PtrTo(true)
 		}
 		for _, id := range x.Groups {
@@ -259,7 +259,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	}
 	// @step: add InstanceMarketOptions if there are any
 	imo := lt.LaunchTemplateData.InstanceMarketOptions
-	if imo != nil && imo.SpotOptions != nil && aws.StringValue(imo.SpotOptions.MaxPrice) != "" {
+	if imo != nil && imo.SpotOptions != nil && aws.ToString(imo.SpotOptions.MaxPrice) != "" {
 		actual.SpotPrice = imo.SpotOptions.MaxPrice
 		actual.SpotDurationInMinutes = imo.SpotOptions.BlockDurationMinutes
 		actual.InstanceInterruptionBehavior = imo.SpotOptions.InstanceInterruptionBehavior
@@ -297,7 +297,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	}
 
 	if lt.LaunchTemplateData.UserData != nil {
-		ud, err := base64.StdEncoding.DecodeString(aws.StringValue(lt.LaunchTemplateData.UserData))
+		ud, err := base64.StdEncoding.DecodeString(aws.ToString(lt.LaunchTemplateData.UserData))
 		if err != nil {
 			return nil, fmt.Errorf("error decoding userdata: %s", err)
 		}
@@ -327,7 +327,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 			klog.Warningf("unable to resolve image: %q: %v", *t.ImageID, err)
 		} else if image == nil {
 			klog.Warningf("unable to resolve image: %q: not found", *t.ImageID)
-		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
+		} else if aws.ToString(image.ImageId) == *actual.ImageID {
 			klog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *t.ImageID)
 			actual.ImageID = t.ImageID
 		}
@@ -387,7 +387,7 @@ func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudupContext) (
 	output, err := cloud.EC2().DescribeLaunchTemplateVersionsWithContext(ctx, input)
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "InvalidLaunchTemplateName.NotFoundException" {
-			klog.V(4).Infof("Got InvalidLaunchTemplateName.NotFoundException error describing latest launch template version: %q", aws.StringValue(t.Name))
+			klog.V(4).Infof("Got InvalidLaunchTemplateName.NotFoundException error describing latest launch template version: %q", aws.ToString(t.Name))
 			return nil, nil
 		} else {
 			return nil, err

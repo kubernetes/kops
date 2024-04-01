@@ -23,13 +23,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -135,8 +135,8 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 
 		for _, igw := range gateways {
 			for _, attachment := range igw.Attachments {
-				vpcID := aws.StringValue(attachment.VpcId)
-				igwID := aws.StringValue(igw.InternetGatewayId)
+				vpcID := aws.ToString(attachment.VpcId)
+				igwID := aws.ToString(igw.InternetGatewayId)
 				if vpcID == "" || igwID == "" {
 					continue
 				}
@@ -229,8 +229,8 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	}
 
 	for _, rt := range routeTables {
-		rtID := aws.StringValue(rt.RouteTableId)
-		vpcID := aws.StringValue(rt.VpcId)
+		rtID := aws.ToString(rt.RouteTableId)
+		vpcID := aws.ToString(rt.VpcId)
 		if vpcID == "" || rtID == "" {
 			continue
 		}
@@ -248,7 +248,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 
 		isMain := false
 		for _, a := range rt.Associations {
-			if aws.BoolValue(a.Main) {
+			if aws.ToBool(a.Main) {
 				isMain = true
 			}
 		}
@@ -270,8 +270,8 @@ func matchesElbTags(tags map[string]string, actual []elbtypes.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
+			if aws.ToString(a.Key) == k {
+				if aws.ToString(a.Value) == v {
 					found = true
 					break
 				}
@@ -288,8 +288,8 @@ func matchesElbV2Tags(tags map[string]string, actual []elbv2types.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
+			if aws.ToString(a.Key) == k {
+				if aws.ToString(a.Value) == v {
 					found = true
 					break
 				}
@@ -306,8 +306,8 @@ func matchesIAMTags(tags map[string]string, actual []iamtypes.Tag) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
+			if aws.ToString(a.Key) == k {
+				if aws.ToString(a.Value) == v {
 					found = true
 					break
 				}
@@ -363,7 +363,7 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 	err := c.EC2().DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
 		for _, reservation := range p.Reservations {
 			for _, instance := range reservation.Instances {
-				id := aws.StringValue(instance.InstanceId)
+				id := aws.ToString(instance.InstanceId)
 
 				resourceTracker := &resources.Resource{
 					Name:         FindName(instance.Tags),
@@ -376,17 +376,17 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 				}
 
 				var blocks []string
-				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
-				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
+				blocks = append(blocks, "subnet:"+aws.ToString(instance.SubnetId))
+				blocks = append(blocks, "vpc:"+aws.ToString(instance.VpcId))
 
 				for _, volume := range instance.BlockDeviceMappings {
 					if volume.Ebs == nil || fi.ValueOf(volume.Ebs.DeleteOnTermination) {
 						continue
 					}
-					blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
+					blocks = append(blocks, "volume:"+aws.ToString(volume.Ebs.VolumeId))
 				}
 				for _, sg := range instance.SecurityGroups {
-					blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
+					blocks = append(blocks, "security-group:"+aws.ToString(sg.GroupId))
 				}
 
 				resourceTracker.Blocks = blocks
@@ -454,7 +454,7 @@ func (s *dumpState) getImageInfo(imageID string) (*imageInfo, error) {
 }
 
 func guessSSHUser(image *ec2.Image) string {
-	owner := aws.StringValue(image.OwnerId)
+	owner := aws.ToString(image.OwnerId)
 	switch owner {
 	case awsup.WellKnownAccountAmazonLinux2, awsup.WellKnownAccountRedhat:
 		return "ec2-user"
@@ -466,7 +466,7 @@ func guessSSHUser(image *ec2.Image) string {
 		return "core"
 	}
 
-	name := aws.StringValue(image.Name)
+	name := aws.ToString(image.Name)
 	name = strings.ToLower(name)
 	if strings.HasPrefix(name, "centos") {
 		// We could check the marketplace id, but this is just a guess anyway...
@@ -489,7 +489,7 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	}
 	for _, networkInterface := range ec2Instance.NetworkInterfaces {
 		if networkInterface.Association != nil {
-			publicIP := aws.StringValue(networkInterface.Association.PublicIp)
+			publicIP := aws.ToString(networkInterface.Association.PublicIp)
 			if publicIP != "" {
 				i.PublicAddresses = append(i.PublicAddresses, publicIP)
 			}
@@ -504,7 +504,7 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	}
 	isControlPlane := false
 	for _, tag := range ec2Instance.Tags {
-		key := aws.StringValue(tag.Key)
+		key := aws.ToString(tag.Key)
 		if !strings.HasPrefix(key, awsup.TagNameRolePrefix) {
 			continue
 		}
@@ -519,7 +519,7 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 		i.Roles = append(i.Roles, "control-plane")
 	}
 
-	imageID := aws.StringValue(ec2Instance.ImageId)
+	imageID := aws.ToString(ec2Instance.ImageId)
 	imageInfo, err := getDumpState(op).getImageInfo(imageID)
 	if err != nil {
 		klog.Warningf("unable to fetch image %q: %v", imageID, err)
@@ -566,11 +566,11 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 
 	elasticIPs := make(map[string]bool)
 	for _, volume := range volumes {
-		id := aws.StringValue(volume.VolumeId)
+		id := aws.ToString(volume.VolumeId)
 
 		deleteOnTermination := false
 		for _, attachment := range volume.Attachments {
-			if aws.BoolValue(attachment.DeleteOnTermination) {
+			if aws.ToBool(attachment.DeleteOnTermination) {
 				deleteOnTermination = true
 				break
 			}
@@ -596,10 +596,10 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 
 		// Check for an elastic IP tag
 		for _, tag := range volume.Tags {
-			name := aws.StringValue(tag.Key)
+			name := aws.ToString(tag.Key)
 			ip := ""
 			if name == "kubernetes.io/master-ip" {
-				ip = aws.StringValue(tag.Value)
+				ip = aws.ToString(tag.Value)
 			}
 			if ip != "" {
 				elasticIPs[ip] = true
@@ -617,7 +617,7 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 		}
 
 		for _, address := range response.Addresses {
-			ip := aws.StringValue(address.PublicIp)
+			ip := aws.ToString(address.PublicIp)
 			if !elasticIPs[ip] {
 				continue
 			}
@@ -689,8 +689,8 @@ func ListKeypairs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 	var resourceTrackers []*resources.Resource
 
 	for _, keypair := range response.KeyPairs {
-		name := aws.StringValue(keypair.KeyName)
-		id := aws.StringValue(keypair.KeyPairId)
+		name := aws.ToString(keypair.KeyName)
+		id := aws.ToString(keypair.KeyPairId)
 		if name != keypairName && !strings.HasPrefix(name, keypairName+"-") {
 			continue
 		}
@@ -742,7 +742,7 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 	natGatewayIds := sets.NewString()
 	ownedNatGatewayIds := sets.NewString()
 	for _, subnet := range subnets {
-		subnetID := aws.StringValue(subnet.SubnetId)
+		subnetID := aws.ToString(subnet.SubnetId)
 
 		shared := HasSharedTag("subnet:"+subnetID, subnet.Tags, clusterName)
 		resourceTracker := &resources.Resource{
@@ -754,14 +754,14 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 			Shared:  shared,
 			Obj:     subnet,
 		}
-		resourceTracker.Blocks = append(resourceTracker.Blocks, "vpc:"+aws.StringValue(subnet.VpcId))
+		resourceTracker.Blocks = append(resourceTracker.Blocks, "vpc:"+aws.ToString(subnet.VpcId))
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 
 		// Get tags and append with EIPs/NGWs as needed
 		for _, tag := range subnet.Tags {
-			name := aws.StringValue(tag.Key)
+			name := aws.ToString(tag.Key)
 			if name == "AssociatedElasticIp" {
-				eip := aws.StringValue(tag.Value)
+				eip := aws.ToString(tag.Value)
 				if eip != "" {
 					elasticIPs.Insert(eip)
 					// A shared subnet means the EIP is not owned
@@ -771,7 +771,7 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 				}
 			}
 			if name == "AssociatedNatgateway" {
-				ngwID := aws.StringValue(tag.Value)
+				ngwID := aws.ToString(tag.Value)
 				if ngwID != "" {
 					natGatewayIds.Insert(ngwID)
 					// A shared subnet means the NAT gateway is not owned
@@ -793,7 +793,7 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 		}
 
 		for _, address := range response.Addresses {
-			ip := aws.StringValue(address.PublicIp)
+			ip := aws.ToString(address.PublicIp)
 			if !elasticIPs.Has(ip) {
 				continue
 			}
@@ -816,8 +816,8 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 		if rtResponse != nil {
 			for _, rt := range rtResponse.RouteTables {
 				for _, t := range rt.Tags {
-					k := aws.StringValue(t.Key)
-					v := aws.StringValue(t.Value)
+					k := aws.ToString(t.Key)
+					v := aws.ToString(t.Value)
 
 					if k == "AssociatedNatgateway" {
 						sharedNgwIds.Insert(v)
@@ -834,7 +834,7 @@ func ListSubnets(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 		}
 
 		for _, ngw := range response.NatGateways {
-			id := aws.StringValue(ngw.NatGatewayId)
+			id := aws.ToString(ngw.NatGatewayId)
 			if !natGatewayIds.Has(id) {
 				continue
 			}
@@ -934,10 +934,10 @@ func ListDhcpOptions(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Re
 	for _, o := range dhcpOptions {
 		resourceTracker := &resources.Resource{
 			Name:    FindName(o.Tags),
-			ID:      aws.StringValue(o.DhcpOptionsId),
+			ID:      aws.ToString(o.DhcpOptionsId),
 			Type:    "dhcp-options",
 			Deleter: DeleteDhcpOptions,
-			Shared:  HasSharedTag(ec2.ResourceTypeDhcpOptions+":"+aws.StringValue(o.DhcpOptionsId), o.Tags, clusterName),
+			Shared:  HasSharedTag(ec2.ResourceTypeDhcpOptions+":"+aws.ToString(o.DhcpOptionsId), o.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -1049,16 +1049,16 @@ func ListInternetGateways(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 	for _, o := range gateways {
 		resourceTracker := &resources.Resource{
 			Name:    FindName(o.Tags),
-			ID:      aws.StringValue(o.InternetGatewayId),
+			ID:      aws.ToString(o.InternetGatewayId),
 			Type:    "internet-gateway",
 			Deleter: DeleteInternetGateway,
-			Shared:  HasSharedTag(ec2.ResourceTypeInternetGateway+":"+aws.StringValue(o.InternetGatewayId), o.Tags, clusterName),
+			Shared:  HasSharedTag(ec2.ResourceTypeInternetGateway+":"+aws.ToString(o.InternetGatewayId), o.Tags, clusterName),
 		}
 
 		var blocks []string
 		for _, a := range o.Attachments {
-			if aws.StringValue(a.VpcId) != "" {
-				blocks = append(blocks, "vpc:"+aws.StringValue(a.VpcId))
+			if aws.ToString(a.VpcId) != "" {
+				blocks = append(blocks, "vpc:"+aws.ToString(a.VpcId))
 			}
 		}
 		resourceTracker.Blocks = blocks
@@ -1153,18 +1153,18 @@ func ListEgressOnlyInternetGateways(cloud fi.Cloud, vpcID, clusterName string) (
 	for _, o := range gateways {
 		resourceTracker := &resources.Resource{
 			Name:    FindName(o.Tags),
-			ID:      aws.StringValue(o.EgressOnlyInternetGatewayId),
+			ID:      aws.ToString(o.EgressOnlyInternetGatewayId),
 			Type:    "egress-only-internet-gateway",
 			Obj:     o,
 			Dumper:  DumpEgressOnlyInternetGateway,
 			Deleter: DeleteEgressOnlyInternetGateway,
-			Shared:  HasSharedTag(ec2.ResourceTypeEgressOnlyInternetGateway+":"+aws.StringValue(o.EgressOnlyInternetGatewayId), o.Tags, clusterName),
+			Shared:  HasSharedTag(ec2.ResourceTypeEgressOnlyInternetGateway+":"+aws.ToString(o.EgressOnlyInternetGatewayId), o.Tags, clusterName),
 		}
 
 		var blocks []string
 		for _, a := range o.Attachments {
-			if aws.StringValue(a.VpcId) != "" {
-				blocks = append(blocks, "vpc:"+aws.StringValue(a.VpcId))
+			if aws.ToString(a.VpcId) != "" {
+				blocks = append(blocks, "vpc:"+aws.ToString(a.VpcId))
 			}
 		}
 		resourceTracker.Blocks = blocks
@@ -1230,13 +1230,13 @@ func ListAutoScalingGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resour
 	for _, asg := range asgs {
 		resourceTracker := &resources.Resource{
 			Name:    FindASGName(asg.Tags),
-			ID:      aws.StringValue(asg.AutoScalingGroupName),
+			ID:      aws.ToString(asg.AutoScalingGroupName),
 			Type:    "autoscaling-group",
 			Deleter: DeleteAutoScalingGroup,
 		}
 
 		var blocks []string
-		subnets := aws.StringValue(asg.VPCZoneIdentifier)
+		subnets := aws.ToString(asg.VPCZoneIdentifier)
 		for _, subnet := range strings.Split(subnets, ",") {
 			if subnet == "" {
 				continue
@@ -1244,10 +1244,10 @@ func ListAutoScalingGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resour
 			blocks = append(blocks, "subnet:"+subnet)
 		}
 		if asg.LaunchConfigurationName != nil {
-			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchConfigurationName))
+			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.ToString(asg.LaunchConfigurationName))
 		}
 		if asg.LaunchTemplate != nil {
-			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchTemplate.LaunchTemplateName))
+			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.ToString(asg.LaunchTemplate.LaunchTemplateName))
 		}
 
 		resourceTracker.Blocks = blocks
@@ -1277,8 +1277,8 @@ func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*reso
 	err := c.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
 		for _, lt := range p.LaunchTemplates {
 			list = append(list, &resources.Resource{
-				Name:    aws.StringValue(lt.LaunchTemplateName),
-				ID:      aws.StringValue(lt.LaunchTemplateId),
+				Name:    aws.ToString(lt.LaunchTemplateName),
+				ID:      aws.ToString(lt.LaunchTemplateId),
 				Type:    TypeAutoscalingLaunchConfig,
 				Deleter: DeleteAutoScalingGroupLaunchTemplate,
 			})
@@ -1312,7 +1312,7 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 		}
 		if response != nil {
 			for _, rt := range response.RouteTables {
-				routeTableID := aws.StringValue(rt.RouteTableId)
+				routeTableID := aws.ToString(rt.RouteTableId)
 				resource := routeTables[routeTableID]
 				if resource == nil {
 					// We somehow got a route table that we didn't ask for
@@ -1360,7 +1360,7 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 		}
 
 		for _, ngw := range response.NatGateways {
-			natGatewayId := aws.StringValue(ngw.NatGatewayId)
+			natGatewayId := aws.ToString(ngw.NatGatewayId)
 
 			forceShared := !ownedNatGatewayIds.Has(natGatewayId)
 			ngwResource := buildNatGatewayResource(ngw, forceShared, clusterName)
@@ -1485,7 +1485,7 @@ func ListELBs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 
 	var resourceTrackers []*resources.Resource
 	for _, elb := range elbs {
-		id := aws.StringValue(elb.LoadBalancerName)
+		id := aws.ToString(elb.LoadBalancerName)
 		resourceTracker := &resources.Resource{
 			Name:    FindELBName(elbTags[id]),
 			ID:      id,
@@ -1502,7 +1502,7 @@ func ListELBs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 		for _, s := range elb.Subnets {
 			blocks = append(blocks, "subnet:"+s)
 		}
-		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
+		blocks = append(blocks, "vpc:"+aws.ToString(elb.VPCId))
 
 		resourceTracker.Blocks = blocks
 
@@ -1539,10 +1539,10 @@ func DescribeELBs(cloud fi.Cloud) ([]elbtypes.LoadBalancerDescription, map[strin
 
 		nameToELB := make(map[string]elbtypes.LoadBalancerDescription)
 		for _, elb := range page.LoadBalancerDescriptions {
-			name := aws.StringValue(elb.LoadBalancerName)
+			name := aws.ToString(elb.LoadBalancerName)
 			nameToELB[name] = elb
 
-			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, aws.StringValue(elb.LoadBalancerName))
+			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, aws.ToString(elb.LoadBalancerName))
 		}
 
 		tagResponse, err := c.ELB().DescribeTags(ctx, tagRequest)
@@ -1551,7 +1551,7 @@ func DescribeELBs(cloud fi.Cloud) ([]elbtypes.LoadBalancerDescription, map[strin
 		}
 
 		for _, t := range tagResponse.TagDescriptions {
-			elbName := aws.StringValue(t.LoadBalancerName)
+			elbName := aws.ToString(t.LoadBalancerName)
 
 			if !matchesElbTags(tags, t.Tags) {
 				continue
@@ -1578,7 +1578,7 @@ func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resourc
 	var resourceTrackers []*resources.Resource
 	for _, loadBalancer := range loadBalancers {
 		elb := loadBalancer.LoadBalancer
-		id := aws.StringValue(elb.LoadBalancerName)
+		id := aws.ToString(elb.LoadBalancerName)
 		resourceTracker := &resources.Resource{
 			Name:    id,
 			ID:      string(*elb.LoadBalancerArn),
@@ -1593,7 +1593,7 @@ func ListELBV2s(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resourc
 			blocks = append(blocks, "security-group:"+sg)
 		}
 
-		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VpcId))
+		blocks = append(blocks, "vpc:"+aws.ToString(elb.VpcId))
 
 		resourceTracker.Blocks = blocks
 
@@ -1621,7 +1621,7 @@ func ListTargetGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.R
 	var resourceTrackers []*resources.Resource
 	for _, targetGroup := range targetGroups {
 		tg := targetGroup.TargetGroup
-		id := aws.StringValue(tg.TargetGroupName)
+		id := aws.ToString(tg.TargetGroupName)
 		resourceTracker := &resources.Resource{
 			Name:    id,
 			ID:      targetGroup.ARN,
@@ -1747,7 +1747,7 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 		request := &route53.ListHostedZonesInput{}
 		err := c.Route53().ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
 			for _, zone := range p.HostedZones {
-				zoneName := aws.StringValue(zone.Name)
+				zoneName := aws.ToString(zone.Name)
 				zoneName = "." + strings.TrimSuffix(zoneName, ".")
 
 				if strings.HasSuffix(clusterName, zoneName) {
@@ -1765,21 +1765,21 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 		// Be super careful because we close over this later (in groupDeleter)
 		zone := zones[i]
 
-		hostedZoneID := strings.TrimPrefix(aws.StringValue(zone.Id), "/hostedzone/")
+		hostedZoneID := strings.TrimPrefix(aws.ToString(zone.Id), "/hostedzone/")
 
-		klog.V(2).Infof("Querying for records in zone: %q", aws.StringValue(zone.Name))
+		klog.V(2).Infof("Querying for records in zone: %q", aws.ToString(zone.Name))
 		request := &route53.ListResourceRecordSetsInput{
 			HostedZoneId: zone.Id,
 		}
 		err := c.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 			for _, rrs := range p.ResourceRecordSets {
-				if aws.StringValue(rrs.Type) != "A" &&
-					aws.StringValue(rrs.Type) != "AAAA" &&
-					aws.StringValue(rrs.Type) != "TXT" {
+				if aws.ToString(rrs.Type) != "A" &&
+					aws.ToString(rrs.Type) != "AAAA" &&
+					aws.ToString(rrs.Type) != "TXT" {
 					continue
 				}
 
-				name := aws.StringValue(rrs.Name)
+				name := aws.ToString(rrs.Name)
 				name = "." + strings.TrimSuffix(name, ".")
 
 				if !strings.HasSuffix(name, clusterName) {
@@ -1788,7 +1788,7 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 				prefix := strings.TrimSuffix(name, clusterName)
 
 				// Also trim ownership records for AAAA records
-				if aws.StringValue(rrs.Type) == "TXT" && strings.HasPrefix(prefix, ".aaaa-") {
+				if aws.ToString(rrs.Type) == "TXT" && strings.HasPrefix(prefix, ".aaaa-") {
 					prefix = "." + strings.TrimPrefix(prefix, ".aaaa-")
 				}
 
@@ -1805,8 +1805,8 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 				}
 
 				resourceTracker := &resources.Resource{
-					Name:     aws.StringValue(rrs.Name),
-					ID:       hostedZoneID + "/" + aws.StringValue(rrs.Type) + "/" + aws.StringValue(rrs.Name),
+					Name:     aws.ToString(rrs.Name),
+					ID:       hostedZoneID + "/" + aws.ToString(rrs.Type) + "/" + aws.ToString(rrs.Name),
 					Type:     "route53-record",
 					GroupKey: hostedZoneID,
 					GroupDeleter: func(cloud fi.Cloud, resourceTrackers []*resources.Resource) error {
@@ -1819,7 +1819,7 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 			return true
 		})
 		if err != nil {
-			return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.StringValue(zone.Name), err)
+			return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.ToString(zone.Name), err)
 		}
 	}
 
@@ -1929,7 +1929,7 @@ func ListIAMRoles(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 				return nil, fmt.Errorf("error listing IAM roles: %v", err)
 			}
 			for _, r := range page.Roles {
-				name := aws.StringValue(r.RoleName)
+				name := aws.ToString(r.RoleName)
 
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
 				roleOutput, err := c.IAM().GetRole(ctx, getRequest)
@@ -1966,19 +1966,19 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
 	profile := r.Obj.(iamtypes.InstanceProfile)
-	name := aws.StringValue(profile.InstanceProfileName)
+	name := aws.ToString(profile.InstanceProfileName)
 
 	// Remove roles
 	{
 		for _, role := range profile.Roles {
-			klog.V(2).Infof("Removing role %q from IAM instance profile %q", aws.StringValue(role.RoleName), name)
+			klog.V(2).Infof("Removing role %q from IAM instance profile %q", aws.ToString(role.RoleName), name)
 			request := &iam.RemoveRoleFromInstanceProfileInput{
 				InstanceProfileName: profile.InstanceProfileName,
 				RoleName:            role.RoleName,
 			}
 			_, err := c.IAM().RemoveRoleFromInstanceProfile(ctx, request)
 			if err != nil {
-				return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.StringValue(role.RoleName), name, err)
+				return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.ToString(role.RoleName), name, err)
 			}
 		}
 	}
@@ -2013,7 +2013,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*reso
 			return nil, fmt.Errorf("error listing IAM instance profiles: %v", err)
 		}
 		for _, p := range page.InstanceProfiles {
-			name := aws.StringValue(p.InstanceProfileName)
+			name := aws.ToString(p.InstanceProfileName)
 
 			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
 			profileOutput, err := c.IAM().GetInstanceProfile(ctx, getRequest)
@@ -2038,7 +2038,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, vpcID, clusterName string) ([]*reso
 	var resourceTrackers []*resources.Resource
 
 	for _, profile := range profiles {
-		name := aws.StringValue(profile.InstanceProfileName)
+		name := aws.ToString(profile.InstanceProfileName)
 		resourceTracker := &resources.Resource{
 			Name:    name,
 			ID:      name,
@@ -2074,13 +2074,13 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 			resp, err := c.IAM().GetOpenIDConnectProvider(ctx, descReq)
 			if err != nil {
 				if awsup.IsIAMNoSuchEntityException(err) {
-					klog.Warningf("could not find IAM OIDC Provider %q. Resource may already have been deleted: %v", aws.StringValue(arn), err)
+					klog.Warningf("could not find IAM OIDC Provider %q. Resource may already have been deleted: %v", aws.ToString(arn), err)
 					continue
 				} else if awsup.AWSErrorCode(err) == "403" {
-					klog.Warningf("failed to determine ownership of %q: %v", aws.StringValue(arn), err)
+					klog.Warningf("failed to determine ownership of %q: %v", aws.ToString(arn), err)
 					continue
 				}
-				return nil, fmt.Errorf("error getting IAM OIDC Provider %q: %w", aws.StringValue(arn), err)
+				return nil, fmt.Errorf("error getting IAM OIDC Provider %q: %w", aws.ToString(arn), err)
 			}
 			if !matchesIAMTags(tags, resp.Tags) {
 				continue
@@ -2093,8 +2093,8 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 
 	for _, arn := range providers {
 		resourceTracker := &resources.Resource{
-			Name:    aws.StringValue(arn),
-			ID:      aws.StringValue(arn),
+			Name:    aws.ToString(arn),
+			ID:      aws.ToString(arn),
 			Type:    "oidc-provider",
 			Deleter: DeleteIAMOIDCProvider,
 		}
@@ -2164,7 +2164,7 @@ func HasSharedTag(description string, tags []*ec2.Tag, clusterName string) bool 
 
 	var found *ec2.Tag
 	for _, tag := range tags {
-		if aws.StringValue(tag.Key) != tagKey {
+		if aws.ToString(tag.Key) != tagKey {
 			continue
 		}
 
@@ -2176,7 +2176,7 @@ func HasSharedTag(description string, tags []*ec2.Tag, clusterName string) bool 
 		return false
 	}
 
-	tagValue := aws.StringValue(found.Value)
+	tagValue := aws.ToString(found.Value)
 	switch tagValue {
 	case "owned":
 		return false

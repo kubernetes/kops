@@ -19,7 +19,7 @@ package awstasks
 import (
 	"k8s.io/kops/upup/pkg/fi"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -62,7 +62,7 @@ func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceM
 		o.EbsVolumeType = i.Ebs.VolumeType
 	}
 
-	return aws.StringValue(i.DeviceName), o
+	return aws.ToString(i.DeviceName), o
 }
 
 // ToEC2 creates and returns an ec2 block mapping
@@ -110,7 +110,7 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 		}
 	}
 
-	return aws.StringValue(i.DeviceName), o
+	return aws.ToString(i.DeviceName), o
 }
 
 // ToAutoscaling converts the internal block mapping to autoscaling
@@ -150,7 +150,7 @@ func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplate
 		o.EbsKmsKey = i.Ebs.KmsKeyId
 	}
 
-	return aws.StringValue(i.DeviceName), o
+	return aws.ToString(i.DeviceName), o
 }
 
 // ToLaunchTemplateBootDeviceRequest coverts in the internal block device mapping to a launch template request

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -78,8 +78,8 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 
 	err := cloud.Route53().ListResourceRecordSetsPagesWithContext(ctx, request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
 		for _, rr := range p.ResourceRecordSets {
-			resourceType := aws.StringValue(rr.Type)
-			name := aws.StringValue(rr.Name)
+			resourceType := aws.ToString(rr.Type)
+			name := aws.ToString(rr.Name)
 
 			klog.V(4).Infof("Found DNS resource %q %q", resourceType, name)
 
@@ -115,8 +115,8 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 	actual.Lifecycle = e.Lifecycle
 
 	if found.AliasTarget != nil {
-		dnsName := aws.StringValue(found.AliasTarget.DNSName)
-		klog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
+		dnsName := aws.ToString(found.AliasTarget.DNSName)
+		klog.Infof("AliasTarget for %q is %q", aws.ToString(found.Name), dnsName)
 		if dnsName != "" {
 			if actual.TargetLoadBalancer, err = findDNSTarget(cloud, found.AliasTarget, dnsName, e.ResourceName); err != nil {
 				return nil, err
@@ -150,8 +150,8 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 	}
 	if lb != nil {
-		loadBalancerName := aws.StringValue(lb.LoadBalancerName) // TODO: can we keep these on object
-		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   // TODO: can we keep these on object
+		loadBalancerName := aws.ToString(lb.LoadBalancerName) // TODO: can we keep these on object
+		loadBalancerArn := aws.ToString(lb.LoadBalancerArn)   // TODO: can we keep these on object
 		tagMap, err := cloud.DescribeELBV2Tags([]string{loadBalancerArn})
 		if err != nil {
 			return nil, err
@@ -172,7 +172,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 	}
 	if lb != nil {
-		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
+		loadBalancerName := aws.ToString(lb.LoadBalancerName)
 		tagMap, err := cloud.DescribeELBTags([]string{loadBalancerName})
 		if err != nil {
 			return nil, err
@@ -242,7 +242,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 		return fmt.Errorf("error creating ResourceRecordSets: %v", err)
 	}
 
-	klog.V(2).Infof("Change id is %q", aws.StringValue(response.ChangeInfo.Id))
+	klog.V(2).Infof("Change id is %q", aws.ToString(response.ChangeInfo.Id))
 
 	return nil
 }

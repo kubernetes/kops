@@ -19,7 +19,7 @@ package route53
 import (
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
@@ -33,11 +33,11 @@ type Zone struct {
 }
 
 func (zone *Zone) Name() string {
-	return aws.StringValue(zone.impl.Name)
+	return aws.ToString(zone.impl.Name)
 }
 
 func (zone *Zone) ID() string {
-	id := aws.StringValue(zone.impl.Id)
+	id := aws.ToString(zone.impl.Id)
 	id = strings.TrimPrefix(id, "/hostedzone/")
 	return id
 }

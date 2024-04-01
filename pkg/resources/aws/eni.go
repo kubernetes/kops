@@ -19,7 +19,7 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
@@ -80,7 +80,7 @@ func DescribeENIs(cloud fi.Cloud, vpcID, clusterName string) (map[string]*ec2.Ne
 		}
 		err := c.EC2().DescribeNetworkInterfacesPages(request, func(dnio *ec2.DescribeNetworkInterfacesOutput, b bool) bool {
 			for _, eni := range dnio.NetworkInterfaces {
-				enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
+				enis[aws.ToString(eni.NetworkInterfaceId)] = eni
 			}
 			return true
 		})
@@ -100,7 +100,7 @@ func ListENIs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 
 	var resourceTrackers []*resources.Resource
 	for _, v := range enis {
-		eniID := aws.StringValue(v.NetworkInterfaceId)
+		eniID := aws.ToString(v.NetworkInterfaceId)
 
 		resourceTracker := &resources.Resource{
 			ID:      eniID,
@@ -112,7 +112,7 @@ func ListENIs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource,
 		}
 
 		var blocks []string
-		blocks = append(blocks, ec2.ResourceTypeVpc+":"+aws.StringValue(v.VpcId))
+		blocks = append(blocks, ec2.ResourceTypeVpc+":"+aws.ToString(v.VpcId))
 
 		resourceTracker.Blocks = blocks
 

@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -32,7 +33,6 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -118,8 +118,8 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 // FindEC2Tag find the value of the tag with the specified key
 func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
 	for _, tag := range tags {
-		if key == aws.StringValue(tag.Key) {
-			return aws.StringValue(tag.Value), true
+		if key == aws.ToString(tag.Key) {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false
@@ -128,8 +128,8 @@ func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
 // FindASGTag find the value of the tag with the specified key
 func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
 	for _, tag := range tags {
-		if key == aws.StringValue(tag.Key) {
-			return aws.StringValue(tag.Value), true
+		if key == aws.ToString(tag.Key) {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false
@@ -138,8 +138,8 @@ func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
 // FindELBTag find the value of the tag with the specified key
 func FindELBTag(tags []elbtypes.Tag, key string) (string, bool) {
 	for _, tag := range tags {
-		if key == aws.StringValue(tag.Key) {
-			return aws.StringValue(tag.Value), true
+		if key == aws.ToString(tag.Key) {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false
@@ -148,8 +148,8 @@ func FindELBTag(tags []elbtypes.Tag, key string) (string, bool) {
 // FindELBV2Tag find the value of the tag with the specified key
 func FindELBV2Tag(tags []elbv2types.Tag, key string) (string, bool) {
 	for _, tag := range tags {
-		if key == aws.StringValue(tag.Key) {
-			return aws.StringValue(tag.Value), true
+		if key == aws.ToString(tag.Key) {
+			return aws.ToString(tag.Value), true
 		}
 	}
 	return "", false

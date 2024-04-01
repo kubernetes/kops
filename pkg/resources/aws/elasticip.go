@@ -17,24 +17,24 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"k8s.io/kops/pkg/resources"
 )
 
 func buildElasticIPResource(address *ec2.Address, forceShared bool, clusterName string) *resources.Resource {
-	name := aws.StringValue(address.PublicIp)
+	name := aws.ToString(address.PublicIp)
 	if name == "" {
-		name = aws.StringValue(address.PrivateIpAddress)
+		name = aws.ToString(address.PrivateIpAddress)
 	}
 	if name == "" {
-		name = aws.StringValue(address.AllocationId)
+		name = aws.ToString(address.AllocationId)
 	}
 
 	r := &resources.Resource{
 		Name:    name,
-		ID:      aws.StringValue(address.AllocationId),
+		ID:      aws.ToString(address.AllocationId),
 		Type:    TypeElasticIp,
 		Deleter: DeleteElasticIP,
 		Shared:  forceShared,

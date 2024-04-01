@@ -19,9 +19,9 @@ package awstasks
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
@@ -31,10 +31,10 @@ func mapEC2TagsToMap(tags []*ec2.Tag) map[string]string {
 	}
 	m := make(map[string]string)
 	for _, t := range tags {
-		if strings.HasPrefix(aws.StringValue(t.Key), "aws:cloudformation:") {
+		if strings.HasPrefix(aws.ToString(t.Key), "aws:cloudformation:") {
 			continue
 		}
-		m[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		m[aws.ToString(t.Key)] = aws.ToString(t.Value)
 	}
 	return m
 }
@@ -45,10 +45,10 @@ func mapIAMTagsToMap(tags []iamtypes.Tag) map[string]string {
 	}
 	m := make(map[string]string)
 	for _, t := range tags {
-		if strings.HasPrefix(aws.StringValue(t.Key), "aws:cloudformation:") {
+		if strings.HasPrefix(aws.ToString(t.Key), "aws:cloudformation:") {
 			continue
 		}
-		m[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		m[aws.ToString(t.Key)] = aws.ToString(t.Value)
 	}
 	return m
 }
@@ -73,17 +73,17 @@ func mapEventBridgeTagsToMap(tags []eventbridgetypes.Tag) map[string]string {
 	}
 	m := make(map[string]string)
 	for _, t := range tags {
-		if strings.HasPrefix(aws.StringValue(t.Key), "aws:cloudformation:") {
+		if strings.HasPrefix(aws.ToString(t.Key), "aws:cloudformation:") {
 			continue
 		}
-		m[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		m[aws.ToString(t.Key)] = aws.ToString(t.Value)
 	}
 	return m
 }
 
 func findNameTag(tags []*ec2.Tag) *string {
 	for _, tag := range tags {
-		if aws.StringValue(tag.Key) == "Name" {
+		if aws.ToString(tag.Key) == "Name" {
 			return tag.Value
 		}
 	}
@@ -98,8 +98,8 @@ func intersectTags(tags []*ec2.Tag, desired map[string]string) map[string]string
 	}
 	actual := make(map[string]string)
 	for _, t := range tags {
-		k := aws.StringValue(t.Key)
-		v := aws.StringValue(t.Value)
+		k := aws.ToString(t.Key)
+		v := aws.ToString(t.Value)
 
 		if _, found := desired[k]; found {
 			actual[k] = v

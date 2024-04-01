@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -280,7 +280,7 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
 		}
-		klog.V(4).Infof("reusing existing ElasticIP with id %q", aws.StringValue(e.ID))
+		klog.V(4).Infof("reusing existing ElasticIP with id %q", aws.ToString(e.ID))
 		return nil
 	}
 

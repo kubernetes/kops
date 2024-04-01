@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -82,7 +82,7 @@ func (e *DHCPOptions) Find(c *fi.CloudupContext) (*DHCPOptions, error) {
 	}
 
 	for _, s := range o.DhcpConfigurations {
-		k := aws.StringValue(s.Key)
+		k := aws.ToString(s.Key)
 		v := ""
 		for _, av := range s.Values {
 			if v != "" {

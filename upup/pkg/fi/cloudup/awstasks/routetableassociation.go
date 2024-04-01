@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -69,7 +69,7 @@ func (e *RouteTableAssociation) Find(c *fi.CloudupContext) (*RouteTableAssociati
 	}
 	rt := response.RouteTables[0]
 	for _, rta := range rt.Associations {
-		if aws.StringValue(rta.SubnetId) != *subnetID {
+		if aws.ToString(rta.SubnetId) != *subnetID {
 			continue
 		}
 		actual := &RouteTableAssociation{
@@ -154,7 +154,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 
 		if existing != nil {
 			for _, a := range existing.Associations {
-				if aws.StringValue(a.SubnetId) != aws.StringValue(e.Subnet.ID) {
+				if aws.ToString(a.SubnetId) != aws.ToString(e.Subnet.ID) {
 					continue
 				}
 				klog.V(2).Infof("Creating RouteTableAssociation")

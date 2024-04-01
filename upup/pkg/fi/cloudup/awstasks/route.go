@@ -19,7 +19,7 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -75,8 +75,8 @@ func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 		}
 		rt := response.RouteTables[0]
 		for _, r := range rt.Routes {
-			if (r.DestinationCidrBlock == nil || aws.StringValue(r.DestinationCidrBlock) != aws.StringValue(e.CIDR)) &&
-				(r.DestinationIpv6CidrBlock == nil || aws.StringValue(r.DestinationIpv6CidrBlock) != aws.StringValue(e.IPv6CIDR)) {
+			if (r.DestinationCidrBlock == nil || aws.ToString(r.DestinationCidrBlock) != aws.ToString(e.CIDR)) &&
+				(r.DestinationIpv6CidrBlock == nil || aws.ToString(r.DestinationIpv6CidrBlock) != aws.ToString(e.IPv6CIDR)) {
 				continue
 			}
 			actual := &Route{
@@ -104,7 +104,7 @@ func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 				actual.VPCPeeringConnectionID = r.VpcPeeringConnectionId
 			}
 
-			if aws.StringValue(r.State) == "blackhole" {
+			if aws.ToString(r.State) == "blackhole" {
 				klog.V(2).Infof("found route is a blackhole route")
 				// These should be nil anyway, but just in case...
 				actual.Instance = nil
@@ -115,7 +115,7 @@ func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 			// Prevent spurious changes
 			actual.Lifecycle = e.Lifecycle
 
-			klog.V(2).Infof("found route matching CIDR=%q IPv6CIDR=%q", aws.StringValue(e.CIDR), aws.StringValue(e.IPv6CIDR))
+			klog.V(2).Infof("found route matching CIDR=%q IPv6CIDR=%q", aws.ToString(e.CIDR), aws.ToString(e.IPv6CIDR))
 			return actual, nil
 		}
 	}
@@ -214,7 +214,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		}
 
 		klog.V(2).Infof("Creating Route with RouteTable:%q CIDR:%q IPv6CIDR:%q",
-			aws.StringValue(e.RouteTable.ID), aws.StringValue(e.CIDR), aws.StringValue(e.IPv6CIDR))
+			aws.ToString(e.RouteTable.ID), aws.ToString(e.CIDR), aws.ToString(e.IPv6CIDR))
 
 		response, err := t.Cloud.EC2().CreateRoute(request)
 		if err != nil {
@@ -227,7 +227,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			return fmt.Errorf("error creating Route: %s", message)
 		}
 
-		if !aws.BoolValue(response.Return) {
+		if !aws.ToBool(response.Return) {
 			return fmt.Errorf("create Route request failed: %v", response)
 		}
 	} else {

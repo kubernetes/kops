@@ -19,7 +19,7 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources"
@@ -61,7 +61,7 @@ func DumpVPC(op *resources.DumpOperation, r *resources.Resource) error {
 
 	ec2VPC := r.Obj.(*ec2.Vpc)
 	vpc := &resources.VPC{
-		ID: aws.StringValue(ec2VPC.VpcId),
+		ID: aws.ToString(ec2VPC.VpcId),
 	}
 	op.Dump.VPC = vpc
 
@@ -83,7 +83,7 @@ func DescribeVPC(cloud fi.Cloud, clusterName string) (*ec2.Vpc, error) {
 		}
 
 		for _, vpc := range response.Vpcs {
-			vpcs[aws.StringValue(vpc.VpcId)] = vpc
+			vpcs[aws.ToString(vpc.VpcId)] = vpc
 		}
 	}
 
@@ -105,7 +105,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error)
 
 	var resourceTrackers []*resources.Resource
 	if vpc != nil {
-		vpcID := aws.StringValue(vpc.VpcId)
+		vpcID := aws.ToString(vpc.VpcId)
 
 		resourceTracker := &resources.Resource{
 			Name:    FindName(vpc.Tags),
@@ -118,7 +118,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error)
 		}
 
 		var blocks []string
-		blocks = append(blocks, "dhcp-options:"+aws.StringValue(vpc.DhcpOptionsId))
+		blocks = append(blocks, "dhcp-options:"+aws.ToString(vpc.DhcpOptionsId))
 
 		resourceTracker.Blocks = blocks
 

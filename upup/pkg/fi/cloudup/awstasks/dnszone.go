@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -77,11 +77,11 @@ func (e *DNSZone) Find(c *fi.CloudupContext) (*DNSZone, error) {
 	// e.PrivateVPC won't be set, so we can't find the "right" VPC (without cheating)
 	if e.PrivateVPC != nil {
 		for _, vpc := range z.VPCs {
-			if cloud.Region() != aws.StringValue(vpc.VPCRegion) {
+			if cloud.Region() != aws.ToString(vpc.VPCRegion) {
 				continue
 			}
 
-			if aws.StringValue(e.PrivateVPC.ID) == aws.StringValue(vpc.VPCId) {
+			if aws.ToString(e.PrivateVPC.ID) == aws.ToString(vpc.VPCId) {
 				actual.PrivateVPC = e.PrivateVPC
 			}
 		}
@@ -137,7 +137,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutp
 
 	var zones []*route53.HostedZone
 	for _, zone := range response.HostedZones {
-		if aws.StringValue(zone.Name) == findName && fi.ValueOf(zone.Config.PrivateZone) == fi.ValueOf(e.Private) {
+		if aws.ToString(zone.Name) == findName && fi.ValueOf(zone.Config.PrivateZone) == fi.ValueOf(e.Private) {
 			zones = append(zones, zone)
 		}
 	}
@@ -172,7 +172,7 @@ func (s *DNSZone) CheckChanges(a, e, changes *DNSZone) error {
 }
 
 func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error {
-	name := aws.StringValue(e.DNSName)
+	name := aws.ToString(e.DNSName)
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
 		request.Name = e.DNSName
@@ -245,7 +245,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	}
 
 	if z != nil {
-		klog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
+		klog.Infof("Existing zone %q found; will configure TF to reuse", aws.ToString(z.HostedZone.Name))
 
 		e.ZoneID = z.HostedZone.Id
 
@@ -259,7 +259,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 				vpcName = *e.PrivateVPC.ID
 				for _, vpc := range z.VPCs {
 					if *vpc.VPCId == vpcName {
-						klog.Infof("VPC %q already associated with zone %q", vpcName, aws.StringValue(z.HostedZone.Name))
+						klog.Infof("VPC %q already associated with zone %q", vpcName, aws.ToString(z.HostedZone.Name))
 						assocNeeded = false
 					}
 				}
@@ -268,7 +268,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 			}
 
 			if assocNeeded {
-				klog.Infof("No association between VPC %q and zone %q; adding", vpcName, aws.StringValue(z.HostedZone.Name))
+				klog.Infof("No association between VPC %q and zone %q; adding", vpcName, aws.ToString(z.HostedZone.Name))
 				tf := &terraformRoute53ZoneAssociation{
 					ZoneID: terraformWriter.LiteralFromStringValue(*e.ZoneID),
 					VPCID:  e.PrivateVPC.TerraformLink(),

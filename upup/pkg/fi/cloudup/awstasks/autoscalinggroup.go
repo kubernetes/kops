@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/klog/v2"
 
@@ -205,7 +205,7 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 			if apiLBDesc != nil {
 				for i := 0; i < len(actual.LoadBalancers); i++ {
 					lb := actual.LoadBalancers[i]
-					if aws.StringValue(apiLBDesc.LoadBalancerName) == aws.StringValue(lb.Name) {
+					if aws.ToString(apiLBDesc.LoadBalancerName) == aws.ToString(lb.Name) {
 						actual.LoadBalancers[i] = apiLBTask
 					}
 				}
@@ -223,13 +223,13 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 			}
 		}
 		for _, arn := range g.TargetGroupARNs {
-			tg := byARN[aws.StringValue(arn)]
+			tg := byARN[aws.ToString(arn)]
 			if tg != nil {
 				actual.TargetGroups = append(actual.TargetGroups, tg)
 				continue
 			}
 			actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: arn})
-			e.deletions = append(e.deletions, buildDeleteAutoscalingTargetGroupAttachment(aws.StringValue(g.AutoScalingGroupName), aws.StringValue(arn)))
+			e.deletions = append(e.deletions, buildDeleteAutoscalingTargetGroupAttachment(aws.ToString(g.AutoScalingGroupName), aws.ToString(arn)))
 		}
 	}
 	sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
@@ -242,7 +242,7 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 	}
 
 	for _, enabledMetric := range g.EnabledMetrics {
-		actual.Metrics = append(actual.Metrics, aws.StringValue(enabledMetric.Metric))
+		actual.Metrics = append(actual.Metrics, aws.ToString(enabledMetric.Metric))
 		actual.Granularity = enabledMetric.Granularity
 	}
 	sort.Strings(actual.Metrics)
@@ -250,10 +250,10 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 	if len(g.Tags) != 0 {
 		actual.Tags = make(map[string]string)
 		for _, tag := range g.Tags {
-			if strings.HasPrefix(aws.StringValue(tag.Key), "aws:cloudformation:") {
+			if strings.HasPrefix(aws.ToString(tag.Key), "aws:cloudformation:") {
 				continue
 			}
-			actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			actual.Tags[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
 		}
 	}
 
@@ -334,7 +334,7 @@ func findAutoscalingGroup(ctx context.Context, cloud awsup.AWSCloud, name string
 				continue
 			}
 
-			if aws.StringValue(g.AutoScalingGroupName) == name {
+			if aws.ToString(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
 				klog.Warningf("Got ASG with unexpected name %q", fi.ValueOf(g.AutoScalingGroupName))
