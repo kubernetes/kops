@@ -67,7 +67,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
 	}
 
-	if b.CloudProvider() == kops.CloudProviderHetzner {
+	if b.CloudProvider() == kops.CloudProviderHetzner || b.CloudProvider() == kops.CloudProviderScaleway {
 		localIP, err := b.GetMetadataLocalIP(c.Context())
 		if err != nil {
 			return err
