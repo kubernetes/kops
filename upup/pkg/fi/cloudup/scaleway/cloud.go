@@ -510,29 +510,7 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 }
 
 func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (string, error) {
-	region, err := zone.Region()
-	if err != nil {
-		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
-	}
-
-	ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
-		Region:     region,
-		IsIPv6:     fi.PtrTo(false),
-		ResourceID: &serverID,
-		Zonal:      fi.PtrTo(zone.String()), // not useful according to tests made on this route with the CLI
-	}, scw.WithAllPages())
-	if err != nil {
-		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
-	}
-
-	if len(ips.IPs) < 1 {
-		return "", fmt.Errorf("could not find IP for server %s", serverID)
-	}
-	if len(ips.IPs) > 1 {
-		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
-	}
-
-	return ips.IPs[0].Address.IP.String(), nil
+	return GetIPAMPublicIP(s.ipamAPI, serverID, zone)
 }
 
 func (s *scwCloudImplementation) GetServerPrivateIP(serverID string, zone scw.Zone) (string, error) {
