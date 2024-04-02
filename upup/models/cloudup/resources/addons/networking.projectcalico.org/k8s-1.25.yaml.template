@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico-typha.yaml
+# Pulled and modified from: https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/calico-typha.yaml
 ---
 {{- if .Networking.Calico.BPFEnabled }}
 # Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
@@ -1101,6 +1101,13 @@ spec:
                   Loose]'
                 pattern: ^(?i)(Disabled|Strict|Loose)?$
                 type: string
+              bpfExcludeCIDRsFromNAT:
+                description: BPFExcludeCIDRsFromNAT is a list of CIDRs that are to
+                  be excluded from NAT resolution so that host can handle them. A
+                  typical usecase is node local DNS cache.
+                items:
+                  type: string
+                type: array
               bpfExtToServiceConnmark:
                 description: 'BPFExtToServiceConnmark in BPF mode, control a 32bit
                   mark that is set on connections from an external client to a local
@@ -4837,7 +4844,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.27.0" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.27.3" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
@@ -4866,7 +4873,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.27.0" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.27.3" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/install"]
           envFrom:
@@ -4909,7 +4916,7 @@ spec:
         # i.e. bpf at /sys/fs/bpf and cgroup2 at /run/calico/cgroup. Calico-node initialisation is executed
         # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptable mode.
         - name: "mount-bpffs"
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.27.0" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.27.3" }}
           imagePullPolicy: IfNotPresent
           command: ["calico-node", "-init", "-best-effort"]
           volumeMounts:
@@ -4935,7 +4942,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.27.0" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.27.3" }}
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -5264,7 +5271,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.27.0" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.27.3" }}
           imagePullPolicy: IfNotPresent
           env:
             # Choose which controllers to run.
@@ -5354,7 +5361,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.27.0" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.27.3" }}
         imagePullPolicy: IfNotPresent
         name: calico-typha
         ports:
