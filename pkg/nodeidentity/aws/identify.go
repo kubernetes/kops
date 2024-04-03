@@ -22,17 +22,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/nodeidentity"
+	"k8s.io/kops/util/pkg/awslog"
 )
 
 const (
@@ -49,7 +49,7 @@ const (
 // nodeIdentifier identifies a node from EC2
 type nodeIdentifier struct {
 	// client is the ec2 interface
-	ec2Client ec2iface.EC2API
+	ec2Client ec2.DescribeInstancesAPIClient
 
 	// cache is a cache of nodeidentity.Info
 	cache expirationcache.Store
@@ -58,27 +58,21 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on AWS
-func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
+func New(ctx context.Context, CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+	config, err := awsconfig.LoadDefaultConfig(ctx, awslog.WithAWSLogger())
 	if err != nil {
-		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+		return nil, fmt.Errorf("error loading AWS config: %v", err)
 	}
-	s.Handlers.Send.PushFront(func(r *request.Request) {
-		// Log requests
-		klog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
-	})
 
-	metadata := ec2metadata.New(s, config)
+	imdsClient := imds.NewFromConfig(config)
 
-	region, err := metadata.Region()
+	regionResp, err := imdsClient.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
 		return nil, fmt.Errorf("error querying ec2 metadata service (for region): %v", err)
 	}
 
-	ec2Client := ec2.New(s, config.WithRegion(region))
+	config.Region = regionResp.Region
+	ec2Client := ec2.NewFromConfig(config)
 
 	return &nodeIdentifier{
 		ec2Client:    ec2Client,
@@ -124,22 +118,22 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	// Based on node-authorizer code
-	instance, err := i.getInstance(instanceID)
+	instance, err := i.getInstance(ctx, instanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceState := "?"
+	var instanceState ec2types.InstanceStateName
 	if instance.State != nil {
-		instanceState = aws.StringValue(instance.State.Name)
+		instanceState = instance.State.Name
 	}
-	if instanceState != ec2.InstanceStateNameRunning && instanceState != ec2.InstanceStateNamePending {
+	if instanceState != ec2types.InstanceStateNameRunning && instanceState != ec2types.InstanceStateNamePending {
 		return nil, fmt.Errorf("found instance %q, but state is %q", instanceID, instanceState)
 	}
 
 	labels := map[string]string{}
-	if instance.InstanceLifecycle != nil {
-		labels[fmt.Sprintf("node-role.kubernetes.io/%s-worker", *instance.InstanceLifecycle)] = "true"
+	if len(instance.InstanceLifecycle) > 0 {
+		labels[fmt.Sprintf("node-role.kubernetes.io/%s-worker", instance.InstanceLifecycle)] = "true"
 	}
 
 	info := &nodeidentity.Info{
@@ -148,9 +142,9 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	for _, tag := range instance.Tags {
-		key := aws.StringValue(tag.Key)
+		key := aws.ToString(tag.Key)
 		if strings.HasPrefix(key, ClusterAutoscalerNodeTemplateLabel) {
-			info.Labels[strings.TrimPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
+			info.Labels[strings.TrimPrefix(aws.ToString(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.ToString(tag.Value)
 		}
 	}
 
@@ -166,10 +160,10 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 }
 
 // getInstance queries EC2 for the instance with the specified ID, returning an error if not found
-func (i *nodeIdentifier) getInstance(instanceID string) (*ec2.Instance, error) {
+func (i *nodeIdentifier) getInstance(ctx context.Context, instanceID string) (*ec2types.Instance, error) {
 	// Based on node-authorizer code
-	resp, err := i.ec2Client.DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: aws.StringSlice([]string{instanceID}),
+	resp, err := i.ec2Client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+		InstanceIds: []string{instanceID},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error from ec2 DescribeInstances request: %v", err)
@@ -184,5 +178,5 @@ func (i *nodeIdentifier) getInstance(instanceID string) (*ec2.Instance, error) {
 	}
 
 	instance := resp.Reservations[0].Instances[0]
-	return instance, nil
+	return &instance, nil
 }
