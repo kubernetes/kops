@@ -17,19 +17,21 @@ limitations under the License.
 package protokube
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/klog/v2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/util/pkg/awslog"
 )
 
 // AWSCloudProvider defines the AWS cloud provider implementation
@@ -38,10 +40,10 @@ type AWSCloudProvider struct {
 
 	clusterTag string
 	deviceMap  map[string]string
-	ec2        *ec2.EC2
+	ec2        ec2.DescribeInstancesAPIClient
 	instanceId string
 	internalIP net.IP
-	metadata   *ec2metadata.EC2Metadata
+	imdsClient *imds.Client
 	zone       string
 }
 
@@ -49,42 +51,46 @@ var _ CloudProvider = &AWSCloudProvider{}
 
 // NewAWSCloudProvider returns a new aws volume provider
 func NewAWSCloudProvider() (*AWSCloudProvider, error) {
+	ctx := context.TODO()
 	a := &AWSCloudProvider{
 		deviceMap: make(map[string]string),
 	}
 
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
+	config, err := awsconfig.LoadDefaultConfig(ctx, awslog.WithAWSLogger())
 	if err != nil {
-		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+		return nil, fmt.Errorf("error loading AWS config: %w", err)
 	}
-	s.Handlers.Send.PushFront(func(r *request.Request) {
-		// Log requests
-		klog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
-	})
+	a.imdsClient = imds.NewFromConfig(config)
 
-	a.metadata = ec2metadata.New(s, config)
-
-	region, err := a.metadata.Region()
+	regionResp, err := a.imdsClient.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for az/region): %v", err)
+		return nil, fmt.Errorf("error querying ec2 metadata service (for az/region): %w", err)
 	}
 
-	a.zone, err = a.metadata.GetMetadata("placement/availability-zone")
+	zoneResp, err := a.imdsClient.GetMetadata(ctx, &imds.GetMetadataInput{Path: "placement/availability-zone"})
 	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for az): %v", err)
+		return nil, fmt.Errorf("error querying ec2 metadata service (for az): %w", err)
 	}
-
-	a.instanceId, err = a.metadata.GetMetadata("instance-id")
+	zone, err := io.ReadAll(zoneResp.Content)
 	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for instance-id): %v", err)
+		return nil, fmt.Errorf("error reading ec2 metadata service response (for az): %w", err)
 	}
+	a.zone = string(zone)
 
-	a.ec2 = ec2.New(s, config.WithRegion(region))
+	instanceIdResp, err := a.imdsClient.GetMetadata(ctx, &imds.GetMetadataInput{Path: "instance-id"})
+	if err != nil {
+		return nil, fmt.Errorf("error querying ec2 metadata service (for instance-id): %w", err)
+	}
+	instanceId, err := io.ReadAll(instanceIdResp.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error reading ec2 metadata service response (for az): %w", err)
+	}
+	a.instanceId = string(instanceId)
 
-	err = a.discoverTags()
+	config.Region = regionResp.Region
+	a.ec2 = ec2.NewFromConfig(config)
+
+	err = a.discoverTags(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -96,15 +102,15 @@ func (a *AWSCloudProvider) InstanceInternalIP() net.IP {
 	return a.internalIP
 }
 
-func (a *AWSCloudProvider) discoverTags() error {
-	instance, err := a.describeInstance()
+func (a *AWSCloudProvider) discoverTags(ctx context.Context) error {
+	instance, err := a.describeInstance(ctx)
 	if err != nil {
 		return err
 	}
 
 	tagMap := make(map[string]string)
 	for _, tag := range instance.Tags {
-		tagMap[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+		tagMap[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
 	}
 
 	clusterID := tagMap[awsup.TagClusterName]
@@ -114,9 +120,9 @@ func (a *AWSCloudProvider) discoverTags() error {
 
 	a.clusterTag = clusterID
 
-	a.internalIP = net.ParseIP(aws.StringValue(instance.Ipv6Address))
+	a.internalIP = net.ParseIP(aws.ToString(instance.Ipv6Address))
 	if a.internalIP == nil {
-		a.internalIP = net.ParseIP(aws.StringValue(instance.PrivateIpAddress))
+		a.internalIP = net.ParseIP(aws.ToString(instance.PrivateIpAddress))
 	}
 	if a.internalIP == nil {
 		return fmt.Errorf("Internal IP not found on this instance (%q)", a.instanceId)
@@ -125,26 +131,27 @@ func (a *AWSCloudProvider) discoverTags() error {
 	return nil
 }
 
-func (a *AWSCloudProvider) describeInstance() (*ec2.Instance, error) {
+func (a *AWSCloudProvider) describeInstance(ctx context.Context) (*ec2types.Instance, error) {
 	request := &ec2.DescribeInstancesInput{}
-	request.InstanceIds = []*string{&a.instanceId}
+	request.InstanceIds = []string{a.instanceId}
 
-	var instances []*ec2.Instance
-	err := a.ec2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
-		for _, r := range p.Reservations {
+	var instances []ec2types.Instance
+	paginator := ec2.NewDescribeInstancesPaginator(a.ec2, request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for EC2 instance %q: %v", a.instanceId, err)
+		}
+		for _, r := range page.Reservations {
 			instances = append(instances, r.Instances...)
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error querying for EC2 instance %q: %v", a.instanceId, err)
 	}
 
 	if len(instances) != 1 {
 		return nil, fmt.Errorf("unexpected number of instances found with id %q: %d", a.instanceId, len(instances))
 	}
 
-	return instances[0], nil
+	return &instances[0], nil
 }
 
 func (a *AWSCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
