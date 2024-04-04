@@ -17,38 +17,46 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 type SeedProvider struct {
-	ec2  ec2iface.EC2API
+	ec2  ec2.DescribeInstancesAPIClient
 	tags map[string]string
 }
 
 var _ gossip.SeedProvider = &SeedProvider{}
 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
+	ctx := context.TODO()
+
 	request := &ec2.DescribeInstancesInput{}
 	for k, v := range p.tags {
-		filter := &ec2.Filter{
+		filter := ec2types.Filter{
 			Name:   aws.String("tag:" + k),
-			Values: aws.StringSlice([]string{v}),
+			Values: []string{v},
 		}
 		request.Filters = append(request.Filters, filter)
 	}
-	request.Filters = append(request.Filters, &ec2.Filter{
+	request.Filters = append(request.Filters, ec2types.Filter{
 		Name:   aws.String("instance-state-name"),
-		Values: aws.StringSlice([]string{"running", "pending"}),
+		Values: []string{"running", "pending"},
 	})
 
 	var seeds []string
-	err := p.ec2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
-		for _, r := range p.Reservations {
+	paginator := ec2.NewDescribeInstancesPaginator(p.ec2, request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for EC2 instances: %v", err)
+		}
+		for _, r := range page.Reservations {
 			for _, i := range r.Instances {
 				ip := aws.ToString(i.PrivateIpAddress)
 				if ip != "" {
@@ -56,16 +64,12 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 				}
 			}
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error querying for EC2 instances: %v", err)
 	}
 
 	return seeds, nil
 }
 
-func NewSeedProvider(ec2 ec2iface.EC2API, tags map[string]string) (*SeedProvider, error) {
+func NewSeedProvider(ec2 ec2.DescribeInstancesAPIClient, tags map[string]string) (*SeedProvider, error) {
 	return &SeedProvider{
 		ec2:  ec2,
 		tags: tags,

@@ -226,7 +226,7 @@ func main() {
 		}
 	}
 
-	if err := addNodeController(mgr, vfsContext, &opt); err != nil {
+	if err := addNodeController(ctx, mgr, vfsContext, &opt); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeController")
 		os.Exit(1)
 	}
@@ -260,13 +260,13 @@ func buildScheme() (*runtime.Scheme, error) {
 	return scheme, nil
 }
 
-func addNodeController(mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {
+func addNodeController(ctx context.Context, mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {
 	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
 	switch opt.Cloud {
 	case "aws":
-		identifier, err = nodeidentityaws.New(opt.CacheNodeidentityInfo)
+		identifier, err = nodeidentityaws.New(ctx, opt.CacheNodeidentityInfo)
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
