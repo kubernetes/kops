@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.111.0] - 2024-04-02
+
+- #674 - @asaha2 - load balancers: introduce glb settings in godo, currently in closed beta
+
 ## [v1.110.0] - 2024-03-14
 
 - #667 - @dwilsondo - Include DBaaS metrics credential endpoint operations

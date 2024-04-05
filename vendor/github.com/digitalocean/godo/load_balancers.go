@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	cachePath             = "cache"
 	dropletsPath          = "droplets"
 	forwardingRulesPath   = "forwarding_rules"
 	loadBalancersBasePath = "/v2/load_balancers"
@@ -31,6 +32,7 @@ type LoadBalancersService interface {
 	RemoveDroplets(ctx context.Context, lbID string, dropletIDs ...int) (*Response, error)
 	AddForwardingRules(ctx context.Context, lbID string, rules ...ForwardingRule) (*Response, error)
 	RemoveForwardingRules(ctx context.Context, lbID string, rules ...ForwardingRule) (*Response, error)
+	PurgeCache(ctx context.Context, lbID string) (*Response, error)
 }
 
 // LoadBalancer represents a DigitalOcean load balancer configuration.
@@ -63,6 +65,9 @@ type LoadBalancer struct {
 	ProjectID                    string           `json:"project_id,omitempty"`
 	HTTPIdleTimeoutSeconds       *uint64          `json:"http_idle_timeout_seconds,omitempty"`
 	Firewall                     *LBFirewall      `json:"firewall,omitempty"`
+	Domains                      []*LBDomain      `json:"domains,omitempty"`
+	GLBSettings                  *GLBSettings     `json:"glb_settings,omitempty"`
+	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancer.
@@ -90,12 +95,12 @@ func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
 		RedirectHttpToHttps:          l.RedirectHttpToHttps,
 		EnableProxyProtocol:          l.EnableProxyProtocol,
 		EnableBackendKeepalive:       l.EnableBackendKeepalive,
-		HealthCheck:                  l.HealthCheck,
 		VPCUUID:                      l.VPCUUID,
 		DisableLetsEncryptDNSRecords: l.DisableLetsEncryptDNSRecords,
 		ValidateOnly:                 l.ValidateOnly,
 		ProjectID:                    l.ProjectID,
 		HTTPIdleTimeoutSeconds:       l.HTTPIdleTimeoutSeconds,
+		TargetLoadBalancerIDs:        append([]string(nil), l.TargetLoadBalancerIDs...),
 	}
 
 	if l.DisableLetsEncryptDNSRecords != nil {
@@ -106,16 +111,30 @@ func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
 		r.HealthCheck = &HealthCheck{}
 		*r.HealthCheck = *l.HealthCheck
 	}
+
 	if l.StickySessions != nil {
 		r.StickySessions = &StickySessions{}
 		*r.StickySessions = *l.StickySessions
 	}
+
 	if l.Region != nil {
 		r.Region = l.Region.Slug
 	}
 
 	if l.Firewall != nil {
 		r.Firewall = l.Firewall.deepCopy()
+	}
+
+	for _, domain := range l.Domains {
+		lbDomain := &LBDomain{}
+		*lbDomain = *domain
+		lbDomain.VerificationErrorReasons = append([]string(nil), domain.VerificationErrorReasons...)
+		lbDomain.SSLValidationErrorReasons = append([]string(nil), domain.SSLValidationErrorReasons...)
+		r.Domains = append(r.Domains, lbDomain)
+	}
+
+	if l.GLBSettings != nil {
+		r.GLBSettings = l.GLBSettings.deepCopy()
 	}
 
 	return &r
@@ -216,6 +235,9 @@ type LoadBalancerRequest struct {
 	ProjectID                    string           `json:"project_id,omitempty"`
 	HTTPIdleTimeoutSeconds       *uint64          `json:"http_idle_timeout_seconds,omitempty"`
 	Firewall                     *LBFirewall      `json:"firewall,omitempty"`
+	Domains                      []*LBDomain      `json:"domains,omitempty"`
+	GLBSettings                  *GLBSettings     `json:"glb_settings,omitempty"`
+	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancerRequest.
@@ -237,6 +259,64 @@ type dropletIDsRequest struct {
 
 func (l dropletIDsRequest) String() string {
 	return Stringify(l)
+}
+
+// LBDomain defines domain names required to ingress traffic to a Global LB
+type LBDomain struct {
+	// Name defines the domain fqdn
+	Name string `json:"name"`
+	// IsManaged indicates if the domain is DO-managed
+	IsManaged bool `json:"is_managed"`
+	// CertificateID indicates ID of a TLS certificate
+	CertificateID string `json:"certificate_id,omitempty"`
+	// Status indicates the domain validation status
+	Status string `json:"status,omitempty"`
+	// VerificationErrorReasons indicates any domain verification errors
+	VerificationErrorReasons []string `json:"verification_error_reasons,omitempty"`
+	// SSLValidationErrorReasons indicates any domain SSL validation errors
+	SSLValidationErrorReasons []string `json:"ssl_validation_error_reasons,omitempty"`
+}
+
+// String creates a human-readable description of a LBDomain
+func (d LBDomain) String() string {
+	return Stringify(d)
+}
+
+// GLBSettings define settings for configuring a Global LB
+type GLBSettings struct {
+	// TargetProtocol is the outgoing traffic protocol.
+	TargetProtocol string `json:"target_protocol"`
+	// EntryPort is the outgoing traffic port.
+	TargetPort uint32 `json:"target_port"`
+	// CDNSettings is the CDN configurations
+	CDN *CDNSettings `json:"cdn"`
+}
+
+// String creates a human-readable description of a GLBSettings
+func (s GLBSettings) String() string {
+	return Stringify(s)
+}
+
+func (s GLBSettings) deepCopy() *GLBSettings {
+	settings := &GLBSettings{
+		TargetProtocol: s.TargetProtocol,
+		TargetPort:     s.TargetPort,
+	}
+	if s.CDN != nil {
+		settings.CDN = &CDNSettings{IsEnabled: s.CDN.IsEnabled}
+	}
+	return settings
+}
+
+// CDNSettings define CDN settings for a Global LB
+type CDNSettings struct {
+	// IsEnabled is the caching enabled flag
+	IsEnabled bool `json:"is_enabled"`
+}
+
+// String creates a human-readable description of a CDNSettings
+func (c CDNSettings) String() string {
+	return Stringify(c)
 }
 
 type loadBalancersRoot struct {
@@ -388,6 +468,18 @@ func (l *LoadBalancersServiceOp) RemoveForwardingRules(ctx context.Context, lbID
 	path := fmt.Sprintf("%s/%s/%s", loadBalancersBasePath, lbID, forwardingRulesPath)
 
 	req, err := l.client.NewRequest(ctx, http.MethodDelete, path, &forwardingRulesRequest{Rules: rules})
+	if err != nil {
+		return nil, err
+	}
+
+	return l.client.Do(ctx, req, nil)
+}
+
+// PurgeCache purges the CDN cache of a global load balancer by its identifier.
+func (l *LoadBalancersServiceOp) PurgeCache(ctx context.Context, ldID string) (*Response, error) {
+	path := fmt.Sprintf("%s/%s/%s", loadBalancersBasePath, ldID, cachePath)
+
+	req, err := l.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
 		return nil, err
 	}

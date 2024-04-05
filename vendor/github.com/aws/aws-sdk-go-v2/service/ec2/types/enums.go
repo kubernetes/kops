@@ -3746,6 +3746,16 @@ const (
 	InstanceTypeC7gdMetal       InstanceType = "c7gd.metal"
 	InstanceTypeM7gdMetal       InstanceType = "m7gd.metal"
 	InstanceTypeR7gdMetal       InstanceType = "r7gd.metal"
+	InstanceTypeG6Xlarge        InstanceType = "g6.xlarge"
+	InstanceTypeG62xlarge       InstanceType = "g6.2xlarge"
+	InstanceTypeG64xlarge       InstanceType = "g6.4xlarge"
+	InstanceTypeG68xlarge       InstanceType = "g6.8xlarge"
+	InstanceTypeG612xlarge      InstanceType = "g6.12xlarge"
+	InstanceTypeG616xlarge      InstanceType = "g6.16xlarge"
+	InstanceTypeG624xlarge      InstanceType = "g6.24xlarge"
+	InstanceTypeG648xlarge      InstanceType = "g6.48xlarge"
+	InstanceTypeGr64xlarge      InstanceType = "gr6.4xlarge"
+	InstanceTypeGr68xlarge      InstanceType = "gr6.8xlarge"
 )
 
 // Values returns all known values for InstanceType. Note that this can be
@@ -4539,6 +4549,16 @@ func (InstanceType) Values() []InstanceType {
 		"c7gd.metal",
 		"m7gd.metal",
 		"r7gd.metal",
+		"g6.xlarge",
+		"g6.2xlarge",
+		"g6.4xlarge",
+		"g6.8xlarge",
+		"g6.12xlarge",
+		"g6.16xlarge",
+		"g6.24xlarge",
+		"g6.48xlarge",
+		"gr6.4xlarge",
+		"gr6.8xlarge",
 	}
 }
 
