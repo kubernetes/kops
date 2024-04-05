@@ -1,3 +1,11 @@
+# v1.156.0 (2024-04-04)
+
+* **Feature**: Amazon EC2 G6 instances powered by NVIDIA L4 Tensor Core GPUs can be used for a wide range of graphics-intensive and machine learning use cases. Gr6 instances also feature NVIDIA L4 GPUs and can be used for graphics workloads with higher memory requirements.
+
+# v1.155.1 (2024-03-29)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.155.0 (2024-03-28)
 
 * **Feature**: Amazon EC2 C7gd, M7gd and R7gd metal instances with up to 3.8 TB of local NVMe-based SSD block-level storage have up to 45% improved real-time NVMe storage performance than comparable Graviton2-based instances.
