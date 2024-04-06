@@ -1,8 +1,8 @@
 # Images
 
-As of Kubernetes 1.27 the default images used by kOps are the **[official Ubuntu 22.04](#ubuntu-2204-jammy)** images.
+As of Kubernetes 1.27 the default images used by kOps are the x86_64 (amd64) **[official Ubuntu 22.04](#ubuntu-2204-jammy)** images. If you want to pull the default kOps image, but for an arm64 processor architecture, you can specify an arm64-based instance name in the --control-plane-size and --node-size parameters of the kops create cluster command.
 
-You can choose a different image for an instance group by editing it with `kops edit ig nodes`.
+You can choose a different image for an instance group by editing it with `kops edit ig nodes`. 
 
 For AWS, you should set the `image` field in one of the following formats:
 
@@ -84,6 +84,15 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-x86_64"
 ```
 
+or (for ARM64 images):
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --filters "Name=owner-alias,Values=amazon" \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-arm64"
+```
+
 ### Debian 10 (Buster)
 
 Debian 10 is based on Kernel version **4.19** which fixes some of the bugs present in Debian 9 and effects are less visible.
@@ -111,6 +120,12 @@ aws ec2 describe-images --region us-east-1 --output table \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-10-amd64-*"
 
+# Amazon Web Services (AWS) for ARM64
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 136693071363 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-10-arm64-*"
+
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter debian-10-buster-v
 
@@ -131,6 +146,12 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-11-amd64-*"
+
+# Amazon Web Services (AWS) for ARM64
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 136693071363 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-11-arm64-*"
 
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter debian-11-bullseye-v
@@ -212,6 +233,12 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
+
+# Amazon Web Services (AWS) for ARM64
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-*"
   
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter ubuntu-2004-focal-v
@@ -233,6 +260,12 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"
+
+# Amazon Web Services (AWS) for ARM64
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-*"
 
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter ubuntu-2204-jammy-v
