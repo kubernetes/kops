@@ -27,6 +27,7 @@ import (
 // VMScaleSetVMsClient is a client for managing VMs in VM Scale Sets.
 type VMScaleSetVMsClient interface {
 	List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error)
+	Delete(ctx context.Context, resourceGroupName, vmssName, instanceId string) error
 }
 
 type vmScaleSetVMsClientImpl struct {
@@ -46,6 +47,17 @@ func (c *vmScaleSetVMsClientImpl) List(ctx context.Context, resourceGroupName, v
 		l = append(l, resp.Value...)
 	}
 	return l, nil
+}
+
+func (c *vmScaleSetVMsClientImpl) Delete(ctx context.Context, resourceGroupName, vmssName, instanceId string) error {
+	future, err := c.c.BeginDelete(ctx, resourceGroupName, vmssName, instanceId, nil)
+	if err != nil {
+		return fmt.Errorf("deleting VMSS VM: %w", err)
+	}
+	if _, err = future.PollUntilDone(ctx, nil); err != nil {
+		return fmt.Errorf("waiting for VMSS VM deletion completion: %w", err)
+	}
+	return nil
 }
 
 func newVMScaleSetVMsClientImpl(subscriptionID string, cred *azidentity.DefaultAzureCredential) (*vmScaleSetVMsClientImpl, error) {

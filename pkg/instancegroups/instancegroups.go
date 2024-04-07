@@ -476,7 +476,8 @@ func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
 	if c.Cluster.Spec.GetCloudProvider() != api.CloudProviderOpenstack &&
 		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderHetzner &&
 		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderScaleway &&
-		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderDO {
+		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderDO &&
+		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderAzure {
 		return nil
 	}
 	rto := fi.RunTasksOptions{}
