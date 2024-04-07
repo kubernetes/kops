@@ -67,6 +67,17 @@ func (c *mockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, v
 	return c.vms, nil
 }
 
+func (c *mockVMScaleSetVMsClient) Delete(ctx context.Context, resourceGroupName, vmssName, instanceID string) error {
+	var l []*compute.VirtualMachineScaleSetVM
+	for _, vm := range c.vms {
+		if *vm.ID != instanceID {
+			l = append(l, vm)
+		}
+	}
+	c.vms = l
+	return nil
+}
+
 func TestFindEtcdStatus(t *testing.T) {
 	clusterName := "my-cluster"
 	c := &azureCloudImplementation{

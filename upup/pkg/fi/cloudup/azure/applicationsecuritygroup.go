@@ -18,8 +18,10 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
@@ -50,11 +52,19 @@ func (c *ApplicationSecurityGroupsClientImpl) CreateOrUpdate(ctx context.Context
 }
 
 func (c *ApplicationSecurityGroupsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.ApplicationSecurityGroup, error) {
+	if resourceGroupName == "" {
+		return nil, nil
+	}
+
 	var l []*network.ApplicationSecurityGroup
 	pager := c.c.NewListPager(resourceGroupName, nil)
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
 		if err != nil {
+			var respErr *azcore.ResponseError
+			if errors.As(err, &respErr) && respErr.ErrorCode == "ResourceGroupNotFound" {
+				return nil, nil
+			}
 			return nil, fmt.Errorf("listing application security groups: %w", err)
 		}
 		l = append(l, resp.Value...)

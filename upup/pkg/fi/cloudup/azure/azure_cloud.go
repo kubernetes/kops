@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"k8s.io/klog/v2"
@@ -192,7 +193,9 @@ func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.V
 }
 
 func (c *azureCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	return errors.New("DeleteInstance not implemented on azureCloud")
+	vmssName := i.CloudInstanceGroup.HumanName
+	instanceID := strings.TrimPrefix(i.ID, vmssName+"_")
+	return c.vmscaleSetVMsClient.Delete(context.TODO(), "my.k8s", vmssName, instanceID)
 }
 
 // DeregisterInstance drains a cloud instance and loadbalancers.

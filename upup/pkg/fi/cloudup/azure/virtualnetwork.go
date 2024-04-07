@@ -18,8 +18,10 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
@@ -50,11 +52,19 @@ func (c *virtualNetworksClientImpl) CreateOrUpdate(ctx context.Context, resource
 }
 
 func (c *virtualNetworksClientImpl) List(ctx context.Context, resourceGroupName string) ([]*network.VirtualNetwork, error) {
+	if resourceGroupName == "" {
+		return nil, nil
+	}
+
 	var l []*network.VirtualNetwork
 	pager := c.c.NewListPager(resourceGroupName, nil)
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
 		if err != nil {
+			var respErr *azcore.ResponseError
+			if errors.As(err, &respErr) && respErr.ErrorCode == "ResourceGroupNotFound" {
+				return nil, nil
+			}
 			return nil, fmt.Errorf("listing virtual networks: %w", err)
 		}
 		l = append(l, resp.Value...)

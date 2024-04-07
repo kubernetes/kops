@@ -463,6 +463,13 @@ func (c *MockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, v
 	return l, nil
 }
 
+// Delete deletes a VM Scale Set VMs.
+func (c *MockVMScaleSetVMsClient) Delete(ctx context.Context, resourceGroupName, vmssName, instanceID string) error {
+	// Ignore resourceGroupName and vmssName for simplicity.
+	delete(c.VMs, instanceID)
+	return nil
+}
+
 // MockDisksClient is a mock implementation of disk client.
 type MockDisksClient struct {
 	Disks map[string]*compute.Disk

@@ -276,7 +276,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.AzureSubscriptionID = cluster.Spec.CloudProvider.Azure.SubscriptionID
 		config.AzureTenantID = cluster.Spec.CloudProvider.Azure.TenantID
 		config.AzureResourceGroup = cluster.AzureResourceGroupName()
-		config.AzureRouteTableName = cluster.Spec.CloudProvider.Azure.RouteTableName
+		config.AzureRouteTableName = cluster.AzureRouteTableName()
 		config.Networking.NetworkID = cluster.Spec.Networking.NetworkID
 	}
 

@@ -61,7 +61,7 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 	if err != nil {
 		var azErr *azcore.ResponseError
 		if errors.As(err, &azErr) {
-			if azErr.ErrorCode == "ResourceNotFound" {
+			if azErr.ErrorCode == "ResourceNotFound" || azErr.ErrorCode == "ResourceGroupNotFound" {
 				return nil, nil
 			} else {
 				return nil, azErr
