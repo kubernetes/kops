@@ -18,8 +18,10 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
@@ -52,11 +54,19 @@ func (c *vmScaleSetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGrou
 }
 
 func (c *vmScaleSetsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*compute.VirtualMachineScaleSet, error) {
+	if resourceGroupName == "" {
+		return nil, nil
+	}
+
 	var l []*compute.VirtualMachineScaleSet
 	pager := c.c.NewListPager(resourceGroupName, nil)
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
 		if err != nil {
+			var respErr *azcore.ResponseError
+			if errors.As(err, &respErr) && respErr.ErrorCode == "ResourceGroupNotFound" {
+				return nil, nil
+			}
 			return nil, fmt.Errorf("listing VMSSs: %w", err)
 		}
 		l = append(l, resp.Value...)
