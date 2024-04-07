@@ -81,7 +81,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-x86_64"
+  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-*"
 ```
 
 or (for ARM64 images):
