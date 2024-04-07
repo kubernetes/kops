@@ -2,7 +2,7 @@
 
 As of Kubernetes 1.27 the default images used by kOps are the **[official Ubuntu 22.04](#ubuntu-2204-jammy)** images.
 
-You can choose a different image for an instance group by editing it with `kops edit ig nodes`. 
+You can choose a different image for an instance group by editing it with `kops edit ig nodes`.
 
 For AWS, you should set the `image` field in one of the following formats:
 
