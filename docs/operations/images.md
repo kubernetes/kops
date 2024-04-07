@@ -68,7 +68,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=amzn2-ami-kernel-5.10-hvm-2*-x86_64-gp2"
+  --filters "Name=name,Values=amzn2-ami-kernel-5.10-hvm-2*-*-gp2"
 ```
 
 ### Amazon Linux 2023
@@ -81,7 +81,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-x86_64"
+  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-*"
 ```
 
 ### Debian 10 (Buster)
@@ -109,7 +109,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=debian-10-amd64-*"
+  --filters "Name=name,Values=debian-10-*-*"
 
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter debian-10-buster-v
@@ -130,7 +130,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=debian-11-amd64-*"
+  --filters "Name=name,Values=debian-11-*-*"
 
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter debian-11-bullseye-v
@@ -171,7 +171,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 309956199498 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=RHEL-8.*x86_64*"
+  --filters "Name=name,Values=RHEL-8.*"
 ```
 
 ### RHEL 9
@@ -184,7 +184,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 309956199498 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=RHEL-9.*x86_64*"
+  --filters "Name=name,Values=RHEL-9.*"
 ```
 
 ### Rocky 8
@@ -197,7 +197,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 792107900819 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=Rocky-8-ec2-8.*.x86_64"
+  --filters "Name=name,Values=Rocky-8-ec2-8.*.*"
 ```
 
 ### Ubuntu 20.04 (Focal)
@@ -211,7 +211,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-*-*"
   
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter ubuntu-2004-focal-v
@@ -232,7 +232,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-*-*"
 
 # Google Cloud Platform (GCP)
 gcloud compute images list --filter ubuntu-2204-jammy-v
