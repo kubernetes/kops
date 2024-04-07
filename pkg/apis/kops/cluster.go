@@ -878,9 +878,8 @@ func (c *Cluster) IsSharedAzureResourceGroup() bool {
 
 // AzureResourceGroupName returns the name of the resource group where the cluster is built.
 func (c *Cluster) AzureResourceGroupName() string {
-	r := c.Spec.CloudProvider.Azure.ResourceGroupName
-	if r != "" {
-		return r
+	if c.Spec.CloudProvider.Azure.ResourceGroupName != "" {
+		return c.Spec.CloudProvider.Azure.ResourceGroupName
 	}
 	return c.Name
 }
@@ -888,6 +887,14 @@ func (c *Cluster) AzureResourceGroupName() string {
 // IsSharedAzureRouteTable returns true if the route table is shared.
 func (c *Cluster) IsSharedAzureRouteTable() bool {
 	return c.Spec.CloudProvider.Azure.RouteTableName != ""
+}
+
+// AzureRouteTableName returns the name of the route table used by the cluster.
+func (c *Cluster) AzureRouteTableName() string {
+	if c.Spec.CloudProvider.Azure.RouteTableName != "" {
+		return c.Spec.CloudProvider.Azure.RouteTableName
+	}
+	return c.Name
 }
 
 func (c *Cluster) PublishesDNSRecords() bool {
