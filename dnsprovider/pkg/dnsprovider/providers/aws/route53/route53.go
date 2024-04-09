@@ -46,7 +46,6 @@ func init() {
 // newRoute53 creates a new instance of an AWS Route53 DNS Interface.
 func newRoute53() (*Interface, error) {
 	ctx := context.TODO()
-	// Connect to AWS Route53 - TODO: Do more sophisticated auth
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithClientLogMode(aws.LogRetries),
@@ -56,6 +55,11 @@ func newRoute53() (*Interface, error) {
 		}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default aws config: %w", err)
+	}
+
+	// AWS_REGION, IMDS, or config profiles can override this in LoadDefaultConfig above.
+	if cfg.Region == "" {
+		cfg.Region = "us-east-1"
 	}
 
 	svc := route53.NewFromConfig(cfg)
