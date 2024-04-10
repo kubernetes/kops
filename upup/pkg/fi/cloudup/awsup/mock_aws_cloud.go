@@ -221,7 +221,7 @@ func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2types.Vpc, error) {
 	return describeVPC(c, vpcID)
 }
 
-func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
+func (c *MockAWSCloud) ResolveImage(name string) (*ec2types.Image, error) {
 	return resolveImage(context.TODO(), c.MockSSM, c.MockEC2, name)
 }
 

@@ -180,7 +180,7 @@ type AWSCloud interface {
 	// `ami-...` in which case it is presumed to be an id
 	// owner/name in which case we find the image with the specified name, owned by owner
 	// name in which case we find the image with the specified name, with the current owner
-	ResolveImage(name string) (*ec2.Image, error)
+	ResolveImage(name string) (*ec2types.Image, error)
 
 	// WithTags created a copy of AWSCloud with the specified default-tags bound
 	WithTags(tags map[string]string) AWSCloud
@@ -1994,7 +1994,7 @@ func describeVPC(c AWSCloud, vpcID string) (*ec2types.Vpc, error) {
 // `ami-...` in which case it is presumed to be an id
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
-func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
+func (c *awsCloudImplementation) ResolveImage(name string) (*ec2types.Image, error) {
 	return resolveImage(context.TODO(), c.ssm, c.ec2, name)
 }
 
@@ -2009,17 +2009,17 @@ func resolveSSMParameter(ctx context.Context, ssmClient awsinterfaces.SSMAPI, na
 		return "", fmt.Errorf("failed to get value for SSM parameter: %w", err)
 	}
 
-	return aws.StringValue(response.Parameter.Value), nil
+	return aws.ToString(response.Parameter.Value), nil
 }
 
-func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
+func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client awsinterfaces.EC2API, name string) (*ec2types.Image, error) {
 	// TODO: Cache this result during a single execution (we get called multiple times)
 	klog.V(2).Infof("Calling DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
 
 	if strings.HasPrefix(name, "ami-") {
 		// ami-xxxxxxxx
-		request.ImageIds = []*string{&name}
+		request.ImageIds = []string{name}
 	} else if strings.HasPrefix(name, "ssm:") {
 		parameter := strings.TrimPrefix(name, "ssm:")
 
@@ -2028,13 +2028,13 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 			return nil, err
 		}
 
-		request.ImageIds = []*string{&image}
+		request.ImageIds = []string{image}
 	} else {
 		// Either <imagename> or <owner>/<imagename>
 		tokens := strings.SplitN(name, "/", 2)
 		if len(tokens) == 1 {
 			// self is a well-known value in the DescribeImages call
-			request.Owners = aws.StringSlice([]string{"self"})
+			request.Owners = []string{"self"}
 			request.Filters = append(request.Filters, NewEC2Filter("name", name))
 		} else if len(tokens) == 2 {
 			owner := tokens[0]
@@ -2055,36 +2055,38 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 				owner = WellKnownAccountUbuntu
 			}
 
-			request.Owners = []*string{&owner}
+			request.Owners = []string{owner}
 			request.Filters = append(request.Filters, NewEC2Filter("name", tokens[1]))
 		} else {
 			return nil, fmt.Errorf("image name specification not recognized: %q", name)
 		}
 	}
 
-	var image *ec2.Image
-	err := ec2Client.DescribeImagesPagesWithContext(context.TODO(), request, func(output *ec2.DescribeImagesOutput, b bool) bool {
-		for _, v := range output.Images {
+	var image *ec2types.Image
+	paginator := ec2.NewDescribeImagesPaginator(ec2Client, request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error listing images: %v", err)
+		}
+
+		for _, v := range page.Images {
 			if image == nil {
-				image = v
+				image = &v
 			} else {
 				itime, _ := time.Parse(time.RFC3339, *image.CreationDate)
 				vtime, _ := time.Parse(time.RFC3339, *v.CreationDate)
 				if vtime.After(itime) {
-					image = v
+					image = &v
 				}
 			}
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing images: %v", err)
 	}
 	if image == nil {
 		return nil, fmt.Errorf("could not find Image for %q", name)
 	}
 
-	klog.V(4).Infof("Resolved image %q", aws.StringValue(image.ImageId))
+	klog.V(4).Infof("Resolved image %q", aws.ToString(image.ImageId))
 	return image, nil
 }
 

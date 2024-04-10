@@ -28,6 +28,7 @@ When defining a new function:
 package cloudup
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -963,8 +964,8 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 
 func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
 	image, _ := tf.cloud.(awsup.AWSCloud).ResolveImage(amiID)
-	switch *image.Architecture {
-	case "x86_64":
+	switch image.Architecture {
+	case ec2types.ArchitectureValuesX8664:
 		return "amd64"
 	}
 	return "arm64"
