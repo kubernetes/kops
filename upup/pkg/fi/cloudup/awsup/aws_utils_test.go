@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -72,23 +71,23 @@ func TestFindRegion(t *testing.T) {
 func TestEC2TagSpecification(t *testing.T) {
 	cases := []struct {
 		Name          string
-		ResourceType  string
+		ResourceType  ec2types.ResourceType
 		Tags          map[string]string
-		Specification []*ec2.TagSpecification
+		Specification []ec2types.TagSpecification
 	}{
 		{
 			Name: "No tags",
 		},
 		{
 			Name:         "simple tag",
-			ResourceType: "vpc",
+			ResourceType: ec2types.ResourceTypeVpc,
 			Tags: map[string]string{
 				"foo": "bar",
 			},
-			Specification: []*ec2.TagSpecification{
+			Specification: []ec2types.TagSpecification{
 				{
-					ResourceType: aws.String("vpc"),
-					Tags: []*ec2.Tag{
+					ResourceType: ec2types.ResourceTypeVpc,
+					Tags: []ec2types.Tag{
 						{
 							Key:   aws.String("foo"),
 							Value: aws.String("bar"),
@@ -102,7 +101,7 @@ func TestEC2TagSpecification(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			s := EC2TagSpecification(tc.ResourceType, tc.Tags)
 			if !reflect.DeepEqual(s, tc.Specification) {
-				t.Fatalf("tag specifications did not match: %q vs %q", s, tc.Specification)
+				t.Fatalf("tag specifications did not match: %+v vs %+v", s, tc.Specification)
 			}
 		})
 	}

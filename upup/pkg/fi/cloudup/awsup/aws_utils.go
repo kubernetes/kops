@@ -116,7 +116,7 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 }
 
 // FindEC2Tag find the value of the tag with the specified key
-func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
+func FindEC2Tag(tags []ec2types.Tag, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.ToString(tag.Key) {
 			return aws.ToString(tag.Value), true
@@ -180,22 +180,22 @@ func AWSErrorMessage(err error) string {
 }
 
 // EC2TagSpecification converts a map of tags to an EC2 TagSpecification
-func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.TagSpecification {
+func EC2TagSpecification(resourceType ec2types.ResourceType, tags map[string]string) []ec2types.TagSpecification {
 	if len(tags) == 0 {
 		return nil
 	}
-	specification := &ec2.TagSpecification{
-		ResourceType: aws.String(resourceType),
-		Tags:         make([]*ec2.Tag, 0),
+	specification := ec2types.TagSpecification{
+		ResourceType: resourceType,
+		Tags:         make([]ec2types.Tag, 0),
 	}
 	for k, v := range tags {
-		specification.Tags = append(specification.Tags, &ec2.Tag{
+		specification.Tags = append(specification.Tags, ec2types.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})
 	}
 
-	return []*ec2.TagSpecification{specification}
+	return []ec2types.TagSpecification{specification}
 }
 
 // ELBv2Tags converts a map of tags to ELBv2 Tags

@@ -140,7 +140,7 @@ type AWSCloud interface {
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
-	BuildFilters(name *string) []*ec2.Filter
+	BuildFilters(name *string) []ec2types.Filter
 	BuildTags(name *string) map[string]string
 	Tags() map[string]string
 
@@ -1038,8 +1038,8 @@ func matchesAsgTags(tags map[string]string, actual []autoscalingtypes.TagDescrip
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
+			if aws.ToString(a.Key) == k {
+				if aws.ToString(a.Value) == v {
 					found = true
 					break
 				}
@@ -1331,11 +1331,12 @@ func getTags(c AWSCloud, resourceID string) (map[string]string, error) {
 	if resourceID == "" {
 		return nil, fmt.Errorf("resourceID not provided to getTags")
 	}
+	ctx := context.TODO()
 
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			NewEC2Filter("resource-id", resourceID),
 		},
 	}
@@ -1344,7 +1345,7 @@ func getTags(c AWSCloud, resourceID string) (map[string]string, error) {
 	for {
 		attempt++
 
-		response, err := c.EC2().DescribeTags(request)
+		response, err := c.EC2().DescribeTags(ctx, request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > DescribeTagsMaxAttempts {
@@ -1364,11 +1365,7 @@ func getTags(c AWSCloud, resourceID string) (map[string]string, error) {
 		}
 
 		for _, tag := range response.Tags {
-			if tag == nil {
-				klog.Warning("unexpected nil tag")
-				continue
-			}
-			tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			tags[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
 		}
 
 		return tags, nil
@@ -1384,10 +1381,11 @@ func createTags(c AWSCloud, resourceID string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
+	ctx := context.TODO()
 
-	ec2Tags := []*ec2.Tag{}
+	ec2Tags := []ec2types.Tag{}
 	for k, v := range tags {
-		ec2Tags = append(ec2Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
+		ec2Tags = append(ec2Tags, ec2types.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 
 	attempt := 0
@@ -1396,10 +1394,10 @@ func createTags(c AWSCloud, resourceID string, tags map[string]string) error {
 
 		request := &ec2.CreateTagsInput{
 			Tags:      ec2Tags,
-			Resources: []*string{&resourceID},
+			Resources: []string{resourceID},
 		}
 
-		_, err := c.EC2().CreateTags(request)
+		_, err := c.EC2().CreateTags(ctx, request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > CreateTagsMaxAttempts {
@@ -1432,10 +1430,11 @@ func deleteTags(c AWSCloud, resourceID string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
+	ctx := context.TODO()
 
-	ec2Tags := []*ec2.Tag{}
+	ec2Tags := []ec2types.Tag{}
 	for k, v := range tags {
-		ec2Tags = append(ec2Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
+		ec2Tags = append(ec2Tags, ec2types.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 
 	attempt := 0
@@ -1444,10 +1443,10 @@ func deleteTags(c AWSCloud, resourceID string, tags map[string]string) error {
 
 		request := &ec2.DeleteTagsInput{
 			Tags:      ec2Tags,
-			Resources: []*string{&resourceID},
+			Resources: []string{resourceID},
 		}
 
-		_, err := c.EC2().DeleteTags(request)
+		_, err := c.EC2().DeleteTags(ctx, request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > DeleteTagsMaxAttempts {
@@ -1562,7 +1561,7 @@ func getELBTags(c AWSCloud, loadBalancerName string) (map[string]string, error) 
 
 	for _, tagset := range response.TagDescriptions {
 		for _, tag := range tagset.Tags {
-			tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			tags[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
 		}
 	}
 	return tags, nil
@@ -1673,7 +1672,7 @@ func getELBV2Tags(c AWSCloud, ResourceArn string) (map[string]string, error) {
 
 	for _, tagset := range response.TagDescriptions {
 		for _, tag := range tagset.Tags {
-			tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			tags[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
 		}
 	}
 
@@ -1763,7 +1762,7 @@ func findELBByNameTag(c AWSCloud, findNameTag string) (*elbtypes.LoadBalancerDes
 		var names []string
 		nameToELB := make(map[string]elbtypes.LoadBalancerDescription)
 		for _, elb := range page.LoadBalancerDescriptions {
-			name := aws.StringValue(elb.LoadBalancerName)
+			name := aws.ToString(elb.LoadBalancerName)
 			nameToELB[name] = elb
 			names = append(names, name)
 		}
@@ -1815,7 +1814,7 @@ func describeELBTags(c AWSCloud, loadBalancerNames []string) (map[string][]elbty
 
 	tagMap := make(map[string][]elbtypes.Tag)
 	for _, tagset := range response.TagDescriptions {
-		tagMap[aws.StringValue(tagset.LoadBalancerName)] = tagset.Tags
+		tagMap[aws.ToString(tagset.LoadBalancerName)] = tagset.Tags
 	}
 	return tagMap, nil
 }
@@ -1835,7 +1834,7 @@ func FindLatestELBV2ByNameTag(loadBalancers []*LoadBalancerInfo, findNameTag str
 		} else {
 			n, err := strconv.Atoi(revisionTag)
 			if err != nil {
-				klog.Warningf("ignoring load balancer %q with revision %q", aws.StringValue(lb.LoadBalancer.LoadBalancerArn), revision)
+				klog.Warningf("ignoring load balancer %q with revision %q", aws.ToString(lb.LoadBalancer.LoadBalancerArn), revision)
 				continue
 			}
 			revision = n
@@ -1899,17 +1898,17 @@ func describeELBV2Tags(c AWSCloud, loadBalancerArns []string) (map[string][]elbv
 
 	tagMap := make(map[string][]elbv2types.Tag)
 	for _, tagset := range response.TagDescriptions {
-		tagMap[aws.StringValue(tagset.ResourceArn)] = tagset.Tags
+		tagMap[aws.ToString(tagset.ResourceArn)] = tagset.Tags
 	}
 	return tagMap, nil
 }
 
-func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
+func (c *awsCloudImplementation) BuildFilters(name *string) []ec2types.Filter {
 	return buildFilters(c.tags, name)
 }
 
-func buildFilters(commonTags map[string]string, name *string) []*ec2.Filter {
-	filters := []*ec2.Filter{}
+func buildFilters(commonTags map[string]string, name *string) []ec2types.Filter {
+	filters := []ec2types.Filter{}
 
 	merged := make(map[string]string)
 	if name != nil {
