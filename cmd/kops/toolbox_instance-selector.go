@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli"
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -69,8 +70,6 @@ const (
 	nodeVolumeSize       = "node-volume-size"
 	nodeSecurityGroups   = "node-security-groups"
 	clusterAutoscaler    = "cluster-autoscaler"
-	usageClassSpot       = "spot"
-	usageClassOndemand   = "on-demand"
 	dryRun               = "dry-run"
 	output               = "output"
 	cpuArchitectureAMD64 = "amd64"
@@ -158,8 +157,8 @@ func NewCmdToolboxInstanceSelector(f commandutils.Factory, out io.Writer) *cobra
 	cpuArchs := []string{cpuArchitectureAMD64, cpuArchitectureARM64}
 	cpuArchDefault := cpuArchitectureAMD64
 	placementGroupStrategies := []string{"cluster", "partition", "spread"}
-	usageClasses := []string{usageClassSpot, usageClassOndemand}
-	usageClassDefault := usageClassOndemand
+	usageClasses := []string{string(ec2types.UsageClassTypeSpot), string(ec2types.UsageClassTypeOnDemand)}
+	usageClassDefault := ec2types.UsageClassTypeOnDemand
 	outputDefault := "yaml"
 	dryRunDefault := false
 	clusterAutoscalerDefault := true
@@ -205,7 +204,8 @@ func NewCmdToolboxInstanceSelector(f commandutils.Factory, out io.Writer) *cobra
 	commandline.Command.RegisterFlagCompletionFunc(placementGroupStrategy, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return placementGroupStrategies, cobra.ShellCompDirectiveNoFileComp
 	})
-	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
+	ucDefault := string(usageClassDefault)
+	commandline.StringOptionsFlag(usageClass, nil, &ucDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
 	commandline.Command.RegisterFlagCompletionFunc(usageClass, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return usageClasses, cobra.ShellCompDirectiveNoFileComp
 	})
@@ -271,12 +271,10 @@ func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	sess, err := cloud.Session()
+	instanceSelector, err := selector.New(ctx, cloud.Config())
 	if err != nil {
-		return err
+		return fmt.Errorf("error initializing instance selector: %v", err)
 	}
-	instanceSelector := selector.New(sess)
-
 	igCount := options.InstanceGroupCount
 	filters := getFilters(commandline, region, zones)
 	mutatedFilters := filters
@@ -294,7 +292,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out
 		if igCount != 1 {
 			igNameForRun = fmt.Sprintf("%s%d", options.InstanceGroupName, i+1)
 		}
-		selectedInstanceTypes, err := instanceSelector.Filter(mutatedFilters)
+		selectedInstanceTypes, err := instanceSelector.Filter(ctx, mutatedFilters)
 		if err != nil {
 			return fmt.Errorf("error finding matching instance types: %w", err)
 		}
@@ -398,21 +396,29 @@ func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterNam
 
 func getFilters(commandline *cli.CommandLineInterface, region string, zones []string) selector.Filters {
 	flags := commandline.Flags
+	var cpuArch ec2types.ArchitectureType
+	if v, ok := flags[cpuArchitecture]; ok {
+		cpuArch = ec2types.ArchitectureType(v.(string))
+	}
+	var uc ec2types.UsageClassType
+	if v, ok := flags[usageClass]; ok {
+		uc = ec2types.UsageClassType(v.(string))
+	}
 	return selector.Filters{
-		VCpusRange:             commandline.IntRangeMe(flags[vcpus]),
+		VCpusRange:             commandline.Int32RangeMe(flags[vcpus]),
 		MemoryRange:            commandline.ByteQuantityRangeMe(flags[memory]),
 		VCpusToMemoryRatio:     commandline.Float64Me(flags[vcpusToMemoryRatio]),
-		CPUArchitecture:        commandline.StringMe(flags[cpuArchitecture]),
-		GpusRange:              commandline.IntRangeMe(flags[gpus]),
+		CPUArchitecture:        &cpuArch,
+		GpusRange:              commandline.Int32RangeMe(flags[gpus]),
 		GpuMemoryRange:         commandline.ByteQuantityRangeMe(flags[gpuMemory]),
 		PlacementGroupStrategy: commandline.StringMe(flags[placementGroupStrategy]),
-		UsageClass:             commandline.StringMe(flags[usageClass]),
+		UsageClass:             &uc,
 		EnaSupport:             commandline.BoolMe(flags[enaSupport]),
 		Burstable:              commandline.BoolMe(flags[burstSupport]),
 		Region:                 commandline.StringMe(region),
 		AvailabilityZones:      commandline.StringSliceMe(zones),
 		MaxResults:             commandline.IntMe(flags[maxResults]),
-		NetworkInterfaces:      commandline.IntRangeMe(flags[networkInterfaces]),
+		NetworkInterfaces:      commandline.Int32RangeMe(flags[networkInterfaces]),
 		NetworkPerformance:     commandline.IntRangeMe(flags[networkPerformance]),
 		AllowList:              commandline.RegexMe(flags[allowList]),
 		DenyList:               commandline.RegexMe(flags[denyList]),
@@ -510,11 +516,11 @@ func decorateWithInstanceGroupSpecs(instanceGroup *kops.InstanceGroup, instanceG
 }
 
 // decorateWithMixedInstancesPolicy adds a mixed instance policy based on usageClass to the instance-group
-func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageClass string, instanceSelections []string) (*kops.InstanceGroup, error) {
+func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageClass ec2types.UsageClassType, instanceSelections []string) (*kops.InstanceGroup, error) {
 	ig := instanceGroup
 	ig.Spec.MachineType = instanceSelections[0]
 
-	if usageClass == usageClassSpot {
+	if usageClass == ec2types.UsageClassTypeSpot {
 		ondemandBase := int64(0)
 		ondemandAboveBase := int64(0)
 		spotAllocationStrategy := "capacity-optimized"
@@ -524,7 +530,7 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 			OnDemandAboveBase:      &ondemandAboveBase,
 			SpotAllocationStrategy: &spotAllocationStrategy,
 		}
-	} else if usageClass == usageClassOndemand {
+	} else if usageClass == ec2types.UsageClassTypeOnDemand {
 		ig.Spec.MixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
 			Instances: instanceSelections,
 		}
