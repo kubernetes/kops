@@ -325,27 +325,27 @@ func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Insta
 }
 
 // DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
-func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
+func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2types.InstanceTypeInfo, error) {
 	if instanceType == "t2.invalidType" {
 		return nil, fmt.Errorf("invalid instance type %q specified", "t2.invalidType")
 	}
-	info := &ec2.InstanceTypeInfo{
-		NetworkInfo: &ec2.NetworkInfo{
-			MaximumNetworkInterfaces:  aws.Int64(1),
-			Ipv4AddressesPerInterface: aws.Int64(1),
+	info := &ec2types.InstanceTypeInfo{
+		NetworkInfo: &ec2types.NetworkInfo{
+			MaximumNetworkInterfaces:  aws.Int32(1),
+			Ipv4AddressesPerInterface: aws.Int32(1),
 		},
-		MemoryInfo: &ec2.MemoryInfo{
+		MemoryInfo: &ec2types.MemoryInfo{
 			SizeInMiB: aws.Int64(1024),
 		},
-		VCpuInfo: &ec2.VCpuInfo{
-			DefaultVCpus: aws.Int64(2),
+		VCpuInfo: &ec2types.VCpuInfo{
+			DefaultVCpus: aws.Int32(2),
 		},
 	}
 	if instanceType == "m3.medium" {
-		info.InstanceStorageInfo = &ec2.InstanceStorageInfo{
-			Disks: []*ec2.DiskInfo{
+		info.InstanceStorageInfo = &ec2types.InstanceStorageInfo{
+			Disks: []ec2types.DiskInfo{
 				{
-					Count:    aws.Int64(1),
+					Count:    aws.Int32(1),
 					SizeInGB: aws.Int64(1024),
 				},
 			},
@@ -354,31 +354,31 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 
 	switch instanceType {
 	case "c5.large", "m3.medium", "m4.large", "m5.large", "m5.xlarge", "t3.micro", "t3.medium", "t3.large", "c4.large":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
 	case "a1.large", "m6g.xlarge":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeArm64),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeArm64,
 			},
 		}
 	case "t2.micro", "t2.medium":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeI386),
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeI386,
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
 	case "g4dn.xlarge", "g4ad.16xlarge":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
-		info.GpuInfo = &ec2.GpuInfo{}
+		info.GpuInfo = &ec2types.GpuInfo{}
 	}
 
 	return info, nil

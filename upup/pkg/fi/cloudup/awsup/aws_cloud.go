@@ -189,7 +189,7 @@ type AWSCloud interface {
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 
 	// DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
-	DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error)
+	DescribeInstanceType(instanceType string) (*ec2types.InstanceTypeInfo, error)
 
 	// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
 	AccountInfo(ctx context.Context) (string, string, error)
@@ -2274,24 +2274,33 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 
 // DefaultInstanceType determines an instance type for the specified cluster & instance group
 func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
-	var candidates []string
+	var candidates []ec2types.InstanceType
 
 	switch ig.Spec.Role {
 	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
-		candidates = []string{"t3.medium", "c5.large", "c4.large", "t4g.medium"}
+		candidates = []ec2types.InstanceType{
+			ec2types.InstanceTypeT3Medium,
+			ec2types.InstanceTypeC5Large,
+			ec2types.InstanceTypeC4Large,
+			ec2types.InstanceTypeT4gMedium,
+		}
 
 	case kops.InstanceGroupRoleBastion:
-		candidates = []string{"t3.micro", "t2.micro", "t4g.micro"}
+		candidates = []ec2types.InstanceType{
+			ec2types.InstanceTypeT3Micro,
+			ec2types.InstanceTypeT2Micro,
+			ec2types.InstanceTypeT4gMicro,
+		}
 
 	default:
 		return "", fmt.Errorf("unhandled role %q", ig.Spec.Role)
 	}
 
-	imageArch := "x86_64"
+	imageArch := ec2types.ArchitectureTypeX8664
 	if imageInfo, err := c.ResolveImage(ig.Spec.Image); err == nil {
-		imageArch = fi.ValueOf(imageInfo.Architecture)
+		imageArch = ec2types.ArchitectureType(imageInfo.Architecture)
 	}
 
 	// Find the AZs the InstanceGroup targets
@@ -2304,13 +2313,13 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
 	var reasons []string
 	for _, instanceType := range candidates {
-		if strings.HasPrefix(instanceType, "t4g") {
-			if imageArch != "arm64" {
+		if strings.HasPrefix(string(instanceType), "t4g") {
+			if imageArch != ec2types.ArchitectureTypeArm64 {
 				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
 		} else {
-			if imageArch == "arm64" {
+			if imageArch == ec2types.ArchitectureTypeArm64 {
 				reasons = append(reasons, fmt.Sprintf("instance type %q does not match image architecture %q", instanceType, imageArch))
 				continue
 			}
@@ -2321,7 +2330,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 			return "", err
 		}
 		if zones.IsSuperset(igZonesSet) {
-			return instanceType, nil
+			return string(instanceType), nil
 		} else {
 			reasons = append(reasons, fmt.Sprintf("instance type %q is not available in all zones (available in zones %v, need %v)", instanceType, zones, igZones))
 			klog.V(2).Infof("can't use instance type %q, available in zones %v but need %v", instanceType, zones, igZones)
@@ -2337,26 +2346,27 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 }
 
 // supportsInstanceType uses the DescribeReservedInstancesOfferings API call to determine if an instance type is supported in a region
-func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (sets.String, error) {
+func (c *awsCloudImplementation) zonesWithInstanceType(instanceType ec2types.InstanceType) (sets.String, error) {
 	klog.V(4).Infof("checking if instance type %q is supported in region %q", instanceType, c.region)
+	ctx := context.TODO()
 	request := &ec2.DescribeReservedInstancesOfferingsInput{}
-	request.InstanceTenancy = aws.String("default")
+	request.InstanceTenancy = ec2types.TenancyDefault
 	request.IncludeMarketplace = aws.Bool(false)
-	request.OfferingClass = aws.String(ec2.OfferingClassTypeStandard)
-	request.OfferingType = aws.String(ec2.OfferingTypeValuesNoUpfront)
-	request.ProductDescription = aws.String(ec2.RIProductDescriptionLinuxUnixamazonVpc)
-	request.InstanceType = aws.String(instanceType)
+	request.OfferingClass = ec2types.OfferingClassTypeStandard
+	request.OfferingType = ec2types.OfferingTypeValuesNoUpfront
+	request.ProductDescription = ec2types.RIProductDescriptionLinuxUnixAmazonVpc
+	request.InstanceType = instanceType
 
 	zones := sets.NewString()
 
-	response, err := c.ec2.DescribeReservedInstancesOfferings(request)
+	response, err := c.ec2.DescribeReservedInstancesOfferings(ctx, request)
 	if err != nil {
 		return zones, fmt.Errorf("error checking if instance type %q is supported in region %q: %v", instanceType, c.region, err)
 	}
 
 	for _, item := range response.ReservedInstancesOfferings {
-		if aws.StringValue(item.InstanceType) == instanceType {
-			zones.Insert(aws.StringValue(item.AvailabilityZone))
+		if item.InstanceType == instanceType {
+			zones.Insert(aws.ToString(item.AvailabilityZone))
 		} else {
 			klog.Warningf("skipping non-matching instance type offering: %v", item)
 		}
@@ -2366,7 +2376,7 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 }
 
 // DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
-func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
+func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2types.InstanceTypeInfo, error) {
 	if info, ok := c.instanceTypes.typeMap[instanceType]; ok {
 		return info, nil
 	}
@@ -2381,18 +2391,19 @@ func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2
 	return info, nil
 }
 
-func describeInstanceType(c AWSCloud, instanceType string) (*ec2.InstanceTypeInfo, error) {
+func describeInstanceType(c AWSCloud, instanceType string) (*ec2types.InstanceTypeInfo, error) {
+	ctx := context.TODO()
 	req := &ec2.DescribeInstanceTypesInput{
-		InstanceTypes: aws.StringSlice([]string{instanceType}),
+		InstanceTypes: []ec2types.InstanceType{ec2types.InstanceType(instanceType)},
 	}
-	resp, err := c.EC2().DescribeInstanceTypes(req)
+	resp, err := c.EC2().DescribeInstanceTypes(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("describing instance type %q in region %q: %w", instanceType, c.Region(), err)
 	}
 	if len(resp.InstanceTypes) != 1 {
 		return nil, fmt.Errorf("instance type %q not found in region %q", instanceType, c.Region())
 	}
-	return resp.InstanceTypes[0], nil
+	return &resp.InstanceTypes[0], nil
 }
 
 // AccountInfo returns the AWS account ID and AWS partition that we are deploying into

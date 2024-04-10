@@ -995,6 +995,7 @@ func (tf *TemplateFunctions) podIdentityWebhookConfigMapData() (string, error) {
 }
 
 func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {
+	ctx := context.TODO()
 	var mixedInstancesPolicy *kops.MixedInstancesPolicySpec
 
 	if ig.MachineType == "" && ig.MixedInstancesPolicy == nil {
@@ -1033,55 +1034,55 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 			arch := ami.Architecture
 			hv := ami.VirtualizationType
 
-			ir := &ec2.InstanceRequirementsRequest{
-				VCpuCount:            &ec2.VCpuCountRangeRequest{},
-				MemoryMiB:            &ec2.MemoryMiBRequest{},
-				BurstablePerformance: fi.PtrTo("included"),
-				InstanceGenerations:  []*string{fi.PtrTo("current")},
+			ir := &ec2types.InstanceRequirementsRequest{
+				VCpuCount:            &ec2types.VCpuCountRangeRequest{},
+				MemoryMiB:            &ec2types.MemoryMiBRequest{},
+				BurstablePerformance: ec2types.BurstablePerformanceIncluded,
+				InstanceGenerations:  []ec2types.InstanceGeneration{ec2types.InstanceGenerationCurrent},
 			}
 			cpu := instanceRequirements.CPU
 			if cpu != nil {
 				if cpu.Max != nil {
 					cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
-					ir.VCpuCount.Max = &cpuMax
+					ir.VCpuCount.Max = fi.PtrTo(int32(cpuMax))
 				}
 				cpu := instanceRequirements.CPU
 				if cpu != nil {
 					if cpu.Max != nil {
 						cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
-						ir.VCpuCount.Max = &cpuMax
+						ir.VCpuCount.Max = fi.PtrTo(int32(cpuMax))
 					}
 					if cpu.Min != nil {
 						cpuMin, _ := instanceRequirements.CPU.Min.AsInt64()
-						ir.VCpuCount.Min = &cpuMin
+						ir.VCpuCount.Min = fi.PtrTo(int32(cpuMin))
 					}
 				} else {
-					ir.VCpuCount.Min = fi.PtrTo(int64(0))
+					ir.VCpuCount.Min = fi.PtrTo(int32(0))
 				}
 
 				memory := instanceRequirements.Memory
 				if memory != nil {
 					if memory.Max != nil {
 						memoryMax := instanceRequirements.Memory.Max.ScaledValue(resource.Mega)
-						ir.MemoryMiB.Max = &memoryMax
+						ir.MemoryMiB.Max = fi.PtrTo(int32(memoryMax))
 					}
 					if memory.Min != nil {
 						memoryMin := instanceRequirements.Memory.Min.ScaledValue(resource.Mega)
-						ir.MemoryMiB.Min = &memoryMin
+						ir.MemoryMiB.Min = fi.PtrTo(int32(memoryMin))
 					}
 				} else {
-					ir.MemoryMiB.Min = fi.PtrTo(int64(0))
+					ir.MemoryMiB.Min = fi.PtrTo(int32(0))
 				}
 
-				ir.AcceleratorCount = &ec2.AcceleratorCountRequest{
-					Min: fi.PtrTo(int64(0)),
-					Max: fi.PtrTo(int64(0)),
+				ir.AcceleratorCount = &ec2types.AcceleratorCountRequest{
+					Min: fi.PtrTo(int32(0)),
+					Max: fi.PtrTo(int32(0)),
 				}
 
-				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(
+				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(ctx,
 					&ec2.GetInstanceTypesFromInstanceRequirementsInput{
-						ArchitectureTypes:    []*string{arch},
-						VirtualizationTypes:  []*string{hv},
+						ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureType(arch)},
+						VirtualizationTypes:  []ec2types.VirtualizationType{hv},
 						InstanceRequirements: ir,
 					},
 				)

@@ -35,6 +35,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"go.uber.org/multierr"
@@ -264,7 +265,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if nvidia != nil && fi.ValueOf(nvidia.Enabled) {
 			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.
-			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, modelContext.MachineType)
+			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, ec2types.InstanceType(modelContext.MachineType))
 			if err != nil {
 				return err
 			}

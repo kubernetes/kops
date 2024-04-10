@@ -17,12 +17,13 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1669,16 +1670,16 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 		if info.ProcessorInfo == nil || len(info.ProcessorInfo.SupportedArchitectures) == 0 {
 			return "", fmt.Errorf("unable to determine architecture info for instance type %q", machineType)
 		}
-		var unsupported []string
+		var unsupported []ec2types.ArchitectureType
 		for _, arch := range info.ProcessorInfo.SupportedArchitectures {
 			// Return the first found supported architecture, in order of popularity
-			switch fi.ValueOf(arch) {
-			case ec2.ArchitectureTypeX8664:
+			switch arch {
+			case ec2types.ArchitectureTypeX8664:
 				return architectures.ArchitectureAmd64, nil
-			case ec2.ArchitectureTypeArm64:
+			case ec2types.ArchitectureTypeArm64:
 				return architectures.ArchitectureArm64, nil
 			default:
-				unsupported = append(unsupported, fi.ValueOf(arch))
+				unsupported = append(unsupported, arch)
 			}
 		}
 		return "", fmt.Errorf("unsupported architecture for instance type %q: %v", machineType, unsupported)
