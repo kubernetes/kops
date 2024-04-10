@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 
@@ -238,13 +238,13 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 	mockEC2 := &mockec2.MockEC2{}
 	cloud.MockEC2 = mockEC2
 
-	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
 		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
 		ImageId:        aws.String("ami-073c8c0760395aab8"),
 		Name:           aws.String("focal"),
 		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
 		RootDeviceName: aws.String("/dev/xvda"),
-		Architecture:   aws.String("x86_64"),
+		Architecture:   ec2types.ArchitectureValuesX8664,
 	})
 
 	for _, g := range grid {
@@ -339,13 +339,13 @@ func TestMixedInstancePolicies(t *testing.T) {
 	mockEC2 := &mockec2.MockEC2{}
 	cloud.MockEC2 = mockEC2
 
-	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
 		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
 		ImageId:        aws.String("ami-073c8c0760395aab8"),
 		Name:           aws.String("focal"),
 		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
 		RootDeviceName: aws.String("/dev/xvda"),
-		Architecture:   aws.String("x86_64"),
+		Architecture:   ec2types.ArchitectureValuesX8664,
 	})
 
 	for _, g := range grid {
@@ -367,13 +367,13 @@ func TestInstanceMetadataOptions(t *testing.T) {
 	mockEC2 := &mockec2.MockEC2{}
 	cloud.MockEC2 = mockEC2
 
-	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
 		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
 		ImageId:        aws.String("ami-073c8c0760395aab8"),
 		Name:           aws.String("focal"),
 		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
 		RootDeviceName: aws.String("/dev/xvda"),
-		Architecture:   aws.String("x86_64"),
+		Architecture:   ec2types.ArchitectureValuesX8664,
 	})
 
 	tests := []struct {

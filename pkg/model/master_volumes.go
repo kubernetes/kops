@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -44,7 +44,7 @@ import (
 
 const (
 	DefaultEtcdVolumeSize             = 20
-	DefaultAWSEtcdVolumeType          = ec2.VolumeTypeGp3
+	DefaultAWSEtcdVolumeType          = "gp3"
 	DefaultAWSEtcdVolumeIonIops       = 100
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
@@ -138,12 +138,12 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, nam
 	}
 	volumeIops := fi.ValueOf(m.VolumeIOPS)
 	volumeThroughput := fi.ValueOf(m.VolumeThroughput)
-	switch volumeType {
-	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+	switch ec2types.VolumeType(volumeType) {
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
 		if volumeIops < 100 {
 			volumeIops = DefaultAWSEtcdVolumeIonIops
 		}
-	case ec2.VolumeTypeGp3:
+	case ec2types.VolumeTypeGp3:
 		if volumeIops < 3000 {
 			volumeIops = DefaultAWSEtcdVolumeGp3Iops
 		}
@@ -181,18 +181,18 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, nam
 		Lifecycle: b.Lifecycle,
 
 		AvailabilityZone: fi.PtrTo(zone),
-		SizeGB:           fi.PtrTo(int64(volumeSize)),
-		VolumeType:       fi.PtrTo(volumeType),
+		SizeGB:           fi.PtrTo(int32(volumeSize)),
+		VolumeType:       ec2types.VolumeType(volumeType),
 		KmsKeyId:         m.KmsKeyID,
 		Encrypted:        fi.PtrTo(encrypted),
 		Tags:             tags,
 	}
-	switch volumeType {
-	case ec2.VolumeTypeGp3:
-		t.VolumeThroughput = fi.PtrTo(int64(volumeThroughput))
+	switch ec2types.VolumeType(volumeType) {
+	case ec2types.VolumeTypeGp3:
+		t.VolumeThroughput = fi.PtrTo(int32(volumeThroughput))
 		fallthrough
-	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
-		t.VolumeIops = fi.PtrTo(int64(volumeIops))
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
+		t.VolumeIops = fi.PtrTo(int32(volumeIops))
 	}
 
 	c.AddTask(t)
@@ -203,16 +203,16 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, nam
 func validateAWSVolume(name, volumeType string, volumeSize, volumeIops, volumeThroughput int32) error {
 	volumeIopsSizeRatio := float64(volumeIops) / float64(volumeSize)
 	volumeThroughputIopsRatio := float64(volumeThroughput) / float64(volumeIops)
-	switch volumeType {
-	case ec2.VolumeTypeIo1:
+	switch ec2types.VolumeType(volumeType) {
+	case ec2types.VolumeTypeIo1:
 		if volumeIopsSizeRatio > 50.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}
-	case ec2.VolumeTypeIo2:
+	case ec2types.VolumeTypeIo2:
 		if volumeIopsSizeRatio > 500.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}
-	case ec2.VolumeTypeGp3:
+	case ec2types.VolumeTypeGp3:
 		if volumeIops > 3000 && volumeIopsSizeRatio > 500.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}

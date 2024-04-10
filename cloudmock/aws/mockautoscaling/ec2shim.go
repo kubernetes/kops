@@ -21,30 +21,29 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type ec2Shim struct {
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 	mockAutoscaling *MockAutoscaling
 }
 
-func (m *MockAutoscaling) GetEC2Shim(e ec2iface.EC2API) ec2iface.EC2API {
+func (m *MockAutoscaling) GetEC2Shim(e awsinterfaces.EC2API) awsinterfaces.EC2API {
 	return &ec2Shim{
 		EC2API:          e,
 		mockAutoscaling: m,
 	}
 }
 
-func (e *ec2Shim) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
-	ctx := context.TODO()
+func (e *ec2Shim) TerminateInstances(ctx context.Context, input *ec2.TerminateInstancesInput, optFns ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error) {
 	if input.DryRun != nil && *input.DryRun {
 		return &ec2.TerminateInstancesOutput{}, nil
 	}
 	for _, id := range input.InstanceIds {
 		request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     id,
+			InstanceId:                     aws.String(id),
 			ShouldDecrementDesiredCapacity: aws.Bool(false),
 		}
 		if _, err := e.mockAutoscaling.TerminateInstanceInAutoScalingGroup(ctx, request); err != nil {

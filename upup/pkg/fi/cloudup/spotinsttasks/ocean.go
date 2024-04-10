@@ -1367,3 +1367,19 @@ func NormalizeClusterOrientation(orientation *string) ClusterOrientation {
 
 	return out
 }
+
+func ptrInt32ToPtrInt64(i *int32) *int64 {
+	if i == nil {
+		return nil
+	}
+	v := int64(*i)
+	return fi.PtrTo(v)
+}
+
+func ptrInt64ToPtrInt32(i *int64) *int32 {
+	if i == nil {
+		return nil
+	}
+	v := int32(*i)
+	return fi.PtrTo(v)
+}

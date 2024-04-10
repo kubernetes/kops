@@ -210,11 +210,11 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 	return resourceTrackers, nil
 }
 
-func BuildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
+func BuildEC2Filters(cloud fi.Cloud) []ec2types.Filter {
 	awsCloud := cloud.(awsup.AWSCloud)
 	tags := awsCloud.Tags()
 
-	var filters []*ec2.Filter
+	var filters []ec2types.Filter
 	for k, v := range tags {
 		filter := awsup.NewEC2Filter("tag:"+k, v)
 		filters = append(filters, filter)
@@ -324,11 +324,12 @@ func matchesIAMTags(tags map[string]string, actual []iamtypes.Tag) bool {
 }
 
 func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	var ids []*string
+	var ids []string
 	for i, instance := range t {
-		ids = append(ids, &instance.ID)
+		ids = append(ids, instance.ID)
 		if len(ids) < 100 && i < len(t)-1 {
 			continue
 		}
@@ -337,8 +338,8 @@ func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: ids,
 		}
-		ids = []*string{}
-		_, err := c.EC2().TerminateInstances(request)
+		ids = []string{}
+		_, err := c.EC2().TerminateInstances(ctx, request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
 				klog.V(2).Infof("Got InvalidInstanceID.NotFound error terminating instances; will treat as already terminated")
@@ -351,27 +352,33 @@ func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 }
 
 func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Querying EC2 instances")
 	filters := BuildEC2Filters(cloud)
 	filters = append(filters, awsup.NewEC2Filter("vpc-id", vpcID))
-	filters = append(filters, awsup.NewEC2Filter("instance-state-name", ec2.InstanceStateNameRunning))
+	filters = append(filters, awsup.NewEC2Filter("instance-state-name", string(ec2types.InstanceStateNameRunning)))
 	request := &ec2.DescribeInstancesInput{
 		Filters: filters,
 	}
 
 	var resourceTrackers []*resources.Resource
 
-	err := c.EC2().DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
-		for _, reservation := range p.Reservations {
+	paginator := ec2.NewDescribeInstancesPaginator(c.EC2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error describing instances: %v", err)
+		}
+		for _, reservation := range page.Reservations {
 			for _, instance := range reservation.Instances {
 				id := aws.ToString(instance.InstanceId)
 
 				resourceTracker := &resources.Resource{
 					Name:         FindName(instance.Tags),
 					ID:           id,
-					Type:         ec2.ResourceTypeInstance,
+					Type:         string(ec2types.ResourceTypeInstance),
 					GroupDeleter: DeleteInstances,
 					GroupKey:     fi.ValueOf(instance.SubnetId),
 					Dumper:       DumpInstance,
@@ -397,10 +404,6 @@ func ListInstances(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 				resourceTrackers = append(resourceTrackers, resourceTracker)
 			}
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing instances: %v", err)
 	}
 
 	return resourceTrackers, nil
@@ -456,7 +459,7 @@ func (s *dumpState) getImageInfo(imageID string) (*imageInfo, error) {
 	return info, nil
 }
 
-func guessSSHUser(image *ec2.Image) string {
+func guessSSHUser(image *ec2types.Image) string {
 	owner := aws.ToString(image.OwnerId)
 	switch owner {
 	case awsup.WellKnownAccountAmazonLinux2, awsup.WellKnownAccountRedhat:
@@ -482,11 +485,11 @@ func guessSSHUser(image *ec2.Image) string {
 func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
-	data["type"] = ec2.ResourceTypeInstance
+	data["type"] = ec2types.ResourceTypeInstance
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
 
-	ec2Instance := r.Obj.(*ec2.Instance)
+	ec2Instance := r.Obj.(*ec2types.Instance)
 	i := &resources.Instance{
 		Name: r.ID,
 	}
@@ -536,6 +539,7 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 }
 
 func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
@@ -544,7 +548,7 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	request := &ec2.DeleteVolumeInput{
 		VolumeId: &id,
 	}
-	_, err := c.EC2().DeleteVolume(request)
+	_, err := c.EC2().DeleteVolume(ctx, request)
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "InvalidVolume.NotFound" {
 			klog.V(2).Infof("Got InvalidVolume.NotFound error deleting Volume %q; will treat as already-deleted", id)
@@ -559,6 +563,7 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	volumes, err := DescribeVolumes(cloud)
@@ -587,7 +592,7 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 			ID:      id,
 			Type:    "volume",
 			Deleter: DeleteVolume,
-			Shared:  HasSharedTag(ec2.ResourceTypeVolume+":"+id, volume.Tags, clusterName),
+			Shared:  HasSharedTag(string(ec2types.ResourceTypeVolume)+":"+id, volume.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -614,7 +619,7 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 	if len(elasticIPs) != 0 {
 		klog.V(2).Infof("Querying EC2 Elastic IPs")
 		request := &ec2.DescribeAddressesInput{}
-		response, err := c.EC2().DescribeAddresses(request)
+		response, err := c.EC2().DescribeAddresses(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error describing addresses: %v", err)
 		}
@@ -632,28 +637,31 @@ func ListVolumes(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resour
 	return resourceTrackers, nil
 }
 
-func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
+func DescribeVolumes(cloud fi.Cloud) ([]ec2types.Volume, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	var volumes []*ec2.Volume
+	var volumes []ec2types.Volume
 
 	klog.V(2).Infof("Listing EC2 Volumes")
 	request := &ec2.DescribeVolumesInput{
 		Filters: BuildEC2Filters(c),
 	}
 
-	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
-		volumes = append(volumes, p.Volumes...)
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing volumes: %v", err)
+	paginator := ec2.NewDescribeVolumesPaginator(c.EC2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error describing volumes: %v", err)
+		}
+		volumes = append(volumes, page.Volumes...)
 	}
 
 	return volumes, nil
 }
 
 func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
@@ -662,7 +670,7 @@ func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
 	request := &ec2.DeleteKeyPairInput{
 		KeyPairId: &id,
 	}
-	_, err := c.EC2().DeleteKeyPair(request)
+	_, err := c.EC2().DeleteKeyPair(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error deleting KeyPair %q: %v", id, err)
 	}
@@ -670,6 +678,7 @@ func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func ListKeypairs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	if !strings.Contains(clusterName, ".") {
 		klog.Infof("cluster %q is legacy (kube-up) cluster; won't delete keypairs", clusterName)
 		return nil, nil
@@ -684,7 +693,7 @@ func ListKeypairs(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Resou
 	// TODO: We need to match both the name and a prefix
 	// TODO: usee 'Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},'
 	request := &ec2.DescribeKeyPairsInput{}
-	response, err := c.EC2().DescribeKeyPairs(request)
+	response, err := c.EC2().DescribeKeyPairs(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing KeyPairs: %v", err)
 	}
@@ -1275,22 +1284,28 @@ func ListAutoScalingGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resour
 
 // FindAutoScalingLaunchTemplates finds any launch templates owned by the cluster (by tag).
 func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Finding all AutoScaling LaunchTemplates owned by the cluster")
 
 	input := &ec2.DescribeLaunchTemplatesInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			{
 				Name:   aws.String("tag:kubernetes.io/cluster/" + clusterName),
-				Values: []*string{aws.String("owned")},
+				Values: []string{"owned"},
 			},
 		},
 	}
 
 	var list []*resources.Resource
-	err := c.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
-		for _, lt := range p.LaunchTemplates {
+	paginator := ec2.NewDescribeLaunchTemplatesPaginator(c.EC2(), input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error listing AutoScaling LaunchTemplates: %v", err)
+		}
+		for _, lt := range page.LaunchTemplates {
 			list = append(list, &resources.Resource{
 				Name:    aws.ToString(lt.LaunchTemplateName),
 				ID:      aws.ToString(lt.LaunchTemplateId),
@@ -1298,10 +1313,6 @@ func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*reso
 				Deleter: DeleteAutoScalingGroupLaunchTemplate,
 			})
 		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing AutoScaling LaunchTemplates: %v", err)
 	}
 
 	return list, nil
@@ -1411,13 +1422,14 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 
 // DeleteAutoScalingGroupLaunchTemplate deletes
 func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource) error {
+	ctx := context.TODO()
 	c, ok := cloud.(awsup.AWSCloud)
 	if !ok {
 		return errors.New("expected a aws.Cloud provider")
 	}
 	klog.V(2).Infof("Deleting EC2 LaunchTemplate %q", r.ID)
 
-	if _, err := c.EC2().DeleteLaunchTemplate(&ec2.DeleteLaunchTemplateInput{
+	if _, err := c.EC2().DeleteLaunchTemplate(ctx, &ec2.DeleteLaunchTemplateInput{
 		LaunchTemplateId: fi.PtrTo(r.ID),
 	}); err != nil {
 		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
@@ -2151,7 +2163,7 @@ func ListSpotinstResources(cloud fi.Cloud, vpcID, clusterName string) ([]*resour
 	return spotinst.ListResources(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
 }
 
-func FindName(tags []*ec2.Tag) string {
+func FindName(tags []ec2types.Tag) string {
 	if name, found := awsup.FindEC2Tag(tags, "Name"); found {
 		return name
 	}
@@ -2180,16 +2192,16 @@ func FindELBV2Name(tags []elbv2types.Tag) string {
 }
 
 // HasSharedTag looks for the shared tag indicating that the cluster does not own the resource
-func HasSharedTag(description string, tags []*ec2.Tag, clusterName string) bool {
+func HasSharedTag(description string, tags []ec2types.Tag, clusterName string) bool {
 	tagKey := "kubernetes.io/cluster/" + clusterName
 
-	var found *ec2.Tag
+	var found *ec2types.Tag
 	for _, tag := range tags {
 		if aws.ToString(tag.Key) != tagKey {
 			continue
 		}
 
-		found = tag
+		found = &tag
 	}
 
 	if found == nil {

@@ -20,15 +20,14 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockEC2 struct {
 	// Stub out interface
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 
 	mutex sync.Mutex
 
@@ -39,7 +38,7 @@ type MockEC2 struct {
 
 	DhcpOptions map[string]*ec2types.DhcpOptions
 
-	Images []*ec2.Image
+	Images []*ec2types.Image
 
 	securityGroupNumber int
 	SecurityGroups      map[string]*ec2types.SecurityGroup
@@ -47,11 +46,11 @@ type MockEC2 struct {
 
 	subnets map[string]*subnetInfo
 
-	Volumes map[string]*ec2.Volume
+	Volumes map[string]*ec2types.Volume
 
-	KeyPairs map[string]*ec2.KeyPairInfo
+	KeyPairs map[string]*ec2types.KeyPairInfo
 
-	Tags []*ec2.TagDescription
+	Tags []*ec2types.TagDescription
 
 	Vpcs map[string]*vpcInfo
 
@@ -67,13 +66,13 @@ type MockEC2 struct {
 	ids      map[string]*idAllocator
 }
 
-var _ ec2iface.EC2API = &MockEC2{}
+var _ awsinterfaces.EC2API = &MockEC2{}
 
 func (m *MockEC2) All() map[string]interface{} {
 	all := make(map[string]interface{})
 
 	for _, o := range m.Addresses {
-		all[aws.StringValue(o.AllocationId)] = o
+		all[aws.ToString(o.AllocationId)] = o
 	}
 	for id, o := range m.RouteTables {
 		all[id] = o
@@ -82,7 +81,7 @@ func (m *MockEC2) All() map[string]interface{} {
 		all[id] = o
 	}
 	for _, o := range m.Images {
-		all[aws.StringValue(o.ImageId)] = o
+		all[aws.ToString(o.ImageId)] = o
 	}
 	for id, o := range m.SecurityGroups {
 		all[id] = o

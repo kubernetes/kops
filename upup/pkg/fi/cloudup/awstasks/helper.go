@@ -20,12 +20,13 @@ import (
 	"errors"
 	"fmt"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // buildEphemeralDevices looks up the machine type and discovery any ephemeral device mappings
-func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string]*BlockDeviceMapping, error) {
+func buildEphemeralDevices(cloud awsup.AWSCloud, machineType ec2types.InstanceType) (map[string]*BlockDeviceMapping, error) {
 	if machineType == "" {
 		return nil, nil
 	}

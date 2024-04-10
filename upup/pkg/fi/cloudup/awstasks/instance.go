@@ -17,12 +17,14 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -49,7 +51,7 @@ type Instance struct {
 	Shared *bool
 
 	ImageID            *string
-	InstanceType       *string
+	InstanceType       ec2types.InstanceType
 	SSHKey             *SSHKey
 	SecurityGroups     []*SecurityGroup
 	AssociatePublicIP  *bool
@@ -63,12 +65,13 @@ func (s *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	var request *ec2.DescribeInstancesInput
 
 	if fi.ValueOf(e.Shared) {
-		var instanceIds []*string
-		instanceIds = append(instanceIds, e.ID)
+		var instanceIds []string
+		instanceIds = append(instanceIds, aws.ToString(e.ID))
 		request = &ec2.DescribeInstancesInput{
 			InstanceIds: instanceIds,
 		}
@@ -80,12 +83,12 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		}
 	}
 
-	response, err := cloud.EC2().DescribeInstances(request)
+	response, err := cloud.EC2().DescribeInstances(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing instances: %v", err)
 	}
 
-	instances := []*ec2.Instance{}
+	instances := []ec2types.Instance{}
 	if response != nil {
 		for _, reservation := range response.Reservations {
 			instances = append(instances, reservation.Instances...)
@@ -119,8 +122,8 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	{
 		request := &ec2.DescribeInstanceAttributeInput{}
 		request.InstanceId = i.InstanceId
-		request.Attribute = aws.String("userData")
-		response, err := cloud.EC2().DescribeInstanceAttribute(request)
+		request.Attribute = ec2types.InstanceAttributeNameUserData
+		response, err := cloud.EC2().DescribeInstanceAttribute(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId, err)
 		}
@@ -208,6 +211,7 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 }
 
 func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
+	ctx := context.TODO()
 	if a == nil {
 
 		if fi.ValueOf(e.Shared) {
@@ -226,21 +230,21 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		request := &ec2.RunInstancesInput{
 			ImageId:      image.ImageId,
 			InstanceType: e.InstanceType,
-			MinCount:     aws.Int64(1),
-			MaxCount:     aws.Int64(1),
+			MinCount:     aws.Int32(1),
+			MaxCount:     aws.Int32(1),
 		}
 
 		if e.SSHKey != nil {
 			request.KeyName = e.SSHKey.Name
 		}
 
-		securityGroupIDs := []*string{}
+		securityGroupIDs := []string{}
 		for _, sg := range e.SecurityGroups {
-			securityGroupIDs = append(securityGroupIDs, sg.ID)
+			securityGroupIDs = append(securityGroupIDs, fi.ValueOf(sg.ID))
 		}
-		request.NetworkInterfaces = []*ec2.InstanceNetworkInterfaceSpecification{
+		request.NetworkInterfaces = []ec2types.InstanceNetworkInterfaceSpecification{
 			{
-				DeviceIndex:              aws.Int64(0),
+				DeviceIndex:              aws.Int32(0),
 				AssociatePublicIpAddress: e.AssociatePublicIP,
 				SubnetId:                 e.Subnet.ID,
 				PrivateIpAddress:         e.PrivateIPAddress,
@@ -250,13 +254,13 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 
 		// Build up the actual block device mappings
 		// TODO: Support RootVolumeType & RootVolumeSize (see launchconfiguration)
-		blockDeviceMappings, err := buildEphemeralDevices(t.Cloud, fi.ValueOf(e.InstanceType))
+		blockDeviceMappings, err := buildEphemeralDevices(t.Cloud, e.InstanceType)
 		if err != nil {
 			return err
 		}
 
 		if len(blockDeviceMappings) != 0 {
-			request.BlockDeviceMappings = []*ec2.BlockDeviceMapping{}
+			request.BlockDeviceMappings = []ec2types.BlockDeviceMapping{}
 			for deviceName, bdm := range blockDeviceMappings {
 				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToEC2(deviceName))
 			}
@@ -280,12 +284,12 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		}
 
 		if e.IAMInstanceProfile != nil {
-			request.IamInstanceProfile = &ec2.IamInstanceProfileSpecification{
+			request.IamInstanceProfile = &ec2types.IamInstanceProfileSpecification{
 				Name: e.IAMInstanceProfile.Name,
 			}
 		}
 
-		response, err := t.Cloud.EC2().RunInstances(request)
+		response, err := t.Cloud.EC2().RunInstances(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}

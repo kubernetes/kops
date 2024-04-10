@@ -17,49 +17,27 @@ limitations under the License.
 package mockec2
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
+func (m *MockEC2) DescribeInstances(ctx context.Context, request *ec2.DescribeInstancesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	klog.Warningf("MockEc2::DescribeInstances is stub-implemented")
 	return &ec2.DescribeInstancesOutput{}, nil
 }
 
-func (m *MockEC2) DescribeInstancesWithContext(aws.Context, *ec2.DescribeInstancesInput, ...request.Option) (*ec2.DescribeInstancesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeInstancesRequest(*ec2.DescribeInstancesInput) (*request.Request, *ec2.DescribeInstancesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeInstancesPages(request *ec2.DescribeInstancesInput, callback func(*ec2.DescribeInstancesOutput, bool) bool) error {
-	// For the mock, we just send everything in one page
-	page, err := m.DescribeInstances(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-func (m *MockEC2) DescribeInstancesPagesWithContext(aws.Context, *ec2.DescribeInstancesInput, func(*ec2.DescribeInstancesOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeInstanceTypes(*ec2.DescribeInstanceTypesInput) (*ec2.DescribeInstanceTypesOutput, error) {
+func (m *MockEC2) DescribeInstanceTypes(ctx context.Context, request *ec2.DescribeInstanceTypesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeInstanceTypesOutput, error) {
 	klog.Warningf("MockEc2::DescribeInstanceTypes is stub-implemented")
 	return &ec2.DescribeInstanceTypesOutput{}, nil
 }
 
-func (m *MockEC2) GetInstanceTypesFromInstanceRequirements(input *ec2.GetInstanceTypesFromInstanceRequirementsInput) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error) {
+func (m *MockEC2) GetInstanceTypesFromInstanceRequirements(ctx context.Context, request *ec2.GetInstanceTypesFromInstanceRequirementsInput, optFns ...func(*ec2.Options)) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error) {
 	return &ec2.GetInstanceTypesFromInstanceRequirementsOutput{
-		InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{
+		InstanceTypes: []ec2types.InstanceTypeInfoFromInstanceRequirements{
 			{
 				InstanceType: aws.String("c5.large"),
 			},

@@ -17,79 +17,45 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) DescribeImageAttributeRequest(*ec2.DescribeImageAttributeInput) (*request.Request, *ec2.DescribeImageAttributeOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImageAttributeWithContext(aws.Context, *ec2.DescribeImageAttributeInput, ...request.Option) (*ec2.DescribeImageAttributeOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImageAttribute(*ec2.DescribeImageAttributeInput) (*ec2.DescribeImageAttributeOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImagesRequest(*ec2.DescribeImagesInput) (*request.Request, *ec2.DescribeImagesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInput, ...request.Option) (*ec2.DescribeImagesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImagesPagesWithContext(ctx aws.Context, request *ec2.DescribeImagesInput, callback func(output *ec2.DescribeImagesOutput, b bool) bool, options ...request.Option) error {
+func (m *MockEC2) DescribeImages(ctx context.Context, request *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeImagesPages: %v", request)
 
-	var images []*ec2.Image
+	var images []ec2types.Image
 
 	for _, image := range m.Images {
 		matches, err := m.imageMatchesFilter(image, request.Filters)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !matches {
 			continue
 		}
 
 		copy := *image
-		copy.Tags = m.getTags(ec2.ResourceTypeImage, *image.ImageId)
-		images = append(images, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeImage, *image.ImageId)
+		images = append(images, copy)
 	}
 
 	response := &ec2.DescribeImagesOutput{
 		Images: images,
 	}
-
-	callback(response, false)
-
-	return nil
+	return response, nil
 }
 
-func (m *MockEC2) DescribeImportImageTasksRequest(*ec2.DescribeImportImageTasksInput) (*request.Request, *ec2.DescribeImportImageTasksOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImportImageTasksWithContext(aws.Context, *ec2.DescribeImportImageTasksInput, ...request.Option) (*ec2.DescribeImportImageTasksOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeImportImageTasks(*ec2.DescribeImportImageTasksInput) (*ec2.DescribeImportImageTasksOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) imageMatchesFilter(image *ec2.Image, filters []*ec2.Filter) (bool, error) {
+func (m *MockEC2) imageMatchesFilter(image *ec2types.Image, filters []ec2types.Filter) (bool, error) {
 	allFiltersMatch := true
 	for _, filter := range filters {
 		match := false
@@ -97,14 +63,14 @@ func (m *MockEC2) imageMatchesFilter(image *ec2.Image, filters []*ec2.Filter) (b
 
 		case "name":
 			for _, v := range filter.Values {
-				if aws.StringValue(image.Name) == *v {
+				if aws.ToString(image.Name) == v {
 					match = true
 				}
 			}
 
 		default:
 			if strings.HasPrefix(*filter.Name, "tag:") {
-				match = m.hasTag(ec2.ResourceTypeImage, *image.ImageId, filter)
+				match = m.hasTag(ec2types.ResourceTypeImage, *image.ImageId, filter)
 			} else {
 				return false, fmt.Errorf("unknown filter name: %q", *filter.Name)
 			}

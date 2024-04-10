@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
@@ -1642,10 +1642,10 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 
 				tf.RootBlockDevice = &terraformElastigroupBlockDevice{
 					DeviceName:          rootDevice.DeviceName,
-					VolumeType:          rootDevice.EbsVolumeType,
-					VolumeSize:          rootDevice.EbsVolumeSize,
-					VolumeIOPS:          rootDevice.EbsVolumeIops,
-					VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+					VolumeType:          fi.PtrTo(string(rootDevice.EbsVolumeType)),
+					VolumeSize:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeSize),
+					VolumeIOPS:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeIops),
+					VolumeThroughput:    ptrInt32ToPtrInt64(rootDevice.EbsVolumeThroughput),
 					Encrypted:           rootDevice.EbsEncrypted,
 					DeleteOnTermination: fi.PtrTo(true),
 				}
@@ -1805,7 +1805,7 @@ func (e *Elastigroup) buildTargetGroups() []*aws.LoadBalancer {
 }
 
 func buildEphemeralDevices(cloud awsup.AWSCloud, machineType *string) ([]*awstasks.BlockDeviceMapping, error) {
-	info, err := awsup.GetMachineTypeInfo(cloud, fi.ValueOf(machineType))
+	info, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(fi.ValueOf(machineType)))
 	if err != nil {
 		return nil, err
 	}
@@ -1831,20 +1831,20 @@ func buildRootDevice(cloud awsup.AWSCloud, volumeOpts *RootVolumeOpts,
 
 	bdm := &awstasks.BlockDeviceMapping{
 		DeviceName:             img.RootDeviceName,
-		EbsVolumeSize:          volumeOpts.Size,
-		EbsVolumeType:          volumeOpts.Type,
+		EbsVolumeSize:          ptrInt64ToPtrInt32(volumeOpts.Size),
+		EbsVolumeType:          ec2types.VolumeType(fi.ValueOf(volumeOpts.Type)),
 		EbsEncrypted:           volumeOpts.Encryption,
 		EbsDeleteOnTermination: fi.PtrTo(true),
 	}
 
 	// IOPS is not supported for gp2 volumes.
 	if volumeOpts.IOPS != nil && fi.ValueOf(volumeOpts.Type) != "gp2" {
-		bdm.EbsVolumeIops = volumeOpts.IOPS
+		bdm.EbsVolumeIops = ptrInt64ToPtrInt32(volumeOpts.IOPS)
 	}
 
 	// Throughput is only supported for gp3 volumes.
 	if volumeOpts.Throughput != nil && fi.ValueOf(volumeOpts.Type) == "gp3" {
-		bdm.EbsVolumeThroughput = volumeOpts.Throughput
+		bdm.EbsVolumeThroughput = ptrInt64ToPtrInt32(volumeOpts.Throughput)
 	}
 
 	return bdm, nil
@@ -1856,21 +1856,21 @@ func (e *Elastigroup) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping)
 		VirtualName: in.VirtualName,
 	}
 
-	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || in.EbsVolumeType != nil {
+	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || len(in.EbsVolumeType) > 0 {
 		out.EBS = &aws.EBS{
-			VolumeType:          in.EbsVolumeType,
+			VolumeType:          fi.PtrTo(string(in.EbsVolumeType)),
 			VolumeSize:          fi.PtrTo(int(fi.ValueOf(in.EbsVolumeSize))),
 			Encrypted:           in.EbsEncrypted,
 			DeleteOnTermination: in.EbsDeleteOnTermination,
 		}
 
 		// IOPS is not valid for gp2 volumes.
-		if in.EbsVolumeIops != nil && fi.ValueOf(in.EbsVolumeType) != "gp2" {
+		if in.EbsVolumeIops != nil && in.EbsVolumeType != ec2types.VolumeTypeGp2 {
 			out.EBS.IOPS = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeIops)))
 		}
 
 		// Throughput is only valid for gp3 volumes.
-		if in.EbsVolumeThroughput != nil && fi.ValueOf(in.EbsVolumeType) == "gp3" {
+		if in.EbsVolumeThroughput != nil && in.EbsVolumeType == ec2types.VolumeTypeGp3 {
 			out.EBS.Throughput = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeThroughput)))
 		}
 	}
@@ -1904,7 +1904,7 @@ func (e *Elastigroup) applyDefaults() {
 	}
 }
 
-func resolveImage(cloud awsup.AWSCloud, name string) (*ec2.Image, error) {
+func resolveImage(cloud awsup.AWSCloud, name string) (*ec2types.Image, error) {
 	image, err := cloud.ResolveImage(name)
 	if err != nil {
 		return nil, fmt.Errorf("spotinst: unable to resolve image %q: %v", name, err)

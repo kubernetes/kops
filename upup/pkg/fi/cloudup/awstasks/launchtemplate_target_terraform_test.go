@@ -19,6 +19,8 @@ package awstasks
 import (
 	"testing"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -33,13 +35,13 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				},
 				ID:                           fi.PtrTo("test-11"),
 				InstanceMonitoring:           fi.PtrTo(true),
-				InstanceType:                 fi.PtrTo("t2.medium"),
+				InstanceType:                 fi.PtrTo(ec2types.InstanceTypeT2Medium),
 				SpotPrice:                    fi.PtrTo("0.1"),
-				SpotDurationInMinutes:        fi.PtrTo(int64(60)),
-				InstanceInterruptionBehavior: fi.PtrTo("hibernate"),
+				SpotDurationInMinutes:        fi.PtrTo(int32(60)),
+				InstanceInterruptionBehavior: fi.PtrTo(ec2types.InstanceInterruptionBehaviorHibernate),
 				RootVolumeOptimization:       fi.PtrTo(true),
-				RootVolumeIops:               fi.PtrTo(int64(100)),
-				RootVolumeSize:               fi.PtrTo(int64(64)),
+				RootVolumeIops:               fi.PtrTo(int32(100)),
+				RootVolumeSize:               fi.PtrTo(int32(64)),
 				SSHKey: &SSHKey{
 					Name:      fi.PtrTo("newkey"),
 					PublicKey: fi.NewStringResource("newkey"),
@@ -48,9 +50,9 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 					{Name: fi.PtrTo("nodes-1"), ID: fi.PtrTo("1111")},
 					{Name: fi.PtrTo("nodes-2"), ID: fi.PtrTo("2222")},
 				},
-				Tenancy:                 fi.PtrTo("dedicated"),
-				HTTPTokens:              fi.PtrTo("optional"),
-				HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+				Tenancy:                 fi.PtrTo(ec2types.TenancyDedicated),
+				HTTPTokens:              fi.PtrTo(ec2types.LaunchTemplateHttpTokensStateOptional),
+				HTTPPutResponseHopLimit: fi.PtrTo(int32(1)),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"
@@ -114,18 +116,18 @@ terraform {
 				BlockDeviceMappings: []*BlockDeviceMapping{
 					{
 						DeviceName:             fi.PtrTo("/dev/xvdd"),
-						EbsVolumeType:          fi.PtrTo("gp2"),
-						EbsVolumeSize:          fi.PtrTo(int64(100)),
+						EbsVolumeType:          ec2types.VolumeTypeGp2,
+						EbsVolumeSize:          fi.PtrTo(int32(100)),
 						EbsDeleteOnTermination: fi.PtrTo(true),
 						EbsEncrypted:           fi.PtrTo(true),
 					},
 				},
 				ID:                     fi.PtrTo("test-11"),
 				InstanceMonitoring:     fi.PtrTo(true),
-				InstanceType:           fi.PtrTo("t2.medium"),
+				InstanceType:           fi.PtrTo(ec2types.InstanceTypeT2Medium),
 				RootVolumeOptimization: fi.PtrTo(true),
-				RootVolumeIops:         fi.PtrTo(int64(100)),
-				RootVolumeSize:         fi.PtrTo(int64(64)),
+				RootVolumeIops:         fi.PtrTo(int32(100)),
+				RootVolumeSize:         fi.PtrTo(int32(64)),
 				SSHKey: &SSHKey{
 					Name: fi.PtrTo("mykey"),
 				},
@@ -133,9 +135,9 @@ terraform {
 					{Name: fi.PtrTo("nodes-1"), ID: fi.PtrTo("1111")},
 					{Name: fi.PtrTo("nodes-2"), ID: fi.PtrTo("2222")},
 				},
-				Tenancy:                 fi.PtrTo("dedicated"),
-				HTTPTokens:              fi.PtrTo("required"),
-				HTTPPutResponseHopLimit: fi.PtrTo(int64(5)),
+				Tenancy:                 fi.PtrTo(ec2types.TenancyDedicated),
+				HTTPTokens:              fi.PtrTo(ec2types.LaunchTemplateHttpTokensStateRequired),
+				HTTPPutResponseHopLimit: fi.PtrTo(int32(5)),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"

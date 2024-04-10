@@ -21,37 +21,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
 type launchTemplateInfo struct {
-	data    *ec2.ResponseLaunchTemplateData
+	data    *ec2types.ResponseLaunchTemplateData
 	name    *string
 	version int
 }
 
-// DescribeLaunchTemplatesPages mocks the describing the launch templates
-func (m *MockEC2) DescribeLaunchTemplatesPages(request *ec2.DescribeLaunchTemplatesInput, callback func(*ec2.DescribeLaunchTemplatesOutput, bool) bool) error {
-	page, err := m.DescribeLaunchTemplates(request)
-	if err != nil {
-		return err
-	}
-
-	callback(page, false)
-
-	return nil
-}
-
-// DescribeLaunchTemplatesPagesWithContext mocks the describing the launch templates
-func (m *MockEC2) DescribeLaunchTemplatesPagesWithContext(ctx context.Context, request *ec2.DescribeLaunchTemplatesInput, callback func(*ec2.DescribeLaunchTemplatesOutput, bool) bool, option ...request.Option) error {
-	return m.DescribeLaunchTemplatesPages(request, callback)
-}
-
 // DescribeLaunchTemplates mocks the describing the launch templates
-func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error) {
+func (m *MockEC2) DescribeLaunchTemplates(ctx context.Context, request *ec2.DescribeLaunchTemplatesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeLaunchTemplatesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -64,12 +47,12 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 	}
 
 	for id, ltInfo := range m.LaunchTemplates {
-		launchTemplatetName := aws.StringValue(ltInfo.name)
+		launchTemplatetName := aws.ToString(ltInfo.name)
 
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
-			filterName := aws.StringValue(filter.Name)
-			filterValue := aws.StringValue(filter.Values[0])
+			filterName := aws.ToString(filter.Name)
+			filterValue := filter.Values[0]
 
 			filterMatches := false
 			if filterName == "tag:Name" && filterValue == launchTemplatetName {
@@ -86,7 +69,7 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 		}
 
 		if allFiltersMatch {
-			o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
+			o.LaunchTemplates = append(o.LaunchTemplates, ec2types.LaunchTemplate{
 				LaunchTemplateName: aws.String(launchTemplatetName),
 				LaunchTemplateId:   aws.String(id),
 			})
@@ -97,7 +80,7 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 }
 
 // DescribeLaunchTemplateVersions mocks the retrieval of launch template versions - we don't use this at the moment so we can just return the template
-func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+func (m *MockEC2) DescribeLaunchTemplateVersions(ctx context.Context, request *ec2.DescribeLaunchTemplateVersionsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -110,10 +93,10 @@ func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemp
 	}
 
 	for id, ltInfo := range m.LaunchTemplates {
-		if aws.StringValue(ltInfo.name) != aws.StringValue(request.LaunchTemplateName) {
+		if aws.ToString(ltInfo.name) != aws.ToString(request.LaunchTemplateName) {
 			continue
 		}
-		o.LaunchTemplateVersions = append(o.LaunchTemplateVersions, &ec2.LaunchTemplateVersion{
+		o.LaunchTemplateVersions = append(o.LaunchTemplateVersions, ec2types.LaunchTemplateVersion{
 			DefaultVersion:     aws.Bool(true),
 			LaunchTemplateId:   aws.String(id),
 			LaunchTemplateData: ltInfo.data,
@@ -123,13 +106,8 @@ func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemp
 	return o, nil
 }
 
-// DescribeLaunchTemplateVersionsWithContext mocks the retrieval of launch template versions - we don't use this at the moment so we can just return the template
-func (m *MockEC2) DescribeLaunchTemplateVersionsWithContext(ctx context.Context, request *ec2.DescribeLaunchTemplateVersionsInput, option ...request.Option) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
-	return m.DescribeLaunchTemplateVersions(request)
-}
-
 // CreateLaunchTemplate mocks the ec2 create launch template
-func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (*ec2.CreateLaunchTemplateOutput, error) {
+func (m *MockEC2) CreateLaunchTemplate(ctx context.Context, request *ec2.CreateLaunchTemplateInput, optFns ...func(*ec2.Options)) (*ec2.CreateLaunchTemplateOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -150,16 +128,16 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 		name:    request.LaunchTemplateName,
 		version: 1,
 	}
-	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeLaunchTemplate)...)
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeLaunchTemplate)...)
 
 	return &ec2.CreateLaunchTemplateOutput{
-		LaunchTemplate: &ec2.LaunchTemplate{
+		LaunchTemplate: &ec2types.LaunchTemplate{
 			LaunchTemplateId: aws.String(id),
 		},
 	}, nil
 }
 
-func (m *MockEC2) CreateLaunchTemplateVersion(request *ec2.CreateLaunchTemplateVersionInput) (*ec2.CreateLaunchTemplateVersionOutput, error) {
+func (m *MockEC2) CreateLaunchTemplateVersion(ctx context.Context, request *ec2.CreateLaunchTemplateVersionInput, optFns ...func(*ec2.Options)) (*ec2.CreateLaunchTemplateVersionOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -170,7 +148,7 @@ func (m *MockEC2) CreateLaunchTemplateVersion(request *ec2.CreateLaunchTemplateV
 	var ltVersion int
 	var ltID string
 	for id, ltInfo := range m.LaunchTemplates {
-		if aws.StringValue(ltInfo.name) == aws.StringValue(name) {
+		if aws.ToString(ltInfo.name) == aws.ToString(name) {
 			found = true
 			ltInfo.data = responseLaunchTemplateData(request.LaunchTemplateData)
 			ltInfo.version++
@@ -182,7 +160,7 @@ func (m *MockEC2) CreateLaunchTemplateVersion(request *ec2.CreateLaunchTemplateV
 		return nil, nil // TODO: error
 	}
 	return &ec2.CreateLaunchTemplateVersionOutput{
-		LaunchTemplateVersion: &ec2.LaunchTemplateVersion{
+		LaunchTemplateVersion: &ec2types.LaunchTemplateVersion{
 			VersionNumber:    aws.Int64(int64(ltVersion)),
 			LaunchTemplateId: &ltID,
 		},
@@ -190,7 +168,7 @@ func (m *MockEC2) CreateLaunchTemplateVersion(request *ec2.CreateLaunchTemplateV
 }
 
 // DeleteLaunchTemplate mocks the deletion of a launch template
-func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (*ec2.DeleteLaunchTemplateOutput, error) {
+func (m *MockEC2) DeleteLaunchTemplate(ctx context.Context, request *ec2.DeleteLaunchTemplateInput, optFns ...func(*ec2.Options)) (*ec2.DeleteLaunchTemplateOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -202,7 +180,7 @@ func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (
 		return o, nil
 	}
 	for id := range m.LaunchTemplates {
-		if id == aws.StringValue(request.LaunchTemplateId) {
+		if id == aws.ToString(request.LaunchTemplateId) {
 			delete(m.LaunchTemplates, id)
 		}
 	}
@@ -210,12 +188,12 @@ func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (
 	return o, nil
 }
 
-func (m *MockEC2) ModifyLaunchTemplate(*ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error) {
+func (m *MockEC2) ModifyLaunchTemplate(ctx context.Context, request *ec2.ModifyLaunchTemplateInput, optFns ...func(*ec2.Options)) (*ec2.ModifyLaunchTemplateOutput, error) {
 	return &ec2.ModifyLaunchTemplateOutput{}, nil
 }
 
-func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.ResponseLaunchTemplateData {
-	resp := &ec2.ResponseLaunchTemplateData{
+func responseLaunchTemplateData(req *ec2types.RequestLaunchTemplateData) *ec2types.ResponseLaunchTemplateData {
+	resp := &ec2types.ResponseLaunchTemplateData{
 		DisableApiTermination: req.DisableApiTermination,
 		EbsOptimized:          req.EbsOptimized,
 		ImageId:               req.ImageId,
@@ -227,26 +205,26 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 	}
 
 	if req.MetadataOptions != nil {
-		resp.MetadataOptions = &ec2.LaunchTemplateInstanceMetadataOptions{
+		resp.MetadataOptions = &ec2types.LaunchTemplateInstanceMetadataOptions{
 			HttpTokens:              req.MetadataOptions.HttpTokens,
 			HttpPutResponseHopLimit: req.MetadataOptions.HttpPutResponseHopLimit,
 			HttpProtocolIpv6:        req.MetadataOptions.HttpProtocolIpv6,
 		}
 	}
 	if req.Monitoring != nil {
-		resp.Monitoring = &ec2.LaunchTemplatesMonitoring{Enabled: req.Monitoring.Enabled}
+		resp.Monitoring = &ec2types.LaunchTemplatesMonitoring{Enabled: req.Monitoring.Enabled}
 	}
 	if req.CpuOptions != nil {
-		resp.CpuOptions = &ec2.LaunchTemplateCpuOptions{
+		resp.CpuOptions = &ec2types.LaunchTemplateCpuOptions{
 			CoreCount:      req.CpuOptions.CoreCount,
 			ThreadsPerCore: req.CpuOptions.ThreadsPerCore,
 		}
 	}
 	if len(req.BlockDeviceMappings) > 0 {
 		for _, x := range req.BlockDeviceMappings {
-			var ebs *ec2.LaunchTemplateEbsBlockDevice
+			var ebs *ec2types.LaunchTemplateEbsBlockDevice
 			if x.Ebs != nil {
-				ebs = &ec2.LaunchTemplateEbsBlockDevice{
+				ebs = &ec2types.LaunchTemplateEbsBlockDevice{
 					DeleteOnTermination: x.Ebs.DeleteOnTermination,
 					Encrypted:           x.Ebs.Encrypted,
 					Iops:                x.Ebs.Iops,
@@ -257,7 +235,7 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 					VolumeType:          x.Ebs.VolumeType,
 				}
 			}
-			resp.BlockDeviceMappings = append(resp.BlockDeviceMappings, &ec2.LaunchTemplateBlockDeviceMapping{
+			resp.BlockDeviceMappings = append(resp.BlockDeviceMappings, ec2types.LaunchTemplateBlockDeviceMapping{
 				DeviceName:  x.DeviceName,
 				Ebs:         ebs,
 				NoDevice:    x.NoDevice,
@@ -266,18 +244,18 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 		}
 	}
 	if req.CreditSpecification != nil {
-		resp.CreditSpecification = &ec2.CreditSpecification{CpuCredits: req.CreditSpecification.CpuCredits}
+		resp.CreditSpecification = &ec2types.CreditSpecification{CpuCredits: req.CreditSpecification.CpuCredits}
 	}
 	if req.IamInstanceProfile != nil {
-		resp.IamInstanceProfile = &ec2.LaunchTemplateIamInstanceProfileSpecification{
+		resp.IamInstanceProfile = &ec2types.LaunchTemplateIamInstanceProfileSpecification{
 			Arn:  req.IamInstanceProfile.Arn,
 			Name: req.IamInstanceProfile.Name,
 		}
 	}
 	if req.InstanceMarketOptions != nil {
-		resp.InstanceMarketOptions = &ec2.LaunchTemplateInstanceMarketOptions{
+		resp.InstanceMarketOptions = &ec2types.LaunchTemplateInstanceMarketOptions{
 			MarketType: req.InstanceMarketOptions.MarketType,
-			SpotOptions: &ec2.LaunchTemplateSpotMarketOptions{
+			SpotOptions: &ec2types.LaunchTemplateSpotMarketOptions{
 				BlockDurationMinutes:         req.InstanceMarketOptions.SpotOptions.BlockDurationMinutes,
 				InstanceInterruptionBehavior: req.InstanceMarketOptions.SpotOptions.InstanceInterruptionBehavior,
 				MaxPrice:                     req.InstanceMarketOptions.SpotOptions.MaxPrice,
@@ -288,7 +266,7 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 	}
 	if len(req.NetworkInterfaces) > 0 {
 		for _, x := range req.NetworkInterfaces {
-			resp.NetworkInterfaces = append(resp.NetworkInterfaces, &ec2.LaunchTemplateInstanceNetworkInterfaceSpecification{
+			resp.NetworkInterfaces = append(resp.NetworkInterfaces, ec2types.LaunchTemplateInstanceNetworkInterfaceSpecification{
 				AssociatePublicIpAddress:       x.AssociatePublicIpAddress,
 				DeleteOnTermination:            x.DeleteOnTermination,
 				Description:                    x.Description,
@@ -305,7 +283,7 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 	}
 	if len(req.TagSpecifications) > 0 {
 		for _, x := range req.TagSpecifications {
-			resp.TagSpecifications = append(resp.TagSpecifications, &ec2.LaunchTemplateTagSpecification{
+			resp.TagSpecifications = append(resp.TagSpecifications, ec2types.LaunchTemplateTagSpecification{
 				ResourceType: x.ResourceType,
 				Tags:         x.Tags,
 			})
