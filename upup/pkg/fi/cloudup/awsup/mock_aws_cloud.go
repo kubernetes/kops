@@ -91,7 +91,7 @@ func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 }
 
 func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	return deleteInstance(c, i)
+	return deleteInstance(context.TODO(), c, i)
 }
 
 func (c *MockAWSCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
@@ -213,7 +213,7 @@ func (c *MockAWSCloud) FindELBV2NetworkInterfacesByName(vpcID, loadBalancerName 
 	return nil, nil
 }
 
-func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
+func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2types.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }
 

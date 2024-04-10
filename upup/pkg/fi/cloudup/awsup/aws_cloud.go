@@ -169,7 +169,7 @@ type AWSCloud interface {
 	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]ec2types.NetworkInterface, error)
 
 	// DescribeInstance is a helper that queries for the specified instance by id
-	DescribeInstance(instanceID string) (*ec2.Instance, error)
+	DescribeInstance(instanceID string) (*ec2types.Instance, error)
 
 	// DescribeVPC is a helper that queries for the specified vpc by id
 	DescribeVPC(vpcID string) (*ec2types.Vpc, error)
@@ -460,16 +460,16 @@ func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGrou
 func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 	asg := g.Raw.(*autoscalingtypes.AutoScalingGroup)
 
-	name := aws.StringValue(asg.AutoScalingGroupName)
-	template := aws.StringValue(asg.LaunchConfigurationName)
+	name := aws.ToString(asg.AutoScalingGroupName)
+	template := aws.ToString(asg.LaunchConfigurationName)
 	launchTemplate := ""
 	if asg.LaunchTemplate != nil {
-		launchTemplate = aws.StringValue(asg.LaunchTemplate.LaunchTemplateName)
+		launchTemplate = aws.ToString(asg.LaunchTemplate.LaunchTemplateName)
 	}
 
 	// Delete detached instances
 	{
-		detached, err := findDetachedInstances(c, asg)
+		detached, err := findDetachedInstances(ctx, c, asg)
 		if err != nil {
 			return fmt.Errorf("error searching for detached instances for autoscaling group %q: %v", name, err)
 		}
@@ -478,7 +478,7 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 			req := &ec2.TerminateInstancesInput{
 				InstanceIds: detached,
 			}
-			if _, err := c.EC2().TerminateInstances(req); err != nil {
+			if _, err := c.EC2().TerminateInstances(ctx, req); err != nil {
 				return fmt.Errorf("error deleting detached instances for autoscaling group %q: %v", name, err)
 			}
 		}
@@ -505,7 +505,7 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 			req := &ec2.DeleteLaunchTemplateInput{
 				LaunchTemplateName: aws.String(launchTemplate),
 			}
-			_, err := c.EC2().DeleteLaunchTemplate(req)
+			_, err := c.EC2().DeleteLaunchTemplate(ctx, req)
 			if err != nil {
 				return fmt.Errorf("error deleting autoscaling launch template %q: %v", launchTemplate, err)
 			}
@@ -531,17 +531,18 @@ func deleteGroup(ctx context.Context, c AWSCloud, g *cloudinstances.CloudInstanc
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
+	ctx := context.TODO()
 	if c.spotinst != nil {
 		if featureflag.SpotinstHybrid.Enabled() {
 			if _, ok := i.CloudInstanceGroup.Raw.(*autoscalingtypes.AutoScalingGroup); ok {
-				return deleteInstance(c, i)
+				return deleteInstance(ctx, c, i)
 			}
 		}
 
 		return spotinst.DeleteInstance(c.spotinst, i)
 	}
 
-	return deleteInstance(c, i)
+	return deleteInstance(ctx, c, i)
 }
 
 // DeregisterInstance drains a cloud instance and load balancers.
@@ -560,17 +561,17 @@ func (c *awsCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 	return nil
 }
 
-func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
+func deleteInstance(ctx context.Context, c AWSCloud, i *cloudinstances.CloudInstance) error {
 	id := i.ID
 	if id == "" {
 		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
 	request := &ec2.TerminateInstancesInput{
-		InstanceIds: []*string{aws.String(id)},
+		InstanceIds: []string{id},
 	}
 
-	if _, err := c.EC2().TerminateInstances(request); err != nil {
+	if _, err := c.EC2().TerminateInstances(ctx, request); err != nil {
 		if AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
 			klog.V(2).Infof("Got InvalidInstanceID.NotFound error deleting instance %q; will treat as already-deleted", id)
 		} else {
@@ -588,7 +589,7 @@ func deregisterInstance(ctx context.Context, c AWSCloud, i *cloudinstances.Cloud
 	asg := i.CloudInstanceGroup.Raw.(*autoscalingtypes.AutoScalingGroup)
 
 	asgDetails, err := c.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []string{aws.StringValue(asg.AutoScalingGroupName)},
+		AutoScalingGroupNames: []string{aws.ToString(asg.AutoScalingGroupName)},
 	})
 	if err != nil {
 		return fmt.Errorf("error describing autoScalingGroups: %v", err)
@@ -646,7 +647,7 @@ func deregisterInstanceFromClassicLoadBalancer(ctx context.Context, c AWSCloud, 
 			}
 
 			// there will be only one instance in the DescribeInstanceHealth response.
-			if aws.StringValue(response.InstanceStates[0].State) == instanceInServiceState {
+			if aws.ToString(response.InstanceStates[0].State) == instanceInServiceState {
 				c.ELB().DeregisterInstancesFromLoadBalancer(ctx, &elb.DeregisterInstancesFromLoadBalancerInput{
 					LoadBalancerName: aws.String(loadBalancerName),
 					Instances: []elbtypes.Instance{{
@@ -827,26 +828,28 @@ func getKarpenterGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kop
 }
 
 func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, nodes []v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	ctx := context.TODO()
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
-	instances := make(map[string]*ec2.Instance)
-	updatedInstances := make(map[string]*ec2.Instance)
+	instances := make(map[string]*ec2types.Instance)
+	updatedInstances := make(map[string]*ec2types.Instance)
 	clusterName := c.Tags()[TagClusterName]
 	var version string
 
 	{
 		input := &ec2.DescribeLaunchTemplatesInput{
-			Filters: []*ec2.Filter{
+			Filters: []ec2types.Filter{
 				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 				NewEC2Filter("tag:"+TagClusterName, clusterName),
 			},
 		}
-		var list []*ec2.LaunchTemplate
-		err := c.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
-			list = append(list, p.LaunchTemplates...)
-			return true
-		})
-		if err != nil {
-			return nil, err
+		var list []ec2types.LaunchTemplate
+		paginator := ec2.NewDescribeLaunchTemplatesPaginator(c.EC2(), input)
+		for paginator.HasMorePages() {
+			page, err := paginator.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("error listing launch templates: %v", err)
+			}
+			list = append(list, page.LaunchTemplates...)
 		}
 		lt := list[0]
 		versionNumber := *lt.LatestVersionNumber
@@ -860,22 +863,22 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 	}
 	{
 		req := &ec2.DescribeInstancesInput{
-			Filters: []*ec2.Filter{
+			Filters: []ec2types.Filter{
 				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 				NewEC2Filter("tag:"+TagClusterName, clusterName),
 				NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 			},
 		}
 
-		result, err := c.EC2().DescribeInstances(req)
+		result, err := c.EC2().DescribeInstances(ctx, req)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, r := range result.Reservations {
 			for _, i := range r.Instances {
-				id := aws.StringValue(i.InstanceId)
-				instances[id] = i
+				id := aws.ToString(i.InstanceId)
+				instances[id] = &i
 			}
 		}
 	}
@@ -884,7 +887,7 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 
 	{
 		req := &ec2.DescribeInstancesInput{
-			Filters: []*ec2.Filter{
+			Filters: []ec2types.Filter{
 				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 				NewEC2Filter("tag:"+TagClusterName, clusterName),
 				NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
@@ -892,15 +895,15 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 			},
 		}
 
-		result, err := c.EC2().DescribeInstances(req)
+		result, err := c.EC2().DescribeInstances(ctx, req)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, r := range result.Reservations {
 			for _, i := range r.Instances {
-				id := aws.StringValue(i.InstanceId)
-				updatedInstances[id] = i
+				id := aws.ToString(i.InstanceId)
+				updatedInstances[id] = &i
 			}
 		}
 	}
@@ -933,7 +936,7 @@ func getCloudGroups(ctx context.Context, c AWSCloud, cluster *kops.Cluster, inst
 	}
 
 	for _, asg := range asgs {
-		name := aws.StringValue(asg.AutoScalingGroupName)
+		name := aws.ToString(asg.AutoScalingGroupName)
 
 		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
 		if err != nil {
@@ -986,7 +989,7 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscalingty
 			for _, t := range page.Tags {
 				switch *t.ResourceType {
 				case "auto-scaling-group":
-					asgNames = append(asgNames, aws.StringValue(t.ResourceId))
+					asgNames = append(asgNames, aws.ToString(t.ResourceId))
 				default:
 					klog.Warningf("Unknown resource type: %v", *t.ResourceType)
 				}
@@ -1053,8 +1056,8 @@ func matchesAsgTags(tags map[string]string, actual []autoscalingtypes.TagDescrip
 }
 
 // findAutoscalingGroupLaunchConfiguration is responsible for finding the launch - which could be a launchconfiguration, a template or a mixed instance policy template
-func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscalingtypes.AutoScalingGroup) (string, error) {
-	name := aws.StringValue(g.LaunchConfigurationName)
+func findAutoscalingGroupLaunchConfiguration(ctx context.Context, c AWSCloud, g *autoscalingtypes.AutoScalingGroup) (string, error) {
+	name := aws.ToString(g.LaunchConfigurationName)
 	if name != "" {
 		return name, nil
 	}
@@ -1066,22 +1069,22 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscalingtypes.Aut
 	} else if g.MixedInstancesPolicy != nil && g.MixedInstancesPolicy.LaunchTemplate != nil && g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
 		launchTemplate = g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification
 	} else {
-		return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+		return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.ToString(g.AutoScalingGroupName))
 	}
 
-	id := aws.StringValue(launchTemplate.LaunchTemplateId)
+	id := aws.ToString(launchTemplate.LaunchTemplateId)
 	if id == "" {
-		return "", fmt.Errorf("error finding launch template ID for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+		return "", fmt.Errorf("error finding launch template ID for autoscaling group: %s", aws.ToString(g.AutoScalingGroupName))
 	}
 
-	version := aws.StringValue(launchTemplate.Version)
+	version := aws.ToString(launchTemplate.Version)
 	// Correctly Handle Default and Latest Versions
 	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
 	if version == "" || version == "$Default" || version == "$Latest" {
 		input := &ec2.DescribeLaunchTemplatesInput{
-			LaunchTemplateIds: []*string{&id},
+			LaunchTemplateIds: []string{id},
 		}
-		output, err := c.EC2().DescribeLaunchTemplates(input)
+		output, err := c.EC2().DescribeLaunchTemplates(ctx, input)
 		if err != nil {
 			return "", fmt.Errorf("error describing launch templates: %q", err)
 		}
@@ -1102,15 +1105,15 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscalingtypes.Aut
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
 func findInstanceLaunchConfiguration(i autoscalingtypes.Instance) string {
-	name := aws.StringValue(i.LaunchConfigurationName)
+	name := aws.ToString(i.LaunchConfigurationName)
 	if name != "" {
 		return name
 	}
 
 	// else we need to check the launch template
 	if i.LaunchTemplate != nil {
-		id := aws.StringValue(i.LaunchTemplate.LaunchTemplateId)
-		version := aws.StringValue(i.LaunchTemplate.Version)
+		id := aws.ToString(i.LaunchTemplate.LaunchTemplateId)
+		version := aws.ToString(i.LaunchTemplate.Version)
 		if id != "" {
 			launchTemplate := id + ":" + version
 			return launchTemplate
@@ -1121,23 +1124,23 @@ func findInstanceLaunchConfiguration(i autoscalingtypes.Instance) string {
 }
 
 func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g *autoscalingtypes.AutoScalingGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	newConfigName, err := findAutoscalingGroupLaunchConfiguration(c, g)
+	newConfigName, err := findAutoscalingGroupLaunchConfiguration(ctx, c, g)
 	if err != nil {
 		return nil, err
 	}
 
 	instanceSeen := map[string]bool{}
-	instances, err := findInstances(c, ig)
+	instances, err := findInstances(ctx, c, ig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch instances: %v", err)
 	}
 
 	cg := &cloudinstances.CloudInstanceGroup{
-		HumanName:     aws.StringValue(g.AutoScalingGroupName),
+		HumanName:     aws.ToString(g.AutoScalingGroupName),
 		InstanceGroup: ig,
-		MinSize:       int(aws.Int32Value(g.MinSize)),
-		TargetSize:    int(aws.Int32Value(g.DesiredCapacity)),
-		MaxSize:       int(aws.Int32Value(g.MaxSize)),
+		MinSize:       int(aws.ToInt32(g.MinSize)),
+		TargetSize:    int(aws.ToInt32(g.DesiredCapacity)),
+		MaxSize:       int(aws.ToInt32(g.MaxSize)),
 		Raw:           g,
 	}
 
@@ -1163,7 +1166,7 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 	var detached []*string
 	for id, instance := range instances {
 		for _, tag := range instance.Tags {
-			if aws.StringValue(tag.Key) == tagNameDetachedInstance {
+			if aws.ToString(tag.Key) == tagNameDetachedInstance {
 				detached = append(detached, aws.String(id))
 			}
 		}
@@ -1178,15 +1181,15 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 				return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 			}
 			instanceSeen[*id] = true
-			addCloudInstanceData(cm, instances[aws.StringValue(id)])
+			addCloudInstanceData(cm, instances[aws.ToString(id)])
 		}
 	}
 
 	return cg, nil
 }
 
-func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2.Instance, instanceSeen map[string]bool, nodeMap map[string]*v1.Node, cg *cloudinstances.CloudInstanceGroup, newConfigName string) error {
-	id := aws.StringValue(i.InstanceId)
+func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2types.Instance, instanceSeen map[string]bool, nodeMap map[string]*v1.Node, cg *cloudinstances.CloudInstanceGroup, newConfigName string) error {
+	id := aws.ToString(i.InstanceId)
 	if id == "" {
 		klog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
 		return nil
@@ -1217,15 +1220,15 @@ func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2.I
 	return nil
 }
 
-func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instance) {
-	cm.MachineType = aws.StringValue(instance.InstanceType)
+func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2types.Instance) {
+	cm.MachineType = string(instance.InstanceType)
 	for _, tag := range instance.Tags {
-		key := aws.StringValue(tag.Key)
+		key := aws.ToString(tag.Key)
 		if !strings.HasPrefix(key, TagNameRolePrefix) {
 			continue
 		}
 		role := strings.TrimPrefix(key, TagNameRolePrefix)
-		cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
+		cm.PrivateIP = aws.ToString(instance.PrivateIpAddress)
 		if role == "master" || role == "control-plane" {
 			cm.Roles = append(cm.Roles, "control-plane")
 		} else {
@@ -1234,48 +1237,48 @@ func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instan
 	}
 }
 
-func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance, error) {
+func findInstances(ctx context.Context, c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2types.Instance, error) {
 	clusterName := c.Tags()[TagClusterName]
 	req := &ec2.DescribeInstancesInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 			NewEC2Filter("tag:"+TagClusterName, clusterName),
 			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 		},
 	}
 
-	result, err := c.EC2().DescribeInstances(req)
+	result, err := c.EC2().DescribeInstances(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	instances := make(map[string]*ec2.Instance)
+	instances := make(map[string]*ec2types.Instance)
 	for _, r := range result.Reservations {
 		for _, i := range r.Instances {
-			id := aws.StringValue(i.InstanceId)
-			instances[id] = i
+			id := aws.ToString(i.InstanceId)
+			instances[id] = &i
 		}
 	}
 	return instances, nil
 }
 
-func findDetachedInstances(c AWSCloud, g *autoscalingtypes.AutoScalingGroup) ([]*string, error) {
+func findDetachedInstances(ctx context.Context, c AWSCloud, g *autoscalingtypes.AutoScalingGroup) ([]string, error) {
 	clusterName := c.Tags()[TagClusterName]
 	req := &ec2.DescribeInstancesInput{
-		Filters: []*ec2.Filter{
-			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.StringValue(g.AutoScalingGroupName)),
+		Filters: []ec2types.Filter{
+			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.ToString(g.AutoScalingGroupName)),
 			NewEC2Filter("tag:"+TagClusterName, clusterName),
 			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 		},
 	}
-	result, err := c.EC2().DescribeInstances(req)
+	result, err := c.EC2().DescribeInstances(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	var detached []*string
+	var detached []string
 	for _, r := range result.Reservations {
 		for _, i := range r.Instances {
-			detached = append(detached, i.InstanceId)
+			detached = append(detached, aws.ToString(i.InstanceId))
 		}
 	}
 	return detached, nil
@@ -1928,13 +1931,14 @@ func buildFilters(commonTags map[string]string, name *string) []ec2types.Filter 
 }
 
 // DescribeInstance is a helper that queries for the specified instance by id
-func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Instance, error) {
+func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2types.Instance, error) {
 	klog.V(2).Infof("Calling DescribeInstances for instance %q", instanceID)
+	ctx := context.TODO()
 	request := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&instanceID},
+		InstanceIds: []string{instanceID},
 	}
 
-	response, err := c.EC2().DescribeInstances(request)
+	response, err := c.EC2().DescribeInstances(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Instances: %v", err)
 	}
@@ -1955,7 +1959,7 @@ func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 	}
 
 	instance := reservation.Instances[0]
-	return instance, nil
+	return &instance, nil
 }
 
 // DescribeVPC is a helper that queries for the specified vpc by id
