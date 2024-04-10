@@ -20,6 +20,10 @@ type Model struct {
 	columns []Column
 	rows    []Row
 
+	// Caches for optimizations
+	visibleRowCacheUpdated bool
+	visibleRowCache        []Row
+
 	// Shown when data is missing from a row
 	missingDataIndicator interface{}
 

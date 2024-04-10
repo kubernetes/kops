@@ -91,8 +91,11 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	fn := listItemStyle.Render
 	if index == m.Index() {
-		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
+		fn = func(s ...string) string {
+			t := make([]string, 0, len(s)+1)
+			t = append(t, "> ")
+			t = append(t, s...)
+			return selectedItemStyle.Render(t...)
 		}
 	}
 

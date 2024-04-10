@@ -130,8 +130,9 @@ github.com/armon/go-metrics
 # github.com/atotto/clipboard v0.1.4
 ## explicit
 github.com/atotto/clipboard
-# github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-## explicit; go 1.18
+# github.com/aws/amazon-ec2-instance-selector/v2 v2.4.2-0.20231216170552-14d4dfcbaadf
+## explicit; go 1.20
+github.com/aws/amazon-ec2-instance-selector/v2/pkg/awsapi
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing
@@ -186,8 +187,6 @@ github.com/aws/aws-sdk-go/service/ec2/ec2iface
 github.com/aws/aws-sdk-go/service/elb
 github.com/aws/aws-sdk-go/service/elbv2
 github.com/aws/aws-sdk-go/service/kms
-github.com/aws/aws-sdk-go/service/pricing
-github.com/aws/aws-sdk-go/service/pricing/pricingiface
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/ssooidc
@@ -305,6 +304,11 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared/config
 github.com/aws/aws-sdk-go-v2/service/kms
 github.com/aws/aws-sdk-go-v2/service/kms/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/kms/types
+# github.com/aws/aws-sdk-go-v2/service/pricing v1.21.6
+## explicit; go 1.15
+github.com/aws/aws-sdk-go-v2/service/pricing
+github.com/aws/aws-sdk-go-v2/service/pricing/internal/endpoints
+github.com/aws/aws-sdk-go-v2/service/pricing/types
 # github.com/aws/aws-sdk-go-v2/service/route53 v1.40.4
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/route53
@@ -370,6 +374,9 @@ github.com/aws/smithy-go/time
 github.com/aws/smithy-go/transport/http
 github.com/aws/smithy-go/transport/http/internal/io
 github.com/aws/smithy-go/waiter
+# github.com/aymanbagabas/go-osc52/v2 v2.0.1
+## explicit; go 1.16
+github.com/aymanbagabas/go-osc52/v2
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
@@ -400,22 +407,24 @@ github.com/chai2010/gettext-go
 github.com/chai2010/gettext-go/mo
 github.com/chai2010/gettext-go/plural
 github.com/chai2010/gettext-go/po
-# github.com/charmbracelet/bubbles v0.13.0
-## explicit; go 1.13
+# github.com/charmbracelet/bubbles v0.16.1
+## explicit; go 1.17
+github.com/charmbracelet/bubbles/cursor
 github.com/charmbracelet/bubbles/help
 github.com/charmbracelet/bubbles/key
 github.com/charmbracelet/bubbles/list
 github.com/charmbracelet/bubbles/paginator
+github.com/charmbracelet/bubbles/runeutil
 github.com/charmbracelet/bubbles/spinner
 github.com/charmbracelet/bubbles/textinput
 github.com/charmbracelet/bubbles/viewport
-# github.com/charmbracelet/bubbletea v0.21.0
-## explicit; go 1.13
+# github.com/charmbracelet/bubbletea v0.24.2
+## explicit; go 1.17
 github.com/charmbracelet/bubbletea
-# github.com/charmbracelet/lipgloss v0.5.0
-## explicit; go 1.15
+# github.com/charmbracelet/lipgloss v0.7.1
+## explicit; go 1.17
 github.com/charmbracelet/lipgloss
-# github.com/containerd/console v1.0.3
+# github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81
 ## explicit; go 1.13
 github.com/containerd/console
 # github.com/containerd/containerd v1.7.12
@@ -521,7 +530,7 @@ github.com/evanphx/json-patch
 ## explicit; go 1.18
 github.com/evanphx/json-patch/v5
 github.com/evanphx/json-patch/v5/internal/json
-# github.com/evertras/bubble-table v0.14.4
+# github.com/evertras/bubble-table v0.15.2
 ## explicit; go 1.17
 github.com/evertras/bubble-table/table
 # github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d
@@ -857,10 +866,13 @@ github.com/magiconair/properties
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-isatty v0.0.17
+# github.com/mattn/go-isatty v0.0.18
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.13
+# github.com/mattn/go-localereader v0.0.1
+## explicit
+github.com/mattn/go-localereader
+# github.com/mattn/go-runewidth v0.0.14
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/miekg/dns v1.1.57
@@ -911,7 +923,7 @@ github.com/morikuni/aec
 ## explicit; go 1.17
 github.com/muesli/ansi
 github.com/muesli/ansi/compressor
-# github.com/muesli/cancelreader v0.2.0
+# github.com/muesli/cancelreader v0.2.2
 ## explicit; go 1.17
 github.com/muesli/cancelreader
 # github.com/muesli/reflow v0.3.0
@@ -920,8 +932,8 @@ github.com/muesli/reflow/ansi
 github.com/muesli/reflow/truncate
 github.com/muesli/reflow/wordwrap
 github.com/muesli/reflow/wrap
-# github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
-## explicit; go 1.13
+# github.com/muesli/termenv v0.15.2
+## explicit; go 1.17
 github.com/muesli/termenv
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit

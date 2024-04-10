@@ -5,7 +5,7 @@ package termenv
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -18,9 +18,19 @@ const (
 	OSCTimeout = 5 * time.Second
 )
 
-func colorProfile() Profile {
-	term := os.Getenv("TERM")
-	colorTerm := os.Getenv("COLORTERM")
+// ColorProfile returns the supported color profile:
+// Ascii, ANSI, ANSI256, or TrueColor.
+func (o *Output) ColorProfile() Profile {
+	if !o.isTTY() {
+		return Ascii
+	}
+
+	if o.environ.Getenv("GOOGLE_CLOUD_SHELL") == "true" {
+		return TrueColor
+	}
+
+	term := o.environ.Getenv("TERM")
+	colorTerm := o.environ.Getenv("COLORTERM")
 
 	switch strings.ToLower(colorTerm) {
 	case "24bit":
@@ -28,7 +38,7 @@ func colorProfile() Profile {
 	case "truecolor":
 		if strings.HasPrefix(term, "screen") {
 			// tmux supports TrueColor, screen only ANSI256
-			if os.Getenv("TERM_PROGRAM") != "tmux" {
+			if o.environ.Getenv("TERM_PROGRAM") != "tmux" {
 				return ANSI256
 			}
 		}
@@ -40,7 +50,7 @@ func colorProfile() Profile {
 	}
 
 	switch term {
-	case "xterm-kitty":
+	case "xterm-kitty", "wezterm":
 		return TrueColor
 	case "linux":
 		return ANSI
@@ -59,8 +69,8 @@ func colorProfile() Profile {
 	return Ascii
 }
 
-func foregroundColor() Color {
-	s, err := termStatusReport(10)
+func (o Output) foregroundColor() Color {
+	s, err := o.termStatusReport(10)
 	if err == nil {
 		c, err := xTermColor(s)
 		if err == nil {
@@ -68,7 +78,7 @@ func foregroundColor() Color {
 		}
 	}
 
-	colorFGBG := os.Getenv("COLORFGBG")
+	colorFGBG := o.environ.Getenv("COLORFGBG")
 	if strings.Contains(colorFGBG, ";") {
 		c := strings.Split(colorFGBG, ";")
 		i, err := strconv.Atoi(c[0])
@@ -81,8 +91,8 @@ func foregroundColor() Color {
 	return ANSIColor(7)
 }
 
-func backgroundColor() Color {
-	s, err := termStatusReport(11)
+func (o Output) backgroundColor() Color {
+	s, err := o.termStatusReport(11)
 	if err == nil {
 		c, err := xTermColor(s)
 		if err == nil {
@@ -90,7 +100,7 @@ func backgroundColor() Color {
 		}
 	}
 
-	colorFGBG := os.Getenv("COLORFGBG")
+	colorFGBG := o.environ.Getenv("COLORFGBG")
 	if strings.Contains(colorFGBG, ";") {
 		c := strings.Split(colorFGBG, ";")
 		i, err := strconv.Atoi(c[len(c)-1])
@@ -103,7 +113,8 @@ func backgroundColor() Color {
 	return ANSIColor(0)
 }
 
-func waitForData(fd uintptr, timeout time.Duration) error {
+func (o *Output) waitForData(timeout time.Duration) error {
+	fd := o.TTY().Fd()
 	tv := unix.NsecToTimeval(int64(timeout))
 	var readfds unix.FdSet
 	readfds.Set(int(fd))
@@ -126,13 +137,15 @@ func waitForData(fd uintptr, timeout time.Duration) error {
 	return nil
 }
 
-func readNextByte(f *os.File) (byte, error) {
-	if err := waitForData(f.Fd(), OSCTimeout); err != nil {
-		return 0, err
+func (o *Output) readNextByte() (byte, error) {
+	if !o.unsafe {
+		if err := o.waitForData(OSCTimeout); err != nil {
+			return 0, err
+		}
 	}
 
 	var b [1]byte
-	n, err := f.Read(b[:])
+	n, err := o.TTY().Read(b[:])
 	if err != nil {
 		return 0, err
 	}
@@ -145,17 +158,17 @@ func readNextByte(f *os.File) (byte, error) {
 }
 
 // readNextResponse reads either an OSC response or a cursor position response:
-//  * OSC response: "\x1b]11;rgb:1111/1111/1111\x1b\\"
-//  * cursor position response: "\x1b[42;1R"
-func readNextResponse(fd *os.File) (response string, isOSC bool, err error) {
-	start, err := readNextByte(fd)
+//   - OSC response: "\x1b]11;rgb:1111/1111/1111\x1b\\"
+//   - cursor position response: "\x1b[42;1R"
+func (o *Output) readNextResponse() (response string, isOSC bool, err error) {
+	start, err := o.readNextByte()
 	if err != nil {
 		return "", false, err
 	}
 
 	// first byte must be ESC
-	for start != '\033' {
-		start, err = readNextByte(fd)
+	for start != ESC {
+		start, err = o.readNextByte()
 		if err != nil {
 			return "", false, err
 		}
@@ -164,7 +177,7 @@ func readNextResponse(fd *os.File) (response string, isOSC bool, err error) {
 	response += string(start)
 
 	// next byte is either '[' (cursor position response) or ']' (OSC response)
-	tpe, err := readNextByte(fd)
+	tpe, err := o.readNextByte()
 	if err != nil {
 		return "", false, err
 	}
@@ -182,7 +195,7 @@ func readNextResponse(fd *os.File) (response string, isOSC bool, err error) {
 	}
 
 	for {
-		b, err := readNextByte(os.Stdout)
+		b, err := o.readNextByte()
 		if err != nil {
 			return "", false, err
 		}
@@ -191,7 +204,7 @@ func readNextResponse(fd *os.File) (response string, isOSC bool, err error) {
 
 		if oscResponse {
 			// OSC can be terminated by BEL (\a) or ST (ESC)
-			if b == '\a' || strings.HasSuffix(response, "\033") {
+			if b == BEL || strings.HasSuffix(response, string(ESC)) {
 				return response, true, nil
 			}
 		} else {
@@ -210,42 +223,50 @@ func readNextResponse(fd *os.File) (response string, isOSC bool, err error) {
 	return "", false, ErrStatusReport
 }
 
-func termStatusReport(sequence int) (string, error) {
+func (o Output) termStatusReport(sequence int) (string, error) {
 	// screen/tmux can't support OSC, because they can be connected to multiple
 	// terminals concurrently.
-	term := os.Getenv("TERM")
-	if strings.HasPrefix(term, "screen") {
+	term := o.environ.Getenv("TERM")
+	if strings.HasPrefix(term, "screen") || strings.HasPrefix(term, "tmux") {
 		return "", ErrStatusReport
 	}
 
-	// if in background, we can't control the terminal
-	if !isForeground(unix.Stdout) {
+	tty := o.TTY()
+	if tty == nil {
 		return "", ErrStatusReport
 	}
 
-	t, err := unix.IoctlGetTermios(unix.Stdout, tcgetattr)
-	if err != nil {
-		return "", ErrStatusReport
-	}
-	defer unix.IoctlSetTermios(unix.Stdout, tcsetattr, t) //nolint:errcheck
+	if !o.unsafe {
+		fd := int(tty.Fd())
+		// if in background, we can't control the terminal
+		if !isForeground(fd) {
+			return "", ErrStatusReport
+		}
 
-	noecho := *t
-	noecho.Lflag = noecho.Lflag &^ unix.ECHO
-	noecho.Lflag = noecho.Lflag &^ unix.ICANON
-	if err := unix.IoctlSetTermios(unix.Stdout, tcsetattr, &noecho); err != nil {
-		return "", ErrStatusReport
+		t, err := unix.IoctlGetTermios(fd, tcgetattr)
+		if err != nil {
+			return "", fmt.Errorf("%s: %s", ErrStatusReport, err)
+		}
+		defer unix.IoctlSetTermios(fd, tcsetattr, t) //nolint:errcheck
+
+		noecho := *t
+		noecho.Lflag = noecho.Lflag &^ unix.ECHO
+		noecho.Lflag = noecho.Lflag &^ unix.ICANON
+		if err := unix.IoctlSetTermios(fd, tcsetattr, &noecho); err != nil {
+			return "", fmt.Errorf("%s: %s", ErrStatusReport, err)
+		}
 	}
 
 	// first, send OSC query, which is ignored by terminal which do not support it
-	fmt.Printf("\033]%d;?\033\\", sequence)
+	fmt.Fprintf(tty, OSC+"%d;?"+ST, sequence)
 
 	// then, query cursor position, should be supported by all terminals
-	fmt.Printf("\033[6n")
+	fmt.Fprintf(tty, CSI+"6n")
 
 	// read the next response
-	res, isOSC, err := readNextResponse(os.Stdout)
+	res, isOSC, err := o.readNextResponse()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s: %s", ErrStatusReport, err)
 	}
 
 	// if this is not OSC response, then the terminal does not support it
@@ -254,11 +275,19 @@ func termStatusReport(sequence int) (string, error) {
 	}
 
 	// read the cursor query response next and discard the result
-	_, _, err = readNextResponse(os.Stdout)
+	_, _, err = o.readNextResponse()
 	if err != nil {
 		return "", err
 	}
 
 	// fmt.Println("Rcvd", res[1:])
 	return res, nil
+}
+
+// EnableVirtualTerminalProcessing enables virtual terminal processing on
+// Windows for w and returns a function that restores w to its previous state.
+// On non-Windows platforms, or if w does not refer to a terminal, then it
+// returns a non-nil no-op function and no error.
+func EnableVirtualTerminalProcessing(_ io.Writer) (func() error, error) {
+	return func() error { return nil }, nil
 }

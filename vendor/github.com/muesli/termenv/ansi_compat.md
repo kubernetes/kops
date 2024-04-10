@@ -46,3 +46,20 @@ This command should set the window title to "Test":
 ```bash
 echo -ne "\033]2;Test\007" && sleep 10
 ```
+
+## Bracketed paste
+
+Enter this command, then paste a word from the clipboard. The text
+displayed on the terminal should contain the codes `200~` and `201~`:
+
+```bash
+echo -ne "\033[?2004h" && sleep 10
+```
+
+## Trigger Notification
+
+This command should trigger a notification:
+
+```bash
+echo -ne "\033]777;notify;Title;Body\033\\"
+```

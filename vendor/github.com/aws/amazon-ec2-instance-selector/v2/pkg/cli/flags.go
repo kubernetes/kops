@@ -14,6 +14,7 @@ import (
 
 const (
 	maxInt    = int(^uint(0) >> 1)
+	max32Int  = int(^uint32(0) >> 1)
 	maxUint64 = math.MaxUint64
 )
 
@@ -53,6 +54,11 @@ func (cl *CommandLineInterface) RatioFlag(name string, shorthand *string, defaul
 // IntMinMaxRangeFlags creates and registers a min, max, and helper flag each accepting an int
 func (cl *CommandLineInterface) IntMinMaxRangeFlags(name string, shorthand *string, defaultValue *int, description string) {
 	cl.IntMinMaxRangeFlagOnFlagSet(cl.Command.Flags(), name, shorthand, defaultValue, description)
+}
+
+// Int32MinMaxRangeFlags creates and registers a min, max, and helper flag each accepting an int
+func (cl *CommandLineInterface) Int32MinMaxRangeFlags(name string, shorthand *string, defaultValue *int32, description string) {
+	cl.Int32MinMaxRangeFlagOnFlagSet(cl.Command.Flags(), name, shorthand, defaultValue, description)
 }
 
 // ByteQuantityMinMaxRangeFlags creates and registers a min, max, and helper flag each accepting a byte quantity like 512mb
@@ -200,6 +206,27 @@ func (cl *CommandLineInterface) IntMinMaxRangeFlagOnFlagSet(flagSet *pflag.FlagS
 	cl.rangeFlags[name] = true
 }
 
+// Int32MinMaxRangeFlagOnFlagSet creates and registers a min, max, and helper flag each accepting an int
+func (cl *CommandLineInterface) Int32MinMaxRangeFlagOnFlagSet(flagSet *pflag.FlagSet, name string, shorthand *string, defaultValue *int32, description string) {
+	cl.Int32FlagOnFlagSet(flagSet, name, shorthand, defaultValue, fmt.Sprintf("%s (sets --%s-min and -max to the same value)", description, name))
+	cl.Int32FlagOnFlagSet(flagSet, name+"-min", nil, nil, fmt.Sprintf("Minimum %s If --%s-max is not specified, the upper bound will be infinity", description, name))
+	cl.Int32FlagOnFlagSet(flagSet, name+"-max", nil, nil, fmt.Sprintf("Maximum %s If --%s-min is not specified, the lower bound will be 0", description, name))
+	cl.validators[name] = func(val interface{}) error {
+		if cl.Flags[name+"-min"] == nil || cl.Flags[name+"-max"] == nil {
+			return nil
+		}
+		minArg := name + "-min"
+		maxArg := name + "-max"
+		minVal := cl.Flags[minArg].(*int32)
+		maxVal := cl.Flags[maxArg].(*int32)
+		if *minVal > *maxVal {
+			return fmt.Errorf("Invalid input for --%s and --%s. %s must be less than or equal to %s", minArg, maxArg, minArg, maxArg)
+		}
+		return nil
+	}
+	cl.rangeFlags[name] = true
+}
+
 // Float64MinMaxRangeFlagOnFlagSet creates and registers a min, max, and helper flag each accepting a float64
 func (cl *CommandLineInterface) Float64MinMaxRangeFlagOnFlagSet(flagSet *pflag.FlagSet, name string, shorthand *string, defaultValue *float64, description string) {
 	cl.Float64FlagOnFlagSet(flagSet, name, shorthand, defaultValue, fmt.Sprintf("%s (sets --%s-min and -max to the same value)", description, name))
@@ -294,6 +321,19 @@ func (cl *CommandLineInterface) IntFlagOnFlagSet(flagSet *pflag.FlagSet, name st
 		return
 	}
 	cl.Flags[name] = flagSet.Int(name, *defaultValue, description)
+}
+
+// Int32FlagOnFlagSet creates and registers a flag accepting an int
+func (cl *CommandLineInterface) Int32FlagOnFlagSet(flagSet *pflag.FlagSet, name string, shorthand *string, defaultValue *int32, description string) {
+	if defaultValue == nil {
+		cl.nilDefaults[name] = true
+		defaultValue = cl.Int32Me(0)
+	}
+	if shorthand != nil {
+		cl.Flags[name] = flagSet.Int32P(name, string(*shorthand), *defaultValue, description)
+		return
+	}
+	cl.Flags[name] = flagSet.Int32(name, *defaultValue, description)
 }
 
 // Float64FlagOnFlagSet creates and registers a flag accepting a float64

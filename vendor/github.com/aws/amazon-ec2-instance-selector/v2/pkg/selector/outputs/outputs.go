@@ -33,15 +33,15 @@ const columnTag = "column"
 // of a wide output row
 type wideColumnsData struct {
 	instanceName       string `column:"Instance Type"`
-	vcpu               int64  `column:"VCPUs"`
+	vcpu               int32  `column:"VCPUs"`
 	memory             string `column:"Mem (GiB)"`
 	hypervisor         string `column:"Hypervisor"`
 	currentGen         bool   `column:"Current Gen"`
 	hibernationSupport bool   `column:"Hibernation Support"`
 	cpuArch            string `column:"CPU Arch"`
 	networkPerformance string `column:"Network Performance"`
-	eni                int64  `column:"ENIs"`
-	gpu                int64  `column:"GPUs"`
+	eni                int32  `column:"ENIs"`
+	gpu                int32  `column:"GPUs"`
 	gpuMemory          string `column:"GPU Mem (GiB)"`
 	gpuInfo            string `column:"GPU Info"`
 	odPrice            string `column:"On-Demand Price/Hr"`
@@ -52,7 +52,7 @@ type wideColumnsData struct {
 func SimpleInstanceTypeOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	instanceTypeStrings := []string{}
 	for _, instanceTypeInfo := range instanceTypeInfoSlice {
-		instanceTypeStrings = append(instanceTypeStrings, *instanceTypeInfo.InstanceType)
+		instanceTypeStrings = append(instanceTypeStrings, string(instanceTypeInfo.InstanceType))
 	}
 	return instanceTypeStrings
 }
@@ -97,7 +97,7 @@ func TableOutputShort(instanceTypeInfoSlice []*instancetypes.Details) []string {
 
 	for _, instanceTypeInfo := range instanceTypeInfoSlice {
 		fmt.Fprintf(w, "\n%s\t%d\t%s\t",
-			*instanceTypeInfo.InstanceType,
+			instanceTypeInfo.InstanceType,
 			*instanceTypeInfo.VCpuInfo.DefaultVCpus,
 			formatFloat(float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0),
 		)
@@ -161,7 +161,7 @@ func TableOutputWide(instanceTypeInfoSlice []*instancetypes.Details) []string {
 func OneLineOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	instanceTypeNames := []string{}
 	for _, instanceType := range instanceTypeInfoSlice {
-		instanceTypeNames = append(instanceTypeNames, *instanceType.InstanceType)
+		instanceTypeNames = append(instanceTypeNames, string(instanceType.InstanceType))
 	}
 	if len(instanceTypeNames) == 0 {
 		return []string{}
@@ -202,18 +202,14 @@ func getWideColumnsData(instanceTypes []*instancetypes.Details) []*wideColumnsDa
 
 	for _, instanceType := range instanceTypes {
 		none := "none"
-		hyperisor := instanceType.Hypervisor
-		if hyperisor == nil {
-			hyperisor = &none
-		}
 
 		cpuArchitectures := []string{}
 		for _, cpuArch := range instanceType.ProcessorInfo.SupportedArchitectures {
-			cpuArchitectures = append(cpuArchitectures, *cpuArch)
+			cpuArchitectures = append(cpuArchitectures, string(cpuArch))
 		}
 
-		gpus := int64(0)
-		gpuMemory := int64(0)
+		gpus := int32(0)
+		gpuMemory := int32(0)
 		gpuType := []string{}
 		if instanceType.GpuInfo != nil {
 			gpuMemory = *instanceType.GpuInfo.TotalGpuMemoryInMiB
@@ -235,10 +231,10 @@ func getWideColumnsData(instanceTypes []*instancetypes.Details) []*wideColumnsDa
 		}
 
 		newColumn := wideColumnsData{
-			instanceName:       *instanceType.InstanceType,
+			instanceName:       string(instanceType.InstanceType),
 			vcpu:               *instanceType.VCpuInfo.DefaultVCpus,
 			memory:             formatFloat(float64(*instanceType.MemoryInfo.SizeInMiB) / 1024.0),
-			hypervisor:         *hyperisor,
+			hypervisor:         string(instanceType.Hypervisor),
 			currentGen:         *instanceType.CurrentGeneration,
 			hibernationSupport: *instanceType.HibernationSupported,
 			cpuArch:            strings.Join(cpuArchitectures, ", "),

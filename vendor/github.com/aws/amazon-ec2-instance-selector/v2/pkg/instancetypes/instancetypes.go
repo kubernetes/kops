@@ -14,6 +14,7 @@
 package instancetypes
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,8 +24,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/mitchellh/go-homedir"
 	"github.com/patrickmn/go-cache"
 )
@@ -35,7 +36,7 @@ var (
 
 // Details hold all the information on an ec2 instance type
 type Details struct {
-	ec2.InstanceTypeInfo
+	ec2types.InstanceTypeInfo
 	OndemandPricePerHour *float64
 	SpotPrice            *float64
 }
@@ -45,11 +46,11 @@ type Provider struct {
 	DirectoryPath   string
 	FullRefreshTTL  time.Duration
 	lastFullRefresh *time.Time
-	ec2Client       ec2iface.EC2API
+	ec2Client       ec2.DescribeInstanceTypesAPIClient
 	cache           *cache.Cache
 }
 
-func NewProvider(directoryPath string, region string, ttl time.Duration, ec2Client ec2iface.EC2API) *Provider {
+func NewProvider(directoryPath string, region string, ttl time.Duration, ec2Client ec2.DescribeInstanceTypesAPIClient) *Provider {
 	expandedDirPath, err := homedir.Expand(directoryPath)
 	if err != nil {
 		log.Printf("Unable to expand instance type cache directory %s: %v", directoryPath, err)
@@ -63,7 +64,7 @@ func NewProvider(directoryPath string, region string, ttl time.Duration, ec2Clie
 	}
 }
 
-func LoadFromOrNew(directoryPath string, region string, ttl time.Duration, ec2Client ec2iface.EC2API) *Provider {
+func LoadFromOrNew(directoryPath string, region string, ttl time.Duration, ec2Client ec2.DescribeInstanceTypesAPIClient) *Provider {
 	expandedDirPath, err := homedir.Expand(directoryPath)
 	if err != nil {
 		log.Printf("Unable to load instance-type cache directory %s: %v", expandedDirPath, err)
@@ -106,17 +107,17 @@ func getCacheFilePath(region string, expandedDirPath string) string {
 	return filepath.Join(expandedDirPath, fmt.Sprintf("%s-%s", region, CacheFileName))
 }
 
-func (p *Provider) Get(instanceTypes []string) ([]*Details, error) {
+func (p *Provider) Get(ctx context.Context, instanceTypes []ec2types.InstanceType) ([]*Details, error) {
 	instanceTypeDetails := []*Details{}
 	describeInstanceTypeOpts := &ec2.DescribeInstanceTypesInput{}
 	if len(instanceTypes) != 0 {
 		for _, it := range instanceTypes {
-			if cachedIT, ok := p.cache.Get(it); ok {
+			if cachedIT, ok := p.cache.Get(string(it)); ok {
 				instanceTypeDetails = append(instanceTypeDetails, cachedIT.(*Details))
 			} else {
-				// need to reassign so we're not sharing the loop iterators memory space
+				// need to reassign, so we're not sharing the loop iterators memory space
 				instanceType := it
-				describeInstanceTypeOpts.InstanceTypes = append(describeInstanceTypeOpts.InstanceTypes, &instanceType)
+				describeInstanceTypeOpts.InstanceTypes = append(describeInstanceTypeOpts.InstanceTypes, instanceType)
 			}
 		}
 	} else if p.lastFullRefresh != nil && !p.isFullRefreshNeeded() {
@@ -125,17 +126,22 @@ func (p *Provider) Get(instanceTypes []string) ([]*Details, error) {
 		}
 		return instanceTypeDetails, nil
 	}
-	if err := p.ec2Client.DescribeInstanceTypesPages(&ec2.DescribeInstanceTypesInput{}, func(page *ec2.DescribeInstanceTypesOutput, lastPage bool) bool {
-		for _, instanceTypeInfo := range page.InstanceTypes {
-			itDetails := &Details{InstanceTypeInfo: *instanceTypeInfo}
-			instanceTypeDetails = append(instanceTypeDetails, itDetails)
-			p.cache.SetDefault(*instanceTypeInfo.InstanceType, itDetails)
+
+	s := ec2.NewDescribeInstanceTypesPaginator(p.ec2Client, &ec2.DescribeInstanceTypesInput{})
+
+	for s.HasMorePages() {
+		instanceTypeOutput, err := s.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get a page, %w", err)
 		}
-		// continue paging through instance types
-		return true
-	}); err != nil {
-		return instanceTypeDetails, err
+
+		for _, instanceTypeInfo := range instanceTypeOutput.InstanceTypes {
+			itDetails := &Details{InstanceTypeInfo: instanceTypeInfo}
+			instanceTypeDetails = append(instanceTypeDetails, itDetails)
+			p.cache.SetDefault(string(instanceTypeInfo.InstanceType), itDetails)
+		}
 	}
+
 	if len(instanceTypes) == 0 {
 		now := time.Now().UTC()
 		p.lastFullRefresh = &now
@@ -158,7 +164,9 @@ func (p *Provider) Save() error {
 	if err != nil {
 		return err
 	}
-	os.Mkdir(p.DirectoryPath, 0755)
+	if err := os.Mkdir(p.DirectoryPath, 0755); err != nil && !errors.Is(err, os.ErrExist) {
+		return err
+	}
 	return ioutil.WriteFile(getCacheFilePath(p.Region, p.DirectoryPath), cacheBytes, 0644)
 }
 

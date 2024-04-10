@@ -10,7 +10,7 @@ import (
 // Perform text alignment. If the string is multi-lined, we also make all lines
 // the same width by padding them with spaces. If a termenv style is passed,
 // use that to style the spaces added.
-func alignText(str string, pos Position, width int, style *termenv.Style) string {
+func alignTextHorizontal(str string, pos Position, width int, style *termenv.Style) string {
 	lines, widestLine := getLines(str)
 	var b strings.Builder
 
@@ -56,4 +56,27 @@ func alignText(str string, pos Position, width int, style *termenv.Style) string
 	}
 
 	return b.String()
+}
+
+func alignTextVertical(str string, pos Position, height int, _ *termenv.Style) string {
+	strHeight := strings.Count(str, "\n") + 1
+	if height < strHeight {
+		return str
+	}
+
+	switch pos {
+	case Top:
+		return str + strings.Repeat("\n", height-strHeight)
+	case Center:
+		var topPadding, bottomPadding = (height - strHeight) / 2, (height - strHeight) / 2
+		if strHeight+topPadding+bottomPadding > height {
+			topPadding--
+		} else if strHeight+topPadding+bottomPadding < height {
+			bottomPadding++
+		}
+		return strings.Repeat("\n", topPadding) + str + strings.Repeat("\n", bottomPadding)
+	case Bottom:
+		return strings.Repeat("\n", height-strHeight) + str
+	}
+	return str
 }

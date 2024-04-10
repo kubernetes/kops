@@ -2,39 +2,40 @@ package tea
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"unicode/utf8"
+
+	"github.com/mattn/go-localereader"
 )
 
 // KeyMsg contains information about a keypress. KeyMsgs are always sent to
 // the program's update function. There are a couple general patterns you could
 // use to check for keypresses:
 //
-//     // Switch on the string representation of the key (shorter)
-//     switch msg := msg.(type) {
-//     case KeyMsg:
-//         switch msg.String() {
-//         case "enter":
-//             fmt.Println("you pressed enter!")
-//         case "a":
-//             fmt.Println("you pressed a!")
-//         }
-//     }
+//	// Switch on the string representation of the key (shorter)
+//	switch msg := msg.(type) {
+//	case KeyMsg:
+//	    switch msg.String() {
+//	    case "enter":
+//	        fmt.Println("you pressed enter!")
+//	    case "a":
+//	        fmt.Println("you pressed a!")
+//	    }
+//	}
 //
-//     // Switch on the key type (more foolproof)
-//     switch msg := msg.(type) {
-//     case KeyMsg:
-//         switch msg.Type {
-//         case KeyEnter:
-//             fmt.Println("you pressed enter!")
-//         case KeyRunes:
-//             switch string(msg.Runes) {
-//             case "a":
-//                 fmt.Println("you pressed a!")
-//             }
-//         }
-//     }
+//	// Switch on the key type (more foolproof)
+//	switch msg := msg.(type) {
+//	case KeyMsg:
+//	    switch msg.Type {
+//	    case KeyEnter:
+//	        fmt.Println("you pressed enter!")
+//	    case KeyRunes:
+//	        switch string(msg.Runes) {
+//	        case "a":
+//	            fmt.Println("you pressed a!")
+//	        }
+//	    }
+//	}
 //
 // Note that Key.Runes will always contain at least one character, so you can
 // always safely call Key.Runes[0]. In most cases Key.Runes will only contain
@@ -58,10 +59,9 @@ type Key struct {
 // String returns a friendly string representation for a key. It's safe (and
 // encouraged) for use in key comparison.
 //
-//     k := Key{Type: KeyEnter}
-//     fmt.Println(k)
-//     // Output: enter
-//
+//	k := Key{Type: KeyEnter}
+//	fmt.Println(k)
+//	// Output: enter
 func (k Key) String() (str string) {
 	if k.Alt {
 		str += "alt+"
@@ -80,16 +80,16 @@ func (k Key) String() (str string) {
 // All other keys will be type KeyRunes. To get the rune value, check the Rune
 // method on a Key struct, or use the Key.String() method:
 //
-//     k := Key{Type: KeyRunes, Runes: []rune{'a'}, Alt: true}
-//     if k.Type == KeyRunes {
+//	k := Key{Type: KeyRunes, Runes: []rune{'a'}, Alt: true}
+//	if k.Type == KeyRunes {
 //
-//         fmt.Println(k.Runes)
-//         // Output: a
+//	    fmt.Println(k.Runes)
+//	    // Output: a
 //
-//         fmt.Println(k.String())
-//         // Output: alt+a
+//	    fmt.Println(k.String())
+//	    // Output: alt+a
 //
-//     }
+//	}
 type KeyType int
 
 func (k KeyType) String() (str string) {
@@ -197,20 +197,29 @@ const (
 	KeyEnd
 	KeyPgUp
 	KeyPgDown
+	KeyCtrlPgUp
+	KeyCtrlPgDown
 	KeyDelete
+	KeyInsert
 	KeySpace
 	KeyCtrlUp
 	KeyCtrlDown
 	KeyCtrlRight
 	KeyCtrlLeft
+	KeyCtrlHome
+	KeyCtrlEnd
 	KeyShiftUp
 	KeyShiftDown
 	KeyShiftRight
 	KeyShiftLeft
+	KeyShiftHome
+	KeyShiftEnd
 	KeyCtrlShiftUp
 	KeyCtrlShiftDown
 	KeyCtrlShiftLeft
 	KeyCtrlShiftRight
+	KeyCtrlShiftHome
+	KeyCtrlShiftEnd
 	KeyF1
 	KeyF2
 	KeyF3
@@ -280,9 +289,18 @@ var keyNames = map[KeyType]string{
 	KeyShiftTab:       "shift+tab",
 	KeyHome:           "home",
 	KeyEnd:            "end",
+	KeyCtrlHome:       "ctrl+home",
+	KeyCtrlEnd:        "ctrl+end",
+	KeyShiftHome:      "shift+home",
+	KeyShiftEnd:       "shift+end",
+	KeyCtrlShiftHome:  "ctrl+shift+home",
+	KeyCtrlShiftEnd:   "ctrl+shift+end",
 	KeyPgUp:           "pgup",
 	KeyPgDown:         "pgdown",
+	KeyCtrlPgUp:       "ctrl+pgup",
+	KeyCtrlPgDown:     "ctrl+pgdown",
 	KeyDelete:         "delete",
+	KeyInsert:         "insert",
 	KeyCtrlUp:         "ctrl+up",
 	KeyCtrlDown:       "ctrl+down",
 	KeyCtrlRight:      "ctrl+right",
@@ -374,100 +392,175 @@ var sequences = map[string]Key{
 	"\x1b[1;8D":  {Type: KeyCtrlShiftLeft, Alt: true},
 
 	// Miscellaneous keys
-	"\x1b[Z":      {Type: KeyShiftTab},
+	"\x1b[Z": {Type: KeyShiftTab},
+
+	"\x1b[2~":     {Type: KeyInsert},
+	"\x1b[3;2~":   {Type: KeyInsert, Alt: true},
+	"\x1b\x1b[2~": {Type: KeyInsert, Alt: true}, // urxvt
+
 	"\x1b[3~":     {Type: KeyDelete},
 	"\x1b[3;3~":   {Type: KeyDelete, Alt: true},
-	"\x1b[1~":     {Type: KeyHome},
-	"\x1b[1;3H~":  {Type: KeyHome, Alt: true},
-	"\x1b[4~":     {Type: KeyEnd},
-	"\x1b[1;3F~":  {Type: KeyEnd, Alt: true},
+	"\x1b\x1b[3~": {Type: KeyDelete, Alt: true}, // urxvt
+
 	"\x1b[5~":     {Type: KeyPgUp},
 	"\x1b[5;3~":   {Type: KeyPgUp, Alt: true},
+	"\x1b\x1b[5~": {Type: KeyPgUp, Alt: true}, // urxvt
+	"\x1b[5;5~":   {Type: KeyCtrlPgUp},
+	"\x1b[5^":     {Type: KeyCtrlPgUp}, // urxvt
+	"\x1b[5;7~":   {Type: KeyCtrlPgUp, Alt: true},
+	"\x1b\x1b[5^": {Type: KeyCtrlPgUp, Alt: true}, // urxvt
+
 	"\x1b[6~":     {Type: KeyPgDown},
 	"\x1b[6;3~":   {Type: KeyPgDown, Alt: true},
-	"\x1b[7~":     {Type: KeyHome},              // urxvt
-	"\x1b[8~":     {Type: KeyEnd},               // urxvt
-	"\x1b\x1b[3~": {Type: KeyDelete, Alt: true}, // urxvt
-	"\x1b\x1b[5~": {Type: KeyPgUp, Alt: true},   // urxvt
 	"\x1b\x1b[6~": {Type: KeyPgDown, Alt: true}, // urxvt
-	"\x1b\x1b[7~": {Type: KeyHome, Alt: true},   // urxvt
-	"\x1b\x1b[8~": {Type: KeyEnd, Alt: true},    // urxvt
+	"\x1b[6;5~":   {Type: KeyCtrlPgDown},
+	"\x1b[6^":     {Type: KeyCtrlPgDown}, // urxvt
+	"\x1b[6;7~":   {Type: KeyCtrlPgDown, Alt: true},
+	"\x1b\x1b[6^": {Type: KeyCtrlPgDown, Alt: true}, // urxvt
+
+	"\x1b[1~":   {Type: KeyHome},
+	"\x1b[H":    {Type: KeyHome},                     // xterm, lxterm
+	"\x1b[1;3H": {Type: KeyHome, Alt: true},          // xterm, lxterm
+	"\x1b[1;5H": {Type: KeyCtrlHome},                 // xterm, lxterm
+	"\x1b[1;7H": {Type: KeyCtrlHome, Alt: true},      // xterm, lxterm
+	"\x1b[1;2H": {Type: KeyShiftHome},                // xterm, lxterm
+	"\x1b[1;4H": {Type: KeyShiftHome, Alt: true},     // xterm, lxterm
+	"\x1b[1;6H": {Type: KeyCtrlShiftHome},            // xterm, lxterm
+	"\x1b[1;8H": {Type: KeyCtrlShiftHome, Alt: true}, // xterm, lxterm
+
+	"\x1b[4~":   {Type: KeyEnd},
+	"\x1b[F":    {Type: KeyEnd},                     // xterm, lxterm
+	"\x1b[1;3F": {Type: KeyEnd, Alt: true},          // xterm, lxterm
+	"\x1b[1;5F": {Type: KeyCtrlEnd},                 // xterm, lxterm
+	"\x1b[1;7F": {Type: KeyCtrlEnd, Alt: true},      // xterm, lxterm
+	"\x1b[1;2F": {Type: KeyShiftEnd},                // xterm, lxterm
+	"\x1b[1;4F": {Type: KeyShiftEnd, Alt: true},     // xterm, lxterm
+	"\x1b[1;6F": {Type: KeyCtrlShiftEnd},            // xterm, lxterm
+	"\x1b[1;8F": {Type: KeyCtrlShiftEnd, Alt: true}, // xterm, lxterm
+
+	"\x1b[7~":     {Type: KeyHome},                     // urxvt
+	"\x1b\x1b[7~": {Type: KeyHome, Alt: true},          // urxvt
+	"\x1b[7^":     {Type: KeyCtrlHome},                 // urxvt
+	"\x1b\x1b[7^": {Type: KeyCtrlHome, Alt: true},      // urxvt
+	"\x1b[7$":     {Type: KeyShiftHome},                // urxvt
+	"\x1b\x1b[7$": {Type: KeyShiftHome, Alt: true},     // urxvt
+	"\x1b[7@":     {Type: KeyCtrlShiftHome},            // urxvt
+	"\x1b\x1b[7@": {Type: KeyCtrlShiftHome, Alt: true}, // urxvt
+
+	"\x1b[8~":     {Type: KeyEnd},                     // urxvt
+	"\x1b\x1b[8~": {Type: KeyEnd, Alt: true},          // urxvt
+	"\x1b[8^":     {Type: KeyCtrlEnd},                 // urxvt
+	"\x1b\x1b[8^": {Type: KeyCtrlEnd, Alt: true},      // urxvt
+	"\x1b[8$":     {Type: KeyShiftEnd},                // urxvt
+	"\x1b\x1b[8$": {Type: KeyShiftEnd, Alt: true},     // urxvt
+	"\x1b[8@":     {Type: KeyCtrlShiftEnd},            // urxvt
+	"\x1b\x1b[8@": {Type: KeyCtrlShiftEnd, Alt: true}, // urxvt
+
+	// Function keys, Linux console
+	"\x1b[[A": {Type: KeyF1}, // linux console
+	"\x1b[[B": {Type: KeyF2}, // linux console
+	"\x1b[[C": {Type: KeyF3}, // linux console
+	"\x1b[[D": {Type: KeyF4}, // linux console
+	"\x1b[[E": {Type: KeyF5}, // linux console
 
 	// Function keys, X11
-	"\x1bOP":     {Type: KeyF1},  // vt100
-	"\x1bOQ":     {Type: KeyF2},  // vt100
-	"\x1bOR":     {Type: KeyF3},  // vt100
-	"\x1bOS":     {Type: KeyF4},  // vt100
-	"\x1b[15~":   {Type: KeyF5},  // also urxvt
-	"\x1b[17~":   {Type: KeyF6},  // also urxvt
-	"\x1b[18~":   {Type: KeyF7},  // also urxvt
-	"\x1b[19~":   {Type: KeyF8},  // also urxvt
-	"\x1b[20~":   {Type: KeyF9},  // also urxvt
-	"\x1b[21~":   {Type: KeyF10}, // also urxvt
-	"\x1b[23~":   {Type: KeyF11}, // also urxvt
-	"\x1b[24~":   {Type: KeyF12}, // also urxvt
-	"\x1b[1;2P":  {Type: KeyF13},
-	"\x1b[1;2Q":  {Type: KeyF14},
-	"\x1b[1;2R":  {Type: KeyF15},
-	"\x1b[1;2S":  {Type: KeyF16},
+	"\x1bOP": {Type: KeyF1}, // vt100, xterm
+	"\x1bOQ": {Type: KeyF2}, // vt100, xterm
+	"\x1bOR": {Type: KeyF3}, // vt100, xterm
+	"\x1bOS": {Type: KeyF4}, // vt100, xterm
+
+	"\x1b[1;3P": {Type: KeyF1, Alt: true}, // vt100, xterm
+	"\x1b[1;3Q": {Type: KeyF2, Alt: true}, // vt100, xterm
+	"\x1b[1;3R": {Type: KeyF3, Alt: true}, // vt100, xterm
+	"\x1b[1;3S": {Type: KeyF4, Alt: true}, // vt100, xterm
+
+	"\x1b[11~": {Type: KeyF1}, // urxvt
+	"\x1b[12~": {Type: KeyF2}, // urxvt
+	"\x1b[13~": {Type: KeyF3}, // urxvt
+	"\x1b[14~": {Type: KeyF4}, // urxvt
+
+	"\x1b\x1b[11~": {Type: KeyF1, Alt: true}, // urxvt
+	"\x1b\x1b[12~": {Type: KeyF2, Alt: true}, // urxvt
+	"\x1b\x1b[13~": {Type: KeyF3, Alt: true}, // urxvt
+	"\x1b\x1b[14~": {Type: KeyF4, Alt: true}, // urxvt
+
+	"\x1b[15~": {Type: KeyF5}, // vt100, xterm, also urxvt
+
+	"\x1b[15;3~": {Type: KeyF5, Alt: true}, // vt100, xterm, also urxvt
+
+	"\x1b\x1b[15~": {Type: KeyF5, Alt: true}, // urxvt
+
+	"\x1b[17~": {Type: KeyF6},  // vt100, xterm, also urxvt
+	"\x1b[18~": {Type: KeyF7},  // vt100, xterm, also urxvt
+	"\x1b[19~": {Type: KeyF8},  // vt100, xterm, also urxvt
+	"\x1b[20~": {Type: KeyF9},  // vt100, xterm, also urxvt
+	"\x1b[21~": {Type: KeyF10}, // vt100, xterm, also urxvt
+
+	"\x1b\x1b[17~": {Type: KeyF6, Alt: true},  // urxvt
+	"\x1b\x1b[18~": {Type: KeyF7, Alt: true},  // urxvt
+	"\x1b\x1b[19~": {Type: KeyF8, Alt: true},  // urxvt
+	"\x1b\x1b[20~": {Type: KeyF9, Alt: true},  // urxvt
+	"\x1b\x1b[21~": {Type: KeyF10, Alt: true}, // urxvt
+
+	"\x1b[17;3~": {Type: KeyF6, Alt: true},  // vt100, xterm
+	"\x1b[18;3~": {Type: KeyF7, Alt: true},  // vt100, xterm
+	"\x1b[19;3~": {Type: KeyF8, Alt: true},  // vt100, xterm
+	"\x1b[20;3~": {Type: KeyF9, Alt: true},  // vt100, xterm
+	"\x1b[21;3~": {Type: KeyF10, Alt: true}, // vt100, xterm
+
+	"\x1b[23~": {Type: KeyF11}, // vt100, xterm, also urxvt
+	"\x1b[24~": {Type: KeyF12}, // vt100, xterm, also urxvt
+
+	"\x1b[23;3~": {Type: KeyF11, Alt: true}, // vt100, xterm
+	"\x1b[24;3~": {Type: KeyF12, Alt: true}, // vt100, xterm
+
+	"\x1b\x1b[23~": {Type: KeyF11, Alt: true}, // urxvt
+	"\x1b\x1b[24~": {Type: KeyF12, Alt: true}, // urxvt
+
+	"\x1b[1;2P": {Type: KeyF13},
+	"\x1b[1;2Q": {Type: KeyF14},
+
+	"\x1b[25~": {Type: KeyF13}, // vt100, xterm, also urxvt
+	"\x1b[26~": {Type: KeyF14}, // vt100, xterm, also urxvt
+
+	"\x1b[25;3~": {Type: KeyF13, Alt: true}, // vt100, xterm
+	"\x1b[26;3~": {Type: KeyF14, Alt: true}, // vt100, xterm
+
+	"\x1b\x1b[25~": {Type: KeyF13, Alt: true}, // urxvt
+	"\x1b\x1b[26~": {Type: KeyF14, Alt: true}, // urxvt
+
+	"\x1b[1;2R": {Type: KeyF15},
+	"\x1b[1;2S": {Type: KeyF16},
+
+	"\x1b[28~": {Type: KeyF15}, // vt100, xterm, also urxvt
+	"\x1b[29~": {Type: KeyF16}, // vt100, xterm, also urxvt
+
+	"\x1b[28;3~": {Type: KeyF15, Alt: true}, // vt100, xterm
+	"\x1b[29;3~": {Type: KeyF16, Alt: true}, // vt100, xterm
+
+	"\x1b\x1b[28~": {Type: KeyF15, Alt: true}, // urxvt
+	"\x1b\x1b[29~": {Type: KeyF16, Alt: true}, // urxvt
+
 	"\x1b[15;2~": {Type: KeyF17},
 	"\x1b[17;2~": {Type: KeyF18},
 	"\x1b[18;2~": {Type: KeyF19},
 	"\x1b[19;2~": {Type: KeyF20},
 
-	// Function keys with the alt modifier, X11
-	"\x1b[1;3P":  {Type: KeyF1, Alt: true},
-	"\x1b[1;3Q":  {Type: KeyF2, Alt: true},
-	"\x1b[1;3R":  {Type: KeyF3, Alt: true},
-	"\x1b[1;3S":  {Type: KeyF4, Alt: true},
-	"\x1b[15;3~": {Type: KeyF5, Alt: true},
-	"\x1b[17;3~": {Type: KeyF6, Alt: true},
-	"\x1b[18;3~": {Type: KeyF7, Alt: true},
-	"\x1b[19;3~": {Type: KeyF8, Alt: true},
-	"\x1b[20;3~": {Type: KeyF9, Alt: true},
-	"\x1b[21;3~": {Type: KeyF10, Alt: true},
-	"\x1b[23;3~": {Type: KeyF11, Alt: true},
-	"\x1b[24;3~": {Type: KeyF12, Alt: true},
-
-	// Function keys, urxvt
-	"\x1b[11~": {Type: KeyF1},
-	"\x1b[12~": {Type: KeyF2},
-	"\x1b[13~": {Type: KeyF3},
-	"\x1b[14~": {Type: KeyF4},
-	"\x1b[25~": {Type: KeyF13},
-	"\x1b[26~": {Type: KeyF14},
-	"\x1b[28~": {Type: KeyF15},
-	"\x1b[29~": {Type: KeyF16},
 	"\x1b[31~": {Type: KeyF17},
 	"\x1b[32~": {Type: KeyF18},
 	"\x1b[33~": {Type: KeyF19},
 	"\x1b[34~": {Type: KeyF20},
 
-	// Function keys with the alt modifier, urxvt
-	"\x1b\x1b[11~": {Type: KeyF1, Alt: true},
-	"\x1b\x1b[12~": {Type: KeyF2, Alt: true},
-	"\x1b\x1b[13~": {Type: KeyF3, Alt: true},
-	"\x1b\x1b[14~": {Type: KeyF4, Alt: true},
-	"\x1b\x1b[25~": {Type: KeyF13, Alt: true},
-	"\x1b\x1b[26~": {Type: KeyF14, Alt: true},
-	"\x1b\x1b[28~": {Type: KeyF15, Alt: true},
-	"\x1b\x1b[29~": {Type: KeyF16, Alt: true},
-	"\x1b\x1b[31~": {Type: KeyF17, Alt: true},
-	"\x1b\x1b[32~": {Type: KeyF18, Alt: true},
-	"\x1b\x1b[33~": {Type: KeyF19, Alt: true},
-	"\x1b\x1b[34~": {Type: KeyF20, Alt: true},
-}
+	"\x1b\x1b[31~": {Type: KeyF17, Alt: true}, // urxvt
+	"\x1b\x1b[32~": {Type: KeyF18, Alt: true}, // urxvt
+	"\x1b\x1b[33~": {Type: KeyF19, Alt: true}, // urxvt
+	"\x1b\x1b[34~": {Type: KeyF20, Alt: true}, // urxvt
 
-// Hex code mappings.
-var hexes = map[string]Key{
-	"1b0d": {Type: KeyEnter, Alt: true},
-	"1b7f": {Type: KeyBackspace, Alt: true},
-
-	// Powershell
-	"1b4f41": {Type: KeyUp, Alt: false},
-	"1b4f42": {Type: KeyDown, Alt: false},
-	"1b4f43": {Type: KeyRight, Alt: false},
-	"1b4f44": {Type: KeyLeft, Alt: false},
+	// Powershell sequences.
+	"\x1bOA": {Type: KeyUp, Alt: false},
+	"\x1bOB": {Type: KeyDown, Alt: false},
+	"\x1bOC": {Type: KeyRight, Alt: false},
+	"\x1bOD": {Type: KeyLeft, Alt: false},
 }
 
 // readInputs reads keypress and mouse inputs from a TTY and returns messages
@@ -480,10 +573,15 @@ func readInputs(input io.Reader) ([]Msg, error) {
 	if err != nil {
 		return nil, err
 	}
+	b := buf[:numBytes]
+	b, err = localereader.UTF8(b)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check if it's a mouse event. For now we're parsing X10-type mouse events
 	// only.
-	mouseEvent, err := parseX10MouseEvents(buf[:numBytes])
+	mouseEvent, err := parseX10MouseEvents(b)
 	if err == nil {
 		var m []Msg
 		for _, v := range mouseEvent {
@@ -492,37 +590,8 @@ func readInputs(input io.Reader) ([]Msg, error) {
 		return m, nil
 	}
 
-	// Is it a sequence, like an arrow key?
-	if k, ok := sequences[string(buf[:numBytes])]; ok {
-		return []Msg{
-			KeyMsg(k),
-		}, nil
-	}
-
-	// Some of these need special handling.
-	hex := fmt.Sprintf("%x", buf[:numBytes])
-	if k, ok := hexes[hex]; ok {
-		return []Msg{
-			KeyMsg(k),
-		}, nil
-	}
-
-	// Is the alt key pressed? If so, the buffer will be prefixed with an
-	// escape.
-	if numBytes > 1 && buf[0] == 0x1b {
-		// Now remove the initial escape sequence and re-process to get the
-		// character being pressed in combination with alt.
-		c, _ := utf8.DecodeRune(buf[1:])
-		if c == utf8.RuneError {
-			return nil, errors.New("could not decode rune after removing initial escape")
-		}
-		return []Msg{
-			KeyMsg(Key{Alt: true, Type: KeyRunes, Runes: []rune{c}}),
-		}, nil
-	}
-
+	var runeSets [][]rune
 	var runes []rune
-	b := buf[:numBytes]
 
 	// Translate input into runes. In most cases we'll receive exactly one
 	// rune, but there are cases, particularly when an input method editor is
@@ -532,38 +601,64 @@ func readInputs(input io.Reader) ([]Msg, error) {
 		if r == utf8.RuneError {
 			return nil, errors.New("could not decode rune")
 		}
+
+		if r == '\x1b' && len(runes) > 1 {
+			// a new key sequence has started
+			runeSets = append(runeSets, runes)
+			runes = []rune{}
+		}
+
 		runes = append(runes, r)
 		w = width
 	}
+	// add the final set of runes we decoded
+	runeSets = append(runeSets, runes)
 
-	if len(runes) == 0 {
+	if len(runeSets) == 0 {
 		return nil, errors.New("received 0 runes from input")
-	} else if len(runes) > 1 {
-		// We received multiple runes, so we know this isn't a control
-		// character, sequence, and so on.
-		return []Msg{
-			KeyMsg(Key{Type: KeyRunes, Runes: runes}),
-		}, nil
 	}
 
-	// Is the first rune a control character?
-	r := KeyType(runes[0])
-	if numBytes == 1 && r <= keyUS || r == keyDEL {
-		return []Msg{
-			KeyMsg(Key{Type: r}),
-		}, nil
+	var msgs []Msg
+	for _, runes := range runeSets {
+		// Is it a sequence, like an arrow key?
+		if k, ok := sequences[string(runes)]; ok {
+			msgs = append(msgs, KeyMsg(k))
+			continue
+		}
+
+		// Is this an unrecognized CSI sequence? If so, ignore it.
+		if len(runes) > 2 && runes[0] == 0x1b && (runes[1] == '[' ||
+			(len(runes) > 3 && runes[1] == 0x1b && runes[2] == '[')) {
+			continue
+		}
+
+		// Is the alt key pressed? If so, the buffer will be prefixed with an
+		// escape.
+		alt := false
+		if len(runes) > 1 && runes[0] == 0x1b {
+			alt = true
+			runes = runes[1:]
+		}
+
+		for _, v := range runes {
+			// Is the first rune a control character?
+			r := KeyType(v)
+			if r <= keyUS || r == keyDEL {
+				msgs = append(msgs, KeyMsg(Key{Type: r, Alt: alt}))
+				continue
+			}
+
+			// If it's a space, override the type with KeySpace (but still include
+			// the rune).
+			if r == ' ' {
+				msgs = append(msgs, KeyMsg(Key{Type: KeySpace, Runes: []rune{v}, Alt: alt}))
+				continue
+			}
+
+			// Welp, just regular, ol' runes.
+			msgs = append(msgs, KeyMsg(Key{Type: KeyRunes, Runes: []rune{v}, Alt: alt}))
+		}
 	}
 
-	// If it's a space, override the type with KeySpace (but still include the
-	// rune).
-	if runes[0] == ' ' {
-		return []Msg{
-			KeyMsg(Key{Type: KeySpace, Runes: runes}),
-		}, nil
-	}
-
-	// Welp, it's just a regular, ol' single rune.
-	return []Msg{
-		KeyMsg(Key{Type: KeyRunes, Runes: runes}),
-	}, nil
+	return msgs, nil
 }

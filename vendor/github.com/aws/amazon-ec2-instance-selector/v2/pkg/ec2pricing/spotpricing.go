@@ -14,6 +14,7 @@
 package ec2pricing
 
 import (
+	"context"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -26,9 +27,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/mitchellh/go-homedir"
 	"github.com/patrickmn/go-cache"
 	"go.uber.org/multierr"
@@ -43,7 +43,7 @@ type SpotPricing struct {
 	FullRefreshTTL time.Duration
 	DirectoryPath  string
 	cache          *cache.Cache
-	ec2Client      ec2iface.EC2API
+	ec2Client      ec2.DescribeSpotPriceHistoryAPIClient
 	sync.RWMutex
 }
 
@@ -53,7 +53,7 @@ type spotPricingEntry struct {
 	Zone      string
 }
 
-func LoadSpotCacheOrNew(ec2Client ec2iface.EC2API, region string, fullRefreshTTL time.Duration, directoryPath string, days int) *SpotPricing {
+func LoadSpotCacheOrNew(ctx context.Context, ec2Client ec2.DescribeSpotPriceHistoryAPIClient, region string, fullRefreshTTL time.Duration, directoryPath string, days int) *SpotPricing {
 	expandedDirPath, err := homedir.Expand(directoryPath)
 	if err != nil {
 		log.Printf("Unable to load spot pricing cache directory %s: %v", expandedDirPath, err)
@@ -78,7 +78,7 @@ func LoadSpotCacheOrNew(ec2Client ec2iface.EC2API, region string, fullRefreshTTL
 	}
 	gob.Register([]*spotPricingEntry{})
 	// Start the cache refresh job
-	go spotCacheRefreshJob(spotPricing, days)
+	go spotCacheRefreshJob(ctx, spotPricing, days)
 	spotCache, err := loadSpotCacheFrom(fullRefreshTTL, region, expandedDirPath)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -109,22 +109,22 @@ func getSpotCacheFilePath(region string, directoryPath string) string {
 	return filepath.Join(directoryPath, fmt.Sprintf("%s-%s", region, SpotCacheFileName))
 }
 
-func spotCacheRefreshJob(spotPricing *SpotPricing, days int) {
+func spotCacheRefreshJob(ctx context.Context, spotPricing *SpotPricing, days int) {
 	if spotPricing.FullRefreshTTL <= 0 {
 		return
 	}
 	refreshTicker := time.NewTicker(spotPricing.FullRefreshTTL)
 	for range refreshTicker.C {
-		if err := spotPricing.Refresh(days); err != nil {
+		if err := spotPricing.Refresh(ctx, days); err != nil {
 			log.Println(err)
 		}
 	}
 }
 
-func (c *SpotPricing) Refresh(days int) error {
+func (c *SpotPricing) Refresh(ctx context.Context, days int) error {
 	c.Lock()
 	defer c.Unlock()
-	spotInstanceTypeCosts, err := c.fetchSpotPricingTimeSeries("", days)
+	spotInstanceTypeCosts, err := c.fetchSpotPricingTimeSeries(ctx, "", days)
 	if err != nil {
 		return fmt.Errorf("there was a problem refreshing the spot instance type pricing cache: %v", err)
 	}
@@ -137,8 +137,8 @@ func (c *SpotPricing) Refresh(days int) error {
 	return nil
 }
 
-func (c *SpotPricing) Get(instanceType string, zone string, days int) (float64, error) {
-	entries, ok := c.cache.Get(instanceType)
+func (c *SpotPricing) Get(ctx context.Context, instanceType ec2types.InstanceType, zone string, days int) (float64, error) {
+	entries, ok := c.cache.Get(string(instanceType))
 	if zone != "" && ok {
 		if !c.contains(zone, entries.([]*spotPricingEntry)) {
 			ok = false
@@ -147,7 +147,7 @@ func (c *SpotPricing) Get(instanceType string, zone string, days int) (float64, 
 	if !ok {
 		c.RLock()
 		defer c.RUnlock()
-		zonalSpotPricing, err := c.fetchSpotPricingTimeSeries(instanceType, days)
+		zonalSpotPricing, err := c.fetchSpotPricingTimeSeries(ctx, instanceType, days)
 		if err != nil {
 			return -1, fmt.Errorf("there was a problem fetching spot instance type pricing for %s: %v", instanceType, err)
 		}
@@ -156,7 +156,7 @@ func (c *SpotPricing) Get(instanceType string, zone string, days int) (float64, 
 		}
 	}
 
-	entries, ok = c.cache.Get(instanceType)
+	entries, ok = c.cache.Get(string(instanceType))
 	if !ok {
 		return -1, fmt.Errorf("unable to get spot pricing for %s in zone %s for %d days back", instanceType, zone, days)
 	}
@@ -240,37 +240,42 @@ func (c *SpotPricing) Clear() error {
 
 // fetchSpotPricingTimeSeries makes a bulk request to the ec2 api to retrieve all spot instance type pricing for the past n days
 // If instanceType is empty, it will fetch for all instance types
-func (c *SpotPricing) fetchSpotPricingTimeSeries(instanceType string, days int) (map[string][]*spotPricingEntry, error) {
+func (c *SpotPricing) fetchSpotPricingTimeSeries(ctx context.Context, instanceType ec2types.InstanceType, days int) (map[string][]*spotPricingEntry, error) {
 	spotTimeSeries := map[string][]*spotPricingEntry{}
 	endTime := time.Now().UTC()
 	startTime := endTime.Add(time.Hour * time.Duration(24*-1*days))
 	spotPriceHistInput := ec2.DescribeSpotPriceHistoryInput{
-		ProductDescriptions: []*string{aws.String(productDescription)},
+		ProductDescriptions: []string{productDescription},
 		StartTime:           &startTime,
 		EndTime:             &endTime,
 	}
 	if instanceType != "" {
-		spotPriceHistInput.InstanceTypes = append(spotPriceHistInput.InstanceTypes, &instanceType)
+		spotPriceHistInput.InstanceTypes = append(spotPriceHistInput.InstanceTypes, instanceType)
 	}
 	var processingErr error
-	errAPI := c.ec2Client.DescribeSpotPriceHistoryPages(&spotPriceHistInput, func(dspho *ec2.DescribeSpotPriceHistoryOutput, b bool) bool {
-		for _, history := range dspho.SpotPriceHistory {
+
+	p := ec2.NewDescribeSpotPriceHistoryPaginator(c.ec2Client, &spotPriceHistInput)
+
+	// Iterate through the Amazon S3 object pages.
+	for p.HasMorePages() {
+		spotHistoryOutput, err := p.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get a page, %w", err)
+		}
+
+		for _, history := range spotHistoryOutput.SpotPriceHistory {
 			spotPrice, errFloat := strconv.ParseFloat(*history.SpotPrice, 64)
 			if errFloat != nil {
 				processingErr = multierr.Append(processingErr, errFloat)
 				continue
 			}
-			instanceType := *history.InstanceType
-			spotTimeSeries[instanceType] = append(spotTimeSeries[instanceType], &spotPricingEntry{
+			spotTimeSeries[string(history.InstanceType)] = append(spotTimeSeries[string(history.InstanceType)], &spotPricingEntry{
 				Timestamp: *history.Timestamp,
 				SpotPrice: spotPrice,
 				Zone:      *history.AvailabilityZone,
 			})
 		}
-		return true
-	})
-	if errAPI != nil {
-		return spotTimeSeries, errAPI
 	}
+
 	return spotTimeSeries, processingErr
 }

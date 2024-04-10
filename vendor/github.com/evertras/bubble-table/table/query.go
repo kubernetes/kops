@@ -25,6 +25,12 @@ func (m *Model) GetIsFilterActive() bool {
 	return m.filterTextInput.Value() != ""
 }
 
+// GetIsFilterInputFocused returns true if the table's built-in filter input is
+// currently focused.
+func (m *Model) GetIsFilterInputFocused() bool {
+	return m.filterTextInput.Focused()
+}
+
 // GetCurrentFilter returns the current filter text being applied, or an empty
 // string if none is applied.
 func (m *Model) GetCurrentFilter() string {
@@ -32,13 +38,20 @@ func (m *Model) GetCurrentFilter() string {
 }
 
 // GetVisibleRows returns sorted and filtered rows.
-func (m Model) GetVisibleRows() []Row {
+func (m *Model) GetVisibleRows() []Row {
+	if m.visibleRowCacheUpdated {
+		return m.visibleRowCache
+	}
+
 	rows := make([]Row, len(m.rows))
 	copy(rows, m.rows)
 	if m.filtered {
 		rows = m.getFilteredRows(rows)
 	}
 	rows = getSortedRows(m.sortOrder, rows)
+
+	m.visibleRowCache = rows
+	m.visibleRowCacheUpdated = true
 
 	return rows
 }

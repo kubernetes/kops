@@ -3,7 +3,8 @@ package table
 import "time"
 
 // This is just a bunch of data type checks, so... no linting here
-// nolint: cyclop
+//
+//nolint:cyclop
 func asInt(data interface{}) (int64, bool) {
 	switch val := data.(type) {
 	case int:

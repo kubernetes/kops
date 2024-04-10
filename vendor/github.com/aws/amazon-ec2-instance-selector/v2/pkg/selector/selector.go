@@ -28,10 +28,10 @@ import (
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing"
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"go.uber.org/multierr"
 )
 
@@ -42,9 +42,9 @@ var (
 
 const (
 	locationFilterKey      = "location"
-	zoneIDLocationType     = "availability-zone-id"
-	zoneNameLocationType   = "availability-zone"
-	regionNameLocationType = "region"
+	zoneIDLocationType     = ec2types.LocationTypeAvailabilityZoneId
+	zoneNameLocationType   = ec2types.LocationTypeAvailabilityZone
+	regionNameLocationType = ec2types.LocationTypeRegion
 	sdkName                = "instance-selector"
 
 	// Filter Keys
@@ -93,37 +93,49 @@ const (
 	dedicatedHosts                   = "dedicatedHosts"
 
 	cpuArchitectureAMD64 = "amd64"
-	cpuArchitectureX8664 = "x86_64"
 
-	virtualizationTypeParaVirtual = "paravirtual"
-	virtualizationTypePV          = "pv"
+	virtualizationTypePV = "pv"
 
 	pricePerHour = "pricePerHour"
 )
 
 // New creates an instance of Selector provided an aws session
-func New(sess *session.Session) *Selector {
+func New(ctx context.Context, cfg aws.Config) (*Selector, error) {
 	serviceRegistry := NewRegistry()
 	serviceRegistry.RegisterAWSServices()
-	ec2Client := ec2.New(userAgentWith(sess))
+	ec2Client := ec2.NewFromConfig(cfg, func(options *ec2.Options) {
+		options.APIOptions = append(options.APIOptions, middleware.AddUserAgentKeyValue(sdkName, versionID))
+	})
+	pricingClient, err := ec2pricing.New(ctx, cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Selector{
 		EC2:                   ec2Client,
-		EC2Pricing:            ec2pricing.New(sess),
-		InstanceTypesProvider: instancetypes.LoadFromOrNew("", *sess.Config.Region, 0, ec2Client),
+		EC2Pricing:            pricingClient,
+		InstanceTypesProvider: instancetypes.LoadFromOrNew("", cfg.Region, 0, ec2Client),
 		ServiceRegistry:       serviceRegistry,
-	}
+	}, nil
 }
 
-func NewWithCache(sess *session.Session, ttl time.Duration, cacheDir string) *Selector {
+func NewWithCache(ctx context.Context, cfg aws.Config, ttl time.Duration, cacheDir string) (*Selector, error) {
 	serviceRegistry := NewRegistry()
 	serviceRegistry.RegisterAWSServices()
-	ec2Client := ec2.New(userAgentWith(sess))
+	ec2Client := ec2.NewFromConfig(cfg, func(options *ec2.Options) {
+		options.APIOptions = append(options.APIOptions, middleware.AddUserAgentKeyValue(sdkName, versionID))
+	})
+	pricingClient, err := ec2pricing.NewWithCache(ctx, cfg, ttl, cacheDir)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Selector{
 		EC2:                   ec2Client,
-		EC2Pricing:            ec2pricing.NewWithCache(sess, ttl, cacheDir),
-		InstanceTypesProvider: instancetypes.LoadFromOrNew(cacheDir, *sess.Config.Region, ttl, ec2Client),
+		EC2Pricing:            pricingClient,
+		InstanceTypesProvider: instancetypes.LoadFromOrNew(cacheDir, cfg.Region, ttl, ec2Client),
 		ServiceRegistry:       serviceRegistry,
-	}
+	}, nil
 }
 
 func (itf Selector) Save() error {
@@ -135,9 +147,9 @@ func (itf Selector) Save() error {
 //
 // Deprecated: This function will be replaced with GetFilteredInstanceTypes() and
 // OutputInstanceTypes() in the next major version.
-func (itf Selector) Filter(filters Filters) ([]string, error) {
+func (itf Selector) Filter(ctx context.Context, filters Filters) ([]string, error) {
 	outputFn := InstanceTypesOutputFn(outputs.SimpleInstanceTypeOutput)
-	output, _, err := itf.FilterWithOutput(filters, outputFn)
+	output, _, err := itf.FilterWithOutput(ctx, filters, outputFn)
 	return output, err
 }
 
@@ -146,8 +158,8 @@ func (itf Selector) Filter(filters Filters) ([]string, error) {
 //
 // Deprecated: This function will be replaced with GetFilteredInstanceTypes() in the next
 // major version.
-func (itf Selector) FilterVerbose(filters Filters) ([]*instancetypes.Details, error) {
-	instanceTypeInfoSlice, err := itf.rawFilter(filters)
+func (itf Selector) FilterVerbose(ctx context.Context, filters Filters) ([]*instancetypes.Details, error) {
+	instanceTypeInfoSlice, err := itf.rawFilter(ctx, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -160,8 +172,8 @@ func (itf Selector) FilterVerbose(filters Filters) ([]*instancetypes.Details, er
 //
 // Deprecated: This function will be replaced with GetFilteredInstanceTypes() and
 // OutputInstanceTypes() in the next major version.
-func (itf Selector) FilterWithOutput(filters Filters, outputFn InstanceTypesOutput) ([]string, int, error) {
-	instanceTypeInfoSlice, err := itf.rawFilter(filters)
+func (itf Selector) FilterWithOutput(ctx context.Context, filters Filters, outputFn InstanceTypesOutput) ([]string, int, error) {
+	instanceTypeInfoSlice, err := itf.rawFilter(ctx, filters)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -182,7 +194,7 @@ func (itf Selector) truncateResults(maxResults *int, instanceTypeInfoSlice []*in
 }
 
 // AggregateFilterTransform takes higher level filters which are used to affect multiple raw filters in an opinionated way.
-func (itf Selector) AggregateFilterTransform(filters Filters) (Filters, error) {
+func (itf Selector) AggregateFilterTransform(ctx context.Context, filters Filters) (Filters, error) {
 	transforms := []FiltersTransform{
 		TransformFn(itf.TransformBaseInstanceType),
 		TransformFn(itf.TransformFlexible),
@@ -190,7 +202,7 @@ func (itf Selector) AggregateFilterTransform(filters Filters) (Filters, error) {
 	}
 	var err error
 	for _, transform := range transforms {
-		filters, err = transform.Transform(filters)
+		filters, err = transform.Transform(ctx, filters)
 		if err != nil {
 			return filters, err
 		}
@@ -200,18 +212,18 @@ func (itf Selector) AggregateFilterTransform(filters Filters) (Filters, error) {
 
 // rawFilter accepts a Filters struct which is used to select the available instance types
 // matching the criteria within Filters and returns the detailed specs of matching instance types
-func (itf Selector) rawFilter(filters Filters) ([]*instancetypes.Details, error) {
-	filters, err := itf.AggregateFilterTransform(filters)
+func (itf Selector) rawFilter(ctx context.Context, filters Filters) ([]*instancetypes.Details, error) {
+	filters, err := itf.AggregateFilterTransform(ctx, filters)
 	if err != nil {
 		return nil, err
 	}
 	var locations, availabilityZones []string
 
 	if filters.CPUArchitecture != nil && *filters.CPUArchitecture == cpuArchitectureAMD64 {
-		*filters.CPUArchitecture = cpuArchitectureX8664
+		*filters.CPUArchitecture = ec2types.ArchitectureTypeX8664
 	}
 	if filters.VirtualizationType != nil && *filters.VirtualizationType == virtualizationTypePV {
-		*filters.VirtualizationType = virtualizationTypeParaVirtual
+		*filters.VirtualizationType = ec2types.VirtualizationTypeParavirtual
 	}
 	if filters.AvailabilityZones != nil {
 		availabilityZones = *filters.AvailabilityZones
@@ -219,12 +231,12 @@ func (itf Selector) rawFilter(filters Filters) ([]*instancetypes.Details, error)
 	} else if filters.Region != nil {
 		locations = []string{*filters.Region}
 	}
-	locationInstanceOfferings, err := itf.RetrieveInstanceTypesSupportedInLocations(locations)
+	locationInstanceOfferings, err := itf.RetrieveInstanceTypesSupportedInLocations(ctx, locations)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceTypeDetails, err := itf.InstanceTypesProvider.Get(nil)
+	instanceTypeDetails, err := itf.InstanceTypesProvider.Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +247,7 @@ func (itf Selector) rawFilter(filters Filters) ([]*instancetypes.Details, error)
 		wg.Add(1)
 		go func(instanceTypeInfo instancetypes.Details) {
 			defer wg.Done()
-			it, err := itf.prepareFilter(filters, instanceTypeInfo, availabilityZones, locationInstanceOfferings)
+			it, err := itf.prepareFilter(ctx, filters, instanceTypeInfo, availabilityZones, locationInstanceOfferings)
 			if err != nil {
 				log.Println(err)
 			}
@@ -252,14 +264,14 @@ func (itf Selector) rawFilter(filters Filters) ([]*instancetypes.Details, error)
 	return sortInstanceTypeInfo(filteredInstanceTypes), nil
 }
 
-func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetypes.Details, availabilityZones []string, locationInstanceOfferings map[string]string) (*instancetypes.Details, error) {
-	instanceTypeName := *instanceTypeInfo.InstanceType
+func (itf Selector) prepareFilter(ctx context.Context, filters Filters, instanceTypeInfo instancetypes.Details, availabilityZones []string, locationInstanceOfferings map[ec2types.InstanceType]string) (*instancetypes.Details, error) {
+	instanceTypeName := instanceTypeInfo.InstanceType
 	isFpga := instanceTypeInfo.FpgaInfo != nil
 	var instanceTypeHourlyPriceForFilter float64 // Price used to filter based on usage class
 	var instanceTypeHourlyPriceOnDemand, instanceTypeHourlyPriceSpot *float64
 	// If prices are fetched, populate the fields irrespective of the price filters
 	if itf.EC2Pricing.OnDemandCacheCount() > 0 {
-		price, err := itf.EC2Pricing.GetOnDemandInstanceTypeCost(instanceTypeName)
+		price, err := itf.EC2Pricing.GetOnDemandInstanceTypeCost(ctx, instanceTypeName)
 		if err != nil {
 			log.Printf("Could not retrieve instantaneous hourly on-demand price for instance type %s - %s\n", instanceTypeName, err)
 		} else {
@@ -267,8 +279,16 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 			instanceTypeInfo.OndemandPricePerHour = instanceTypeHourlyPriceOnDemand
 		}
 	}
-	if itf.EC2Pricing.SpotCacheCount() > 0 && contains(instanceTypeInfo.SupportedUsageClasses, "spot") {
-		price, err := itf.EC2Pricing.GetSpotInstanceTypeNDayAvgCost(instanceTypeName, availabilityZones, 30)
+
+	isSpotUsageClass := false
+	for _, it := range instanceTypeInfo.SupportedUsageClasses {
+		if it == ec2types.UsageClassTypeSpot {
+			isSpotUsageClass = true
+		}
+	}
+
+	if itf.EC2Pricing.SpotCacheCount() > 0 && isSpotUsageClass {
+		price, err := itf.EC2Pricing.GetSpotInstanceTypeNDayAvgCost(ctx, instanceTypeName, availabilityZones, 30)
 		if err != nil {
 			log.Printf("Could not retrieve 30 day avg hourly spot price for instance type %s\n", instanceTypeName)
 		} else {
@@ -279,12 +299,14 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 	if filters.PricePerHour != nil {
 		// If price filter is present, prices should be already fetched
 		// If prices are not fetched, filter should fail and the corresponding error is already printed
-		if filters.UsageClass != nil && *filters.UsageClass == "spot" && instanceTypeHourlyPriceSpot != nil {
+		if filters.UsageClass != nil && *filters.UsageClass == ec2types.UsageClassTypeSpot && instanceTypeHourlyPriceSpot != nil {
 			instanceTypeHourlyPriceForFilter = *instanceTypeHourlyPriceSpot
 		} else if instanceTypeHourlyPriceOnDemand != nil {
 			instanceTypeHourlyPriceForFilter = *instanceTypeHourlyPriceOnDemand
 		}
 	}
+	eneaSupport := string(instanceTypeInfo.NetworkInfo.EnaSupport)
+	ebsOptimizedSupport := string(instanceTypeInfo.EbsInfo.EbsOptimizedSupport)
 
 	// filterToInstanceSpecMappingPairs is a map of filter name [key] to filter pair [value].
 	// A filter pair includes user input filter value and instance spec value retrieved from DescribeInstanceTypes
@@ -304,7 +326,7 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 		baremetal:                        {filters.BareMetal, instanceTypeInfo.BareMetal},
 		burstable:                        {filters.Burstable, instanceTypeInfo.BurstablePerformanceSupported},
 		fpga:                             {filters.Fpga, &isFpga},
-		enaSupport:                       {filters.EnaSupport, supportSyntaxToBool(instanceTypeInfo.NetworkInfo.EnaSupport)},
+		enaSupport:                       {filters.EnaSupport, supportSyntaxToBool(&eneaSupport)},
 		efaSupport:                       {filters.EfaSupport, instanceTypeInfo.NetworkInfo.EfaSupported},
 		vcpusToMemoryRatio:               {filters.VCpusToMemoryRatio, calculateVCpusToMemoryRatio(instanceTypeInfo.VCpuInfo.DefaultVCpus, instanceTypeInfo.MemoryInfo.SizeInMiB)},
 		currentGeneration:                {filters.CurrentGeneration, instanceTypeInfo.CurrentGeneration},
@@ -318,7 +340,7 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 		instanceStorageRange:             {filters.InstanceStorageRange, getInstanceStorage(instanceTypeInfo.InstanceStorageInfo)},
 		diskType:                         {filters.DiskType, getDiskType(instanceTypeInfo.InstanceStorageInfo)},
 		nvme:                             {filters.NVME, getNVMESupport(instanceTypeInfo.InstanceStorageInfo, instanceTypeInfo.EbsInfo)},
-		ebsOptimized:                     {filters.EBSOptimized, supportSyntaxToBool(instanceTypeInfo.EbsInfo.EbsOptimizedSupport)},
+		ebsOptimized:                     {filters.EBSOptimized, supportSyntaxToBool(&ebsOptimizedSupport)},
 		diskEncryption:                   {filters.DiskEncryption, getDiskEncryptionSupport(instanceTypeInfo.InstanceStorageInfo, instanceTypeInfo.EbsInfo)},
 		ebsOptimizedBaselineBandwidth:    {filters.EBSOptimizedBaselineBandwidth, getEBSOptimizedBaselineBandwidth(instanceTypeInfo.EbsInfo)},
 		ebsOptimizedBaselineThroughput:   {filters.EBSOptimizedBaselineThroughput, getEBSOptimizedBaselineThroughput(instanceTypeInfo.EbsInfo)},
@@ -341,7 +363,7 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 	}
 
 	var isInstanceSupported bool
-	isInstanceSupported, err := itf.executeFilters(filterToInstanceSpecMappingPairs, instanceTypeName)
+	isInstanceSupported, err := itf.executeFilters(ctx, filterToInstanceSpecMappingPairs, instanceTypeName)
 	if err != nil {
 		return nil, err
 	}
@@ -359,17 +381,17 @@ func sortInstanceTypeInfo(instanceTypeInfoSlice []*instancetypes.Details) []*ins
 	sort.Slice(instanceTypeInfoSlice, func(i, j int) bool {
 		iInstanceInfo := instanceTypeInfoSlice[i]
 		jInstanceInfo := instanceTypeInfoSlice[j]
-		return strings.Compare(aws.StringValue(iInstanceInfo.InstanceType), aws.StringValue(jInstanceInfo.InstanceType)) <= 0
+		return strings.Compare(string(iInstanceInfo.InstanceType), string(jInstanceInfo.InstanceType)) <= 0
 	})
 	return instanceTypeInfoSlice
 }
 
 // executeFilters accepts a mapping of filter name to filter pairs which are iterated through
 // to determine if the instance type matches the filter values.
-func (itf Selector) executeFilters(filterToInstanceSpecMapping map[string]filterPair, instanceType string) (bool, error) {
-	verdict := make(chan bool, len(filterToInstanceSpecMapping) + 1)
+func (itf Selector) executeFilters(ctx context.Context, filterToInstanceSpecMapping map[string]filterPair, instanceType ec2types.InstanceType) (bool, error) {
+	verdict := make(chan bool, len(filterToInstanceSpecMapping)+1)
 	errs := make(chan error)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var wg sync.WaitGroup
 	for filterName, filter := range filterToInstanceSpecMapping {
@@ -410,15 +432,16 @@ func (itf Selector) executeFilters(filterToInstanceSpecMapping map[string]filter
 	}
 }
 
-func exec(instanceType string, filterName string, filter filterPair) (bool, error) {
+func exec(instanceType ec2types.InstanceType, filterName string, filter filterPair) (bool, error) {
 	filterVal := filter.filterValue
 	instanceSpec := filter.instanceSpec
+	filterValReflection := reflect.ValueOf(filterVal)
 	// if filter is nil, user did not specify a filter, so skip evaluation
-	if reflect.ValueOf(filterVal).IsNil() {
+	if filterValReflection.IsNil() {
 		return true, nil
 	}
 	instanceSpecType := reflect.ValueOf(instanceSpec).Type()
-	filterType := reflect.ValueOf(filterVal).Type()
+	filterType := filterValReflection.Type()
 	filterDetailsMsg := fmt.Sprintf("filter (%s: %s => %s) corresponding to instance spec (%s => %s) for instance type %s", filterName, filterVal, filterType, instanceSpec, instanceSpecType, instanceType)
 	invalidInstanceSpecTypeMsg := fmt.Sprintf("Unable to process for %s", filterDetailsMsg)
 
@@ -454,6 +477,15 @@ func exec(instanceType string, filterName string, filter filterPair) (bool, erro
 			}
 		case *int:
 			if !isSupportedWithRangeInt(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *Int32RangeFilter:
+		switch iSpec := instanceSpec.(type) {
+		case *int32:
+			if !isSupportedWithRangeInt32(iSpec, filter) {
 				return false, nil
 			}
 		default:
@@ -507,6 +539,60 @@ func exec(instanceType string, filterName string, filter filterPair) (bool, erro
 		default:
 			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
 		}
+	case *ec2types.ArchitectureType:
+		switch iSpec := instanceSpec.(type) {
+		case []ec2types.ArchitectureType:
+			if !isSupportedArchitectureType(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *ec2types.UsageClassType:
+		switch iSpec := instanceSpec.(type) {
+		case []ec2types.UsageClassType:
+			if !isSupportedUsageClassType(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *CPUManufacturer:
+		switch iSpec := instanceSpec.(type) {
+		case CPUManufacturer:
+			if !isMatchingCpuArchitecture(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *ec2types.VirtualizationType:
+		switch iSpec := instanceSpec.(type) {
+		case []ec2types.VirtualizationType:
+			if !isSupportedVirtualizationType(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *ec2types.InstanceTypeHypervisor:
+		switch iSpec := instanceSpec.(type) {
+		case ec2types.InstanceTypeHypervisor:
+			if !isSupportedInstanceTypeHypervisorType(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
+	case *ec2types.RootDeviceType:
+		switch iSpec := instanceSpec.(type) {
+		case []ec2types.RootDeviceType:
+			if !isSupportedRootDeviceType(iSpec, filter) {
+				return false, nil
+			}
+		default:
+			return false, fmt.Errorf(invalidInstanceSpecTypeMsg)
+		}
 	case *[]string:
 		switch iSpec := instanceSpec.(type) {
 		case *string:
@@ -532,41 +618,45 @@ func exec(instanceType string, filterName string, filter filterPair) (bool, erro
 // RetrieveInstanceTypesSupportedInLocations returns a map of instance type -> AZ or Region for all instance types supported in the intersected locations passed in
 // The location can be a zone-id (ie. use1-az1), a zone-name (us-east-1a), or a region name (us-east-1).
 // Note that zone names are not necessarily the same across accounts
-func (itf Selector) RetrieveInstanceTypesSupportedInLocations(locations []string) (map[string]string, error) {
+func (itf Selector) RetrieveInstanceTypesSupportedInLocations(ctx context.Context, locations []string) (map[ec2types.InstanceType]string, error) {
 	if len(locations) == 0 {
 		return nil, nil
 	}
-	availableInstanceTypes := map[string]int{}
+	availableInstanceTypes := map[ec2types.InstanceType]int{}
 	for _, location := range locations {
-		instanceTypeOfferingsInput := &ec2.DescribeInstanceTypeOfferingsInput{
-			Filters: []*ec2.Filter{
-				{
-					Name:   aws.String(locationFilterKey),
-					Values: []*string{aws.String(location)},
-				},
-			},
-		}
-		locationType, err := itf.getLocationType(location)
+		locationType, err := itf.getLocationType(ctx, location)
 		if err != nil {
 			return nil, err
 		}
-		instanceTypeOfferingsInput.SetLocationType(locationType)
 
-		err = itf.EC2.DescribeInstanceTypeOfferingsPages(instanceTypeOfferingsInput, func(page *ec2.DescribeInstanceTypeOfferingsOutput, lastPage bool) bool {
-			for _, instanceType := range page.InstanceTypeOfferings {
-				if i, ok := availableInstanceTypes[*instanceType.InstanceType]; !ok {
-					availableInstanceTypes[*instanceType.InstanceType] = 1
+		instanceTypeOfferingsInput := &ec2.DescribeInstanceTypeOfferingsInput{
+			LocationType: locationType,
+			Filters: []ec2types.Filter{
+				{
+					Name:   aws.String(locationFilterKey),
+					Values: []string{location},
+				},
+			},
+		}
+
+		p := ec2.NewDescribeInstanceTypeOfferingsPaginator(itf.EC2, instanceTypeOfferingsInput)
+
+		for p.HasMorePages() {
+			instanceTypeOfferings, err := p.NextPage(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("Encountered an error when describing instance type offerings: %w", err)
+			}
+
+			for _, instanceType := range instanceTypeOfferings.InstanceTypeOfferings {
+				if i, ok := availableInstanceTypes[instanceType.InstanceType]; !ok {
+					availableInstanceTypes[instanceType.InstanceType] = 1
 				} else {
-					availableInstanceTypes[*instanceType.InstanceType] = i + 1
+					availableInstanceTypes[instanceType.InstanceType] = i + 1
 				}
 			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("Encountered an error when describing instance type offerings: %w", err)
 		}
 	}
-	availableInstanceTypesAllLocations := map[string]string{}
+	availableInstanceTypesAllLocations := map[ec2types.InstanceType]string{}
 	for instanceType, locationsSupported := range availableInstanceTypes {
 		if locationsSupported == len(locations) {
 			availableInstanceTypesAllLocations[instanceType] = ""
@@ -576,8 +666,8 @@ func (itf Selector) RetrieveInstanceTypesSupportedInLocations(locations []string
 	return availableInstanceTypesAllLocations, nil
 }
 
-func (itf Selector) getLocationType(location string) (string, error) {
-	azs, err := itf.EC2.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
+func (itf Selector) getLocationType(ctx context.Context, location string) (ec2types.LocationType, error) {
+	azs, err := itf.EC2.DescribeAvailabilityZones(ctx, &ec2.DescribeAvailabilityZonesInput{})
 	if err != nil {
 		return "", err
 	}
@@ -593,7 +683,7 @@ func (itf Selector) getLocationType(location string) (string, error) {
 	return "", fmt.Errorf("The location passed in (%s) is not a valid zone-id, zone-name, or region name", location)
 }
 
-func isSupportedInLocation(instanceOfferings map[string]string, instanceType string) bool {
+func isSupportedInLocation(instanceOfferings map[ec2types.InstanceType]string, instanceType ec2types.InstanceType) bool {
 	if instanceOfferings == nil {
 		return true
 	}
@@ -601,22 +691,16 @@ func isSupportedInLocation(instanceOfferings map[string]string, instanceType str
 	return ok
 }
 
-func isInDenyList(denyRegex *regexp.Regexp, instanceTypeName string) bool {
+func isInDenyList(denyRegex *regexp.Regexp, instanceTypeName ec2types.InstanceType) bool {
 	if denyRegex == nil {
 		return false
 	}
-	return denyRegex.MatchString(instanceTypeName)
+	return denyRegex.MatchString(string(instanceTypeName))
 }
 
-func isInAllowList(allowRegex *regexp.Regexp, instanceTypeName string) bool {
+func isInAllowList(allowRegex *regexp.Regexp, instanceTypeName ec2types.InstanceType) bool {
 	if allowRegex == nil {
 		return true
 	}
-	return allowRegex.MatchString(instanceTypeName)
-}
-
-func userAgentWith(sess *session.Session) *session.Session {
-	userAgentHandler := request.MakeAddToUserAgentFreeFormHandler(fmt.Sprintf("%s-%s", sdkName, versionID))
-	sess.Handlers.Build.PushBack(userAgentHandler)
-	return sess
+	return allowRegex.MatchString(string(instanceTypeName))
 }

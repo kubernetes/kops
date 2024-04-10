@@ -3,7 +3,7 @@ package list
 import "github.com/charmbracelet/bubbles/key"
 
 // KeyMap defines keybindings. It satisfies to the help.KeyMap interface, which
-// is used to render the menu menu.
+// is used to render the menu.
 type KeyMap struct {
 	// Keybindings used when browsing the list.
 	CursorUp    key.Binding

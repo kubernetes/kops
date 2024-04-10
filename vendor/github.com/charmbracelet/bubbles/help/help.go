@@ -21,7 +21,7 @@ type KeyMap interface {
 	// which the help items are returned here.
 	ShortHelp() []key.Binding
 
-	// MoreHelp returns an extended group of help items, grouped by columns.
+	// FullHelp returns an extended group of help items, grouped by columns.
 	// The help bubble will render the help in the order in which the help
 	// items are returned here.
 	FullHelp() [][]key.Binding
@@ -92,11 +92,11 @@ func New() Model {
 
 // NewModel creates a new help view with some useful defaults.
 //
-// Deprecated. Use New instead.
+// Deprecated: use [New] instead.
 var NewModel = New
 
 // Update helps satisfy the Bubble Tea Model interface. It's a no-op.
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(_ tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
@@ -203,7 +203,7 @@ func (m Model) FullHelpView(groups [][]key.Binding) string {
 
 		// Column
 		totalWidth += lipgloss.Width(col)
-		if totalWidth > m.Width {
+		if m.Width > 0 && totalWidth > m.Width {
 			break
 		}
 
@@ -212,7 +212,7 @@ func (m Model) FullHelpView(groups [][]key.Binding) string {
 		// Separator
 		if i < len(group)-1 {
 			totalWidth += sepWidth
-			if totalWidth > m.Width {
+			if m.Width > 0 && totalWidth > m.Width {
 				break
 			}
 		}

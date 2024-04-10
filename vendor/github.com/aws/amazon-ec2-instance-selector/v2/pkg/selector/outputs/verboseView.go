@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -38,7 +39,7 @@ type verboseModel struct {
 	viewport viewport.Model
 
 	// the instance which the verbose output is focused on
-	focusedInstanceName *string
+	focusedInstanceName ec2types.InstanceType
 }
 
 // styling for viewport
@@ -96,7 +97,7 @@ func (m verboseModel) view() string {
 	outputStr := strings.Builder{}
 
 	// format header for viewport
-	instanceName := titleStyle.Render(*m.focusedInstanceName)
+	instanceName := titleStyle.Render(string(m.focusedInstanceName))
 	line := strings.Repeat("─", int(math.Max(0, float64(m.viewport.Width-lipgloss.Width(instanceName)))))
 	outputStr.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, instanceName, line))
 	outputStr.WriteString("\n")

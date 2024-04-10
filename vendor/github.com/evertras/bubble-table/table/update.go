@@ -38,6 +38,7 @@ func (m *Model) toggleSelect() {
 	rows[m.rowCursorIndex].selected = !currentSelectedState
 
 	m.rows = rows
+	m.visibleRowCacheUpdated = false
 
 	m.appendUserEvent(UserEventRowSelectToggled{
 		RowIndex:   m.rowCursorIndex,
@@ -55,11 +56,14 @@ func (m Model) updateFilterTextInput(msg tea.Msg) (Model, tea.Cmd) {
 	}
 	m.filterTextInput, cmd = m.filterTextInput.Update(msg)
 	m.pageFirst()
+	m.visibleRowCacheUpdated = false
 
 	return m, cmd
 }
 
-// nolint: cyclop // This is a series of Matches tests with minimal logic
+// This is a series of Matches tests with minimal logic
+//
+//nolint:cyclop
 func (m *Model) handleKeypress(msg tea.KeyMsg) {
 	previousRowIndex := m.rowCursorIndex
 
@@ -93,9 +97,11 @@ func (m *Model) handleKeypress(msg tea.KeyMsg) {
 
 	if key.Matches(msg, m.keyMap.Filter) {
 		m.filterTextInput.Focus()
+		m.appendUserEvent(UserEventFilterInputFocused{})
 	}
 
 	if key.Matches(msg, m.keyMap.FilterClear) {
+		m.visibleRowCacheUpdated = false
 		m.filterTextInput.Reset()
 	}
 
@@ -124,7 +130,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	if m.filterTextInput.Focused() {
-		return m.updateFilterTextInput(msg)
+		var cmd tea.Cmd
+		m, cmd = m.updateFilterTextInput(msg)
+
+		if !m.filterTextInput.Focused() {
+			m.appendUserEvent(UserEventFilterInputUnfocused{})
+		}
+
+		return m, cmd
 	}
 
 	switch msg := msg.(type) {

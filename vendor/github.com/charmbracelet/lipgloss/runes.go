@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// StyleRunes applys a given style to runes at the given indicesin the string.
+// StyleRunes apply a given style to runes at the given indices in the string.
 // Note that you must provide styling options for both matched and unmatched
 // runes. Indices out of bounds will be ignored.
 func StyleRunes(str string, indices []int, matched, unmatched Style) string {

@@ -140,7 +140,8 @@ func (b *Border) styleBothWithFooter(original lipgloss.Style) lipgloss.Style {
 }
 
 // This function is long, but it's just repetitive...
-// nolint:funlen
+//
+//nolint:funlen
 func (b *Border) generateMultiStyles() {
 	b.styleMultiTopLeft = lipgloss.NewStyle().BorderStyle(
 		lipgloss.Border{
@@ -354,7 +355,8 @@ func (b *borderStyleRow) inherit(s lipgloss.Style) {
 
 // There's a lot of branches here, but splitting it up further would make it
 // harder to follow.  So just be careful with comments and make sure it's tested!
-// nolint:nestif
+//
+//nolint:nestif
 func (m Model) styleHeaders() borderStyleRow {
 	hasRows := len(m.GetVisibleRows()) > 0
 	singleColumn := len(m.columns) == 1

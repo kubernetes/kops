@@ -14,11 +14,13 @@ func (m *Model) CurrentPage() int {
 
 // MaxPages returns the maximum number of pages that are visible.
 func (m *Model) MaxPages() int {
-	if m.pageSize == 0 || len(m.GetVisibleRows()) == 0 {
+	totalRows := len(m.GetVisibleRows())
+
+	if m.pageSize == 0 || totalRows == 0 {
 		return 1
 	}
 
-	return (len(m.GetVisibleRows())-1)/m.pageSize + 1
+	return (totalRows-1)/m.pageSize + 1
 }
 
 // TotalRows returns the current total row count of the table.  If the table is

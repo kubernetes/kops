@@ -393,7 +393,7 @@ func (m tableModel) sortTable(sortFilter string, sortDirection string) (tableMod
 	// get sorted rows from sorted instance types
 	rows := []table.Row{}
 	for _, instance := range instanceTypes {
-		currRow := rowMap[*instance.InstanceType]
+		currRow := rowMap[string(instance.InstanceType)]
 		rows = append(rows, currRow)
 	}
 
@@ -431,7 +431,7 @@ func (m tableModel) getInstanceTypeFromRows() ([]*instancetypes.Details, map[str
 		}
 
 		instanceTypes = append(instanceTypes, currInstance)
-		rowMap[*currInstance.InstanceType] = row
+		rowMap[string(currInstance.InstanceType)] = row
 	}
 
 	return instanceTypes, rowMap
