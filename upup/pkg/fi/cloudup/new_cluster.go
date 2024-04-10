@@ -535,14 +535,15 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 }
 
 func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) error {
+	ctx := context.TODO()
 	cluster.Spec.Networking.NetworkID = opt.NetworkID
 
 	switch cluster.Spec.GetCloudProvider() {
 	case api.CloudProviderAWS:
 		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			awsCloud := cloud.(awsup.AWSCloud)
-			res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
-				SubnetIds: []*string{aws.String(opt.SubnetIDs[0])},
+			res, err := awsCloud.EC2().DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{
+				SubnetIds: []string{opt.SubnetIDs[0]},
 			})
 			if err != nil {
 				return fmt.Errorf("error describing subnet %s: %v", opt.SubnetIDs[0], err)

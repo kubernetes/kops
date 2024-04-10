@@ -17,9 +17,11 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -47,8 +49,8 @@ func (e *InternetGateway) CompareWithID() *string {
 	return e.ID
 }
 
-func findInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeInternetGatewaysInput) (*ec2.InternetGateway, error) {
-	response, err := cloud.EC2().DescribeInternetGateways(request)
+func findInternetGateway(ctx context.Context, cloud awsup.AWSCloud, request *ec2.DescribeInternetGatewaysInput) (*ec2types.InternetGateway, error) {
+	response, err := cloud.EC2().DescribeInternetGateways(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing InternetGateways: %v", err)
 	}
@@ -60,10 +62,11 @@ func findInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeInternetGate
 		return nil, fmt.Errorf("found multiple InternetGateways matching tags")
 	}
 	igw := response.InternetGateways[0]
-	return igw, nil
+	return &igw, nil
 }
 
 func (e *InternetGateway) Find(c *fi.CloudupContext) (*InternetGateway, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeInternetGatewaysInput{}
@@ -74,16 +77,16 @@ func (e *InternetGateway) Find(c *fi.CloudupContext) (*InternetGateway, error) {
 			return nil, fmt.Errorf("VPC ID is required when InternetGateway is shared")
 		}
 
-		request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
+		request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
 	} else {
 		if e.ID != nil {
-			request.InternetGatewayIds = []*string{e.ID}
+			request.InternetGatewayIds = []string{fi.ValueOf(e.ID)}
 		} else {
 			request.Filters = cloud.BuildFilters(e.Name)
 		}
 	}
 
-	igw, err := findInternetGateway(cloud, request)
+	igw, err := findInternetGateway(ctx, cloud, request)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +139,7 @@ func (s *InternetGateway) CheckChanges(a, e, changes *InternetGateway) error {
 }
 
 func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *InternetGateway) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the InternetGateway was found and matches our required settings
@@ -150,10 +154,10 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		klog.V(2).Infof("Creating InternetGateway")
 
 		request := &ec2.CreateInternetGatewayInput{
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeInternetGateway, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeInternetGateway, e.Tags),
 		}
 
-		response, err := t.Cloud.EC2().CreateInternetGateway(request)
+		response, err := t.Cloud.EC2().CreateInternetGateway(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating InternetGateway: %v", err)
 		}
@@ -169,7 +173,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 			InternetGatewayId: e.ID,
 		}
 
-		_, err := t.Cloud.EC2().AttachInternetGateway(attachRequest)
+		_, err := t.Cloud.EC2().AttachInternetGateway(ctx, attachRequest)
 		if err != nil {
 			return fmt.Errorf("error attaching InternetGateway to VPC: %v", err)
 		}
@@ -184,6 +188,7 @@ type terraformInternetGateway struct {
 }
 
 func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
@@ -195,8 +200,8 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
 			}
-			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
-			igw, err := findInternetGateway(t.Cloud.(awsup.AWSCloud), request)
+			request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
+			igw, err := findInternetGateway(ctx, t.Cloud.(awsup.AWSCloud), request)
 			if err != nil {
 				return err
 			}

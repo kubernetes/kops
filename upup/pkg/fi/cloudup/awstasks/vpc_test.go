@@ -22,7 +22,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -62,7 +63,7 @@ func TestVPCCreate(t *testing.T) {
 			t.Fatalf("Expected exactly one Vpc; found %v", c.Vpcs)
 		}
 
-		expected := &ec2.Vpc{
+		expected := &ec2types.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
 			IsDefault: fi.PtrTo(false),
 			VpcId:     vpc1.ID,
@@ -86,10 +87,10 @@ func TestVPCCreate(t *testing.T) {
 	}
 }
 
-func buildTags(tags map[string]string) []*ec2.Tag {
-	var t []*ec2.Tag
+func buildTags(tags map[string]string) []ec2types.Tag {
+	var t []ec2types.Tag
 	for k, v := range tags {
-		t = append(t, &ec2.Tag{
+		t = append(t, ec2types.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})
@@ -123,14 +124,15 @@ func Test4758(t *testing.T) {
 }
 
 func TestSharedVPCAdditionalCIDR(t *testing.T) {
+	ctx := context.Background()
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	c.CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: s("172.21.0.0/16"),
-		TagSpecifications: []*ec2.TagSpecification{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				ResourceType: s(ec2.ResourceTypeVpc),
-				Tags: []*ec2.Tag{
+				ResourceType: ec2types.ResourceTypeVpc,
+				Tags: []ec2types.Tag{
 					{
 						Key:   s("Name"),
 						Value: s("vpc-1"),
@@ -139,7 +141,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			},
 		},
 	}, "vpc-1")
-	c.AssociateVpcCidrBlock(&ec2.AssociateVpcCidrBlockInput{
+	c.AssociateVpcCidrBlock(ctx, &ec2.AssociateVpcCidrBlockInput{
 		VpcId:     s("vpc-1"),
 		CidrBlock: s("172.22.0.0/16"),
 	})
@@ -174,19 +176,19 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			t.Fatalf("Expected exactly one Vpc; found %v", c.Vpcs)
 		}
 
-		expected := &ec2.Vpc{
+		expected := &ec2types.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
 			IsDefault: fi.PtrTo(false),
 			VpcId:     vpc1.ID,
 			Tags: buildTags(map[string]string{
 				"Name": "vpc-1",
 			}),
-			CidrBlockAssociationSet: []*ec2.VpcCidrBlockAssociation{
+			CidrBlockAssociationSet: []ec2types.VpcCidrBlockAssociation{
 				{
 					AssociationId: s("vpc-1-0"),
 					CidrBlock:     s("172.22.0.0/16"),
-					CidrBlockState: &ec2.VpcCidrBlockState{
-						State: s(ec2.VpcCidrBlockStateCodeAssociated),
+					CidrBlockState: &ec2types.VpcCidrBlockState{
+						State: ec2types.VpcCidrBlockStateCodeAssociated,
 					},
 				},
 			},

@@ -17,12 +17,14 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -96,13 +98,14 @@ func (e *SecurityGroup) Find(c *fi.CloudupContext) (*SecurityGroup, error) {
 	return actual, nil
 }
 
-func (e *SecurityGroup) findEc2(c *fi.CloudupContext) (*ec2.SecurityGroup, error) {
+func (e *SecurityGroup) findEc2(c *fi.CloudupContext) (*ec2types.SecurityGroup, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 	request := &ec2.DescribeSecurityGroupsInput{}
 
 	if fi.ValueOf(e.ID) != "" {
 		// Find by ID.
-		request.GroupIds = []*string{e.ID}
+		request.GroupIds = []string{fi.ValueOf(e.ID)}
 	} else if fi.ValueOf(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
 		// Find by filters (name and VPC ID).
 		filters := cloud.BuildFilters(e.Name)
@@ -115,7 +118,7 @@ func (e *SecurityGroup) findEc2(c *fi.CloudupContext) (*ec2.SecurityGroup, error
 		return nil, nil
 	}
 
-	response, err := cloud.EC2().DescribeSecurityGroups(request)
+	response, err := cloud.EC2().DescribeSecurityGroups(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
 	}
@@ -127,7 +130,7 @@ func (e *SecurityGroup) findEc2(c *fi.CloudupContext) (*ec2.SecurityGroup, error
 		return nil, fmt.Errorf("found multiple SecurityGroups matching tags")
 	}
 	sg := response.SecurityGroups[0]
-	return sg, nil
+	return &sg, nil
 }
 
 func (e *SecurityGroup) Run(c *fi.CloudupContext) error {
@@ -157,6 +160,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 }
 
 func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroup) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Do we want to do any verification of the security group?
@@ -170,10 +174,10 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 			VpcId:             e.VPC.ID,
 			GroupName:         e.Name,
 			Description:       e.Description,
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroup, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeSecurityGroup, e.Tags),
 		}
 
-		response, err := t.Cloud.EC2().CreateSecurityGroup(request)
+		response, err := t.Cloud.EC2().CreateSecurityGroup(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating SecurityGroup: %v", err)
 		}
@@ -225,18 +229,19 @@ func (e *SecurityGroup) TerraformLink() *terraformWriter.Literal {
 // deleteSecurityGroupRule tracks a securitygrouprule that we're going to delete
 // It implements fi.CloudupDeletion
 type deleteSecurityGroupRule struct {
-	rule *ec2.SecurityGroupRule
+	rule *ec2types.SecurityGroupRule
 }
 
-func buildDeleteSecurityGroupRule(rule *ec2.SecurityGroupRule) *deleteSecurityGroupRule {
+func buildDeleteSecurityGroupRule(rule ec2types.SecurityGroupRule) *deleteSecurityGroupRule {
 	d := &deleteSecurityGroupRule{}
-	d.rule = rule
+	d.rule = &rule
 	return d
 }
 
 var _ fi.CloudupDeletion = &deleteSecurityGroupRule{}
 
 func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
+	ctx := context.TODO()
 	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.rule))
 
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
@@ -247,22 +252,22 @@ func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 	if aws.ToBool(d.rule.IsEgress) {
 		request := &ec2.RevokeSecurityGroupEgressInput{
 			GroupId:              d.rule.GroupId,
-			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
+			SecurityGroupRuleIds: []string{fi.ValueOf(d.rule.SecurityGroupRuleId)},
 		}
 
 		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
-		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(request)
+		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error revoking SecurityGroupEgress: %v", err)
 		}
 	} else {
 		request := &ec2.RevokeSecurityGroupIngressInput{
 			GroupId:              d.rule.GroupId,
-			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
+			SecurityGroupRuleIds: []string{fi.ValueOf(d.rule.SecurityGroupRuleId)},
 		}
 
 		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
-		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(request)
+		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error revoking SecurityGroupIngress: %v", err)
 		}
@@ -278,10 +283,10 @@ func (d *deleteSecurityGroupRule) TaskName() string {
 func (d *deleteSecurityGroupRule) Item() string {
 	s := fi.ValueOf(d.rule.GroupId) + ":"
 	p := d.rule
-	if aws.ToInt64(p.FromPort) != 0 {
-		s += fmt.Sprintf(" port=%d", aws.ToInt64(p.FromPort))
-		if aws.ToInt64(p.ToPort) != aws.ToInt64(p.FromPort) {
-			s += fmt.Sprintf("-%d", aws.ToInt64(p.ToPort))
+	if aws.ToInt32(p.FromPort) != 0 {
+		s += fmt.Sprintf(" port=%d", aws.ToInt32(p.FromPort))
+		if aws.ToInt32(p.ToPort) != aws.ToInt32(p.FromPort) {
+			s += fmt.Sprintf("-%d", aws.ToInt32(p.ToPort))
 		}
 	}
 	if aws.ToString(p.IpProtocol) != "-1" {
@@ -303,6 +308,7 @@ func (d *deleteSecurityGroupRule) DeferDeletion() bool {
 }
 
 func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
+	ctx := c.Context()
 	var removals []fi.CloudupDeletion
 
 	if len(e.RemoveExtraRules) == 0 {
@@ -329,12 +335,12 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSecurityGroupRulesInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			awsup.NewEC2Filter("group-id", *e.ID),
 		},
 	}
 
-	response, err := cloud.EC2().DescribeSecurityGroupRules(request)
+	response, err := cloud.EC2().DescribeSecurityGroupRules(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -345,14 +351,14 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 		// (in the model, we typically consider only rules on port 22 and 443)
 		match := false
 		for _, rule := range rules {
-			if rule.Matches(permission) {
+			if rule.Matches(&permission) {
 				klog.V(2).Infof("permission matches rule %s: %v", rule, permission)
 				match = true
 				break
 			}
 		}
 		if !match {
-			klog.V(4).Infof("Ignoring security group permission %q (did not match removal rules)", permission)
+			klog.V(4).Infof("Ignoring security group permission %+v (did not match removal rules)", permission)
 			continue
 		}
 		found := false
@@ -367,7 +373,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 				return nil, nil
 			}
 
-			if er.matches(permission) {
+			if er.matches(&permission) {
 				found = true
 			}
 		}
@@ -381,7 +387,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 
 // RemovalRule is a rule that filters the permissions we should remove
 type RemovalRule interface {
-	Matches(permission *ec2.SecurityGroupRule) bool
+	Matches(permission *ec2types.SecurityGroupRule) bool
 }
 
 // ParseRemovalRule parses our removal rule DSL into a RemovalRule
@@ -431,12 +437,12 @@ func (r *PortRemovalRule) String() string {
 	return fi.DebugAsJsonString(r)
 }
 
-func (r *PortRemovalRule) Matches(permission *ec2.SecurityGroupRule) bool {
+func (r *PortRemovalRule) Matches(permission *ec2types.SecurityGroupRule) bool {
 	// Check if port matches
-	if permission.FromPort == nil || *permission.FromPort != int64(r.FromPort) {
+	if permission.FromPort == nil || *permission.FromPort != int32(r.FromPort) {
 		return false
 	}
-	if permission.ToPort == nil || *permission.ToPort != int64(r.ToPort) {
+	if permission.ToPort == nil || *permission.ToPort != int32(r.ToPort) {
 		return false
 	}
 	return true

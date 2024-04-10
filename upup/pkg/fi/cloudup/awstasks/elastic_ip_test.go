@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/util/pkg/vfs"
 
 	"k8s.io/kops/cloudmock/aws/mockec2"
@@ -88,11 +88,11 @@ func TestElasticIPCreate(t *testing.T) {
 			t.Fatalf("Expected exactly one ElasticIP; found %v", c.Addresses)
 		}
 
-		expected := &ec2.Address{
+		expected := &ec2types.Address{
 			AllocationId: eip1.ID,
-			Domain:       s("vpc"),
+			Domain:       ec2types.DomainTypeVpc,
 			PublicIp:     s("192.0.2.1"),
-			Tags: []*ec2.Tag{
+			Tags: []ec2types.Tag{
 				{
 					Key:   s("Name"),
 					Value: s("eip1"),

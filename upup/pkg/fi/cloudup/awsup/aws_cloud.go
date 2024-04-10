@@ -37,6 +37,8 @@ import (
 	stscredsv2 "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -49,13 +51,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	ec2v1 "github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	k8s_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
@@ -165,13 +166,13 @@ type AWSCloud interface {
 	DescribeELBTags(loadBalancerNames []string) (map[string][]elbtypes.Tag, error)
 	// TODO: Remove, replace with awsup.ListELBV2LoadBalancers
 	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]elbv2types.Tag, error)
-	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
+	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]ec2types.NetworkInterface, error)
 
 	// DescribeInstance is a helper that queries for the specified instance by id
 	DescribeInstance(instanceID string) (*ec2.Instance, error)
 
 	// DescribeVPC is a helper that queries for the specified vpc by id
-	DescribeVPC(vpcID string) (*ec2.Vpc, error)
+	DescribeVPC(vpcID string) (*ec2types.Vpc, error)
 	DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error)
 
 	// ResolveImage finds an AMI image based on the given name.
@@ -1849,28 +1850,29 @@ func FindLatestELBV2ByNameTag(loadBalancers []*LoadBalancerInfo, findNameTag str
 	return latest
 }
 
-func (c *awsCloudImplementation) FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error) {
+func (c *awsCloudImplementation) FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]ec2types.NetworkInterface, error) {
 	return findELBV2NetworkInterfaces(c, vpcID, loadBalancerName)
 }
 
-func findELBV2NetworkInterfaces(c AWSCloud, vpcID, lbName string) ([]*ec2.NetworkInterface, error) {
+func findELBV2NetworkInterfaces(c AWSCloud, vpcID, lbName string) ([]ec2types.NetworkInterface, error) {
 	klog.V(2).Infof("Listing all NLB network interfaces")
+	ctx := context.TODO()
 
 	request := &ec2.DescribeNetworkInterfacesInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			NewEC2Filter("vpc-id", vpcID),
 			NewEC2Filter("interface-type", "network_load_balancer"),
 		},
 	}
 
-	response, err := c.EC2().DescribeNetworkInterfaces(request)
+	response, err := c.EC2().DescribeNetworkInterfaces(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error describing network interfaces: %w", err)
 	}
 
-	var found []*ec2.NetworkInterface
+	var found []ec2types.NetworkInterface
 	for _, ni := range response.NetworkInterfaces {
-		if strings.HasPrefix(aws.StringValue(ni.Description), "ELB net/"+lbName+"/") {
+		if strings.HasPrefix(aws.ToString(ni.Description), "ELB net/"+lbName+"/") {
 			found = append(found, ni)
 		}
 	}
@@ -1958,17 +1960,18 @@ func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 }
 
 // DescribeVPC is a helper that queries for the specified vpc by id
-func (c *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+func (c *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2types.Vpc, error) {
 	return describeVPC(c, vpcID)
 }
 
-func describeVPC(c AWSCloud, vpcID string) (*ec2.Vpc, error) {
+func describeVPC(c AWSCloud, vpcID string) (*ec2types.Vpc, error) {
 	klog.V(2).Infof("Calling DescribeVPC for VPC %q", vpcID)
+	ctx := context.TODO()
 	request := &ec2.DescribeVpcsInput{
-		VpcIds: []*string{&vpcID},
+		VpcIds: []string{vpcID},
 	}
 
-	response, err := c.EC2().DescribeVpcs(request)
+	response, err := c.EC2().DescribeVpcs(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
@@ -1980,7 +1983,7 @@ func describeVPC(c AWSCloud, vpcID string) (*ec2.Vpc, error) {
 	}
 
 	vpc := response.Vpcs[0]
-	return vpc, nil
+	return &vpc, nil
 }
 
 // ResolveImage finds an AMI image based on the given name.
@@ -2184,6 +2187,7 @@ func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) 
 }
 
 func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
+	ctx := context.TODO()
 	vpc, err := c.DescribeVPC(vpcID)
 	if err != nil {
 		return nil, err
@@ -2193,26 +2197,26 @@ func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
 	}
 
 	vpcInfo := &fi.VPCInfo{
-		CIDR: aws.StringValue(vpc.CidrBlock),
+		CIDR: aws.ToString(vpc.CidrBlock),
 	}
 
 	// Find subnets in the VPC
 	{
 		klog.V(2).Infof("Calling DescribeSubnets for subnets in VPC %q", vpcID)
 		request := &ec2.DescribeSubnetsInput{
-			Filters: []*ec2.Filter{NewEC2Filter("vpc-id", vpcID)},
+			Filters: []ec2types.Filter{NewEC2Filter("vpc-id", vpcID)},
 		}
 
-		response, err := c.EC2().DescribeSubnets(request)
+		response, err := c.EC2().DescribeSubnets(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing subnets in VPC %q: %v", vpcID, err)
 		}
 		if response != nil {
 			for _, subnet := range response.Subnets {
 				subnetInfo := &fi.SubnetInfo{
-					ID:   aws.StringValue(subnet.SubnetId),
-					CIDR: aws.StringValue(subnet.CidrBlock),
-					Zone: aws.StringValue(subnet.AvailabilityZone),
+					ID:   aws.ToString(subnet.SubnetId),
+					CIDR: aws.ToString(subnet.CidrBlock),
+					Zone: aws.ToString(subnet.AvailabilityZone),
 				}
 
 				vpcInfo.Subnets = append(vpcInfo.Subnets, subnetInfo)

@@ -17,11 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -56,12 +58,12 @@ func (e *DHCPOptions) Find(c *fi.CloudupContext) (*DHCPOptions, error) {
 
 	request := &ec2.DescribeDhcpOptionsInput{}
 	if e.ID != nil {
-		request.DhcpOptionsIds = []*string{e.ID}
+		request.DhcpOptionsIds = []string{aws.ToString(e.ID)}
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2().DescribeDhcpOptions(request)
+	response, err := cloud.EC2().DescribeDhcpOptions(c.Context(), request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing DHCPOptions: %v", err)
 	}
@@ -137,28 +139,29 @@ func (s *DHCPOptions) CheckChanges(a, e, changes *DHCPOptions) error {
 }
 
 func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOptions) error {
+	ctx := context.TODO()
 	if a == nil {
 		klog.V(2).Infof("Creating DHCPOptions with Name:%q", *e.Name)
 
 		request := &ec2.CreateDhcpOptionsInput{
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeDhcpOptions, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeDhcpOptions, e.Tags),
 		}
 		if e.DomainNameServers != nil {
-			o := &ec2.NewDhcpConfiguration{
+			o := ec2types.NewDhcpConfiguration{
 				Key:    aws.String("domain-name-servers"),
-				Values: []*string{e.DomainNameServers},
+				Values: []string{aws.ToString(e.DomainNameServers)},
 			}
 			request.DhcpConfigurations = append(request.DhcpConfigurations, o)
 		}
 		if e.DomainName != nil {
-			o := &ec2.NewDhcpConfiguration{
+			o := ec2types.NewDhcpConfiguration{
 				Key:    aws.String("domain-name"),
-				Values: []*string{e.DomainName},
+				Values: []string{aws.ToString(e.DomainName)},
 			}
 			request.DhcpConfigurations = append(request.DhcpConfigurations, o)
 		}
 
-		response, err := t.Cloud.EC2().CreateDhcpOptions(request)
+		response, err := t.Cloud.EC2().CreateDhcpOptions(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating DHCPOptions: %v", err)
 		}

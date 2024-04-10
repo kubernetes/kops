@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 type MockEC2 struct {
@@ -32,17 +33,17 @@ type MockEC2 struct {
 	mutex sync.Mutex
 
 	addressNumber int
-	Addresses     map[string]*ec2.Address
+	Addresses     map[string]*ec2types.Address
 
-	RouteTables map[string]*ec2.RouteTable
+	RouteTables map[string]*ec2types.RouteTable
 
-	DhcpOptions map[string]*ec2.DhcpOptions
+	DhcpOptions map[string]*ec2types.DhcpOptions
 
 	Images []*ec2.Image
 
 	securityGroupNumber int
-	SecurityGroups      map[string]*ec2.SecurityGroup
-	SecurityGroupRules  map[string]*ec2.SecurityGroupRule
+	SecurityGroups      map[string]*ec2types.SecurityGroup
+	SecurityGroupRules  map[string]*ec2types.SecurityGroupRule
 
 	subnets map[string]*subnetInfo
 
@@ -54,13 +55,13 @@ type MockEC2 struct {
 
 	Vpcs map[string]*vpcInfo
 
-	InternetGateways           map[string]*ec2.InternetGateway
-	EgressOnlyInternetGateways map[string]*ec2.EgressOnlyInternetGateway
+	InternetGateways           map[string]*ec2types.InternetGateway
+	EgressOnlyInternetGateways map[string]*ec2types.EgressOnlyInternetGateway
 
 	launchTemplateNumber int
 	LaunchTemplates      map[string]*launchTemplateInfo
 
-	NatGateways map[string]*ec2.NatGateway
+	NatGateways map[string]*ec2types.NatGateway
 
 	idsMutex sync.Mutex
 	ids      map[string]*idAllocator

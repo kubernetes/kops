@@ -28,7 +28,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -96,14 +96,14 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 		return err
 	}
 
-	response, err := t.Cloud.(awsup.AWSCloud).EC2().AssignIpv6Addresses(&ec2.AssignIpv6AddressesInput{
-		Ipv6PrefixCount:    fi.PtrTo(int64(1)),
+	response, err := t.Cloud.(awsup.AWSCloud).EC2().AssignIpv6Addresses(ctx, &ec2.AssignIpv6AddressesInput{
+		Ipv6PrefixCount:    fi.PtrTo(int32(1)),
 		NetworkInterfaceId: fi.PtrTo(interfaceId),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to assign prefix: %w", err)
 	}
-	klog.V(2).Infof("assigned prefix to primary network interface: %q", fi.ValueOf(response.AssignedIpv6Prefixes[0]))
+	klog.V(2).Infof("assigned prefix to primary network interface: %q", response.AssignedIpv6Prefixes[0])
 
 	return nil
 }

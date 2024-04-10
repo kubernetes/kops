@@ -18,7 +18,7 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"k8s.io/kops/pkg/resources"
 )
@@ -32,7 +32,7 @@ func DumpNatGateway(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func buildNatGatewayResource(ngw *ec2.NatGateway, forceShared bool, clusterName string) *resources.Resource {
+func buildNatGatewayResource(ngw ec2types.NatGateway, forceShared bool, clusterName string) *resources.Resource {
 	id := aws.ToString(ngw.NatGatewayId)
 
 	r := &resources.Resource{

@@ -209,7 +209,7 @@ func (c *MockAWSCloud) DescribeELBV2Tags(loadBalancerArns []string) (map[string]
 	return describeELBV2Tags(c, loadBalancerArns)
 }
 
-func (c *MockAWSCloud) FindELBV2NetworkInterfacesByName(vpcID, loadBalancerName string) ([]*ec2.NetworkInterface, error) {
+func (c *MockAWSCloud) FindELBV2NetworkInterfacesByName(vpcID, loadBalancerName string) ([]ec2types.NetworkInterface, error) {
 	return nil, nil
 }
 
@@ -217,7 +217,7 @@ func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }
 
-func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2types.Vpc, error) {
 	return describeVPC(c, vpcID)
 }
 

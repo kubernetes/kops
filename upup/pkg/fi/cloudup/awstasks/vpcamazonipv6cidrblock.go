@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -84,6 +86,7 @@ func (s *VPCAmazonIPv6CIDRBlock) CheckChanges(a, e, changes *VPCAmazonIPv6CIDRBl
 }
 
 func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
+	ctx := context.TODO()
 	shared := aws.ToBool(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
@@ -97,7 +100,7 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 	}
 
 	// Response doesn't contain the new CIDR block
-	_, err := t.Cloud.EC2().AssociateVpcCidrBlock(request)
+	_, err := t.Cloud.EC2().AssociateVpcCidrBlock(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error associating Amazon IPv6 provided CIDR block to VPC: %v", err)
 	}
@@ -119,12 +122,12 @@ func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
 	var byoIPv6CidrBlock *string
 
 	for _, association := range vpc.Ipv6CidrBlockAssociationSet {
-		if association == nil || association.Ipv6CidrBlockState == nil {
+		if association.Ipv6CidrBlockState == nil {
 			continue
 		}
 
 		// Ipv6CidrBlock is available only when state is "associated"
-		if aws.ToString(association.Ipv6CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+		if association.Ipv6CidrBlockState.State != ec2types.VpcCidrBlockStateCodeAssociated {
 			continue
 		}
 

@@ -17,10 +17,12 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/resources"
@@ -29,6 +31,7 @@ import (
 )
 
 func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
@@ -36,9 +39,9 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 	// TODO: Move to a "pre-execute" phase?
 	{
 		request := &ec2.DescribeSecurityGroupsInput{
-			GroupIds: []*string{&id},
+			GroupIds: []string{id},
 		}
-		response, err := c.EC2().DescribeSecurityGroups(request)
+		response, err := c.EC2().DescribeSecurityGroups(ctx, request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
 				klog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
@@ -60,7 +63,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 				GroupId:       &id,
 				IpPermissions: sg.IpPermissions,
 			}
-			_, err = c.EC2().RevokeSecurityGroupIngress(revoke)
+			_, err = c.EC2().RevokeSecurityGroupIngress(ctx, revoke)
 			if err != nil {
 				return fmt.Errorf("cannot revoke ingress for ID %q: %v", id, err)
 			}
@@ -72,7 +75,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 		request := &ec2.DeleteSecurityGroupInput{
 			GroupId: &id,
 		}
-		_, err := c.EC2().DeleteSecurityGroup(request)
+		_, err := c.EC2().DeleteSecurityGroup(ctx, request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
@@ -86,7 +89,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
-	data["type"] = ec2.ResourceTypeSecurityGroup
+	data["type"] = ec2types.ResourceTypeSecurityGroup
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
@@ -104,11 +107,11 @@ func ListSecurityGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 		resourceTracker := &resources.Resource{
 			Name:    FindName(sg.Tags),
 			ID:      id,
-			Type:    ec2.ResourceTypeSecurityGroup,
+			Type:    string(ec2types.ResourceTypeSecurityGroup),
 			Deleter: DeleteSecurityGroup,
 			Dumper:  DumpSecurityGroup,
 			Obj:     sg,
-			Shared:  !HasOwnedTag(ec2.ResourceTypeSecurityGroup+":"+id, sg.Tags, clusterName),
+			Shared:  !HasOwnedTag(string(ec2types.ResourceTypeSecurityGroup)+":"+id, sg.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -122,16 +125,17 @@ func ListSecurityGroups(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 	return resourceTrackers, nil
 }
 
-func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]*ec2.SecurityGroup, error) {
+func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]ec2types.SecurityGroup, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	groups := make(map[string]*ec2.SecurityGroup)
+	groups := make(map[string]ec2types.SecurityGroup)
 	klog.V(2).Infof("Listing EC2 SecurityGroups")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: filters,
 		}
-		response, err := c.EC2().DescribeSecurityGroups(request)
+		response, err := c.EC2().DescribeSecurityGroups(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
 		}

@@ -17,11 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -44,9 +46,9 @@ type SecurityGroupRule struct {
 	Protocol      *string
 
 	// FromPort is the lower-bound (inclusive) of the port-range
-	FromPort *int64
+	FromPort *int32
 	// ToPort is the upper-bound (inclusive) of the port-range
-	ToPort      *int64
+	ToPort      *int32
 	SourceGroup *SecurityGroup
 
 	Egress *bool
@@ -55,6 +57,7 @@ type SecurityGroupRule struct {
 }
 
 func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	if e.SecurityGroup == nil || e.SecurityGroup.ID == nil {
@@ -67,12 +70,12 @@ func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, erro
 	}
 
 	request := &ec2.DescribeSecurityGroupRulesInput{
-		Filters: []*ec2.Filter{
+		Filters: []ec2types.Filter{
 			awsup.NewEC2Filter("group-id", *e.SecurityGroup.ID),
 		},
 	}
 
-	response, err := cloud.EC2().DescribeSecurityGroupRules(request)
+	response, err := cloud.EC2().DescribeSecurityGroupRules(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroup: %v", err)
 	}
@@ -81,11 +84,11 @@ func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, erro
 		return nil, nil
 	}
 
-	var foundRule *ec2.SecurityGroupRule
+	var foundRule *ec2types.SecurityGroupRule
 
 	for _, rule := range response.SecurityGroupRules {
-		if e.matches(rule) {
-			foundRule = rule
+		if e.matches(&rule) {
+			foundRule = &rule
 			break
 		}
 	}
@@ -108,10 +111,10 @@ func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, erro
 		}
 
 		if fi.ValueOf(actual.Protocol) != "icmpv6" {
-			if fi.ValueOf(actual.FromPort) == int64(-1) {
+			if fi.ValueOf(actual.FromPort) == int32(-1) {
 				actual.FromPort = nil
 			}
-			if fi.ValueOf(actual.ToPort) == int64(-1) {
+			if fi.ValueOf(actual.ToPort) == int32(-1) {
 				actual.ToPort = nil
 			}
 		}
@@ -149,20 +152,20 @@ func (e *SecurityGroupRule) SetCidrOrPrefix(cidr string) {
 	}
 }
 
-func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
-	matchFromPort := int64(-1)
+func (e *SecurityGroupRule) matches(rule *ec2types.SecurityGroupRule) bool {
+	matchFromPort := int32(-1)
 	if e.FromPort != nil {
 		matchFromPort = *e.FromPort
 	}
-	if aws.ToInt64(rule.FromPort) != matchFromPort {
+	if aws.ToInt32(rule.FromPort) != matchFromPort {
 		return false
 	}
 
-	matchToPort := int64(-1)
+	matchToPort := int32(-1)
 	if e.ToPort != nil {
 		matchToPort = *e.ToPort
 	}
-	if aws.ToInt64(rule.ToPort) != matchToPort {
+	if aws.ToInt32(rule.ToPort) != matchToPort {
 		return false
 	}
 
@@ -260,6 +263,7 @@ func (e *SecurityGroupRule) Description() string {
 }
 
 func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
+	ctx := context.TODO()
 	name := fi.ValueOf(e.Name)
 
 	if a == nil {
@@ -268,35 +272,35 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			protocol = aws.String("-1")
 		}
 
-		ipPermission := &ec2.IpPermission{
+		ipPermission := ec2types.IpPermission{
 			IpProtocol: protocol,
 			FromPort:   e.FromPort,
 			ToPort:     e.ToPort,
 		}
 
 		if e.SourceGroup != nil {
-			ipPermission.UserIdGroupPairs = []*ec2.UserIdGroupPair{
+			ipPermission.UserIdGroupPairs = []ec2types.UserIdGroupPair{
 				{
 					GroupId: e.SourceGroup.ID,
 				},
 			}
 		} else if e.IPv6CIDR != nil {
 			IPv6CIDR := e.IPv6CIDR
-			ipPermission.Ipv6Ranges = []*ec2.Ipv6Range{
+			ipPermission.Ipv6Ranges = []ec2types.Ipv6Range{
 				{CidrIpv6: IPv6CIDR},
 			}
 		} else if e.CIDR != nil {
 			CIDR := e.CIDR
-			ipPermission.IpRanges = []*ec2.IpRange{
+			ipPermission.IpRanges = []ec2types.IpRange{
 				{CidrIp: CIDR},
 			}
 		} else if e.PrefixList != nil {
 			PrefixList := e.PrefixList
-			ipPermission.PrefixListIds = []*ec2.PrefixListId{
+			ipPermission.PrefixListIds = []ec2types.PrefixListId{
 				{PrefixListId: PrefixList},
 			}
 		} else {
-			ipPermission.IpRanges = []*ec2.IpRange{
+			ipPermission.IpRanges = []ec2types.IpRange{
 				{CidrIp: aws.String("0.0.0.0/0")},
 			}
 		}
@@ -307,11 +311,11 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			request := &ec2.AuthorizeSecurityGroupEgressInput{
 				GroupId: e.SecurityGroup.ID,
 			}
-			request.IpPermissions = []*ec2.IpPermission{ipPermission}
-			request.TagSpecifications = awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroupRule, e.Tags)
+			request.IpPermissions = []ec2types.IpPermission{ipPermission}
+			request.TagSpecifications = awsup.EC2TagSpecification(ec2types.ResourceTypeSecurityGroupRule, e.Tags)
 
 			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupEgress (%s)", name, description)
-			_, err := t.Cloud.EC2().AuthorizeSecurityGroupEgress(request)
+			_, err := t.Cloud.EC2().AuthorizeSecurityGroupEgress(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupEgress: %v", err)
 			}
@@ -319,11 +323,11 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			request := &ec2.AuthorizeSecurityGroupIngressInput{
 				GroupId: e.SecurityGroup.ID,
 			}
-			request.IpPermissions = []*ec2.IpPermission{ipPermission}
-			request.TagSpecifications = awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroupRule, e.Tags)
+			request.IpPermissions = []ec2types.IpPermission{ipPermission}
+			request.TagSpecifications = awsup.EC2TagSpecification(ec2types.ResourceTypeSecurityGroupRule, e.Tags)
 
 			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupIngress (%s)", name, description)
-			_, err := t.Cloud.EC2().AuthorizeSecurityGroupIngress(request)
+			_, err := t.Cloud.EC2().AuthorizeSecurityGroupIngress(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupIngress: %v", err)
 			}
@@ -344,8 +348,8 @@ type terraformSecurityGroupIngress struct {
 	SecurityGroup *terraformWriter.Literal `cty:"security_group_id"`
 	SourceGroup   *terraformWriter.Literal `cty:"source_security_group_id"`
 
-	FromPort *int64 `cty:"from_port"`
-	ToPort   *int64 `cty:"to_port"`
+	FromPort *int32 `cty:"from_port"`
+	ToPort   *int32 `cty:"to_port"`
 
 	Protocol       *string  `cty:"protocol"`
 	CIDRBlocks     []string `cty:"cidr_blocks"`
@@ -367,17 +371,17 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 
 	if e.Protocol == nil {
 		tf.Protocol = fi.PtrTo("-1")
-		tf.FromPort = fi.PtrTo(int64(0))
-		tf.ToPort = fi.PtrTo(int64(0))
+		tf.FromPort = fi.PtrTo(int32(0))
+		tf.ToPort = fi.PtrTo(int32(0))
 	}
 
 	if tf.FromPort == nil {
 		// FromPort is required by tf
-		tf.FromPort = fi.PtrTo(int64(0))
+		tf.FromPort = fi.PtrTo(int32(0))
 	}
 	if tf.ToPort == nil {
 		// ToPort is required by tf
-		tf.ToPort = fi.PtrTo(int64(65535))
+		tf.ToPort = fi.PtrTo(int32(65535))
 	}
 
 	if e.SourceGroup != nil {

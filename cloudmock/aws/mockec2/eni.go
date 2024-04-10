@@ -16,13 +16,13 @@ limitations under the License.
 
 package mockec2
 
-import "github.com/aws/aws-sdk-go/service/ec2"
+import (
+	"context"
 
-func (m *MockEC2) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInterfacesInput) (*ec2.DescribeNetworkInterfacesOutput, error) {
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+)
+
+func (m *MockEC2) DescribeNetworkInterfaces(ctx context.Context, params *ec2.DescribeNetworkInterfacesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
 	output := &ec2.DescribeNetworkInterfacesOutput{}
 	return output, nil
-}
-
-func (m *MockEC2) DescribeNetworkInterfacesPages(*ec2.DescribeNetworkInterfacesInput, func(*ec2.DescribeNetworkInterfacesOutput, bool) bool) error {
-	return nil
 }

@@ -18,12 +18,12 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"k8s.io/kops/pkg/resources"
 )
 
-func buildElasticIPResource(address *ec2.Address, forceShared bool, clusterName string) *resources.Resource {
+func buildElasticIPResource(address ec2types.Address, forceShared bool, clusterName string) *resources.Resource {
 	name := aws.ToString(address.PublicIp)
 	if name == "" {
 		name = aws.ToString(address.PrivateIpAddress)

@@ -67,8 +67,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int64(22)),
-					ToPort:        fi.PtrTo(int64(22)),
+					FromPort:      fi.PtrTo(int32(22)),
+					ToPort:        fi.PtrTo(int32(22)),
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
@@ -81,8 +81,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
 					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int64(22)),
-					ToPort:        fi.PtrTo(int64(22)),
+					FromPort:      fi.PtrTo(int32(22)),
+					ToPort:        fi.PtrTo(int32(22)),
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
@@ -104,8 +104,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
 					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int64(nodePortRange.Base)),
-					ToPort:        fi.PtrTo(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+					FromPort:      fi.PtrTo(int32(nodePortRange.Base)),
+					ToPort:        fi.PtrTo(int32(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
 				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
@@ -116,8 +116,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
 					Protocol:      fi.PtrTo("udp"),
-					FromPort:      fi.PtrTo(int64(nodePortRange.Base)),
-					ToPort:        fi.PtrTo(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+					FromPort:      fi.PtrTo(int32(nodePortRange.Base)),
+					ToPort:        fi.PtrTo(int32(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
 				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
@@ -139,8 +139,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int64(443)),
-					ToPort:        fi.PtrTo(int64(443)),
+					FromPort:      fi.PtrTo(int32(443)),
+					ToPort:        fi.PtrTo(int32(443)),
 				}
 				t.SetCidrOrPrefix(apiAccess)
 				AddDirectionalGroupRule(c, t)

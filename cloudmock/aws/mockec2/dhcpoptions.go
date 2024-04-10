@@ -17,16 +17,17 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*ec2.DescribeDhcpOptionsOutput, error) {
+func (m *MockEC2) DescribeDhcpOptions(ctx context.Context, request *ec2.DescribeDhcpOptionsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeDhcpOptionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -52,7 +53,7 @@ func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*e
 			// 	}
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId, filter)
+					match = m.hasTag(ec2types.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId, filter)
 				} else {
 					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
@@ -69,22 +70,14 @@ func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*e
 		}
 
 		copy := *dhcpOptions
-		copy.Tags = m.getTags(ec2.ResourceTypeDhcpOptions, id)
-		response.DhcpOptions = append(response.DhcpOptions, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeDhcpOptions, id)
+		response.DhcpOptions = append(response.DhcpOptions, copy)
 	}
 
 	return response, nil
 }
 
-func (m *MockEC2) DescribeDhcpOptionsWithContext(aws.Context, *ec2.DescribeDhcpOptionsInput, ...request.Option) (*ec2.DescribeDhcpOptionsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeDhcpOptionsRequest(*ec2.DescribeDhcpOptionsInput) (*request.Request, *ec2.DescribeDhcpOptionsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateDhcpOptions(request *ec2.AssociateDhcpOptionsInput) (*ec2.AssociateDhcpOptionsOutput, error) {
+func (m *MockEC2) AssociateDhcpOptions(ctx context.Context, request *ec2.AssociateDhcpOptionsInput, optFns ...func(*ec2.Options)) (*ec2.AssociateDhcpOptionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -110,15 +103,7 @@ func (m *MockEC2) AssociateDhcpOptions(request *ec2.AssociateDhcpOptionsInput) (
 	return response, nil
 }
 
-func (m *MockEC2) AssociateDhcpOptionsWithContext(aws.Context, *ec2.AssociateDhcpOptionsInput, ...request.Option) (*ec2.AssociateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateDhcpOptionsRequest(*ec2.AssociateDhcpOptionsInput) (*request.Request, *ec2.AssociateDhcpOptionsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.CreateDhcpOptionsOutput, error) {
+func (m *MockEC2) CreateDhcpOptions(ctx context.Context, request *ec2.CreateDhcpOptionsInput, optFns ...func(*ec2.Options)) (*ec2.CreateDhcpOptionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -131,48 +116,40 @@ func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.C
 	n := len(m.DhcpOptions) + 1
 	id := fmt.Sprintf("dopt-%d", n)
 
-	dhcpOptions := &ec2.DhcpOptions{
+	dhcpOptions := &ec2types.DhcpOptions{
 		DhcpOptionsId: s(id),
 	}
 
 	for _, o := range request.DhcpConfigurations {
-		c := &ec2.DhcpConfiguration{
+		c := ec2types.DhcpConfiguration{
 			Key: o.Key,
 		}
 		for _, v := range o.Values {
-			c.Values = append(c.Values, &ec2.AttributeValue{
-				Value: v,
+			c.Values = append(c.Values, ec2types.AttributeValue{
+				Value: aws.String(v),
 			})
 		}
 		dhcpOptions.DhcpConfigurations = append(dhcpOptions.DhcpConfigurations, c)
 	}
 	if m.DhcpOptions == nil {
-		m.DhcpOptions = make(map[string]*ec2.DhcpOptions)
+		m.DhcpOptions = make(map[string]*ec2types.DhcpOptions)
 	}
 	m.DhcpOptions[*dhcpOptions.DhcpOptionsId] = dhcpOptions
 
-	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeDhcpOptions)...)
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeDhcpOptions)...)
 
 	copy := *dhcpOptions
-	copy.Tags = m.getTags(ec2.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId)
+	copy.Tags = m.getTags(ec2types.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId)
 	return &ec2.CreateDhcpOptionsOutput{DhcpOptions: &copy}, nil
 }
 
-func (m *MockEC2) CreateDhcpOptionsWithContext(aws.Context, *ec2.CreateDhcpOptionsInput, ...request.Option) (*ec2.CreateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateDhcpOptionsRequest(*ec2.CreateDhcpOptionsInput) (*request.Request, *ec2.CreateDhcpOptionsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.DeleteDhcpOptionsOutput, error) {
+func (m *MockEC2) DeleteDhcpOptions(ctx context.Context, request *ec2.DeleteDhcpOptionsInput, optFns ...func(*ec2.Options)) (*ec2.DeleteDhcpOptionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteDhcpOptions: %v", request)
 
-	id := aws.StringValue(request.DhcpOptionsId)
+	id := aws.ToString(request.DhcpOptionsId)
 	o := m.DhcpOptions[id]
 	if o == nil {
 		return nil, fmt.Errorf("DhcpOptions %q not found", id)
@@ -180,12 +157,4 @@ func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.D
 	delete(m.DhcpOptions, id)
 
 	return &ec2.DeleteDhcpOptionsOutput{}, nil
-}
-
-func (m *MockEC2) DeleteDhcpOptionsWithContext(aws.Context, *ec2.DeleteDhcpOptionsInput, ...request.Option) (*ec2.DeleteDhcpOptionsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteDhcpOptionsRequest(*ec2.DeleteDhcpOptionsInput) (*request.Request, *ec2.DeleteDhcpOptionsOutput) {
-	panic("Not implemented")
 }

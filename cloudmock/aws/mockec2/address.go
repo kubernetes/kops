@@ -17,23 +17,16 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
-
-func (m *MockEC2) AllocateAddressRequest(*ec2.AllocateAddressInput) (*request.Request, *ec2.AllocateAddressOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AllocateAddressWithContext(aws.Context, *ec2.AllocateAddressInput, ...request.Option) (*ec2.AllocateAddressOutput, error) {
-	panic("Not implemented")
-}
 
 func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id string) (*ec2.AllocateAddressOutput, error) {
 	m.mutex.Lock()
@@ -50,10 +43,10 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 		binary.BigEndian.PutUint32(publicIP, v)
 	}
 
-	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeElasticIp)
-	address := &ec2.Address{
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeElasticIp)
+	address := &ec2types.Address{
 		AllocationId: s(id),
-		Domain:       s("vpc"),
+		Domain:       ec2types.DomainTypeVpc,
 		PublicIp:     s(publicIP.String()),
 		Tags:         tags,
 	}
@@ -62,7 +55,7 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 	}
 
 	if m.Addresses == nil {
-		m.Addresses = make(map[string]*ec2.Address)
+		m.Addresses = make(map[string]*ec2types.Address)
 	}
 	m.Addresses[id] = address
 	m.addTags(id, tags...)
@@ -75,54 +68,22 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 	return response, nil
 }
 
-func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
+func (m *MockEC2) AllocateAddress(ctx context.Context, request *ec2.AllocateAddressInput, optFns ...func(*ec2.Options)) (*ec2.AllocateAddressOutput, error) {
 	klog.Infof("AllocateAddress: %v", request)
 	id := m.allocateId("eipalloc")
 	return m.AllocateAddressWithId(request, id)
 }
 
-func (m *MockEC2) AssignPrivateIpAddressesRequest(*ec2.AssignPrivateIpAddressesInput) (*request.Request, *ec2.AssignPrivateIpAddressesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssignPrivateIpAddressesWithContext(aws.Context, *ec2.AssignPrivateIpAddressesInput, ...request.Option) (*ec2.AssignPrivateIpAddressesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssignPrivateIpAddresses(*ec2.AssignPrivateIpAddressesInput) (*ec2.AssignPrivateIpAddressesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateAddressRequest(*ec2.AssociateAddressInput) (*request.Request, *ec2.AssociateAddressOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateAddressWithContext(aws.Context, *ec2.AssociateAddressInput, ...request.Option) (*ec2.AssociateAddressOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateAddress(*ec2.AssociateAddressInput) (*ec2.AssociateAddressOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeAddressesRequest(*ec2.DescribeAddressesInput) (*request.Request, *ec2.DescribeAddressesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeAddressesWithContext(aws.Context, *ec2.DescribeAddressesInput, ...request.Option) (*ec2.DescribeAddressesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
+func (m *MockEC2) DescribeAddresses(ctx context.Context, request *ec2.DescribeAddressesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeAddressesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeAddresses: %v", request)
 
-	var addresses []*ec2.Address
+	var addresses []ec2types.Address
 
 	if len(request.AllocationIds) != 0 {
-		request.Filters = append(request.Filters, &ec2.Filter{Name: s("allocation-id"), Values: request.AllocationIds})
+		request.Filters = append(request.Filters, ec2types.Filter{Name: s("allocation-id"), Values: request.AllocationIds})
 	}
 	for _, address := range m.Addresses {
 		allFiltersMatch := true
@@ -132,14 +93,14 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 
 			case "allocation-id":
 				for _, v := range filter.Values {
-					if *address.AllocationId == *v {
+					if *address.AllocationId == v {
 						match = true
 					}
 				}
 
 			case "public-ip":
 				for _, v := range filter.Values {
-					if *address.PublicIp == *v {
+					if *address.PublicIp == v {
 						match = true
 					}
 				}
@@ -159,8 +120,8 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 		}
 
 		copy := *address
-		copy.Tags = m.getTags(ec2.ResourceTypeElasticIp, *address.AllocationId)
-		addresses = append(addresses, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeElasticIp, *address.AllocationId)
+		addresses = append(addresses, copy)
 	}
 
 	response := &ec2.DescribeAddressesOutput{
@@ -170,21 +131,13 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 	return response, nil
 }
 
-func (m *MockEC2) ReleaseAddressRequest(*ec2.ReleaseAddressInput) (*request.Request, *ec2.ReleaseAddressOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) ReleaseAddressWithContext(aws.Context, *ec2.ReleaseAddressInput, ...request.Option) (*ec2.ReleaseAddressOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) ReleaseAddress(request *ec2.ReleaseAddressInput) (*ec2.ReleaseAddressOutput, error) {
+func (m *MockEC2) ReleaseAddress(ctx context.Context, request *ec2.ReleaseAddressInput, optFns ...func(*ec2.Options)) (*ec2.ReleaseAddressOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("ReleaseAddress: %v", request)
 
-	id := aws.StringValue(request.AllocationId)
+	id := aws.ToString(request.AllocationId)
 	o := m.Addresses[id]
 	if o == nil {
 		return nil, fmt.Errorf("Address %q not found", id)

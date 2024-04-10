@@ -432,10 +432,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("https-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(443)),
+					FromPort:      fi.PtrTo(int32(443)),
 					Protocol:      fi.PtrTo("tcp"),
 					SecurityGroup: lbSG,
-					ToPort:        fi.PtrTo(int64(443)),
+					ToPort:        fi.PtrTo(int32(443)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				AddDirectionalGroupRule(c, t)
@@ -446,8 +446,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("https-api-elb-8443-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(8443)),
-					ToPort:        fi.PtrTo(int64(8443)),
+					FromPort:      fi.PtrTo(int32(8443)),
+					ToPort:        fi.PtrTo(int32(8443)),
 					Protocol:      fi.PtrTo("tcp"),
 					SecurityGroup: lbSG,
 				}
@@ -462,10 +462,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("icmpv6-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(-1)),
+					FromPort:      fi.PtrTo(int32(-1)),
 					Protocol:      fi.PtrTo("icmpv6"),
 					SecurityGroup: lbSG,
-					ToPort:        fi.PtrTo(int64(-1)),
+					ToPort:        fi.PtrTo(int32(-1)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				if t.CIDR == nil {
@@ -476,10 +476,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("icmp-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(3)),
+					FromPort:      fi.PtrTo(int32(3)),
 					Protocol:      fi.PtrTo("icmp"),
 					SecurityGroup: lbSG,
-					ToPort:        fi.PtrTo(int64(4)),
+					ToPort:        fi.PtrTo(int32(4)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				if t.IPv6CIDR == nil {
@@ -519,11 +519,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo(fmt.Sprintf("tcp-api-cp%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(8443)),
+				FromPort:      fi.PtrTo(int32(8443)),
 				Protocol:      fi.PtrTo("tcp"),
 				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
-				ToPort:        fi.PtrTo(int64(8443)),
+				ToPort:        fi.PtrTo(int32(8443)),
 			}
 			c.AddTask(t)
 		}
@@ -551,29 +551,29 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo(fmt.Sprintf("https-elb-to-master%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(443)),
+				FromPort:      fi.PtrTo(int32(443)),
 				Protocol:      fi.PtrTo("tcp"),
 				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
-				ToPort:        fi.PtrTo(int64(443)),
+				ToPort:        fi.PtrTo(int32(443)),
 			})
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-elb-to-cp%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(3)),
+				FromPort:      fi.PtrTo(int32(3)),
 				Protocol:      fi.PtrTo("icmp"),
 				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
-				ToPort:        fi.PtrTo(int64(4)),
+				ToPort:        fi.PtrTo(int32(4)),
 			})
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo(fmt.Sprintf("icmp-pmtu-cp%s-to-elb", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(3)),
+				FromPort:      fi.PtrTo(int32(3)),
 				Protocol:      fi.PtrTo("icmp"),
 				SecurityGroup: lbSG,
 				SourceGroup:   masterGroup.Task,
-				ToPort:        fi.PtrTo(int64(4)),
+				ToPort:        fi.PtrTo(int32(4)),
 			})
 			if b.Cluster.UsesNoneDNS() {
 				nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
@@ -582,10 +582,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					FromPort:      fi.PtrTo(int32(wellknownports.KopsControllerPort)),
 					Protocol:      fi.PtrTo("tcp"),
 					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					ToPort:        fi.PtrTo(int32(wellknownports.KopsControllerPort)),
 					SourceGroup:   lbSG,
 				})
 			}

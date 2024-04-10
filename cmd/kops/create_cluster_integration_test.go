@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -220,13 +220,13 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		CidrBlock: aws.String("10.0.0.0/12"),
 	}, "vpc-12345678")
 
-	awsCloud.EC2().CreateSubnet(&ec2.CreateSubnetInput{
+	awsCloud.EC2().CreateSubnet(ctx, &ec2.CreateSubnetInput{
 		AvailabilityZone: aws.String("us-test-1a"),
 		VpcId:            aws.String("vpc-12345678"),
 		CidrBlock:        aws.String("10.10.0.0/24"),
 	})
 
-	awsCloud.EC2().CreateSubnet(&ec2.CreateSubnetInput{
+	awsCloud.EC2().CreateSubnet(ctx, &ec2.CreateSubnetInput{
 		AvailabilityZone: aws.String("us-test-1a"),
 		VpcId:            aws.String("vpc-12345678"),
 		CidrBlock:        aws.String("10.11.0.0/24"),
