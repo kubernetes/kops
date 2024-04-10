@@ -173,7 +173,7 @@ type AWSCloud interface {
 
 	// DescribeVPC is a helper that queries for the specified vpc by id
 	DescribeVPC(vpcID string) (*ec2types.Vpc, error)
-	DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error)
+	DescribeAvailabilityZones() ([]ec2types.AvailabilityZone, error)
 
 	// ResolveImage finds an AMI image based on the given name.
 	// The name can be one of:
@@ -2088,11 +2088,12 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 	return image, nil
 }
 
-func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error) {
+func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]ec2types.AvailabilityZone, error) {
 	klog.V(2).Infof("Querying EC2 for all valid zones in region %q", c.region)
+	ctx := context.TODO()
 
 	request := &ec2.DescribeAvailabilityZonesInput{}
-	response, err := c.EC2().DescribeAvailabilityZones(request)
+	response, err := c.EC2().DescribeAvailabilityZones(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error querying for valid AZs in %q - verify your AWS credentials.  Error: %v", c.region, err)
 	}
@@ -2107,15 +2108,15 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 		return err
 	}
 
-	zoneMap := make(map[string]*ec2.AvailabilityZone)
+	zoneMap := make(map[string]ec2types.AvailabilityZone)
 	for _, z := range azs {
-		name := aws.StringValue(z.ZoneName)
+		name := aws.ToString(z.ZoneName)
 		zoneMap[name] = z
 	}
 
 	for _, zone := range zones {
-		z := zoneMap[zone]
-		if z == nil {
+		z, ok := zoneMap[zone]
+		if !ok {
 			var knownZones []string
 			for z := range zoneMap {
 				knownZones = append(knownZones, z)
@@ -2126,11 +2127,11 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 		}
 
 		for _, message := range z.Messages {
-			klog.Warningf("Zone %q has message: %q", zone, aws.StringValue(message.Message))
+			klog.Warningf("Zone %q has message: %q", zone, aws.ToString(message.Message))
 		}
 
-		if aws.StringValue(z.State) != ec2.AvailabilityZoneStateAvailable {
-			klog.Warningf("Zone %q has state %q", zone, aws.StringValue(z.State))
+		if z.State != ec2types.AvailabilityZoneStateAvailable {
+			klog.Warningf("Zone %q has state %q", zone, z.State)
 		}
 	}
 

@@ -29,13 +29,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
-	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -54,7 +53,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 	if allRegions == nil {
 		klog.V(2).Infof("Querying EC2 for all valid regions")
 
-		request := &ec2v2.DescribeRegionsInput{}
+		request := &ec2.DescribeRegionsInput{}
 		awsRegion := os.Getenv("AWS_REGION")
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
@@ -68,7 +67,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 			return fmt.Errorf("error starting a new AWS session: %v", err)
 		}
 
-		client := ec2v2.NewFromConfig(cfg)
+		client := ec2.NewFromConfig(cfg)
 
 		response, err := client.DescribeRegions(ctx, request)
 		if err != nil {

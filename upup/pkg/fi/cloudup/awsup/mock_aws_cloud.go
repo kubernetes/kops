@@ -43,7 +43,7 @@ type MockAWSCloud struct {
 	region string
 	tags   map[string]string
 
-	zones []*ec2.AvailabilityZone
+	zones []ec2types.AvailabilityZone
 }
 
 var _ fi.Cloud = (*MockAWSCloud)(nil)
@@ -61,10 +61,10 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 	i := &MockAWSCloud{region: region}
 	for _, c := range zoneLetters {
 		azName := fmt.Sprintf("%s%c", region, c)
-		az := &ec2.AvailabilityZone{
+		az := ec2types.AvailabilityZone{
 			RegionName: aws.String(region),
 			ZoneName:   aws.String(azName),
-			State:      aws.String("available"),
+			State:      ec2types.AvailabilityZoneStateAvailable,
 		}
 		i.zones = append(i.zones, az)
 	}
@@ -124,7 +124,7 @@ func (c *MockAWSCloud) Region() string {
 	return c.region
 }
 
-func (c *MockAWSCloud) DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error) {
+func (c *MockAWSCloud) DescribeAvailabilityZones() ([]ec2types.AvailabilityZone, error) {
 	return c.zones, nil
 }
 
