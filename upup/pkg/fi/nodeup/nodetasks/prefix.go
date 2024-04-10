@@ -25,9 +25,9 @@ import (
 	"path"
 	"strings"
 
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -128,8 +128,8 @@ func getInstanceMetadataList(ctx context.Context, category string) ([]string, er
 	metadata := imds.NewFromConfig(cfg)
 	resp, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{Path: category})
 	if err != nil {
-		var aerr awserr.RequestFailure
-		if errors.As(err, &aerr) && aerr.StatusCode() == http.StatusNotFound {
+		var awsErr *awshttp.ResponseError
+		if errors.As(err, &awsErr) && awsErr.HTTPStatusCode() == http.StatusNotFound {
 			return nil, nil
 		} else {
 			return nil, fmt.Errorf("failed to get %q from ec2 meta-data: %v", category, err)

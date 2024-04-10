@@ -1313,13 +1313,13 @@ var tagsEventualConsistencyErrors = map[string]bool{
 // isTagsEventualConsistencyError checks if the error is one of the errors encountered
 // when we try to create/get tags before the resource has fully 'propagated' in EC2
 func isTagsEventualConsistencyError(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		isEventualConsistency, found := tagsEventualConsistencyErrors[awsErr.Code()]
-		if found {
-			return isEventualConsistency
-		}
-
-		klog.Warningf("Uncategorized error in isTagsEventualConsistencyError: %v", awsErr.Code())
+	errCode := AWSErrorCode(err)
+	isEventualConsistency, found := tagsEventualConsistencyErrors[errCode]
+	if found {
+		return isEventualConsistency
+	}
+	if errCode != "" {
+		klog.Warningf("Uncategorized error in isTagsEventualConsistencyError: %v", errCode)
 	}
 	return false
 }
