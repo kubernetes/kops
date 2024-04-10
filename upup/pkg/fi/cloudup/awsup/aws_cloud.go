@@ -25,13 +25,13 @@ import (
 	"sync"
 	"time"
 
-	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	stscredsv2 "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
@@ -46,12 +46,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	ec2v1 "github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
@@ -126,8 +120,8 @@ const AWSErrCodeInvalidAction = "InvalidAction"
 
 type AWSCloud interface {
 	fi.Cloud
-	Session() (*session.Session, error)
-	EC2() ec2iface.EC2API
+	Config() aws.Config
+	EC2() awsinterfaces.EC2API
 	IAM() awsinterfaces.IAMAPI
 	ELB() awsinterfaces.ELBAPI
 	ELBV2() awsinterfaces.ELBV2API
@@ -196,7 +190,7 @@ type AWSCloud interface {
 }
 
 type awsCloudImplementation struct {
-	ec2         *ec2.EC2
+	ec2         *ec2.Client
 	iam         *iam.Client
 	elb         *elb.Client
 	elbv2       *elbv2.Client
@@ -212,19 +206,14 @@ type awsCloudImplementation struct {
 
 	tags map[string]string
 
-	regionDelayers *RegionDelayers
-
 	instanceTypes *instanceTypes
-}
 
-type RegionDelayers struct {
-	mutex      sync.Mutex
-	delayerMap map[string]*k8s_aws.CrossRequestRetryDelay
+	config aws.Config
 }
 
 type instanceTypes struct {
 	mutex   sync.Mutex
-	typeMap map[string]*ec2.InstanceTypeInfo
+	typeMap map[string]*ec2types.InstanceTypeInfo
 }
 
 var _ fi.Cloud = &awsCloudImplementation{}
@@ -256,13 +245,6 @@ func ResetAWSCloudInstances() {
 	awsCloudInstances.mutex.Unlock()
 }
 
-func setConfig(config *aws.Config) *aws.Config {
-	// This avoids a confusing error message when we fail to get credentials
-	// e.g. https://github.com/kubernetes/kops/issues/605
-	config = config.WithCredentialsChainVerboseErrors(true)
-	return request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
-}
-
 func updateAwsCloudInstances(region string, cloud AWSCloud) {
 	awsCloudInstances.mutex.Lock()
 	awsCloudInstances.regionMap[region] = cloud
@@ -288,68 +270,47 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	if raw == nil {
 		c := &awsCloudImplementation{
 			region: region,
-			regionDelayers: &RegionDelayers{
-				delayerMap: make(map[string]*k8s_aws.CrossRequestRetryDelay),
-			},
 			instanceTypes: &instanceTypes{
-				typeMap: make(map[string]*ec2.InstanceTypeInfo),
+				typeMap: make(map[string]*ec2types.InstanceTypeInfo),
 			},
 		}
 
 		loadOptions := []func(*awsconfig.LoadOptions) error{
 			awsconfig.WithRegion(region),
-			awsconfig.WithClientLogMode(awsv2.LogRetries),
+			awsconfig.WithClientLogMode(aws.LogRetries),
 			awsconfig.WithLogger(awsLogger{}),
-			awsconfig.WithRetryer(func() awsv2.Retryer {
+			awsconfig.WithRetryer(func() aws.Retryer {
 				return retry.NewStandard()
 			}),
-		}
-
-		config := aws.NewConfig().WithRegion(region)
-		config = setConfig(config)
-
-		requestLogger := newRequestLogger(2)
-
-		sess, err := session.NewSessionWithOptions(session.Options{
-			Config:            *config,
-			SharedConfigState: session.SharedConfigEnable,
-		})
-		if err != nil {
-			return c, err
 		}
 
 		// assumes the role before executing commands
 		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
 		if roleARN != "" {
-			cfgV2, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+			cfg, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
 			if err != nil {
 				return c, fmt.Errorf("failed to load default aws config: %w", err)
 			}
-			stsClient := sts.NewFromConfig(cfgV2)
+			stsClient := sts.NewFromConfig(cfg)
 			assumeRoleProvider := stscredsv2.NewAssumeRoleProvider(stsClient, roleARN)
 
 			loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(assumeRoleProvider))
-
-			creds := stscreds.NewCredentials(sess, roleARN)
-			config = &aws.Config{Credentials: creds}
-			config = setConfig(config).WithRegion(region)
 		}
 
-		c.ec2 = ec2.New(sess, config)
-		c.ec2.Handlers.Send.PushFront(requestLogger)
-		c.addHandlers(region, &c.ec2.Handlers)
-
-		cfgV2, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+		cfg, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
 		if err != nil {
 			return c, fmt.Errorf("failed to load default aws config: %w", err)
 		}
 
-		c.iam = iam.NewFromConfig(cfgV2)
-		c.elb = elb.NewFromConfig(cfgV2)
-		c.elbv2 = elbv2.NewFromConfig(cfgV2)
-		c.sts = sts.NewFromConfig(cfgV2)
-		c.autoscaling = autoscaling.NewFromConfig(cfgV2)
-		c.route53 = route53.NewFromConfig(cfgV2)
+		c.config = cfg
+
+		c.ec2 = ec2.NewFromConfig(cfg)
+		c.iam = iam.NewFromConfig(cfg)
+		c.elb = elb.NewFromConfig(cfg)
+		c.elbv2 = elbv2.NewFromConfig(cfg)
+		c.sts = sts.NewFromConfig(cfg)
+		c.autoscaling = autoscaling.NewFromConfig(cfg)
+		c.route53 = route53.NewFromConfig(cfg)
 
 		if featureflag.Spotinst.Enabled() {
 			c.spotinst, err = spotinst.NewCloud(kops.CloudProviderAWS)
@@ -358,9 +319,9 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			}
 		}
 
-		c.sqs = sqs.NewFromConfig(cfgV2)
-		c.eventbridge = eventbridge.NewFromConfig(cfgV2)
-		c.ssm = ssm.NewFromConfig(cfgV2)
+		c.sqs = sqs.NewFromConfig(cfg)
+		c.eventbridge = eventbridge.NewFromConfig(cfg)
+		c.ssm = ssm.NewFromConfig(cfg)
 
 		updateAwsCloudInstances(region, c)
 
@@ -372,66 +333,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	return i, nil
 }
 
-func (c *awsCloudImplementation) Session() (*session.Session, error) {
-	config := aws.NewConfig().WithRegion(c.region)
-	config = config.WithCredentialsChainVerboseErrors(true)
-	config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
-
-	sess, err := session.NewSessionWithOptions(session.Options{
-		Config:            *config,
-		SharedConfigState: session.SharedConfigEnable,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create session: %w", err)
-	}
-
-	return sess, err
+func (c *awsCloudImplementation) Config() aws.Config {
+	return c.config
 }
 
-func (c *awsCloudImplementation) addHandlers(regionName string, h *request.Handlers) {
-	delayer := c.getCrossRequestRetryDelay(regionName)
-	if delayer != nil {
-		h.Sign.PushFrontNamed(request.NamedHandler{
-			Name: "kops/delay-presign",
-			Fn:   delayer.BeforeSign,
-		})
-
-		h.AfterRetry.PushFrontNamed(request.NamedHandler{
-			Name: "kops/delay-afterretry",
-			Fn:   delayer.AfterRetry,
-		})
-	}
-}
-
-// Get a CrossRequestRetryDelay, scoped to the region, not to the request.
-// This means that when we hit a limit on a call, we will delay _all_ calls to the API.
-// We do this to protect the AWS account from becoming overloaded and effectively locked.
-// We also log when we hit request limits.
-// Note that this delays the current goroutine; this is bad behaviour and will
-// likely cause kops to become slow or unresponsive for cloud operations.
-// However, this throttle is intended only as a last resort.  When we observe
-// this throttling, we need to address the root cause (e.g. add a delay to a
-// controller retry loop)
-func (c *awsCloudImplementation) getCrossRequestRetryDelay(regionName string) *k8s_aws.CrossRequestRetryDelay {
-	c.regionDelayers.mutex.Lock()
-	defer c.regionDelayers.mutex.Unlock()
-
-	delayer, found := c.regionDelayers.delayerMap[regionName]
-	if !found {
-		delayer = k8s_aws.NewCrossRequestRetryDelay()
-		c.regionDelayers.delayerMap[regionName] = delayer
-	}
-	return delayer
-}
-
-func NewEC2Filter(name string, values ...string) *ec2.Filter {
-	awsValues := []*string{}
-	for _, value := range values {
-		awsValues = append(awsValues, aws.String(value))
-	}
-	filter := &ec2.Filter{
+func NewEC2Filter(name string, values ...string) ec2types.Filter {
+	filter := ec2types.Filter{
 		Name:   aws.String(name),
-		Values: awsValues,
+		Values: values,
 	}
 	return filter
 }
@@ -2148,7 +2057,7 @@ func (c *awsCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	return provider, nil
 }
 
-func (c *awsCloudImplementation) EC2() ec2iface.EC2API {
+func (c *awsCloudImplementation) EC2() awsinterfaces.EC2API {
 	return c.ec2
 }
 
@@ -2259,7 +2168,7 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 		if lb, err := cloud.FindELBByNameTag(name); err != nil {
 			return "", fmt.Errorf("error looking for AWS ELB: %v", err)
 		} else if lb != nil {
-			return aws.StringValue(lb.DNSName), nil
+			return aws.ToString(lb.DNSName), nil
 		}
 	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 		allLoadBalancers, err := ListELBV2LoadBalancers(ctx, cloud)
@@ -2269,7 +2178,7 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 
 		latest := FindLatestELBV2ByNameTag(allLoadBalancers, name)
 		if latest != nil {
-			return aws.StringValue(latest.LoadBalancer.DNSName), nil
+			return aws.ToString(latest.LoadBalancer.DNSName), nil
 		}
 	}
 	return "", nil
@@ -2418,7 +2327,7 @@ func (c *awsCloudImplementation) AccountInfo(ctx context.Context) (string, strin
 		return "", "", fmt.Errorf("error getting AWS account ID: %v", err)
 	}
 
-	arn, err := arn.Parse(aws.StringValue(response.Arn))
+	arn, err := arn.Parse(aws.ToString(response.Arn))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse GetCallerIdentity ARN: %w", err)
 	}
@@ -2449,7 +2358,7 @@ func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error)
 
 // GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
 // The first value is the node name and any additional values are the DNS name and IP addresses.
-func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
+func GetInstanceCertificateNames(instances *ec2v1.DescribeInstancesOutput) (addrs []string, err error) {
 	if len(instances.Reservations) != 1 {
 		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
 	}

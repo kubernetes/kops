@@ -24,9 +24,6 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -73,7 +70,7 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 
 type MockCloud struct {
 	MockAutoscaling awsinterfaces.AutoScalingAPI
-	MockEC2         ec2iface.EC2API
+	MockEC2         awsinterfaces.EC2API
 	MockIAM         awsinterfaces.IAMAPI
 	MockRoute53     awsinterfaces.Route53API
 	MockELB         awsinterfaces.ELBAPI
@@ -137,7 +134,7 @@ func (c *MockAWSCloud) AddTags(name *string, tags map[string]string) {
 	}
 }
 
-func (c *MockAWSCloud) BuildFilters(name *string) []*ec2.Filter {
+func (c *MockAWSCloud) BuildFilters(name *string) []ec2types.Filter {
 	return buildFilters(c.tags, name)
 }
 
@@ -232,7 +229,7 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 	return m
 }
 
-func (c *MockAWSCloud) EC2() ec2iface.EC2API {
+func (c *MockAWSCloud) EC2() awsinterfaces.EC2API {
 	if c.MockEC2 == nil {
 		klog.Fatalf("MockAWSCloud MockEC2 not set")
 	}
@@ -389,6 +386,6 @@ func (c *MockAWSCloud) AccountInfo(ctx context.Context) (string, string, error) 
 	return "123456789012", "aws-test", nil
 }
 
-func (c *MockAWSCloud) Session() (*session.Session, error) {
-	return nil, nil
+func (c *MockAWSCloud) Config() aws.Config {
+	return aws.Config{}
 }
