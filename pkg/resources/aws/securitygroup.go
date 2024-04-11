@@ -56,16 +56,36 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 		if len(response.SecurityGroups) != 1 {
 			return fmt.Errorf("found multiple SecurityGroups with ID %q", id)
 		}
-		sg := response.SecurityGroups[0]
 
-		if len(sg.IpPermissions) != 0 {
+		ruleReqest := &ec2.DescribeSecurityGroupRulesInput{
+			Filters: []ec2types.Filter{
+				{Name: aws.String("group-id"), Values: []string{id}},
+			},
+		}
+		ruleResp, err := c.EC2().DescribeSecurityGroupRules(ctx, ruleReqest)
+		if err != nil {
+			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
+				klog.V(2).Infof("Got InvalidGroup.NotFound error describing rules for SecurityGroup %q; will treat as already-deleted", id)
+				return nil
+			}
+			return fmt.Errorf("error describing SecurityGroup rules %q: %v", id, err)
+		}
+
+		ingressRuleIDs := make([]string, 0)
+		for _, rule := range ruleResp.SecurityGroupRules {
+			if !aws.ToBool(rule.IsEgress) {
+				ingressRuleIDs = append(ingressRuleIDs, aws.ToString(rule.SecurityGroupRuleId))
+			}
+		}
+
+		if len(ingressRuleIDs) != 0 {
 			revoke := &ec2.RevokeSecurityGroupIngressInput{
-				GroupId:       &id,
-				IpPermissions: sg.IpPermissions,
+				GroupId:              aws.String(id),
+				SecurityGroupRuleIds: ingressRuleIDs,
 			}
 			_, err = c.EC2().RevokeSecurityGroupIngress(ctx, revoke)
 			if err != nil {
-				return fmt.Errorf("cannot revoke ingress for ID %q: %v", id, err)
+				return fmt.Errorf("cannot revoke ingress for ID %q with rule IDs %v: %v", id, ingressRuleIDs, err)
 			}
 		}
 	}
