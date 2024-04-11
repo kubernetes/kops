@@ -30,7 +30,7 @@ func DumpSubnet(op *resources.DumpOperation, r *resources.Resource) error {
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
 
-	ec2Subnet := r.Obj.(*ec2types.Subnet)
+	ec2Subnet := r.Obj.(ec2types.Subnet)
 	s := &resources.Subnet{
 		ID:   aws.ToString(ec2Subnet.SubnetId),
 		Zone: aws.ToString(ec2Subnet.AvailabilityZone),

@@ -489,7 +489,7 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
 
-	ec2Instance := r.Obj.(*ec2types.Instance)
+	ec2Instance := r.Obj.(ec2types.Instance)
 	i := &resources.Instance{
 		Name: r.ID,
 	}
