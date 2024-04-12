@@ -35,6 +35,7 @@ const (
 	databaseTopicPath                   = databaseBasePath + "/%s/topics/%s"
 	databaseTopicsPath                  = databaseBasePath + "/%s/topics"
 	databaseMetricsCredentialsPath      = databaseBasePath + "/metrics/credentials"
+	databaseEvents                      = databaseBasePath + "/%s/events"
 )
 
 // SQL Mode constants allow for MySQL-specific SQL flavor configuration.
@@ -157,6 +158,7 @@ type DatabasesService interface {
 	UpdateTopic(context.Context, string, string, *DatabaseUpdateTopicRequest) (*Response, error)
 	GetMetricsCredentials(context.Context) (*DatabaseMetricsCredentials, *Response, error)
 	UpdateMetricsCredentials(context.Context, *DatabaseUpdateMetricsCredentialsRequest) (*Response, error)
+	ListDatabaseEvents(context.Context, string) ([]*DatabaseEvent, *Response, error)
 }
 
 // DatabasesServiceOp handles communication with the Databases related methods
@@ -709,6 +711,23 @@ type DatabaseEngineOptions struct {
 type DatabaseLayout struct {
 	NodeNum int      `json:"num_nodes"`
 	Sizes   []string `json:"sizes"`
+}
+
+// ListDatabaseEvents contains a list of project events.
+type ListDatabaseEvents struct {
+	Events []*DatabaseEvent `json:"events"`
+}
+
+// DatbaseEvent contains the information about a Datbase event.
+type DatabaseEvent struct {
+	ID          string `json:"id"`
+	ServiceName string `json:"cluster_name"`
+	EventType   string `json:"event_type"`
+	CreateTime  string `json:"create_time"`
+}
+
+type ListDatabaseEventsRoot struct {
+	Events []*DatabaseEvent `json:"events"`
 }
 
 // URN returns a URN identifier for the database
@@ -1516,4 +1535,21 @@ func (svc *DatabasesServiceOp) UpdateMetricsCredentials(ctx context.Context, upd
 		return resp, err
 	}
 	return resp, nil
+}
+
+func (svc *DatabasesServiceOp) ListDatabaseEvents(ctx context.Context, databaseID string) ([]*DatabaseEvent, *Response, error) {
+	path := fmt.Sprintf(databaseEvents, databaseID)
+	root := new(ListDatabaseEventsRoot)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return root.Events, resp, nil
+
 }

@@ -170,12 +170,12 @@ type SimulatePrincipalPolicyInput struct {
 	// results. If your simulation does not match one of the following scenarios, then
 	// you can omit this parameter. The following list shows each of the supported
 	// scenario values and the resources that you must define to run the simulation.
-	// Each of the EC2 scenarios requires that you specify instance, image, and
+	// Each of the Amazon EC2 scenarios requires that you specify instance, image, and
 	// security group resources. If your scenario includes an EBS volume, then you must
-	// specify that volume as a resource. If the EC2 scenario includes VPC, then you
-	// must supply the network interface resource. If it includes an IP subnet, then
-	// you must specify the subnet resource. For more information on the EC2 scenario
-	// options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
+	// specify that volume as a resource. If the Amazon EC2 scenario includes VPC, then
+	// you must supply the network interface resource. If it includes an IP subnet,
+	// then you must specify the subnet resource. For more information on the Amazon
+	// EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
 	// in the Amazon EC2 User Guide.
 	//   - EC2-VPC-InstanceStore instance, image, security group, network interface
 	//   - EC2-VPC-InstanceStore-Subnet instance, image, security group, network

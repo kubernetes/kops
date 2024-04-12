@@ -1276,6 +1276,9 @@ func awsAwsquery_deserializeOpErrorCreateOpenIDConnectProvider(response *smithyh
 	case strings.EqualFold("LimitExceeded", errorCode):
 		return awsAwsquery_deserializeErrorLimitExceededException(response, errorBody)
 
+	case strings.EqualFold("OpenIdIdpCommunicationError", errorCode):
+		return awsAwsquery_deserializeErrorOpenIdIdpCommunicationErrorException(response, errorBody)
+
 	case strings.EqualFold("ServiceFailure", errorCode):
 		return awsAwsquery_deserializeErrorServiceFailureException(response, errorBody)
 
@@ -16554,6 +16557,50 @@ func awsAwsquery_deserializeErrorNoSuchEntityException(response *smithyhttp.Resp
 	return output
 }
 
+func awsAwsquery_deserializeErrorOpenIdIdpCommunicationErrorException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	output := &types.OpenIdIdpCommunicationErrorException{}
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+	body := io.TeeReader(errorBody, ringBuffer)
+	rootDecoder := xml.NewDecoder(body)
+	t, err := smithyxml.FetchRootElement(rootDecoder)
+	if err == io.EOF {
+		return output
+	}
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		return &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+	}
+
+	decoder := smithyxml.WrapNodeDecoder(rootDecoder, t)
+	t, err = decoder.GetElement("Error")
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		return &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+	}
+
+	decoder = smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+	err = awsAwsquery_deserializeDocumentOpenIdIdpCommunicationErrorException(&output, decoder)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		return &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+	}
+
+	return output
+}
+
 func awsAwsquery_deserializeErrorPasswordPolicyViolationException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
 	output := &types.PasswordPolicyViolationException{}
 	var buff [1024]byte
@@ -21035,6 +21082,55 @@ func awsAwsquery_deserializeDocumentOpenIDConnectProviderListTypeUnwrapped(v *[]
 	*v = sv
 	return nil
 }
+func awsAwsquery_deserializeDocumentOpenIdIdpCommunicationErrorException(v **types.OpenIdIdpCommunicationErrorException, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.OpenIdIdpCommunicationErrorException
+	if *v == nil {
+		sv = &types.OpenIdIdpCommunicationErrorException{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("message", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.Message = ptr.String(xtv)
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
 func awsAwsquery_deserializeDocumentOrganizationsDecisionDetail(v **types.OrganizationsDecisionDetail, decoder smithyxml.NodeDecoder) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)

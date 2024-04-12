@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"golang.org/x/exp/maps"
@@ -421,7 +422,12 @@ func defaultOpts(config *rest.Config, opts Options) (Options, error) {
 	for namespace, cfg := range opts.DefaultNamespaces {
 		cfg = defaultConfig(cfg, optionDefaultsToConfig(&opts))
 		if namespace == metav1.NamespaceAll {
-			cfg.FieldSelector = fields.AndSelectors(appendIfNotNil(namespaceAllSelector(maps.Keys(opts.DefaultNamespaces)), cfg.FieldSelector)...)
+			cfg.FieldSelector = fields.AndSelectors(
+				appendIfNotNil(
+					namespaceAllSelector(maps.Keys(opts.DefaultNamespaces)),
+					cfg.FieldSelector,
+				)...,
+			)
 		}
 		opts.DefaultNamespaces[namespace] = cfg
 	}
@@ -435,7 +441,12 @@ func defaultOpts(config *rest.Config, opts Options) (Options, error) {
 			return opts, fmt.Errorf("type %T is not namespaced, but its ByObject.Namespaces setting is not nil", obj)
 		}
 
-		// Default the namespace-level configs first, because they need to use the undefaulted type-level config.
+		if isNamespaced && byObject.Namespaces == nil {
+			byObject.Namespaces = maps.Clone(opts.DefaultNamespaces)
+		}
+
+		// Default the namespace-level configs first, because they need to use the undefaulted type-level config
+		// to be able to potentially fall through to settings from DefaultNamespaces.
 		for namespace, config := range byObject.Namespaces {
 			// 1. Default from the undefaulted type-level config
 			config = defaultConfig(config, byObjectToConfig(byObject))
@@ -461,14 +472,14 @@ func defaultOpts(config *rest.Config, opts Options) (Options, error) {
 			byObject.Namespaces[namespace] = config
 		}
 
-		defaultedConfig := defaultConfig(byObjectToConfig(byObject), optionDefaultsToConfig(&opts))
-		byObject.Label = defaultedConfig.LabelSelector
-		byObject.Field = defaultedConfig.FieldSelector
-		byObject.Transform = defaultedConfig.Transform
-		byObject.UnsafeDisableDeepCopy = defaultedConfig.UnsafeDisableDeepCopy
-
-		if isNamespaced && byObject.Namespaces == nil {
-			byObject.Namespaces = opts.DefaultNamespaces
+		// Only default ByObject iself if it isn't namespaced or has no namespaces configured, as only
+		// then any of this will be honored.
+		if !isNamespaced || len(byObject.Namespaces) == 0 {
+			defaultedConfig := defaultConfig(byObjectToConfig(byObject), optionDefaultsToConfig(&opts))
+			byObject.Label = defaultedConfig.LabelSelector
+			byObject.Field = defaultedConfig.FieldSelector
+			byObject.Transform = defaultedConfig.Transform
+			byObject.UnsafeDisableDeepCopy = defaultedConfig.UnsafeDisableDeepCopy
 		}
 
 		opts.ByObject[obj] = byObject
@@ -498,20 +509,21 @@ func defaultConfig(toDefault, defaultFrom Config) Config {
 	return toDefault
 }
 
-func namespaceAllSelector(namespaces []string) fields.Selector {
+func namespaceAllSelector(namespaces []string) []fields.Selector {
 	selectors := make([]fields.Selector, 0, len(namespaces)-1)
+	sort.Strings(namespaces)
 	for _, namespace := range namespaces {
 		if namespace != metav1.NamespaceAll {
 			selectors = append(selectors, fields.OneTermNotEqualSelector("metadata.namespace", namespace))
 		}
 	}
 
-	return fields.AndSelectors(selectors...)
+	return selectors
 }
 
-func appendIfNotNil[T comparable](a, b T) []T {
+func appendIfNotNil[T comparable](a []T, b T) []T {
 	if b != *new(T) {
-		return []T{a, b}
+		return append(a, b)
 	}
-	return []T{a}
+	return a
 }

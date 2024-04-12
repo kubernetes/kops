@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.112.0] - 2024-04-08
+
+- #672 - @dependabot[bot] - Bump google.golang.org/protobuf from 1.28.0 to 1.33.0
+- #675 - @bhardwajRahul - Add ListDatabaseEvents to Godo
+
 ## [v1.111.0] - 2024-04-02
 
 - #674 - @asaha2 - load balancers: introduce glb settings in godo, currently in closed beta

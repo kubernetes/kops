@@ -3487,9 +3487,6 @@ func validateOpCreateOpenIDConnectProviderInput(v *CreateOpenIDConnectProviderIn
 	if v.Url == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Url"))
 	}
-	if v.ThumbprintList == nil {
-		invalidParams.Add(smithy.NewErrParamRequired("ThumbprintList"))
-	}
 	if v.Tags != nil {
 		if err := validateTagListType(v.Tags); err != nil {
 			invalidParams.AddNested("Tags", err.(smithy.InvalidParamsError))

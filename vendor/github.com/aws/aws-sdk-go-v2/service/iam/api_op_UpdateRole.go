@@ -48,7 +48,8 @@ type UpdateRoleInput struct {
 	// AssumeRole* API operations or the assume-role* CLI operations but does not
 	// apply when you use those operations to create a console URL. For more
 	// information, see Using IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
-	// in the IAM User Guide.
+	// in the IAM User Guide. IAM role credentials provided by Amazon EC2 instances
+	// assigned to the role are not subject to the specified maximum session duration.
 	MaxSessionDuration *int32
 
 	noSmithyDocumentSerde

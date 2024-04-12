@@ -518,6 +518,8 @@ func (cm *controllerManager) engageStopProcedure(stopComplete <-chan struct{}) e
 
 		// Stop all the leader election runnables, which includes reconcilers.
 		cm.logger.Info("Stopping and waiting for leader election runnables")
+		// Prevent leader election when shutting down a non-elected manager
+		cm.runnables.LeaderElection.startOnce.Do(func() {})
 		cm.runnables.LeaderElection.StopAndWait(cm.shutdownCtx)
 
 		// Stop the caches before the leader election runnables, this is an important
