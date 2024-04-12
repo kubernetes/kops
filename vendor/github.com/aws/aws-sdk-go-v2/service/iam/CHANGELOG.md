@@ -1,3 +1,7 @@
+# v1.32.0 (2024-04-11)
+
+* **Feature**: For CreateOpenIDConnectProvider API, the ThumbprintList parameter is no longer required.
+
 # v1.31.4 (2024-03-29)
 
 * **Dependency Update**: Updated to the latest SDK module versions

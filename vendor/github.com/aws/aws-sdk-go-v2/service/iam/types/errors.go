@@ -529,6 +529,35 @@ func (e *NoSuchEntityException) ErrorCode() string {
 }
 func (e *NoSuchEntityException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+// The request failed because IAM cannot connect to the OpenID Connect identity
+// provider URL.
+type OpenIdIdpCommunicationErrorException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *OpenIdIdpCommunicationErrorException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *OpenIdIdpCommunicationErrorException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *OpenIdIdpCommunicationErrorException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "OpenIdIdpCommunicationError"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *OpenIdIdpCommunicationErrorException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
 // The request was rejected because the provided password did not meet the
 // requirements imposed by the account password policy.
 type PasswordPolicyViolationException struct {
