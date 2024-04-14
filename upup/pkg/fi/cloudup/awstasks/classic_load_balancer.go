@@ -27,7 +27,6 @@ import (
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -131,10 +130,8 @@ func findLoadBalancerByLoadBalancerName(ctx context.Context, cloud awsup.AWSClou
 		return false
 	})
 	if err != nil {
-		if awsError, ok := err.(awserr.Error); ok {
-			if awsError.Code() == "LoadBalancerNotFound" {
-				return nil, nil
-			}
+		if awsup.AWSErrorCode(err) == "LoadBalancerNotFound" {
+			return nil, nil
 		}
 
 		return nil, fmt.Errorf("error listing ELBs: %v", err)

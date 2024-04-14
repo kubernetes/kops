@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/featureflag"
@@ -67,17 +69,18 @@ func (e *VPC) CompareWithID() *string {
 }
 
 func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeVpcsInput{}
 
 	if fi.ValueOf(e.ID) != "" {
-		request.VpcIds = []*string{e.ID}
+		request.VpcIds = []string{aws.ToString(e.ID)}
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2().DescribeVpcs(request)
+	response, err := cloud.EC2().DescribeVpcs(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
@@ -100,12 +103,12 @@ func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	klog.V(4).Infof("found matching VPC %v", actual)
 
 	for _, association := range vpc.Ipv6CidrBlockAssociationSet {
-		if association == nil || association.Ipv6CidrBlockState == nil {
+		if association.Ipv6CidrBlockState == nil {
 			continue
 		}
 
-		state := aws.ToString(association.Ipv6CidrBlockState.State)
-		if state != ec2.VpcCidrBlockStateCodeAssociated && state != ec2.VpcCidrBlockStateCodeAssociating {
+		state := association.Ipv6CidrBlockState.State
+		if state != ec2types.VpcCidrBlockStateCodeAssociated && state != ec2types.VpcCidrBlockStateCodeAssociating {
 			continue
 		}
 
@@ -122,8 +125,8 @@ func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	}
 
 	if actual.ID != nil {
-		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsSupport)}
-		response, err := cloud.EC2().DescribeVpcAttribute(request)
+		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: ec2types.VpcAttributeNameEnableDnsSupport}
+		response, err := cloud.EC2().DescribeVpcAttribute(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying for dns support: %v", err)
 		}
@@ -131,8 +134,8 @@ func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	}
 
 	if actual.ID != nil {
-		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsHostnames)}
-		response, err := cloud.EC2().DescribeVpcAttribute(request)
+		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: ec2types.VpcAttributeNameEnableDnsHostnames}
+		response, err := cloud.EC2().DescribeVpcAttribute(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying for dns support: %v", err)
 		}
@@ -172,6 +175,7 @@ func (e *VPC) Run(c *fi.CloudupContext) error {
 }
 
 func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the VPC was found and matches our required settings
@@ -194,10 +198,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 
 		request := &ec2.CreateVpcInput{
 			CidrBlock:         e.CIDR,
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeVpc, e.Tags),
 		}
 
-		response, err := t.Cloud.EC2().CreateVpc(request)
+		response, err := t.Cloud.EC2().CreateVpc(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating VPC: %v", err)
 		}
@@ -208,10 +212,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	if changes.EnableDNSSupport != nil {
 		request := &ec2.ModifyVpcAttributeInput{
 			VpcId:            e.ID,
-			EnableDnsSupport: &ec2.AttributeBooleanValue{Value: changes.EnableDNSSupport},
+			EnableDnsSupport: &ec2types.AttributeBooleanValue{Value: changes.EnableDNSSupport},
 		}
 
-		_, err := t.Cloud.EC2().ModifyVpcAttribute(request)
+		_, err := t.Cloud.EC2().ModifyVpcAttribute(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error modifying VPC attribute: %v", err)
 		}
@@ -220,10 +224,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	if changes.EnableDNSHostnames != nil {
 		request := &ec2.ModifyVpcAttributeInput{
 			VpcId:              e.ID,
-			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: changes.EnableDNSHostnames},
+			EnableDnsHostnames: &ec2types.AttributeBooleanValue{Value: changes.EnableDNSHostnames},
 		}
 
-		_, err := t.Cloud.EC2().ModifyVpcAttribute(request)
+		_, err := t.Cloud.EC2().ModifyVpcAttribute(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error modifying VPC attribute: %v", err)
 		}
@@ -239,10 +243,10 @@ func (e *VPC) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) 
 
 	var removals []fi.CloudupDeletion
 	request := &ec2.DescribeVpcsInput{
-		VpcIds: []*string{e.ID},
+		VpcIds: []string{aws.ToString(e.ID)},
 	}
 	cloud := c.T.Cloud.(awsup.AWSCloud)
-	response, err := cloud.EC2().DescribeVpcs(request)
+	response, err := cloud.EC2().DescribeVpcs(c.Context(), request)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +262,7 @@ func (e *VPC) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) 
 		// We'll only delete CIDR associations that are not the primary association
 		// and that have a state of "associated"
 		if fi.ValueOf(association.CidrBlock) == fi.ValueOf(vpc.CidrBlock) ||
-			association.CidrBlockState != nil && fi.ValueOf(association.CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+			association.CidrBlockState != nil && association.CidrBlockState.State != ec2types.VpcCidrBlockStateCodeAssociated {
 			continue
 		}
 		match := false
@@ -373,6 +377,7 @@ type deleteVPCCIDRBlock struct {
 var _ fi.CloudupDeletion = &deleteVPCCIDRBlock{}
 
 func (d *deleteVPCCIDRBlock) Delete(t fi.CloudupTarget) error {
+	ctx := context.TODO()
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
@@ -380,7 +385,7 @@ func (d *deleteVPCCIDRBlock) Delete(t fi.CloudupTarget) error {
 	request := &ec2.DisassociateVpcCidrBlockInput{
 		AssociationId: d.associationID,
 	}
-	_, err := awsTarget.Cloud.EC2().DisassociateVpcCidrBlock(request)
+	_, err := awsTarget.Cloud.EC2().DisassociateVpcCidrBlock(ctx, request)
 	return err
 }
 

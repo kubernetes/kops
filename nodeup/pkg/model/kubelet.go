@@ -29,6 +29,7 @@ import (
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -647,18 +648,18 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 		}
 		metadata := imds.NewFromConfig(config)
 
-		var instanceTypeName string
+		var instanceTypeName ec2types.InstanceType
 		// Get the actual instance type by querying the EC2 instance metadata service.
 		resp, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{Path: "instance-type"})
 		if err == nil {
 			defer resp.Content.Close()
 			itName, err := io.ReadAll(resp.Content)
 			if err == nil {
-				instanceTypeName = string(itName)
+				instanceTypeName = ec2types.InstanceType(string(itName))
 			}
 		}
 		if instanceTypeName == "" {
-			instanceTypeName = *b.NodeupConfig.DefaultMachineType
+			instanceTypeName = ec2types.InstanceType(*b.NodeupConfig.DefaultMachineType)
 		}
 
 		awsCloud := b.Cloud.(awsup.AWSCloud)
@@ -669,7 +670,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 		}
 
 		// Default maximum pods per node defined by KubeletConfiguration
-		maxPods := 110
+		maxPods := int32(110)
 
 		// AWS VPC CNI plugin-specific maximum pod calculation based on:
 		// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup

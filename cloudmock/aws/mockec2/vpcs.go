@@ -17,20 +17,21 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
 type vpcInfo struct {
-	main       ec2.Vpc
+	main       ec2types.Vpc
 	attributes ec2.DescribeVpcAttributeOutput
 }
 
-func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
+func (m *MockEC2) FindVpc(id string) *ec2types.Vpc {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -40,35 +41,27 @@ func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
 	}
 
 	copy := vpc.main
-	copy.Tags = m.getTags(ec2.ResourceTypeVpc, *vpc.main.VpcId)
+	copy.Tags = m.getTags(ec2types.ResourceTypeVpc, *vpc.main.VpcId)
 
 	return &copy
-}
-
-func (m *MockEC2) CreateVpcRequest(*ec2.CreateVpcInput) (*request.Request, *ec2.CreateVpcOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateVpcWithContext(aws.Context, *ec2.CreateVpcInput, ...request.Option) (*ec2.CreateVpcOutput, error) {
-	panic("Not implemented")
 }
 
 func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.CreateVpcOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeVpc)
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeVpc)
 
 	vpc := &vpcInfo{
-		main: ec2.Vpc{
+		main: ec2types.Vpc{
 			VpcId:     s(id),
 			CidrBlock: request.CidrBlock,
 			IsDefault: aws.Bool(false),
 			Tags:      tags,
 		},
 		attributes: ec2.DescribeVpcAttributeOutput{
-			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
-			EnableDnsSupport:   &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
+			EnableDnsHostnames: &ec2types.AttributeBooleanValue{Value: aws.Bool(true)},
+			EnableDnsSupport:   &ec2types.AttributeBooleanValue{Value: aws.Bool(true)},
 		},
 	}
 
@@ -85,7 +78,7 @@ func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.
 	return response, nil
 }
 
-func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
+func (m *MockEC2) CreateVpc(ctx context.Context, request *ec2.CreateVpcInput, optFns ...func(*ec2.Options)) (*ec2.CreateVpcOutput, error) {
 	klog.Infof("CreateVpc: %v", request)
 
 	if request.DryRun != nil {
@@ -97,25 +90,17 @@ func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, 
 	return m.CreateVpcWithId(request, id)
 }
 
-func (m *MockEC2) DescribeVpcsRequest(*ec2.DescribeVpcsInput) (*request.Request, *ec2.DescribeVpcsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeVpcsWithContext(aws.Context, *ec2.DescribeVpcsInput, ...request.Option) (*ec2.DescribeVpcsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
+func (m *MockEC2) DescribeVpcs(ctx context.Context, request *ec2.DescribeVpcsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeVpcs: %v", request)
 
 	if len(request.VpcIds) != 0 {
-		request.Filters = append(request.Filters, &ec2.Filter{Name: s("vpc-id"), Values: request.VpcIds})
+		request.Filters = append(request.Filters, ec2types.Filter{Name: s("vpc-id"), Values: request.VpcIds})
 	}
 
-	var vpcs []*ec2.Vpc
+	var vpcs []ec2types.Vpc
 
 	for k, vpc := range m.Vpcs {
 		allFiltersMatch := true
@@ -124,12 +109,12 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 			switch *filter.Name {
 			case "vpc-id":
 				for _, v := range filter.Values {
-					if k == *v {
+					if k == v {
 						match = true
 					}
 				}
 			default:
-				match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
+				match = m.hasTag(ec2types.ResourceTypeVpc, *vpc.main.VpcId, filter)
 			}
 
 			if !match {
@@ -143,8 +128,8 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 		}
 
 		copy := vpc.main
-		copy.Tags = m.getTags(ec2.ResourceTypeVpc, *vpc.main.VpcId)
-		vpcs = append(vpcs, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeVpc, *vpc.main.VpcId)
+		vpcs = append(vpcs, copy)
 	}
 
 	response := &ec2.DescribeVpcsOutput{
@@ -154,15 +139,7 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 	return response, nil
 }
 
-func (m *MockEC2) DescribeVpcAttributeRequest(*ec2.DescribeVpcAttributeInput) (*request.Request, *ec2.DescribeVpcAttributeOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeVpcAttributeWithContext(aws.Context, *ec2.DescribeVpcAttributeInput, ...request.Option) (*ec2.DescribeVpcAttributeOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (*ec2.DescribeVpcAttributeOutput, error) {
+func (m *MockEC2) DescribeVpcAttribute(ctx context.Context, request *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -183,7 +160,7 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 	return response, nil
 }
 
-func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2.ModifyVpcAttributeOutput, error) {
+func (m *MockEC2) ModifyVpcAttribute(ctx context.Context, request *ec2.ModifyVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.ModifyVpcAttributeOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -207,21 +184,13 @@ func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2
 	return response, nil
 }
 
-func (m *MockEC2) ModifyVpcAttributeWithContext(aws.Context, *ec2.ModifyVpcAttributeInput, ...request.Option) (*ec2.ModifyVpcAttributeOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) (*request.Request, *ec2.ModifyVpcAttributeOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteVpc(request *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error) {
+func (m *MockEC2) DeleteVpc(ctx context.Context, request *ec2.DeleteVpcInput, optFns ...func(*ec2.Options)) (*ec2.DeleteVpcOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteVpc: %v", request)
 
-	id := aws.StringValue(request.VpcId)
+	id := aws.ToString(request.VpcId)
 	o := m.Vpcs[id]
 	if o == nil {
 		return nil, fmt.Errorf("VPC %q not found", id)
@@ -231,46 +200,38 @@ func (m *MockEC2) DeleteVpc(request *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, 
 	return &ec2.DeleteVpcOutput{}, nil
 }
 
-func (m *MockEC2) DeleteVpcWithContext(aws.Context, *ec2.DeleteVpcInput, ...request.Option) (*ec2.DeleteVpcOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteVpcRequest(*ec2.DeleteVpcInput) (*request.Request, *ec2.DeleteVpcOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) AssociateVpcCidrBlock(request *ec2.AssociateVpcCidrBlockInput) (*ec2.AssociateVpcCidrBlockOutput, error) {
+func (m *MockEC2) AssociateVpcCidrBlock(ctx context.Context, request *ec2.AssociateVpcCidrBlockInput, optFns ...func(*ec2.Options)) (*ec2.AssociateVpcCidrBlockOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("AssociateVpcCidrBlock: %v", request)
 
-	id := aws.StringValue(request.VpcId)
+	id := aws.ToString(request.VpcId)
 	vpc, ok := m.Vpcs[id]
 	if !ok {
 		return nil, fmt.Errorf("VPC %q not found", id)
 	}
-	var ipv4association *ec2.VpcCidrBlockAssociation
-	var ipv6association *ec2.VpcIpv6CidrBlockAssociation
-	if aws.BoolValue(request.AmazonProvidedIpv6CidrBlock) {
-		ipv6association = &ec2.VpcIpv6CidrBlockAssociation{
+	var ipv4association *ec2types.VpcCidrBlockAssociation
+	var ipv6association *ec2types.VpcIpv6CidrBlockAssociation
+	if aws.ToBool(request.AmazonProvidedIpv6CidrBlock) {
+		ipv6association = &ec2types.VpcIpv6CidrBlockAssociation{
 			Ipv6Pool:      aws.String("Amazon"),
 			Ipv6CidrBlock: aws.String("2001:db8::/56"),
 			AssociationId: aws.String(fmt.Sprintf("%v-%v", id, len(vpc.main.Ipv6CidrBlockAssociationSet))),
-			Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
-				State: aws.String(ec2.VpcCidrBlockStateCodeAssociated),
+			Ipv6CidrBlockState: &ec2types.VpcCidrBlockState{
+				State: ec2types.VpcCidrBlockStateCodeAssociated,
 			},
 		}
-		vpc.main.Ipv6CidrBlockAssociationSet = append(vpc.main.Ipv6CidrBlockAssociationSet, ipv6association)
+		vpc.main.Ipv6CidrBlockAssociationSet = append(vpc.main.Ipv6CidrBlockAssociationSet, *ipv6association)
 	} else {
-		ipv4association = &ec2.VpcCidrBlockAssociation{
+		ipv4association = &ec2types.VpcCidrBlockAssociation{
 			CidrBlock:     request.CidrBlock,
 			AssociationId: aws.String(fmt.Sprintf("%v-%v", id, len(vpc.main.CidrBlockAssociationSet))),
-			CidrBlockState: &ec2.VpcCidrBlockState{
-				State: aws.String(ec2.VpcCidrBlockStateCodeAssociated),
+			CidrBlockState: &ec2types.VpcCidrBlockState{
+				State: ec2types.VpcCidrBlockStateCodeAssociated,
 			},
 		}
-		vpc.main.CidrBlockAssociationSet = append(vpc.main.CidrBlockAssociationSet, ipv4association)
+		vpc.main.CidrBlockAssociationSet = append(vpc.main.CidrBlockAssociationSet, *ipv4association)
 	}
 
 	return &ec2.AssociateVpcCidrBlockOutput{
@@ -280,20 +241,20 @@ func (m *MockEC2) AssociateVpcCidrBlock(request *ec2.AssociateVpcCidrBlockInput)
 	}, nil
 }
 
-func (m *MockEC2) DisassociateVpcCidrBlock(request *ec2.DisassociateVpcCidrBlockInput) (*ec2.DisassociateVpcCidrBlockOutput, error) {
+func (m *MockEC2) DisassociateVpcCidrBlock(ctx context.Context, request *ec2.DisassociateVpcCidrBlockInput, optFns ...func(*ec2.Options)) (*ec2.DisassociateVpcCidrBlockOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DisassociateVpcCidrBlock: %v", request)
 
-	id := aws.StringValue(request.AssociationId)
-	var association *ec2.VpcCidrBlockAssociation
+	id := aws.ToString(request.AssociationId)
+	var association *ec2types.VpcCidrBlockAssociation
 	var vpcID *string
 	for _, vpc := range m.Vpcs {
 		for _, a := range vpc.main.CidrBlockAssociationSet {
-			if aws.StringValue(a.AssociationId) == id {
-				a.CidrBlockState.State = aws.String(ec2.VpcCidrBlockStateCodeDisassociated)
-				association = a
+			if aws.ToString(a.AssociationId) == id {
+				a.CidrBlockState.State = ec2types.VpcCidrBlockStateCodeDisassociated
+				association = &a
 				vpcID = vpc.main.VpcId
 				break
 			}

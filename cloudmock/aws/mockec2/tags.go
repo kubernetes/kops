@@ -17,87 +17,71 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateTagsWithContext(aws.Context, *ec2.CreateTagsInput, ...request.Option) (*ec2.CreateTagsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
+func (m *MockEC2) CreateTags(ctx context.Context, request *ec2.CreateTagsInput, optFns ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("CreateTags %v", request)
 
 	for _, v := range request.Resources {
-		resourceId := *v
-		m.addTags(resourceId, request.Tags...)
+		m.addTags(v, request.Tags...)
 	}
 	response := &ec2.CreateTagsOutput{}
 	return response, nil
 }
 
-func (m *MockEC2) addTags(resourceId string, tags ...*ec2.Tag) {
-	resourceType := ""
+func (m *MockEC2) addTags(resourceId string, tags ...ec2types.Tag) {
+	var resourceType ec2types.ResourceType
 	if strings.HasPrefix(resourceId, "subnet-") {
-		resourceType = ec2.ResourceTypeSubnet
+		resourceType = ec2types.ResourceTypeSubnet
 	} else if strings.HasPrefix(resourceId, "vpc-") {
-		resourceType = ec2.ResourceTypeVpc
+		resourceType = ec2types.ResourceTypeVpc
 	} else if strings.HasPrefix(resourceId, "sg-") {
-		resourceType = ec2.ResourceTypeSecurityGroup
+		resourceType = ec2types.ResourceTypeSecurityGroup
 	} else if strings.HasPrefix(resourceId, "vol-") {
-		resourceType = ec2.ResourceTypeVolume
+		resourceType = ec2types.ResourceTypeVolume
 	} else if strings.HasPrefix(resourceId, "igw-") {
-		resourceType = ec2.ResourceTypeInternetGateway
+		resourceType = ec2types.ResourceTypeInternetGateway
 	} else if strings.HasPrefix(resourceId, "eigw-") {
-		resourceType = ec2.ResourceTypeEgressOnlyInternetGateway
+		resourceType = ec2types.ResourceTypeEgressOnlyInternetGateway
 	} else if strings.HasPrefix(resourceId, "nat-") {
-		resourceType = ec2.ResourceTypeNatgateway
+		resourceType = ec2types.ResourceTypeNatgateway
 	} else if strings.HasPrefix(resourceId, "dopt-") {
-		resourceType = ec2.ResourceTypeDhcpOptions
+		resourceType = ec2types.ResourceTypeDhcpOptions
 	} else if strings.HasPrefix(resourceId, "rtb-") {
-		resourceType = ec2.ResourceTypeRouteTable
+		resourceType = ec2types.ResourceTypeRouteTable
 	} else if strings.HasPrefix(resourceId, "eipalloc-") {
-		resourceType = ec2.ResourceTypeElasticIp
+		resourceType = ec2types.ResourceTypeElasticIp
 	} else if strings.HasPrefix(resourceId, "lt-") {
-		resourceType = ec2.ResourceTypeLaunchTemplate
+		resourceType = ec2types.ResourceTypeLaunchTemplate
 	} else if strings.HasPrefix(resourceId, "key-") {
-		resourceType = ec2.ResourceTypeKeyPair
+		resourceType = ec2types.ResourceTypeKeyPair
 	} else {
 		klog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 	}
 	for _, tag := range tags {
-		t := &ec2.TagDescription{
+		t := &ec2types.TagDescription{
 			Key:          tag.Key,
 			Value:        tag.Value,
 			ResourceId:   s(resourceId),
-			ResourceType: s(resourceType),
+			ResourceType: resourceType,
 		}
 		m.Tags = append(m.Tags, t)
 	}
 }
 
-func (m *MockEC2) DescribeTagsRequest(*ec2.DescribeTagsInput) (*request.Request, *ec2.DescribeTagsOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeTagsWithContext(aws.Context, *ec2.DescribeTagsInput, ...request.Option) (*ec2.DescribeTagsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Filter) bool {
+func (m *MockEC2) hasTag(resourceType ec2types.ResourceType, resourceId string, filter ec2types.Filter) bool {
 	name := *filter.Name
 	if strings.HasPrefix(name, "tag:") {
 		tagKey := name[4:]
@@ -106,7 +90,7 @@ func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Fil
 			if *tag.ResourceId != resourceId {
 				continue
 			}
-			if *tag.ResourceType != resourceType {
+			if tag.ResourceType != resourceType {
 				continue
 			}
 			if *tag.Key != tagKey {
@@ -114,7 +98,7 @@ func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Fil
 			}
 
 			for _, v := range filter.Values {
-				if *tag.Value == *v {
+				if *tag.Value == v {
 					return true
 				}
 			}
@@ -124,11 +108,11 @@ func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Fil
 			if *tag.ResourceId != resourceId {
 				continue
 			}
-			if *tag.ResourceType != resourceType {
+			if tag.ResourceType != resourceType {
 				continue
 			}
 			for _, v := range filter.Values {
-				if *tag.Key == *v {
+				if *tag.Key == v {
 					return true
 				}
 			}
@@ -139,17 +123,17 @@ func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Fil
 	return false
 }
 
-func (m *MockEC2) getTags(resourceType string, resourceId string) []*ec2.Tag {
-	var tags []*ec2.Tag
+func (m *MockEC2) getTags(resourceType ec2types.ResourceType, resourceId string) []ec2types.Tag {
+	var tags []ec2types.Tag
 	for _, tag := range m.Tags {
 		if *tag.ResourceId != resourceId {
 			continue
 		}
-		if *tag.ResourceType != resourceType {
+		if tag.ResourceType != resourceType {
 			continue
 		}
 
-		t := &ec2.Tag{
+		t := ec2types.Tag{
 			Key:   tag.Key,
 			Value: tag.Value,
 		}
@@ -158,13 +142,13 @@ func (m *MockEC2) getTags(resourceType string, resourceId string) []*ec2.Tag {
 	return tags
 }
 
-func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTagsOutput, error) {
+func (m *MockEC2) DescribeTags(ctx context.Context, request *ec2.DescribeTagsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeTags %v", request)
 
-	var tags []*ec2.TagDescription
+	var tags []ec2types.TagDescription
 
 	for _, tag := range m.Tags {
 		allFiltersMatch := true
@@ -173,14 +157,14 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 			switch *filter.Name {
 			case "key":
 				for _, v := range filter.Values {
-					if *v == *tag.Key {
+					if v == *tag.Key {
 						match = true
 					}
 				}
 
 			case "resource-id":
 				for _, v := range filter.Values {
-					if *v == *tag.ResourceId {
+					if v == *tag.ResourceId {
 						match = true
 					}
 				}
@@ -200,7 +184,7 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 		}
 
 		copy := *tag
-		tags = append(tags, &copy)
+		tags = append(tags, copy)
 	}
 
 	response := &ec2.DescribeTagsOutput{
@@ -210,29 +194,19 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 	return response, nil
 }
 
-func (m *MockEC2) DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeTagsPagesWithContext(aws.Context, *ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
 // SortTags sorts the slice of tags by Key
-func SortTags(tags []*ec2.Tag) {
+func SortTags(tags []ec2types.Tag) {
 	keys := make([]string, len(tags))
 	for i := range tags {
-		if tags[i] != nil {
-			keys[i] = aws.StringValue(tags[i].Key)
-		}
+		keys[i] = aws.ToString(tags[i].Key)
 	}
 	sort.SliceStable(tags, func(i, j int) bool { return keys[i] < keys[j] })
 }
 
-func tagSpecificationsToTags(specifications []*ec2.TagSpecification, resourceType string) []*ec2.Tag {
-	tags := make([]*ec2.Tag, 0)
+func tagSpecificationsToTags(specifications []ec2types.TagSpecification, resourceType ec2types.ResourceType) []ec2types.Tag {
+	tags := make([]ec2types.Tag, 0)
 	for _, specification := range specifications {
-		if aws.StringValue(specification.ResourceType) != resourceType {
+		if specification.ResourceType != resourceType {
 			continue
 		}
 		tags = append(tags, specification.Tags...)

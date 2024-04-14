@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/blang/semver/v4"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"

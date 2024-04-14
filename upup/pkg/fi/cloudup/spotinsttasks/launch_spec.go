@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strings"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
 	corev1 "k8s.io/api/core/v1"
@@ -1047,10 +1048,10 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformBlockDeviceMapping{
 			DeviceName: rootDevice.DeviceName,
 			EBS: &terraformBlockDeviceMappingEBS{
-				VolumeType:          rootDevice.EbsVolumeType,
-				VolumeSize:          rootDevice.EbsVolumeSize,
-				VolumeIOPS:          rootDevice.EbsVolumeIops,
-				VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+				VolumeType:          fi.PtrTo(string(rootDevice.EbsVolumeType)),
+				VolumeSize:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeSize),
+				VolumeIOPS:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeIops),
+				VolumeThroughput:    ptrInt32ToPtrInt64(rootDevice.EbsVolumeThroughput),
 				Encrypted:           rootDevice.EbsEncrypted,
 				DeleteOnTermination: fi.PtrTo(true),
 			},
@@ -1154,20 +1155,20 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 		VirtualName: in.VirtualName,
 	}
 
-	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || in.EbsVolumeType != nil {
+	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || len(in.EbsVolumeType) > 0 {
 		out.EBS = &aws.EBS{
-			VolumeType:          in.EbsVolumeType,
+			VolumeType:          fi.PtrTo(string(in.EbsVolumeType)),
 			VolumeSize:          fi.PtrTo(int(fi.ValueOf(in.EbsVolumeSize))),
 			DeleteOnTermination: in.EbsDeleteOnTermination,
 		}
 
 		// IOPS is not valid for gp2 volumes.
-		if in.EbsVolumeIops != nil && fi.ValueOf(in.EbsVolumeType) != "gp2" {
+		if in.EbsVolumeIops != nil && in.EbsVolumeType != ec2types.VolumeTypeGp2 {
 			out.EBS.IOPS = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeIops)))
 		}
 
 		// Throughput is only valid for gp3 volumes.
-		if in.EbsVolumeThroughput != nil && fi.ValueOf(in.EbsVolumeType) == "gp3" {
+		if in.EbsVolumeThroughput != nil && in.EbsVolumeType == ec2types.VolumeTypeGp3 {
 			out.EBS.Throughput = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeThroughput)))
 		}
 	}

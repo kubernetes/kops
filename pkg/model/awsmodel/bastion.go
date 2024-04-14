@@ -131,8 +131,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 				Protocol:      fi.PtrTo("tcp"),
-				FromPort:      fi.PtrTo(int64(22)),
-				ToPort:        fi.PtrTo(int64(22)),
+				FromPort:      fi.PtrTo(int32(22)),
+				ToPort:        fi.PtrTo(int32(22)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -147,8 +147,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 				Protocol:      fi.PtrTo("tcp"),
-				FromPort:      fi.PtrTo(int64(22)),
-				ToPort:        fi.PtrTo(int64(22)),
+				FromPort:      fi.PtrTo(int32(22)),
+				ToPort:        fi.PtrTo(int32(22)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -237,8 +237,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: lbSG,
 				Protocol:      fi.PtrTo("tcp"),
-				FromPort:      fi.PtrTo(int64(22)),
-				ToPort:        fi.PtrTo(int64(22)),
+				FromPort:      fi.PtrTo(int32(22)),
+				ToPort:        fi.PtrTo(int32(22)),
 			}
 			t.SetCidrOrPrefix(cidr)
 			AddDirectionalGroupRule(c, t)
@@ -249,10 +249,10 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo("icmpv6-pmtu-ssh-nlb-" + cidr),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(-1)),
+				FromPort:      fi.PtrTo(int32(-1)),
 				Protocol:      fi.PtrTo("icmpv6"),
 				SecurityGroup: lbSG,
-				ToPort:        fi.PtrTo(int64(-1)),
+				ToPort:        fi.PtrTo(int32(-1)),
 			}
 			t.SetCidrOrPrefix(cidr)
 			if t.CIDR == nil {
@@ -263,10 +263,10 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.PtrTo("icmp-pmtu-ssh-nlb-" + cidr),
 				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.PtrTo(int64(3)),
+				FromPort:      fi.PtrTo(int32(3)),
 				Protocol:      fi.PtrTo("icmp"),
 				SecurityGroup: lbSG,
-				ToPort:        fi.PtrTo(int64(4)),
+				ToPort:        fi.PtrTo(int32(4)),
 			}
 			t.SetCidrOrPrefix(cidr)
 			if t.IPv6CIDR == nil {
@@ -285,8 +285,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SecurityGroup: bastionGroup.Task,
 				SourceGroup:   lbSG,
 				Protocol:      fi.PtrTo("tcp"),
-				FromPort:      fi.PtrTo(int64(22)),
-				ToPort:        fi.PtrTo(int64(22)),
+				FromPort:      fi.PtrTo(int32(22)),
+				ToPort:        fi.PtrTo(int32(22)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -298,8 +298,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SecurityGroup: bastionGroup.Task,
 				SourceGroup:   lbSG,
 				Protocol:      fi.PtrTo("icmp"),
-				FromPort:      fi.PtrTo(int64(3)),
-				ToPort:        fi.PtrTo(int64(4)),
+				FromPort:      fi.PtrTo(int32(3)),
+				ToPort:        fi.PtrTo(int32(4)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -311,8 +311,8 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SecurityGroup: lbSG,
 				SourceGroup:   bastionGroup.Task,
 				Protocol:      fi.PtrTo("icmp"),
-				FromPort:      fi.PtrTo(int64(3)),
-				ToPort:        fi.PtrTo(int64(4)),
+				FromPort:      fi.PtrTo(int32(3)),
+				ToPort:        fi.PtrTo(int32(4)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}

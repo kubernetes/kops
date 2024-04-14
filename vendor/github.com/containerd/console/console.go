@@ -78,7 +78,7 @@ func Current() (c Console) {
 }
 
 // ConsoleFromFile returns a console using the provided file
-// nolint:golint
+// nolint:revive
 func ConsoleFromFile(f File) (Console, error) {
 	if err := checkConsole(f); err != nil {
 		return nil, err

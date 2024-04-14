@@ -6,14 +6,15 @@ import (
 )
 
 func (m Model) getFilteredRows(rows []Row) []Row {
-	if !m.filtered || m.filterTextInput.Value() == "" {
+	filterInputValue := m.filterTextInput.Value()
+	if !m.filtered || filterInputValue == "" {
 		return rows
 	}
 
 	filteredRows := make([]Row, 0)
 
 	for _, row := range rows {
-		if isRowMatched(m.columns, row, m.filterTextInput.Value()) {
+		if isRowMatched(m.columns, row, filterInputValue) {
 			filteredRows = append(filteredRows, row)
 		}
 	}
@@ -28,6 +29,8 @@ func isRowMatched(columns []Column, row Row, filter string) bool {
 
 	checkedAny := false
 
+	filterLower := strings.ToLower(filter)
+
 	for _, column := range columns {
 		if !column.filterable {
 			continue
@@ -41,16 +44,26 @@ func isRowMatched(columns []Column, row Row, filter string) bool {
 			continue
 		}
 
+		// Extract internal StyledCell data
+		switch dataV := data.(type) {
+		case StyledCell:
+			data = dataV.Data
+		}
+
+		var target string
 		switch dataV := data.(type) {
 		case string:
-			if strings.Contains(strings.ToLower(dataV), strings.ToLower(filter)) {
-				return true
-			}
+			target = dataV
 
 		case fmt.Stringer:
-			if strings.Contains(strings.ToLower(dataV.String()), strings.ToLower(filter)) {
-				return true
-			}
+			target = dataV.String()
+
+		default:
+			target = fmt.Sprintf("%v", data)
+		}
+
+		if strings.Contains(strings.ToLower(target), filterLower) {
+			return true
 		}
 	}
 

@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -66,40 +66,40 @@ func testParsesAsPort(t *testing.T, rule string, fromPort int, toPort int) {
 
 func TestPortRemovalRule(t *testing.T) {
 	r := &PortRemovalRule{FromPort: 22, ToPort: 23}
-	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(23)})
+	testMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(22), ToPort: aws.Int32(23)})
 
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(23), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(20), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(24)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(0), ToPort: aws.Int32(0)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(22), ToPort: aws.Int32(22)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(23), ToPort: aws.Int32(23)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(20), ToPort: aws.Int32(23)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(22), ToPort: aws.Int32(24)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{ToPort: aws.Int32(23)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(22)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{})
 
 	r = &PortRemovalRule{FromPort: -1, ToPort: -1}
-	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(-1), ToPort: aws.Int64(-1)})
+	testMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(-1), ToPort: aws.Int32(-1)})
 }
 
 func TestPortRemovalRule_Zero(t *testing.T) {
 	r := &PortRemovalRule{FromPort: 0, ToPort: 0}
-	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
+	testMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(0), ToPort: aws.Int32(0)})
 
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(20)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.SecurityGroupRule{})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(0), ToPort: aws.Int32(20)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{ToPort: aws.Int32(0)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{FromPort: aws.Int32(0)})
+	testNotMatches(t, r, &ec2types.SecurityGroupRule{})
 }
 
-func testMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.SecurityGroupRule) {
+func testMatches(t *testing.T, rule *PortRemovalRule, permission *ec2types.SecurityGroupRule) {
 	if !rule.Matches(permission) {
-		t.Fatalf("rule %q failed to match permission %q", rule, permission)
+		t.Fatalf("rule %+v failed to match permission %+v", rule, permission)
 	}
 }
 
-func testNotMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.SecurityGroupRule) {
+func testNotMatches(t *testing.T, rule *PortRemovalRule, permission *ec2types.SecurityGroupRule) {
 	if rule.Matches(permission) {
-		t.Fatalf("rule %q unexpectedly matched permission %q", rule, permission)
+		t.Fatalf("rule %+v unexpectedly matched permission %+v", rule, permission)
 	}
 }
 
@@ -147,11 +147,11 @@ func TestSecurityGroupCreate(t *testing.T) {
 			t.Fatalf("Expected exactly one SecurityGroup; found %v", c.SecurityGroups)
 		}
 
-		expected := &ec2.SecurityGroup{
+		expected := &ec2types.SecurityGroup{
 			Description: s("Description"),
 			GroupId:     sg1.ID,
 			VpcId:       vpc1.ID,
-			Tags: []*ec2.Tag{
+			Tags: []ec2types.Tag{
 				{
 					Key:   aws.String("Name"),
 					Value: aws.String("sg1"),

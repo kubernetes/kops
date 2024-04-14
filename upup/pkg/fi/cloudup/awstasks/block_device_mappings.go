@@ -20,8 +20,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 // BlockDeviceMapping defines the specification for a device mapping
@@ -35,19 +35,19 @@ type BlockDeviceMapping struct {
 	// EbsKmsKey is the encryption key identifier for the volume
 	EbsKmsKey *string
 	// EbsVolumeIops is the provisioned iops for the volume
-	EbsVolumeIops *int64
+	EbsVolumeIops *int32
 	// EbsVolumeThroughput is the throughput for the volume
-	EbsVolumeThroughput *int64
+	EbsVolumeThroughput *int32
 	// EbsVolumeSize is the size of the volume
-	EbsVolumeSize *int64
+	EbsVolumeSize *int32
 	// EbsVolumeType is the aws volume type
-	EbsVolumeType *string
+	EbsVolumeType ec2types.VolumeType
 	// VirtualName is the device name
 	VirtualName *string
 }
 
 // BlockDeviceMappingFromEC2 converts a e2c block mapping to internal block device mapping
-func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceMapping) {
+func BlockDeviceMappingFromEC2(i ec2types.BlockDeviceMapping) (string, *BlockDeviceMapping) {
 	o := &BlockDeviceMapping{
 		DeviceName:  i.DeviceName,
 		VirtualName: i.VirtualName,
@@ -66,23 +66,23 @@ func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceM
 }
 
 // ToEC2 creates and returns an ec2 block mapping
-func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
-	o := &ec2.BlockDeviceMapping{
+func (i *BlockDeviceMapping) ToEC2(deviceName string) ec2types.BlockDeviceMapping {
+	o := ec2types.BlockDeviceMapping{
 		DeviceName:  aws.String(deviceName),
 		VirtualName: i.VirtualName,
 	}
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsEncrypted != nil {
-		o.Ebs = &ec2.EbsBlockDevice{
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || len(i.EbsVolumeType) > 0 || i.EbsEncrypted != nil {
+		o.Ebs = &ec2types.EbsBlockDevice{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 		}
-		switch fi.ValueOf(i.EbsVolumeType) {
-		case ec2.VolumeTypeGp3:
+		switch i.EbsVolumeType {
+		case ec2types.VolumeTypeGp3:
 			o.Ebs.Throughput = i.EbsVolumeThroughput
 			fallthrough
-		case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+		case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
 			o.Ebs.Iops = i.EbsVolumeIops
 		}
 		if fi.ValueOf(o.Ebs.Encrypted) {
@@ -94,7 +94,7 @@ func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
 }
 
 // BlockDeviceMappingFromAutoscaling converts an autoscaling block mapping to internal spec
-func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (string, *BlockDeviceMapping) {
+func BlockDeviceMappingFromAutoscaling(i *autoscalingtypes.BlockDeviceMapping) (string, *BlockDeviceMapping) {
 	o := &BlockDeviceMapping{
 		DeviceName:  i.DeviceName,
 		VirtualName: i.VirtualName,
@@ -103,9 +103,9 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
 		o.EbsEncrypted = i.Ebs.Encrypted
 		o.EbsVolumeSize = i.Ebs.VolumeSize
-		o.EbsVolumeType = i.Ebs.VolumeType
+		o.EbsVolumeType = ec2types.VolumeType(fi.ValueOf(i.Ebs.VolumeType))
 
-		if fi.ValueOf(o.EbsVolumeType) == ec2.VolumeTypeIo1 || fi.ValueOf(o.EbsVolumeType) == ec2.VolumeTypeIo2 {
+		if o.EbsVolumeType == ec2types.VolumeTypeIo1 || o.EbsVolumeType == ec2types.VolumeTypeIo2 {
 			o.EbsVolumeIops = i.Ebs.Iops
 		}
 	}
@@ -114,19 +114,19 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 }
 
 // ToAutoscaling converts the internal block mapping to autoscaling
-func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.BlockDeviceMapping {
-	o := &autoscaling.BlockDeviceMapping{
+func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscalingtypes.BlockDeviceMapping {
+	o := &autoscalingtypes.BlockDeviceMapping{
 		DeviceName:  aws.String(deviceName),
 		VirtualName: i.VirtualName,
 	}
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil {
-		o.Ebs = &autoscaling.Ebs{
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || len(i.EbsVolumeType) > 0 {
+		o.Ebs = &autoscalingtypes.Ebs{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
-			VolumeType:          i.EbsVolumeType,
+			VolumeType:          fi.PtrTo(string(i.EbsVolumeType)),
 		}
-		if fi.ValueOf(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 || fi.ValueOf(o.Ebs.VolumeType) == ec2.VolumeTypeIo2 {
+		if ec2types.VolumeType(fi.ValueOf(o.Ebs.VolumeType)) == ec2types.VolumeTypeIo1 || ec2types.VolumeType(fi.ValueOf(o.Ebs.VolumeType)) == ec2types.VolumeTypeIo2 {
 			o.Ebs.Iops = i.EbsVolumeIops
 		}
 	}
@@ -135,7 +135,7 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 }
 
 // BlockDeviceMappingFromLaunchTemplateBootDeviceRequest coverts the launch template device mappings to an interval block device mapping
-func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplateBlockDeviceMapping) (string, *BlockDeviceMapping) {
+func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i ec2types.LaunchTemplateBlockDeviceMapping) (string, *BlockDeviceMapping) {
 	o := &BlockDeviceMapping{
 		DeviceName:  i.DeviceName,
 		VirtualName: i.VirtualName,
@@ -154,24 +154,24 @@ func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplate
 }
 
 // ToLaunchTemplateBootDeviceRequest coverts in the internal block device mapping to a launch template request
-func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string) *ec2.LaunchTemplateBlockDeviceMappingRequest {
-	o := &ec2.LaunchTemplateBlockDeviceMappingRequest{
+func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string) ec2types.LaunchTemplateBlockDeviceMappingRequest {
+	o := ec2types.LaunchTemplateBlockDeviceMappingRequest{
 		DeviceName:  aws.String(deviceName),
 		VirtualName: i.VirtualName,
 	}
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsEncrypted != nil {
-		o.Ebs = &ec2.LaunchTemplateEbsBlockDeviceRequest{
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || len(i.EbsVolumeType) > 0 || i.EbsEncrypted != nil {
+		o.Ebs = &ec2types.LaunchTemplateEbsBlockDeviceRequest{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 		}
 	}
-	switch fi.ValueOf(i.EbsVolumeType) {
-	case ec2.VolumeTypeGp3:
+	switch i.EbsVolumeType {
+	case ec2types.VolumeTypeGp3:
 		o.Ebs.Throughput = i.EbsVolumeThroughput
 		fallthrough
-	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
 		o.Ebs.Iops = i.EbsVolumeIops
 	}
 	if fi.ValueOf(i.EbsEncrypted) {

@@ -105,6 +105,29 @@ func (*CommandLineInterface) IntMe(i interface{}) *int {
 	}
 }
 
+// Int32Me takes an interface and returns a pointer to an int value
+// If the underlying interface kind is not int or *int then nil is returned
+func (*CommandLineInterface) Int32Me(i interface{}) *int32 {
+	if i == nil {
+		return nil
+	}
+	switch v := i.(type) {
+	case *int:
+		val := int32(*v)
+		return &val
+	case int:
+		val := int32(v)
+		return &val
+	case *int32:
+		return v
+	case int32:
+		return &v
+	default:
+		log.Printf("%s cannot be converted to an int32", i)
+		return nil
+	}
+}
+
 // IntRangeMe takes an interface and returns a pointer to an IntRangeFilter value
 // If the underlying interface kind is not IntRangeFilter or *IntRangeFilter then nil is returned
 func (*CommandLineInterface) IntRangeMe(i interface{}) *selector.IntRangeFilter {
@@ -118,6 +141,23 @@ func (*CommandLineInterface) IntRangeMe(i interface{}) *selector.IntRangeFilter 
 		return &v
 	default:
 		log.Printf("%s cannot be converted to an IntRange", i)
+		return nil
+	}
+}
+
+// Int32RangeMe takes an interface and returns a pointer to an Int32RangeFilter value
+// If the underlying interface kind is not Int32RangeFilter or *Int32RangeFilter then nil is returned
+func (*CommandLineInterface) Int32RangeMe(i interface{}) *selector.Int32RangeFilter {
+	if i == nil {
+		return nil
+	}
+	switch v := i.(type) {
+	case *selector.Int32RangeFilter:
+		return v
+	case selector.Int32RangeFilter:
+		return &v
+	default:
+		log.Printf("%s cannot be converted to an Int32Range", i)
 		return nil
 	}
 }

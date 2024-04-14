@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -48,6 +50,7 @@ type Route struct {
 }
 
 func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	if e.RouteTable == nil || (e.CIDR == nil && e.IPv6CIDR == nil) {
@@ -60,10 +63,10 @@ func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 	}
 
 	request := &ec2.DescribeRouteTablesInput{
-		RouteTableIds: []*string{e.RouteTable.ID},
+		RouteTableIds: []string{fi.ValueOf(e.RouteTable.ID)},
 	}
 
-	response, err := cloud.EC2().DescribeRouteTables(request)
+	response, err := cloud.EC2().DescribeRouteTables(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -104,7 +107,7 @@ func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 				actual.VPCPeeringConnectionID = r.VpcPeeringConnectionId
 			}
 
-			if aws.ToString(r.State) == "blackhole" {
+			if r.State == ec2types.RouteStateBlackhole {
 				klog.V(2).Infof("found route is a blackhole route")
 				// These should be nil anyway, but just in case...
 				actual.Instance = nil
@@ -184,6 +187,7 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 }
 
 func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
+	ctx := context.TODO()
 	if a == nil {
 		request := &ec2.CreateRouteInput{}
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
@@ -216,7 +220,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		klog.V(2).Infof("Creating Route with RouteTable:%q CIDR:%q IPv6CIDR:%q",
 			aws.ToString(e.RouteTable.ID), aws.ToString(e.CIDR), aws.ToString(e.IPv6CIDR))
 
-		response, err := t.Cloud.EC2().CreateRoute(request)
+		response, err := t.Cloud.EC2().CreateRoute(ctx, request)
 		if err != nil {
 			code := awsup.AWSErrorCode(err)
 			message := awsup.AWSErrorMessage(err)
@@ -259,7 +263,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		klog.V(2).Infof("Updating Route with RouteTable:%q CIDR:%q", *e.RouteTable.ID, *e.CIDR)
 
-		if _, err := t.Cloud.EC2().ReplaceRoute(request); err != nil {
+		if _, err := t.Cloud.EC2().ReplaceRoute(ctx, request); err != nil {
 			code := awsup.AWSErrorCode(err)
 			message := awsup.AWSErrorMessage(err)
 			if code == "InvalidNatGatewayID.NotFound" {

@@ -17,11 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
@@ -55,21 +56,16 @@ func (e *SSHKey) CompareWithID() *string {
 func (e *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
-	return e.find(cloud)
+	return e.find(c.Context(), cloud)
 }
 
-func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
+func (e *SSHKey) find(ctx context.Context, cloud awsup.AWSCloud) (*SSHKey, error) {
 	request := &ec2.DescribeKeyPairsInput{
-		KeyNames: []*string{e.Name},
+		KeyNames: []string{fi.ValueOf(e.Name)},
 	}
 
-	response, err := cloud.EC2().DescribeKeyPairs(request)
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "InvalidKeyPair.NotFound" {
-			err = nil
-		}
-	}
-	if err != nil {
+	response, err := cloud.EC2().DescribeKeyPairs(ctx, request)
+	if err != nil && awsup.AWSErrorCode(err) != "InvalidKeyPair.NotFound" {
 		return nil, fmt.Errorf("error listing SSHKeys: %v", err)
 	}
 
@@ -94,7 +90,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	}
 
 	// Avoid spurious changes
-	if fi.ValueOf(k.KeyType) == ec2.KeyTypeEd25519 {
+	if k.KeyType == ec2types.KeyTypeEd25519 {
 		// Trim the trailing "=" and prefix with "SHA256:" to match the output of "ssh-keygen -lf"
 		fingerprint := fi.ValueOf(k.KeyFingerprint)
 		fingerprint = strings.TrimRight(fingerprint, "=")
@@ -152,11 +148,12 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 }
 
 func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
+	ctx := context.TODO()
 	klog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
 
 	request := &ec2.ImportKeyPairInput{
 		KeyName:           e.Name,
-		TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeKeyPair, e.Tags),
+		TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeKeyPair, e.Tags),
 	}
 
 	if e.PublicKey != nil {
@@ -167,7 +164,7 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 		request.PublicKeyMaterial = d
 	}
 
-	response, err := cloud.EC2().ImportKeyPair(request)
+	response, err := cloud.EC2().ImportKeyPair(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating SSHKey: %v", err)
 	}

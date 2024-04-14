@@ -23,7 +23,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -186,7 +187,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 		return append(allErrs, field.Invalid(imageFieldPath, image,
 			fmt.Sprintf("specified image %q is invalid: %s", image, err)))
 	}
-	imageArch := fi.ValueOf(imageInfo.Architecture)
+	imageArch := string(imageInfo.Architecture)
 
 	// Spotinst uses the instance type field to keep a "," separated list of instance types
 	for _, instanceType := range strings.Split(instanceTypes, ",") {
@@ -199,15 +200,17 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 		found := false
 		if machineInfo != nil && machineInfo.ProcessorInfo != nil {
 			for _, machineArch := range machineInfo.ProcessorInfo.SupportedArchitectures {
-				if imageArch == fi.ValueOf(machineArch) {
+				if imageArch == string(machineArch) {
 					found = true
 				}
 			}
 		}
 		if !found {
-			var machineArch []string
+			machineArch := make([]string, 0)
 			if machineInfo != nil && machineInfo.ProcessorInfo != nil && machineInfo.ProcessorInfo.SupportedArchitectures != nil {
-				machineArch = fi.StringSliceValue(machineInfo.ProcessorInfo.SupportedArchitectures)
+				for _, arch := range machineInfo.ProcessorInfo.SupportedArchitectures {
+					machineArch = append(machineArch, string(arch))
+				}
 			}
 			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes,
 				fmt.Sprintf("machine type architecture %q does not match image architecture %q", strings.Join(machineArch, ","), imageArch)))
@@ -230,8 +233,8 @@ func awsValidateSpotDurationInMinute(fieldPath *field.Path, ig *kops.InstanceGro
 func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.InstanceGroup) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if ig.Spec.InstanceInterruptionBehavior != nil {
-		instanceInterruptionBehavior := *ig.Spec.InstanceInterruptionBehavior
-		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, ec2.InstanceInterruptionBehavior_Values())...)
+		instanceInterruptionBehavior := ec2types.InstanceInterruptionBehavior(*ig.Spec.InstanceInterruptionBehavior)
+		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, ec2types.InstanceInterruptionBehavior("").Values())...)
 	}
 	return allErrs
 }
@@ -240,7 +243,7 @@ func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.Ins
 func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
 	var errs field.ErrorList
 
-	mainMachineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ig.Spec.MachineType)
+	mainMachineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(ig.Spec.MachineType))
 	if err != nil {
 		errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
 		return errs
@@ -254,7 +257,7 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 		errs = append(errs, awsValidateInstanceTypeAndImage(path.Child("instances").Index(i), path.Child("image"), instanceTypes, ig.Spec.Image, cloud)...)
 
 		for _, instanceType := range strings.Split(instanceTypes, ",") {
-			machineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, instanceType)
+			machineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(instanceType))
 			if err != nil {
 				errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
 				return errs

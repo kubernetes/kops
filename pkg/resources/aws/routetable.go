@@ -17,10 +17,12 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/resources"
@@ -29,16 +31,17 @@ import (
 )
 
 // DescribeRouteTables lists route-tables tagged for the cluster (shared and owned)
-func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.RouteTable, error) {
+func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]ec2types.RouteTable, error) {
+	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
 
-	routeTables := make(map[string]*ec2.RouteTable)
+	routeTables := make(map[string]ec2types.RouteTable)
 	klog.V(2).Info("Listing EC2 RouteTables")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeRouteTablesInput{
 			Filters: filters,
 		}
-		response, err := c.EC2().DescribeRouteTables(request)
+		response, err := c.EC2().DescribeRouteTables(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing RouteTables: %v", err)
 		}
@@ -76,15 +79,15 @@ func dumpRouteTable(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resources.Resource {
+func buildTrackerForRouteTable(rt ec2types.RouteTable, clusterName string) *resources.Resource {
 	resourceTracker := &resources.Resource{
 		Name:    FindName(rt.Tags),
 		ID:      aws.ToString(rt.RouteTableId),
-		Type:    ec2.ResourceTypeRouteTable,
+		Type:    string(ec2types.ResourceTypeRouteTable),
 		Obj:     rt,
 		Dumper:  dumpRouteTable,
 		Deleter: DeleteRouteTable,
-		Shared:  !HasOwnedTag(ec2.ResourceTypeRouteTable+":"+*rt.RouteTableId, rt.Tags, clusterName),
+		Shared:  !HasOwnedTag(string(ec2types.ResourceTypeRouteTable)+":"+*rt.RouteTableId, rt.Tags, clusterName),
 	}
 
 	var blocks []string

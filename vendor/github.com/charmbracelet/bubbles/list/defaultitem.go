@@ -26,7 +26,7 @@ type DefaultItemStyles struct {
 	DimmedTitle lipgloss.Style
 	DimmedDesc  lipgloss.Style
 
-	// Charcters matching the current filter, if any.
+	// Characters matching the current filter, if any.
 	FilterMatch lipgloss.Style
 }
 
@@ -79,7 +79,7 @@ type DefaultItem interface {
 // ItemDelegate called, which is called when the list's Update function is
 // invoked.
 //
-// Settings ShortHelpFunc and FullHelpFunc is optional. They can can be set to
+// Settings ShortHelpFunc and FullHelpFunc is optional. They can be set to
 // include items in the list's default short and full help menus.
 type DefaultDelegate struct {
 	ShowDescription bool
@@ -116,7 +116,7 @@ func (d DefaultDelegate) Height() int {
 	return 1
 }
 
-// SetSpacing set the delegate's spacing.
+// SetSpacing sets the delegate's spacing.
 func (d *DefaultDelegate) SetSpacing(i int) {
 	d.spacing = i
 }

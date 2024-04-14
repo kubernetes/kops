@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -175,7 +176,7 @@ func TestDecorateWithInstanceGroupSpecs(t *testing.T) {
 
 func TestDecorateWithMixedInstancesPolicy(t *testing.T) {
 	selectedInstanceTypes := []string{"m3.medium", "m4.medium", "m5.medium"}
-	usageClasses := []string{"spot", "on-demand"}
+	usageClasses := []ec2types.UsageClassType{ec2types.UsageClassTypeSpot, ec2types.UsageClassTypeOnDemand}
 	for _, usageClass := range usageClasses {
 		actualIG, err := decorateWithMixedInstancesPolicy(&kops.InstanceGroup{}, usageClass, selectedInstanceTypes)
 		if err != nil {

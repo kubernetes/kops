@@ -178,6 +178,10 @@ func (cl *CommandLineInterface) SetUntouchedFlagValuesToNil() error {
 				return
 			}
 			switch v := cl.Flags[f.Name].(type) {
+			case *int32:
+				if reflect.ValueOf(*v).IsZero() {
+					cl.Flags[f.Name] = nil
+				}
 			case *int:
 				if reflect.ValueOf(*v).IsZero() {
 					cl.Flags[f.Name] = nil
@@ -234,6 +238,8 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 			switch cl.Flags[rangeHelperMax].(type) {
 			case *int:
 				cl.Flags[rangeHelperMin] = cl.IntMe(0)
+			case *int32:
+				cl.Flags[rangeHelperMin] = cl.Int32Me(0)
 			case *bytequantity.ByteQuantity:
 				cl.Flags[rangeHelperMin] = cl.ByteQuantityMe(bytequantity.ByteQuantity{Quantity: 0})
 			case *float64:
@@ -245,6 +251,8 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 			switch cl.Flags[rangeHelperMin].(type) {
 			case *int:
 				cl.Flags[rangeHelperMax] = cl.IntMe(maxInt)
+			case *int32:
+				cl.Flags[rangeHelperMax] = cl.Int32Me(max32Int)
 			case *bytequantity.ByteQuantity:
 				cl.Flags[rangeHelperMax] = cl.ByteQuantityMe(bytequantity.ByteQuantity{Quantity: maxUint64})
 			case *float64:
@@ -259,6 +267,11 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 			cl.Flags[flagName] = &selector.IntRangeFilter{
 				LowerBound: *cl.IntMe(cl.Flags[rangeHelperMin]),
 				UpperBound: *cl.IntMe(cl.Flags[rangeHelperMax]),
+			}
+		case *int32:
+			cl.Flags[flagName] = &selector.Int32RangeFilter{
+				LowerBound: *cl.Int32Me(cl.Flags[rangeHelperMin]),
+				UpperBound: *cl.Int32Me(cl.Flags[rangeHelperMax]),
 			}
 		case *bytequantity.ByteQuantity:
 			cl.Flags[flagName] = &selector.ByteQuantityRangeFilter{

@@ -17,16 +17,17 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) FindEgressOnlyInternetGateway(id string) *ec2.EgressOnlyInternetGateway {
+func (m *MockEC2) FindEgressOnlyInternetGateway(id string) *ec2types.EgressOnlyInternetGateway {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -36,7 +37,7 @@ func (m *MockEC2) FindEgressOnlyInternetGateway(id string) *ec2.EgressOnlyIntern
 	}
 
 	copy := *internetGateway
-	copy.Tags = m.getTags(ec2.ResourceTypeEgressOnlyInternetGateway, id)
+	copy.Tags = m.getTags(ec2types.ResourceTypeEgressOnlyInternetGateway, id)
 	return &copy
 }
 
@@ -51,26 +52,18 @@ func (m *MockEC2) EgressOnlyInternetGatewayIds() []string {
 	return ids
 }
 
-func (m *MockEC2) CreateEgressOnlyInternetGatewayRequest(*ec2.CreateEgressOnlyInternetGatewayInput) (*request.Request, *ec2.CreateEgressOnlyInternetGatewayOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateEgressOnlyInternetGatewayWithContext(aws.Context, *ec2.CreateEgressOnlyInternetGatewayInput, ...request.Option) (*ec2.CreateEgressOnlyInternetGatewayOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateEgressOnlyInternetGateway(request *ec2.CreateEgressOnlyInternetGatewayInput) (*ec2.CreateEgressOnlyInternetGatewayOutput, error) {
+func (m *MockEC2) CreateEgressOnlyInternetGateway(ctx context.Context, request *ec2.CreateEgressOnlyInternetGatewayInput, optFns ...func(*ec2.Options)) (*ec2.CreateEgressOnlyInternetGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("CreateEgressOnlyInternetGateway: %v", request)
 
 	id := m.allocateId("eigw")
-	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeEgressOnlyInternetGateway)
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeEgressOnlyInternetGateway)
 
-	eigw := &ec2.EgressOnlyInternetGateway{
+	eigw := &ec2types.EgressOnlyInternetGateway{
 		EgressOnlyInternetGatewayId: s(id),
-		Attachments: []*ec2.InternetGatewayAttachment{
+		Attachments: []ec2types.InternetGatewayAttachment{
 			{
 				VpcId: request.VpcId,
 			},
@@ -79,7 +72,7 @@ func (m *MockEC2) CreateEgressOnlyInternetGateway(request *ec2.CreateEgressOnlyI
 	}
 
 	if m.EgressOnlyInternetGateways == nil {
-		m.EgressOnlyInternetGateways = make(map[string]*ec2.EgressOnlyInternetGateway)
+		m.EgressOnlyInternetGateways = make(map[string]*ec2types.EgressOnlyInternetGateway)
 	}
 	m.EgressOnlyInternetGateways[id] = eigw
 
@@ -91,24 +84,16 @@ func (m *MockEC2) CreateEgressOnlyInternetGateway(request *ec2.CreateEgressOnlyI
 	return response, nil
 }
 
-func (m *MockEC2) DescribeEgressOnlyInternetGatewaysRequest(*ec2.DescribeEgressOnlyInternetGatewaysInput) (*request.Request, *ec2.DescribeEgressOnlyInternetGatewaysOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeEgressOnlyInternetGatewaysWithContext(aws.Context, *ec2.DescribeEgressOnlyInternetGatewaysInput, ...request.Option) (*ec2.DescribeEgressOnlyInternetGatewaysOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2.DescribeEgressOnlyInternetGatewaysOutput, error) {
+func (m *MockEC2) DescribeEgressOnlyInternetGateways(ctx context.Context, request *ec2.DescribeEgressOnlyInternetGatewaysInput, optFns ...func(*ec2.Options)) (*ec2.DescribeEgressOnlyInternetGatewaysOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeEgressOnlyInternetGateways: %v", request)
 
-	var internetGateways []*ec2.EgressOnlyInternetGateway
+	var internetGateways []ec2types.EgressOnlyInternetGateway
 
 	if len(request.EgressOnlyInternetGatewayIds) != 0 {
-		request.Filters = append(request.Filters, &ec2.Filter{Name: s("egress-only-internet-gateway-id"), Values: request.EgressOnlyInternetGatewayIds})
+		request.Filters = append(request.Filters, ec2types.Filter{Name: s("egress-only-internet-gateway-id"), Values: request.EgressOnlyInternetGatewayIds})
 	}
 
 	for id, internetGateway := range m.EgressOnlyInternetGateways {
@@ -118,7 +103,7 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 			switch *filter.Name {
 			case "internet-gateway-id":
 				for _, v := range filter.Values {
-					if id == aws.StringValue(v) {
+					if id == v {
 						match = true
 					}
 				}
@@ -127,7 +112,7 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 				for _, v := range filter.Values {
 					if internetGateway.Attachments != nil {
 						for _, attachment := range internetGateway.Attachments {
-							if *attachment.VpcId == *v {
+							if *attachment.VpcId == v {
 								match = true
 							}
 						}
@@ -136,7 +121,7 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeEgressOnlyInternetGateway, id, filter)
+					match = m.hasTag(ec2types.ResourceTypeEgressOnlyInternetGateway, id, filter)
 				} else {
 					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
@@ -153,8 +138,8 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 		}
 
 		copy := *internetGateway
-		copy.Tags = m.getTags(ec2.ResourceTypeEgressOnlyInternetGateway, id)
-		internetGateways = append(internetGateways, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeEgressOnlyInternetGateway, id)
+		internetGateways = append(internetGateways, copy)
 	}
 
 	response := &ec2.DescribeEgressOnlyInternetGatewaysOutput{
@@ -164,13 +149,13 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 	return response, nil
 }
 
-func (m *MockEC2) DeleteEgressOnlyInternetGateway(request *ec2.DeleteEgressOnlyInternetGatewayInput) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
+func (m *MockEC2) DeleteEgressOnlyInternetGateway(ctx context.Context, request *ec2.DeleteEgressOnlyInternetGatewayInput, optFns ...func(*ec2.Options)) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteEgressOnlyInternetGateway: %v", request)
 
-	id := aws.StringValue(request.EgressOnlyInternetGatewayId)
+	id := aws.ToString(request.EgressOnlyInternetGatewayId)
 	o := m.EgressOnlyInternetGateways[id]
 	if o == nil {
 		return nil, fmt.Errorf("EgressOnlyInternetGateway %q not found", id)
@@ -178,12 +163,4 @@ func (m *MockEC2) DeleteEgressOnlyInternetGateway(request *ec2.DeleteEgressOnlyI
 	delete(m.EgressOnlyInternetGateways, id)
 
 	return &ec2.DeleteEgressOnlyInternetGatewayOutput{}, nil
-}
-
-func (m *MockEC2) DeleteEgressOnlyInternetGatewayWithContext(aws.Context, *ec2.DeleteEgressOnlyInternetGatewayInput, ...request.Option) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteEgressOnlyInternetGatewayRequest(*ec2.DeleteEgressOnlyInternetGatewayInput) (*request.Request, *ec2.DeleteEgressOnlyInternetGatewayOutput) {
-	panic("Not implemented")
 }

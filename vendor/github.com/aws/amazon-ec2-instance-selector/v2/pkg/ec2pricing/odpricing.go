@@ -14,6 +14,7 @@
 package ec2pricing
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,10 +27,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/pricing"
+	pricingtypes "github.com/aws/aws-sdk-go-v2/service/pricing/types"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/pricing"
-	"github.com/aws/aws-sdk-go/service/pricing/pricingiface"
 	"github.com/mitchellh/go-homedir"
 	"github.com/patrickmn/go-cache"
 	"go.uber.org/multierr"
@@ -44,11 +45,48 @@ type OnDemandPricing struct {
 	FullRefreshTTL time.Duration
 	DirectoryPath  string
 	cache          *cache.Cache
-	pricingClient  pricingiface.PricingAPI
+	pricingClient  pricing.GetProductsAPIClient
 	sync.RWMutex
 }
 
-func LoadODCacheOrNew(pricingClient pricingiface.PricingAPI, region string, fullRefreshTTL time.Duration, directoryPath string) *OnDemandPricing {
+type PricingList struct {
+	Product         PricingListProduct `json:"product"`
+	ServiceCode     string             `json:"serviceCode"`
+	Terms           ProductTerms       `json:"terms"`
+	Version         string             `json:"version"`
+	PublicationDate string             `json:"publicationDate"`
+}
+
+type PricingListProduct struct {
+	ProductFamily     string            `json:"productFamily"`
+	ProductAttributes map[string]string `json:"attributes"`
+	SKU               string            `json:"sku"`
+}
+
+type ProductTerms struct {
+	OnDemand map[string]ProductPricingInfo `json:"OnDemand"`
+	Reserved map[string]ProductPricingInfo `json:"Reserved"`
+}
+
+type ProductPricingInfo struct {
+	PriceDimensions map[string]PriceDimensionInfo `json:"priceDimensions"`
+	SKU             string                        `json:"sku"`
+	EffectiveDate   string                        `json:"effectiveDate"`
+	OfferTermCode   string                        `json:"offerTermCode"`
+	TermAttributes  map[string]string             `json:"termAttributes"`
+}
+
+type PriceDimensionInfo struct {
+	Unit         string            `json:"unit"`
+	EndRange     string            `json:"endRange"`
+	Description  string            `json:"description"`
+	AppliesTo    []string          `json:"appliesTo"`
+	RateCode     string            `json:"rateCode"`
+	BeginRange   string            `json:"beginRange"`
+	PricePerUnit map[string]string `json:"pricePerUnit"`
+}
+
+func LoadODCacheOrNew(ctx context.Context, pricingClient pricing.GetProductsAPIClient, region string, fullRefreshTTL time.Duration, directoryPath string) *OnDemandPricing {
 	expandedDirPath, err := homedir.Expand(directoryPath)
 	if err != nil {
 		log.Printf("Unable to load on-demand pricing cache directory %s: %v", expandedDirPath, err)
@@ -72,7 +110,7 @@ func LoadODCacheOrNew(pricingClient pricingiface.PricingAPI, region string, full
 		return odPricing
 	}
 	// Start the cache refresh job
-	go odCacheRefreshJob(odPricing)
+	go odCacheRefreshJob(ctx, odPricing)
 	odCache, err := loadODCacheFrom(fullRefreshTTL, region, expandedDirPath)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -102,22 +140,22 @@ func getODCacheFilePath(region string, directoryPath string) string {
 	return filepath.Join(directoryPath, fmt.Sprintf("%s-%s", region, ODCacheFileName))
 }
 
-func odCacheRefreshJob(odPricing *OnDemandPricing) {
+func odCacheRefreshJob(ctx context.Context, odPricing *OnDemandPricing) {
 	if odPricing.FullRefreshTTL <= 0 {
 		return
 	}
 	refreshTicker := time.NewTicker(odPricing.FullRefreshTTL)
 	for range refreshTicker.C {
-		if err := odPricing.Refresh(); err != nil {
+		if err := odPricing.Refresh(ctx); err != nil {
 			log.Println(err)
 		}
 	}
 }
 
-func (c *OnDemandPricing) Refresh() error {
+func (c *OnDemandPricing) Refresh(ctx context.Context) error {
 	c.Lock()
 	defer c.Unlock()
-	odInstanceTypeCosts, err := c.fetchOnDemandPricing("")
+	odInstanceTypeCosts, err := c.fetchOnDemandPricing(ctx, "")
 	if err != nil {
 		return fmt.Errorf("there was a problem refreshing the on-demand instance type pricing cache: %v", err)
 	}
@@ -130,18 +168,18 @@ func (c *OnDemandPricing) Refresh() error {
 	return nil
 }
 
-func (c *OnDemandPricing) Get(instanceType string) (float64, error) {
-	if cost, ok := c.cache.Get(instanceType); ok {
+func (c *OnDemandPricing) Get(ctx context.Context, instanceType ec2types.InstanceType) (float64, error) {
+	if cost, ok := c.cache.Get(string(instanceType)); ok {
 		return cost.(float64), nil
 	}
 	c.RLock()
 	defer c.RUnlock()
-	costs, err := c.fetchOnDemandPricing(instanceType)
+	costs, err := c.fetchOnDemandPricing(ctx, instanceType)
 	if err != nil {
 		return 0, fmt.Errorf("there was a problem fetching on-demand instance type pricing for %s: %v", instanceType, err)
 	}
-	c.cache.SetDefault(instanceType, costs[instanceType])
-	return costs[instanceType], nil
+	c.cache.SetDefault(string(instanceType), costs[string(instanceType)])
+	return costs[string(instanceType)], nil
 }
 
 // Count of items in the cache
@@ -157,7 +195,9 @@ func (c *OnDemandPricing) Save() error {
 	if err != nil {
 		return err
 	}
-	os.Mkdir(c.DirectoryPath, 0755)
+	if err := os.Mkdir(c.DirectoryPath, 0755); err != nil && !errors.Is(err, os.ErrExist) {
+		return err
+	}
 	return ioutil.WriteFile(getODCacheFilePath(c.Region, c.DirectoryPath), cacheBytes, 0644)
 }
 
@@ -169,15 +209,24 @@ func (c *OnDemandPricing) Clear() error {
 }
 
 // fetchOnDemandPricing makes a bulk request to the pricing api to retrieve all instance type pricing if the instanceType is the empty string
-//   or, if instanceType is specified, it can request a specific instance type pricing
-func (c *OnDemandPricing) fetchOnDemandPricing(instanceType string) (map[string]float64, error) {
+//
+//	or, if instanceType is specified, it can request a specific instance type pricing
+func (c *OnDemandPricing) fetchOnDemandPricing(ctx context.Context, instanceType ec2types.InstanceType) (map[string]float64, error) {
 	odPricing := map[string]float64{}
 	productInput := pricing.GetProductsInput{
-		ServiceCode: aws.String(serviceCode),
+		ServiceCode: c.StringMe(serviceCode),
 		Filters:     c.getProductsInputFilters(instanceType),
 	}
 	var processingErr error
-	errAPI := c.pricingClient.GetProductsPages(&productInput, func(pricingOutput *pricing.GetProductsOutput, nextPage bool) bool {
+
+	p := pricing.NewGetProductsPaginator(c.pricingClient, &productInput)
+
+	for p.HasMorePages() {
+		pricingOutput, err := p.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get a page, %w", err)
+		}
+
 		for _, priceDoc := range pricingOutput.PriceList {
 			instanceTypeName, price, errParse := c.parseOndemandUnitPrice(priceDoc)
 			if errParse != nil {
@@ -186,26 +235,39 @@ func (c *OnDemandPricing) fetchOnDemandPricing(instanceType string) (map[string]
 			}
 			odPricing[instanceTypeName] = price
 		}
-		return true
-	})
-	if errAPI != nil {
-		return odPricing, errAPI
 	}
 	return odPricing, processingErr
 }
 
-func (c *OnDemandPricing) getProductsInputFilters(instanceType string) []*pricing.Filter {
+// StringMe takes an interface and returns a pointer to a string value
+// If the underlying interface kind is not string or *string then nil is returned
+func (*OnDemandPricing) StringMe(i interface{}) *string {
+	if i == nil {
+		return nil
+	}
+	switch v := i.(type) {
+	case *string:
+		return v
+	case string:
+		return &v
+	default:
+		log.Printf("%s cannot be converted to a string", i)
+		return nil
+	}
+}
+
+func (c *OnDemandPricing) getProductsInputFilters(instanceType ec2types.InstanceType) []pricingtypes.Filter {
 	regionDescription := c.getRegionForPricingAPI()
-	filters := []*pricing.Filter{
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("ServiceCode"), Value: aws.String(serviceCode)},
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("operatingSystem"), Value: aws.String("linux")},
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("location"), Value: aws.String(regionDescription)},
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("capacitystatus"), Value: aws.String("used")},
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("preInstalledSw"), Value: aws.String("NA")},
-		{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("tenancy"), Value: aws.String("shared")},
+	filters := []pricingtypes.Filter{
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("ServiceCode"), Value: c.StringMe(serviceCode)},
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("operatingSystem"), Value: c.StringMe("linux")},
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("location"), Value: c.StringMe(regionDescription)},
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("capacitystatus"), Value: c.StringMe("used")},
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("preInstalledSw"), Value: c.StringMe("NA")},
+		{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("tenancy"), Value: c.StringMe("shared")},
 	}
 	if instanceType != "" {
-		filters = append(filters, &pricing.Filter{Type: aws.String(pricing.FilterTypeTermMatch), Field: aws.String("instanceType"), Value: aws.String(instanceType)})
+		filters = append(filters, pricingtypes.Filter{Type: pricingtypes.FilterTypeTermMatch, Field: c.StringMe("instanceType"), Value: c.StringMe(string(instanceType))})
 	}
 	return filters
 }
@@ -235,43 +297,25 @@ func (c *OnDemandPricing) getRegionForPricingAPI() string {
 }
 
 // parseOndemandUnitPrice takes a priceList from the pricing API and parses its weirdness
-func (c *OnDemandPricing) parseOndemandUnitPrice(priceList aws.JSONValue) (string, float64, error) {
-	// TODO: this could probably be cleaned up a bit by adding a couple structs with json tags
-	//       We still need to some weird for-loops to get at elements under json keys that are IDs...
-	//       But it would probably be cleaner than this.
-	attributes, ok := priceList["product"].(map[string]interface{})["attributes"]
-	if !ok {
-		return "", float64(-1.0), fmt.Errorf("unable to find product attributes")
+func (c *OnDemandPricing) parseOndemandUnitPrice(priceList string) (string, float64, error) {
+	var productPriceList PricingList
+	err := json.Unmarshal([]byte(priceList), &productPriceList)
+	if err != nil {
+		return "", float64(-1.0), fmt.Errorf("unable to parse pricing doc: %w", err)
 	}
-	instanceTypeName, ok := attributes.(map[string]interface{})["instanceType"].(string)
-	if !ok {
-		return "", float64(-1.0), fmt.Errorf("unable to find instance type name from product attributes")
-	}
-	terms, ok := priceList["terms"]
-	if !ok {
-		return instanceTypeName, float64(-1.0), fmt.Errorf("unable to find pricing terms")
-	}
-	ondemandTerms, ok := terms.(map[string]interface{})["OnDemand"]
-	if !ok {
-		return instanceTypeName, float64(-1.0), fmt.Errorf("unable to find on-demand pricing terms")
-	}
-	for _, priceDimensions := range ondemandTerms.(map[string]interface{}) {
-		dim, ok := priceDimensions.(map[string]interface{})["priceDimensions"]
-		if !ok {
-			return instanceTypeName, float64(-1.0), fmt.Errorf("unable to find on-demand pricing dimensions")
-		}
-		for _, dimension := range dim.(map[string]interface{}) {
-			dims := dimension.(map[string]interface{})
-			pricePerUnit, ok := dims["pricePerUnit"]
-			if !ok {
-				return instanceTypeName, float64(-1.0), fmt.Errorf("unable to find on-demand price per unit in pricing dimensions")
-			}
-			pricePerUnitInUSDStr, ok := pricePerUnit.(map[string]interface{})["USD"]
+	attributes := productPriceList.Product.ProductAttributes
+	instanceTypeName := attributes["instanceType"]
+
+	for _, priceDimensions := range productPriceList.Terms.OnDemand {
+		dim := priceDimensions.PriceDimensions
+		for _, dimension := range dim {
+			pricePerUnit := dimension.PricePerUnit
+			pricePerUnitInUSDStr, ok := pricePerUnit["USD"]
 			if !ok {
 				return instanceTypeName, float64(-1.0), fmt.Errorf("unable to find on-demand price per unit in USD")
 			}
 			var err error
-			pricePerUnitInUSD, err := strconv.ParseFloat(pricePerUnitInUSDStr.(string), 64)
+			pricePerUnitInUSD, err := strconv.ParseFloat(pricePerUnitInUSDStr, 64)
 			if err != nil {
 				return instanceTypeName, float64(-1.0), fmt.Errorf("could not convert price per unit in USD to a float64")
 			}

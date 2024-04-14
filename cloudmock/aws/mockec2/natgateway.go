@@ -17,12 +17,13 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
@@ -30,25 +31,25 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeNatgateway)
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeNatgateway)
 
-	ngw := &ec2.NatGateway{
+	ngw := &ec2types.NatGateway{
 		NatGatewayId: s(id),
 		SubnetId:     request.SubnetId,
 		Tags:         tags,
 	}
 
 	if request.AllocationId != nil {
-		var eip *ec2.Address
+		var eip *ec2types.Address
 		for _, address := range m.Addresses {
-			if aws.StringValue(address.AllocationId) == *request.AllocationId {
+			if aws.ToString(address.AllocationId) == *request.AllocationId {
 				eip = address
 			}
 		}
 		if eip == nil {
 			return nil, fmt.Errorf("AllocationId %q not found", *request.AllocationId)
 		}
-		ngw.NatGatewayAddresses = append(ngw.NatGatewayAddresses, &ec2.NatGatewayAddress{
+		ngw.NatGatewayAddresses = append(ngw.NatGatewayAddresses, ec2types.NatGatewayAddress{
 			AllocationId: eip.AllocationId,
 			PrivateIp:    eip.PrivateIpAddress,
 			PublicIp:     eip.PublicIp,
@@ -56,7 +57,7 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 	}
 
 	if m.NatGateways == nil {
-		m.NatGateways = make(map[string]*ec2.NatGateway)
+		m.NatGateways = make(map[string]*ec2types.NatGateway)
 	}
 	m.NatGateways[*ngw.NatGatewayId] = ngw
 
@@ -70,14 +71,14 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 	}, nil
 }
 
-func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
+func (m *MockEC2) CreateNatGateway(ctx context.Context, request *ec2.CreateNatGatewayInput, optFns ...func(*ec2.Options)) (*ec2.CreateNatGatewayOutput, error) {
 	klog.Infof("CreateNatGateway: %v", request)
 
 	id := m.allocateId("nat")
 	return m.CreateNatGatewayWithId(request, id)
 }
 
-func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysInput) error {
+/*func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysInput) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -96,30 +97,18 @@ func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysI
 	ngw.State = aws.String("Available")
 
 	return nil
-}
+}*/
 
-func (m *MockEC2) WaitUntilNatGatewayAvailableWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.WaiterOption) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateNatGatewayWithContext(aws.Context, *ec2.CreateNatGatewayInput, ...request.Option) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateNatGatewayRequest(*ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
+func (m *MockEC2) DescribeNatGateways(ctx context.Context, request *ec2.DescribeNatGatewaysInput, optFns ...func(*ec2.Options)) (*ec2.DescribeNatGatewaysOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeNatGateways: %v", request)
 
-	var ngws []*ec2.NatGateway
+	var ngws []ec2types.NatGateway
 
 	if len(request.NatGatewayIds) != 0 {
-		request.Filter = append(request.Filter, &ec2.Filter{Name: s("nat-gateway-id"), Values: request.NatGatewayIds})
+		request.Filter = append(request.Filter, ec2types.Filter{Name: s("nat-gateway-id"), Values: request.NatGatewayIds})
 	}
 
 	for id, ngw := range m.NatGateways {
@@ -129,13 +118,13 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 			switch *filter.Name {
 			case "nat-gateway-id":
 				for _, v := range filter.Values {
-					if *ngw.NatGatewayId == *v {
+					if *ngw.NatGatewayId == v {
 						match = true
 					}
 				}
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeNatgateway, *ngw.NatGatewayId, filter)
+					match = m.hasTag(ec2types.ResourceTypeNatgateway, *ngw.NatGatewayId, filter)
 				} else {
 					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
@@ -152,8 +141,8 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 		}
 
 		copy := *ngw
-		copy.Tags = m.getTags(ec2.ResourceTypeNatgateway, id)
-		ngws = append(ngws, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeNatgateway, id)
+		ngws = append(ngws, copy)
 	}
 
 	response := &ec2.DescribeNatGatewaysOutput{
@@ -163,29 +152,13 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 	return response, nil
 }
 
-func (m *MockEC2) DescribeNatGatewaysWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.Option) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysRequest(*ec2.DescribeNatGatewaysInput) (*request.Request, *ec2.DescribeNatGatewaysOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysPages(*ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeNatGatewaysPagesWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error) {
+func (m *MockEC2) DeleteNatGateway(ctx context.Context, request *ec2.DeleteNatGatewayInput, optFns ...func(*ec2.Options)) (*ec2.DeleteNatGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteNatGateway: %v", request)
 
-	id := aws.StringValue(request.NatGatewayId)
+	id := aws.ToString(request.NatGatewayId)
 	o := m.NatGateways[id]
 	if o == nil {
 		return nil, fmt.Errorf("NatGateway %q not found", id)
@@ -193,12 +166,4 @@ func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.Del
 	delete(m.NatGateways, id)
 
 	return &ec2.DeleteNatGatewayOutput{}, nil
-}
-
-func (m *MockEC2) DeleteNatGatewayWithContext(aws.Context, *ec2.DeleteNatGatewayInput, ...request.Option) (*ec2.DeleteNatGatewayOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteNatGatewayRequest(*ec2.DeleteNatGatewayInput) (*request.Request, *ec2.DeleteNatGatewayOutput) {
-	panic("Not implemented")
 }

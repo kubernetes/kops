@@ -34,8 +34,8 @@ type File interface {
 // false. However, after calling Cancel(), new Read() calls immediately return
 // errCanceled and don't consume any data anymore.
 type fallbackCancelReader struct {
-	r        io.Reader
-	canceled bool
+	r io.Reader
+	cancelMixin
 }
 
 // newFallbackCancelReader is a fallback for NewReader that cannot actually
@@ -46,16 +46,25 @@ func newFallbackCancelReader(reader io.Reader) (CancelReader, error) {
 }
 
 func (r *fallbackCancelReader) Read(data []byte) (int, error) {
-	if r.canceled {
+	if r.isCanceled() {
 		return 0, ErrCanceled
 	}
 
-	return r.r.Read(data)
+	n, err := r.r.Read(data)
+	/*
+		If the underlying reader is a blocking reader (e.g. an open connection),
+		it might happen that 1 goroutine cancels the reader while its stuck in
+		the read call waiting for something.
+		If that happens, we should still cancel the read.
+	*/
+	if r.isCanceled() {
+		return 0, ErrCanceled
+	}
+	return n, err // nolint: wrapcheck
 }
 
 func (r *fallbackCancelReader) Cancel() bool {
-	r.canceled = true
-
+	r.setCanceled()
 	return false
 }
 

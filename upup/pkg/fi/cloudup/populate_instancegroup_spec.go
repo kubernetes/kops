@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
@@ -200,7 +201,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		if clusterNvidia || igNvidia {
-			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ig.Spec.MachineType)
+			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ec2types.InstanceType(ig.Spec.MachineType))
 			if err != nil {
 				return ig, fmt.Errorf("error looking up machine type info: %v", err)
 			}

@@ -21,9 +21,9 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 )
 
@@ -85,8 +85,8 @@ func (m *MockELBV2) CreateLoadBalancer(ctx context.Context, request *elbv2.Creat
 		zones = append(zones, elbv2types.AvailabilityZone{
 			SubnetId: aws.String(subnet),
 		})
-		subnetsOutput, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
-			SubnetIds: []*string{aws.String(subnet)},
+		subnetsOutput, err := m.EC2.DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{
+			SubnetIds: []string{subnet},
 		})
 		if err == nil {
 			vpc = *subnetsOutput.Subnets[0].VpcId
@@ -104,8 +104,8 @@ func (m *MockELBV2) CreateLoadBalancer(ctx context.Context, request *elbv2.Creat
 			SubnetId:              subnetMapping.SubnetId,
 			LoadBalancerAddresses: lbAddrs,
 		})
-		subnetsOutput, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
-			SubnetIds: []*string{subnetMapping.SubnetId},
+		subnetsOutput, err := m.EC2.DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{
+			SubnetIds: []string{aws.ToString(subnetMapping.SubnetId)},
 		})
 		if err == nil {
 			vpc = *subnetsOutput.Subnets[0].VpcId

@@ -17,20 +17,21 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
-func (m *MockEC2) AddRouteTable(rt *ec2.RouteTable) {
+func (m *MockEC2) AddRouteTable(rt *ec2types.RouteTable) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	if m.RouteTables == nil {
-		m.RouteTables = make(map[string]*ec2.RouteTable)
+		m.RouteTables = make(map[string]*ec2types.RouteTable)
 	}
 
 	m.addTags(*rt.RouteTableId, rt.Tags...)
@@ -38,15 +39,7 @@ func (m *MockEC2) AddRouteTable(rt *ec2.RouteTable) {
 	m.RouteTables[*rt.RouteTableId] = rt
 }
 
-func (m *MockEC2) DescribeRouteTablesRequest(*ec2.DescribeRouteTablesInput) (*request.Request, *ec2.DescribeRouteTablesOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeRouteTablesWithContext(aws.Context, *ec2.DescribeRouteTablesInput, ...request.Option) (*ec2.DescribeRouteTablesOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
+func (m *MockEC2) DescribeRouteTables(ctx context.Context, request *ec2.DescribeRouteTablesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeRouteTablesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -57,7 +50,7 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 	}
 
 	if len(request.RouteTableIds) != 0 {
-		request.Filters = append(request.Filters, &ec2.Filter{Name: s("route-table-id"), Values: request.RouteTableIds})
+		request.Filters = append(request.Filters, ec2types.Filter{Name: s("route-table-id"), Values: request.RouteTableIds})
 	}
 
 	response := &ec2.DescribeRouteTablesOutput{}
@@ -68,20 +61,20 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 			switch *filter.Name {
 			case "route-table-id":
 				for _, v := range filter.Values {
-					if *rt.RouteTableId == *v {
+					if *rt.RouteTableId == v {
 						match = true
 					}
 				}
 			case "association.subnet-id":
 				for _, a := range rt.Associations {
 					for _, v := range filter.Values {
-						if aws.StringValue(a.SubnetId) == *v {
+						if aws.ToString(a.SubnetId) == v {
 							match = true
 						}
 					}
 				}
 			default:
-				match = m.hasTag(ec2.ResourceTypeRouteTable, *rt.RouteTableId, filter)
+				match = m.hasTag(ec2types.ResourceTypeRouteTable, *rt.RouteTableId, filter)
 			}
 
 			if !match {
@@ -95,14 +88,14 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 		}
 
 		copy := *rt
-		copy.Tags = m.getTags(ec2.ResourceTypeRouteTable, *rt.RouteTableId)
-		response.RouteTables = append(response.RouteTables, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeRouteTable, *rt.RouteTableId)
+		response.RouteTables = append(response.RouteTables, copy)
 	}
 
 	return response, nil
 }
 
-func (m *MockEC2) CreateRouteTable(request *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
+func (m *MockEC2) CreateRouteTable(ctx context.Context, request *ec2.CreateRouteTableInput, optFns ...func(*ec2.Options)) (*ec2.CreateRouteTableOutput, error) {
 	klog.Infof("CreateRouteTable: %v", request)
 
 	id := m.allocateId("rtb")
@@ -117,13 +110,13 @@ func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id 
 		klog.Fatalf("DryRun")
 	}
 
-	rt := &ec2.RouteTable{
+	rt := &ec2types.RouteTable{
 		RouteTableId: s(id),
 		VpcId:        request.VpcId,
 	}
 
 	if m.RouteTables == nil {
-		m.RouteTables = make(map[string]*ec2.RouteTable)
+		m.RouteTables = make(map[string]*ec2types.RouteTable)
 	}
 	m.RouteTables[id] = rt
 
@@ -134,15 +127,7 @@ func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id 
 	return response, nil
 }
 
-func (m *MockEC2) CreateRouteTableWithContext(aws.Context, *ec2.CreateRouteTableInput, ...request.Option) (*ec2.CreateRouteTableOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateRouteTableRequest(*ec2.CreateRouteTableInput) (*request.Request, *ec2.CreateRouteTableOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOutput, error) {
+func (m *MockEC2) CreateRoute(ctx context.Context, request *ec2.CreateRouteInput, optFns ...func(*ec2.Options)) (*ec2.CreateRouteOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -152,12 +137,12 @@ func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOu
 		klog.Fatalf("DryRun")
 	}
 
-	rt := m.RouteTables[aws.StringValue(request.RouteTableId)]
+	rt := m.RouteTables[aws.ToString(request.RouteTableId)]
 	if rt == nil {
 		return nil, fmt.Errorf("RouteTable not found")
 	}
 
-	r := &ec2.Route{
+	r := ec2types.Route{
 		DestinationCidrBlock:        request.DestinationCidrBlock,
 		DestinationIpv6CidrBlock:    request.DestinationIpv6CidrBlock,
 		EgressOnlyInternetGatewayId: request.EgressOnlyInternetGatewayId,
@@ -173,21 +158,13 @@ func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOu
 	return &ec2.CreateRouteOutput{Return: aws.Bool(true)}, nil
 }
 
-func (m *MockEC2) CreateRouteWithContext(aws.Context, *ec2.CreateRouteInput, ...request.Option) (*ec2.CreateRouteOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *ec2.CreateRouteOutput) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.DeleteRouteTableOutput, error) {
+func (m *MockEC2) DeleteRouteTable(ctx context.Context, request *ec2.DeleteRouteTableInput, optFns ...func(*ec2.Options)) (*ec2.DeleteRouteTableOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteRouteTable: %v", request)
 
-	id := aws.StringValue(request.RouteTableId)
+	id := aws.ToString(request.RouteTableId)
 	o := m.RouteTables[id]
 	if o == nil {
 		return nil, fmt.Errorf("RouteTable %q not found", id)
@@ -195,12 +172,4 @@ func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.Del
 	delete(m.RouteTables, id)
 
 	return &ec2.DeleteRouteTableOutput{}, nil
-}
-
-func (m *MockEC2) DeleteRouteTableWithContext(aws.Context, *ec2.DeleteRouteTableInput, ...request.Option) (*ec2.DeleteRouteTableOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteRouteTableRequest(*ec2.DeleteRouteTableInput) (*request.Request, *ec2.DeleteRouteTableOutput) {
-	panic("Not implemented")
 }

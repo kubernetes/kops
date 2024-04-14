@@ -172,8 +172,8 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
-					FromPort:      fi.PtrTo(int64(r.From)),
-					ToPort:        fi.PtrTo(int64(r.To)),
+					FromPort:      fi.PtrTo(int32(r.From)),
+					ToPort:        fi.PtrTo(int32(r.To)),
 					Protocol:      fi.PtrTo("udp"),
 				}
 				AddDirectionalGroupRule(c, t)
@@ -184,8 +184,8 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
-					FromPort:      fi.PtrTo(int64(r.From)),
-					ToPort:        fi.PtrTo(int64(r.To)),
+					FromPort:      fi.PtrTo(int32(r.From)),
+					ToPort:        fi.PtrTo(int32(r.To)),
 					Protocol:      fi.PtrTo("tcp"),
 				}
 				AddDirectionalGroupRule(c, t)

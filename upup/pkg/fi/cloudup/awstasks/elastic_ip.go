@@ -17,10 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
@@ -59,18 +61,18 @@ func (e *ElasticIP) CompareWithID() *string {
 }
 
 // Find returns the actual ElasticIP state, or nil if not found
-func (e *ElasticIP) Find(context *fi.CloudupContext) (*ElasticIP, error) {
-	return e.find(context.T.Cloud.(awsup.AWSCloud))
+func (e *ElasticIP) Find(c *fi.CloudupContext) (*ElasticIP, error) {
+	return e.find(c.Context(), c.T.Cloud.(awsup.AWSCloud))
 }
 
 // find will attempt to look up the elastic IP from AWS
-func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
+func (e *ElasticIP) find(ctx context.Context, cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
 
 	// Find via RouteTable -> NatGateway -> ElasticIP
 	if allocationID == nil && publicIP == nil && e.AssociatedNatGatewayRouteTable != nil {
-		ngw, err := findNatGatewayFromRouteTable(cloud, e.AssociatedNatGatewayRouteTable)
+		ngw, err := findNatGatewayFromRouteTable(ctx, cloud, e.AssociatedNatGatewayRouteTable)
 		if err != nil {
 			return nil, fmt.Errorf("error finding AssociatedNatGatewayRouteTable: %v", err)
 		}
@@ -96,7 +98,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	// Find via tag on subnet
 	// TODO: Deprecated, because doesn't round-trip with terraform
 	if allocationID == nil && publicIP == nil && e.TagOnSubnet != nil && e.TagOnSubnet.ID != nil {
-		var filters []*ec2.Filter
+		var filters []ec2types.Filter
 		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedElasticIp"))
 		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.TagOnSubnet.ID))
 
@@ -104,7 +106,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			Filters: filters,
 		}
 
-		response, err := cloud.EC2().DescribeTags(request)
+		response, err := cloud.EC2().DescribeTags(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing tags: %v", err)
 		}
@@ -124,12 +126,12 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	if publicIP != nil || allocationID != nil {
 		request := &ec2.DescribeAddressesInput{}
 		if allocationID != nil {
-			request.AllocationIds = []*string{allocationID}
+			request.AllocationIds = []string{fi.ValueOf(allocationID)}
 		} else if publicIP != nil {
-			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("public-ip", *publicIP)}
+			request.Filters = []ec2types.Filter{awsup.NewEC2Filter("public-ip", *publicIP)}
 		}
 
-		response, err := cloud.EC2().DescribeAddresses(request)
+		response, err := cloud.EC2().DescribeAddresses(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing ElasticIPs: %v", err)
 		}
@@ -150,20 +152,20 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		actual.AssociatedNatGatewayRouteTable = e.AssociatedNatGatewayRouteTable
 
 		{
-			tags, err := cloud.EC2().DescribeTags(&ec2.DescribeTagsInput{
-				Filters: []*ec2.Filter{
+			tags, err := cloud.EC2().DescribeTags(ctx, &ec2.DescribeTagsInput{
+				Filters: []ec2types.Filter{
 					{
 						Name:   aws.String("resource-id"),
-						Values: aws.StringSlice([]string{*a.AllocationId}),
+						Values: []string{aws.ToString(a.AllocationId)},
 					},
 				},
 			})
 			if err != nil {
 				return nil, fmt.Errorf("error querying tags for ElasticIP: %v", err)
 			}
-			var ec2Tags []*ec2.Tag
+			var ec2Tags []ec2types.Tag
 			for _, t := range tags.Tags {
-				ec2Tags = append(ec2Tags, &ec2.Tag{
+				ec2Tags = append(ec2Tags, ec2types.Tag{
 					Key:   t.Key,
 					Value: t.Value,
 				})
@@ -220,6 +222,7 @@ func (_ *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 
 // RenderAWS is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
+	ctx := context.TODO()
 	var publicIp *string
 	var eipId *string
 
@@ -228,11 +231,11 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 		klog.V(2).Infof("Creating ElasticIP for VPC")
 
 		request := &ec2.AllocateAddressInput{
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeElasticIp, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeElasticIp, e.Tags),
 		}
-		request.Domain = aws.String(ec2.DomainTypeVpc)
+		request.Domain = ec2types.DomainTypeVpc
 
-		response, err := t.Cloud.EC2().AllocateAddress(request)
+		response, err := t.Cloud.EC2().AllocateAddress(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating ElasticIP: %v", err)
 		}

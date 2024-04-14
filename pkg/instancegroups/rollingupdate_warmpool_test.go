@@ -17,11 +17,11 @@ limitations under the License.
 package instancegroups
 
 import (
+	"context"
 	"testing"
 
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 // Here we have three nodes that are up to date, while three warm nodes need updating.
@@ -102,13 +103,13 @@ func makeGroupWithWarmPool(groups map[string]*cloudinstances.CloudInstanceGroup,
 }
 
 type warmPoolBeforeJoinedNodesTest struct {
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 	t               *testing.T
 	numTerminations int
 }
 
-func (t *warmPoolBeforeJoinedNodesTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+func (t *warmPoolBeforeJoinedNodesTest) TerminateInstances(ctx context.Context, input *ec2.TerminateInstancesInput, optFns ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error) {
 	t.numTerminations++
 
-	return t.EC2API.TerminateInstances(input)
+	return t.EC2API.TerminateInstances(ctx, input, optFns...)
 }

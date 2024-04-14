@@ -32,6 +32,7 @@ func (m Model) HeaderStyle(style lipgloss.Style) Model {
 // WithRows sets the rows to show as data in the table.
 func (m Model) WithRows(rows []Row) Model {
 	m.rows = rows
+	m.visibleRowCacheUpdated = false
 
 	if m.rowCursorIndex >= len(m.rows) {
 		m.rowCursorIndex = len(m.rows) - 1
@@ -129,6 +130,7 @@ func (m Model) Focused(focused bool) Model {
 // Filtered allows the table to show rows that match the filter.
 func (m Model) Filtered(filtered bool) Model {
 	m.filtered = filtered
+	m.visibleRowCacheUpdated = false
 
 	return m
 }
@@ -279,7 +281,12 @@ func (m Model) WithColumns(columns []Column) Model {
 // filtering rather than using the built-in default.  This allows for external
 // text input controls to be used.
 func (m Model) WithFilterInput(input textinput.Model) Model {
+	if m.filterTextInput.Value() != input.Value() {
+		m.pageFirst()
+	}
+
 	m.filterTextInput = input
+	m.visibleRowCacheUpdated = false
 
 	return m
 }
@@ -288,8 +295,13 @@ func (m Model) WithFilterInput(input textinput.Model) Model {
 // applying it as if the user had typed it in.  Useful for external filter inputs
 // that are not necessarily a text input.
 func (m Model) WithFilterInputValue(value string) Model {
+	if m.filterTextInput.Value() != value {
+		m.pageFirst()
+	}
+
 	m.filterTextInput.SetValue(value)
 	m.filterTextInput.Blur()
+	m.visibleRowCacheUpdated = false
 
 	return m
 }
@@ -361,6 +373,21 @@ func (m Model) WithMissingDataIndicator(str string) Model {
 // not considered to be missing.
 func (m Model) WithMissingDataIndicatorStyled(styled StyledCell) Model {
 	m.missingDataIndicator = styled
+
+	return m
+}
+
+// WithAllRowsDeselected deselects any rows that are currently selected.
+func (m Model) WithAllRowsDeselected() Model {
+	rows := m.GetVisibleRows()
+
+	for i, row := range rows {
+		if row.selected {
+			rows[i] = row.Selected(false)
+		}
+	}
+
+	m.rows = rows
 
 	return m
 }

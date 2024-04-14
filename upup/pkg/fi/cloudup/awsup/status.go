@@ -17,11 +17,13 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
@@ -64,16 +66,18 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 		request.Filters = append(request.Filters, NewEC2Filter("tag:"+k, v))
 	}
 
-	var volumes []*ec2.Volume
+	var volumes []ec2types.Volume
 	klog.V(2).Infof("Listing EC2 Volumes")
-	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
-		volumes = append(volumes, p.Volumes...)
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error describing volumes: %v", err)
+	paginator := ec2.NewDescribeVolumesPaginator(c.EC2(), request)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("error describing volumes: %v", err)
+		}
+		volumes = append(volumes, page.Volumes...)
 	}
 
+	var err error
 	for _, volume := range volumes {
 		volumeID := aws.ToString(volume.VolumeId)
 

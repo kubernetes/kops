@@ -23,7 +23,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -108,13 +109,13 @@ func TestSubnetCreate(t *testing.T) {
 			t.Fatalf("Expected exactly one Subnet; found %v", c.SubnetIds())
 		}
 
-		expected := &ec2.Subnet{
+		expected := &ec2types.Subnet{
 			AssignIpv6AddressOnCreation: aws.Bool(false),
 			CidrBlock:                   aws.String("172.20.1.0/24"),
-			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+			PrivateDnsNameOptionsOnLaunch: &ec2types.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(false),
 				EnableResourceNameDnsARecord:    aws.Bool(true),
-				HostnameType:                    aws.String(ec2.HostnameTypeResourceName),
+				HostnameType:                    ec2types.HostnameTypeResourceName,
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),
@@ -189,22 +190,22 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			t.Fatalf("Expected exactly one Subnet; found %v", c.SubnetIds())
 		}
 
-		expected := &ec2.Subnet{
+		expected := &ec2types.Subnet{
 			AssignIpv6AddressOnCreation: aws.Bool(true),
 			CidrBlock:                   aws.String("172.20.1.0/24"),
-			Ipv6CidrBlockAssociationSet: []*ec2.SubnetIpv6CidrBlockAssociation{
+			Ipv6CidrBlockAssociationSet: []ec2types.SubnetIpv6CidrBlockAssociation{
 				{
 					AssociationId: aws.String("subnet-cidr-assoc-ipv6-subnet-1"),
 					Ipv6CidrBlock: aws.String("2001:db8:0:1::/64"),
-					Ipv6CidrBlockState: &ec2.SubnetCidrBlockState{
-						State: aws.String(ec2.SubnetCidrBlockStateCodeAssociated),
+					Ipv6CidrBlockState: &ec2types.SubnetCidrBlockState{
+						State: ec2types.SubnetCidrBlockStateCodeAssociated,
 					},
 				},
 			},
-			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+			PrivateDnsNameOptionsOnLaunch: &ec2types.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(true),
 				EnableResourceNameDnsARecord:    aws.Bool(true),
-				HostnameType:                    aws.String(ec2.HostnameTypeResourceName),
+				HostnameType:                    ec2types.HostnameTypeResourceName,
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),
@@ -278,22 +279,22 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			t.Fatalf("Expected exactly one Subnet; found %v", c.SubnetIds())
 		}
 
-		expected := &ec2.Subnet{
+		expected := &ec2types.Subnet{
 			AssignIpv6AddressOnCreation: aws.Bool(true),
 			CidrBlock:                   aws.String("172.20.1.0/24"),
-			Ipv6CidrBlockAssociationSet: []*ec2.SubnetIpv6CidrBlockAssociation{
+			Ipv6CidrBlockAssociationSet: []ec2types.SubnetIpv6CidrBlockAssociation{
 				{
 					AssociationId: aws.String("subnet-cidr-assoc-ipv6-subnet-1"),
 					Ipv6CidrBlock: aws.String("2001:db8:0:1::/64"),
-					Ipv6CidrBlockState: &ec2.SubnetCidrBlockState{
-						State: aws.String(ec2.SubnetCidrBlockStateCodeAssociated),
+					Ipv6CidrBlockState: &ec2types.SubnetCidrBlockState{
+						State: ec2types.SubnetCidrBlockStateCodeAssociated,
 					},
 				},
 			},
-			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+			PrivateDnsNameOptionsOnLaunch: &ec2types.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(false),
 				EnableResourceNameDnsARecord:    aws.Bool(false),
-				HostnameType:                    aws.String(ec2.HostnameTypeIpName),
+				HostnameType:                    ec2types.HostnameTypeIpName,
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),
@@ -324,12 +325,12 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// Pre-create the vpc / subnet
-	vpc, err := c.CreateVpc(&ec2.CreateVpcInput{
+	vpc, err := c.CreateVpc(ctx, &ec2.CreateVpcInput{
 		CidrBlock: aws.String("172.20.0.0/16"),
-		TagSpecifications: []*ec2.TagSpecification{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				ResourceType: aws.String(ec2.ResourceTypeVpc),
-				Tags: []*ec2.Tag{
+				ResourceType: ec2types.ResourceTypeVpc,
+				Tags: []ec2types.Tag{
 					{
 						Key:   aws.String("Name"),
 						Value: aws.String("ExistingVPC"),
@@ -342,13 +343,13 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 		t.Fatalf("error creating test VPC: %v", err)
 	}
 
-	subnet, err := c.CreateSubnet(&ec2.CreateSubnetInput{
+	subnet, err := c.CreateSubnet(ctx, &ec2.CreateSubnetInput{
 		VpcId:     vpc.Vpc.VpcId,
 		CidrBlock: aws.String("172.20.1.0/24"),
-		TagSpecifications: []*ec2.TagSpecification{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				ResourceType: aws.String(ec2.ResourceTypeSubnet),
-				Tags: []*ec2.Tag{
+				ResourceType: ec2types.ResourceTypeSubnet,
+				Tags: []ec2types.Tag{
 					{
 						Key:   aws.String("Name"),
 						Value: aws.String("ExistingSubnet"),
@@ -405,13 +406,13 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 		if actual == nil {
 			t.Fatalf("Subnet created but then not found")
 		}
-		expected := &ec2.Subnet{
+		expected := &ec2types.Subnet{
 			AssignIpv6AddressOnCreation: aws.Bool(false),
 			CidrBlock:                   aws.String("172.20.1.0/24"),
-			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+			PrivateDnsNameOptionsOnLaunch: &ec2types.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(false),
 				EnableResourceNameDnsARecord:    aws.Bool(false),
-				HostnameType:                    aws.String(ec2.HostnameTypeIpName),
+				HostnameType:                    ec2types.HostnameTypeIpName,
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),

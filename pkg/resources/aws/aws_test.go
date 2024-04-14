@@ -17,14 +17,16 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/pkg/resources"
@@ -42,16 +44,16 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// Matches by vpc id
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
 		RouteTableId: aws.String("rtb-1234"),
 	})
 
 	// Skips main route tables
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
 		RouteTableId: aws.String("rtb-1234main"),
-		Associations: []*ec2.RouteTableAssociation{
+		Associations: []ec2types.RouteTableAssociation{
 			{
 				Main: aws.Bool(true),
 			},
@@ -59,10 +61,10 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	})
 
 	// Skips route table tagged with other cluster
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
 		RouteTableId: aws.String("rtb-1234notmain"),
-		Tags: []*ec2.Tag{
+		Tags: []ec2types.Tag{
 			{
 				Key:   aws.String(awsup.TagClusterName),
 				Value: aws.String("other.example.com"),
@@ -71,7 +73,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	})
 
 	// Ignores non-matching vpcs
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-5555"),
 		RouteTableId: aws.String("rtb-5555"),
 	})
@@ -243,10 +245,10 @@ func TestListRouteTables(t *testing.T) {
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
 
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
 		RouteTableId: aws.String("rtb-shared"),
-		Tags: []*ec2.Tag{
+		Tags: []ec2types.Tag{
 			{
 				Key:   aws.String("KubernetesCluster"),
 				Value: aws.String(clusterName),
@@ -257,10 +259,10 @@ func TestListRouteTables(t *testing.T) {
 			},
 		},
 	})
-	c.AddRouteTable(&ec2.RouteTable{
+	c.AddRouteTable(&ec2types.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
 		RouteTableId: aws.String("rtb-owned"),
-		Tags: []*ec2.Tag{
+		Tags: []ec2types.Tag{
 			{
 				Key:   aws.String("KubernetesCluster"),
 				Value: aws.String(clusterName),
@@ -287,6 +289,7 @@ func TestListRouteTables(t *testing.T) {
 }
 
 func TestSharedVolume(t *testing.T) {
+	ctx := context.Background()
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	clusterName := "me.example.com"
 	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
@@ -294,11 +297,11 @@ func TestSharedVolume(t *testing.T) {
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
 
-	sharedVolume, err := c.CreateVolume(&ec2.CreateVolumeInput{
-		TagSpecifications: []*ec2.TagSpecification{
+	sharedVolume, err := c.CreateVolume(ctx, &ec2.CreateVolumeInput{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				ResourceType: aws.String(ec2.ResourceTypeVolume),
-				Tags: []*ec2.Tag{
+				ResourceType: ec2types.ResourceTypeVolume,
+				Tags: []ec2types.Tag{
 					{
 						Key:   aws.String(ownershipTagKey),
 						Value: aws.String("shared"),
@@ -311,10 +314,10 @@ func TestSharedVolume(t *testing.T) {
 		t.Fatalf("error creating volume: %v", err)
 	}
 
-	ownedVolume, err := c.CreateVolume(&ec2.CreateVolumeInput{
-		TagSpecifications: []*ec2.TagSpecification{
+	ownedVolume, err := c.CreateVolume(ctx, &ec2.CreateVolumeInput{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				Tags: []*ec2.Tag{
+				Tags: []ec2types.Tag{
 					{
 						Key:   aws.String(ownershipTagKey),
 						Value: aws.String("owned"),

@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -25,7 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
@@ -38,11 +40,11 @@ type EBSVolume struct {
 	Encrypted        *bool
 	ID               *string
 	KmsKeyId         *string
-	SizeGB           *int64
+	SizeGB           *int32
 	Tags             map[string]string
-	VolumeIops       *int64
-	VolumeThroughput *int64
-	VolumeType       *string
+	VolumeIops       *int32
+	VolumeThroughput *int32
+	VolumeType       ec2types.VolumeType
 }
 
 var _ fi.CompareWithID = &EBSVolume{}
@@ -52,15 +54,16 @@ func (e *EBSVolume) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *EBSVolume) Find(context *fi.CloudupContext) (*EBSVolume, error) {
-	cloud := context.T.Cloud.(awsup.AWSCloud)
+func (e *EBSVolume) Find(c *fi.CloudupContext) (*EBSVolume, error) {
+	ctx := c.Context()
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	filters := cloud.BuildFilters(e.Name)
 	request := &ec2.DescribeVolumesInput{
 		Filters: filters,
 	}
 
-	response, err := cloud.EC2().DescribeVolumes(request)
+	response, err := cloud.EC2().DescribeVolumes(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing volumes: %v", err)
 	}
@@ -131,6 +134,7 @@ func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
 }
 
 func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) error {
+	ctx := context.TODO()
 	if a == nil {
 		klog.V(2).Infof("Creating PersistentVolume with Name:%q", *e.Name)
 
@@ -142,10 +146,10 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			Encrypted:         e.Encrypted,
 			Iops:              e.VolumeIops,
 			Throughput:        e.VolumeThroughput,
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVolume, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeVolume, e.Tags),
 		}
 
-		response, err := t.Cloud.EC2().CreateVolume(request)
+		response, err := t.Cloud.EC2().CreateVolume(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating PersistentVolume: %v", err)
 		}
@@ -165,7 +169,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			}
 		}
 
-		if changes.VolumeType != nil ||
+		if len(changes.VolumeType) > 0 ||
 			changes.VolumeIops != nil ||
 			changes.VolumeThroughput != nil ||
 			changes.SizeGB != nil {
@@ -178,7 +182,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 				Size:       e.SizeGB,
 			}
 
-			_, err := t.Cloud.EC2().ModifyVolume(request)
+			_, err := t.Cloud.EC2().ModifyVolume(ctx, request)
 			if err != nil {
 				return fmt.Errorf("error modifying volume: %v", err)
 			}
@@ -201,14 +205,14 @@ func (e *EBSVolume) getEBSVolumeTagsToDelete(currentTags map[string]string) map[
 }
 
 type terraformVolume struct {
-	AvailabilityZone *string           `cty:"availability_zone"`
-	Size             *int64            `cty:"size"`
-	Type             *string           `cty:"type"`
-	Iops             *int64            `cty:"iops"`
-	Throughput       *int64            `cty:"throughput"`
-	KmsKeyId         *string           `cty:"kms_key_id"`
-	Encrypted        *bool             `cty:"encrypted"`
-	Tags             map[string]string `cty:"tags"`
+	AvailabilityZone *string             `cty:"availability_zone"`
+	Size             *int32              `cty:"size"`
+	Type             ec2types.VolumeType `cty:"type"`
+	Iops             *int32              `cty:"iops"`
+	Throughput       *int32              `cty:"throughput"`
+	KmsKeyId         *string             `cty:"kms_key_id"`
+	Encrypted        *bool               `cty:"encrypted"`
+	Tags             map[string]string   `cty:"tags"`
 }
 
 func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -185,7 +184,7 @@ func (t *AWSAPITarget) WaitForInstanceRunning(instanceID string) error {
 
 		state := "?"
 		if instance.State != nil {
-			state = aws.ToString(instance.State.Name)
+			state = string(instance.State.Name)
 		}
 		if state == "running" {
 			return nil

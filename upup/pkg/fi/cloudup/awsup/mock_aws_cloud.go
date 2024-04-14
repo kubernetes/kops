@@ -24,9 +24,6 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -43,7 +40,7 @@ type MockAWSCloud struct {
 	region string
 	tags   map[string]string
 
-	zones []*ec2.AvailabilityZone
+	zones []ec2types.AvailabilityZone
 }
 
 var _ fi.Cloud = (*MockAWSCloud)(nil)
@@ -61,10 +58,10 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 	i := &MockAWSCloud{region: region}
 	for _, c := range zoneLetters {
 		azName := fmt.Sprintf("%s%c", region, c)
-		az := &ec2.AvailabilityZone{
+		az := ec2types.AvailabilityZone{
 			RegionName: aws.String(region),
 			ZoneName:   aws.String(azName),
-			State:      aws.String("available"),
+			State:      ec2types.AvailabilityZoneStateAvailable,
 		}
 		i.zones = append(i.zones, az)
 	}
@@ -73,7 +70,7 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 
 type MockCloud struct {
 	MockAutoscaling awsinterfaces.AutoScalingAPI
-	MockEC2         ec2iface.EC2API
+	MockEC2         awsinterfaces.EC2API
 	MockIAM         awsinterfaces.IAMAPI
 	MockRoute53     awsinterfaces.Route53API
 	MockELB         awsinterfaces.ELBAPI
@@ -91,7 +88,7 @@ func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 }
 
 func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	return deleteInstance(c, i)
+	return deleteInstance(context.TODO(), c, i)
 }
 
 func (c *MockAWSCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
@@ -124,7 +121,7 @@ func (c *MockAWSCloud) Region() string {
 	return c.region
 }
 
-func (c *MockAWSCloud) DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error) {
+func (c *MockAWSCloud) DescribeAvailabilityZones() ([]ec2types.AvailabilityZone, error) {
 	return c.zones, nil
 }
 
@@ -137,7 +134,7 @@ func (c *MockAWSCloud) AddTags(name *string, tags map[string]string) {
 	}
 }
 
-func (c *MockAWSCloud) BuildFilters(name *string) []*ec2.Filter {
+func (c *MockAWSCloud) BuildFilters(name *string) []ec2types.Filter {
 	return buildFilters(c.tags, name)
 }
 
@@ -209,19 +206,19 @@ func (c *MockAWSCloud) DescribeELBV2Tags(loadBalancerArns []string) (map[string]
 	return describeELBV2Tags(c, loadBalancerArns)
 }
 
-func (c *MockAWSCloud) FindELBV2NetworkInterfacesByName(vpcID, loadBalancerName string) ([]*ec2.NetworkInterface, error) {
+func (c *MockAWSCloud) FindELBV2NetworkInterfacesByName(vpcID, loadBalancerName string) ([]ec2types.NetworkInterface, error) {
 	return nil, nil
 }
 
-func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
+func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2types.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }
 
-func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2types.Vpc, error) {
 	return describeVPC(c, vpcID)
 }
 
-func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
+func (c *MockAWSCloud) ResolveImage(name string) (*ec2types.Image, error) {
 	return resolveImage(context.TODO(), c.MockSSM, c.MockEC2, name)
 }
 
@@ -232,7 +229,7 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 	return m
 }
 
-func (c *MockAWSCloud) EC2() ec2iface.EC2API {
+func (c *MockAWSCloud) EC2() awsinterfaces.EC2API {
 	if c.MockEC2 == nil {
 		klog.Fatalf("MockAWSCloud MockEC2 not set")
 	}
@@ -325,27 +322,27 @@ func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Insta
 }
 
 // DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
-func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
+func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2types.InstanceTypeInfo, error) {
 	if instanceType == "t2.invalidType" {
 		return nil, fmt.Errorf("invalid instance type %q specified", "t2.invalidType")
 	}
-	info := &ec2.InstanceTypeInfo{
-		NetworkInfo: &ec2.NetworkInfo{
-			MaximumNetworkInterfaces:  aws.Int64(1),
-			Ipv4AddressesPerInterface: aws.Int64(1),
+	info := &ec2types.InstanceTypeInfo{
+		NetworkInfo: &ec2types.NetworkInfo{
+			MaximumNetworkInterfaces:  aws.Int32(1),
+			Ipv4AddressesPerInterface: aws.Int32(1),
 		},
-		MemoryInfo: &ec2.MemoryInfo{
+		MemoryInfo: &ec2types.MemoryInfo{
 			SizeInMiB: aws.Int64(1024),
 		},
-		VCpuInfo: &ec2.VCpuInfo{
-			DefaultVCpus: aws.Int64(2),
+		VCpuInfo: &ec2types.VCpuInfo{
+			DefaultVCpus: aws.Int32(2),
 		},
 	}
 	if instanceType == "m3.medium" {
-		info.InstanceStorageInfo = &ec2.InstanceStorageInfo{
-			Disks: []*ec2.DiskInfo{
+		info.InstanceStorageInfo = &ec2types.InstanceStorageInfo{
+			Disks: []ec2types.DiskInfo{
 				{
-					Count:    aws.Int64(1),
+					Count:    aws.Int32(1),
 					SizeInGB: aws.Int64(1024),
 				},
 			},
@@ -354,31 +351,31 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 
 	switch instanceType {
 	case "c5.large", "m3.medium", "m4.large", "m5.large", "m5.xlarge", "t3.micro", "t3.medium", "t3.large", "c4.large":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
 	case "a1.large", "m6g.xlarge":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeArm64),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeArm64,
 			},
 		}
 	case "t2.micro", "t2.medium":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeI386),
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeI386,
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
 	case "g4dn.xlarge", "g4ad.16xlarge":
-		info.ProcessorInfo = &ec2.ProcessorInfo{
-			SupportedArchitectures: []*string{
-				aws.String(ec2.ArchitectureTypeX8664),
+		info.ProcessorInfo = &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{
+				ec2types.ArchitectureTypeX8664,
 			},
 		}
-		info.GpuInfo = &ec2.GpuInfo{}
+		info.GpuInfo = &ec2types.GpuInfo{}
 	}
 
 	return info, nil
@@ -389,6 +386,6 @@ func (c *MockAWSCloud) AccountInfo(ctx context.Context) (string, string, error) 
 	return "123456789012", "aws-test", nil
 }
 
-func (c *MockAWSCloud) Session() (*session.Session, error) {
-	return nil, nil
+func (c *MockAWSCloud) Config() aws.Config {
+	return aws.Config{}
 }

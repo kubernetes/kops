@@ -17,33 +17,18 @@ limitations under the License.
 package mockec2
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/pki"
 )
 
-func (m *MockEC2) DescribeKeyPairsRequest(*ec2.DescribeKeyPairsInput) (*request.Request, *ec2.DescribeKeyPairsOutput) {
-	panic("MockEC2 DescribeKeyPairsRequest not implemented")
-}
-
-func (m *MockEC2) DescribeKeyPairsWithContext(aws.Context, *ec2.DescribeKeyPairsInput, ...request.Option) (*ec2.DescribeKeyPairsOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) ImportKeyPairRequest(*ec2.ImportKeyPairInput) (*request.Request, *ec2.ImportKeyPairOutput) {
-	panic("MockEC2 ImportKeyPairRequest not implemented")
-}
-
-func (m *MockEC2) ImportKeyPairWithContext(aws.Context, *ec2.ImportKeyPairInput, ...request.Option) (*ec2.ImportKeyPairOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
+func (m *MockEC2) ImportKeyPair(ctx context.Context, request *ec2.ImportKeyPairInput, optFns ...func(*ec2.Options)) (*ec2.ImportKeyPairOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -57,13 +42,13 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 	n := len(m.KeyPairs) + 1
 	id := fmt.Sprintf("key-%d", n)
 
-	kp := &ec2.KeyPairInfo{
+	kp := &ec2types.KeyPairInfo{
 		KeyFingerprint: aws.String(fp),
 		KeyName:        request.KeyName,
 		KeyPairId:      aws.String(id),
 	}
 	if m.KeyPairs == nil {
-		m.KeyPairs = make(map[string]*ec2.KeyPairInfo)
+		m.KeyPairs = make(map[string]*ec2types.KeyPairInfo)
 	}
 	m.KeyPairs[id] = kp
 	response := &ec2.ImportKeyPairOutput{
@@ -71,30 +56,18 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 		KeyName:        kp.KeyName,
 	}
 
-	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeKeyPair)...)
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2types.ResourceTypeKeyPair)...)
 
 	return response, nil
 }
 
-func (m *MockEC2) CreateKeyPairRequest(*ec2.CreateKeyPairInput) (*request.Request, *ec2.CreateKeyPairOutput) {
-	panic("MockEC2 CreateKeyPairRequest not implemented")
-}
-
-func (m *MockEC2) CreateKeyPairWithContext(aws.Context, *ec2.CreateKeyPairInput, ...request.Option) (*ec2.CreateKeyPairOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) CreateKeyPair(*ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
-	panic("MockEC2 CreateKeyPair not implemented")
-}
-
-func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
+func (m *MockEC2) DescribeKeyPairs(ctx context.Context, request *ec2.DescribeKeyPairsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeKeyPairsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DescribeKeyPairs: %v", request)
 
-	var keypairs []*ec2.KeyPairInfo
+	var keypairs []ec2types.KeyPairInfo
 
 	for _, keypair := range m.KeyPairs {
 		allFiltersMatch := true
@@ -102,7 +75,7 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 		if len(request.KeyNames) != 0 {
 			match := false
 			for _, keyname := range request.KeyNames {
-				if aws.StringValue(keyname) == aws.StringValue(keypair.KeyName) {
+				if keyname == aws.ToString(keypair.KeyName) {
 					match = true
 				}
 			}
@@ -117,7 +90,7 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 
 			case "key-name":
 				for _, v := range filter.Values {
-					if aws.StringValue(keypair.KeyName) == aws.StringValue(v) {
+					if aws.ToString(keypair.KeyName) == v {
 						match = true
 					}
 				}
@@ -136,8 +109,8 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 		}
 
 		copy := *keypair
-		copy.Tags = m.getTags(ec2.ResourceTypeKeyPair, *copy.KeyPairId)
-		keypairs = append(keypairs, &copy)
+		copy.Tags = m.getTags(ec2types.ResourceTypeKeyPair, *copy.KeyPairId)
+		keypairs = append(keypairs, copy)
 	}
 
 	response := &ec2.DescribeKeyPairsOutput{
@@ -147,16 +120,16 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 	return response, nil
 }
 
-func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error) {
+func (m *MockEC2) DeleteKeyPair(ctx context.Context, request *ec2.DeleteKeyPairInput, optFns ...func(*ec2.Options)) (*ec2.DeleteKeyPairOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	klog.Infof("DeleteKeyPair: %v", request)
 
-	keyID := aws.StringValue(request.KeyPairId)
+	keyID := aws.ToString(request.KeyPairId)
 	found := false
 	for id, kp := range m.KeyPairs {
-		if aws.StringValue(kp.KeyPairId) == keyID {
+		if aws.ToString(kp.KeyPairId) == keyID {
 			found = true
 			delete(m.KeyPairs, id)
 		}
@@ -166,12 +139,4 @@ func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKey
 	}
 
 	return &ec2.DeleteKeyPairOutput{}, nil
-}
-
-func (m *MockEC2) DeleteKeyPairWithContext(aws.Context, *ec2.DeleteKeyPairInput, ...request.Option) (*ec2.DeleteKeyPairOutput, error) {
-	panic("Not implemented")
-}
-
-func (m *MockEC2) DeleteKeyPairRequest(*ec2.DeleteKeyPairInput) (*request.Request, *ec2.DeleteKeyPairOutput) {
-	panic("Not implemented")
 }

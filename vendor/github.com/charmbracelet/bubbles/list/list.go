@@ -24,7 +24,7 @@ import (
 
 // Item is an item that appears in the list.
 type Item interface {
-	// Filter value is the value we use when filtering against this item when
+	// FilterValue is the value we use when filtering against this item when
 	// we're filtering the list.
 	FilterValue() string
 }
@@ -132,8 +132,9 @@ type Model struct {
 	itemNameSingular string
 	itemNamePlural   string
 
-	Title  string
-	Styles Styles
+	Title             string
+	Styles            Styles
+	InfiniteScrolling bool
 
 	// Key mappings for navigating the list.
 	KeyMap KeyMap
@@ -183,18 +184,18 @@ type Model struct {
 func New(items []Item, delegate ItemDelegate, width, height int) Model {
 	styles := DefaultStyles()
 
-	sp := spinner.NewModel()
+	sp := spinner.New()
 	sp.Spinner = spinner.Line
 	sp.Style = styles.Spinner
 
-	filterInput := textinput.NewModel()
+	filterInput := textinput.New()
 	filterInput.Prompt = "Filter: "
 	filterInput.PromptStyle = styles.FilterPrompt
-	filterInput.CursorStyle = styles.FilterCursor
+	filterInput.Cursor.Style = styles.FilterCursor
 	filterInput.CharLimit = 64
 	filterInput.Focus()
 
-	p := paginator.NewModel()
+	p := paginator.New()
 	p.Type = paginator.Dots
 	p.ActiveDot = styles.ActivePaginationDot.String()
 	p.InactiveDot = styles.InactivePaginationDot.String()
@@ -221,7 +222,7 @@ func New(items []Item, delegate ItemDelegate, width, height int) Model {
 		items:     items,
 		Paginator: p,
 		spinner:   sp,
-		Help:      help.NewModel(),
+		Help:      help.New(),
 	}
 
 	m.updatePagination()
@@ -231,7 +232,7 @@ func New(items []Item, delegate ItemDelegate, width, height int) Model {
 
 // NewModel returns a new model with sensible defaults.
 //
-// Deprecated. Use New instead.
+// Deprecated: use [New] instead.
 var NewModel = New
 
 // SetFilteringEnabled enables or disables filtering. Note that this is different
@@ -291,7 +292,7 @@ func (m Model) ShowStatusBar() bool {
 	return m.showStatusBar
 }
 
-// SetStatusBarItemName defines a replacement for the items identifier.
+// SetStatusBarItemName defines a replacement for the item's identifier.
 // Defaults to item/items.
 func (m *Model) SetStatusBarItemName(singular, plural string) {
 	m.itemNameSingular = singular
@@ -303,7 +304,7 @@ func (m Model) StatusBarItemName() (string, string) {
 	return m.itemNameSingular, m.itemNamePlural
 }
 
-// SetShowPagination hides or shoes the paginator. Note that pagination will
+// SetShowPagination hides or shows the paginator. Note that pagination will
 // still be active, it simply won't be displayed.
 func (m *Model) SetShowPagination(v bool) {
 	m.showPagination = v
@@ -331,7 +332,7 @@ func (m Model) Items() []Item {
 	return m.items
 }
 
-// Set the items available in the list. This returns a command.
+// SetItems sets the items available in the list. This returns a command.
 func (m *Model) SetItems(i []Item) tea.Cmd {
 	var cmd tea.Cmd
 	m.items = i
@@ -362,7 +363,7 @@ func (m *Model) ResetFilter() {
 	m.resetFiltering()
 }
 
-// Replace an item at the given index. This returns a command.
+// SetItem replaces an item at the given index. This returns a command.
 func (m *Model) SetItem(index int, item Item) tea.Cmd {
 	var cmd tea.Cmd
 	m.items[index] = item
@@ -375,8 +376,8 @@ func (m *Model) SetItem(index int, item Item) tea.Cmd {
 	return cmd
 }
 
-// Insert an item at the given index. If index is out of the upper bound, the
-// item will be appended. This returns a command.
+// InsertItem inserts an item at the given index. If the index is out of the upper bound,
+// the item will be appended. This returns a command.
 func (m *Model) InsertItem(index int, item Item) tea.Cmd {
 	var cmd tea.Cmd
 	m.items = insertItemIntoSlice(m.items, item, index)
@@ -404,7 +405,7 @@ func (m *Model) RemoveItem(index int) {
 	m.updatePagination()
 }
 
-// Set the item delegate.
+// SetDelegate sets the item delegate.
 func (m *Model) SetDelegate(d ItemDelegate) {
 	m.delegate = d
 	m.updatePagination()
@@ -418,7 +419,7 @@ func (m Model) VisibleItems() []Item {
 	return m.items
 }
 
-// SelectedItems returns the current selected item in the list.
+// SelectedItem returns the current selected item in the list.
 func (m Model) SelectedItem() Item {
 	i := m.Index()
 
@@ -459,6 +460,13 @@ func (m *Model) CursorUp() {
 
 	// If we're at the start, stop
 	if m.cursor < 0 && m.Paginator.Page == 0 {
+		// if infinite scrolling is enabled, go to the last item
+		if m.InfiniteScrolling {
+			m.Paginator.Page = m.Paginator.TotalPages - 1
+			m.cursor = m.Paginator.ItemsOnPage(len(m.VisibleItems())) - 1
+			return
+		}
+
 		m.cursor = 0
 		return
 	}
@@ -501,6 +509,12 @@ func (m *Model) CursorDown() {
 	}
 
 	m.cursor = itemsOnPage - 1
+
+	// if infinite scrolling is enabled, go to the first item
+	if m.InfiniteScrolling {
+		m.Paginator.Page = 0
+		m.cursor = 0
+	}
 }
 
 // PrevPage moves to the previous page, if available.
@@ -526,12 +540,20 @@ func (m Model) FilterValue() string {
 // SettingFilter returns whether or not the user is currently editing the
 // filter value. It's purely a convenience method for the following:
 //
-//     m.FilterState() == Filtering
+//	m.FilterState() == Filtering
 //
 // It's included here because it's a common thing to check for when
 // implementing this component.
 func (m Model) SettingFilter() bool {
 	return m.filterState == Filtering
+}
+
+// IsFiltered returns whether or not the list is currently filtered.
+// It's purely a convenience method for the following:
+//
+//	m.FilterState() == FilterApplied
+func (m Model) IsFiltered() bool {
+	return m.filterState == FilterApplied
 }
 
 // Width returns the current width setting.
@@ -549,7 +571,7 @@ func (m *Model) SetSpinner(spinner spinner.Spinner) {
 	m.spinner.Spinner = spinner
 }
 
-// Toggle the spinner. Note that this also returns a command.
+// ToggleSpinner toggles the spinner. Note that this also returns a command.
 func (m *Model) ToggleSpinner() tea.Cmd {
 	if !m.showSpinner {
 		return m.StartSpinner()
@@ -561,7 +583,7 @@ func (m *Model) ToggleSpinner() tea.Cmd {
 // StartSpinner starts the spinner. Note that this returns a command.
 func (m *Model) StartSpinner() tea.Cmd {
 	m.showSpinner = true
-	return spinner.Tick
+	return m.spinner.Tick
 }
 
 // StopSpinner stops the spinner.
@@ -569,8 +591,8 @@ func (m *Model) StopSpinner() {
 	m.showSpinner = false
 }
 
-// Helper for disabling the keybindings used for quitting, in case you want to
-// handle this elsewhere in your application.
+// DisableQuitKeybindings is a helper for disabling the keybindings used for quitting,
+// in case you want to handle this elsewhere in your application.
 func (m *Model) DisableQuitKeybindings() {
 	m.disableQuitKeybindings = true
 	m.KeyMap.Quit.SetEnabled(false)
@@ -638,7 +660,7 @@ func (m Model) itemsAsFilterItems() filteredItems {
 			item: item,
 		}
 	}
-	return filteredItems(fi)
+	return fi
 }
 
 // Set keybindings according to the filter state.

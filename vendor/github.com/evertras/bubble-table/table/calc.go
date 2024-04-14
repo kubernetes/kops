@@ -16,7 +16,9 @@ func max(x, y int) int {
 	return y
 }
 
-// nolint: varnamelen
+// These var names are fine for this little function
+//
+//nolint:varnamelen
 func gcd(x, y int) int {
 	if x == 0 {
 		return y

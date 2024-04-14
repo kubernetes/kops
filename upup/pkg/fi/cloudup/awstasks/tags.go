@@ -20,12 +20,12 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	eventbridgetypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func mapEC2TagsToMap(tags []*ec2.Tag) map[string]string {
+func mapEC2TagsToMap(tags []ec2types.Tag) map[string]string {
 	if tags == nil {
 		return nil
 	}
@@ -81,7 +81,7 @@ func mapEventBridgeTagsToMap(tags []eventbridgetypes.Tag) map[string]string {
 	return m
 }
 
-func findNameTag(tags []*ec2.Tag) *string {
+func findNameTag(tags []ec2types.Tag) *string {
 	for _, tag := range tags {
 		if aws.ToString(tag.Key) == "Name" {
 			return tag.Value
@@ -92,7 +92,7 @@ func findNameTag(tags []*ec2.Tag) *string {
 
 // intersectTags returns the tags of interest from a specified list of AWS tags;
 // because we only add tags, this set of tags of interest is the tags that occur in the desired set.
-func intersectTags(tags []*ec2.Tag, desired map[string]string) map[string]string {
+func intersectTags(tags []ec2types.Tag, desired map[string]string) map[string]string {
 	if tags == nil {
 		return nil
 	}

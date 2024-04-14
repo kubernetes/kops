@@ -26,7 +26,8 @@ const (
 	backgroundKey
 	widthKey
 	heightKey
-	alignKey
+	alignHorizontalKey
+	alignVerticalKey
 
 	// Padding.
 	paddingTopKey
@@ -74,17 +75,34 @@ const (
 // A set of properties.
 type rules map[propKey]interface{}
 
-// NewStyle returns a new, empty Style.  While it's syntactic sugar for the
+// NewStyle returns a new, empty Style. While it's syntactic sugar for the
 // Style{} primitive, it's recommended to use this function for creating styles
-// incase the underlying implementation changes.
+// in case the underlying implementation changes. It takes an optional string
+// value to be set as the underlying string value for this style.
 func NewStyle() Style {
-	return Style{}
+	return renderer.NewStyle()
+}
+
+// NewStyle returns a new, empty Style. While it's syntactic sugar for the
+// Style{} primitive, it's recommended to use this function for creating styles
+// in case the underlying implementation changes. It takes an optional string
+// value to be set as the underlying string value for this style.
+func (r *Renderer) NewStyle() Style {
+	s := Style{r: r}
+	return s
 }
 
 // Style contains a set of rules that comprise a style as a whole.
 type Style struct {
+	r     *Renderer
 	rules map[propKey]interface{}
 	value string
+}
+
+// joinString joins a list of strings into a single string separated with a
+// space.
+func joinString(strs ...string) string {
+	return strings.Join(strs, " ")
 }
 
 // SetString sets the underlying string value for this style. To render once
@@ -92,8 +110,8 @@ type Style struct {
 // a convenience for cases when having a stringer implementation is handy, such
 // as when using fmt.Sprintf. You can also simply define a style and render out
 // strings directly with Style.Render.
-func (s Style) SetString(str string) Style {
-	s.value = str
+func (s Style) SetString(strs ...string) Style {
+	s.value = joinString(strs...)
 	return s
 }
 
@@ -106,7 +124,7 @@ func (s Style) Value() string {
 // on the rules in this style. An underlying string value must be set with
 // Style.SetString prior to using this method.
 func (s Style) String() string {
-	return s.Render(s.value)
+	return s.Render()
 }
 
 // Copy returns a copy of this style, including any underlying string values.
@@ -116,13 +134,14 @@ func (s Style) Copy() Style {
 	for k, v := range s.rules {
 		o.rules[k] = v
 	}
+	o.r = s.r
 	o.value = s.value
 	return o
 }
 
-// Inherit takes values from the style in the argument applies them to this
-// style, overwriting existing definitions. Only values explicitly set on the
-// style in argument will be applied.
+// Inherit overlays the style in the argument onto this style by copying each explicitly
+// set value from the argument style onto this style if it is not already explicitly set.
+// Existing set values are kept intact and not overwritten.
 //
 // Margins, padding, and underlying string values are not inherited.
 func (s Style) Inherit(i Style) Style {
@@ -137,8 +156,6 @@ func (s Style) Inherit(i Style) Style {
 			// Padding is not inherited
 			continue
 		case backgroundKey:
-			s.rules[k] = v
-
 			// The margins also inherit the background color
 			if !s.isSet(marginBackgroundKey) && !i.isSet(marginBackgroundKey) {
 				s.rules[marginBackgroundKey] = v
@@ -154,11 +171,20 @@ func (s Style) Inherit(i Style) Style {
 }
 
 // Render applies the defined style formatting to a given string.
-func (s Style) Render(str string) string {
+func (s Style) Render(strs ...string) string {
+	if s.r == nil {
+		s.r = renderer
+	}
+	if s.value != "" {
+		strs = append([]string{s.value}, strs...)
+	}
+
 	var (
-		te           termenv.Style
-		teSpace      termenv.Style
-		teWhitespace termenv.Style
+		str = joinString(strs...)
+
+		te           = s.r.ColorProfile().String()
+		teSpace      = s.r.ColorProfile().String()
+		teWhitespace = s.r.ColorProfile().String()
 
 		bold          = s.getAsBool(boldKey, false)
 		italic        = s.getAsBool(italicKey, false)
@@ -171,9 +197,10 @@ func (s Style) Render(str string) string {
 		fg = s.getAsColor(foregroundKey)
 		bg = s.getAsColor(backgroundKey)
 
-		width  = s.getAsInt(widthKey)
-		height = s.getAsInt(heightKey)
-		align  = s.getAsPosition(alignKey)
+		width           = s.getAsInt(widthKey)
+		height          = s.getAsInt(heightKey)
+		horizontalAlign = s.getAsPosition(alignHorizontalKey)
+		verticalAlign   = s.getAsPosition(alignVerticalKey)
 
 		topPadding    = s.getAsInt(paddingTopKey)
 		rightPadding  = s.getAsInt(paddingRightKey)
@@ -227,24 +254,22 @@ func (s Style) Render(str string) string {
 	}
 
 	if fg != noColor {
-		fgc := fg.color()
-		te = te.Foreground(fgc)
+		te = te.Foreground(fg.color(s.r))
 		if styleWhitespace {
-			teWhitespace = teWhitespace.Foreground(fgc)
+			teWhitespace = teWhitespace.Foreground(fg.color(s.r))
 		}
 		if useSpaceStyler {
-			teSpace = teSpace.Foreground(fgc)
+			teSpace = teSpace.Foreground(fg.color(s.r))
 		}
 	}
 
 	if bg != noColor {
-		bgc := bg.color()
-		te = te.Background(bgc)
+		te = te.Background(bg.color(s.r))
 		if colorWhitespace {
-			teWhitespace = teWhitespace.Background(bgc)
+			teWhitespace = teWhitespace.Background(bg.color(s.r))
 		}
 		if useSpaceStyler {
-			teSpace = teSpace.Background(bgc)
+			teSpace = teSpace.Background(bg.color(s.r))
 		}
 	}
 
@@ -264,7 +289,7 @@ func (s Style) Render(str string) string {
 
 	// Strip newlines in single line mode
 	if inline {
-		str = strings.Replace(str, "\n", "", -1)
+		str = strings.ReplaceAll(str, "\n", "")
 	}
 
 	// Word wrap
@@ -329,10 +354,7 @@ func (s Style) Render(str string) string {
 
 	// Height
 	if height > 0 {
-		h := strings.Count(str, "\n") + 1
-		if height > h {
-			str += strings.Repeat("\n", height-h)
-		}
+		str = alignTextVertical(str, verticalAlign, height, nil)
 	}
 
 	// Set alignment. This will also pad short lines with spaces so that all
@@ -346,7 +368,7 @@ func (s Style) Render(str string) string {
 			if colorWhitespace || styleWhitespace {
 				st = &teWhitespace
 			}
-			str = alignText(str, align, width, st)
+			str = alignTextHorizontal(str, horizontalAlign, width, st)
 		}
 	}
 
@@ -387,7 +409,7 @@ func (s Style) applyMargins(str string, inline bool) string {
 
 	bgc := s.getAsColor(marginBackgroundKey)
 	if bgc != noColor {
-		styler = styler.Background(bgc.color())
+		styler = styler.Background(bgc.color(s.r))
 	}
 
 	// Add left and right margin
@@ -435,7 +457,7 @@ func padLeft(str string, n int, style *termenv.Style) string {
 	return b.String()
 }
 
-// Apply right right padding.
+// Apply right padding.
 func padRight(str string, n int, style *termenv.Style) string {
 	if n == 0 || str == "" {
 		return str

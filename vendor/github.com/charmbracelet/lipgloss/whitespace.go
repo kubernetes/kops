@@ -9,8 +9,23 @@ import (
 
 // whitespace is a whitespace renderer.
 type whitespace struct {
+	re    *Renderer
 	style termenv.Style
 	chars string
+}
+
+// newWhitespace creates a new whitespace renderer. The order of the options
+// matters, it you'r using WithWhitespaceRenderer, make sure it comes first as
+// other options might depend on it.
+func newWhitespace(r *Renderer, opts ...WhitespaceOption) *whitespace {
+	w := &whitespace{
+		re:    r,
+		style: r.ColorProfile().String(),
+	}
+	for _, opt := range opts {
+		opt(w)
+	}
+	return w
 }
 
 // Render whitespaces.
@@ -49,14 +64,14 @@ type WhitespaceOption func(*whitespace)
 // WithWhitespaceForeground sets the color of the characters in the whitespace.
 func WithWhitespaceForeground(c TerminalColor) WhitespaceOption {
 	return func(w *whitespace) {
-		w.style = w.style.Foreground(c.color())
+		w.style = w.style.Foreground(c.color(w.re))
 	}
 }
 
 // WithWhitespaceBackground sets the background color of the whitespace.
 func WithWhitespaceBackground(c TerminalColor) WhitespaceOption {
 	return func(w *whitespace) {
-		w.style = w.style.Background(c.color())
+		w.style = w.style.Background(c.color(w.re))
 	}
 }
 

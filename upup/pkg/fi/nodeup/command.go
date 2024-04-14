@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -32,11 +33,12 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"go.uber.org/multierr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -264,7 +266,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if nvidia != nil && fi.ValueOf(nvidia.Enabled) {
 			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.
-			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, modelContext.MachineType)
+			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, ec2types.InstanceType(modelContext.MachineType))
 			if err != nil {
 				return err
 			}
@@ -742,9 +744,8 @@ func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (
 
 	targetLifecycleState, err := vfs.Context.ReadFile("metadata://aws/meta-data/autoscaling/target-lifecycle-state")
 	if err != nil {
-		var awsErr awserr.RequestFailure
-		if errors.As(err, &awsErr) && awsErr.StatusCode() == 404 {
-			// The instance isn't in an ASG (karpenter, etc.)
+		var awsErr *awshttp.ResponseError
+		if errors.As(err, &awsErr) && awsErr.HTTPStatusCode() == http.StatusNotFound {
 			return "", nil
 		}
 		return "", fmt.Errorf("error reading target-lifecycle-state from instance metadata: %v", err)

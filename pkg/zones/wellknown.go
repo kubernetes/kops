@@ -17,12 +17,13 @@ limitations under the License.
 package zones
 
 import (
+	"context"
 	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -244,6 +245,8 @@ func scwZones() []string {
 }
 
 func WellKnownZonesForCloud(matchCloud kops.CloudProviderID, prefix string) []string {
+	ctx := context.Background()
+
 	var found []string
 	switch matchCloud {
 	case kops.CloudProviderAWS:
@@ -259,7 +262,7 @@ func WellKnownZonesForCloud(matchCloud kops.CloudProviderID, prefix string) []st
 						continue
 					}
 					var zones *ec2.DescribeAvailabilityZonesOutput
-					zones, err = awsCloud.EC2().DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{
+					zones, err = awsCloud.EC2().DescribeAvailabilityZones(ctx, &ec2.DescribeAvailabilityZonesInput{
 						AllAvailabilityZones: aws.Bool(true),
 					})
 					if err != nil {

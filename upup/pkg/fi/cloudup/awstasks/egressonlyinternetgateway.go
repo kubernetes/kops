@@ -17,9 +17,11 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -47,8 +49,8 @@ func (e *EgressOnlyInternetGateway) CompareWithID() *string {
 	return e.ID
 }
 
-func findEgressOnlyInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2.EgressOnlyInternetGateway, error) {
-	response, err := cloud.EC2().DescribeEgressOnlyInternetGateways(request)
+func findEgressOnlyInternetGateway(ctx context.Context, cloud awsup.AWSCloud, request *ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2types.EgressOnlyInternetGateway, error) {
+	response, err := cloud.EC2().DescribeEgressOnlyInternetGateways(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing EgressOnlyInternetGateways: %v", err)
 	}
@@ -60,10 +62,11 @@ func findEgressOnlyInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeEg
 		return nil, fmt.Errorf("found multiple EgressOnlyInternetGateways matching tags")
 	}
 	igw := response.EgressOnlyInternetGateways[0]
-	return igw, nil
+	return &igw, nil
 }
 
 func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInternetGateway, error) {
+	ctx := c.Context()
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeEgressOnlyInternetGatewaysInput{}
@@ -74,16 +77,16 @@ func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInter
 			return nil, fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
 		}
 
-		request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
+		request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
 	} else {
 		if e.ID != nil {
-			request.EgressOnlyInternetGatewayIds = []*string{e.ID}
+			request.EgressOnlyInternetGatewayIds = []string{fi.ValueOf(e.ID)}
 		} else {
 			request.Filters = cloud.BuildFilters(e.Name)
 		}
 	}
 
-	eigw, err := findEgressOnlyInternetGateway(cloud, request)
+	eigw, err := findEgressOnlyInternetGateway(ctx, cloud, request)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +138,7 @@ func (s *EgressOnlyInternetGateway) CheckChanges(a, e, changes *EgressOnlyIntern
 }
 
 func (_ *EgressOnlyInternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EgressOnlyInternetGateway) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the EgressOnlyInternetGateway was found and matches our required settings
@@ -150,10 +154,10 @@ func (_ *EgressOnlyInternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 
 		request := &ec2.CreateEgressOnlyInternetGatewayInput{
 			VpcId:             e.VPC.ID,
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeEgressOnlyInternetGateway, e.Tags),
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeEgressOnlyInternetGateway, e.Tags),
 		}
 
-		response, err := t.Cloud.EC2().CreateEgressOnlyInternetGateway(request)
+		response, err := t.Cloud.EC2().CreateEgressOnlyInternetGateway(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error creating EgressOnlyInternetGateway: %v", err)
 		}
@@ -171,6 +175,7 @@ type terraformEgressOnlyInternetGateway struct {
 }
 
 func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EgressOnlyInternetGateway) error {
+	ctx := context.TODO()
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
@@ -182,8 +187,8 @@ func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
 			}
-			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
-			igw, err := findEgressOnlyInternetGateway(t.Cloud.(awsup.AWSCloud), request)
+			request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
+			igw, err := findEgressOnlyInternetGateway(ctx, t.Cloud.(awsup.AWSCloud), request)
 			if err != nil {
 				return err
 			}

@@ -15,12 +15,13 @@ package selector
 
 import (
 	"encoding/json"
+	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/awsapi"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"regexp"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity"
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing"
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
 
 // InstanceTypesOutput can be implemented to provide custom output to instance type results
@@ -39,7 +40,7 @@ func (fn InstanceTypesOutputFn) Output(instanceTypes []*instancetypes.Details) [
 
 // Selector is used to filter instance type resource specs
 type Selector struct {
-	EC2                   ec2iface.EC2API
+	EC2                   awsapi.SelectorInterface
 	EC2Pricing            ec2pricing.EC2PricingIface
 	InstanceTypesProvider *instancetypes.Provider
 	ServiceRegistry       ServiceRegistry
@@ -50,6 +51,13 @@ type Selector struct {
 type IntRangeFilter struct {
 	UpperBound int
 	LowerBound int
+}
+
+// Int32RangeFilter holds an upper and lower bound int
+// The lower and upper bound are used to range filter resource specs
+type Int32RangeFilter struct {
+	UpperBound int32
+	LowerBound int32
 }
 
 // Uint64RangeFilter holds an upper and lower bound uint64
@@ -122,11 +130,10 @@ type Filters struct {
 	FreeTier *bool
 
 	// CPUArchitecture of the EC2 instance type
-	// Possible values are: x86_64/amd64 or arm64
-	CPUArchitecture *string
+	CPUArchitecture *ec2types.ArchitectureType
 
 	// CPUManufacturer is used to filter instance types with a specific CPU manufacturer
-	CPUManufacturer *string
+	CPUManufacturer *CPUManufacturer
 
 	// CurrentGeneration returns the latest generation of instance types
 	CurrentGeneration *bool
@@ -141,7 +148,7 @@ type Filters struct {
 	Fpga *bool
 
 	// GpusRange filter is a range of acceptable GPU count available to an EC2 instance type
-	GpusRange *IntRangeFilter
+	GpusRange *Int32RangeFilter
 
 	// GpuMemoryRange filter is a range of acceptable GPU memory in Gibibytes (GiB) available to an EC2 instance type in aggreagte across all GPUs.
 	GpuMemoryRange *ByteQuantityRangeFilter
@@ -167,7 +174,7 @@ type Filters struct {
 
 	// Hypervisor is used to return only a specific hypervisor backed instance type
 	// Possibly values are: xen or nitro
-	Hypervisor *string
+	Hypervisor *ec2types.InstanceTypeHypervisor
 
 	// MaxResults is the maximum number of instance types to return that match the filter criteria
 	MaxResults *int
@@ -176,7 +183,7 @@ type Filters struct {
 	MemoryRange *ByteQuantityRangeFilter
 
 	// NetworkInterfaces filter is a range of the number of ENI attachments an instance type can support
-	NetworkInterfaces *IntRangeFilter
+	NetworkInterfaces *Int32RangeFilter
 
 	// NetworkPerformance filter is a range of network bandwidth an instance type can support
 	NetworkPerformance *IntRangeFilter
@@ -199,14 +206,14 @@ type Filters struct {
 
 	// RootDeviceType is the backing device of the root storage volume
 	// Possible values are: instance-store or ebs
-	RootDeviceType *string
+	RootDeviceType *ec2types.RootDeviceType
 
 	// UsageClass of the instance EC2 instance type
 	// Possible values are: spot or on-demand
-	UsageClass *string
+	UsageClass *ec2types.UsageClassType
 
 	// VCpusRange filter is a range of acceptable VCpus for the instance type
-	VCpusRange *IntRangeFilter
+	VCpusRange *Int32RangeFilter
 
 	// VcpusToMemoryRatio is a ratio of vcpus to memory expressed as a floating point
 	VCpusToMemoryRatio *float64
@@ -232,7 +239,7 @@ type Filters struct {
 	InstanceTypes *[]string
 
 	// VirtualizationType is used to return instance types that match either hvm or pv virtualization types
-	VirtualizationType *string
+	VirtualizationType *ec2types.VirtualizationType
 
 	// PricePerHour is used to return instance types that are equal to or cheaper than the specified price
 	PricePerHour *Float64RangeFilter
@@ -265,3 +272,33 @@ type Filters struct {
 	// DedicatedHosts filters on instance types that support dedicated hosts tenancy
 	DedicatedHosts *bool
 }
+
+type CPUManufacturer string
+
+// Enum values for CPUManufacturer
+const (
+	CPUManufacturerAWS   CPUManufacturer = "aws"
+	CPUManufacturerAMD   CPUManufacturer = "amd"
+	CPUManufacturerIntel CPUManufacturer = "intel"
+)
+
+// Values returns all known values for CPUManufacturer. Note that this can be
+// expanded in the future, and so it is only as up to date as the client. The
+// ordering of this slice is not guaranteed to be stable across updates.
+func (CPUManufacturer) Values() []CPUManufacturer {
+	return []CPUManufacturer{
+		"aws",
+		"amd",
+		"intel",
+	}
+}
+
+// ArchitectureTypeAMD64 is a legacy type we support for b/c that isn't in the API
+const (
+	ArchitectureTypeAMD64 ec2types.ArchitectureType = "amd64"
+)
+
+// ArchitectureTypeAMD64 is a legacy type we support for b/c that isn't in the API
+const (
+	VirtualizationTypePv ec2types.VirtualizationType = "pv"
+)

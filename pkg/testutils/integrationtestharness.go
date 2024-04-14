@@ -28,10 +28,11 @@ import (
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
@@ -178,21 +179,21 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		VPCId: aws.String("vpc-12345678"),
 	}})
 
-	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
 		CreationDate:   aws.String("2022-04-04T00:00:00.000Z"),
 		ImageId:        aws.String("ami-12345678"),
 		Name:           aws.String("images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404"),
 		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
 		RootDeviceName: aws.String("/dev/xvda"),
-		Architecture:   aws.String("x86_64"),
+		Architecture:   ec2types.ArchitectureValuesX8664,
 	})
 
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: aws.String("172.20.0.0/16"),
-		TagSpecifications: []*ec2.TagSpecification{
+		TagSpecifications: []ec2types.TagSpecification{
 			{
-				ResourceType: aws.String(ec2.ResourceTypeVpc),
-				Tags: []*ec2.Tag{
+				ResourceType: ec2types.ResourceTypeVpc,
+				Tags: []ec2types.Tag{
 					{
 						Key:   aws.String("kubernetes.io/cluster/minimal.example.com"),
 						Value: aws.String(""),
@@ -201,12 +202,12 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 			},
 		},
 	}, "vpc-12345678")
-	mockEC2.CreateInternetGateway(&ec2.CreateInternetGatewayInput{})
-	mockEC2.AttachInternetGateway(&ec2.AttachInternetGatewayInput{
+	mockEC2.CreateInternetGateway(ctx, &ec2.CreateInternetGatewayInput{})
+	mockEC2.AttachInternetGateway(ctx, &ec2.AttachInternetGatewayInput{
 		InternetGatewayId: aws.String("igw-1"),
 		VpcId:             aws.String("vpc-12345678"),
 	})
-	mockEC2.CreateEgressOnlyInternetGateway(&ec2.CreateEgressOnlyInternetGatewayInput{
+	mockEC2.CreateEgressOnlyInternetGateway(ctx, &ec2.CreateEgressOnlyInternetGatewayInput{
 		VpcId: aws.String("vpc-12345678"),
 	})
 
@@ -219,7 +220,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		AvailabilityZone: aws.String("us-test-1a"),
 		CidrBlock:        aws.String("172.20.32.0/19"),
 	}, "subnet-12345678")
-	mockEC2.AssociateRouteTable(&ec2.AssociateRouteTableInput{
+	mockEC2.AssociateRouteTable(ctx, &ec2.AssociateRouteTableInput{
 		RouteTableId: aws.String("rtb-12345678"),
 		SubnetId:     aws.String("subnet-12345678"),
 	})
@@ -234,7 +235,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		CidrBlock:        aws.String("172.20.8.0/22"),
 	}, "subnet-b2345678")
 
-	mockEC2.AssociateRouteTable(&ec2.AssociateRouteTableInput{
+	mockEC2.AssociateRouteTable(ctx, &ec2.AssociateRouteTableInput{
 		RouteTableId: aws.String("rtb-12345678"),
 		SubnetId:     aws.String("subnet-abcdef"),
 	})

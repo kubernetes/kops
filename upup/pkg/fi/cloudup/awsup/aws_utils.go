@@ -29,13 +29,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
-	ec2v2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -54,7 +53,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 	if allRegions == nil {
 		klog.V(2).Infof("Querying EC2 for all valid regions")
 
-		request := &ec2v2.DescribeRegionsInput{}
+		request := &ec2.DescribeRegionsInput{}
 		awsRegion := os.Getenv("AWS_REGION")
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
@@ -68,7 +67,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 			return fmt.Errorf("error starting a new AWS session: %v", err)
 		}
 
-		client := ec2v2.NewFromConfig(cfg)
+		client := ec2.NewFromConfig(cfg)
 
 		response, err := client.DescribeRegions(ctx, request)
 		if err != nil {
@@ -116,7 +115,7 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 }
 
 // FindEC2Tag find the value of the tag with the specified key
-func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
+func FindEC2Tag(tags []ec2types.Tag, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.ToString(tag.Key) {
 			return aws.ToString(tag.Value), true
@@ -180,22 +179,22 @@ func AWSErrorMessage(err error) string {
 }
 
 // EC2TagSpecification converts a map of tags to an EC2 TagSpecification
-func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.TagSpecification {
+func EC2TagSpecification(resourceType ec2types.ResourceType, tags map[string]string) []ec2types.TagSpecification {
 	if len(tags) == 0 {
 		return nil
 	}
-	specification := &ec2.TagSpecification{
-		ResourceType: aws.String(resourceType),
-		Tags:         make([]*ec2.Tag, 0),
+	specification := ec2types.TagSpecification{
+		ResourceType: resourceType,
+		Tags:         make([]ec2types.Tag, 0),
 	}
 	for k, v := range tags {
-		specification.Tags = append(specification.Tags, &ec2.Tag{
+		specification.Tags = append(specification.Tags, ec2types.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})
 	}
 
-	return []*ec2.TagSpecification{specification}
+	return []ec2types.TagSpecification{specification}
 }
 
 // ELBv2Tags converts a map of tags to ELBv2 Tags

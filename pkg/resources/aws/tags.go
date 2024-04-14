@@ -18,22 +18,22 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // HasOwnedTag looks for the new tag indicating that the cluster does owns the resource, or the legacy tag
-func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
+func HasOwnedTag(description string, tags []ec2types.Tag, clusterName string) bool {
 	tagKey := "kubernetes.io/cluster/" + clusterName
 
-	var found *ec2.Tag
+	var found *ec2types.Tag
 	for _, tag := range tags {
 		if aws.ToString(tag.Key) != tagKey {
 			continue
 		}
 
-		found = tag
+		found = &tag
 	}
 
 	if found != nil {
@@ -56,7 +56,7 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 			continue
 		}
 
-		found = tag
+		found = &tag
 	}
 
 	if found != nil {

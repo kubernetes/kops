@@ -25,7 +25,7 @@ func (m Model) View() string {
 	if m.headerVisible {
 		rowStrs = append(rowStrs, headers)
 	} else if endRowIndex-startRowIndex > 0 {
-		// nolint: gomnd // This is just getting the first newlined substring
+		//nolint: gomnd // This is just getting the first newlined substring
 		split := strings.SplitN(headers, "\n", 2)
 		rowStrs = append(rowStrs, split[0])
 	}

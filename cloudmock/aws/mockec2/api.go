@@ -20,59 +20,59 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
 type MockEC2 struct {
 	// Stub out interface
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 
 	mutex sync.Mutex
 
 	addressNumber int
-	Addresses     map[string]*ec2.Address
+	Addresses     map[string]*ec2types.Address
 
-	RouteTables map[string]*ec2.RouteTable
+	RouteTables map[string]*ec2types.RouteTable
 
-	DhcpOptions map[string]*ec2.DhcpOptions
+	DhcpOptions map[string]*ec2types.DhcpOptions
 
-	Images []*ec2.Image
+	Images []*ec2types.Image
 
 	securityGroupNumber int
-	SecurityGroups      map[string]*ec2.SecurityGroup
-	SecurityGroupRules  map[string]*ec2.SecurityGroupRule
+	SecurityGroups      map[string]*ec2types.SecurityGroup
+	SecurityGroupRules  map[string]*ec2types.SecurityGroupRule
 
 	subnets map[string]*subnetInfo
 
-	Volumes map[string]*ec2.Volume
+	Volumes map[string]*ec2types.Volume
 
-	KeyPairs map[string]*ec2.KeyPairInfo
+	KeyPairs map[string]*ec2types.KeyPairInfo
 
-	Tags []*ec2.TagDescription
+	Tags []*ec2types.TagDescription
 
 	Vpcs map[string]*vpcInfo
 
-	InternetGateways           map[string]*ec2.InternetGateway
-	EgressOnlyInternetGateways map[string]*ec2.EgressOnlyInternetGateway
+	InternetGateways           map[string]*ec2types.InternetGateway
+	EgressOnlyInternetGateways map[string]*ec2types.EgressOnlyInternetGateway
 
 	launchTemplateNumber int
 	LaunchTemplates      map[string]*launchTemplateInfo
 
-	NatGateways map[string]*ec2.NatGateway
+	NatGateways map[string]*ec2types.NatGateway
 
 	idsMutex sync.Mutex
 	ids      map[string]*idAllocator
 }
 
-var _ ec2iface.EC2API = &MockEC2{}
+var _ awsinterfaces.EC2API = &MockEC2{}
 
 func (m *MockEC2) All() map[string]interface{} {
 	all := make(map[string]interface{})
 
 	for _, o := range m.Addresses {
-		all[aws.StringValue(o.AllocationId)] = o
+		all[aws.ToString(o.AllocationId)] = o
 	}
 	for id, o := range m.RouteTables {
 		all[id] = o
@@ -81,7 +81,7 @@ func (m *MockEC2) All() map[string]interface{} {
 		all[id] = o
 	}
 	for _, o := range m.Images {
-		all[aws.StringValue(o.ImageId)] = o
+		all[aws.ToString(o.ImageId)] = o
 	}
 	for id, o := range m.SecurityGroups {
 		all[id] = o

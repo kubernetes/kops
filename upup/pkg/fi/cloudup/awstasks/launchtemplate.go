@@ -21,6 +21,7 @@ import (
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -42,34 +43,34 @@ type LaunchTemplate struct {
 	// CPUCredits is the credit option for CPU Usage on some instance types
 	CPUCredits *string
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
-	HTTPPutResponseHopLimit *int64
+	HTTPPutResponseHopLimit *int32
 	// HTTPTokens is the state of token usage for your instance metadata requests.
-	HTTPTokens *string
+	HTTPTokens *ec2types.LaunchTemplateHttpTokensState
 	// HTTPProtocolIPv6 enables the IPv6 instance metadata endpoint
-	HTTPProtocolIPv6 *string
+	HTTPProtocolIPv6 *ec2types.LaunchTemplateInstanceMetadataProtocolIpv6
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ImageID is the AMI to use for the instances
 	ImageID *string
 	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
 	// or stopped after interruption
-	InstanceInterruptionBehavior *string
+	InstanceInterruptionBehavior *ec2types.InstanceInterruptionBehavior
 	// InstanceMonitoring indicates if monitoring is enabled
 	InstanceMonitoring *bool
 	// InstanceType is the type of instance we are using
-	InstanceType *string
+	InstanceType *ec2types.InstanceType
 	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
-	IPv6AddressCount *int64
+	IPv6AddressCount *int32
 	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
-	RootVolumeIops *int64
+	RootVolumeIops *int32
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
-	RootVolumeSize *int64
+	RootVolumeSize *int32
 	// RootVolumeThroughput is the volume throughput in MBps when the volume type is gp3
-	RootVolumeThroughput *int64
+	RootVolumeThroughput *int32
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
-	RootVolumeType *string
+	RootVolumeType ec2types.VolumeType
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool
 	// RootVolumeKmsKey is the encryption key identifier for EBS root volume encryption
@@ -81,11 +82,11 @@ type LaunchTemplate struct {
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
 	SpotPrice *string
 	// SpotDurationInMinutes is set for requesting spot blocks
-	SpotDurationInMinutes *int64
+	SpotDurationInMinutes *int32
 	// Tags are the keypairs to apply to the instance and volume on launch as well as the launch template itself.
 	Tags map[string]string
 	// Tenancy. Can be either default or dedicated.
-	Tenancy *string
+	Tenancy *ec2types.Tenancy
 	// UserData is the user data configuration
 	UserData fi.Resource
 }
@@ -171,7 +172,7 @@ func (t *LaunchTemplate) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeleti
 
 	for _, lt := range list {
 		if aws.ToString(lt.LaunchTemplateName) != aws.ToString(t.Name) {
-			removals = append(removals, &deleteLaunchTemplate{lc: lt})
+			removals = append(removals, &deleteLaunchTemplate{lc: fi.PtrTo(lt)})
 		}
 	}
 

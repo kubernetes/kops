@@ -31,17 +31,15 @@ color conversions.
 go get github.com/muesli/termenv
 ```
 
-## Query Terminal Support
-
-`termenv` can query the terminal it is running in, so you can safely use
-advanced features, like RGB colors. `ColorProfile` returns the color profile
-supported by the terminal:
+## Usage
 
 ```go
-profile := termenv.ColorProfile()
+output := termenv.NewOutput(os.Stdout)
 ```
 
-This returns one of the supported color profiles:
+`termenv` queries the terminal's capabilities it is running in, so you can
+safely use advanced features, like RGB colors or ANSI styles. `output.Profile`
+returns the supported profile:
 
 - `termenv.Ascii` - no ANSI support detected, ASCII only
 - `termenv.ANSI` - 16 color ANSI support
@@ -57,39 +55,46 @@ app is running in a light- or dark-themed environment:
 
 ```go
 // Returns terminal's foreground color
-color := termenv.ForegroundColor()
+color := output.ForegroundColor()
 
 // Returns terminal's background color
-color := termenv.BackgroundColor()
+color := output.BackgroundColor()
 
 // Returns whether terminal uses a dark-ish background
-darkTheme := termenv.HasDarkBackground()
+darkTheme := output.HasDarkBackground()
+```
+
+### Manual Profile Selection
+
+If you don't want to rely on the automatic detection, you can manually select
+the profile you want to use:
+
+```go
+output := termenv.NewOutput(os.Stdout, termenv.WithProfile(termenv.TrueColor))
 ```
 
 ## Colors
 
-`termenv` supports multiple color profiles: ANSI (16 colors), ANSI Extended
-(256 colors), and TrueColor (24-bit RGB). Colors will automatically be degraded
-to the best matching available color in the desired profile:
+`termenv` supports multiple color profiles: Ascii (black & white only),
+ANSI (16 colors), ANSI Extended (256 colors), and TrueColor (24-bit RGB). Colors
+will automatically be degraded to the best matching available color in the
+desired profile:
 
 `TrueColor` => `ANSI 256 Colors` => `ANSI 16 Colors` => `Ascii`
 
 ```go
-s := termenv.String("Hello World")
-
-// Retrieve color profile supported by terminal
-p := termenv.ColorProfile()
+s := output.String("Hello World")
 
 // Supports hex values
 // Will automatically degrade colors on terminals not supporting RGB
-s.Foreground(p.Color("#abcdef"))
+s.Foreground(output.Color("#abcdef"))
 // but also supports ANSI colors (0-255)
-s.Background(p.Color("69"))
+s.Background(output.Color("69"))
 // ...or the color.Color interface
-s.Foreground(p.FromColor(color.RGBA{255, 128, 0, 255}))
+s.Foreground(output.FromColor(color.RGBA{255, 128, 0, 255}))
 
 // Combine fore- & background colors
-s.Foreground(p.Color("#ffffff")).Background(p.Color("#0000ff"))
+s.Foreground(output.Color("#ffffff")).Background(output.Color("#0000ff"))
 
 // Supports the fmt.Stringer interface
 fmt.Println(s)
@@ -100,7 +105,7 @@ fmt.Println(s)
 You can use a chainable syntax to compose your own styles:
 
 ```go
-s := termenv.String("foobar")
+s := output.String("foobar")
 
 // Text styles
 s.Bold()
@@ -122,9 +127,11 @@ s.Bold().Underline()
 
 ## Template Helpers
 
+`termenv` provides a set of helper functions to style your Go templates:
+
 ```go
 // load template helpers
-f := termenv.TemplateFuncs(termenv.ColorProfile())
+f := output.TemplateFuncs()
 tpl := template.New("tpl").Funcs(f)
 
 // apply bold style in a template
@@ -153,161 +160,223 @@ Other available helper functions are: `Faint`, `Italic`, `CrossOut`,
 
 ```go
 // Move the cursor to a given position
-termenv.MoveCursor(row, column)
+output.MoveCursor(row, column)
 
 // Save the cursor position
-termenv.SaveCursorPosition()
+output.SaveCursorPosition()
 
 // Restore a saved cursor position
-termenv.RestoreCursorPosition()
+output.RestoreCursorPosition()
 
 // Move the cursor up a given number of lines
-termenv.CursorUp(n)
+output.CursorUp(n)
 
 // Move the cursor down a given number of lines
-termenv.CursorDown(n)
+output.CursorDown(n)
 
 // Move the cursor up a given number of lines
-termenv.CursorForward(n)
+output.CursorForward(n)
 
 // Move the cursor backwards a given number of cells
-termenv.CursorBack(n)
+output.CursorBack(n)
 
 // Move the cursor down a given number of lines and place it at the beginning
 // of the line
-termenv.CursorNextLine(n)
+output.CursorNextLine(n)
 
 // Move the cursor up a given number of lines and place it at the beginning of
 // the line
-termenv.CursorPrevLine(n)
+output.CursorPrevLine(n)
 ```
 
 ## Screen
 
 ```go
 // Reset the terminal to its default style, removing any active styles
-termenv.Reset()
+output.Reset()
 
 // RestoreScreen restores a previously saved screen state
-termenv.RestoreScreen()
+output.RestoreScreen()
 
 // SaveScreen saves the screen state
-termenv.SaveScreen()
+output.SaveScreen()
 
 // Switch to the altscreen. The former view can be restored with ExitAltScreen()
-termenv.AltScreen()
+output.AltScreen()
 
 // Exit the altscreen and return to the former terminal view
-termenv.ExitAltScreen()
+output.ExitAltScreen()
 
 // Clear the visible portion of the terminal
-termenv.ClearScreen()
+output.ClearScreen()
 
 // Clear the current line
-termenv.ClearLine()
+output.ClearLine()
 
 // Clear a given number of lines
-termenv.ClearLines(n)
+output.ClearLines(n)
 
 // Set the scrolling region of the terminal
-termenv.ChangeScrollingRegion(top, bottom)
+output.ChangeScrollingRegion(top, bottom)
 
 // Insert the given number of lines at the top of the scrollable region, pushing
 // lines below down
-termenv.InsertLines(n)
+output.InsertLines(n)
 
 // Delete the given number of lines, pulling any lines in the scrollable region
 // below up
-termenv.DeleteLines(n)
+output.DeleteLines(n)
 ```
 
 ## Session
 
 ```go
 // SetWindowTitle sets the terminal window title
-termenv.SetWindowTitle(title)
+output.SetWindowTitle(title)
 
 // SetForegroundColor sets the default foreground color
-termenv.SetForegroundColor(color)
+output.SetForegroundColor(color)
 
 // SetBackgroundColor sets the default background color
-termenv.SetBackgroundColor(color)
+output.SetBackgroundColor(color)
 
 // SetCursorColor sets the cursor color
-termenv.SetCursorColor(color)
+output.SetCursorColor(color)
 
 // Hide the cursor
-termenv.HideCursor()
+output.HideCursor()
 
 // Show the cursor
-termenv.ShowCursor()
+output.ShowCursor()
+
+// Copy to clipboard
+output.Copy(message)
+
+// Copy to primary clipboard (X11)
+output.CopyPrimary(message)
+
+// Trigger notification
+output.Notify(title, body)
 ```
 
 ## Mouse
 
 ```go
 // Enable X10 mouse mode, only button press events are sent
-termenv.EnableMousePress()
+output.EnableMousePress()
 
 // Disable X10 mouse mode
-termenv.DisableMousePress()
+output.DisableMousePress()
 
 // Enable Mouse Tracking mode
-termenv.EnableMouse()
+output.EnableMouse()
 
 // Disable Mouse Tracking mode
-termenv.DisableMouse()
+output.DisableMouse()
 
 // Enable Hilite Mouse Tracking mode
-termenv.EnableMouseHilite()
+output.EnableMouseHilite()
 
 // Disable Hilite Mouse Tracking mode
-termenv.DisableMouseHilite()
+output.DisableMouseHilite()
 
 // Enable Cell Motion Mouse Tracking mode
-termenv.EnableMouseCellMotion()
+output.EnableMouseCellMotion()
 
 // Disable Cell Motion Mouse Tracking mode
-termenv.DisableMouseCellMotion()
+output.DisableMouseCellMotion()
 
 // Enable All Motion Mouse mode
-termenv.EnableMouseAllMotion()
+output.EnableMouseAllMotion()
 
 // Disable All Motion Mouse mode
-termenv.DisableMouseAllMotion()
+output.DisableMouseAllMotion()
 ```
 
-## Optional Feature Support
+## Bracketed Paste
 
-| Terminal         | Alt Screen | Query Color Scheme | Query Cursor Position | Set Window Title | Change Cursor Color | Change Default Foreground Setting | Change Default Background Setting |
-| ---------------- | :--------: | :----------------: | :-------------------: | :--------------: | :-----------------: | :-------------------------------: | :-------------------------------: |
-| alacritty        |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| foot             |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| kitty            |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| Konsole          |     ✅      |         ✅          |           ✅           |        ✅         |          ❌          |                 ✅                 |                 ✅                 |
-| rxvt             |     ✅      |         ❌          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| screen           |     ✅      |      ⛔[^mux]       |           ✅           |        ✅         |          ❌          |                 ❌                 |                 ✅                 |
-| st               |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| tmux             |     ✅      |      ⛔[^mux]       |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| vte-based[^vte]  |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ❌                 |
-| wezterm          |     ✅      |         ✅          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| xterm            |     ✅      |         ✅          |           ✅           |        ✅         |          ❌          |                 ❌                 |                 ❌                 |
-| Linux Console    |     ✅      |         ❌          |           ✅           |        ⛔         |          ❌          |                 ❌                 |                 ❌                 |
-| Apple Terminal   |     ✅      |         ✅          |           ✅           |        ✅         |          ❌          |                 ✅                 |                 ✅                 |
-| iTerm            |     ✅      |         ✅          |           ✅           |        ✅         |          ❌          |                 ❌                 |                 ❌                 |
-| Windows cmd      |     ✅      |         ❌          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
-| Windows Terminal |     ✅      |         ❌          |           ✅           |        ✅         |          ✅          |                 ✅                 |                 ✅                 |
+```go
+// Enables bracketed paste mode
+termenv.EnableBracketedPaste()
 
-[^vte]: This covers all vte-based terminals, including Gnome Terminal, guake, Pantheon Terminal, Terminator, Tilix, XFCE Terminal.
-[^mux]: Unavailable as multiplexers (like tmux or screen) can be connected to multiple terminals (with different color settings) at the same time.
+// Disables bracketed paste mode
+termenv.DisableBracketedPaste()
+```
 
-You can help improve this list! Check out [how to](ansi_compat.md) and open an issue or pull request.
+## Terminal Feature Support
 
 ### Color Support
 
 - 24-bit (RGB): alacritty, foot, iTerm, kitty, Konsole, st, tmux, vte-based, wezterm, Windows Terminal
 - 8-bit (256): rxvt, screen, xterm, Apple Terminal
 - 4-bit (16): Linux Console
+
+### Control Sequences
+
+<details>
+<summary>Click to show feature matrix</summary>
+
+| Terminal         | Query Color Scheme | Query Cursor Position | Set Window Title | Change Cursor Color | Change Default Foreground Setting | Change Default Background Setting | Bracketed Paste | Extended Mouse (SGR) | Pixels Mouse (SGR-Pixels) |
+| ---------------- | :----------------: | :-------------------: | :--------------: | :-----------------: | :-------------------------------: | :-------------------------------: | :-------------: | :------------------: | :-----------------------: |
+| alacritty        |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| foot             |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ✅             |
+| kitty            |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ✅             |
+| Konsole          |         ✅         |          ✅           |        ✅        |         ❌          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| rxvt             |         ❌         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ❌          |            ❌             |
+| urxvt            |         ❌         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| screen           |      ⛔[^mux]      |          ✅           |        ✅        |         ❌          |                ❌                 |                ✅                 |       ❌        |          ❌          |            ❌             |
+| st               |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| tmux             |      ⛔[^mux]      |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| vte-based[^vte]  |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ❌                 |       ✅        |          ✅          |            ❌             |
+| wezterm          |         ✅         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ✅             |
+| xterm            |         ✅         |          ✅           |        ✅        |         ❌          |                ❌                 |                ❌                 |       ✅        |          ✅          |            ❌             |
+| Linux Console    |         ❌         |          ✅           |        ⛔        |         ❌          |                ❌                 |                ❌                 |       ❌        |          ❌          |            ❌             |
+| Apple Terminal   |         ✅         |          ✅           |        ✅        |         ❌          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+| iTerm            |         ✅         |          ✅           |        ✅        |         ❌          |                ❌                 |                ❌                 |       ✅        |          ✅          |            ❌             |
+| Windows cmd      |         ❌         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ❌        |          ❌          |            ❌             |
+| Windows Terminal |         ❌         |          ✅           |        ✅        |         ✅          |                ✅                 |                ✅                 |       ✅        |          ✅          |            ❌             |
+
+[^vte]: This covers all vte-based terminals, including Gnome Terminal, guake, Pantheon Terminal, Terminator, Tilix, XFCE Terminal.
+[^mux]: Unavailable as multiplexers (like tmux or screen) can be connected to multiple terminals (with different color settings) at the same time.
+
+You can help improve this list! Check out [how to](ansi_compat.md) and open an issue or pull request.
+
+</details>
+
+### System Commands
+
+<details>
+<summary>Click to show feature matrix</summary>
+
+| Terminal         | Copy to Clipboard (OSC52) | Hyperlinks (OSC8) | Notifications (OSC777) |
+| ---------------- | :-----------------------: | :---------------: | :--------------------: |
+| alacritty        |            ✅             |  ❌[^alacritty]   |           ❌           |
+| foot             |            ✅             |        ✅         |           ✅           |
+| kitty            |            ✅             |        ✅         |           ✅           |
+| Konsole          |       ❌[^konsole]        |        ✅         |           ❌           |
+| rxvt             |            ❌             |        ❌         |           ❌           |
+| urxvt            |        ✅[^urxvt]         |        ❌         |           ✅           |
+| screen           |            ✅             |    ❌[^screen]    |           ❌           |
+| st               |            ✅             |        ❌         |           ❌           |
+| tmux             |            ✅             |     ❌[^tmux]     |           ❌           |
+| vte-based[^vte]  |         ❌[^vte]          |        ✅         |           ❌           |
+| wezterm          |            ✅             |        ✅         |           ❌           |
+| xterm            |            ✅             |        ❌         |           ❌           |
+| Linux Console    |            ⛔             |        ⛔         |           ❌           |
+| Apple Terminal   |        ✅[^apple]         |        ❌         |           ❌           |
+| iTerm            |            ✅             |        ✅         |           ❌           |
+| Windows cmd      |            ❌             |        ❌         |           ❌           |
+| Windows Terminal |            ✅             |        ✅         |           ❌           |
+
+[^vte]: This covers all vte-based terminals, including Gnome Terminal, guake, Pantheon Terminal, Terminator, Tilix, XFCE Terminal. OSC52 is not supported, see [issue#2495](https://gitlab.gnome.org/GNOME/vte/-/issues/2495).
+[^urxvt]: Workaround for urxvt not supporting OSC52. See [this](https://unix.stackexchange.com/a/629485) for more information.
+[^konsole]: OSC52 is not supported, for more info see [bug#372116](https://bugs.kde.org/show_bug.cgi?id=372116).
+[^apple]: OSC52 works with a [workaround](https://github.com/roy2220/osc52pty).
+[^tmux]: OSC8 is not supported, for more info see [issue#911](https://github.com/tmux/tmux/issues/911).
+[^screen]: OSC8 is not supported, for more info see [bug#50952](https://savannah.gnu.org/bugs/index.php?50952).
+[^alacritty]: OSC8 is not supported, for more info see [issue#922](https://github.com/alacritty/alacritty/issues/922).
+
+</details>
 
 ## Platform Support
 
@@ -316,12 +385,15 @@ terminal applications on Unix support ANSI styling out-of-the-box, on Windows
 you need to enable ANSI processing in your application first:
 
 ```go
-    mode, err := termenv.EnableWindowsANSIConsole()
+    restoreConsole, err := termenv.EnableVirtualTerminalProcessing(termenv.DefaultOutput())
     if err != nil {
         panic(err)
     }
-    defer termenv.RestoreWindowsConsole(mode)
+    defer restoreConsole()
 ```
+
+The above code is safe to include on non-Windows systems or when os.Stdout does
+not refer to a terminal (e.g. in tests).
 
 ## Color Chart
 
@@ -351,8 +423,8 @@ out these projects:
 
 Got some feedback or suggestions? Please open an issue or drop me a note!
 
-* [Twitter](https://twitter.com/mueslix)
-* [The Fediverse](https://mastodon.social/@fribbledom)
+- [Twitter](https://twitter.com/mueslix)
+- [The Fediverse](https://mastodon.social/@fribbledom)
 
 ## License
 

@@ -28,8 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1030,7 +1029,7 @@ func TestRollingUpdateDisabledSurge(t *testing.T) {
 //                                 <-- validated
 
 type concurrentTest struct {
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 	t                       *testing.T
 	mutex                   sync.Mutex
 	surge                   int
@@ -1093,7 +1092,7 @@ func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
 	return &validation.ValidationCluster{}, nil
 }
 
-func (c *concurrentTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+func (c *concurrentTest) TerminateInstances(ctx context.Context, input *ec2.TerminateInstancesInput, optFns ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error) {
 	if input.DryRun != nil && *input.DryRun {
 		return &ec2.TerminateInstancesOutput{}, nil
 	}
@@ -1103,7 +1102,7 @@ func (c *concurrentTest) TerminateInstances(input *ec2.TerminateInstancesInput) 
 
 	for _, id := range input.InstanceIds {
 		assert.Equal(c.t, c.surge, len(c.detached), "Number of detached instances")
-		if c.detached[*id] {
+		if c.detached[id] {
 			assert.LessOrEqual(c.t, c.terminationRequestsLeft, c.surge, "Deleting detached instances last")
 		}
 
@@ -1126,7 +1125,7 @@ func (c *concurrentTest) TerminateInstances(input *ec2.TerminateInstancesInput) 
 			assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
 		}
 	}
-	return c.EC2API.TerminateInstances(input)
+	return c.EC2API.TerminateInstances(ctx, input)
 }
 
 const postTerminationValidationDelay = 100 * time.Millisecond // NodeInterval plus some
@@ -1258,11 +1257,11 @@ func (m *concurrentTestAutoscaling) DetachInstances(ctx context.Context, input *
 }
 
 type ec2IgnoreTags struct {
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 }
 
 // CreateTags ignores tagging of instances done by the AWS fi.Cloud implementation of DetachInstance()
-func (e *ec2IgnoreTags) CreateTags(*ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
+func (e *ec2IgnoreTags) CreateTags(ctx context.Context, params *ec2.CreateTagsInput, optFns ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
 	return &ec2.CreateTagsOutput{}, nil
 }
 
@@ -1407,7 +1406,7 @@ func TestRollingUpdateDetachFails(t *testing.T) {
 //
 //	<-- validated
 type alreadyDetachedTest struct {
-	ec2iface.EC2API
+	awsinterfaces.EC2API
 	t                       *testing.T
 	mutex                   sync.Mutex
 	terminationRequestsLeft int
@@ -1437,7 +1436,7 @@ func (t *alreadyDetachedTest) Validate() (*validation.ValidationCluster, error) 
 	return &validation.ValidationCluster{}, nil
 }
 
-func (t *alreadyDetachedTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+func (t *alreadyDetachedTest) TerminateInstances(ctx context.Context, input *ec2.TerminateInstancesInput, optFns ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error) {
 	if input.DryRun != nil && *input.DryRun {
 		return &ec2.TerminateInstancesOutput{}, nil
 	}
@@ -1449,12 +1448,12 @@ func (t *alreadyDetachedTest) TerminateInstances(input *ec2.TerminateInstancesIn
 		assert.Equal(t.t, 3, len(t.detached), "Number of detached instances")
 		assert.GreaterOrEqual(t.t, t.numValidations, 3, "Number of previous validations")
 		if t.terminationRequestsLeft == 1 {
-			assert.True(t.t, t.detached[*id], "Last deleted instance %q was detached", *id)
+			assert.True(t.t, t.detached[id], "Last deleted instance %q was detached", id)
 		}
 
 		t.terminationRequestsLeft--
 	}
-	return t.EC2API.TerminateInstances(input)
+	return t.EC2API.TerminateInstances(ctx, input)
 }
 
 type alreadyDetachedTestAutoscaling struct {

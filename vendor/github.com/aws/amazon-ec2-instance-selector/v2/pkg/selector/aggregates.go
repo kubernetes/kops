@@ -1,12 +1,12 @@
 package selector
 
 import (
+	"context"
 	"fmt"
-	"regexp"
-
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"regexp"
 )
 
 const (
@@ -18,25 +18,27 @@ const (
 
 // FiltersTransform can be implemented to provide custom transforms
 type FiltersTransform interface {
-	Transform(Filters) (Filters, error)
+	Transform(context.Context, Filters) (Filters, error)
 }
 
 // TransformFn is the func type definition for a FiltersTransform
-type TransformFn func(Filters) (Filters, error)
+type TransformFn func(context.Context, Filters) (Filters, error)
 
 // Transform implements FiltersTransform interface on TransformFn
 // This allows any TransformFn to be passed into funcs accepting FiltersTransform interface
-func (fn TransformFn) Transform(filters Filters) (Filters, error) {
-	return fn(filters)
+func (fn TransformFn) Transform(ctx context.Context, filters Filters) (Filters, error) {
+	return fn(ctx, filters)
 }
 
 // TransformBaseInstanceType transforms lower level filters based on the instanceTypeBase specs
-func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) {
+func (itf Selector) TransformBaseInstanceType(ctx context.Context, filters Filters) (Filters, error) {
 	if filters.InstanceTypeBase == nil {
 		return filters, nil
 	}
-	instanceTypesOutput, err := itf.EC2.DescribeInstanceTypes(&ec2.DescribeInstanceTypesInput{
-		InstanceTypes: []*string{filters.InstanceTypeBase},
+	instanceTypesOutput, err := itf.EC2.DescribeInstanceTypes(ctx, &ec2.DescribeInstanceTypesInput{
+		InstanceTypes: []ec2types.InstanceType{
+			ec2types.InstanceType(*filters.InstanceTypeBase),
+		},
 	})
 	if err != nil {
 		return filters, err
@@ -49,18 +51,18 @@ func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) 
 		filters.BareMetal = instanceTypeInfo.BareMetal
 	}
 	if filters.CPUArchitecture == nil && len(instanceTypeInfo.ProcessorInfo.SupportedArchitectures) == 1 {
-		filters.CPUArchitecture = instanceTypeInfo.ProcessorInfo.SupportedArchitectures[0]
+		filters.CPUArchitecture = &instanceTypeInfo.ProcessorInfo.SupportedArchitectures[0]
 	}
 	if filters.Fpga == nil {
 		isFpgaSupported := instanceTypeInfo.FpgaInfo != nil
 		filters.Fpga = &isFpgaSupported
 	}
 	if filters.GpusRange == nil {
-		gpuCount := 0
+		gpuCount := int32(0)
 		if instanceTypeInfo.GpuInfo != nil {
-			gpuCount = int(*getTotalGpusCount(instanceTypeInfo.GpuInfo))
+			gpuCount = *getTotalGpusCount(instanceTypeInfo.GpuInfo)
 		}
-		filters.GpusRange = &IntRangeFilter{LowerBound: gpuCount, UpperBound: gpuCount}
+		filters.GpusRange = &Int32RangeFilter{LowerBound: gpuCount, UpperBound: gpuCount}
 	}
 	if filters.MemoryRange == nil {
 		lowerBound := bytequantity.ByteQuantity{Quantity: uint64(float64(*instanceTypeInfo.MemoryInfo.SizeInMiB) * AggregateLowPercentile)}
@@ -68,12 +70,12 @@ func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) 
 		filters.MemoryRange = &ByteQuantityRangeFilter{LowerBound: lowerBound, UpperBound: upperBound}
 	}
 	if filters.VCpusRange == nil {
-		lowerBound := int(float64(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateLowPercentile)
-		upperBound := int(float64(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateHighPercentile)
-		filters.VCpusRange = &IntRangeFilter{LowerBound: lowerBound, UpperBound: upperBound}
+		lowerBound := int32(float32(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateLowPercentile)
+		upperBound := int32(float32(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateHighPercentile)
+		filters.VCpusRange = &Int32RangeFilter{LowerBound: lowerBound, UpperBound: upperBound}
 	}
 	if filters.VirtualizationType == nil && len(instanceTypeInfo.SupportedVirtualizationTypes) == 1 {
-		filters.VirtualizationType = instanceTypeInfo.SupportedVirtualizationTypes[0]
+		filters.VirtualizationType = &instanceTypeInfo.SupportedVirtualizationTypes[0]
 	}
 	filters.InstanceTypeBase = nil
 
@@ -81,18 +83,21 @@ func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) 
 }
 
 // TransformFlexible transforms lower level filters based on a set of opinions
-func (itf Selector) TransformFlexible(filters Filters) (Filters, error) {
+func (itf Selector) TransformFlexible(ctx context.Context, filters Filters) (Filters, error) {
 	if filters.Flexible == nil {
 		return filters, nil
 	}
 	if filters.CPUArchitecture == nil {
-		filters.CPUArchitecture = aws.String("x86_64")
+		defaultArchitecture := ec2types.ArchitectureTypeX8664
+		filters.CPUArchitecture = &defaultArchitecture
 	}
 	if filters.BareMetal == nil {
-		filters.BareMetal = aws.Bool(false)
+		bareMetalDefault := false
+		filters.BareMetal = &bareMetalDefault
 	}
 	if filters.Fpga == nil {
-		filters.Fpga = aws.Bool(false)
+		fpgaDefault := false
+		filters.Fpga = &fpgaDefault
 	}
 
 	if filters.AllowList == nil {
@@ -104,14 +109,14 @@ func (itf Selector) TransformFlexible(filters Filters) (Filters, error) {
 	}
 
 	if filters.VCpusRange == nil && filters.MemoryRange == nil {
-		defaultVcpus := 4
-		filters.VCpusRange = &IntRangeFilter{LowerBound: defaultVcpus, UpperBound: defaultVcpus}
+		defaultVcpus := int32(4)
+		filters.VCpusRange = &Int32RangeFilter{LowerBound: defaultVcpus, UpperBound: defaultVcpus}
 	}
 
 	return filters, nil
 }
 
 // TransformForService transforms lower level filters based on the service
-func (itf Selector) TransformForService(filters Filters) (Filters, error) {
+func (itf Selector) TransformForService(ctx context.Context, filters Filters) (Filters, error) {
 	return itf.ServiceRegistry.ExecuteTransforms(filters)
 }

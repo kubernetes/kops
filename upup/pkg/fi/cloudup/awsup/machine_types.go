@@ -22,28 +22,29 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 )
 
 type AWSMachineTypeInfo struct {
-	Name              string
+	Name              ec2types.InstanceType
 	MemoryGB          float32
-	Cores             int
-	EphemeralDisks    []int
+	Cores             int32
+	EphemeralDisks    []int64
 	GPU               bool
-	MaxPods           int
-	InstanceENIs      int
-	InstanceIPsPerENI int
+	MaxPods           int32
+	InstanceENIs      int32
+	InstanceIPsPerENI int32
 }
 
 type EphemeralDevice struct {
 	DeviceName  string
 	VirtualName string
-	SizeGB      int
+	SizeGB      int64
 }
 
 var (
-	machineTypeInfo  map[string]*AWSMachineTypeInfo
+	machineTypeInfo  map[ec2types.InstanceType]*AWSMachineTypeInfo
 	machineTypeMutex sync.Mutex
 )
 
@@ -66,36 +67,36 @@ func (m *AWSMachineTypeInfo) EphemeralDevices() []*EphemeralDevice {
 	return disks
 }
 
-func GetMachineTypeInfo(c AWSCloud, machineType string) (*AWSMachineTypeInfo, error) {
+func GetMachineTypeInfo(c AWSCloud, machineType ec2types.InstanceType) (*AWSMachineTypeInfo, error) {
 	machineTypeMutex.Lock()
 	defer machineTypeMutex.Unlock()
 	if machineTypeInfo == nil {
-		machineTypeInfo = make(map[string]*AWSMachineTypeInfo)
+		machineTypeInfo = make(map[ec2types.InstanceType]*AWSMachineTypeInfo)
 	} else if i, ok := machineTypeInfo[machineType]; ok {
 		return i, nil
 	}
 
-	info, err := c.DescribeInstanceType(machineType)
+	info, err := c.DescribeInstanceType(string(machineType))
 	if err != nil {
 		return nil, err
 	}
 	machine := AWSMachineTypeInfo{
 		Name:              machineType,
 		GPU:               info.GpuInfo != nil,
-		InstanceENIs:      intValue(info.NetworkInfo.MaximumNetworkInterfaces),
-		InstanceIPsPerENI: intValue(info.NetworkInfo.Ipv4AddressesPerInterface),
+		InstanceENIs:      aws.ToInt32(info.NetworkInfo.MaximumNetworkInterfaces),
+		InstanceIPsPerENI: aws.ToInt32(info.NetworkInfo.Ipv4AddressesPerInterface),
 	}
-	memoryGB := float64(intValue(info.MemoryInfo.SizeInMiB)) / 1024
+	memoryGB := float64(aws.ToInt64(info.MemoryInfo.SizeInMiB)) / 1024
 	machine.MemoryGB = float32(math.Round(memoryGB*100) / 100)
 
 	if info.VCpuInfo != nil && info.VCpuInfo.DefaultVCpus != nil {
-		machine.Cores = intValue(info.VCpuInfo.DefaultVCpus)
+		machine.Cores = aws.ToInt32(info.VCpuInfo.DefaultVCpus)
 	}
 	if info.InstanceStorageInfo != nil && len(info.InstanceStorageInfo.Disks) > 0 {
-		disks := make([]int, 0)
+		disks := make([]int64, 0)
 		for _, disk := range info.InstanceStorageInfo.Disks {
-			for i := 0; i < intValue(disk.Count); i++ {
-				disks = append(disks, intValue(disk.SizeInGB))
+			for i := int32(0); i < aws.ToInt32(disk.Count); i++ {
+				disks = append(disks, aws.ToInt64(disk.SizeInGB))
 			}
 		}
 		machine.EphemeralDisks = disks
@@ -103,8 +104,4 @@ func GetMachineTypeInfo(c AWSCloud, machineType string) (*AWSMachineTypeInfo, er
 	machineTypeInfo[machineType] = &machine
 
 	return &machine, nil
-}
-
-func intValue(v *int64) int {
-	return int(aws.ToInt64(v))
 }

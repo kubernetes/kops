@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/blang/semver/v4"
 )
 
@@ -46,8 +46,10 @@ func (e EMR) Filters(version string) (Filters, error) {
 		return filters, err
 	}
 	filters.InstanceTypes = &instanceTypes
-	filters.RootDeviceType = aws.String("ebs")
-	filters.VirtualizationType = aws.String("hvm")
+	ebsType := ec2types.RootDeviceTypeEbs
+	filters.RootDeviceType = &ebsType
+	hvmType := ec2types.VirtualizationTypeHvm
+	filters.VirtualizationType = &hvmType
 	return filters, nil
 }
 

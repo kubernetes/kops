@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/oliveagle/jsonpath"
 )
 
@@ -349,34 +348,34 @@ func (s *sorter) instanceTypes() []*instancetypes.Details {
 // helper functions for special sorting fields
 
 // getTotalGpusCount calculates the number of gpus in the given instance type
-func getTotalGpusCount(instanceType *instancetypes.Details) *int64 {
+func getTotalGpusCount(instanceType *instancetypes.Details) *int32 {
 	gpusInfo := instanceType.GpuInfo
 
 	if gpusInfo == nil {
 		return nil
 	}
 
-	total := aws.Int64(0)
+	total := int32(0)
 	for _, gpu := range gpusInfo.Gpus {
-		total = aws.Int64(*total + *gpu.Count)
+		total = total + *gpu.Count
 	}
 
-	return total
+	return &total
 }
 
 // getTotalAcceleratorsCount calculates the total number of inference accelerators
 // in the given instance type
-func getTotalAcceleratorsCount(instanceType *instancetypes.Details) *int64 {
+func getTotalAcceleratorsCount(instanceType *instancetypes.Details) *int32 {
 	acceleratorInfo := instanceType.InferenceAcceleratorInfo
 
 	if acceleratorInfo == nil {
 		return nil
 	}
 
-	total := aws.Int64(0)
+	total := int32(0)
 	for _, accel := range acceleratorInfo.Accelerators {
-		total = aws.Int64(*total + *accel.Count)
+		total = total + *accel.Count
 	}
 
-	return total
+	return &total
 }
