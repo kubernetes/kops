@@ -72,6 +72,7 @@ spec:
         - --metrics-port=12013
         - --runtime-endpoint=unix:///run/containerd/containerd.sock
         - --hairpin-mode=true
+        - --service-cluster-ip-range="{{ .Networking.ServiceClusterIPRange }}"
         env:
         - name: NODE_NAME
           valueFrom:
@@ -115,7 +116,7 @@ spec:
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v1.6.0
+        image: docker.io/cloudnativelabs/kube-router:v2.1.0
         command:
         - /bin/sh
         - -c
