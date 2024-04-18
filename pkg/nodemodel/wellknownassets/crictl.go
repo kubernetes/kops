@@ -19,7 +19,9 @@ package wellknownassets
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
@@ -32,6 +34,31 @@ const (
 )
 
 func FindCrictlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+	if c.Spec.Containerd != nil && c.Spec.Containerd.Packages != nil {
+		switch arch {
+		case architectures.ArchitectureAmd64:
+			// If the user has specified containerd package URLs, and it matches the old format containerd URL, then we don't need to download crictl.
+			// Because it contains crictl in the package.
+			// Refs: https://github.com/kubernetes/kops/issues/16425
+			if c.Spec.Containerd.Packages.UrlAmd64 != nil {
+				match, _ := regexp.MatchString(`cri-containerd-cni-(\d+\.\d+\.\d+)-linux-amd64\.tar\.gz$`, *c.Spec.Containerd.Packages.UrlAmd64)
+				if match {
+					klog.V(4).Infof("Skipping downloading crictl because it is included in the containerd package")
+					return nil, nil, nil
+				}
+			}
+		case architectures.ArchitectureArm64:
+			if c.Spec.Containerd.Packages.UrlArm64 != nil {
+				match, _ := regexp.MatchString(`cri-containerd-cni-(\d+\.\d+\.\d+)-linux-arm64\.tar\.gz$`, *c.Spec.Containerd.Packages.UrlArm64)
+				if match {
+					klog.V(4).Infof("Skipping downloading crictl because it is included in the containerd package")
+					return nil, nil, nil
+				}
+			}
+		default:
+		}
+	}
+
 	var assetURL string
 	switch arch {
 	case architectures.ArchitectureAmd64:
