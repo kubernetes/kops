@@ -209,7 +209,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
-	} else if nodeupConfig.ConfigStore.Secrets != "" {
+	} else if nodeupConfig.ConfigStore != nil && nodeupConfig.ConfigStore.Secrets != "" {
 		klog.Infof("Building SecretStore at %q", nodeupConfig.ConfigStore.Secrets)
 		p, err := vfs.Context.BuildVfsPath(nodeupConfig.ConfigStore.Secrets)
 		if err != nil {
