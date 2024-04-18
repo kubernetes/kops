@@ -89,7 +89,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil || *vm.OsProfile.ComputerName == "" {
 		return nil, fmt.Errorf("determining ComputerName for VMSS %q virtual machine #%s", vmssName, vmssIndex)
 	}
-	nodeName := *vm.OsProfile.ComputerName
+	nodeName := strings.ToLower(*vm.OsProfile.ComputerName)
 
 	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName+"-netconfig", "")
 	if err != nil {
