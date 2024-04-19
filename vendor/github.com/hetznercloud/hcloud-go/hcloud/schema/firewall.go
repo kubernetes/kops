@@ -15,11 +15,11 @@ type Firewall struct {
 // FirewallRule defines the schema of a Firewall rule.
 type FirewallRule struct {
 	Direction      string   `json:"direction"`
-	SourceIPs      []string `json:"source_ips,omitempty"`
-	DestinationIPs []string `json:"destination_ips,omitempty"`
+	SourceIPs      []string `json:"source_ips"`
+	DestinationIPs []string `json:"destination_ips"`
 	Protocol       string   `json:"protocol"`
-	Port           *string  `json:"port,omitempty"`
-	Description    *string  `json:"description,omitempty"`
+	Port           *string  `json:"port"`
+	Description    *string  `json:"description"`
 }
 
 // FirewallListResponse defines the schema of the response when listing Firewalls.

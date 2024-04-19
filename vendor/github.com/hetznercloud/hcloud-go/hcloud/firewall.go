@@ -298,7 +298,35 @@ type FirewallSetRulesOpts struct {
 
 // SetRules sets the rules of a Firewall.
 func (c *FirewallClient) SetRules(ctx context.Context, firewall *Firewall, opts FirewallSetRulesOpts) ([]*Action, *Response, error) {
-	reqBody := firewallSetRulesOptsToSchema(opts)
+	s := firewallSetRulesOptsToSchema(opts)
+
+	// We can't use the FirewallRule struct here, because unlike in the response some fields must be omitted when empty.
+	type firewallRule struct {
+		Direction      string   `json:"direction"`
+		SourceIPs      []string `json:"source_ips,omitempty"`
+		DestinationIPs []string `json:"destination_ips,omitempty"`
+		Protocol       string   `json:"protocol"`
+		Port           *string  `json:"port,omitempty"`
+		Description    *string  `json:"description,omitempty"`
+	}
+
+	rules := make([]firewallRule, 0, len(s.Rules))
+	for _, r := range s.Rules {
+		rules = append(rules, firewallRule{
+			Direction:      r.Direction,
+			SourceIPs:      r.SourceIPs,
+			DestinationIPs: r.DestinationIPs,
+			Protocol:       r.Protocol,
+			Port:           r.Port,
+			Description:    r.Description,
+		})
+	}
+	reqBody := struct {
+		Rules []firewallRule `json:"rules"`
+	}{
+		Rules: rules,
+	}
+
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, nil, err

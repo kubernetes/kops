@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e
 
-go 1.22
+go 1.22.0
 
 replace k8s.io/kops => ../../.
 
@@ -12,9 +12,9 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
+	k8s.io/api v0.30.0
+	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v1.5.2
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kops v1.28.2
@@ -26,8 +26,9 @@ require (
 
 require (
 	cloud.google.com/go v0.112.0 // indirect
-	cloud.google.com/go/compute v1.24.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/auth v0.2.0 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.0 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/storage v1.36.0 // indirect
 	cuelang.org/go v0.5.0 // indirect
@@ -77,7 +78,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.5 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.156.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.157.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.15.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
@@ -203,8 +204,6 @@ require (
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/onsi/ginkgo/v2 v2.14.0 // indirect
-	github.com/onsi/gomega v1.30.0 // indirect
 	github.com/open-policy-agent/opa v0.52.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
@@ -272,7 +271,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.25.0 // indirect
 	go.opentelemetry.io/otel/trace v1.25.0 // indirect
 	go.step.sm/crypto v0.32.2 // indirect
-	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
@@ -287,10 +285,10 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.20.0 // indirect
 	golang.org/x/tools/go/vcs v0.1.0-deprecated // indirect
-	google.golang.org/api v0.172.0 // indirect
+	google.golang.org/api v0.174.0 // indirect
 	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
 	google.golang.org/grpc v1.63.2 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/gcfg.v1 v1.2.3 // indirect
@@ -302,8 +300,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/cloud-provider v0.29.0 // indirect
 	k8s.io/cloud-provider-gcp/providers v0.28.2 // indirect
-	k8s.io/component-base v0.29.3 // indirect
-	k8s.io/kube-openapi v0.0.0-20240103051144-eec4567ac022 // indirect
+	k8s.io/component-base v0.30.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/test-infra v0.0.0-20220913174101-46ac1a6cf806 // indirect
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57 // indirect
 	sigs.k8s.io/bom v0.5.2-0.20230519223618-1ebaa9ce375f // indirect

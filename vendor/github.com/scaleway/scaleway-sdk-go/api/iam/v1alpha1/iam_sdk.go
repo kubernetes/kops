@@ -887,6 +887,15 @@ type Quotum struct {
 	// Unlimited: defines whether or not the quota is unlimited.
 	// Precisely one of Limit, Unlimited must be set.
 	Unlimited *bool `json:"unlimited,omitempty"`
+
+	// PrettyName: a human-readable name for the quota.
+	PrettyName string `json:"pretty_name"`
+
+	// Unit: the unit in which the quota is expressed.
+	Unit string `json:"unit"`
+
+	// Description: details about the quota.
+	Description string `json:"description"`
 }
 
 // Rule: rule.
@@ -1069,6 +1078,15 @@ type CreateGroupRequest struct {
 	Tags []string `json:"tags"`
 }
 
+// CreateJWTRequest: create jwt request.
+type CreateJWTRequest struct {
+	// UserID: ID of the user the JWT will be created for.
+	UserID string `json:"user_id"`
+
+	// Referrer: referrer of the JWT.
+	Referrer string `json:"referrer"`
+}
+
 // CreatePolicyRequest: create policy request.
 type CreatePolicyRequest struct {
 	// Name: name of the policy to create (max length is 64 characters).
@@ -1166,6 +1184,18 @@ type DeleteSSHKeyRequest struct {
 type DeleteUserRequest struct {
 	// UserID: ID of the user to delete.
 	UserID string `json:"-"`
+}
+
+// EncodedJWT: encoded jwt.
+type EncodedJWT struct {
+	// Jwt: the renewed JWT.
+	Jwt *JWT `json:"jwt"`
+
+	// Token: the encoded token of the renewed JWT.
+	Token string `json:"token"`
+
+	// RenewToken: the encoded renew token. This token is necessary to renew the JWT.
+	RenewToken string `json:"renew_token"`
 }
 
 // GetAPIKeyRequest: get api key request.
@@ -1646,6 +1676,9 @@ type ListQuotaRequest struct {
 
 	// OrganizationID: filter by Organization ID.
 	OrganizationID string `json:"-"`
+
+	// QuotumNames: list of quotum names to filter from.
+	QuotumNames []string `json:"-"`
 }
 
 // ListQuotaResponse: list quota response.
@@ -3026,6 +3059,7 @@ func (s *API) ListQuota(req *ListQuotaRequest, opts ...scw.RequestOption) (*List
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "quotum_names", req.QuotumNames)
 
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
@@ -3096,6 +3130,29 @@ func (s *API) ListJWTs(req *ListJWTsRequest, opts ...scw.RequestOption) (*ListJW
 	}
 
 	var resp ListJWTsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// CreateJWT: Create a JWT.
+func (s *API) CreateJWT(req *CreateJWTRequest, opts ...scw.RequestOption) (*EncodedJWT, error) {
+	var err error
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/jwts",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp EncodedJWT
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {

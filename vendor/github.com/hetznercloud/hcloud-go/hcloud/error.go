@@ -1,6 +1,7 @@
 package hcloud
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -120,7 +121,8 @@ type ErrorDetailsInvalidInputField struct {
 
 // IsError returns whether err is an API error with the given error code.
 func IsError(err error, code ErrorCode) bool {
-	apiErr, ok := err.(Error)
+	var apiErr Error
+	ok := errors.As(err, &apiErr)
 	return ok && apiErr.Code == code
 }
 
