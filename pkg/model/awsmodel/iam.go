@@ -17,12 +17,14 @@ limitations under the License.
 package awsmodel
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -404,15 +406,21 @@ func (b *IAMModelBuilder) buildPolicy(policyString string) (*iam.Policy, error) 
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
 // It is ec2.amazonaws.com in the default aws partition, but different in other isolated/custom partitions
-func IAMServiceEC2(region string) string {
-	partitions := endpoints.DefaultPartitions()
-	for _, p := range partitions {
-		if _, ok := p.Regions()[region]; ok {
-			ep := "ec2." + p.DNSSuffix()
-			return ep
-		}
+func IAMServiceEC2(region string) (string, error) {
+	ctx := context.TODO()
+	resolver := ec2.NewDefaultEndpointResolverV2()
+	ep, err := resolver.ResolveEndpoint(ctx, ec2.EndpointParameters{Region: aws.String(region)})
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve endpoint: %v", err)
 	}
-	return "ec2.amazonaws.com"
+	if ep.URI.Host != "" {
+		// Remove the region from the hostname. Examples:
+		// ec2.us-east-1.amazonaws.com     -> ec2.amazonaws.com
+		// ec2.cn-west-1.amazonaws.com.cn  -> ec2.amazonaws.com.cn
+		// ec2.us-gov-west-1.amazonaws.com -> ec2.amazonaws.com
+		return strings.ReplaceAll(ep.URI.Host, fmt.Sprintf("%v.", region), ""), nil
+	}
+	return "ec2.amazonaws.com", nil
 }
 
 func formatAWSIAMStatement(accountId, partition, oidcProvider, namespace, name string) (*iam.Statement, error) {
@@ -466,7 +474,11 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	} else {
 		// We don't generate using json.Marshal here, it would create whitespace changes in the policy for existing clusters.
 
-		policy = strings.ReplaceAll(NodeRolePolicyTemplate, "{{ IAMServiceEC2 }}", IAMServiceEC2(b.Region))
+		ec2Service, err := IAMServiceEC2(b.Region)
+		if err != nil {
+			return nil, err
+		}
+		policy = strings.ReplaceAll(NodeRolePolicyTemplate, "{{ IAMServiceEC2 }}", ec2Service)
 	}
 
 	return fi.NewStringResource(policy), nil
