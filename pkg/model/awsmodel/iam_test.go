@@ -34,7 +34,10 @@ func TestIAMServiceEC2(t *testing.T) {
 	}
 
 	for region, expect := range expectations {
-		principal := IAMServiceEC2(region)
+		principal, err := IAMServiceEC2(region)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
 		if principal != expect {
 			t.Errorf("expected %s for %s, but received %s", expect, region, principal)
 		}

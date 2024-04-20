@@ -34,7 +34,6 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -156,9 +155,6 @@ func FindELBV2Tag(tags []elbv2types.Tag, key string) (string, bool) {
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorCode(err error) string {
-	if awsError, ok := err.(awserr.Error); ok {
-		return awsError.Code()
-	}
 	var apiErr smithy.APIError
 	if errors.As(err, &apiErr) {
 		return apiErr.ErrorCode()
@@ -168,9 +164,6 @@ func AWSErrorCode(err error) string {
 
 // AWSErrorMessage returns the aws error message, if it is an awserr.Error or smithy.APIError, otherwise ""
 func AWSErrorMessage(err error) string {
-	if awsError, ok := err.(awserr.Error); ok {
-		return awsError.Message()
-	}
 	var apiErr smithy.APIError
 	if errors.As(err, &apiErr) {
 		return apiErr.ErrorMessage()
