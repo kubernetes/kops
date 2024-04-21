@@ -46,7 +46,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	ec2v1 "github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
@@ -2358,7 +2357,7 @@ func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error)
 
 // GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
 // The first value is the node name and any additional values are the DNS name and IP addresses.
-func GetInstanceCertificateNames(instances *ec2v1.DescribeInstancesOutput) (addrs []string, err error) {
+func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
 	if len(instances.Reservations) != 1 {
 		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
 	}

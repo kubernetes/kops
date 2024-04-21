@@ -52,7 +52,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
-		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
+		a, err := awsup.NewAWSAuthenticator(c.Context(), b.Cloud.Region())
 		if err != nil {
 			return err
 		}
