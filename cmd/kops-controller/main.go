@@ -130,7 +130,7 @@ func main() {
 		var verifiers []bootstrap.Verifier
 		var err error
 		if opt.Server.Provider.AWS != nil {
-			verifier, err := awsup.NewAWSVerifier(opt.Server.Provider.AWS)
+			verifier, err := awsup.NewAWSVerifier(ctx, opt.Server.Provider.AWS)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
