@@ -80,6 +80,10 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	//if clusterSpec.GetCloudProvider() == kops.CloudProviderScaleway {
+	//	clusterSpec.KubeDNS.UpstreamNameservers = []string{"100.64.0.10"}
+	//}
+
 	nodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
 	if nodeLocalDNS == nil {
 		nodeLocalDNS = &kops.NodeLocalDNSConfig{}
