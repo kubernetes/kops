@@ -39,11 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache/internal"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
-	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
 )
 
 var (
-	log               = logf.RuntimeLog.WithName("object-cache")
 	defaultSyncPeriod = 10 * time.Hour
 )
 
@@ -222,7 +220,7 @@ type Options struct {
 	DefaultUnsafeDisableDeepCopy *bool
 
 	// ByObject restricts the cache's ListWatch to the desired fields per GVK at the specified object.
-	// object, this will fall through to Default* settings.
+	// If unset, this will fall through to the Default* settings.
 	ByObject map[client.Object]ByObject
 
 	// newInformer allows overriding of NewSharedIndexInformer for testing.

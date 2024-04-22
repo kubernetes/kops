@@ -92,7 +92,7 @@ require (
 	k8s.io/kubelet v0.30.0
 	k8s.io/mount-utils v0.30.0
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
-	sigs.k8s.io/controller-runtime v0.17.3
+	sigs.k8s.io/controller-runtime v0.17.1-0.20240419092505-a92b9612b606
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -145,7 +145,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.8.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/evertras/bubble-table v0.15.2 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -263,7 +263,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.29.2 // indirect
+	k8s.io/apiextensions-apiserver v0.30.0 // indirect
 	k8s.io/cloud-provider v0.30.0 // indirect
 	k8s.io/component-helpers v0.30.0 // indirect
 	k8s.io/csi-translation-lib v0.30.0 // indirect

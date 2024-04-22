@@ -33,6 +33,7 @@ import (
 	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/internal/controller/metrics"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -50,10 +51,13 @@ type Controller struct {
 	// Defaults to the DefaultReconcileFunc.
 	Do reconcile.Reconciler
 
-	// MakeQueue constructs the queue for this controller once the controller is ready to start.
-	// This exists because the standard Kubernetes workqueues start themselves immediately, which
+	// RateLimiter is used to limit how frequently requests may be queued into the work queue.
+	RateLimiter ratelimiter.RateLimiter
+
+	// NewQueue constructs the queue for this controller once the controller is ready to start.
+	// This is a func because the standard Kubernetes work queues start themselves immediately, which
 	// leads to goroutine leaks if something calls controller.New repeatedly.
-	MakeQueue func() workqueue.RateLimitingInterface
+	NewQueue func(controllerName string, rateLimiter ratelimiter.RateLimiter) workqueue.RateLimitingInterface
 
 	// Queue is an listeningQueue that listens for events from Informers and adds object keys to
 	// the Queue for processing
@@ -158,7 +162,7 @@ func (c *Controller) Start(ctx context.Context) error {
 	// Set the internal context.
 	c.ctx = ctx
 
-	c.Queue = c.MakeQueue()
+	c.Queue = c.NewQueue(c.Name, c.RateLimiter)
 	go func() {
 		<-ctx.Done()
 		c.Queue.ShutDown()

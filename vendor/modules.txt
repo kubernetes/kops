@@ -541,7 +541,7 @@ github.com/emicklei/go-restful/v3/log
 # github.com/evanphx/json-patch v5.7.0+incompatible
 ## explicit
 github.com/evanphx/json-patch
-# github.com/evanphx/json-patch/v5 v5.8.0
+# github.com/evanphx/json-patch/v5 v5.9.0
 ## explicit; go 1.18
 github.com/evanphx/json-patch/v5
 github.com/evanphx/json-patch/v5/internal/json
@@ -1570,8 +1570,8 @@ k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
 k8s.io/api/storagemigration/v1alpha1
-# k8s.io/apiextensions-apiserver v0.29.2
-## explicit; go 1.21
+# k8s.io/apiextensions-apiserver v0.30.0
+## explicit; go 1.22.0
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 # k8s.io/apimachinery v0.30.0
@@ -1995,8 +1995,6 @@ k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.30.0
 ## explicit; go 1.22.0
 k8s.io/component-base/cli/flag
-k8s.io/component-base/config
-k8s.io/component-base/config/v1alpha1
 k8s.io/component-base/featuregate
 k8s.io/component-base/logs/api/v1
 k8s.io/component-base/logs/internal/setverbositylevel
@@ -2099,8 +2097,8 @@ oras.land/oras-go/pkg/registry/remote/auth
 oras.land/oras-go/pkg/registry/remote/internal/errutil
 oras.land/oras-go/pkg/registry/remote/internal/syncutil
 oras.land/oras-go/pkg/target
-# sigs.k8s.io/controller-runtime v0.17.3
-## explicit; go 1.21
+# sigs.k8s.io/controller-runtime v0.17.1-0.20240419092505-a92b9612b606
+## explicit; go 1.22.0
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
 sigs.k8s.io/controller-runtime/pkg/cache
@@ -2112,7 +2110,6 @@ sigs.k8s.io/controller-runtime/pkg/client/apiutil
 sigs.k8s.io/controller-runtime/pkg/client/config
 sigs.k8s.io/controller-runtime/pkg/cluster
 sigs.k8s.io/controller-runtime/pkg/config
-sigs.k8s.io/controller-runtime/pkg/config/v1alpha1
 sigs.k8s.io/controller-runtime/pkg/controller
 sigs.k8s.io/controller-runtime/pkg/controller/controllerutil
 sigs.k8s.io/controller-runtime/pkg/conversion
