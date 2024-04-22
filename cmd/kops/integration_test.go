@@ -116,7 +116,7 @@ func (i *integrationTest) withPrivate() *integrationTest {
 	return i
 }
 
-// withServiceAccountRoles indicates we expect to assign an IAM role for a ServiceAccount (instead of just using the node roles)
+// withServiceAccountRole indicates we expect to assign an IAM role for a ServiceAccount (instead of just using the node roles)
 func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *integrationTest {
 	role := truncate.TruncateString(sa+".sa."+i.clusterName, truncate.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
 	i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_%s_policy", role))
@@ -533,7 +533,7 @@ func TestMinimalIPv6Calico(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Cilium
+// TestMinimalIPv6Cilium runs the test on a minimum IPv6 configuration with Cilium
 func TestMinimalIPv6Cilium(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
 		withDefaultAddons24().
@@ -1147,7 +1147,7 @@ func TestNTHIMDSProcessor(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestNTHIMDSProcessorIRSSA tests the output for resources required by NTH IMDS Processor mode with IRSA
+// TestNTHIMDSProcessorIRSA tests the output for resources required by NTH IMDS Processor mode with IRSA
 func TestNTHIMDSProcessorIRSA(t *testing.T) {
 	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor-irsa").
 		withOIDCDiscovery().
