@@ -299,6 +299,7 @@ type FirewallSetRulesOpts struct {
 // SetRules sets the rules of a Firewall.
 func (c *FirewallClient) SetRules(ctx context.Context, firewall *Firewall, opts FirewallSetRulesOpts) ([]*Action, *Response, error) {
 	reqBody := firewallSetRulesOptsToSchema(opts)
+
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, nil, err

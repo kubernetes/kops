@@ -8,16 +8,14 @@ import (
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
+	"time"
 )
 
-// Gets a Boolean value that indicates whether automatic rotation of the key
-// material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-// is enabled for the specified KMS key. When you enable automatic rotation for
-// customer managed KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk)
-// , KMS rotates the key material of the KMS key one year (approximately 365 days)
-// from the enable date and every year thereafter. You can monitor rotation of the
-// key material for your KMS keys in CloudTrail and Amazon CloudWatch. Automatic
-// key rotation is supported only on symmetric encryption KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks)
+// Provides detailed information about the rotation status for a KMS key,
+// including whether automatic rotation of the key material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
+// is enabled for the specified KMS key, the rotation period (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotation-period)
+// , and the next scheduled rotation date. Automatic key rotation is supported only
+// on symmetric encryption KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks)
 // . You cannot enable automatic rotation of asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 // , HMAC KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html)
 // , KMS keys with imported key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
@@ -29,10 +27,15 @@ import (
 // KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk)
 // is not configurable. KMS always rotates the key material in Amazon Web Services
 // managed KMS keys every year. The key rotation status for Amazon Web Services
-// managed KMS keys is always true . In May 2022, KMS changed the rotation schedule
-// for Amazon Web Services managed keys from every three years to every year. For
-// details, see EnableKeyRotation . The KMS key that you use for this operation
-// must be in a compatible key state. For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+// managed KMS keys is always true . You can perform on-demand ( RotateKeyOnDemand
+// ) rotation of the key material in customer managed KMS keys, regardless of
+// whether or not automatic key rotation is enabled. You can use
+// GetKeyRotationStatus to identify the date and time that an in progress on-demand
+// rotation was initiated. You can use ListKeyRotations to view the details of
+// completed rotations. In May 2022, KMS changed the rotation schedule for Amazon
+// Web Services managed keys from every three years to every year. For details, see
+// EnableKeyRotation . The KMS key that you use for this operation must be in a
+// compatible key state. For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 // in the Key Management Service Developer Guide.
 //   - Disabled: The key rotation status does not change when you disable a KMS
 //     key. However, while the KMS key is disabled, KMS does not rotate the key
@@ -51,6 +54,8 @@ import (
 // (key policy) Related operations:
 //   - DisableKeyRotation
 //   - EnableKeyRotation
+//   - ListKeyRotations
+//   - RotateKeyOnDemand
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
@@ -88,8 +93,26 @@ type GetKeyRotationStatusInput struct {
 
 type GetKeyRotationStatusOutput struct {
 
+	// Identifies the specified symmetric encryption KMS key.
+	KeyId *string
+
 	// A Boolean value that specifies whether key rotation is enabled.
 	KeyRotationEnabled bool
+
+	// The next date that KMS will automatically rotate the key material.
+	NextRotationDate *time.Time
+
+	// Identifies the date and time that an in progress on-demand rotation was
+	// initiated. The KMS API follows an eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
+	// model due to the distributed nature of the system. As a result, there might be a
+	// slight delay between initiating on-demand key rotation and the rotation's
+	// completion. Once the on-demand rotation is complete, use ListKeyRotations to
+	// view the details of the on-demand rotation.
+	OnDemandRotationStartDate *time.Time
+
+	// The number of days between each automatic rotation. The default value is 365
+	// days.
+	RotationPeriodInDays *int32
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata

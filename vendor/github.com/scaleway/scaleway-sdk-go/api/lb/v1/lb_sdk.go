@@ -2538,6 +2538,9 @@ type ListLBsRequest struct {
 
 	// ProjectID: project ID to filter for, only Load Balancers from this Project will be returned.
 	ProjectID *string `json:"-"`
+
+	// Tags: filter by tag, only Load Balancers with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ListLBsResponse: list l bs response.
@@ -3822,6 +3825,9 @@ type ZonedAPIListLBsRequest struct {
 
 	// ProjectID: project ID to filter for, only Load Balancers from this Project will be returned.
 	ProjectID *string `json:"-"`
+
+	// Tags: filter by tag, only Load Balancers with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ZonedAPIListRoutesRequest: zoned api list routes request.
@@ -4342,6 +4348,7 @@ func (s *ZonedAPI) ListLBs(req *ZonedAPIListLBsRequest, opts ...scw.RequestOptio
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -6302,6 +6309,7 @@ func (s *API) ListLBs(req *ListLBsRequest, opts ...scw.RequestOption) (*ListLBsR
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")

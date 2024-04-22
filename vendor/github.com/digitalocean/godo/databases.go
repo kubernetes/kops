@@ -158,7 +158,7 @@ type DatabasesService interface {
 	UpdateTopic(context.Context, string, string, *DatabaseUpdateTopicRequest) (*Response, error)
 	GetMetricsCredentials(context.Context) (*DatabaseMetricsCredentials, *Response, error)
 	UpdateMetricsCredentials(context.Context, *DatabaseUpdateMetricsCredentialsRequest) (*Response, error)
-	ListDatabaseEvents(context.Context, string) ([]*DatabaseEvent, *Response, error)
+	ListDatabaseEvents(context.Context, string, *ListOptions) ([]DatabaseEvent, *Response, error)
 }
 
 // DatabasesServiceOp handles communication with the Databases related methods
@@ -180,6 +180,7 @@ type Database struct {
 	EngineSlug               string                     `json:"engine,omitempty"`
 	VersionSlug              string                     `json:"version,omitempty"`
 	Connection               *DatabaseConnection        `json:"connection,omitempty"`
+	UIConnection             *DatabaseConnection        `json:"ui_connection,omitempty"`
 	PrivateConnection        *DatabaseConnection        `json:"private_connection,omitempty"`
 	StandbyConnection        *DatabaseConnection        `json:"standby_connection,omitempty"`
 	StandbyPrivateConnection *DatabaseConnection        `json:"standby_private_connection,omitempty"`
@@ -698,6 +699,7 @@ type DatabaseOptions struct {
 	PostgresSQLOptions DatabaseEngineOptions `json:"pg"`
 	RedisOptions       DatabaseEngineOptions `json:"redis"`
 	KafkaOptions       DatabaseEngineOptions `json:"kafka"`
+	OpensearchOptions  DatabaseEngineOptions `json:"opensearch"`
 }
 
 // DatabaseEngineOptions represents the configuration options that are available for a given database engine
@@ -715,7 +717,7 @@ type DatabaseLayout struct {
 
 // ListDatabaseEvents contains a list of project events.
 type ListDatabaseEvents struct {
-	Events []*DatabaseEvent `json:"events"`
+	Events []DatabaseEvent `json:"events"`
 }
 
 // DatbaseEvent contains the information about a Datbase event.
@@ -727,7 +729,7 @@ type DatabaseEvent struct {
 }
 
 type ListDatabaseEventsRoot struct {
-	Events []*DatabaseEvent `json:"events"`
+	Events []DatabaseEvent `json:"events"`
 }
 
 // URN returns a URN identifier for the database
@@ -1537,8 +1539,13 @@ func (svc *DatabasesServiceOp) UpdateMetricsCredentials(ctx context.Context, upd
 	return resp, nil
 }
 
-func (svc *DatabasesServiceOp) ListDatabaseEvents(ctx context.Context, databaseID string) ([]*DatabaseEvent, *Response, error) {
+// ListDatabaseEvents returns all the events for a given cluster
+func (svc *DatabasesServiceOp) ListDatabaseEvents(ctx context.Context, databaseID string, opts *ListOptions) ([]DatabaseEvent, *Response, error) {
 	path := fmt.Sprintf(databaseEvents, databaseID)
+	path, err := addOptions(path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
 	root := new(ListDatabaseEventsRoot)
 	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -1551,5 +1558,4 @@ func (svc *DatabasesServiceOp) ListDatabaseEvents(ctx context.Context, databaseI
 	}
 
 	return root.Events, resp, nil
-
 }

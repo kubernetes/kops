@@ -369,7 +369,7 @@
               ]
             },
             "testIamPermissions": {
-              "description": "Returns the caller's permissions on the WorkforcePool. If the pool does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error.",
+              "description": "Returns the caller's permissions on the WorkforcePool. If the pool doesn't exist, this call returns an empty set of permissions. It doesn't return a `NOT_FOUND` error.",
               "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:testIamPermissions",
               "httpMethod": "POST",
               "id": "iam.locations.workforcePools.testIamPermissions",
@@ -491,7 +491,7 @@
                   ]
                 },
                 "delete": {
-                  "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been\\ issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
+                  "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
                   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
                   "httpMethod": "DELETE",
                   "id": "iam.locations.workforcePools.providers.delete",
@@ -866,7 +866,7 @@
             "subjects": {
               "methods": {
                 "delete": {
-                  "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential with a mapped `google.subject` attribute. There is no path to manually create WorkforcePoolSubjects. Once deleted, the WorkforcePoolSubject may not be used for 30 days. After 30 days, the WorkforcePoolSubject will be deleted forever and can be reused in token exchanges with Google Cloud STS. This will automatically create a new WorkforcePoolSubject that is independent of the previously deleted WorkforcePoolSubject with the same google.subject value.",
+                  "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential using a mapped `google.subject` attribute. There is no endpoint to manually create a WorkforcePoolSubject. For 30 days after a WorkforcePoolSubject is deleted, using the same `google.subject` attribute in token exchanges with Google Cloud STS fails. Call UndeleteWorkforcePoolSubject to undelete a WorkforcePoolSubject that has been deleted, within within 30 days of deleting it. After 30 days, the WorkforcePoolSubject is permanently deleted. At this point, a token exchange with Google Cloud STS that uses the same mapped `google.subject` attribute automatically creates a new WorkforcePoolSubject that is unrelated to the previously deleted WorkforcePoolSubject but has the same `google.subject` value.",
                   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}",
                   "httpMethod": "DELETE",
                   "id": "iam.locations.workforcePools.subjects.delete",
@@ -875,7 +875,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
                       "location": "path",
                       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
                       "required": true,
@@ -900,7 +900,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+                      "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
                       "location": "path",
                       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
                       "required": true,
@@ -1189,6 +1189,344 @@
       "resources": {
         "locations": {
           "resources": {
+            "oauthClients": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new OauthClient. You cannot reuse the name of a deleted oauth client until 30 days after deletion.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.oauthClients.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "oauthClientId": {
+                      "description": "Required. The ID to use for the oauth client, which becomes the final component of the resource name. This value should be a string of 6 to 63 lowercase letters, digits, or hyphens. It must start with a letter, and cannot have a trailing hyphen. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent resource to create the oauth client in. The only supported location is `global`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+parent}/oauthClients",
+                  "request": {
+                    "$ref": "OauthClient"
+                  },
+                  "response": {
+                    "$ref": "OauthClient"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes a OauthClient. You cannot use a deleted oauth client. However, deletion does not revoke access tokens that have already been issued; they continue to grant access. Deletion does revoke refresh tokens that have already been issued; They cannot be used to renew an access token. If the oauth client is undeleted, and the refresh tokens are not expired, they are valid for token exchange again. You can undelete an oauth client for 30 days. After 30 days, deletion is permanent. You cannot update deleted oauth clients. However, you can view and list them.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+                  "httpMethod": "DELETE",
+                  "id": "iam.projects.locations.oauthClients.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the oauth client to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "OauthClient"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets an individual OauthClient.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.oauthClients.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the oauth client to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "OauthClient"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists all non-deleted OauthClientss in a project. If `show_deleted` is set to `true`, then deleted oauth clients are also listed.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.oauthClients.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "pageSize": {
+                      "description": "Optional. The maximum number of oauth clients to return. If unspecified, at most 50 oauth clients will be returned. The maximum value is 100; values above 100 are truncated to 100.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A page token, received from a previous `ListOauthClients` call. Provide this to retrieve the subsequent page.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent to list oauth clients for.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "showDeleted": {
+                      "description": "Optional. Whether to return soft-deleted oauth clients.",
+                      "location": "query",
+                      "type": "boolean"
+                    }
+                  },
+                  "path": "v1/{+parent}/oauthClients",
+                  "response": {
+                    "$ref": "ListOauthClientsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates an existing OauthClient.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+                  "httpMethod": "PATCH",
+                  "id": "iam.projects.locations.oauthClients.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Immutable. The resource name of the oauth client. Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Required. The list of fields to update.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "request": {
+                    "$ref": "OauthClient"
+                  },
+                  "response": {
+                    "$ref": "OauthClient"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "undelete": {
+                  "description": "Undeletes a OauthClient, as long as it was deleted fewer than 30 days ago.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}:undelete",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.oauthClients.undelete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the oauth client to undelete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:undelete",
+                  "request": {
+                    "$ref": "UndeleteOauthClientRequest"
+                  },
+                  "response": {
+                    "$ref": "OauthClient"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              },
+              "resources": {
+                "credentials": {
+                  "methods": {
+                    "create": {
+                      "description": "Creates a new OauthClientCredential.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
+                      "httpMethod": "POST",
+                      "id": "iam.projects.locations.oauthClients.credentials.create",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "oauthClientCredentialId": {
+                          "description": "Required. The ID to use for the oauth client credential, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                          "location": "query",
+                          "type": "string"
+                        },
+                        "parent": {
+                          "description": "Required. The parent resource to create the oauth client Credential in.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/credentials",
+                      "request": {
+                        "$ref": "OauthClientCredential"
+                      },
+                      "response": {
+                        "$ref": "OauthClientCredential"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "delete": {
+                      "description": "Deletes a OauthClientCredential. Before deleting an oauth client credential, it should first be disabled.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+                      "httpMethod": "DELETE",
+                      "id": "iam.projects.locations.oauthClients.credentials.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the oauth client credential to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "Empty"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets an individual OauthClientCredential.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.oauthClients.credentials.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the oauth client credential to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "OauthClientCredential"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "list": {
+                      "description": "Lists all OauthClientCredentialss in a OauthClient.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.oauthClients.credentials.list",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "parent": {
+                          "description": "Required. The parent to list oauth client credentials for.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/credentials",
+                      "response": {
+                        "$ref": "ListOauthClientCredentialsResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "patch": {
+                      "description": "Updates an existing OauthClientCredential.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+                      "httpMethod": "PATCH",
+                      "id": "iam.projects.locations.oauthClients.credentials.patch",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Immutable. The resource name of the oauth client credential. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "updateMask": {
+                          "description": "Required. The list of fields to update.",
+                          "format": "google-fieldmask",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "request": {
+                        "$ref": "OauthClientCredential"
+                      },
+                      "response": {
+                        "$ref": "OauthClientCredential"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
             "workloadIdentityPools": {
               "methods": {
                 "create": {
@@ -2718,6 +3056,34 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
+                "patch": {
+                  "description": "Patches a ServiceAccountKey.",
+                  "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}:patch",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.serviceAccounts.keys.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "The resource name of the service account key in the following format `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:patch",
+                  "request": {
+                    "$ref": "PatchServiceAccountKeyRequest"
+                  },
+                  "response": {
+                    "$ref": "ServiceAccountKey"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "upload": {
                   "description": "Uploads the public key portion of a key pair that you manage, and associates the public key with a ServiceAccount. After you upload the public key, you can use the private key from the key pair as a service account key.",
                   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys:upload",
@@ -2850,7 +3216,7 @@
       }
     }
   },
-  "revision": "20240314",
+  "revision": "20240415",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -3086,7 +3452,28 @@
     "DisableServiceAccountKeyRequest": {
       "description": "The service account key disable request.",
       "id": "DisableServiceAccountKeyRequest",
-      "properties": {},
+      "properties": {
+        "extendedStatusMessage": {
+          "description": "Optional. Usable by internal google services only. An extended_status_message can be used to include additional information about the key, such as its private key data being exposed on a public repository like GitHub.",
+          "type": "string"
+        },
+        "serviceAccountKeyDisableReason": {
+          "description": "Optional. Describes the reason this key is being disabled. If unspecified, the default value of SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.",
+          "enum": [
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED"
+          ],
+          "enumDescriptions": [
+            "Unspecified disable reason",
+            "Disabled by the user",
+            "Google detected this Service Account external key's private key data as exposed, typically in a public repository on GitHub or similar.",
+            "This service account external key was detected as compromised and used by an attacker."
+          ],
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "DisableServiceAccountRequest": {
@@ -3136,6 +3523,31 @@
       },
       "type": "object"
     },
+    "ExtendedStatus": {
+      "description": "Extended status can store additional metadata. For example, for keys disabled due to their private key data being expoesed we may include a message with more information about the exposure.",
+      "id": "ExtendedStatus",
+      "properties": {
+        "key": {
+          "description": "The key for this extended status.",
+          "enum": [
+            "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_UNSPECIFIED",
+            "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_EXPOSED",
+            "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_COMPROMISE_DETECTED"
+          ],
+          "enumDescriptions": [
+            "Unspecified extended status, should not be used.",
+            "This key has been detected as exposed. extended_status_value may contain information about the exposure (public GitHub repo, open internet, etc.)",
+            "This key was implicated in a compromise or other attack. extended_status_value may contain information about the abuse perpetrated."
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "The value for the extended status.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GetIamPolicyRequest": {
       "description": "Request message for `GetIamPolicy` method.",
       "id": "GetIamPolicyRequest",
@@ -3159,6 +3571,52 @@
       },
       "type": "object"
     },
+    "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client": {
+      "description": "Represents the OAuth 2.0 client credential configuration for retrieving additional user attributes that are not present in the initial authentication credentials from the identity provider, e.g. groups. See https://datatracker.ietf.org/doc/html/rfc6749#section-4.4 for more details on client credentials grant flow.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
+      "properties": {
+        "attributesType": {
+          "description": "Required. Represents the IdP and type of claims that should be fetched.",
+          "enum": [
+            "ATTRIBUTES_TYPE_UNSPECIFIED",
+            "AZURE_AD_GROUPS_MAIL"
+          ],
+          "enumDescriptions": [
+            "No AttributesType specified.",
+            "Used to get the user's group claims from the Azure AD identity provider using configuration provided in ExtraAttributesOAuth2Client and `mail` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The attributes obtained from idntity provider are mapped to `assertion.groups`."
+          ],
+          "type": "string"
+        },
+        "clientId": {
+          "description": "Required. The OAuth 2.0 client ID for retrieving extra attributes from the identity provider. Required to get the Access Token using client credentials grant flow.",
+          "type": "string"
+        },
+        "clientSecret": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret",
+          "description": "Required. The OAuth 2.0 client secret for retrieving extra attributes from the identity provider. Required to get the Access Token using client credentials grant flow."
+        },
+        "issuerUri": {
+          "description": "Required. The OIDC identity provider's issuer URI. Must be a valid URI using the `https` scheme. Required to get the OIDC discovery document.",
+          "type": "string"
+        },
+        "queryParameters": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters",
+          "description": "Optional. Represents the parameters to control which claims are fetched from an IdP."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters": {
+      "description": "Represents the parameters to control which claims are fetched from an IdP.",
+      "id": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters",
+      "properties": {
+        "filter": {
+          "description": "Optional. The filter used to request specific records from IdP. In case of attributes type as AZURE_AD_GROUPS_MAIL, it represents the filter used to request specific groups for users from IdP. By default all the groups associated with the user are fetched. The groups that are used should be mail enabled and security enabled. See https://learn.microsoft.com/en-us/graph/search-query-parameter for more details.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GoogleIamAdminV1WorkforcePoolProviderOidc": {
       "description": "Represents an OpenId Connect 1.0 identity provider.",
       "id": "GoogleIamAdminV1WorkforcePoolProviderOidc",
@@ -3172,7 +3630,7 @@
           "description": "The optional client secret. Required to enable Authorization Code flow for web sign-in."
         },
         "issuerUri": {
-          "description": "Required. The OIDC issuer URI. Must be a valid URI using the 'https' scheme.",
+          "description": "Required. The OIDC issuer URI. Must be a valid URI using the `https` scheme.",
           "type": "string"
         },
         "jwksJson": {
@@ -3404,6 +3862,38 @@
       },
       "type": "object"
     },
+    "ListOauthClientCredentialsResponse": {
+      "description": "Response message for ListOauthClientCredentials.",
+      "id": "ListOauthClientCredentialsResponse",
+      "properties": {
+        "oauthClientCredentials": {
+          "description": "A list of oauth client credentials.",
+          "items": {
+            "$ref": "OauthClientCredential"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListOauthClientsResponse": {
+      "description": "Response message for ListOauthClients.",
+      "id": "ListOauthClientsResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "oauthClients": {
+          "description": "A list of oauth clients.",
+          "items": {
+            "$ref": "OauthClient"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "ListRolesResponse": {
       "description": "The response containing the roles defined under a resource.",
       "id": "ListRolesResponse",
@@ -3562,6 +4052,124 @@
       },
       "type": "object"
     },
+    "OauthClient": {
+      "description": "Represents an oauth client. Used to access Google Cloud resources on behave of a user by using OAuth2 Protocol to obtain an access token from Google Cloud Platform.",
+      "id": "OauthClient",
+      "properties": {
+        "allowedGrantTypes": {
+          "description": "Required. The list of OAuth grant type is allowed for the oauth client.",
+          "items": {
+            "enum": [
+              "GRANT_TYPE_UNSPECIFIED",
+              "AUTHORIZATION_CODE_GRANT",
+              "REFRESH_TOKEN_GRANT"
+            ],
+            "enumDescriptions": [
+              "should not be used",
+              "authorization code grant",
+              "refresh token grant"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowedRedirectUris": {
+          "description": "Required. The list of redirect uris that is allowed to redirect back when authorization process is completed.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowedScopes": {
+          "description": "Required. The list of scopes that the oauth client is allowed to request during OAuth flows. The following scopes are supported: * `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account. * `openid`: Associate you with your personal info on Google Cloud. * `email`: See your Google Cloud Account email address.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "clientId": {
+          "description": "Output only. The system-generated oauth client id.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "clientType": {
+          "description": "Immutable. The type of oauth client. either public or private.",
+          "enum": [
+            "CLIENT_TYPE_UNSPECIFIED",
+            "PUBLIC_CLIENT",
+            "CONFIDENTIAL_CLIENT"
+          ],
+          "enumDescriptions": [
+            "should not be used",
+            "public client has no secret",
+            "private client"
+          ],
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. A user-specified description of the oauth client. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Optional. Whether the oauth client is disabled. You cannot use a disabled oauth client for login.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "Optional. A user-specified display name of the oauth client. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the oauth client will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "name": {
+          "description": "Immutable. The resource name of the oauth client. Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the oauth client.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "Default value. This value is unused.",
+            "The oauth client is active.",
+            "The oauth client is soft-deleted. Soft-deleted oauth client is permanently deleted after approximately 30 days unless restored via UndeleteOauthClient."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "OauthClientCredential": {
+      "description": "Represents an oauth client credential. Used to authenticate an oauth client while accessing Google Cloud resources on behalf of a user by using OAuth2 Protocol.",
+      "id": "OauthClientCredential",
+      "properties": {
+        "clientSecret": {
+          "description": "Output only. The system-generated oauth client secret.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Optional. Whether the oauth client credential is disabled. You cannot use a disabled oauth client credential for OAuth.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "Optional. A user-specified display name of the oauth client credential Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Immutable. The resource name of the oauth client credential. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "Oidc": {
       "description": "Represents an OpenId Connect 1.0 identity provider.",
       "id": "Oidc",
@@ -3658,6 +4266,22 @@
         "verb": {
           "description": "Output only. Name of the verb executed by the operation.",
           "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PatchServiceAccountKeyRequest": {
+      "description": "The service account key patch request.",
+      "id": "PatchServiceAccountKeyRequest",
+      "properties": {
+        "serviceAccountKey": {
+          "$ref": "ServiceAccountKey",
+          "description": "Required. The service account key to update."
+        },
+        "updateMask": {
+          "description": "Required. The update mask to apply to the service account key. Only the following fields are eligible for patching: - contact - description",
+          "format": "google-fieldmask",
           "type": "string"
         }
       },
@@ -4067,9 +4691,45 @@
       "description": "Represents a service account key. A service account has two sets of key-pairs: user-managed, and system-managed. User-managed key-pairs can be created and deleted by users. Users are responsible for rotating these keys periodically to ensure security of their service accounts. Users retain the private key of these key-pairs, and Google retains ONLY the public key. System-managed keys are automatically rotated by Google, and are used for signing for a maximum of two weeks. The rotation process is probabilistic, and usage of the new key will gradually ramp up and down over the key's lifetime. If you cache the public key set for a service account, we recommend that you update the cache every 15 minutes. User-managed keys can be added and removed at any time, so it is important to update the cache frequently. For Google-managed keys, Google will publish a key at least 6 hours before it is first used for signing and will keep publishing it for at least 6 hours after it was last used for signing. Public keys for all service accounts are also published at the OAuth2 Service Account API.",
       "id": "ServiceAccountKey",
       "properties": {
+        "contact": {
+          "description": "Optional. A user provided email address as the point of contact for this service account key. Must be an email address. Limit 64 characters.",
+          "type": "string"
+        },
+        "creator": {
+          "description": "Output only. The cloud identity that created this service account key. Populated automatically when the key is created and not editable by the user.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. A user provided description of this service account key.",
+          "type": "string"
+        },
+        "disableReason": {
+          "description": "optional. If the key is disabled, it may have a DisableReason describing why it was disabled.",
+          "enum": [
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED",
+            "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED"
+          ],
+          "enumDescriptions": [
+            "Unspecified disable reason",
+            "Disabled by the user",
+            "Google detected this Service Account external key's private key data as exposed, typically in a public repository on GitHub or similar.",
+            "This service account external key was detected as compromised and used by an attacker."
+          ],
+          "type": "string"
+        },
         "disabled": {
           "description": "The key status.",
           "type": "boolean"
+        },
+        "extendedStatus": {
+          "description": "Extended Status provides permanent information about a service account key. For example, if this key was detected as exposed or compromised, that information will remain for the lifetime of the key in the extended_status.",
+          "items": {
+            "$ref": "ExtendedStatus"
+          },
+          "type": "array"
         },
         "keyAlgorithm": {
           "description": "Specifies the algorithm (and possibly key size) for the key.",
@@ -4296,6 +4956,12 @@
       },
       "type": "object"
     },
+    "UndeleteOauthClientRequest": {
+      "description": "Request message for UndeleteOauthClient.",
+      "id": "UndeleteOauthClientRequest",
+      "properties": {},
+      "type": "object"
+    },
     "UndeleteRoleRequest": {
       "description": "The request to undelete an existing role.",
       "id": "UndeleteRoleRequest",
@@ -4468,6 +5134,10 @@
           "format": "google-datetime",
           "readOnly": true,
           "type": "string"
+        },
+        "extraAttributesOauth2Client": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
+          "description": "Optional. The configuration for OAuth 2.0 client used to get the additional user attributes. This should be used when users can't get the desired claims in authentication credentials. Currently this configuration is only supported with OIDC protocol."
         },
         "name": {
           "description": "Output only. The resource name of the provider. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
@@ -4664,10 +5334,6 @@
           ],
           "readOnly": true,
           "type": "string"
-        },
-        "x509": {
-          "$ref": "X509",
-          "description": "An X.509-type identity provider."
         }
       },
       "type": "object"
@@ -4719,12 +5385,6 @@
           "type": "string"
         }
       },
-      "type": "object"
-    },
-    "X509": {
-      "description": "An X.509-type identity provider represents a CA. It is trusted to assert a client identity if the client has a certificate that chains up to this CA.",
-      "id": "X509",
-      "properties": {},
       "type": "object"
     }
   },

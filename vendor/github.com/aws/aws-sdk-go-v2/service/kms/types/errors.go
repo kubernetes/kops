@@ -211,6 +211,33 @@ func (e *CloudHsmClusterNotRelatedException) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
 
+// The request was rejected because an automatic rotation of this key is currently
+// in progress or scheduled to begin within the next 20 minutes.
+type ConflictException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *ConflictException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *ConflictException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "ConflictException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *ConflictException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The request was rejected because the custom key store contains KMS keys. After
 // verifying that you do not need to use the KMS keys, use the ScheduleKeyDeletion
 // operation to delete the KMS keys. After they are deleted, you can delete the
