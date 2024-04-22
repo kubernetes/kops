@@ -334,6 +334,7 @@ type ProjectsService struct {
 
 func NewProjectsLocationsService(s *Service) *ProjectsLocationsService {
 	rs := &ProjectsLocationsService{s: s}
+	rs.OauthClients = NewProjectsLocationsOauthClientsService(s)
 	rs.WorkloadIdentityPools = NewProjectsLocationsWorkloadIdentityPoolsService(s)
 	return rs
 }
@@ -341,7 +342,30 @@ func NewProjectsLocationsService(s *Service) *ProjectsLocationsService {
 type ProjectsLocationsService struct {
 	s *Service
 
+	OauthClients *ProjectsLocationsOauthClientsService
+
 	WorkloadIdentityPools *ProjectsLocationsWorkloadIdentityPoolsService
+}
+
+func NewProjectsLocationsOauthClientsService(s *Service) *ProjectsLocationsOauthClientsService {
+	rs := &ProjectsLocationsOauthClientsService{s: s}
+	rs.Credentials = NewProjectsLocationsOauthClientsCredentialsService(s)
+	return rs
+}
+
+type ProjectsLocationsOauthClientsService struct {
+	s *Service
+
+	Credentials *ProjectsLocationsOauthClientsCredentialsService
+}
+
+func NewProjectsLocationsOauthClientsCredentialsService(s *Service) *ProjectsLocationsOauthClientsCredentialsService {
+	rs := &ProjectsLocationsOauthClientsCredentialsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsOauthClientsCredentialsService struct {
+	s *Service
 }
 
 func NewProjectsLocationsWorkloadIdentityPoolsService(s *Service) *ProjectsLocationsWorkloadIdentityPoolsService {
@@ -1057,6 +1081,52 @@ func (s *CreateServiceAccountRequest) MarshalJSON() ([]byte, error) {
 // DisableServiceAccountKeyRequest: The service account key disable
 // request.
 type DisableServiceAccountKeyRequest struct {
+	// ExtendedStatusMessage: Optional. Usable by internal google services
+	// only. An extended_status_message can be used to include additional
+	// information about the key, such as its private key data being exposed
+	// on a public repository like GitHub.
+	ExtendedStatusMessage string `json:"extendedStatusMessage,omitempty"`
+
+	// ServiceAccountKeyDisableReason: Optional. Describes the reason this
+	// key is being disabled. If unspecified, the default value of
+	// SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
+	//
+	// Possible values:
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified
+	// disable reason
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by
+	// the user
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED" - Google detected this
+	// Service Account external key's private key data as exposed, typically
+	// in a public repository on GitHub or similar.
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This
+	// service account external key was detected as compromised and used by
+	// an attacker.
+	ServiceAccountKeyDisableReason string `json:"serviceAccountKeyDisableReason,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "ExtendedStatusMessage") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExtendedStatusMessage") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DisableServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod DisableServiceAccountKeyRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // DisableServiceAccountRequest: The service account disable request.
@@ -1143,6 +1213,52 @@ func (s *Expr) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ExtendedStatus: Extended status can store additional metadata. For
+// example, for keys disabled due to their private key data being
+// expoesed we may include a message with more information about the
+// exposure.
+type ExtendedStatus struct {
+	// Key: The key for this extended status.
+	//
+	// Possible values:
+	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_UNSPECIFIED" - Unspecified
+	// extended status, should not be used.
+	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_EXPOSED" - This key has
+	// been detected as exposed. extended_status_value may contain
+	// information about the exposure (public GitHub repo, open internet,
+	// etc.)
+	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_COMPROMISE_DETECTED" -
+	// This key was implicated in a compromise or other attack.
+	// extended_status_value may contain information about the abuse
+	// perpetrated.
+	Key string `json:"key,omitempty"`
+
+	// Value: The value for the extended status.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ExtendedStatus) MarshalJSON() ([]byte, error) {
+	type NoMethod ExtendedStatus
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GetIamPolicyRequest: Request message for `GetIamPolicy` method.
 type GetIamPolicyRequest struct {
 	// Options: OPTIONAL: A `GetPolicyOptions` object for specifying options
@@ -1213,6 +1329,107 @@ func (s *GetPolicyOptions) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client:
+// Represents the OAuth 2.0 client credential configuration for
+// retrieving additional user attributes that are not present in the
+// initial authentication credentials from the identity provider, e.g.
+// groups. See https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
+// for more details on client credentials grant flow.
+type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client struct {
+	// AttributesType: Required. Represents the IdP and type of claims that
+	// should be fetched.
+	//
+	// Possible values:
+	//   "ATTRIBUTES_TYPE_UNSPECIFIED" - No AttributesType specified.
+	//   "AZURE_AD_GROUPS_MAIL" - Used to get the user's group claims from
+	// the Azure AD identity provider using configuration provided in
+	// ExtraAttributesOAuth2Client and `mail` property of the
+	// `microsoft.graph.group` object is used for claim mapping. See
+	// https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties
+	// for more details on `microsoft.graph.group` properties. The
+	// attributes obtained from idntity provider are mapped to
+	// `assertion.groups`.
+	AttributesType string `json:"attributesType,omitempty"`
+
+	// ClientId: Required. The OAuth 2.0 client ID for retrieving extra
+	// attributes from the identity provider. Required to get the Access
+	// Token using client credentials grant flow.
+	ClientId string `json:"clientId,omitempty"`
+
+	// ClientSecret: Required. The OAuth 2.0 client secret for retrieving
+	// extra attributes from the identity provider. Required to get the
+	// Access Token using client credentials grant flow.
+	ClientSecret *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret `json:"clientSecret,omitempty"`
+
+	// IssuerUri: Required. The OIDC identity provider's issuer URI. Must be
+	// a valid URI using the `https` scheme. Required to get the OIDC
+	// discovery document.
+	IssuerUri string `json:"issuerUri,omitempty"`
+
+	// QueryParameters: Optional. Represents the parameters to control which
+	// claims are fetched from an IdP.
+	QueryParameters *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters `json:"queryParameters,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AttributesType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AttributesType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryP
+// arameters: Represents the parameters to control which claims are
+// fetched from an IdP.
+type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters struct {
+	// Filter: Optional. The filter used to request specific records from
+	// IdP. In case of attributes type as AZURE_AD_GROUPS_MAIL, it
+	// represents the filter used to request specific groups for users from
+	// IdP. By default all the groups associated with the user are fetched.
+	// The groups that are used should be mail enabled and security enabled.
+	// See https://learn.microsoft.com/en-us/graph/search-query-parameter
+	// for more details.
+	Filter string `json:"filter,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Filter") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Filter") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GoogleIamAdminV1WorkforcePoolProviderOidc: Represents an OpenId
 // Connect 1.0 identity provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
@@ -1225,7 +1442,7 @@ type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 	ClientSecret *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret `json:"clientSecret,omitempty"`
 
 	// IssuerUri: Required. The OIDC issuer URI. Must be a valid URI using
-	// the 'https' scheme.
+	// the `https` scheme.
 	IssuerUri string `json:"issuerUri,omitempty"`
 
 	// JwksJson: OIDC JWKs in JSON String format. For details on the
@@ -1645,6 +1862,78 @@ func (s *LintResult) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ListOauthClientCredentialsResponse: Response message for
+// ListOauthClientCredentials.
+type ListOauthClientCredentialsResponse struct {
+	// OauthClientCredentials: A list of oauth client credentials.
+	OauthClientCredentials []*OauthClientCredential `json:"oauthClientCredentials,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "OauthClientCredentials") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OauthClientCredentials")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListOauthClientCredentialsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListOauthClientCredentialsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListOauthClientsResponse: Response message for ListOauthClients.
+type ListOauthClientsResponse struct {
+	// NextPageToken: Optional. A token, which can be sent as `page_token`
+	// to retrieve the next page. If this field is omitted, there are no
+	// subsequent pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// OauthClients: A list of oauth clients.
+	OauthClients []*OauthClient `json:"oauthClients,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListOauthClientsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListOauthClientsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ListRolesResponse: The response containing the roles defined under a
 // resource.
 type ListRolesResponse struct {
@@ -1979,6 +2268,151 @@ func (s *ListWorkloadIdentityPoolsResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// OauthClient: Represents an oauth client. Used to access Google Cloud
+// resources on behave of a user by using OAuth2 Protocol to obtain an
+// access token from Google Cloud Platform.
+type OauthClient struct {
+	// AllowedGrantTypes: Required. The list of OAuth grant type is allowed
+	// for the oauth client.
+	//
+	// Possible values:
+	//   "GRANT_TYPE_UNSPECIFIED" - should not be used
+	//   "AUTHORIZATION_CODE_GRANT" - authorization code grant
+	//   "REFRESH_TOKEN_GRANT" - refresh token grant
+	AllowedGrantTypes []string `json:"allowedGrantTypes,omitempty"`
+
+	// AllowedRedirectUris: Required. The list of redirect uris that is
+	// allowed to redirect back when authorization process is completed.
+	AllowedRedirectUris []string `json:"allowedRedirectUris,omitempty"`
+
+	// AllowedScopes: Required. The list of scopes that the oauth client is
+	// allowed to request during OAuth flows. The following scopes are
+	// supported: * `https://www.googleapis.com/auth/cloud-platform`: See,
+	// edit, configure, and delete your Google Cloud data and see the email
+	// address for your Google Account. * `openid`: Associate you with your
+	// personal info on Google Cloud. * `email`: See your Google Cloud
+	// Account email address.
+	AllowedScopes []string `json:"allowedScopes,omitempty"`
+
+	// ClientId: Output only. The system-generated oauth client id.
+	ClientId string `json:"clientId,omitempty"`
+
+	// ClientType: Immutable. The type of oauth client. either public or
+	// private.
+	//
+	// Possible values:
+	//   "CLIENT_TYPE_UNSPECIFIED" - should not be used
+	//   "PUBLIC_CLIENT" - public client has no secret
+	//   "CONFIDENTIAL_CLIENT" - private client
+	ClientType string `json:"clientType,omitempty"`
+
+	// Description: Optional. A user-specified description of the oauth
+	// client. Cannot exceed 256 characters.
+	Description string `json:"description,omitempty"`
+
+	// Disabled: Optional. Whether the oauth client is disabled. You cannot
+	// use a disabled oauth client for login.
+	Disabled bool `json:"disabled,omitempty"`
+
+	// DisplayName: Optional. A user-specified display name of the oauth
+	// client. Cannot exceed 32 characters.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// ExpireTime: Output only. Time after which the oauth client will be
+	// permanently purged and cannot be recovered.
+	ExpireTime string `json:"expireTime,omitempty"`
+
+	// Name: Immutable. The resource name of the oauth client.
+	// Format:`projects/{project}/locations/{location}/oauthClients/{oauth_cl
+	// ient}`.
+	Name string `json:"name,omitempty"`
+
+	// State: Output only. The state of the oauth client.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - Default value. This value is unused.
+	//   "ACTIVE" - The oauth client is active.
+	//   "DELETED" - The oauth client is soft-deleted. Soft-deleted oauth
+	// client is permanently deleted after approximately 30 days unless
+	// restored via UndeleteOauthClient.
+	State string `json:"state,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AllowedGrantTypes")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowedGrantTypes") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OauthClient) MarshalJSON() ([]byte, error) {
+	type NoMethod OauthClient
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// OauthClientCredential: Represents an oauth client credential. Used to
+// authenticate an oauth client while accessing Google Cloud resources
+// on behalf of a user by using OAuth2 Protocol.
+type OauthClientCredential struct {
+	// ClientSecret: Output only. The system-generated oauth client secret.
+	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// Disabled: Optional. Whether the oauth client credential is disabled.
+	// You cannot use a disabled oauth client credential for OAuth.
+	Disabled bool `json:"disabled,omitempty"`
+
+	// DisplayName: Optional. A user-specified display name of the oauth
+	// client credential Cannot exceed 32 characters.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// Name: Immutable. The resource name of the oauth client credential.
+	// Format:
+	// `projects/{project}/locations/{location}/oauthClients/{oauth_client}/c
+	// redentials/{credential}`
+	Name string `json:"name,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ClientSecret") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientSecret") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OauthClientCredential) MarshalJSON() ([]byte, error) {
+	type NoMethod OauthClientCredential
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Oidc: Represents an OpenId Connect 1.0 identity provider.
 type Oidc struct {
 	// AllowedAudiences: Acceptable values for the `aud` field (audience) in
@@ -2142,6 +2576,40 @@ type OperationMetadata struct {
 
 func (s *OperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod OperationMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PatchServiceAccountKeyRequest: The service account key patch request.
+type PatchServiceAccountKeyRequest struct {
+	// ServiceAccountKey: Required. The service account key to update.
+	ServiceAccountKey *ServiceAccountKey `json:"serviceAccountKey,omitempty"`
+
+	// UpdateMask: Required. The update mask to apply to the service account
+	// key. Only the following fields are eligible for patching: - contact -
+	// description
+	UpdateMask string `json:"updateMask,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ServiceAccountKey")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ServiceAccountKey") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PatchServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod PatchServiceAccountKeyRequest
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2908,8 +3376,44 @@ func (s *ServiceAccount) MarshalJSON() ([]byte, error) {
 // was last used for signing. Public keys for all service accounts are
 // also published at the OAuth2 Service Account API.
 type ServiceAccountKey struct {
+	// Contact: Optional. A user provided email address as the point of
+	// contact for this service account key. Must be an email address. Limit
+	// 64 characters.
+	Contact string `json:"contact,omitempty"`
+
+	// Creator: Output only. The cloud identity that created this service
+	// account key. Populated automatically when the key is created and not
+	// editable by the user.
+	Creator string `json:"creator,omitempty"`
+
+	// Description: Optional. A user provided description of this service
+	// account key.
+	Description string `json:"description,omitempty"`
+
+	// DisableReason: optional. If the key is disabled, it may have a
+	// DisableReason describing why it was disabled.
+	//
+	// Possible values:
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified
+	// disable reason
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by
+	// the user
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED" - Google detected this
+	// Service Account external key's private key data as exposed, typically
+	// in a public repository on GitHub or similar.
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This
+	// service account external key was detected as compromised and used by
+	// an attacker.
+	DisableReason string `json:"disableReason,omitempty"`
+
 	// Disabled: The key status.
 	Disabled bool `json:"disabled,omitempty"`
+
+	// ExtendedStatus: Extended Status provides permanent information about
+	// a service account key. For example, if this key was detected as
+	// exposed or compromised, that information will remain for the lifetime
+	// of the key in the extended_status.
+	ExtendedStatus []*ExtendedStatus `json:"extendedStatus,omitempty"`
 
 	// KeyAlgorithm: Specifies the algorithm (and possibly key size) for the
 	// key.
@@ -2983,7 +3487,7 @@ type ServiceAccountKey struct {
 	// server.
 	googleapi.ServerResponse `json:"-"`
 
-	// ForceSendFields is a list of field names (e.g. "Disabled") to
+	// ForceSendFields is a list of field names (e.g. "Contact") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -2991,7 +3495,7 @@ type ServiceAccountKey struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Disabled") to include in
+	// NullFields is a list of field names (e.g. "Contact") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -3335,6 +3839,10 @@ func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UndeleteOauthClientRequest: Request message for UndeleteOauthClient.
+type UndeleteOauthClientRequest struct {
+}
+
 // UndeleteRoleRequest: The request to undelete an existing role.
 type UndeleteRoleRequest struct {
 	// Etag: Used to perform a consistent read-modify-write.
@@ -3642,6 +4150,13 @@ type WorkforcePoolProvider struct {
 	// will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
 
+	// ExtraAttributesOauth2Client: Optional. The configuration for OAuth
+	// 2.0 client used to get the additional user attributes. This should be
+	// used when users can't get the desired claims in authentication
+	// credentials. Currently this configuration is only supported with OIDC
+	// protocol.
+	ExtraAttributesOauth2Client *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client `json:"extraAttributesOauth2Client,omitempty"`
+
 	// Name: Output only. The resource name of the provider. Format:
 	// `locations/{location}/workforcePools/{workforce_pool_id}/providers/{pr
 	// ovider_id}`
@@ -3931,9 +4446,6 @@ type WorkloadIdentityPoolProvider struct {
 	// permanently deleted.
 	State string `json:"state,omitempty"`
 
-	// X509: An X.509-type identity provider.
-	X509 *X509 `json:"x509,omitempty"`
-
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -4023,12 +4535,6 @@ func (s *WorkloadIdentityPoolProviderKey) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPoolProviderKey
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// X509: An X.509-type identity provider represents a CA. It is trusted
-// to assert a client identity if the client has a certificate that
-// chains up to this CA.
-type X509 struct {
 }
 
 // method id "iam.iamPolicies.lintPolicy":
@@ -5414,8 +5920,8 @@ type LocationsWorkforcePoolsTestIamPermissionsCall struct {
 }
 
 // TestIamPermissions: Returns the caller's permissions on the
-// WorkforcePool. If the pool does not exist, this will return an empty
-// set of permissions, not a `NOT_FOUND` error.
+// WorkforcePool. If the pool doesn't exist, this call returns an empty
+// set of permissions. It doesn't return a `NOT_FOUND` error.
 //
 //   - resource: REQUIRED: The resource for which the policy detail is
 //     being requested. See Resource names
@@ -5519,7 +6025,7 @@ func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Do(opts ...googleapi.Cal
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns the caller's permissions on the WorkforcePool. If the pool does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error.",
+	//   "description": "Returns the caller's permissions on the WorkforcePool. If the pool doesn't exist, this call returns an empty set of permissions. It doesn't return a `NOT_FOUND` error.",
 	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:testIamPermissions",
 	//   "httpMethod": "POST",
 	//   "id": "iam.locations.workforcePools.testIamPermissions",
@@ -6012,7 +6518,7 @@ type LocationsWorkforcePoolsProvidersDeleteCall struct {
 }
 
 // Delete: Deletes a WorkforcePoolProvider. Deleting a provider does not
-// revoke credentials that have already been\ issued; they continue to
+// revoke credentials that have already been issued; they continue to
 // grant access. You can undelete a provider for 30 days. After 30 days,
 // deletion is permanent. You cannot update deleted providers. However,
 // you can view and list them.
@@ -6112,7 +6618,7 @@ func (c *LocationsWorkforcePoolsProvidersDeleteCall) Do(opts ...googleapi.CallOp
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been\\ issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
+	//   "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
 	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "iam.locations.workforcePools.providers.delete",
@@ -7899,16 +8405,20 @@ type LocationsWorkforcePoolsSubjectsDeleteCall struct {
 // Delete: Deletes a WorkforcePoolSubject. Subject must not already be
 // in a deleted state. A WorkforcePoolSubject is automatically created
 // the first time an external credential is exchanged for a Google Cloud
-// credential with a mapped `google.subject` attribute. There is no path
-// to manually create WorkforcePoolSubjects. Once deleted, the
-// WorkforcePoolSubject may not be used for 30 days. After 30 days, the
-// WorkforcePoolSubject will be deleted forever and can be reused in
-// token exchanges with Google Cloud STS. This will automatically create
-// a new WorkforcePoolSubject that is independent of the previously
-// deleted WorkforcePoolSubject with the same google.subject value.
+// credential using a mapped `google.subject` attribute. There is no
+// endpoint to manually create a WorkforcePoolSubject. For 30 days after
+// a WorkforcePoolSubject is deleted, using the same `google.subject`
+// attribute in token exchanges with Google Cloud STS fails. Call
+// UndeleteWorkforcePoolSubject to undelete a WorkforcePoolSubject that
+// has been deleted, within within 30 days of deleting it. After 30
+// days, the WorkforcePoolSubject is permanently deleted. At this point,
+// a token exchange with Google Cloud STS that uses the same mapped
+// `google.subject` attribute automatically creates a new
+// WorkforcePoolSubject that is unrelated to the previously deleted
+// WorkforcePoolSubject but has the same `google.subject` value.
 //
 //   - name: The resource name of the WorkforcePoolSubject. Special
-//     characters, like '/' and ':', must be escaped, because all URLs
+//     characters, like `/` and `:`, must be escaped, because all URLs
 //     need to conform to the "When to Escape and Unescape" section of
 //     RFC3986 (https://www.ietf.org/rfc/rfc2396.txt). Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{s
@@ -8005,7 +8515,7 @@ func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Do(opts ...googleapi.CallOpt
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential with a mapped `google.subject` attribute. There is no path to manually create WorkforcePoolSubjects. Once deleted, the WorkforcePoolSubject may not be used for 30 days. After 30 days, the WorkforcePoolSubject will be deleted forever and can be reused in token exchanges with Google Cloud STS. This will automatically create a new WorkforcePoolSubject that is independent of the previously deleted WorkforcePoolSubject with the same google.subject value.",
+	//   "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential using a mapped `google.subject` attribute. There is no endpoint to manually create a WorkforcePoolSubject. For 30 days after a WorkforcePoolSubject is deleted, using the same `google.subject` attribute in token exchanges with Google Cloud STS fails. Call UndeleteWorkforcePoolSubject to undelete a WorkforcePoolSubject that has been deleted, within within 30 days of deleting it. After 30 days, the WorkforcePoolSubject is permanently deleted. At this point, a token exchange with Google Cloud STS that uses the same mapped `google.subject` attribute automatically creates a new WorkforcePoolSubject that is unrelated to the previously deleted WorkforcePoolSubject but has the same `google.subject` value.",
 	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "iam.locations.workforcePools.subjects.delete",
@@ -8014,7 +8524,7 @@ func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Do(opts ...googleapi.CallOpt
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
 	//       "location": "path",
 	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
 	//       "required": true,
@@ -8047,7 +8557,7 @@ type LocationsWorkforcePoolsSubjectsUndeleteCall struct {
 // fewer than 30 days ago.
 //
 //   - name: The resource name of the WorkforcePoolSubject. Special
-//     characters, like '/' and ':', must be escaped, because all URLs
+//     characters, like `/` and `:`, must be escaped, because all URLs
 //     need to conform to the "When to Escape and Unescape" section of
 //     RFC3986 (https://www.ietf.org/rfc/rfc2396.txt). Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{s
@@ -8159,7 +8669,7 @@ func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Do(opts ...googleapi.CallO
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like '/' and ':', must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
+	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
 	//       "location": "path",
 	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
 	//       "required": true,
@@ -9590,6 +10100,1714 @@ func (c *PermissionsQueryTestablePermissionsCall) Pages(ctx context.Context, f f
 		}
 		c.querytestablepermissionsrequest.PageToken = x.NextPageToken
 	}
+}
+
+// method id "iam.projects.locations.oauthClients.create":
+
+type ProjectsLocationsOauthClientsCreateCall struct {
+	s           *Service
+	parent      string
+	oauthclient *OauthClient
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
+}
+
+// Create: Creates a new OauthClient. You cannot reuse the name of a
+// deleted oauth client until 30 days after deletion.
+//
+//   - parent: The parent resource to create the oauth client in. The only
+//     supported location is `global`.
+func (r *ProjectsLocationsOauthClientsService) Create(parent string, oauthclient *OauthClient) *ProjectsLocationsOauthClientsCreateCall {
+	c := &ProjectsLocationsOauthClientsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.oauthclient = oauthclient
+	return c
+}
+
+// OauthClientId sets the optional parameter "oauthClientId": Required.
+// The ID to use for the oauth client, which becomes the final component
+// of the resource name. This value should be a string of 6 to 63
+// lowercase letters, digits, or hyphens. It must start with a letter,
+// and cannot have a trailing hyphen. The prefix `gcp-` is reserved for
+// use by Google, and may not be specified.
+func (c *ProjectsLocationsOauthClientsCreateCall) OauthClientId(oauthClientId string) *ProjectsLocationsOauthClientsCreateCall {
+	c.urlParams_.Set("oauthClientId", oauthClientId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCreateCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclient)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/oauthClients")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.create" call.
+// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsCreateCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClient{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a new OauthClient. You cannot reuse the name of a deleted oauth client until 30 days after deletion.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.oauthClients.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "oauthClientId": {
+	//       "description": "Required. The ID to use for the oauth client, which becomes the final component of the resource name. This value should be a string of 6 to 63 lowercase letters, digits, or hyphens. It must start with a letter, and cannot have a trailing hyphen. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The parent resource to create the oauth client in. The only supported location is `global`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/oauthClients",
+	//   "request": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "response": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.delete":
+
+type ProjectsLocationsOauthClientsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a OauthClient. You cannot use a deleted oauth client.
+// However, deletion does not revoke access tokens that have already
+// been issued; they continue to grant access. Deletion does revoke
+// refresh tokens that have already been issued; They cannot be used to
+// renew an access token. If the oauth client is undeleted, and the
+// refresh tokens are not expired, they are valid for token exchange
+// again. You can undelete an oauth client for 30 days. After 30 days,
+// deletion is permanent. You cannot update deleted oauth clients.
+// However, you can view and list them.
+//
+//   - name: The name of the oauth client to delete. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     `.
+func (r *ProjectsLocationsOauthClientsService) Delete(name string) *ProjectsLocationsOauthClientsDeleteCall {
+	c := &ProjectsLocationsOauthClientsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsDeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.delete" call.
+// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsDeleteCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClient{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a OauthClient. You cannot use a deleted oauth client. However, deletion does not revoke access tokens that have already been issued; they continue to grant access. Deletion does revoke refresh tokens that have already been issued; They cannot be used to renew an access token. If the oauth client is undeleted, and the refresh tokens are not expired, they are valid for token exchange again. You can undelete an oauth client for 30 days. After 30 days, deletion is permanent. You cannot update deleted oauth clients. However, you can view and list them.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.projects.locations.oauthClients.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the oauth client to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.get":
+
+type ProjectsLocationsOauthClientsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual OauthClient.
+//
+//   - name: The name of the oauth client to retrieve. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     `.
+func (r *ProjectsLocationsOauthClientsService) Get(name string) *ProjectsLocationsOauthClientsGetCall {
+	c := &ProjectsLocationsOauthClientsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsOauthClientsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsGetCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.get" call.
+// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsGetCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClient{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets an individual OauthClient.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.oauthClients.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the oauth client to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.list":
+
+type ProjectsLocationsOauthClientsListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted OauthClientss in a project. If
+// `show_deleted` is set to `true`, then deleted oauth clients are also
+// listed.
+//
+// - parent: The parent to list oauth clients for.
+func (r *ProjectsLocationsOauthClientsService) List(parent string) *ProjectsLocationsOauthClientsListCall {
+	c := &ProjectsLocationsOauthClientsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of oauth clients to return. If unspecified, at most 50 oauth clients
+// will be returned. The maximum value is 100; values above 100 are
+// truncated to 100.
+func (c *ProjectsLocationsOauthClientsListCall) PageSize(pageSize int64) *ProjectsLocationsOauthClientsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token,
+// received from a previous `ListOauthClients` call. Provide this to
+// retrieve the subsequent page.
+func (c *ProjectsLocationsOauthClientsListCall) PageToken(pageToken string) *ProjectsLocationsOauthClientsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to
+// return soft-deleted oauth clients.
+func (c *ProjectsLocationsOauthClientsListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsOauthClientsListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsOauthClientsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsListCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/oauthClients")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.list" call.
+// Exactly one of *ListOauthClientsResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListOauthClientsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsListCall) Do(opts ...googleapi.CallOption) (*ListOauthClientsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListOauthClientsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all non-deleted OauthClientss in a project. If `show_deleted` is set to `true`, then deleted oauth clients are also listed.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.oauthClients.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "Optional. The maximum number of oauth clients to return. If unspecified, at most 50 oauth clients will be returned. The maximum value is 100; values above 100 are truncated to 100.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "Optional. A page token, received from a previous `ListOauthClients` call. Provide this to retrieve the subsequent page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The parent to list oauth clients for.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "showDeleted": {
+	//       "description": "Optional. Whether to return soft-deleted oauth clients.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/oauthClients",
+	//   "response": {
+	//     "$ref": "ListOauthClientsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsOauthClientsListCall) Pages(ctx context.Context, f func(*ListOauthClientsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "iam.projects.locations.oauthClients.patch":
+
+type ProjectsLocationsOauthClientsPatchCall struct {
+	s           *Service
+	name        string
+	oauthclient *OauthClient
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
+}
+
+// Patch: Updates an existing OauthClient.
+//
+//   - name: Immutable. The resource name of the oauth client.
+//     Format:`projects/{project}/locations/{location}/oauthClients/{oauth_
+//     client}`.
+func (r *ProjectsLocationsOauthClientsService) Patch(name string, oauthclient *OauthClient) *ProjectsLocationsOauthClientsPatchCall {
+	c := &ProjectsLocationsOauthClientsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.oauthclient = oauthclient
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": Required. The
+// list of fields to update.
+func (c *ProjectsLocationsOauthClientsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsOauthClientsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsPatchCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclient)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.patch" call.
+// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsPatchCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClient{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates an existing OauthClient.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
+	//   "httpMethod": "PATCH",
+	//   "id": "iam.projects.locations.oauthClients.patch",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Immutable. The resource name of the oauth client. Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "updateMask": {
+	//       "description": "Required. The list of fields to update.",
+	//       "format": "google-fieldmask",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "request": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "response": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.undelete":
+
+type ProjectsLocationsOauthClientsUndeleteCall struct {
+	s                          *Service
+	name                       string
+	undeleteoauthclientrequest *UndeleteOauthClientRequest
+	urlParams_                 gensupport.URLParams
+	ctx_                       context.Context
+	header_                    http.Header
+}
+
+// Undelete: Undeletes a OauthClient, as long as it was deleted fewer
+// than 30 days ago.
+//
+//   - name: The name of the oauth client to undelete. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     `.
+func (r *ProjectsLocationsOauthClientsService) Undelete(name string, undeleteoauthclientrequest *UndeleteOauthClientRequest) *ProjectsLocationsOauthClientsUndeleteCall {
+	c := &ProjectsLocationsOauthClientsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteoauthclientrequest = undeleteoauthclientrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsUndeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteoauthclientrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.undelete" call.
+// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsUndeleteCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClient{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Undeletes a OauthClient, as long as it was deleted fewer than 30 days ago.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}:undelete",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.oauthClients.undelete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the oauth client to undelete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:undelete",
+	//   "request": {
+	//     "$ref": "UndeleteOauthClientRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "OauthClient"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.credentials.create":
+
+type ProjectsLocationsOauthClientsCredentialsCreateCall struct {
+	s                     *Service
+	parent                string
+	oauthclientcredential *OauthClientCredential
+	urlParams_            gensupport.URLParams
+	ctx_                  context.Context
+	header_               http.Header
+}
+
+// Create: Creates a new OauthClientCredential.
+//
+//   - parent: The parent resource to create the oauth client Credential
+//     in.
+func (r *ProjectsLocationsOauthClientsCredentialsService) Create(parent string, oauthclientcredential *OauthClientCredential) *ProjectsLocationsOauthClientsCredentialsCreateCall {
+	c := &ProjectsLocationsOauthClientsCredentialsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.oauthclientcredential = oauthclientcredential
+	return c
+}
+
+// OauthClientCredentialId sets the optional parameter
+// "oauthClientCredentialId": Required. The ID to use for the oauth
+// client credential, which becomes the final component of the resource
+// name. This value should be 4-32 characters, and may contain the
+// characters [a-z0-9-]. The prefix `gcp-` is reserved for use by
+// Google, and may not be specified.
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) OauthClientCredentialId(oauthClientCredentialId string) *ProjectsLocationsOauthClientsCredentialsCreateCall {
+	c.urlParams_.Set("oauthClientCredentialId", oauthClientCredentialId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclientcredential)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/credentials")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.credentials.create" call.
+// Exactly one of *OauthClientCredential or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClientCredential{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a new OauthClientCredential.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.oauthClients.credentials.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "oauthClientCredentialId": {
+	//       "description": "Required. The ID to use for the oauth client credential, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The parent resource to create the oauth client Credential in.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/credentials",
+	//   "request": {
+	//     "$ref": "OauthClientCredential"
+	//   },
+	//   "response": {
+	//     "$ref": "OauthClientCredential"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.credentials.delete":
+
+type ProjectsLocationsOauthClientsCredentialsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a OauthClientCredential. Before deleting an oauth
+// client credential, it should first be disabled.
+//
+//   - name: The name of the oauth client credential to delete. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     /credentials/{credential}`.
+func (r *ProjectsLocationsOauthClientsCredentialsService) Delete(name string) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
+	c := &ProjectsLocationsOauthClientsCredentialsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.credentials.delete" call.
+// Exactly one of *Empty or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Empty{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a OauthClientCredential. Before deleting an oauth client credential, it should first be disabled.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.projects.locations.oauthClients.credentials.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the oauth client credential to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Empty"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.credentials.get":
+
+type ProjectsLocationsOauthClientsCredentialsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual OauthClientCredential.
+//
+//   - name: The name of the oauth client credential to retrieve. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     /credentials/{credential}`.
+func (r *ProjectsLocationsOauthClientsCredentialsService) Get(name string) *ProjectsLocationsOauthClientsCredentialsGetCall {
+	c := &ProjectsLocationsOauthClientsCredentialsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsCredentialsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.credentials.get" call.
+// Exactly one of *OauthClientCredential or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClientCredential{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets an individual OauthClientCredential.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.oauthClients.credentials.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the oauth client credential to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "OauthClientCredential"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.credentials.list":
+
+type ProjectsLocationsOauthClientsCredentialsListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all OauthClientCredentialss in a OauthClient.
+//
+// - parent: The parent to list oauth client credentials for.
+func (r *ProjectsLocationsOauthClientsCredentialsService) List(parent string) *ProjectsLocationsOauthClientsCredentialsListCall {
+	c := &ProjectsLocationsOauthClientsCredentialsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsCredentialsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/credentials")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.credentials.list" call.
+// Exactly one of *ListOauthClientCredentialsResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *ListOauthClientCredentialsResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *ProjectsLocationsOauthClientsCredentialsListCall) Do(opts ...googleapi.CallOption) (*ListOauthClientCredentialsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListOauthClientCredentialsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all OauthClientCredentialss in a OauthClient.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.oauthClients.credentials.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The parent to list oauth client credentials for.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/credentials",
+	//   "response": {
+	//     "$ref": "ListOauthClientCredentialsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.oauthClients.credentials.patch":
+
+type ProjectsLocationsOauthClientsCredentialsPatchCall struct {
+	s                     *Service
+	name                  string
+	oauthclientcredential *OauthClientCredential
+	urlParams_            gensupport.URLParams
+	ctx_                  context.Context
+	header_               http.Header
+}
+
+// Patch: Updates an existing OauthClientCredential.
+//
+//   - name: Immutable. The resource name of the oauth client credential.
+//     Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     /credentials/{credential}`.
+func (r *ProjectsLocationsOauthClientsCredentialsService) Patch(name string, oauthclientcredential *OauthClientCredential) *ProjectsLocationsOauthClientsCredentialsPatchCall {
+	c := &ProjectsLocationsOauthClientsCredentialsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.oauthclientcredential = oauthclientcredential
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": Required. The
+// list of fields to update.
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsOauthClientsCredentialsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclientcredential)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.oauthClients.credentials.patch" call.
+// Exactly one of *OauthClientCredential or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &OauthClientCredential{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates an existing OauthClientCredential.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
+	//   "httpMethod": "PATCH",
+	//   "id": "iam.projects.locations.oauthClients.credentials.patch",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Immutable. The resource name of the oauth client credential. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "updateMask": {
+	//       "description": "Required. The list of fields to update.",
+	//       "format": "google-fieldmask",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "request": {
+	//     "$ref": "OauthClientCredential"
+	//   },
+	//   "response": {
+	//     "$ref": "OauthClientCredential"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
 }
 
 // method id "iam.projects.locations.workloadIdentityPools.create":
@@ -17523,6 +19741,150 @@ func (c *ProjectsServiceAccountsKeysListCall) Do(opts ...googleapi.CallOption) (
 	//   "path": "v1/{+name}/keys",
 	//   "response": {
 	//     "$ref": "ListServiceAccountKeysResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.serviceAccounts.keys.patch":
+
+type ProjectsServiceAccountsKeysPatchCall struct {
+	s                             *Service
+	name                          string
+	patchserviceaccountkeyrequest *PatchServiceAccountKeyRequest
+	urlParams_                    gensupport.URLParams
+	ctx_                          context.Context
+	header_                       http.Header
+}
+
+// Patch: Patches a ServiceAccountKey.
+//
+//   - name: The resource name of the service account key in the following
+//     format
+//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
+func (r *ProjectsServiceAccountsKeysService) Patch(name string, patchserviceaccountkeyrequest *PatchServiceAccountKeyRequest) *ProjectsServiceAccountsKeysPatchCall {
+	c := &ProjectsServiceAccountsKeysPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.patchserviceaccountkeyrequest = patchserviceaccountkeyrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsServiceAccountsKeysPatchCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsServiceAccountsKeysPatchCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsServiceAccountsKeysPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsServiceAccountsKeysPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.patchserviceaccountkeyrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:patch")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.serviceAccounts.keys.patch" call.
+// Exactly one of *ServiceAccountKey or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ServiceAccountKey.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsServiceAccountsKeysPatchCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ServiceAccountKey{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Patches a ServiceAccountKey.",
+	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}:patch",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.serviceAccounts.keys.patch",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "The resource name of the service account key in the following format `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:patch",
+	//   "request": {
+	//     "$ref": "PatchServiceAccountKeyRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "ServiceAccountKey"
 	//   },
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform"

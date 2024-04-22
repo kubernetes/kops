@@ -1,11 +1,9 @@
 module k8s.io/kops
 
-go 1.22
-
-toolchain go1.22.0
+go 1.22.2
 
 require (
-	cloud.google.com/go/compute/metadata v0.2.3
+	cloud.google.com/go/compute/metadata v0.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.2
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3 v3.0.0-beta.2
@@ -17,18 +15,18 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.2-0.20231216170552-14d4dfcbaadf
-	github.com/aws/aws-sdk-go v1.51.20
+	github.com/aws/aws-sdk-go v1.51.25
 	github.com/aws/aws-sdk-go-v2 v1.26.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.11
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.1
 	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.40.5
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.156.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.157.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.24.4
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.30.4
 	github.com/aws/aws-sdk-go-v2/service/iam v1.32.0
-	github.com/aws/aws-sdk-go-v2/service/kms v1.30.1
+	github.com/aws/aws-sdk-go-v2/service/kms v1.31.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.1
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.4
@@ -37,7 +35,7 @@ require (
 	github.com/aws/smithy-go v1.20.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.14.4
-	github.com/digitalocean/godo v1.112.0
+	github.com/digitalocean/godo v1.113.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.4.1
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
@@ -48,12 +46,12 @@ require (
 	github.com/google/go-tpm-tools v0.4.4
 	github.com/google/uuid v1.6.0
 	github.com/gophercloud/gophercloud v1.11.0
-	github.com/hetznercloud/hcloud-go v1.53.0
+	github.com/hetznercloud/hcloud-go v1.54.1
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.6
 	github.com/prometheus/client_golang v1.19.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.25
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.26
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
@@ -69,38 +67,39 @@ require (
 	go.opentelemetry.io/proto/otlp v1.2.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/crypto v0.22.0
-	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/net v0.24.0
 	golang.org/x/oauth2 v0.19.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/sys v0.19.0
-	google.golang.org/api v0.172.0
+	google.golang.org/api v0.175.0
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0
 	helm.sh/helm/v3 v3.14.4
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/cli-runtime v0.29.3
-	k8s.io/client-go v0.29.3
-	k8s.io/cloud-provider-aws v1.29.2
+	k8s.io/api v0.30.0
+	k8s.io/apimachinery v0.30.0
+	k8s.io/cli-runtime v0.30.0
+	k8s.io/client-go v0.30.0
+	k8s.io/cloud-provider-aws v1.30.0
 	k8s.io/cloud-provider-gcp/providers v0.28.2
-	k8s.io/component-base v0.29.3
+	k8s.io/component-base v0.30.0
 	k8s.io/gengo v0.0.0-20240404160639-a0386bf69313
 	k8s.io/klog/v2 v2.120.1
-	k8s.io/kubectl v0.29.3
-	k8s.io/kubelet v0.29.3
-	k8s.io/mount-utils v0.29.3
+	k8s.io/kubectl v0.30.0
+	k8s.io/kubelet v0.30.0
+	k8s.io/mount-utils v0.30.0
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
-	sigs.k8s.io/controller-runtime v0.17.3
+	sigs.k8s.io/controller-runtime v0.17.1-0.20240419092505-a92b9612b606
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
-	cloud.google.com/go/compute v1.24.0 // indirect
+	cloud.google.com/go/auth v0.2.2 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.1 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
@@ -146,7 +145,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.8.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/evertras/bubble-table v0.15.2 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -259,17 +258,17 @@ require (
 	golang.org/x/tools v0.20.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.29.2 // indirect
-	k8s.io/cloud-provider v0.29.0 // indirect
-	k8s.io/component-helpers v0.29.3 // indirect
-	k8s.io/csi-translation-lib v0.29.0 // indirect
+	k8s.io/apiextensions-apiserver v0.30.0 // indirect
+	k8s.io/cloud-provider v0.30.0 // indirect
+	k8s.io/component-helpers v0.30.0 // indirect
+	k8s.io/csi-translation-lib v0.30.0 // indirect
 	k8s.io/klog v1.0.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20240103051144-eec4567ac022 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	oras.land/oras-go v1.2.4 // indirect
 	sigs.k8s.io/gateway-api v1.0.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect

@@ -482,6 +482,23 @@ type RecipientInfo struct {
 	noSmithyDocumentSerde
 }
 
+// Contains information about completed key material rotations.
+type RotationsListEntry struct {
+
+	// Unique identifier of the key.
+	KeyId *string
+
+	// Date and time that the key material rotation completed. Formatted as Unix time.
+	RotationDate *time.Time
+
+	// Identifies whether the key material rotation was a scheduled automatic rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable)
+	// or an on-demand rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand)
+	// .
+	RotationType RotationType
+
+	noSmithyDocumentSerde
+}
+
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and tag
 // values are both required, but tag values can be empty (null) strings. Do not
 // include confidential or sensitive information in this field. This field may be

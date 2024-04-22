@@ -55,7 +55,7 @@ type FakeAWSServices struct {
 // NewFakeAWSServices creates a new FakeAWSServices
 func NewFakeAWSServices(clusterID string) *FakeAWSServices {
 	s := &FakeAWSServices{}
-	s.region = "us-east-1"
+	s.region = "us-west-2"
 	s.ec2 = &FakeEC2Impl{aws: s}
 	s.elb = &FakeELB{aws: s}
 	s.elbv2 = &FakeELBV2{aws: s}
@@ -69,7 +69,7 @@ func NewFakeAWSServices(clusterID string) *FakeAWSServices {
 	selfInstance := &ec2.Instance{}
 	selfInstance.InstanceId = aws.String("i-self")
 	selfInstance.Placement = &ec2.Placement{
-		AvailabilityZone: aws.String("us-east-1a"),
+		AvailabilityZone: aws.String("us-west-2a"),
 	}
 	selfInstance.PrivateDnsName = aws.String("ip-172-20-0-100.ec2.internal")
 	selfInstance.PrivateIpAddress = aws.String("192.168.0.1")
@@ -287,23 +287,33 @@ func (ec2i *FakeEC2Impl) RemoveSubnets() {
 // DescribeAvailabilityZones returns fake availability zones
 // For every input returns a hardcoded list of fake availability zones for the moment
 func (ec2i *FakeEC2Impl) DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error) {
-	var azs []*ec2.AvailabilityZone
-
-	fakeZones := [5]string{"az-local", "az-wavelength", "us-west-2a", "us-west-2b", "us-west-2c"}
-	for _, name := range fakeZones {
-		var zoneType *string
-		switch name {
-		case "az-local":
-			zoneType = aws.String(localZoneType)
-		case "az-wavelength":
-			zoneType = aws.String(wavelengthZoneType)
-		default:
-			zoneType = aws.String(regularAvailabilityZoneType)
-		}
-		zone := &ec2.AvailabilityZone{ZoneName: aws.String(name), ZoneType: zoneType, ZoneId: aws.String(name)}
-		azs = append(azs, zone)
-	}
-	return azs, nil
+	return []*ec2.AvailabilityZone{
+		{
+			ZoneName: aws.String("us-west-2a"),
+			ZoneType: aws.String("availability-zone"),
+			ZoneId:   aws.String("az1"),
+		},
+		{
+			ZoneName: aws.String("us-west-2b"),
+			ZoneType: aws.String("availability-zone"),
+			ZoneId:   aws.String("az2"),
+		},
+		{
+			ZoneName: aws.String("us-west-2c"),
+			ZoneType: aws.String("availability-zone"),
+			ZoneId:   aws.String("az3"),
+		},
+		{
+			ZoneName: aws.String("az-local"),
+			ZoneType: aws.String("local-zone"),
+			ZoneId:   aws.String("lz1"),
+		},
+		{
+			ZoneName: aws.String("az-wavelength"),
+			ZoneType: aws.String("wavelength"),
+			ZoneId:   aws.String("wl1"),
+		},
+	}, nil
 }
 
 // CreateTags is a mock for CreateTags from EC2

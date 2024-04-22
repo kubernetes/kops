@@ -2102,7 +2102,7 @@ func (c *KMS) DescribeCustomKeyStoresRequest(input *DescribeCustomKeyStoresInput
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -2632,6 +2632,10 @@ func (c *KMS) DisableKeyRotationRequest(input *DisableKeyRotationInput) (req *re
 //
 //   - GetKeyRotationStatus
 //
+//   - ListKeyRotations
+//
+//   - RotateKeyOnDemand
+//
 // Eventual consistency: The KMS API follows an eventual consistency model.
 // For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
 //
@@ -3039,15 +3043,22 @@ func (c *KMS) EnableKeyRotationRequest(input *EnableKeyRotationInput) (req *requ
 
 // EnableKeyRotation API operation for AWS Key Management Service.
 //
-// Enables automatic rotation of the key material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
+// Enables automatic rotation of the key material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable)
 // of the specified symmetric encryption KMS key.
 //
-// When you enable automatic rotation of a customer managed KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk),
+// By default, when you enable automatic rotation of a customer managed KMS
+// key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk),
 // KMS rotates the key material of the KMS key one year (approximately 365 days)
-// from the enable date and every year thereafter. You can monitor rotation
-// of the key material for your KMS keys in CloudTrail and Amazon CloudWatch.
-// To disable rotation of the key material in a customer managed KMS key, use
-// the DisableKeyRotation operation.
+// from the enable date and every year thereafter. You can use the optional
+// RotationPeriodInDays parameter to specify a custom rotation period when you
+// enable key rotation, or you can use RotationPeriodInDays to modify the rotation
+// period of a key that you previously enabled automatic key rotation on.
+//
+// You can monitor rotation of the key material for your KMS keys in CloudTrail
+// and Amazon CloudWatch. To disable rotation of the key material in a customer
+// managed KMS key, use the DisableKeyRotation operation. You can use the GetKeyRotationStatus
+// operation to identify any in progress rotations. You can use the ListKeyRotations
+// operation to view the details of completed rotations.
 //
 // Automatic key rotation is supported only on symmetric encryption KMS keys
 // (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks).
@@ -3059,11 +3070,11 @@ func (c *KMS) EnableKeyRotationRequest(input *EnableKeyRotationInput) (req *requ
 // keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate),
 // set the property on the primary key.
 //
-// You cannot enable or disable automatic rotation Amazon Web Services managed
+// You cannot enable or disable automatic rotation of Amazon Web Services managed
 // KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
 // KMS always rotates the key material of Amazon Web Services managed keys every
 // year. Rotation of Amazon Web Services owned KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk)
-// varies.
+// is managed by the Amazon Web Services service that owns the key.
 //
 // In May 2022, KMS changed the rotation schedule for Amazon Web Services managed
 // keys from every three years (approximately 1,095 days) to every year (approximately
@@ -3090,6 +3101,12 @@ func (c *KMS) EnableKeyRotationRequest(input *EnableKeyRotationInput) (req *requ
 //   - DisableKeyRotation
 //
 //   - GetKeyRotationStatus
+//
+//   - ListKeyRotations
+//
+//   - RotateKeyOnDemand You can perform on-demand (RotateKeyOnDemand) rotation
+//     of the key material in customer managed KMS keys, regardless of whether
+//     or not automatic key rotation is enabled.
 //
 // Eventual consistency: The KMS API follows an eventual consistency model.
 // For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
@@ -4693,14 +4710,10 @@ func (c *KMS) GetKeyRotationStatusRequest(input *GetKeyRotationStatusInput) (req
 
 // GetKeyRotationStatus API operation for AWS Key Management Service.
 //
-// Gets a Boolean value that indicates whether automatic rotation of the key
-// material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-// is enabled for the specified KMS key.
-//
-// When you enable automatic rotation for customer managed KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk),
-// KMS rotates the key material of the KMS key one year (approximately 365 days)
-// from the enable date and every year thereafter. You can monitor rotation
-// of the key material for your KMS keys in CloudTrail and Amazon CloudWatch.
+// Provides detailed information about the rotation status for a KMS key, including
+// whether automatic rotation of the key material (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
+// is enabled for the specified KMS key, the rotation period (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotation-period),
+// and the next scheduled rotation date.
 //
 // Automatic key rotation is supported only on symmetric encryption KMS keys
 // (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks).
@@ -4718,6 +4731,12 @@ func (c *KMS) GetKeyRotationStatusRequest(input *GetKeyRotationStatusInput) (req
 // is not configurable. KMS always rotates the key material in Amazon Web Services
 // managed KMS keys every year. The key rotation status for Amazon Web Services
 // managed KMS keys is always true.
+//
+// You can perform on-demand (RotateKeyOnDemand) rotation of the key material
+// in customer managed KMS keys, regardless of whether or not automatic key
+// rotation is enabled. You can use GetKeyRotationStatus to identify the date
+// and time that an in progress on-demand rotation was initiated. You can use
+// ListKeyRotations to view the details of completed rotations.
 //
 // In May 2022, KMS changed the rotation schedule for Amazon Web Services managed
 // keys from every three years to every year. For details, see EnableKeyRotation.
@@ -4750,6 +4769,10 @@ func (c *KMS) GetKeyRotationStatusRequest(input *GetKeyRotationStatusInput) (req
 //   - DisableKeyRotation
 //
 //   - EnableKeyRotation
+//
+//   - ListKeyRotations
+//
+//   - RotateKeyOnDemand
 //
 // Eventual consistency: The KMS API follows an eventual consistency model.
 // For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
@@ -5465,7 +5488,7 @@ func (c *KMS) ListAliasesRequest(input *ListAliasesInput) (req *request.Request,
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -5655,7 +5678,7 @@ func (c *KMS) ListGrantsRequest(input *ListGrantsInput) (req *request.Request, o
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -5861,7 +5884,7 @@ func (c *KMS) ListKeyPoliciesRequest(input *ListKeyPoliciesInput) (req *request.
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -6009,6 +6032,202 @@ func (c *KMS) ListKeyPoliciesPagesWithContext(ctx aws.Context, input *ListKeyPol
 	return p.Err()
 }
 
+const opListKeyRotations = "ListKeyRotations"
+
+// ListKeyRotationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListKeyRotations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListKeyRotations for more information on using the ListKeyRotations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListKeyRotationsRequest method.
+//	req, resp := client.ListKeyRotationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/ListKeyRotations
+func (c *KMS) ListKeyRotationsRequest(input *ListKeyRotationsInput) (req *request.Request, output *ListKeyRotationsOutput) {
+	op := &request.Operation{
+		Name:       opListKeyRotations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "Limit",
+			TruncationToken: "Truncated",
+		},
+	}
+
+	if input == nil {
+		input = &ListKeyRotationsInput{}
+	}
+
+	output = &ListKeyRotationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListKeyRotations API operation for AWS Key Management Service.
+//
+// Returns information about all completed key material rotations for the specified
+// KMS key.
+//
+// You must specify the KMS key in all requests. You can refine the key rotations
+// list by limiting the number of rotations returned.
+//
+// For detailed information about automatic and on-demand key rotations, see
+// Rotating KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
+// in the Key Management Service Developer Guide.
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in
+// a different Amazon Web Services account.
+//
+// Required permissions: kms:ListKeyRotations (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+// (key policy)
+//
+// Related operations:
+//
+//   - EnableKeyRotation
+//
+//   - DisableKeyRotation
+//
+//   - GetKeyRotationStatus
+//
+//   - RotateKeyOnDemand
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Key Management Service's
+// API operation ListKeyRotations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     The request was rejected because the specified entity or resource could not
+//     be found.
+//
+//   - InvalidArnException
+//     The request was rejected because a specified ARN, or an ARN in a key policy,
+//     is not valid.
+//
+//   - InvalidMarkerException
+//     The request was rejected because the marker that specifies where pagination
+//     should next begin is not valid.
+//
+//   - InternalException
+//     The request was rejected because an internal exception occurred. The request
+//     can be retried.
+//
+//   - InvalidStateException
+//     The request was rejected because the state of the specified resource is not
+//     valid for this request.
+//
+//     This exceptions means one of the following:
+//
+//   - The key state of the KMS key is not compatible with the operation. To
+//     find the key state, use the DescribeKey operation. For more information
+//     about which key states are compatible with each KMS operation, see Key
+//     states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Key Management Service Developer Guide .
+//
+//   - For cryptographic operations on KMS keys in custom key stores, this
+//     exception represents a general failure with many possible causes. To identify
+//     the cause, see the error message that accompanies the exception.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/ListKeyRotations
+func (c *KMS) ListKeyRotations(input *ListKeyRotationsInput) (*ListKeyRotationsOutput, error) {
+	req, out := c.ListKeyRotationsRequest(input)
+	return out, req.Send()
+}
+
+// ListKeyRotationsWithContext is the same as ListKeyRotations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListKeyRotations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *KMS) ListKeyRotationsWithContext(ctx aws.Context, input *ListKeyRotationsInput, opts ...request.Option) (*ListKeyRotationsOutput, error) {
+	req, out := c.ListKeyRotationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListKeyRotationsPages iterates over the pages of a ListKeyRotations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListKeyRotations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListKeyRotations operation.
+//	pageNum := 0
+//	err := client.ListKeyRotationsPages(params,
+//	    func(page *kms.ListKeyRotationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *KMS) ListKeyRotationsPages(input *ListKeyRotationsInput, fn func(*ListKeyRotationsOutput, bool) bool) error {
+	return c.ListKeyRotationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListKeyRotationsPagesWithContext same as ListKeyRotationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *KMS) ListKeyRotationsPagesWithContext(ctx aws.Context, input *ListKeyRotationsInput, fn func(*ListKeyRotationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListKeyRotationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListKeyRotationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListKeyRotationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListKeys = "ListKeys"
 
 // ListKeysRequest generates a "aws/request.Request" representing the
@@ -6043,7 +6262,7 @@ func (c *KMS) ListKeysRequest(input *ListKeysInput) (req *request.Request, outpu
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -6208,7 +6427,7 @@ func (c *KMS) ListResourceTagsRequest(input *ListResourceTagsInput) (req *reques
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -6381,7 +6600,7 @@ func (c *KMS) ListRetirableGrantsRequest(input *ListRetirableGrantsInput) (req *
 			InputTokens:     []string{"Marker"},
 			OutputTokens:    []string{"NextMarker"},
 			LimitToken:      "Limit",
-			TruncationToken: "",
+			TruncationToken: "Truncated",
 		},
 	}
 
@@ -7426,6 +7645,188 @@ func (c *KMS) RevokeGrant(input *RevokeGrantInput) (*RevokeGrantOutput, error) {
 // for more information on using Contexts.
 func (c *KMS) RevokeGrantWithContext(ctx aws.Context, input *RevokeGrantInput, opts ...request.Option) (*RevokeGrantOutput, error) {
 	req, out := c.RevokeGrantRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRotateKeyOnDemand = "RotateKeyOnDemand"
+
+// RotateKeyOnDemandRequest generates a "aws/request.Request" representing the
+// client's request for the RotateKeyOnDemand operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RotateKeyOnDemand for more information on using the RotateKeyOnDemand
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RotateKeyOnDemandRequest method.
+//	req, resp := client.RotateKeyOnDemandRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RotateKeyOnDemand
+func (c *KMS) RotateKeyOnDemandRequest(input *RotateKeyOnDemandInput) (req *request.Request, output *RotateKeyOnDemandOutput) {
+	op := &request.Operation{
+		Name:       opRotateKeyOnDemand,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RotateKeyOnDemandInput{}
+	}
+
+	output = &RotateKeyOnDemandOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RotateKeyOnDemand API operation for AWS Key Management Service.
+//
+// Immediately initiates rotation of the key material of the specified symmetric
+// encryption KMS key.
+//
+// You can perform on-demand rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand)
+// of the key material in customer managed KMS keys, regardless of whether or
+// not automatic key rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable)
+// is enabled. On-demand rotations do not change existing automatic rotation
+// schedules. For example, consider a KMS key that has automatic key rotation
+// enabled with a rotation period of 730 days. If the key is scheduled to automatically
+// rotate on April 14, 2024, and you perform an on-demand rotation on April
+// 10, 2024, the key will automatically rotate, as scheduled, on April 14, 2024
+// and every 730 days thereafter.
+//
+// You can perform on-demand key rotation a maximum of 10 times per KMS key.
+// You can use the KMS console to view the number of remaining on-demand rotations
+// available for a KMS key.
+//
+// You can use GetKeyRotationStatus to identify any in progress on-demand rotations.
+// You can use ListKeyRotations to identify the date that completed on-demand
+// rotations were performed. You can monitor rotation of the key material for
+// your KMS keys in CloudTrail and Amazon CloudWatch.
+//
+// On-demand key rotation is supported only on symmetric encryption KMS keys
+// (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks).
+// You cannot perform on-demand rotation of asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html),
+// HMAC KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html),
+// KMS keys with imported key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+// or KMS keys in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
+// To perform on-demand rotation of a set of related multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate),
+// invoke the on-demand rotation on the primary key.
+//
+// You cannot initiate on-demand rotation of Amazon Web Services managed KMS
+// keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
+// KMS always rotates the key material of Amazon Web Services managed keys every
+// year. Rotation of Amazon Web Services owned KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk)
+// is managed by the Amazon Web Services service that owns the key.
+//
+// The KMS key that you use for this operation must be in a compatible key state.
+// For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+// in the Key Management Service Developer Guide.
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in
+// a different Amazon Web Services account.
+//
+// Required permissions: kms:RotateKeyOnDemand (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+// (key policy)
+//
+// Related operations:
+//
+//   - EnableKeyRotation
+//
+//   - DisableKeyRotation
+//
+//   - GetKeyRotationStatus
+//
+//   - ListKeyRotations
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Key Management Service's
+// API operation RotateKeyOnDemand for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     The request was rejected because the specified entity or resource could not
+//     be found.
+//
+//   - DisabledException
+//     The request was rejected because the specified KMS key is not enabled.
+//
+//   - InvalidArnException
+//     The request was rejected because a specified ARN, or an ARN in a key policy,
+//     is not valid.
+//
+//   - DependencyTimeoutException
+//     The system timed out while trying to fulfill the request. You can retry the
+//     request.
+//
+//   - InternalException
+//     The request was rejected because an internal exception occurred. The request
+//     can be retried.
+//
+//   - InvalidStateException
+//     The request was rejected because the state of the specified resource is not
+//     valid for this request.
+//
+//     This exceptions means one of the following:
+//
+//   - The key state of the KMS key is not compatible with the operation. To
+//     find the key state, use the DescribeKey operation. For more information
+//     about which key states are compatible with each KMS operation, see Key
+//     states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Key Management Service Developer Guide .
+//
+//   - For cryptographic operations on KMS keys in custom key stores, this
+//     exception represents a general failure with many possible causes. To identify
+//     the cause, see the error message that accompanies the exception.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
+//
+//   - LimitExceededException
+//     The request was rejected because a quota was exceeded. For more information,
+//     see Quotas (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html)
+//     in the Key Management Service Developer Guide.
+//
+//   - ConflictException
+//     The request was rejected because an automatic rotation of this key is currently
+//     in progress or scheduled to begin within the next 20 minutes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/RotateKeyOnDemand
+func (c *KMS) RotateKeyOnDemand(input *RotateKeyOnDemandInput) (*RotateKeyOnDemandOutput, error) {
+	req, out := c.RotateKeyOnDemandRequest(input)
+	return out, req.Send()
+}
+
+// RotateKeyOnDemandWithContext is the same as RotateKeyOnDemand with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RotateKeyOnDemand for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *KMS) RotateKeyOnDemandWithContext(ctx aws.Context, input *RotateKeyOnDemandInput, opts ...request.Option) (*RotateKeyOnDemandOutput, error) {
+	req, out := c.RotateKeyOnDemandRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -9833,6 +10234,71 @@ func (s *CloudHsmClusterNotRelatedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The request was rejected because an automatic rotation of this key is currently
+// in progress or scheduled to begin within the next 20 minutes.
+type ConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorConflictException(v protocol.ResponseMetadata) error {
+	return &ConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ConflictException) Code() string {
+	return "ConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type ConnectCustomKeyStoreInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12197,7 +12663,7 @@ type DescribeCustomKeyStoresOutput struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -12827,6 +13293,18 @@ type EnableKeyRotationInput struct {
 	//
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
+
+	// Use this parameter to specify a custom period of time between each rotation
+	// date. If no value is specified, the default value is 365 days.
+	//
+	// The rotation period defines the number of days after you enable automatic
+	// key rotation that KMS will rotate your key material, and the number of days
+	// between each automatic rotation thereafter.
+	//
+	// You can use the kms:RotationPeriodInDays (https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-rotation-period-in-days)
+	// condition key to further constrain the values that principals can specify
+	// in the RotationPeriodInDays parameter.
+	RotationPeriodInDays *int64 `min:"90" type:"integer"`
 }
 
 // String returns the string representation.
@@ -12856,6 +13334,9 @@ func (s *EnableKeyRotationInput) Validate() error {
 	if s.KeyId != nil && len(*s.KeyId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
 	}
+	if s.RotationPeriodInDays != nil && *s.RotationPeriodInDays < 90 {
+		invalidParams.Add(request.NewErrParamMinValue("RotationPeriodInDays", 90))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -12866,6 +13347,12 @@ func (s *EnableKeyRotationInput) Validate() error {
 // SetKeyId sets the KeyId field's value.
 func (s *EnableKeyRotationInput) SetKeyId(v string) *EnableKeyRotationInput {
 	s.KeyId = &v
+	return s
+}
+
+// SetRotationPeriodInDays sets the RotationPeriodInDays field's value.
+func (s *EnableKeyRotationInput) SetRotationPeriodInDays(v int64) *EnableKeyRotationInput {
+	s.RotationPeriodInDays = &v
 	return s
 }
 
@@ -14619,8 +15106,27 @@ func (s *GetKeyRotationStatusInput) SetKeyId(v string) *GetKeyRotationStatusInpu
 type GetKeyRotationStatusOutput struct {
 	_ struct{} `type:"structure"`
 
+	// Identifies the specified symmetric encryption KMS key.
+	KeyId *string `min:"1" type:"string"`
+
 	// A Boolean value that specifies whether key rotation is enabled.
 	KeyRotationEnabled *bool `type:"boolean"`
+
+	// The next date that KMS will automatically rotate the key material.
+	NextRotationDate *time.Time `type:"timestamp"`
+
+	// Identifies the date and time that an in progress on-demand rotation was initiated.
+	//
+	// The KMS API follows an eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
+	// model due to the distributed nature of the system. As a result, there might
+	// be a slight delay between initiating on-demand key rotation and the rotation's
+	// completion. Once the on-demand rotation is complete, use ListKeyRotations
+	// to view the details of the on-demand rotation.
+	OnDemandRotationStartDate *time.Time `type:"timestamp"`
+
+	// The number of days between each automatic rotation. The default value is
+	// 365 days.
+	RotationPeriodInDays *int64 `min:"90" type:"integer"`
 }
 
 // String returns the string representation.
@@ -14641,9 +15147,33 @@ func (s GetKeyRotationStatusOutput) GoString() string {
 	return s.String()
 }
 
+// SetKeyId sets the KeyId field's value.
+func (s *GetKeyRotationStatusOutput) SetKeyId(v string) *GetKeyRotationStatusOutput {
+	s.KeyId = &v
+	return s
+}
+
 // SetKeyRotationEnabled sets the KeyRotationEnabled field's value.
 func (s *GetKeyRotationStatusOutput) SetKeyRotationEnabled(v bool) *GetKeyRotationStatusOutput {
 	s.KeyRotationEnabled = &v
+	return s
+}
+
+// SetNextRotationDate sets the NextRotationDate field's value.
+func (s *GetKeyRotationStatusOutput) SetNextRotationDate(v time.Time) *GetKeyRotationStatusOutput {
+	s.NextRotationDate = &v
+	return s
+}
+
+// SetOnDemandRotationStartDate sets the OnDemandRotationStartDate field's value.
+func (s *GetKeyRotationStatusOutput) SetOnDemandRotationStartDate(v time.Time) *GetKeyRotationStatusOutput {
+	s.OnDemandRotationStartDate = &v
+	return s
+}
+
+// SetRotationPeriodInDays sets the RotationPeriodInDays field's value.
+func (s *GetKeyRotationStatusOutput) SetRotationPeriodInDays(v int64) *GetKeyRotationStatusOutput {
+	s.RotationPeriodInDays = &v
 	return s
 }
 
@@ -17001,7 +17531,7 @@ type ListAliasesOutput struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -17171,7 +17701,7 @@ type ListGrantsResponse struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -17316,7 +17846,7 @@ type ListKeyPoliciesOutput struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -17353,6 +17883,149 @@ func (s *ListKeyPoliciesOutput) SetPolicyNames(v []*string) *ListKeyPoliciesOutp
 
 // SetTruncated sets the Truncated field's value.
 func (s *ListKeyPoliciesOutput) SetTruncated(v bool) *ListKeyPoliciesOutput {
+	s.Truncated = &v
+	return s
+}
+
+type ListKeyRotationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Gets the key rotations for the specified KMS key.
+	//
+	// Specify the key ID or key ARN of the KMS key.
+	//
+	// For example:
+	//
+	//    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
+	//
+	// KeyId is a required field
+	KeyId *string `min:"1" type:"string" required:"true"`
+
+	// Use this parameter to specify the maximum number of items to return. When
+	// this value is present, KMS does not return more than the specified number
+	// of items, but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and
+	// 1000, inclusive. If you do not include a value, it defaults to 100.
+	Limit *int64 `min:"1" type:"integer"`
+
+	// Use this parameter in a subsequent request after you receive a response with
+	// truncated results. Set it to the value of NextMarker from the truncated response
+	// you just received.
+	Marker *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListKeyRotationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListKeyRotationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListKeyRotationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListKeyRotationsInput"}
+	if s.KeyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyId"))
+	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
+	if s.Limit != nil && *s.Limit < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Limit", 1))
+	}
+	if s.Marker != nil && len(*s.Marker) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Marker", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *ListKeyRotationsInput) SetKeyId(v string) *ListKeyRotationsInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *ListKeyRotationsInput) SetLimit(v int64) *ListKeyRotationsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *ListKeyRotationsInput) SetMarker(v string) *ListKeyRotationsInput {
+	s.Marker = &v
+	return s
+}
+
+type ListKeyRotationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// When Truncated is true, this element is present and contains the value to
+	// use for the Marker parameter in a subsequent request.
+	NextMarker *string `min:"1" type:"string"`
+
+	// A list of completed key material rotations.
+	Rotations []*RotationsListEntry `type:"list"`
+
+	// A flag that indicates whether there are more items in the list. When this
+	// value is true, the list in this response is truncated. To get more items,
+	// pass the value of the NextMarker element in this response to the Marker parameter
+	// in a subsequent request.
+	Truncated *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListKeyRotationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListKeyRotationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *ListKeyRotationsOutput) SetNextMarker(v string) *ListKeyRotationsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetRotations sets the Rotations field's value.
+func (s *ListKeyRotationsOutput) SetRotations(v []*RotationsListEntry) *ListKeyRotationsOutput {
+	s.Rotations = v
+	return s
+}
+
+// SetTruncated sets the Truncated field's value.
+func (s *ListKeyRotationsOutput) SetTruncated(v bool) *ListKeyRotationsOutput {
 	s.Truncated = &v
 	return s
 }
@@ -17432,7 +18105,7 @@ type ListKeysOutput struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -17584,7 +18257,7 @@ type ListResourceTagsOutput struct {
 
 	// A flag that indicates whether there are more items in the list. When this
 	// value is true, the list in this response is truncated. To get more items,
-	// pass the value of the NextMarker element in thisresponse to the Marker parameter
+	// pass the value of the NextMarker element in this response to the Marker parameter
 	// in a subsequent request.
 	Truncated *bool `type:"boolean"`
 }
@@ -18990,6 +19663,156 @@ func (s RevokeGrantOutput) String() string {
 // value will be replaced with "sensitive".
 func (s RevokeGrantOutput) GoString() string {
 	return s.String()
+}
+
+type RotateKeyOnDemandInput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies a symmetric encryption KMS key. You cannot perform on-demand rotation
+	// of asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html),
+	// HMAC KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html),
+	// KMS keys with imported key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html),
+	// or KMS keys in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
+	// To perform on-demand rotation of a set of related multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate),
+	// invoke the on-demand rotation on the primary key.
+	//
+	// Specify the key ID or key ARN of the KMS key.
+	//
+	// For example:
+	//
+	//    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
+	//
+	// KeyId is a required field
+	KeyId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotateKeyOnDemandInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotateKeyOnDemandInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RotateKeyOnDemandInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RotateKeyOnDemandInput"}
+	if s.KeyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyId"))
+	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *RotateKeyOnDemandInput) SetKeyId(v string) *RotateKeyOnDemandInput {
+	s.KeyId = &v
+	return s
+}
+
+type RotateKeyOnDemandOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the symmetric encryption KMS key that you initiated on-demand
+	// rotation on.
+	KeyId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotateKeyOnDemandOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotateKeyOnDemandOutput) GoString() string {
+	return s.String()
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *RotateKeyOnDemandOutput) SetKeyId(v string) *RotateKeyOnDemandOutput {
+	s.KeyId = &v
+	return s
+}
+
+// Contains information about completed key material rotations.
+type RotationsListEntry struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier of the key.
+	KeyId *string `min:"1" type:"string"`
+
+	// Date and time that the key material rotation completed. Formatted as Unix
+	// time.
+	RotationDate *time.Time `type:"timestamp"`
+
+	// Identifies whether the key material rotation was a scheduled automatic rotation
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable)
+	// or an on-demand rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand).
+	RotationType *string `type:"string" enum:"RotationType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationsListEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationsListEntry) GoString() string {
+	return s.String()
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *RotationsListEntry) SetKeyId(v string) *RotationsListEntry {
+	s.KeyId = &v
+	return s
+}
+
+// SetRotationDate sets the RotationDate field's value.
+func (s *RotationsListEntry) SetRotationDate(v time.Time) *RotationsListEntry {
+	s.RotationDate = &v
+	return s
+}
+
+// SetRotationType sets the RotationType field's value.
+func (s *RotationsListEntry) SetRotationType(v string) *RotationsListEntry {
+	s.RotationType = &v
+	return s
 }
 
 type ScheduleKeyDeletionInput struct {
@@ -22445,6 +23268,22 @@ func OriginType_Values() []string {
 		OriginTypeExternal,
 		OriginTypeAwsCloudhsm,
 		OriginTypeExternalKeyStore,
+	}
+}
+
+const (
+	// RotationTypeAutomatic is a RotationType enum value
+	RotationTypeAutomatic = "AUTOMATIC"
+
+	// RotationTypeOnDemand is a RotationType enum value
+	RotationTypeOnDemand = "ON_DEMAND"
+)
+
+// RotationType_Values returns all elements of the RotationType enum
+func RotationType_Values() []string {
+	return []string{
+		RotationTypeAutomatic,
+		RotationTypeOnDemand,
 	}
 }
 

@@ -54,7 +54,10 @@ func newRunnables(baseContext BaseContextFunc, errChan chan error) *runnables {
 // The runnables added after Start are started directly.
 func (r *runnables) Add(fn Runnable) error {
 	switch runnable := fn.(type) {
-	case *server:
+	case *Server:
+		if runnable.NeedLeaderElection() {
+			return r.LeaderElection.Add(fn, nil)
+		}
 		return r.HTTPServers.Add(fn, nil)
 	case hasCache:
 		return r.Caches.Add(fn, func(ctx context.Context) bool {

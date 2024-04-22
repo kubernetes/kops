@@ -1097,7 +1097,7 @@ func firewallCreateOptsToSchema(opts FirewallCreateOpts) schema.FirewallCreateRe
 		req.Labels = &opts.Labels
 	}
 	for _, rule := range opts.Rules {
-		schemaRule := schema.FirewallRule{
+		schemaRule := schema.FirewallRuleRequest{
 			Direction:   string(rule.Direction),
 			Protocol:    string(rule.Protocol),
 			Port:        rule.Port,
@@ -1136,9 +1136,9 @@ func firewallCreateOptsToSchema(opts FirewallCreateOpts) schema.FirewallCreateRe
 }
 
 func firewallSetRulesOptsToSchema(opts FirewallSetRulesOpts) schema.FirewallActionSetRulesRequest {
-	req := schema.FirewallActionSetRulesRequest{Rules: []schema.FirewallRule{}}
+	req := schema.FirewallActionSetRulesRequest{Rules: []schema.FirewallRuleRequest{}}
 	for _, rule := range opts.Rules {
-		schemaRule := schema.FirewallRule{
+		schemaRule := schema.FirewallRuleRequest{
 			Direction:   string(rule.Direction),
 			Protocol:    string(rule.Protocol),
 			Port:        rule.Port,

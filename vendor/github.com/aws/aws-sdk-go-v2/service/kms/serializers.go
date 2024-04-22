@@ -1776,6 +1776,61 @@ func (m *awsAwsjson11_serializeOpListKeyPolicies) HandleSerialize(ctx context.Co
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsjson11_serializeOpListKeyRotations struct {
+}
+
+func (*awsAwsjson11_serializeOpListKeyRotations) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpListKeyRotations) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*ListKeyRotationsInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("TrentService.ListKeyRotations")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentListKeyRotationsInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsjson11_serializeOpListKeys struct {
 }
 
@@ -2201,6 +2256,61 @@ func (m *awsAwsjson11_serializeOpRevokeGrant) HandleSerialize(ctx context.Contex
 
 	jsonEncoder := smithyjson.NewEncoder()
 	if err := awsAwsjson11_serializeOpDocumentRevokeGrantInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsjson11_serializeOpRotateKeyOnDemand struct {
+}
+
+func (*awsAwsjson11_serializeOpRotateKeyOnDemand) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpRotateKeyOnDemand) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*RotateKeyOnDemandInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("TrentService.RotateKeyOnDemand")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentRotateKeyOnDemandInput(input, jsonEncoder.Value); err != nil {
 		return out, metadata, &smithy.SerializationError{Err: err}
 	}
 
@@ -3298,6 +3408,11 @@ func awsAwsjson11_serializeOpDocumentEnableKeyRotationInput(v *EnableKeyRotation
 		ok.String(*v.KeyId)
 	}
 
+	if v.RotationPeriodInDays != nil {
+		ok := object.Key("RotationPeriodInDays")
+		ok.Integer(*v.RotationPeriodInDays)
+	}
+
 	return nil
 }
 
@@ -3746,6 +3861,28 @@ func awsAwsjson11_serializeOpDocumentListKeyPoliciesInput(v *ListKeyPoliciesInpu
 	return nil
 }
 
+func awsAwsjson11_serializeOpDocumentListKeyRotationsInput(v *ListKeyRotationsInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.KeyId != nil {
+		ok := object.Key("KeyId")
+		ok.String(*v.KeyId)
+	}
+
+	if v.Limit != nil {
+		ok := object.Key("Limit")
+		ok.Integer(*v.Limit)
+	}
+
+	if v.Marker != nil {
+		ok := object.Key("Marker")
+		ok.String(*v.Marker)
+	}
+
+	return nil
+}
+
 func awsAwsjson11_serializeOpDocumentListKeysInput(v *ListKeysInput, value smithyjson.Value) error {
 	object := value.Object()
 	defer object.Close()
@@ -3971,6 +4108,18 @@ func awsAwsjson11_serializeOpDocumentRevokeGrantInput(v *RevokeGrantInput, value
 		ok := object.Key("GrantId")
 		ok.String(*v.GrantId)
 	}
+
+	if v.KeyId != nil {
+		ok := object.Key("KeyId")
+		ok.String(*v.KeyId)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentRotateKeyOnDemandInput(v *RotateKeyOnDemandInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
 
 	if v.KeyId != nil {
 		ok := object.Key("KeyId")

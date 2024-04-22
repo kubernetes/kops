@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.113.0] - 2024-04-12
+
+- #679 - @bhardwajRahul - Enable ui_connection parameter for Opensearch
+- #678 - @bhardwajRahul - Enable Opensearch option in Godo
+
 ## [v1.112.0] - 2024-04-08
 
 - #672 - @dependabot[bot] - Bump google.golang.org/protobuf from 1.28.0 to 1.33.0
