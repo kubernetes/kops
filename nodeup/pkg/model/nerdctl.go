@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"k8s.io/klog/v2"
@@ -42,7 +41,8 @@ func (b *NerdctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	assetPath := ""
 	asset, err := b.Assets.Find(assetName, assetPath)
 	if err != nil {
-		return fmt.Errorf("unable to locate asset %q: %w", assetName, err)
+		klog.Warningf("unable to locate asset %q: %v", assetName, err)
+		return nil
 	}
 
 	c.AddTask(&nodetasks.File{

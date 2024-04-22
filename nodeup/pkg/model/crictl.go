@@ -17,9 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"path/filepath"
+	"regexp"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -32,19 +33,24 @@ type CrictlBuilder struct {
 var _ fi.NodeupModelBuilder = &CrictlBuilder{}
 
 func (b *CrictlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	assetName := "crictl"
-	assetPath := ""
-	asset, err := b.Assets.Find(assetName, assetPath)
-	if err != nil {
-		return fmt.Errorf("unable to locate asset %q: %w", assetName, err)
+	assets := b.Assets.FindMatches(regexp.MustCompile(`^crictl$`))
+	if len(assets) == 0 {
+		klog.Warning("unable to find any crictl binaries in assets")
+		return nil
+	}
+	if len(assets) > 1 {
+		klog.Warning("multiple crictl binaries are found")
+		return nil
 	}
 
-	c.AddTask(&nodetasks.File{
-		Path:     b.crictlPath(),
-		Contents: asset,
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0755"),
-	})
+	for k, v := range assets {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.binaryPath(), k),
+			Contents: v,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		})
+	}
 
 	return nil
 }
@@ -58,8 +64,4 @@ func (b *CrictlBuilder) binaryPath() string {
 		path = "/home/kubernetes/bin"
 	}
 	return path
-}
-
-func (b *CrictlBuilder) crictlPath() string {
-	return filepath.Join(b.binaryPath(), "crictl")
 }
