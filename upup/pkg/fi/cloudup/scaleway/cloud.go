@@ -24,7 +24,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"

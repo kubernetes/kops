@@ -1341,8 +1341,8 @@ type Server struct {
 	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode.
 	RoutedIPEnabled bool `json:"routed_ip_enabled"`
 
-	// EnableIPv6: true if IPv6 is enabled.
-	EnableIPv6 bool `json:"enable_ipv6"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6"`
 
 	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
@@ -1353,10 +1353,10 @@ type Server struct {
 	// Protected: defines whether the Instance protection option is activated.
 	Protected bool `json:"protected"`
 
-	// PrivateIP: private IP address of the Instance.
+	// PrivateIP: private IP address of the Instance (deprecated and always `null` when `routed_ip_enabled` is `True`).
 	PrivateIP *string `json:"private_ip"`
 
-	// PublicIP: information about the public IP.
+	// Deprecated: PublicIP: information about the public IP (deprecated in favor of `public_ips`).
 	PublicIP *ServerIP `json:"public_ip"`
 
 	// PublicIPs: information about all the public IPs attached to the server.
@@ -1375,7 +1375,7 @@ type Server struct {
 	// Location: instance location.
 	Location *ServerLocation `json:"location"`
 
-	// IPv6: instance IPv6 address.
+	// Deprecated: IPv6: instance IPv6 address (deprecated when `routed_ip_enabled` is `True`).
 	IPv6 *ServerIPv6 `json:"ipv6"`
 
 	// Deprecated: Bootscript: instance bootscript.
@@ -2090,10 +2090,10 @@ type CreateServerRequest struct {
 	// Volumes: volumes attached to the server.
 	Volumes map[string]*VolumeServerTemplate `json:"volumes,omitempty"`
 
-	// EnableIPv6: true if IPv6 is enabled on the server.
-	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled on the server (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
-	// PublicIP: ID of the reserved IP to attach to the Instance.
+	// Deprecated: PublicIP: ID of the reserved IP to attach to the Instance.
 	PublicIP *string `json:"public_ip,omitempty"`
 
 	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
@@ -2956,11 +2956,14 @@ type ListServersRequest struct {
 	// Name: filter Instances by name (eg. "server1" will return "server100" and "server1" but not "foo").
 	Name *string `json:"-"`
 
-	// PrivateIP: list Instances by private_ip.
+	// Deprecated: PrivateIP: list Instances by private_ip.
 	PrivateIP *net.IP `json:"-"`
 
 	// WithoutIP: list Instances that are not attached to a public IP.
 	WithoutIP *bool `json:"-"`
+
+	// WithIP: list Instances by IP (both private_ip and public_ip are supported).
+	WithIP *net.IP `json:"-"`
 
 	// CommercialType: list Instances of this commercial type.
 	CommercialType *string `json:"-"`
@@ -3596,6 +3599,7 @@ type UpdateServerRequest struct {
 	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
 	PublicIPs *[]string `json:"public_ips,omitempty"`
 
+	// Deprecated
 	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
 	Protected *bool `json:"protected,omitempty"`
@@ -3797,8 +3801,8 @@ type setServerRequest struct {
 	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode (once this is set to True you cannot set it back to False).
 	RoutedIPEnabled *bool `json:"routed_ip_enabled,omitempty"`
 
-	// EnableIPv6: true if IPv6 is enabled.
-	EnableIPv6 bool `json:"enable_ipv6"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
 	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
@@ -3809,10 +3813,10 @@ type setServerRequest struct {
 	// Protected: instance protection option is activated.
 	Protected bool `json:"protected"`
 
-	// PrivateIP: instance private IP address.
+	// Deprecated: PrivateIP: instance private IP address (deprecated and always `null` when `routed_ip_enabled` is `True`).
 	PrivateIP *string `json:"private_ip,omitempty"`
 
-	// PublicIP: information about the public IP.
+	// Deprecated: PublicIP: information about the public IP (deprecated in favor of `public_ips`).
 	PublicIP *ServerIP `json:"public_ip,omitempty"`
 
 	// PublicIPs: information about all the public IPs attached to the server.
@@ -3828,7 +3832,7 @@ type setServerRequest struct {
 	// Location: instance location.
 	Location *ServerLocation `json:"location,omitempty"`
 
-	// IPv6: instance IPv6 address.
+	// Deprecated: IPv6: instance IPv6 address (deprecated when `routed_ip_enabled` is `True`).
 	IPv6 *ServerIPv6 `json:"ipv6,omitempty"`
 
 	// Deprecated: Bootscript: instance bootscript.
@@ -4031,6 +4035,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "private_ip", req.PrivateIP)
 	parameter.AddToQuery(query, "without_ip", req.WithoutIP)
+	parameter.AddToQuery(query, "with_ip", req.WithIP)
 	parameter.AddToQuery(query, "commercial_type", req.CommercialType)
 	parameter.AddToQuery(query, "state", req.State)
 	if len(req.Tags) != 0 {

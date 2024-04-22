@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	k8serrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"

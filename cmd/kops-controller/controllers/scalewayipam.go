@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
