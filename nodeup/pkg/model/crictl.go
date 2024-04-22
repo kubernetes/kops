@@ -17,10 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"path/filepath"
 	"regexp"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -35,10 +35,12 @@ var _ fi.NodeupModelBuilder = &CrictlBuilder{}
 func (b *CrictlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	assets := b.Assets.FindMatches(regexp.MustCompile(`^crictl$`))
 	if len(assets) == 0 {
-		return fmt.Errorf("unable to find any crictl binaries in assets")
+		klog.Warning("unable to find any crictl binaries in assets")
+		return nil
 	}
 	if len(assets) > 1 {
-		return fmt.Errorf("multiple crictl binaries are found")
+		klog.Warning("multiple crictl binaries are found")
+		return nil
 	}
 
 	for k, v := range assets {
