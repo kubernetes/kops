@@ -22,30 +22,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
-	// "github.com/aws/aws-sdk-go-v2/aws"
-	// "github.com/aws/aws-sdk-go-v2/credentials"
-	// "github.com/aws/aws-sdk-go-v2/service/sts"
-
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 func TestAWSPresign(t *testing.T) {
-	// mockSTSServer := &mockSTSServer{t: t}
-	// awsConfig := aws.Config{}
-	// awsConfig.Region = "us-east-1"
-	// awsConfig.Credentials = credentials.NewStaticCredentialsProvider("accesskey", "secretkey", "")
-	// awsConfig.HTTPClient = mockSTSServer
-	// sts := sts.NewFromConfig(awsConfig)
+	mockSTSServer := &mockHTTPClient{t: t}
+	awsConfig := aws.Config{}
+	awsConfig.Region = "us-east-1"
+	awsConfig.Credentials = credentials.NewStaticCredentialsProvider("fakeaccesskey", "fakesecretkey", "")
+	awsConfig.HTTPClient = mockSTSServer
+	sts := sts.NewFromConfig(awsConfig)
 
-	mySession := session.Must(session.NewSession())
-	mySession.Config.Credentials = credentials.NewStaticCredentials("accesskey", "secretkey", "")
-	sts := sts.New(mySession)
-	mySession.Config.HTTPClient = &http.Client{Transport: &mockHTTPTransport{}}
 	a := &awsAuthenticator{
 		sts: sts,
 	}
@@ -68,30 +61,40 @@ func TestAWSPresign(t *testing.T) {
 	if err != nil {
 		t.Fatalf("decoding token as base64: %v", err)
 	}
-	headers := make(map[string][]string)
-	if err := json.Unmarshal([]byte(data), &headers); err != nil {
+	decoded := &awsV2Token{}
+	if err := json.Unmarshal([]byte(data), &decoded); err != nil {
 		t.Fatalf("decoding token as json: %v", err)
 	}
 
-	t.Logf("headers: %+v", headers)
+	t.Logf("decoded: %+v", decoded)
+
+	amzSignature := ""
+	amzSignedHeaders := ""
+	amzDate := ""
+	amzAlgorithm := ""
+	amzCredential := ""
 
 	authorization := ""
-	for header, values := range headers {
+	for header, values := range decoded.SignedHeader {
 		got := strings.Join(values, "||")
 		switch header {
 		case "User-Agent":
 			// Ignore
 			// TODO: Should we (can we) override the useragent?
 		case "X-Amz-Date":
-			if len(got) < 10 {
-				t.Errorf("expected %q header of at least 10 characters, got %q", header, got)
-			}
+			amzDate = got
+
 		case "Content-Length":
 			if want := "43"; got != want {
 				t.Errorf("unexpected %q header: got %q, want %q", header, got, want)
 			}
 		case "Content-Type":
 			if want := "application/x-www-form-urlencoded; charset=utf-8"; got != want {
+				t.Errorf("unexpected %q header: got %q, want %q", header, got, want)
+			}
+
+		case "Host":
+			if want := "sts.us-east-1.amazonaws.com"; got != want {
 				t.Errorf("unexpected %q header: got %q, want %q", header, got, want)
 			}
 
@@ -103,34 +106,86 @@ func TestAWSPresign(t *testing.T) {
 			// Validated more deeply below
 			authorization = got
 		default:
-			t.Errorf("unexpected header %q", header)
+			t.Errorf("unexpected header %q: %q", header, got)
 		}
 	}
 
-	if !strings.HasPrefix(authorization, "AWS4-HMAC-SHA256 ") {
-		t.Errorf("unexpected authorization prefix, got %q", authorization)
+	// TODO: This is only aws-sdk-go V1
+	if authorization != "" {
+		if !strings.HasPrefix(authorization, "AWS4-HMAC-SHA256 ") {
+			t.Errorf("unexpected authorization prefix, got %q", authorization)
+		}
+
+		for _, token := range strings.Split(strings.TrimPrefix(authorization, "AWS4-HMAC-SHA256 "), ", ") {
+			kv := strings.SplitN(token, "=", 2)
+			if len(kv) == 1 {
+				t.Errorf("invalid token %q in authorization header", token)
+				continue
+			}
+			got := kv[1]
+			switch kv[0] {
+			case "Signature":
+				amzSignature = got
+			case "Credential":
+				amzCredential = got
+			case "SignedHeaders":
+				amzSignedHeaders = got
+			default:
+				t.Errorf("unknown token %q in authorization header", token)
+			}
+		}
 	}
-	for _, token := range strings.Split(strings.TrimPrefix(authorization, "AWS4-HMAC-SHA256 "), ", ") {
-		kv := strings.SplitN(token, "=", 2)
-		got := kv[1]
-		switch kv[0] {
-		case "Signature":
-			if len(got) < 10 {
-				t.Errorf("expected %q Authorization value of at least 10 characters, got %q", kv[0], got)
+
+	u, err := url.Parse(decoded.URL)
+	if err != nil {
+		t.Errorf("error parsing url %q: %v", decoded.URL, err)
+	}
+	for k, values := range u.Query() {
+		got := strings.Join(values, "||")
+
+		switch k {
+		case "Action":
+			if want := "GetCallerIdentity"; got != want {
+				t.Errorf("unexpected %q query param: got %q, want %q", k, got, want)
 			}
-		case "Credential":
-			if len(got) < 10 {
-				t.Errorf("expected %q Authorization value of at least 10 characters, got %q", kv[0], got)
+		case "Version":
+			if want := "2011-06-15"; got != want {
+				t.Errorf("unexpected %q query param: got %q, want %q", k, got, want)
 			}
-		case "SignedHeaders":
-			if want := "content-length;content-type;host;x-amz-date;x-kops-request-sha"; got != want {
-				t.Errorf("unexpected %q Authorization value: got %q, want %q", kv[0], got, want)
-			}
+		case "X-Amz-Date":
+			amzDate = k
+		case "X-Amz-Signature":
+			amzSignature = k
+		case "X-Amz-Credential":
+			amzCredential = got
+		case "X-Amz-SignedHeaders":
+			amzSignedHeaders = got
+		case "X-Amz-Algorithm":
+			amzAlgorithm = got
 		default:
-			t.Errorf("unknown token %q in authorization header", token)
+			t.Errorf("unknown token %q=%q in query", k, got)
 		}
 	}
 
+	if len(amzCredential) < 10 {
+		t.Errorf("expected amzCredential value of at least 10 characters, got %q", amzCredential)
+	}
+
+	if len(amzDate) < 10 {
+		t.Errorf("expected amz-date of at least 10 characters, got %q", amzDate)
+	}
+
+	if len(amzSignature) < 10 {
+		t.Errorf("expected amzSignature value of at least 10 characters, got %q", amzSignature)
+	}
+
+	if want := "AWS4-HMAC-SHA256"; amzAlgorithm != want {
+		t.Errorf("unexpected amzAlgorithm: got %q, want %q", amzAlgorithm, want)
+	}
+
+	if want := "host;x-kops-request-sha"; amzSignedHeaders != want {
+		t.Errorf("unexpected amzSignedHeaders: got %q, want %q", amzSignedHeaders, want)
+	}
 }
 
 type mockHTTPClient struct {

@@ -36,6 +36,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/bootstrap"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/wellknownports"
@@ -54,8 +55,9 @@ type awsVerifier struct {
 	opt       AWSVerifierOptions
 
 	ec2    *ec2.Client
-	sts    *sts.PresignClient
 	client http.Client
+
+	stsRequestValidator *stsRequestValidator
 }
 
 var _ bootstrap.Verifier = &awsVerifier{}
@@ -79,12 +81,17 @@ func NewAWSVerifier(ctx context.Context, opt *AWSVerifierOptions) (bootstrap.Ver
 
 	ec2Client := ec2.NewFromConfig(config)
 
+	stsRequestValidator, err := buildSTSRequestValidator(ctx, stsClient)
+	if err != nil {
+		return nil, err
+	}
+
 	return &awsVerifier{
-		accountId: aws.ToString(identity.Account),
-		partition: partition,
-		opt:       *opt,
-		ec2:       ec2Client,
-		sts:       sts.NewPresignClient(stsClient),
+		accountId:           aws.ToString(identity.Account),
+		partition:           partition,
+		opt:                 *opt,
+		ec2:                 ec2Client,
+		stsRequestValidator: stsRequestValidator,
 		client: http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
@@ -126,59 +133,38 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 	}
 	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefix)
 
-	// We rely on the client and server using the same version of the same STS library.
-	stsRequest, err := a.sts.PresignGetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
-	if err != nil {
-		return nil, fmt.Errorf("creating identity request: %v", err)
-	}
-
-	stsRequest.SignedHeader = nil
 	tokenBytes, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return nil, fmt.Errorf("decoding authorization token: %v", err)
 	}
-	err = json.Unmarshal(tokenBytes, &stsRequest.SignedHeader)
-	if err != nil {
+	var decoded awsV2Token
+	if err := json.Unmarshal(tokenBytes, &decoded); err != nil {
 		return nil, fmt.Errorf("unmarshalling authorization token: %v", err)
 	}
 
 	// Verify the token has signed the body content.
 	sha := sha256.Sum256(body)
-	if stsRequest.SignedHeader.Get("X-Kops-Request-SHA") != base64.RawStdEncoding.EncodeToString(sha[:]) {
+	if decoded.SignedHeader.Get("X-Kops-Request-SHA") != base64.RawStdEncoding.EncodeToString(sha[:]) {
 		return nil, fmt.Errorf("incorrect SHA")
 	}
 
-	reqURL, err := url.Parse(stsRequest.URL)
+	reqURL, err := url.Parse(decoded.URL)
 	if err != nil {
 		return nil, fmt.Errorf("parsing STS request URL: %v", err)
 	}
-	req := &http.Request{
-		URL:    reqURL,
-		Method: stsRequest.Method,
-		Header: stsRequest.SignedHeader,
-	}
-	response, err := a.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("sending STS request: %v", err)
-	}
-	if response != nil {
-		defer response.Body.Close()
+	signedHeaders := sets.New(strings.Split(reqURL.Query().Get("X-Amz-SignedHeaders"), ",")...)
+	if !signedHeaders.Has("x-kops-request-sha") {
+		return nil, fmt.Errorf("unexpected signed headers value")
 	}
 
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("reading STS response: %v", err)
-	}
-	if response.StatusCode != 200 {
-		return nil, fmt.Errorf("received status code %d from STS: %s", response.StatusCode, string(responseBody))
+	if !a.stsRequestValidator.IsValid(reqURL) {
+		return nil, fmt.Errorf("invalid STS url: host=%q, path=%q", reqURL.Host, reqURL.Path)
 	}
 
-	callerIdentity := GetCallerIdentityResponse{}
-	err = xml.NewDecoder(bytes.NewReader(responseBody)).Decode(&callerIdentity)
+	callerIdentity, err := a.stsRequestValidator.GetCallerIdentity(ctx, &a.client, &decoded)
 	if err != nil {
-		return nil, fmt.Errorf("decoding STS response: %v", err)
+		return nil, err
 	}
-
 	if callerIdentity.GetCallerIdentityResult[0].Account != a.accountId {
 		return nil, fmt.Errorf("incorrect account %s", callerIdentity.GetCallerIdentityResult[0].Account)
 	}
@@ -275,4 +261,82 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 	}
 
 	return result, nil
+}
+
+// stsRequestValidator describes valid STS Presigned URLs, and is used to validate client authentication requests.
+type stsRequestValidator struct {
+	Host string
+}
+
+// IsValid performs some basic pre-validation of the request URL.
+func (s *stsRequestValidator) IsValid(u *url.URL) bool {
+	if u.Host != s.Host {
+		return false
+	}
+	if u.Path != "/" {
+		return false
+	}
+	if u.Query().Get("Action") != "GetCallerIdentity" {
+		return false
+	}
+	if len(u.Query()["Action"]) != 1 {
+		return false
+	}
+
+	return true
+}
+
+// GetCallerIdentity will request the presigned token URL, and decode the returned identity.
+func (s *stsRequestValidator) GetCallerIdentity(ctx context.Context, httpClient *http.Client, decoded *awsV2Token) (*GetCallerIdentityResponse, error) {
+	reqURL, err := url.Parse(decoded.URL)
+	if err != nil {
+		return nil, fmt.Errorf("parsing STS request URL: %w", err)
+	}
+
+	if !s.IsValid(reqURL) {
+		return nil, fmt.Errorf("url not valid for STS request")
+	}
+
+	req := &http.Request{
+		URL:    reqURL,
+		Method: decoded.Method,
+		Header: decoded.SignedHeader,
+	}
+	response, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("sending STS request: %v", err)
+	}
+	if response != nil {
+		defer response.Body.Close()
+	}
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading STS response: %v", err)
+	}
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("received status code %d from STS: %s", response.StatusCode, string(responseBody))
+	}
+
+	callerIdentity := &GetCallerIdentityResponse{}
+	err = xml.NewDecoder(bytes.NewReader(responseBody)).Decode(callerIdentity)
+	if err != nil {
+		return nil, fmt.Errorf("decoding STS response: %v", err)
+	}
+
+	return callerIdentity, nil
+}
+
+// buildSTSRequestValidator determines the form of a valid STS presigned URL.
+func buildSTSRequestValidator(ctx context.Context, stsClient *sts.Client) (*stsRequestValidator, error) {
+	// We build a presigned token ourselves, primarily to get the expected hostname for the endpoint.
+	signed, err := sts.NewPresignClient(stsClient).PresignGetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return nil, fmt.Errorf("building presigned request: %w", err)
+	}
+	u, err := url.Parse(signed.URL)
+	if err != nil {
+		return nil, fmt.Errorf("parsing presigned url: %w", err)
+	}
+	return &stsRequestValidator{Host: u.Host}, nil
 }
