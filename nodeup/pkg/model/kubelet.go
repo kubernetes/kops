@@ -30,6 +30,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -89,12 +91,29 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 				return err
 			}
 			providerID = fmt.Sprintf("aws:///%s/%s", instanceIdentity.AvailabilityZone, instanceIdentity.InstanceID)
+
+		} else if b.CloudProvider() == kops.CloudProviderScaleway {
+			klog.Info("DOING STUFF FOR SCW")
+			metadataAPI := instance.NewMetadataAPI()
+			metadata, err := metadataAPI.GetMetadata()
+			if err != nil {
+				return fmt.Errorf("failed to retrieve server metadata: %w", err)
+			}
+			instanceID := metadata.ID
+			zone, err := scw.ParseZone(metadata.Location.ZoneID)
+			if err != nil {
+				return fmt.Errorf("unable to parse Scaleway zone: %w", err)
+			}
+			providerID = fmt.Sprintf("scaleway://instance/%s/%s", zone, instanceID)
+			klog.Infof("PROVIDER ID = %s", providerID)
 		}
 
+		klog.Info("DID THE STUFF, NOW APPLY IT")
 		t, err := buildKubeletComponentConfig(kubeletConfig, providerID)
 		if err != nil {
 			return err
 		}
+		klog.Info("APPLIED !")
 
 		c.AddTask(t)
 	}
@@ -206,13 +225,13 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 		}
 		/* Kubelet incorrectly interprets this value when CgroupDriver is systemd
-		See https://github.com/kubernetes/kubernetes/issues/101189
-		{
-			cgroup := kubeletConfig.KubeReservedCgroup
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-		}
+		   See https://github.com/kubernetes/kubernetes/issues/101189
+		   {
+		   	cgroup := kubeletConfig.KubeReservedCgroup
+		   	if cgroup != "" {
+		   		c.EnsureTask(b.buildCgroupService(cgroup))
+		   	}
+		   }
 		*/
 
 		{
@@ -223,12 +242,12 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 
 		/* This suffers from the same issue as KubeReservedCgroup
-		{
-			cgroup := kubeletConfig.SystemReservedCgroup
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-		}
+		   {
+		   	cgroup := kubeletConfig.SystemReservedCgroup
+		   	if cgroup != "" {
+		   		c.EnsureTask(b.buildCgroupService(cgroup))
+		   	}
+		   }
 		*/
 	}
 
