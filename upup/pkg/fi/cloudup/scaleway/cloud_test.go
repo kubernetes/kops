@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
