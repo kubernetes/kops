@@ -32,6 +32,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
 )
@@ -258,7 +259,7 @@ func (t *Tester) addRegionFlag() error {
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	case "scaleway":
-		scwRegion, err := (scw.Zone(cluster.Spec.Subnets[0].Zone)).Region()
+		scwRegion, err := scaleway.ParseRegionFromZone(scw.Zone(cluster.Spec.Subnets[0].Zone))
 		if err != nil {
 			return fmt.Errorf("adding region flag: %w", err)
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -37,6 +38,19 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if clusterSpec.KubeDNS == nil {
 		clusterSpec.KubeDNS = &kops.KubeDNSConfig{}
+		if clusterSpec.CloudProvider.Scaleway != nil {
+			clusterSpec.KubeDNS.Tolerations = []corev1.Toleration{
+				{
+					Key:      "node-role.kubernetes.io/control-plane",
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				},
+				{
+					Key:      "CriticalAddonsOnly",
+					Operator: corev1.TolerationOpExists,
+				},
+			}
+		}
 	}
 
 	if clusterSpec.KubeDNS.CacheMaxSize == 0 {
@@ -79,6 +93,10 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 			clusterSpec.KubeDNS.UpstreamNameservers = []string{"fd00:ec2::253"}
 		}
 	}
+
+	//if clusterSpec.GetCloudProvider() == kops.CloudProviderScaleway {
+	//	clusterSpec.KubeDNS.UpstreamNameservers = []string{"100.64.0.10"}
+	//}
 
 	nodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
 	if nodeLocalDNS == nil {

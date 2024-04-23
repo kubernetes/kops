@@ -385,6 +385,12 @@ func setupCloudIPAM(ctx context.Context, mgr manager.Manager, opt *config.Option
 			return fmt.Errorf("creating gce IPAM controller: %w", err)
 		}
 		controller = ipamController
+	//case "scaleway":
+	//	ipamController, err := controllers.NewScalewayIPAMReconciler(mgr)
+	//	if err != nil {
+	//		return fmt.Errorf("creating scaleway IPAM controller: %w", err)
+	//	}
+	//	controller = ipamController
 	default:
 		return fmt.Errorf("kOps IPAM controller is not supported on cloud %q", opt.Cloud)
 	}

@@ -23,8 +23,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	k8serrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/klog/v2"
+	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -58,6 +61,14 @@ func ParseZoneFromClusterSpec(clusterSpec kops.ClusterSpec) (scw.Zone, error) {
 		}
 	}
 	return scw.Zone(zone), nil
+}
+
+func ParseRegionFromZone(zone scw.Zone) (region scw.Region, err error) {
+	region, err = scw.ParseRegion(strings.TrimRight(string(zone), "-123"))
+	if err != nil {
+		return "", fmt.Errorf("could not determine region from zone %s: %w", zone, err)
+	}
+	return region, nil
 }
 
 func ClusterNameFromTags(tags []string) string {
@@ -168,6 +179,47 @@ func CreateValidScalewayProfile() (*scw.Profile, error) {
 	//fmt.Printf("SCW_DEFAULT_PROJECT_ID = %s\n", *profile.DefaultProjectID)
 
 	return &profile, nil
+}
+
+func GetIPAMPublicIP(ipamAPI *ipam.API, serverID string, zone scw.Zone) (string, error) {
+	if ipamAPI == nil {
+		profile, err := CreateValidScalewayProfile()
+		if err != nil {
+			return "", err
+		}
+		scwClient, err := scw.NewClient(
+			scw.WithProfile(profile),
+			scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
+		)
+		if err != nil {
+			return "", fmt.Errorf("creating client for Scaleway IPAM checking: %w", err)
+		}
+		ipamAPI = ipam.NewAPI(scwClient)
+	}
+
+	region, err := zone.Region()
+	if err != nil {
+		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
+	}
+
+	ips, err := ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		IsIPv6:     fi.PtrTo(false),
+		ResourceID: &serverID,
+		Zonal:      fi.PtrTo(zone.String()), // not useful according to tests made on this route with the CLI
+	}, scw.WithAllPages())
+	if err != nil {
+		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
+	}
+
+	if len(ips.IPs) < 1 {
+		return "", fmt.Errorf("could not find IP for server %s", serverID)
+	}
+	if len(ips.IPs) > 1 {
+		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
+	}
+
+	return ips.IPs[0].Address.IP.String(), nil
 }
 
 func displayEnv() {

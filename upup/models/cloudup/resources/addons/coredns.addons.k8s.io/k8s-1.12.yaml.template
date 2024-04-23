@@ -66,6 +66,7 @@ data:
 {{ KubeDNS.ExternalCoreFile | indent 4 }}
   {{- else }}
     .:53 {
+        log
         errors
         health {
           lameduck 5s

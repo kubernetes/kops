@@ -24,7 +24,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
@@ -89,7 +89,9 @@ type ScwCloud interface {
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 	GetClusterVPCs(clusterName string) ([]*vpc.VPC, error)
-	GetServerPrivateIP(serverName string, zone scw.Zone) (string, error)
+	//GetServerPrivateIP(serverName string, zone scw.Zone) (string, error)
+	GetServerIP(serverID string, zone scw.Zone) (string, error)
+	GetServerPrivateIP(serverID string, zone scw.Zone) (string, error)
 
 	DeleteDNSRecord(record *domain.Record, clusterName string) error
 	DeleteGateway(gateway *vpcgw.Gateway) error
@@ -458,11 +460,20 @@ func buildCloudGroup(s *scwCloudImplementation, ig *kops.InstanceGroup, sg []*in
 		cloudInstance.State = cloudinstances.State(server.State)
 		cloudInstance.MachineType = server.CommercialType
 		cloudInstance.Roles = append(cloudInstance.Roles, InstanceRoleFromTags(server.Tags))
-		ip, err := s.GetServerPrivateIP(server.ID, server.Zone)
+
+		externalIP, err := s.GetServerIP(server.ID, server.Zone)
+		if err != nil {
+			return nil, fmt.Errorf("getting server public IP: %w", err)
+		}
+		cloudInstance.ExternalIP = externalIP
+		privateIP, err := s.GetServerPrivateIP(server.ID, server.Zone)
 		if err != nil {
 			return nil, fmt.Errorf("getting server private IP: %w", err)
 		}
-		cloudInstance.PrivateIP = ip
+		cloudInstance.PrivateIP = privateIP
+		//if privateIP == "" {
+		//	cloudInstance.PrivateIP = externalIP
+		//}
 	}
 
 	return cloudInstanceGroup, nil
@@ -588,6 +599,10 @@ func (s *scwCloudImplementation) GetClusterPrivateNetworks(clusterName string) (
 		return nil, fmt.Errorf("failed to list cluster private networks: %w", err)
 	}
 	return pns.PrivateNetworks, nil
+}
+
+func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (string, error) {
+	return GetIPAMPublicIP(s.ipamAPI, serverID, zone)
 }
 
 func (s *scwCloudImplementation) GetServerPrivateIP(serverID string, zone scw.Zone) (string, error) {

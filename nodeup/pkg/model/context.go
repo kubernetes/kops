@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/blang/semver/v4"
 	hcloudmetadata "github.com/hetznercloud/hcloud-go/hcloud/metadata"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -36,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
@@ -603,6 +606,24 @@ func (c *NodeupModelContext) GetMetadataLocalIP(ctx context.Context) (string, er
 				internalIP = privateNetwork.IP.String()
 			}
 		}
+
+	case kops.CloudProviderScaleway:
+		metadataAPI := instance.NewMetadataAPI()
+		metadata, err := metadataAPI.GetMetadata()
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve server metadata: %w", err)
+		}
+
+		zone, err := scw.ParseZone(metadata.Location.ZoneID)
+		if err != nil {
+			return "", fmt.Errorf("unable to parse Scaleway zone: %w", err)
+		}
+
+		ip, err := scaleway.GetIPAMPublicIP(nil, metadata.ID, zone)
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve server IP: %w", err)
+		}
+		internalIP = ip
 
 	default:
 		return "", fmt.Errorf("getting local IP from metadata is not supported for cloud provider: %q", c.BootConfig.CloudProvider)
