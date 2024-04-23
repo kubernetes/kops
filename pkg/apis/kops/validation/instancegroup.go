@@ -20,13 +20,11 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kops/pkg/nodeidentity/aws"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
-
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/nodeidentity/aws"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -170,8 +168,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 			allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
 		case kops.CloudProviderGCE:
 			allErrs = append(allErrs, gceValidateInstanceGroup(g, cloud.(gce.GCECloud))...)
-		case kops.CloudProviderScaleway:
-			allErrs = append(allErrs, scalewayValidateInstanceGroup(g, cloud.(scaleway.ScwCloud))...)
+			//case kops.CloudProviderScaleway:
+			//	allErrs = append(allErrs, scalewayValidateInstanceGroup(g, cloud.(scaleway.ScwCloud))...)
 		}
 	}
 
