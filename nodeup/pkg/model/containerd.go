@@ -343,7 +343,7 @@ func (b *ContainerdBuilder) skipInstall() bool {
 	return d.SkipInstall
 }
 
-// addCritctlConfig creates /etc/crictl.yaml, which lets crictl work out-of-the-box.
+// addCrictlConfig creates /etc/crictl.yaml, which lets crictl work out-of-the-box.
 func (b *ContainerdBuilder) addCrictlConfig(c *fi.NodeupModelBuilderContext) {
 	conf := `
 runtime-endpoint: unix:///run/containerd/containerd.sock

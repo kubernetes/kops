@@ -135,7 +135,7 @@ func TestLifecycleComplex(t *testing.T) {
 	})
 }
 
-// TestLifecycleExternlLB runs the test on a cluster with external load balancers and target groups attached
+// TestLifecycleExternalLB runs the test on a cluster with external load balancers and target groups attached
 func TestLifecycleExternalLB(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
