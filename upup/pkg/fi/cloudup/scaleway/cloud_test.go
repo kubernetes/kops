@@ -33,10 +33,7 @@ func TestGetServerPrivateIP(t *testing.T) {
 		ProjectID:        nil,
 		OrganizationID:   nil,
 		Zonal:            nil,
-		ZonalNat:         nil,
-		Regional:         nil,
 		PrivateNetworkID: nil,
-		SubnetID:         nil,
 		Attached:         nil,
 		ResourceID:       nil,
 		ResourceType:     "",
@@ -44,7 +41,6 @@ func TestGetServerPrivateIP(t *testing.T) {
 		Tags:             nil,
 		IsIPv6:           nil,
 		ResourceName:     fi.PtrTo("api.paris.nonedns"),
-		ResourceIDs:      nil,
 	})
 	if err != nil {
 		t.Error(err)
