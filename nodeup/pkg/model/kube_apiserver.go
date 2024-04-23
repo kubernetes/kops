@@ -518,7 +518,7 @@ func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.NodeupModelBuilderCo
 	return nil
 }
 
-// allTokens returns a map of all auth tokens that are present
+// allAuthTokens returns a map of all auth tokens that are present
 func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
 	possibleTokens := tokens.GetKubernetesAuthTokens_Deprecated()
 
