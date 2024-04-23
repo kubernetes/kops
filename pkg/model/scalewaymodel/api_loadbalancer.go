@@ -78,6 +78,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 		Tags:                  lbTags,
 		Description:           "Load-balancer for kops cluster " + b.ClusterName(),
 		SslCompatibilityLevel: string(lb.SSLCompatibilityLevelSslCompatibilityLevelUnknown),
+		PrivateNetwork:        b.LinkToNetwork(),
 	}
 
 	c.AddTask(loadBalancer)

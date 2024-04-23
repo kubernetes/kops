@@ -15,6 +15,8 @@ stringData:
   SCW_DEFAULT_REGION: {{ SCW_DEFAULT_REGION }}
   # Zone is where your servers and volumes will be created, ex: fr-par-1, nl-ams-2
   SCW_DEFAULT_ZONE: {{ SCW_DEFAULT_ZONE }}
+   # The ID of the private network of the cluster
+  PN_ID: {{ SCW_PN_ID }}
 ---
 apiVersion: apps/v1
 kind: Deployment

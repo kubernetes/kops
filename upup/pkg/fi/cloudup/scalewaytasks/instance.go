@@ -47,8 +47,9 @@ type Instance struct {
 	VolumeSize     *int
 	NeedsUpdate    []string
 
-	UserData     *fi.Resource
-	LoadBalancer *LoadBalancer
+	UserData       *fi.Resource
+	LoadBalancer   *LoadBalancer
+	PrivateNetwork *PrivateNetwork
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -63,7 +64,13 @@ var _ fi.CloudupHasDependencies = &Instance{}
 func (s *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask
 	for _, task := range tasks {
+		if _, ok := task.(*LoadBalancer); ok {
+			deps = append(deps, task)
+		}
 		if _, ok := task.(*Volume); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*PrivateNetwork); ok {
 			deps = append(deps, task)
 		}
 	}

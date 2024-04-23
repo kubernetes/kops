@@ -682,6 +682,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.DNSModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&scalewaymodel.NetworkModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
 

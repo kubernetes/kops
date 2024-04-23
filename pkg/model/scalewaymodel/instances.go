@@ -45,6 +45,7 @@ var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := ig.Name
+		count := int(fi.ValueOf(ig.Spec.MinSize))
 		zone, err := scw.ParseZone(ig.Spec.Subnets[0])
 		if err != nil {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)
@@ -63,8 +64,8 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			instanceTags = append(instanceTags, fmt.Sprintf("%s=%s", k, v))
 		}
 
-		instance := scalewaytasks.Instance{
-			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
+		instance := &scalewaytasks.Instance{
+			Count:          count,
 			Name:           fi.PtrTo(name),
 			Lifecycle:      b.Lifecycle,
 			Zone:           fi.PtrTo(string(zone)),
@@ -72,12 +73,14 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Image:          fi.PtrTo(ig.Spec.Image),
 			UserData:       &userData,
 			Tags:           instanceTags,
+			PrivateNetwork: b.LinkToNetwork(),
 		}
 
 		if ig.IsControlPlane() {
 			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane)
 			instance.Role = fi.PtrTo(scaleway.TagRoleControlPlane)
 		} else {
+			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleWorker)
 			instance.Role = fi.PtrTo(scaleway.TagRoleWorker)
 		}
 
@@ -94,7 +97,24 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 		}
 
-		c.AddTask(&instance)
+		c.AddTask(instance)
+
+		// For each individual server of the instance group, we add a PrivateNIC task to link the server to the private network.
+		isForAPIServer := false
+		if *instance.Role == scaleway.TagRoleControlPlane {
+			isForAPIServer = true
+		}
+		privateNIC := &scalewaytasks.PrivateNIC{
+			Name:           &name,
+			Zone:           fi.PtrTo(string(zone)),
+			Tags:           instanceTags,
+			ForAPIServer:   isForAPIServer,
+			Count:          count,
+			Lifecycle:      b.Lifecycle,
+			Instance:       instance,
+			PrivateNetwork: b.LinkToNetwork(),
+		}
+		c.AddTask(privateNIC)
 	}
 	return nil
 }

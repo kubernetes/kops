@@ -23,8 +23,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	k8serrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/klog/v2"
+	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -169,4 +173,114 @@ func CreateValidScalewayProfile() (*scw.Profile, error) {
 	}
 
 	return &profile, nil
+}
+
+func GetPublicIP(scwClient *scw.Client, serverID string, zone scw.Zone) (string, error) {
+	if scwClient == nil {
+		profile, err := CreateValidScalewayProfile()
+		if err != nil {
+			return "", err
+		}
+		scwClient, err = scw.NewClient(
+			scw.WithProfile(profile),
+			scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
+		)
+		if err != nil {
+			return "", fmt.Errorf("creating client for Scaleway IPAM checking: %w", err)
+		}
+	}
+
+	ipamAPI := ipam.NewAPI(scwClient)
+
+	region, err := zone.Region()
+	if err != nil {
+		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
+	}
+
+	ips, err := ipamAPI.ListIPs(&ipam.ListIPsRequest{
+		Region:     region,
+		IsIPv6:     fi.PtrTo(false),
+		ResourceID: &serverID,
+		Zonal:      fi.PtrTo(zone.String()), // not useful according to tests made on this route with the CLI
+	}, scw.WithAllPages())
+	if err != nil {
+		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
+	}
+
+	if len(ips.IPs) < 1 {
+		return "", fmt.Errorf("could not find IP for server %s", serverID)
+	}
+	if len(ips.IPs) > 1 {
+		klog.V(10).Infof("Found more than 1 IP for server %s, using %s", serverID, ips.IPs[0].Address.IP.String())
+	}
+
+	return ips.IPs[0].Address.IP.String(), nil
+}
+
+func GetPrivateIP(scwClient *scw.Client, serverID string, zone scw.Zone) (string, error) {
+	if scwClient == nil {
+		profile, err := CreateValidScalewayProfile()
+		if err != nil {
+			return "", err
+		}
+		scwClient, err = scw.NewClient(
+			scw.WithProfile(profile),
+			scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
+		)
+		if err != nil {
+			return "", fmt.Errorf("creating client for Scaleway IPAM checking: %w", err)
+		}
+	}
+
+	instanceAPI := instance.NewAPI(scwClient)
+	ipamAPI := ipam.NewAPI(scwClient)
+
+	region, err := zone.Region()
+	if err != nil {
+		return "", fmt.Errorf("converting zone %s to region: %w", zone, err)
+	}
+
+	privateNICs, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithAllPages())
+	if err != nil {
+		return "", err
+	}
+
+	var privateIPs []string
+	for _, privateNIC := range privateNICs.PrivateNics {
+		//resourceType := "instance_server"
+		ips, err := ipamAPI.ListIPs(&ipam.ListIPsRequest{
+			Region:           region,
+			PrivateNetworkID: fi.PtrTo(privateNIC.PrivateNetworkID),
+			ResourceID:       fi.PtrTo(privateNIC.ID),
+			IsIPv6:           fi.PtrTo(false),
+			//ResourceName: fi.PtrTo(serverName),
+			//Zonal:            nil,
+			//ZonalNat:         nil,
+			//Regional: fi.PtrTo(false),
+			//SubnetID:         nil,
+			//Attached:         nil,
+			//ResourceType: ipam.ResourceType(resourceType),
+			//MacAddress:       nil,
+			//Tags:             nil,
+			//ResourceIDs:      nil,
+		}, scw.WithAllPages())
+		if err != nil {
+			return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
+		}
+		for _, ip := range ips.IPs {
+			privateIPs = append(privateIPs, ip.Address.IP.String())
+		}
+	}
+
+	if len(privateIPs) < 1 {
+		return "", fmt.Errorf("could not find IP for server %s", serverID)
+	}
+
+	if len(privateIPs) > 1 {
+		klog.Infof("Found more than 1 IP for server %s, using %s", serverID, privateIPs[0])
+	}
+	return privateIPs[0], nil
 }

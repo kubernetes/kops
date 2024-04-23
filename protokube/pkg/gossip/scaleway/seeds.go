@@ -68,7 +68,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	}
 
 	for _, server := range servers {
-		ip, err := scwCloud.GetServerIP(server.ID, server.Zone)
+		ip, err := scwCloud.GetServerPublicIP(server.ID, server.Zone)
 		if err != nil {
 			return nil, fmt.Errorf("getting server IP: %w", err)
 		}

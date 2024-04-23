@@ -25,12 +25,10 @@ import (
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 type ScalewayVerifierOptions struct{}
@@ -41,7 +39,7 @@ type scalewayVerifier struct {
 
 var _ bootstrap.Verifier = &scalewayVerifier{}
 
-func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (bootstrap.Verifier, error) {
+func NewScalewayVerifier(_ context.Context, _ *ScalewayVerifierOptions) (bootstrap.Verifier, error) {
 	profile, err := CreateValidScalewayProfile()
 	if err != nil {
 		return nil, fmt.Errorf("creating client for Scaleway Verifier: %w", err)
@@ -58,7 +56,7 @@ func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (boo
 	}, nil
 }
 
-func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
+func (v scalewayVerifier) VerifyToken(ctx context.Context, _ *http.Request, token string, _ []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, ScalewayAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
@@ -72,10 +70,6 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	zone, err := scw.ParseZone(metadata.Location.ZoneID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse Scaleway zone %q: %w", metadata.Location.ZoneID, err)
-	}
-	region, err := zone.Region()
-	if err != nil {
-		return nil, fmt.Errorf("unable to determine region from zone %s", zone)
 	}
 
 	profile, err := CreateValidScalewayProfile()
@@ -99,31 +93,16 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 	}
 	server := serverResponse.Server
 
-	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
-		Region:     region,
-		ResourceID: fi.PtrTo(server.ID),
-		IsIPv6:     fi.PtrTo(false),
-		Zonal:      fi.PtrTo(zone.String()),
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	privateIP, err := GetPrivateIP(scwClient, serverID, zone)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)
-	}
-	if ips.TotalCount == 0 {
-		return nil, fmt.Errorf("no IP found for server %q: %w", server.Name, err)
-	}
-
-	addresses := []string(nil)
-	challengeEndPoints := []string(nil)
-	for _, ip := range ips.IPs {
-		addresses = append(addresses, ip.Address.IP.String())
-		challengeEndPoints = append(challengeEndPoints, net.JoinHostPort(ip.Address.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
+		return nil, fmt.Errorf("failed to get private IP for server %s: %w", serverID, err)
 	}
 
 	result := &bootstrap.VerifyResult{
 		NodeName:          server.Name,
 		InstanceGroupName: InstanceGroupNameFromTags(server.Tags),
-		CertificateNames:  addresses,
-		ChallengeEndpoint: challengeEndPoints[0],
+		CertificateNames:  []string{privateIP},
+		ChallengeEndpoint: net.JoinHostPort(privateIP, strconv.Itoa(wellknownports.NodeupChallenge)),
 	}
 
 	return result, nil
