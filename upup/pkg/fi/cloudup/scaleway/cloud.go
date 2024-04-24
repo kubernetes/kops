@@ -283,7 +283,6 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 	if err != nil {
 		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
-	//serverIP, err := s.GetServerIP(server.Server.ID, server.Server.Zone)
 	serverIP, err := s.GetServerPrivateIP(server.Server.ID, server.Server.Zone)
 	if err != nil {
 		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
@@ -661,16 +660,6 @@ func (s *scwCloudImplementation) DeleteGateway(gateway *vpcgw.Gateway) error {
 }
 
 func (s *scwCloudImplementation) DeleteGatewayNetwork(gatewayNetwork *vpcgw.GatewayNetwork) error {
-	// We look for gateway connexions to private networks and detach them before deleting the gateway
-	//connexions, err := s.GetClusterGatewayNetworks(gatewayN.ID)
-	//if err != nil {
-	//	if Is404Error(err) {
-	//		klog.V(8).Infof("Gateway %q (%s) was already deleted", gateway.Name, gateway.ID)
-	//		return nil
-	//	}
-	//	return fmt.Errorf("listing gateway networks: %w", err)
-	//}
-	//for _, connexion := range connexions {
 	err := s.gatewayAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
 		Zone:             s.zone,
 		GatewayNetworkID: gatewayNetwork.ID,

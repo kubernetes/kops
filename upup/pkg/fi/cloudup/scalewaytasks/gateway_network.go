@@ -143,30 +143,8 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 
 	expected.ID = &gwnCreated.ID
 
-	nodesIPs, err := getAllNodesIPs(cloud, expected.Gateway)
-	if err != nil {
-		return err
-	}
-
-	for _, nodeIP := range nodesIPs {
-		_, err = cloud.GatewayService().CreatePATRule(&vpcgw.CreatePATRuleRequest{
-			Zone:        zone,
-			GatewayID:   fi.ValueOf(expected.Gateway.ID),
-			PublicPort:  0,
-			PrivateIP:   net.IP(nodeIP),
-			PrivatePort: 0,
-			Protocol:    vpcgw.PATRuleProtocolBoth,
-		})
-		if err != nil {
-			return fmt.Errorf("creating NAT rule for public gateway %s", fi.ValueOf(expected.Gateway.ID))
-		}
-	}
-
 	return nil
 }
-
-func getAllNodesIPs(scwCloud scaleway.ScwCloud, gw *Gateway) ([]string, error) {
-	var nodePrivateIPs []string
 
 type gwnIpamConfig struct {
 	PushDefaultRoute bool `cty:"push_default_route"`

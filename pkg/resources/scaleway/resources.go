@@ -37,10 +37,9 @@ const (
 	resourceTypeLoadBalancer   = "load-balancer"
 	resourceTypePrivateNetwork = "private-network"
 	resourceTypeServer         = "server"
-	//resourceTypeServerIP       = "server-IP"
-	resourceTypeSSHKey = "ssh-key"
-	resourceTypeVolume = "volume"
-	resourceTypeVPC    = "vpc"
+	resourceTypeSSHKey         = "ssh-key"
+	resourceTypeVolume         = "volume"
+	resourceTypeVPC            = "vpc"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -55,7 +54,6 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 		listLoadBalancers,
 		listPrivateNetworks,
 		listServers,
-		//listServerIPs,
 		listSSHKeys,
 		listVolumes,
 		listVPCs,
@@ -182,7 +180,6 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 				return deleteLoadBalancer(cloud, tracker)
 			},
 			Obj: loadBalancer,
-			//Blocked: []string{resourceTypePrivateNetwork+loadBalancer. }},
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -243,34 +240,6 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 
 	return resourceTrackers, nil
 }
-
-//func listServerIPs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-//	c := cloud.(scaleway.ScwCloud)
-//
-//	ips, err := c.InstanceService().ListIPs(&instance.ListIPsRequest{
-//		Zone: scw.Zone(c.Zone()),
-//		Tags: []string{fmt.Sprintf("%s=%s", scaleway.TagClusterName, clusterName)},
-//	}, scw.WithAllPages())
-//	if err != nil {
-//		return nil, fmt.Errorf("listing IPs for deletion: %w", err)
-//	}
-//
-//	resourceTrackers := []*resources.Resource(nil)
-//	for _, ip := range ips.IPs {
-//		resourceTracker := &resources.Resource{
-//			Name: ip.Address.String(),
-//			ID:   ip.ID,
-//			Type: resourceTypeServerIP,
-//			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-//				return deleteServerIP(cloud, tracker)
-//			},
-//			Obj: ip,
-//		}
-//		resourceTrackers = append(resourceTrackers, resourceTracker)
-//	}
-//
-//	return resourceTrackers, nil
-//}
 
 func listSSHKeys(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(scaleway.ScwCloud)
@@ -391,21 +360,6 @@ func deleteServer(cloud fi.Cloud, tracker *resources.Resource) error {
 
 	return c.DeleteServer(server)
 }
-
-//func deleteServerIP(cloud fi.Cloud, tracker *resources.Resource) error {
-//	c := cloud.(scaleway.ScwCloud)
-//	ip := tracker.Obj.(*instance.IP)
-//
-//	err := c.InstanceService().DeleteIP(&instance.DeleteIPRequest{
-//		Zone: ip.Zone,
-//		IP:   ip.ID,
-//	})
-//	if err != nil {
-//		return fmt.Errorf("failed to delete instance IP %s: %w", ip.Address.String(), err)
-//	}
-//
-//	return nil
-//}
 
 func deleteSSHKey(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(scaleway.ScwCloud)
