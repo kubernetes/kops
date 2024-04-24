@@ -221,7 +221,7 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 			PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
 		})
 		if err != nil {
-			return fmt.Errorf("attaching load-balancer to private network: %w")
+			return fmt.Errorf("attaching load-balancer to private network: %w", err)
 		}
 
 		_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{

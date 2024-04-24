@@ -2,11 +2,14 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -101,4 +104,22 @@ func (_ *VPC) RenderScw(t *scaleway.ScwAPITarget, actual, expected, _ *VPC) erro
 	expected.ID = &vpcCreated.ID
 
 	return nil
+}
+
+type terraformVPC struct {
+	Name *string  `cty:"name"`
+	Tags []string `cty:"tags"`
+}
+
+func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *VPC) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+	tfVPC := terraformVPC{
+		Name: expected.Name,
+		Tags: expected.Tags,
+	}
+	return t.RenderResource("scaleway_vpc", tfName, tfVPC)
+}
+
+func (v *VPC) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_vpc", fi.ValueOf(v.Name), "id")
 }

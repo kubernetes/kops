@@ -3,11 +3,14 @@ package scalewaytasks
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -143,4 +146,34 @@ func (_ *PrivateNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 	// We link the gateway (with DHCP) to the private network once it's in a stable state
 
 	return nil
+}
+
+type pnSubnet struct {
+	Subnet *string `cty:"subnet"`
+}
+
+type terraformPrivateNetwork struct {
+	Name       *string                  `cty:"name"`
+	Tags       []string                 `cty:"tags"`
+	IPV4Subnet *pnSubnet                `cty:"ipv4_subnet"`
+	VPCID      *terraformWriter.Literal `cty:"vpc_id"`
+}
+
+func (_ *PrivateNetwork) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *PrivateNetwork) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfPN := &terraformPrivateNetwork{
+		Name: expected.Name,
+		Tags: expected.Tags,
+		IPV4Subnet: &pnSubnet{
+			Subnet: expected.IPRange,
+		},
+		VPCID: expected.VPC.TerraformLink(),
+	}
+
+	return t.RenderResource("scaleway_vpc_private_network", tfName, tfPN)
+}
+
+func (p *PrivateNetwork) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_vpc_private_network", fi.ValueOf(p.Name), "id")
 }

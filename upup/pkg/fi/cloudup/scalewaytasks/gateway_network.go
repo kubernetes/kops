@@ -2,12 +2,14 @@ package scalewaytasks
 
 import (
 	"fmt"
-	"net"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -166,21 +168,30 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 func getAllNodesIPs(scwCloud scaleway.ScwCloud, gw *Gateway) ([]string, error) {
 	var nodePrivateIPs []string
 
-	servers, err := scwCloud.GetClusterServers(scwCloud.ClusterName(gw.Tags), nil)
-	if err != nil {
-		return nil, fmt.Errorf("getting cluster servers for public gateway's NAT rules: %w", err)
+type gwnIpamConfig struct {
+	PushDefaultRoute bool `cty:"push_default_route"`
+}
+
+type terraformGatewayNetwork struct {
+	GatewayID        *terraformWriter.Literal `cty:"gateway_id"`
+	PrivateNetworkID *terraformWriter.Literal `cty:"private_network_id"`
+	EnableMasquerade bool                     `cty:"enable_masquerade"`
+	EnableDHCP       bool                     `cty:"enable_dhcp"`
+	IpamConfig       *gwnIpamConfig           `cty:"ipam_config"`
+}
+
+func (_ *GatewayNetwork) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *GatewayNetwork) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfGWN := terraformGatewayNetwork{
+		GatewayID:        expected.Gateway.TerraformLink(),
+		PrivateNetworkID: expected.PrivateNetwork.TerraformLink(),
+		EnableMasquerade: true,
+		EnableDHCP:       true,
+		IpamConfig: &gwnIpamConfig{
+			PushDefaultRoute: true,
+		},
 	}
 
-	for _, server := range servers {
-		if role := scaleway.InstanceRoleFromTags(server.Tags); role == scaleway.TagRoleWorker {
-			continue
-		}
-		ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
-		if err != nil {
-			return nil, fmt.Errorf("getting IP of server %s for public gateway's NAT rules: %w", server.Name, err)
-		}
-		nodePrivateIPs = append(nodePrivateIPs, ip)
-	}
-
-	return nodePrivateIPs, nil
+	return t.RenderResource("scaleway_vpc_gateway_network", tfName, tfGWN)
 }

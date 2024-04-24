@@ -2,11 +2,14 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 const GatewayDefaultType = "VPC-GW-S"
@@ -161,4 +164,25 @@ func (_ *Gateway) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes 
 	expected.ID = &gatewayCreated.ID
 
 	return nil
+}
+
+type terraformGateway struct {
+	Type string   `cty:"type"`
+	Name *string  `cty:"name"`
+	Tags []string `cty:"tags"`
+}
+
+func (_ *Gateway) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Gateway) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfGW := terraformGateway{
+		Type: GatewayDefaultType,
+		Name: expected.Name,
+		Tags: expected.Tags,
+	}
+	return t.RenderResource("scaleway_vpc_public_gateway", tfName, tfGW)
+}
+
+func (g *Gateway) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_vpc_public_gateway", fi.ValueOf(g.Name), "id")
 }

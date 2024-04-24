@@ -2,11 +2,14 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -237,5 +240,31 @@ func (_ *PrivateNIC) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 
 	}
 
+	return nil
+}
+
+type terraformPrivateNIC struct {
+	ServerID         *terraformWriter.Literal `cty:"server_id"`
+	PrivateNetworkID *terraformWriter.Literal `cty:"private_network_id"`
+	Tags             []string                 `cty:"tags"`
+}
+
+func (_ *PrivateNIC) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *PrivateNIC) error {
+	for i := 0; i < expected.Count; i++ {
+		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i)
+		tfName := strings.ReplaceAll(uniqueName, ".", "-")
+
+		tfPNic := terraformPrivateNIC{
+			//TODO(Mia-Cross): find a way to link server and PNIC before server creation (--> without using ListClusterServers)
+			//ServerID: expected.Instance.,
+			PrivateNetworkID: expected.PrivateNetwork.TerraformLink(),
+			Tags:             expected.Tags,
+		}
+
+		err := t.RenderResource("scaleway_instance_private_nic", tfName, tfPNic)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
