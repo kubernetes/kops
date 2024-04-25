@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2023-01-01T00:00:00Z"
-  name: scw-minimal.k8s.local
+  name: scw-minimal.example.com
 spec:
   api:
     loadBalancer:
@@ -14,15 +14,15 @@ spec:
     manageStorageClasses: true
   cloudProvider: scaleway
   clusterDNSDomain: cluster.local
-  configBase: memfs://tests/scw-minimal.k8s.local
+  configBase: memfs://tests/scw-minimal.example.com
   containerd:
     logLevel: info
     runc:
-      version: 1.1.5
-    version: 1.6.20
+      version: 1.1.12
+    version: 1.7.13
   etcdClusters:
   - backups:
-      backupStore: memfs://tests/scw-minimal.k8s.local/backups/etcd/main
+      backupStore: memfs://tests/scw-minimal.example.com/backups/etcd/main
     cpuRequest: 200m
     etcdMembers:
     - instanceGroup: control-plane-fr-par-1
@@ -31,9 +31,9 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.13
+    version: 3.5.9
   - backups:
-      backupStore: memfs://tests/scw-minimal.k8s.local/backups/etcd/events
+      backupStore: memfs://tests/scw-minimal.example.com/backups/etcd/events
     cpuRequest: 100m
     etcdMembers:
     - instanceGroup: control-plane-fr-par-1
@@ -42,13 +42,11 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.13
-  externalDns:
-    provider: dns-controller
+    version: 3.5.9
   iam:
     allowContainerRegistry: true
     legacy: false
-  keyStore: memfs://tests/scw-minimal.k8s.local/pki
+  keyStore: memfs://tests/scw-minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -72,7 +70,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.25.5
+    image: registry.k8s.io/kube-apiserver:v1.28.6
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -87,8 +85,8 @@ spec:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.scw-minimal.k8s.local
-    serviceAccountJWKSURI: https://api.internal.scw-minimal.k8s.local/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.scw-minimal.example.com
+    serviceAccountJWKSURI: https://api.internal.scw-minimal.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -96,9 +94,9 @@ spec:
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: external
     clusterCIDR: 100.96.0.0/11
-    clusterName: scw-minimal.k8s.local
+    clusterName: scw-minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.25.5
+    image: registry.k8s.io/kube-controller-manager:v1.28.6
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -113,7 +111,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: registry.k8s.io/dns/k8s-dns-node-cache:1.23.0
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.20
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 100.64.0.10
@@ -121,10 +119,10 @@ spec:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     enabled: false
-    image: registry.k8s.io/kube-proxy:v1.25.5
+    image: registry.k8s.io/kube-proxy:v1.28.6
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.25.5
+    image: registry.k8s.io/kube-scheduler:v1.28.6
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -148,7 +146,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.25.5
+  kubernetesVersion: 1.28.6
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -199,10 +197,10 @@ spec:
       sidecarIstioProxyImage: cilium/istio_proxy
       toFqdnsDnsRejectResponseCode: refused
       tunnel: vxlan
-      version: v1.15.4
+      version: v1.15.1
   nonMasqueradeCIDR: 100.64.0.0/10
   podCIDR: 100.96.0.0/11
-  secretStore: memfs://tests/scw-minimal.k8s.local/secrets
+  secretStore: memfs://tests/scw-minimal.example.com/secrets
   serviceClusterIPRange: 100.64.0.0/13
   sshAccess:
   - 0.0.0.0/0
@@ -213,4 +211,4 @@ spec:
     zone: fr-par-1
   topology:
     dns:
-      type: Private
+      type: None

@@ -548,7 +548,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: api.internal.scw-minimal.k8s.local
+          value: api.internal.scw-minimal.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         image: quay.io/cilium/cilium:v1.15.4
@@ -645,7 +645,7 @@ spec:
               apiVersion: v1
               fieldPath: metadata.namespace
         - name: KUBERNETES_SERVICE_HOST
-          value: api.internal.scw-minimal.k8s.local
+          value: api.internal.scw-minimal.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         image: quay.io/cilium/cilium:v1.15.4
@@ -715,7 +715,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: api.internal.scw-minimal.k8s.local
+          value: api.internal.scw-minimal.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         image: quay.io/cilium/cilium:v1.15.4
@@ -866,7 +866,7 @@ spec:
       - args:
         - --config-dir=/tmp/cilium/config-map
         - --debug=$(CILIUM_DEBUG)
-        - --eni-tags=KubernetesCluster=scw-minimal.k8s.local
+        - --eni-tags=KubernetesCluster=scw-minimal.example.com
         command:
         - cilium-operator
         env:
@@ -887,7 +887,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: api.internal.scw-minimal.k8s.local
+          value: api.internal.scw-minimal.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         image: quay.io/cilium/operator:v1.15.4

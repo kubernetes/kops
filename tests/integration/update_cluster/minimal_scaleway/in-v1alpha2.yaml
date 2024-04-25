@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2023-01-01T00:00:00Z"
-  name: scw-minimal.k8s.local
+  name: scw-minimal.example.com
 spec:
   api:
     loadBalancer:
@@ -11,18 +11,22 @@ spec:
     rbac: {}
   channel: stable
   cloudProvider: scaleway
-  configBase: memfs://tests/scw-minimal.k8s.local
+  configBase: memfs://tests/scw-minimal.example.com
   etcdClusters:
     - cpuRequest: 200m
       etcdMembers:
         - instanceGroup: control-plane-fr-par-1
           name: etcd-1
+      manager:
+        backupRetentionDays: 90
       memoryRequest: 100Mi
       name: main
     - cpuRequest: 100m
       etcdMembers:
         - instanceGroup: control-plane-fr-par-1
           name: etcd-1
+      manager:
+        backupRetentionDays: 90
       memoryRequest: 100Mi
       name: events
   iam:
@@ -35,7 +39,7 @@ spec:
   kubernetesApiAccess:
     - 0.0.0.0/0
     - ::/0
-  kubernetesVersion: 1.25.5
+  kubernetesVersion: 1.28.6
   networking:
     cilium:
       enableNodePort: true
@@ -49,7 +53,7 @@ spec:
       zone: fr-par-1
   topology:
     dns:
-      type: Private
+      type: None
 
 ---
 
@@ -58,7 +62,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2023-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: scw-minimal.k8s.local
+    kops.k8s.io/cluster: scw-minimal.example.com
   name: control-plane-fr-par-1
 spec:
   image: ubuntu_focal
@@ -76,7 +80,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2023-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: scw-minimal.k8s.local
+    kops.k8s.io/cluster: scw-minimal.example.com
   name: nodes-fr-par-1
 spec:
   image: ubuntu_focal

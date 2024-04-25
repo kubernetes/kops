@@ -8,9 +8,6 @@ NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c9
 NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
 NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
 
-export SCW_ACCESS_KEY=
-export SCW_DEFAULT_PROJECT_ID=
-export SCW_SECRET_KEY=
 
 
 
@@ -128,7 +125,7 @@ ensure-install-dir
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: scaleway
-ClusterName: scw-minimal.k8s.local
+ClusterName: scw-minimal.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
@@ -152,10 +149,10 @@ ConfigServer:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
   servers:
-  - https://kops-controller.internal.scw-minimal.k8s.local:3988/
+  - https://kops-controller.internal.scw-minimal.example.com:3988/
 InstanceGroupName: nodes-fr-par-1
 InstanceGroupRole: Node
-NodeupConfigHash: yA/wFF1FUShF6l1o35leWYVzXlzUIdXNllHEnm1FfjI=
+NodeupConfigHash: d7gC7Jb6IZwRD8DlQf9iR/p5DRak6EB1SEzlzPZeyf8=
 
 __EOF_KUBE_ENV
 

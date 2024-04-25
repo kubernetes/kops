@@ -12,11 +12,11 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-      --backup-store=memfs://tests/scw-minimal.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
-      --cluster-name=etcd --containerized=true --dns-suffix=.internal.scw-minimal.k8s.local
+      --backup-store=memfs://tests/scw-minimal.example.com/backups/etcd/main --client-urls=https://__name__:4001
+      --cluster-name=etcd --containerized=true --dns-suffix=.internal.scw-minimal.example.com
       --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
       --v=6 --volume-name-tag=noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1
-      --volume-provider=scaleway --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local
+      --volume-provider=scaleway --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.example.com
       --volume-tag=noprefix=kops.k8s.io/etcd=main --volume-tag=noprefix=kops.k8s.io/role=ControlPlane
       > /tmp/pipe 2>&1
     env:
@@ -25,7 +25,7 @@ spec:
     - name: SCW_SECRET_KEY
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230925
+    image: rg.nl-ams.scw.cloud/kops-v2/etcd-manager:latest
     name: etcd-manager
     resources:
       requests:

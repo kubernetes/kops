@@ -80,7 +80,7 @@ data:
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
         }
-        hosts /rootfs/etc/hosts k8s.local {
+        hosts /rootfs/etc/hosts scw-minimal.example.com {
           ttl 30
           fallthrough
         }

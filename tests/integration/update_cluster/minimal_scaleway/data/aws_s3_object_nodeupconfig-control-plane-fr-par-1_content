@@ -24,7 +24,7 @@ APIServerConfig:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.25.5
+    image: registry.k8s.io/kube-apiserver:v1.28.6
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -39,8 +39,8 @@ APIServerConfig:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.scw-minimal.k8s.local
-    serviceAccountJWKSURI: https://api.internal.scw-minimal.k8s.local/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.scw-minimal.example.com
+    serviceAccountJWKSURI: https://api.internal.scw-minimal.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   ServiceAccountPublicKeys: |
@@ -54,21 +54,21 @@ APIServerConfig:
     -----END RSA PUBLIC KEY-----
 Assets:
   amd64:
-  - 16b23e1254830805b892cfccf2687eb3edb4ea54ffbadb8cc2eee6d3b1fab8e6@https://dl.k8s.io/release/v1.25.5/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.25.5/bin/linux/amd64/kubelet
-  - 6a660cd44db3d4bfe1563f6689cbe2ffb28ee4baf3532e04fff2d7b909081c29@https://dl.k8s.io/release/v1.25.5/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.25.5/bin/linux/amd64/kubectl
-  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - bb9a9ccd6517e2a54da748a9f60dc9aa9d79d19d4724663f2386812f083968e2@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-amd64.tar.gz
-  - f00b144e86f8c1db347a2e8f22caade07d55382c5f76dd5c0a5b1ab64eaec8bb@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.amd64
+  - 8506df1f20a5f8bba0592f5a4cf5d0cc541047708e664cb88580735400d0b26f@https://dl.k8s.io/release/v1.28.6/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.28.6/bin/linux/amd64/kubelet
+  - c8351fe0611119fd36634dd3f53eb94ec1a2d43ef9e78b92b4846df5cc7aa7e3@https://dl.k8s.io/release/v1.28.6/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.28.6/bin/linux/amd64/kubectl
+  - f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+  - c2371c009dd8b7738663333d91e5ab50d204f8bcae24201f45d59060d12c3a23@https://github.com/containerd/containerd/releases/download/v1.7.13/containerd-1.7.13-linux-amd64.tar.gz
+  - aadeef400b8f05645768c1476d1023f7875b78f52c7ff1967a6dbce236b8cbd8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64
   - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - 18aa53ff59740a11504218905b51b29cc78fb8b5dd818a619141afa9dafb8f5a@https://dl.k8s.io/release/v1.25.5/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.25.5/bin/linux/arm64/kubelet
-  - 7bc650f28a5b4436df2abcfae5905e461728ba416146beac17a2634fa82a6f0a@https://dl.k8s.io/release/v1.25.5/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.25.5/bin/linux/arm64/kubectl
-  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-arm64.tar.gz
-  - 54e79e4d48b9e191767e4abc08be1a8476a1c757e9a9f8c45c6ded001226867f@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.arm64
+  - ee2c060deff330d3338e24aec9734c9e5d5aea4fea1905c0795bccff6997a65e@https://dl.k8s.io/release/v1.28.6/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.28.6/bin/linux/arm64/kubelet
+  - 0de705659a80c3fef01df43cc0926610fe31482f728b0f992818abd9bdcd2cb9@https://dl.k8s.io/release/v1.28.6/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.28.6/bin/linux/arm64/kubectl
+  - 525e2b62ba92a1b6f3dc9612449a84aa61652e680f7ebf4eff579795fe464b57@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz
+  - 118759e398f35337109592b4d237538872dc12a207d38832b9d04515d0acbc4d@https://github.com/containerd/containerd/releases/download/v1.7.13/containerd-1.7.13-linux-arm64.tar.gz
+  - 879f910a05c95c10c64ad8eb7d5e3aa8e4b30e65587b3d68e009a3565aed5bb8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.arm64
   - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
@@ -225,22 +225,22 @@ CAs:
     MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
-ClusterName: scw-minimal.k8s.local
+ClusterName: scw-minimal.example.com
 ControlPlaneConfig:
   KubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: external
     clusterCIDR: 100.96.0.0/11
-    clusterName: scw-minimal.k8s.local
+    clusterName: scw-minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.25.5
+    image: registry.k8s.io/kube-controller-manager:v1.28.6
     leaderElection:
       leaderElect: true
     logLevel: 2
     useServiceAccountCredentials: true
   KubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.25.5
+    image: registry.k8s.io/kube-scheduler:v1.28.6
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -290,27 +290,27 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
   taints:
   - node-role.kubernetes.io/control-plane=:NoSchedule
-KubernetesVersion: 1.25.5
+KubernetesVersion: 1.28.6
 Networking:
   cilium: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 channels:
-- memfs://tests/scw-minimal.k8s.local/addons/bootstrap-channel.yaml
+- memfs://tests/scw-minimal.example.com/addons/bootstrap-channel.yaml
 configStore:
-  keypairs: memfs://tests/scw-minimal.k8s.local/pki
-  secrets: memfs://tests/scw-minimal.k8s.local/secrets
+  keypairs: memfs://tests/scw-minimal.example.com/pki
+  secrets: memfs://tests/scw-minimal.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.5
-  version: 1.6.20
+    version: 1.1.12
+  version: 1.7.13
 etcdManifests:
-- memfs://tests/scw-minimal.k8s.local/manifests/etcd/main-control-plane-fr-par-1.yaml
-- memfs://tests/scw-minimal.k8s.local/manifests/etcd/events-control-plane-fr-par-1.yaml
+- memfs://tests/scw-minimal.example.com/manifests/etcd/main-control-plane-fr-par-1.yaml
+- memfs://tests/scw-minimal.example.com/manifests/etcd/events-control-plane-fr-par-1.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
-usesLegacyGossip: true
-usesNoneDNS: false
+usesLegacyGossip: false
+usesNoneDNS: true

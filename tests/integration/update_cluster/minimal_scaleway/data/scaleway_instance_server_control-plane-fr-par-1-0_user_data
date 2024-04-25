@@ -128,11 +128,11 @@ ensure-install-dir
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: scaleway
-ClusterName: scw-minimal.k8s.local
-ConfigBase: memfs://tests/scw-minimal.k8s.local
+ClusterName: scw-minimal.example.com
+ConfigBase: memfs://tests/scw-minimal.example.com
 InstanceGroupName: control-plane-fr-par-1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: qkMcgEhTy3oHXOw6o8xCcTcSY7T7PLlQIesc5/8Ntvg=
+NodeupConfigHash: /srPUs9wfFh9GZm7GpynKobnMWgo2YO6lyNg19Av9rk=
 
 __EOF_KUBE_ENV
 

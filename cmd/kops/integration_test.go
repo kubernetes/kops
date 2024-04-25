@@ -453,11 +453,10 @@ func TestMinimalGCEDNSNone(t *testing.T) {
 // TestMinimalScaleway runs tests on a minimal Scaleway cluster with gossip DNS
 func TestMinimalScaleway(t *testing.T) {
 	t.Setenv("SCW_PROFILE", "REDACTED")
-	newIntegrationTest("scw-minimal.k8s.local", "minimal_scaleway").
+	newIntegrationTest("scw-minimal.example.com", "minimal_scaleway").
 		withAddons(
 			scwCCMAddon,
 			scwCSIAddon,
-			dnsControllerAddon,
 		).
 		runTestTerraformScaleway(t)
 }

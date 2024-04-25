@@ -9,6 +9,7 @@ metadata:
   name: scaleway-secret
   namespace: kube-system
 stringData:
+  PN_ID: scw-minimal.example.com
   SCW_ACCESS_KEY: null
   SCW_DEFAULT_PROJECT_ID: null
   SCW_DEFAULT_REGION: fr-par
