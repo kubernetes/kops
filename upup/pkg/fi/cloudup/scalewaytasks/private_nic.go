@@ -30,13 +30,10 @@ import (
 
 // +kops:fitask
 type PrivateNIC struct {
-	//ID   *string
-	Name *string
-	Zone *string
-	Tags []string
-
-	ForAPIServer bool
-	Count        int
+	Name  *string
+	Zone  *string
+	Tags  []string
+	Count int
 
 	Lifecycle      fi.Lifecycle
 	Instance       *Instance
@@ -142,18 +139,11 @@ func (p *PrivateNIC) Find(context *fi.CloudupContext) (*PrivateNIC, error) {
 	}
 	pNICFound := privateNICsFound[0]
 
-	forAPIServer := false
-	instanceRole := scaleway.InstanceRoleFromTags(pNICFound.Tags)
-	if instanceRole == scaleway.TagRoleControlPlane {
-		forAPIServer = true
-	}
-
 	return &PrivateNIC{
 		//ID:             fi.PtrTo(pNICFound.ID),
 		Name:           p.Name,
 		Zone:           p.Zone,
 		Tags:           pNICFound.Tags,
-		ForAPIServer:   forAPIServer,
 		Count:          len(privateNICsFound),
 		Lifecycle:      p.Lifecycle,
 		Instance:       p.Instance,
@@ -180,9 +170,6 @@ func (p *PrivateNIC) CheckChanges(actual, expected, changes *PrivateNIC) error {
 		if expected.Zone == nil {
 			return fi.RequiredField("Zone")
 		}
-		//if expected.InstanceID == nil {
-		//	return fi.RequiredField("InstanceID")
-		//}
 	}
 	return nil
 }
@@ -238,7 +225,6 @@ func (_ *PrivateNIC) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 			ServerID:         serverID,
 			PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
 			Tags:             expected.Tags,
-			//IPIDs:
 		})
 		if err != nil {
 			return fmt.Errorf("creating private NIC between instance %s and private network %s: %w", serverID, fi.ValueOf(expected.PrivateNetwork.ID), err)

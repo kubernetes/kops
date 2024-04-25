@@ -46,7 +46,6 @@ type LoadBalancer struct {
 	Tags                  []string
 	Description           string
 	SslCompatibilityLevel string
-	ForAPIServer          bool
 
 	// WellKnownServices indicates which services are supported by this resource.
 	// This field is internal and is not rendered to the cloud.
@@ -107,7 +106,6 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 		Zone:              fi.PtrTo(string(loadBalancer.Zone)),
 		LBAddresses:       lbIPs,
 		Tags:              loadBalancer.Tags,
-		ForAPIServer:      l.ForAPIServer,
 		Lifecycle:         l.Lifecycle,
 		WellKnownServices: l.WellKnownServices,
 	}, nil

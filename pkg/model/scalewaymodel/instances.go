@@ -100,15 +100,10 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		c.AddTask(instance)
 
 		// For each individual server of the instance group, we add a PrivateNIC task to link the server to the private network.
-		isForAPIServer := false
-		if *instance.Role == scaleway.TagRoleControlPlane {
-			isForAPIServer = true
-		}
 		privateNIC := &scalewaytasks.PrivateNIC{
 			Name:           &name,
 			Zone:           fi.PtrTo(string(zone)),
 			Tags:           instanceTags,
-			ForAPIServer:   isForAPIServer,
 			Count:          count,
 			Lifecycle:      b.Lifecycle,
 			Instance:       instance,
