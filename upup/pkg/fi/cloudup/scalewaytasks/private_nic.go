@@ -271,8 +271,7 @@ func (_ *PrivateNIC) RenderTerraform(t *terraform.TerraformTarget, actual, expec
 		tfName := strings.ReplaceAll(uniqueName, ".", "-")
 
 		tfPNic := terraformPrivateNIC{
-			//TODO(Mia-Cross): find a way to link server and PNIC before server creation (--> without using ListClusterServers)
-			//ServerID: expected.Instance.,
+			ServerID:         terraformWriter.LiteralProperty("scaleway_instance_server", tfName, "id"),
 			PrivateNetworkID: expected.PrivateNetwork.TerraformLink(),
 			Tags:             expected.Tags,
 		}

@@ -177,11 +177,13 @@ resource "scaleway_instance_ip" "nodes-fr-par-1-0" {
 
 resource "scaleway_instance_private_nic" "control-plane-fr-par-1-0" {
   private_network_id = scaleway_vpc_private_network.scw-minimal-example-com.id
+  server_id          = scaleway_instance_server.control-plane-fr-par-1-0.id
   tags               = ["noprefix=kops.k8s.io/cluster=scw-minimal.example.com", "noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1"]
 }
 
 resource "scaleway_instance_private_nic" "nodes-fr-par-1-0" {
   private_network_id = scaleway_vpc_private_network.scw-minimal-example-com.id
+  server_id          = scaleway_instance_server.nodes-fr-par-1-0.id
   tags               = ["noprefix=kops.k8s.io/cluster=scw-minimal.example.com", "noprefix=kops.k8s.io/instance-group=nodes-fr-par-1"]
 }
 
