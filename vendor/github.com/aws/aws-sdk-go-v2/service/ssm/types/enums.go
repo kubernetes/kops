@@ -896,6 +896,63 @@ func (InstancePatchStateOperatorType) Values() []InstancePatchStateOperatorType 
 	}
 }
 
+type InstancePropertyFilterKey string
+
+// Enum values for InstancePropertyFilterKey
+const (
+	InstancePropertyFilterKeyInstanceIds       InstancePropertyFilterKey = "InstanceIds"
+	InstancePropertyFilterKeyAgentVersion      InstancePropertyFilterKey = "AgentVersion"
+	InstancePropertyFilterKeyPingStatus        InstancePropertyFilterKey = "PingStatus"
+	InstancePropertyFilterKeyPlatformTypes     InstancePropertyFilterKey = "PlatformTypes"
+	InstancePropertyFilterKeyDocumentName      InstancePropertyFilterKey = "DocumentName"
+	InstancePropertyFilterKeyActivationIds     InstancePropertyFilterKey = "ActivationIds"
+	InstancePropertyFilterKeyIamRole           InstancePropertyFilterKey = "IamRole"
+	InstancePropertyFilterKeyResourceType      InstancePropertyFilterKey = "ResourceType"
+	InstancePropertyFilterKeyAssociationStatus InstancePropertyFilterKey = "AssociationStatus"
+)
+
+// Values returns all known values for InstancePropertyFilterKey. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (InstancePropertyFilterKey) Values() []InstancePropertyFilterKey {
+	return []InstancePropertyFilterKey{
+		"InstanceIds",
+		"AgentVersion",
+		"PingStatus",
+		"PlatformTypes",
+		"DocumentName",
+		"ActivationIds",
+		"IamRole",
+		"ResourceType",
+		"AssociationStatus",
+	}
+}
+
+type InstancePropertyFilterOperator string
+
+// Enum values for InstancePropertyFilterOperator
+const (
+	InstancePropertyFilterOperatorEqual       InstancePropertyFilterOperator = "Equal"
+	InstancePropertyFilterOperatorNotEqual    InstancePropertyFilterOperator = "NotEqual"
+	InstancePropertyFilterOperatorBeginWith   InstancePropertyFilterOperator = "BeginWith"
+	InstancePropertyFilterOperatorLessThan    InstancePropertyFilterOperator = "LessThan"
+	InstancePropertyFilterOperatorGreaterThan InstancePropertyFilterOperator = "GreaterThan"
+)
+
+// Values returns all known values for InstancePropertyFilterOperator. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client. The ordering of this slice is not guaranteed to be stable across
+// updates.
+func (InstancePropertyFilterOperator) Values() []InstancePropertyFilterOperator {
+	return []InstancePropertyFilterOperator{
+		"Equal",
+		"NotEqual",
+		"BeginWith",
+		"LessThan",
+		"GreaterThan",
+	}
+}
+
 type InventoryAttributeDataType string
 
 // Enum values for InventoryAttributeDataType

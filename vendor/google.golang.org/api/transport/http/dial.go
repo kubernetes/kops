@@ -48,7 +48,7 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*http.Client, 
 	}
 
 	if settings.IsNewAuthLibraryEnabled() {
-		client, err := newClientNewAuth(ctx, settings)
+		client, err := newClientNewAuth(ctx, nil, settings)
 		if err != nil {
 			return nil, "", err
 		}
@@ -62,7 +62,7 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*http.Client, 
 }
 
 // newClientNewAuth is an adapter to call new auth library.
-func newClientNewAuth(ctx context.Context, ds *internal.DialSettings) (*http.Client, error) {
+func newClientNewAuth(ctx context.Context, base http.RoundTripper, ds *internal.DialSettings) (*http.Client, error) {
 	// honor options if set
 	var creds *auth.Credentials
 	if ds.InternalCredentials != nil {
@@ -91,8 +91,8 @@ func newClientNewAuth(ctx context.Context, ds *internal.DialSettings) (*http.Cli
 	}
 
 	// Defaults for older clients that don't set this value yet
-	var defaultEndpointTemplate string
-	if ds.DefaultEndpointTemplate == "" {
+	defaultEndpointTemplate := ds.DefaultEndpointTemplate
+	if defaultEndpointTemplate == "" {
 		defaultEndpointTemplate = ds.DefaultEndpoint
 	}
 
@@ -115,6 +115,7 @@ func newClientNewAuth(ctx context.Context, ds *internal.DialSettings) (*http.Cli
 		APIKey:                ds.APIKey,
 		Credentials:           creds,
 		ClientCertProvider:    ds.ClientCertSource,
+		BaseRoundTripper:      base,
 		DetectOpts: &credentials.DetectOptions{
 			Scopes:          ds.Scopes,
 			Audience:        aud,
@@ -148,8 +149,7 @@ func NewTransport(ctx context.Context, base http.RoundTripper, opts ...option.Cl
 		return nil, errors.New("transport/http: WithHTTPClient passed to NewTransport")
 	}
 	if settings.IsNewAuthLibraryEnabled() {
-		// TODO, this is not wrapping the base, find a way...
-		client, err := newClientNewAuth(ctx, settings)
+		client, err := newClientNewAuth(ctx, base, settings)
 		if err != nil {
 			return nil, err
 		}

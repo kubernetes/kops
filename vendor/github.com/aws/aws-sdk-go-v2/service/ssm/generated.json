@@ -54,6 +54,7 @@
         "api_op_DescribeInstancePatchStates.go",
         "api_op_DescribeInstancePatchStatesForPatchGroup.go",
         "api_op_DescribeInstancePatches.go",
+        "api_op_DescribeInstanceProperties.go",
         "api_op_DescribeInventoryDeletions.go",
         "api_op_DescribeMaintenanceWindowExecutionTaskInvocations.go",
         "api_op_DescribeMaintenanceWindowExecutionTasks.go",

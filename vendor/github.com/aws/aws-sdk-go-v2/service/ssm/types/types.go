@@ -2513,6 +2513,132 @@ type InstancePatchStateFilter struct {
 	noSmithyDocumentSerde
 }
 
+// An object containing various properties of a managed node.
+type InstanceProperty struct {
+
+	// The activation ID created by Systems Manager when the server or virtual machine
+	// (VM) was registered
+	ActivationId *string
+
+	// The version of SSM Agent running on your managed node.
+	AgentVersion *string
+
+	// The CPU architecture of the node. For example, x86_64.
+	Architecture *string
+
+	// Status information about the aggregated associations.
+	AssociationOverview *InstanceAggregatedAssociationOverview
+
+	// The status of the State Manager association applied to the managed node.
+	AssociationStatus *string
+
+	// The fully qualified host name of the managed node.
+	ComputerName *string
+
+	// The public IPv4 address assigned to the node. If a public IPv4 address isn't
+	// assigned to the node, this value is blank.
+	IPAddress *string
+
+	// The IAM role used in the hybrid activation to register the node with Systems
+	// Manager.
+	IamRole *string
+
+	// The ID of the managed node.
+	InstanceId *string
+
+	// The instance profile attached to the node. If an instance profile isn't
+	// attached to the node, this value is blank.
+	InstanceRole *string
+
+	// The current state of the node.
+	InstanceState *string
+
+	// The instance type of the managed node. For example, t3.large.
+	InstanceType *string
+
+	// The name of the key pair associated with the node. If a key pair isnt't
+	// associated with the node, this value is blank.
+	KeyName *string
+
+	// The date the association was last run.
+	LastAssociationExecutionDate *time.Time
+
+	// The date and time when the SSM Agent last pinged the Systems Manager service.
+	LastPingDateTime *time.Time
+
+	// The last date the association was successfully run.
+	LastSuccessfulAssociationExecutionDate *time.Time
+
+	// The timestamp for when the node was launched.
+	LaunchTime *time.Time
+
+	// The value of the EC2 Name tag associated with the node. If a Name tag hasn't
+	// been applied to the node, this value is blank.
+	Name *string
+
+	// Connection status of the SSM Agent on the managed node.
+	PingStatus PingStatus
+
+	// The name of the operating system platform running on your managed node.
+	PlatformName *string
+
+	// The operating system platform type of the managed node. For example, Windows.
+	PlatformType PlatformType
+
+	// The version of the OS platform running on your managed node.
+	PlatformVersion *string
+
+	// The date the node was registered with Systems Manager.
+	RegistrationDate *time.Time
+
+	// The type of managed node.
+	ResourceType *string
+
+	// The ID of the source resource.
+	SourceId *string
+
+	// The type of the source resource.
+	SourceType SourceType
+
+	noSmithyDocumentSerde
+}
+
+// Describes a filter for a specific list of managed nodes. You can filter node
+// information by using tags. You specify tags by using a key-value mapping.
+type InstancePropertyFilter struct {
+
+	// The name of the filter.
+	//
+	// This member is required.
+	Key InstancePropertyFilterKey
+
+	// The filter values.
+	//
+	// This member is required.
+	ValueSet []string
+
+	noSmithyDocumentSerde
+}
+
+// The filters to describe or get information about your managed nodes.
+type InstancePropertyStringFilter struct {
+
+	// The filter key name to describe your managed nodes.
+	//
+	// This member is required.
+	Key *string
+
+	// The filter key name to describe your managed nodes.
+	//
+	// This member is required.
+	Values []string
+
+	// The operator used by the filter call.
+	Operator InstancePropertyFilterOperator
+
+	noSmithyDocumentSerde
+}
+
 // Specifies the inventory type and attribute for the aggregation execution.
 type InventoryAggregator struct {
 
@@ -5052,34 +5178,30 @@ type Tag struct {
 // information about running tasks that don't specify targets, see Registering
 // maintenance window tasks without targets (https://docs.aws.amazon.com/systems-manager/latest/userguide/maintenance-windows-targetless-tasks.html)
 // in the Amazon Web Services Systems Manager User Guide. Supported formats include
-// the following.
-//   - Key=InstanceIds,Values=,,
-//   - Key=tag:,Values=,
-//   - Key=tag-key,Values=,
-//   - Run Command and Maintenance window targets only:
-//     Key=resource-groups:Name,Values=
-//   - Maintenance window targets only:
-//     Key=resource-groups:ResourceTypeFilters,Values=,
-//   - Automation targets only: Key=ResourceGroup;Values=
+// the following. For all Systems Manager capabilities:
+//   - Key=tag-key,Values=tag-value-1,tag-value-2
 //
-// For example:
+// For Automation and Change Manager:
+//   - Key=tag:tag-key,Values=tag-value
+//   - Key=ResourceGroup,Values=resource-group-name
+//   - Key=ParameterValues,Values=value-1,value-2,value-3
+//   - To target all instances in the Amazon Web Services Region:
+//   - Key=AWS::EC2::Instance,Values=*
+//   - Key=InstanceIds,Values=*
 //
-//	-
-//	Key=InstanceIds,Values=i-02573cafcfEXAMPLE,i-0471e04240EXAMPLE,i-07782c72faEXAMPLE
-//	- Key=tag:CostCenter,Values=CostCenter1,CostCenter2,CostCenter3
-//	- Key=tag-key,Values=Name,Instance-Type,CostCenter
-//	- Run Command and Maintenance window targets only:
-//	Key=resource-groups:Name,Values=ProductionResourceGroup This example
-//	demonstrates how to target all resources in the resource group
-//	ProductionResourceGroup in your maintenance window.
-//	- Maintenance window targets only:
-//	Key=resource-groups:ResourceTypeFilters,Values=AWS::EC2::INSTANCE,AWS::EC2::VPC
-//	This example demonstrates how to target only Amazon Elastic Compute Cloud
-//	(Amazon EC2) instances and VPCs in your maintenance window.
-//	- Automation targets only: Key=ResourceGroup,Values=MyResourceGroup
-//	- State Manager association targets only: Key=InstanceIds,Values=* This
-//	example demonstrates how to target all managed instances in the Amazon Web
-//	Services Region where the association was created.
+// For Run Command and Maintenance Windows:
+//   - Key=InstanceIds,Values=instance-id-1,instance-id-2,instance-id-3
+//   - Key=tag:tag-key,Values=tag-value-1,tag-value-2
+//   - Key=resource-groups:Name,Values=resource-group-name
+//   - Additionally, Maintenance Windows support targeting resource types:
+//     -
+//     Key=resource-groups:ResourceTypeFilters,Values=resource-type-1,resource-type-2
+//
+// For State Manager:
+//   - Key=InstanceIds,Values=instance-id-1,instance-id-2,instance-id-3
+//   - Key=tag:tag-key,Values=tag-value-1,tag-value-2
+//   - To target all instances in the Amazon Web Services Region:
+//   - Key=InstanceIds,Values=*
 //
 // For more information about how to send commands that target managed nodes using
 // Key,Value parameters, see Targeting multiple managed nodes (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html#send-commands-targeting)

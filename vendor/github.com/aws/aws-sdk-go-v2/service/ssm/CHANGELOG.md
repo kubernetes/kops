@@ -1,3 +1,7 @@
+# v1.50.0 (2024-04-24)
+
+* **Feature**: Add SSM DescribeInstanceProperties API to public AWS SDK.
+
 # v1.49.5 (2024-03-29)
 
 * **Dependency Update**: Updated to the latest SDK module versions

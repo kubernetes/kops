@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/googleapis/google-cloud-go/compare/auth/v0.2.2...auth/v0.3.0) (2024-04-23)
+
+
+### Features
+
+* **auth/httptransport:** Add ability to customize transport ([#10023](https://github.com/googleapis/google-cloud-go/issues/10023)) ([72c7f6b](https://github.com/googleapis/google-cloud-go/commit/72c7f6bbec3136cc7a62788fc7186bc33ef6c3b3)), refs [#9812](https://github.com/googleapis/google-cloud-go/issues/9812) [#9814](https://github.com/googleapis/google-cloud-go/issues/9814)
+
+
+### Bug Fixes
+
+* **auth/credentials:** Error on bad file name if explicitly set ([#10018](https://github.com/googleapis/google-cloud-go/issues/10018)) ([55beaa9](https://github.com/googleapis/google-cloud-go/commit/55beaa993aaf052d8be39766afc6777c3c2a0bdd)), refs [#9809](https://github.com/googleapis/google-cloud-go/issues/9809)
+
 ## [0.2.2](https://github.com/googleapis/google-cloud-go/compare/auth/v0.2.1...auth/v0.2.2) (2024-04-19)
 
 
