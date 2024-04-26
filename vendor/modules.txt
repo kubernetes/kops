@@ -1,4 +1,4 @@
-# cloud.google.com/go/auth v0.2.2
+# cloud.google.com/go/auth v0.3.0
 ## explicit; go 1.19
 cloud.google.com/go/auth
 cloud.google.com/go/auth/credentials
@@ -13,7 +13,7 @@ cloud.google.com/go/auth/internal/credsfile
 cloud.google.com/go/auth/internal/jwt
 cloud.google.com/go/auth/internal/transport
 cloud.google.com/go/auth/internal/transport/cert
-# cloud.google.com/go/auth/oauth2adapt v0.2.1
+# cloud.google.com/go/auth/oauth2adapt v0.2.2
 ## explicit; go 1.19
 cloud.google.com/go/auth/oauth2adapt
 # cloud.google.com/go/compute/metadata v0.3.0
@@ -155,7 +155,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.51.25
+# github.com/aws/aws-sdk-go v1.51.29
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -274,7 +274,7 @@ github.com/aws/aws-sdk-go-v2/internal/v4a/internal/v4
 github.com/aws/aws-sdk-go-v2/service/autoscaling
 github.com/aws/aws-sdk-go-v2/service/autoscaling/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/autoscaling/types
-# github.com/aws/aws-sdk-go-v2/service/ec2 v1.157.0
+# github.com/aws/aws-sdk-go-v2/service/ec2 v1.159.0
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/ec2
 github.com/aws/aws-sdk-go-v2/service/ec2/internal/endpoints
@@ -342,7 +342,7 @@ github.com/aws/aws-sdk-go-v2/service/s3/types
 github.com/aws/aws-sdk-go-v2/service/sqs
 github.com/aws/aws-sdk-go-v2/service/sqs/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/sqs/types
-# github.com/aws/aws-sdk-go-v2/service/ssm v1.49.5
+# github.com/aws/aws-sdk-go-v2/service/ssm v1.50.0
 ## explicit; go 1.20
 github.com/aws/aws-sdk-go-v2/service/ssm
 github.com/aws/aws-sdk-go-v2/service/ssm/internal/endpoints
@@ -398,7 +398,7 @@ github.com/beorn7/perks/quantile
 # github.com/blang/semver/v4 v4.0.0
 ## explicit; go 1.14
 github.com/blang/semver/v4
-# github.com/cert-manager/cert-manager v1.14.4
+# github.com/cert-manager/cert-manager v1.14.5
 ## explicit; go 1.21
 github.com/cert-manager/cert-manager/pkg/apis/acme
 github.com/cert-manager/cert-manager/pkg/apis/acme/v1
@@ -1157,11 +1157,12 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.50.0
+# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0
 ## explicit; go 1.21
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
+go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/semconv
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/semconvutil
-# go.opentelemetry.io/otel v1.25.0
+# go.opentelemetry.io/otel v1.26.0
 ## explicit; go 1.21
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/attribute
@@ -1175,15 +1176,15 @@ go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/v1.20.0
 go.opentelemetry.io/otel/semconv/v1.21.0
 go.opentelemetry.io/otel/semconv/v1.24.0
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.25.0
+# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.26.0
 ## explicit; go 1.21
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform
-# go.opentelemetry.io/otel/metric v1.25.0
+# go.opentelemetry.io/otel/metric v1.26.0
 ## explicit; go 1.21
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/embedded
-# go.opentelemetry.io/otel/sdk v1.25.0
+# go.opentelemetry.io/otel/sdk v1.26.0
 ## explicit; go 1.21
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/instrumentation
@@ -1191,7 +1192,7 @@ go.opentelemetry.io/otel/sdk/internal
 go.opentelemetry.io/otel/sdk/internal/env
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
-# go.opentelemetry.io/otel/trace v1.25.0
+# go.opentelemetry.io/otel/trace v1.26.0
 ## explicit; go 1.21
 go.opentelemetry.io/otel/trace
 go.opentelemetry.io/otel/trace/embedded
@@ -1339,7 +1340,7 @@ golang.org/x/tools/internal/versions
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.175.0
+# google.golang.org/api v0.176.1
 ## explicit; go 1.19
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -2067,7 +2068,7 @@ k8s.io/kubelet/config/v1beta1
 # k8s.io/mount-utils v0.30.0
 ## explicit; go 1.22.0
 k8s.io/mount-utils
-# k8s.io/utils v0.0.0-20240310230437-4693a0247e57
+# k8s.io/utils v0.0.0-20240423183400-0849a56e8f22
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock
@@ -2097,7 +2098,7 @@ oras.land/oras-go/pkg/registry/remote/auth
 oras.land/oras-go/pkg/registry/remote/internal/errutil
 oras.land/oras-go/pkg/registry/remote/internal/syncutil
 oras.land/oras-go/pkg/target
-# sigs.k8s.io/controller-runtime v0.17.1-0.20240419092505-a92b9612b606
+# sigs.k8s.io/controller-runtime v0.18.0
 ## explicit; go 1.22.0
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder

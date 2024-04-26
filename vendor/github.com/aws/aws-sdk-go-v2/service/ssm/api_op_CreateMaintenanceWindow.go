@@ -93,7 +93,9 @@ type CreateMaintenanceWindowInput struct {
 
 	// The date and time, in ISO-8601 Extended format, for when you want the
 	// maintenance window to become active. StartDate allows you to delay activation
-	// of the maintenance window until the specified future date.
+	// of the maintenance window until the specified future date. When using a rate
+	// schedule, if you provide a start date that occurs in the past, the current date
+	// and time are used as the start date.
 	StartDate *string
 
 	// Optional metadata that you assign to a resource. Tags enable you to categorize

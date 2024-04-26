@@ -1934,6 +1934,10 @@ type EC2API interface {
 	DisableImageDeprecationWithContext(aws.Context, *ec2.DisableImageDeprecationInput, ...request.Option) (*ec2.DisableImageDeprecationOutput, error)
 	DisableImageDeprecationRequest(*ec2.DisableImageDeprecationInput) (*request.Request, *ec2.DisableImageDeprecationOutput)
 
+	DisableImageDeregistrationProtection(*ec2.DisableImageDeregistrationProtectionInput) (*ec2.DisableImageDeregistrationProtectionOutput, error)
+	DisableImageDeregistrationProtectionWithContext(aws.Context, *ec2.DisableImageDeregistrationProtectionInput, ...request.Option) (*ec2.DisableImageDeregistrationProtectionOutput, error)
+	DisableImageDeregistrationProtectionRequest(*ec2.DisableImageDeregistrationProtectionInput) (*request.Request, *ec2.DisableImageDeregistrationProtectionOutput)
+
 	DisableIpamOrganizationAdminAccount(*ec2.DisableIpamOrganizationAdminAccountInput) (*ec2.DisableIpamOrganizationAdminAccountOutput, error)
 	DisableIpamOrganizationAdminAccountWithContext(aws.Context, *ec2.DisableIpamOrganizationAdminAccountInput, ...request.Option) (*ec2.DisableIpamOrganizationAdminAccountOutput, error)
 	DisableIpamOrganizationAdminAccountRequest(*ec2.DisableIpamOrganizationAdminAccountInput) (*request.Request, *ec2.DisableIpamOrganizationAdminAccountOutput)
@@ -2053,6 +2057,10 @@ type EC2API interface {
 	EnableImageDeprecation(*ec2.EnableImageDeprecationInput) (*ec2.EnableImageDeprecationOutput, error)
 	EnableImageDeprecationWithContext(aws.Context, *ec2.EnableImageDeprecationInput, ...request.Option) (*ec2.EnableImageDeprecationOutput, error)
 	EnableImageDeprecationRequest(*ec2.EnableImageDeprecationInput) (*request.Request, *ec2.EnableImageDeprecationOutput)
+
+	EnableImageDeregistrationProtection(*ec2.EnableImageDeregistrationProtectionInput) (*ec2.EnableImageDeregistrationProtectionOutput, error)
+	EnableImageDeregistrationProtectionWithContext(aws.Context, *ec2.EnableImageDeregistrationProtectionInput, ...request.Option) (*ec2.EnableImageDeregistrationProtectionOutput, error)
+	EnableImageDeregistrationProtectionRequest(*ec2.EnableImageDeregistrationProtectionInput) (*request.Request, *ec2.EnableImageDeregistrationProtectionOutput)
 
 	EnableIpamOrganizationAdminAccount(*ec2.EnableIpamOrganizationAdminAccountInput) (*ec2.EnableIpamOrganizationAdminAccountOutput, error)
 	EnableIpamOrganizationAdminAccountWithContext(aws.Context, *ec2.EnableIpamOrganizationAdminAccountInput, ...request.Option) (*ec2.EnableIpamOrganizationAdminAccountOutput, error)

@@ -26009,6 +26009,9 @@ var awsPartition = partition{
 					Region: "ap-south-1",
 				}: endpoint{},
 				endpointKey{
+					Region: "ap-south-2",
+				}: endpoint{},
+				endpointKey{
 					Region: "ap-southeast-1",
 				}: endpoint{},
 				endpointKey{
@@ -26018,16 +26021,25 @@ var awsPartition = partition{
 					Region: "ap-southeast-3",
 				}: endpoint{},
 				endpointKey{
+					Region: "ap-southeast-4",
+				}: endpoint{},
+				endpointKey{
 					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-central-1",
 				}: endpoint{},
 				endpointKey{
+					Region: "eu-central-2",
+				}: endpoint{},
+				endpointKey{
 					Region: "eu-north-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-south-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "eu-south-2",
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-west-1",
@@ -26037,6 +26049,9 @@ var awsPartition = partition{
 				}: endpoint{},
 				endpointKey{
 					Region: "eu-west-3",
+				}: endpoint{},
+				endpointKey{
+					Region: "me-central-1",
 				}: endpoint{},
 				endpointKey{
 					Region: "me-south-1",
@@ -36382,6 +36397,19 @@ var awscnPartition = partition{
 				}: endpoint{},
 			},
 		},
+		"entitlement.marketplace": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "cn-northwest-1",
+				}: endpoint{
+					Hostname:  "entitlement-marketplace.cn-northwest-1.amazonaws.com.cn",
+					Protocols: []string{"HTTPS"},
+					CredentialScope: credentialScope{
+						Region: "cn-northwest-1",
+					},
+				},
+			},
+		},
 		"es": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
@@ -40212,6 +40240,15 @@ var awsusgovPartition = partition{
 		"email": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
+					Region: "fips-us-gov-east-1",
+				}: endpoint{
+					Hostname: "email-fips.us-gov-east-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "us-gov-east-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
 					Region: "fips-us-gov-west-1",
 				}: endpoint{
 					Hostname: "email-fips.us-gov-west-1.amazonaws.com",
@@ -40219,6 +40256,15 @@ var awsusgovPartition = partition{
 						Region: "us-gov-west-1",
 					},
 					Deprecated: boxedTrue,
+				},
+				endpointKey{
+					Region: "us-gov-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region:  "us-gov-east-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "email-fips.us-gov-east-1.amazonaws.com",
 				},
 				endpointKey{
 					Region: "us-gov-west-1",
@@ -41640,6 +41686,16 @@ var awsusgovPartition = partition{
 			},
 		},
 		"license-manager-linux-subscriptions": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-gov-east-1",
+				}: endpoint{},
+				endpointKey{
+					Region: "us-gov-west-1",
+				}: endpoint{},
+			},
+		},
+		"license-manager-user-subscriptions": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
 					Region: "us-gov-east-1",

@@ -52,6 +52,9 @@ type CreateDocumentInput struct {
 	//   - aws
 	//   - amazon
 	//   - amzn
+	//   - AWSEC2
+	//   - AWSConfigRemediation
+	//   - AWSSupport
 	//
 	// This member is required.
 	Name *string

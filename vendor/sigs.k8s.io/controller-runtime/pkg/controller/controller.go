@@ -25,10 +25,8 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/internal/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -84,13 +82,8 @@ type Controller interface {
 	// Reconciler is called to reconcile an object by Namespace/Name
 	reconcile.Reconciler
 
-	// Watch takes events provided by a Source and uses the EventHandler to
-	// enqueue reconcile.Requests in response to the events.
-	//
-	// Watch may be provided one or more Predicates to filter events before
-	// they are given to the EventHandler.  Events will be passed to the
-	// EventHandler if all provided Predicates evaluate to true.
-	Watch(src source.Source, eventhandler handler.EventHandler, predicates ...predicate.Predicate) error
+	// Watch watches the provided Source.
+	Watch(src source.Source) error
 
 	// Start starts the controller.  Start blocks until the context is closed or a
 	// controller has an error starting.

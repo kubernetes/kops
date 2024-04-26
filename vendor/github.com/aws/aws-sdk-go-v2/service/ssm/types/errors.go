@@ -1458,6 +1458,34 @@ func (e *InvalidInstanceInformationFilterValue) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
 
+// The specified filter value isn't valid.
+type InvalidInstancePropertyFilterValue struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *InvalidInstancePropertyFilterValue) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *InvalidInstancePropertyFilterValue) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *InvalidInstancePropertyFilterValue) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "InvalidInstancePropertyFilterValue"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *InvalidInstancePropertyFilterValue) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
 // The specified inventory group isn't valid.
 type InvalidInventoryGroupException struct {
 	Message *string
