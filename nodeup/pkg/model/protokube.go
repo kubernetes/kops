@@ -285,11 +285,6 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}
 
-	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
-		envVars["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
-		envVars["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
-	}
-
 	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
