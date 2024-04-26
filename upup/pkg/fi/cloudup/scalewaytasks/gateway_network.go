@@ -136,13 +136,8 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 		Zone:             zone,
 		GatewayID:        fi.ValueOf(expected.Gateway.ID),
 		PrivateNetworkID: fi.ValueOf(expected.PrivateNetwork.ID),
-		EnableMasquerade: true,
-		EnableDHCP:       scw.BoolPtr(true),
-		DHCP:             nil,
-		Address:          nil,
 		IpamConfig: &vpcgw.CreateGatewayNetworkRequestIpamConfig{
-			PushDefaultRoute: true,
-			//IpamIPID: expected.PrivateNetwork.
+			PushDefaultRoute: false,
 		},
 	})
 	if err != nil {
@@ -180,10 +175,8 @@ func (_ *GatewayNetwork) RenderTerraform(t *terraform.TerraformTarget, actual, e
 	tfGWN := terraformGatewayNetwork{
 		GatewayID:        expected.Gateway.TerraformLink(),
 		PrivateNetworkID: expected.PrivateNetwork.TerraformLink(),
-		EnableMasquerade: true,
-		EnableDHCP:       true,
 		IpamConfig: &gwnIpamConfig{
-			PushDefaultRoute: true,
+			PushDefaultRoute: false,
 		},
 	}
 

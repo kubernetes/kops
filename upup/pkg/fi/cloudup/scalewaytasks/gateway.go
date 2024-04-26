@@ -154,14 +154,10 @@ func (_ *Gateway) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes 
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 
 	gatewayCreated, err := cloud.GatewayService().CreateGateway(&vpcgw.CreateGatewayRequest{
-		Zone: zone,
-		Name: fi.ValueOf(expected.Name),
-		Tags: expected.Tags,
-		Type: GatewayDefaultType,
-		//UpstreamDNSServers: nil,
-		//TODO, if not work
-		//IPID:               nil,
-		//EnableSMTP:         false,
+		Zone:          zone,
+		Name:          fi.ValueOf(expected.Name),
+		Tags:          expected.Tags,
+		Type:          GatewayDefaultType,
 		EnableBastion: true,
 		BastionPort:   scw.Uint32Ptr(1042),
 	})
