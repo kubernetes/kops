@@ -678,6 +678,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 			"/usr/local/bin/kube-apiserver",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
+		container.Args = sortServiceAccountIssuers(container.Args, fi.ValueOf(kubeAPIServer.ServiceAccountIssuer), kubeAPIServer.AdditionalServiceAccountIssuers)
 	}
 
 	for _, path := range b.SSLHostPaths() {
@@ -754,4 +755,27 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	}
 
 	return annotations
+}
+
+func sortServiceAccountIssuers(in []string, currentIssuer string, oldIssuers []string) []string {
+	if len(oldIssuers) == 0 {
+		return in
+	}
+
+	positionMap := make(map[int]string)
+	positionMap[0] = fmt.Sprintf("--service-account-issuer=%s", currentIssuer)
+	for k, v := range oldIssuers {
+		positionMap[k+1] = fmt.Sprintf("--service-account-issuer=%s", v)
+	}
+
+	out := make([]string, 0, len(in))
+	issuerPosition := 0
+	for _, flag := range in {
+		if strings.HasPrefix(flag, "--service-account-issuer=") {
+			flag = positionMap[issuerPosition]
+			issuerPosition++
+		}
+		out = append(out, flag)
+	}
+	return out
 }

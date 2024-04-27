@@ -52,8 +52,12 @@ contents: |
       - --requestheader-group-headers=X-Remote-Group
       - --requestheader-username-headers=X-Remote-User
       - --secure-port=443
-      - --service-account-issuer=https://api.internal.minimal.example.com
-      - --service-account-jwks-uri=https://api.internal.minimal.example.com/openid/v1/jwks
+      - --service-account-issuer=https://huh.com/multisaissuer.example.com
+      - --service-account-issuer=https://foobar.com
+      - --service-account-issuer=https://aaa.com
+      - --service-account-issuer=https://hello.com
+      - --service-account-issuer=https://dorld.com
+      - --service-account-jwks-uri=https://huh.com/multisaissuer.example.com/openid/v1/jwks
       - --service-account-key-file=/srv/kubernetes/kube-apiserver/service-account.pub
       - --service-account-signing-key-file=/srv/kubernetes/kube-apiserver/service-account.key
       - --service-cluster-ip-range=100.64.0.0/13
