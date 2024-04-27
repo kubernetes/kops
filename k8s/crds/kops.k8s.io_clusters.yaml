@@ -1568,6 +1568,12 @@ spec:
                 description: KubeAPIServerConfig defines the configuration for the
                   kube api
                 properties:
+                  additionalServiceAccountIssuers:
+                    description: AdditionalServiceAccountIssuers can contain additional
+                      service account token issuers.
+                    items:
+                      type: string
+                    type: array
                   address:
                     description: 'Address is the binding address for the kube api:
                       Deprecated - use insecure-bind-address and bind-address'

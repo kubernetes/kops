@@ -3179,6 +3179,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AdditionalServiceAccountIssuers != nil {
+		in, out := &in.AdditionalServiceAccountIssuers, &out.AdditionalServiceAccountIssuers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ServiceAccountJWKSURI != nil {
 		in, out := &in.ServiceAccountJWKSURI, &out.ServiceAccountJWKSURI
 		*out = new(string)

@@ -5241,6 +5241,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
+	out.AdditionalServiceAccountIssuers = in.AdditionalServiceAccountIssuers
 	out.ServiceAccountJWKSURI = in.ServiceAccountJWKSURI
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
@@ -5353,6 +5354,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
+	out.AdditionalServiceAccountIssuers = in.AdditionalServiceAccountIssuers
 	out.ServiceAccountJWKSURI = in.ServiceAccountJWKSURI
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
