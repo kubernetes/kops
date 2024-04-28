@@ -18,20 +18,12 @@ package vfs
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-	"golang.org/x/oauth2"
 	"k8s.io/klog/v2"
-)
-
-const (
-	storageResourceID = "https://storage.azure.com/"
 )
 
 func newAzureClient(ctx context.Context) (*azblob.Client, error) {
@@ -54,36 +46,4 @@ func newAzureClient(ctx context.Context) (*azblob.Client, error) {
 	}
 
 	return client, nil
-}
-
-// getAccessTokenFromInstanceMetadataService obtains the access token from Instance Metadata Service.
-func getAccessTokenFromInstanceMetadataService(ctx context.Context) (string, error) {
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, "GET", "http://169.254.169.254/metadata/identity/oauth2/token", nil)
-	if err != nil {
-		return "", fmt.Errorf("error creating a new request: %s", err)
-	}
-	req.Header.Add("Metadata", "True")
-
-	q := req.URL.Query()
-	q.Add("resource", storageResourceID)
-	q.Add("api-version", "2020-06-01")
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("error sending request to the metadata server: %s", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("error reading a response from the metadata server: %s", err)
-	}
-
-	token := &oauth2.Token{}
-	if err := json.Unmarshal(body, token); err != nil {
-		return "", fmt.Errorf("error unmarsharlling token: %s", err)
-	}
-	return token.AccessToken, nil
 }
