@@ -178,7 +178,7 @@ func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceG
 	return mig, nil
 }
 
-// getMIGMember queries GCE for the instance from the MIG
+// getManagedInstance queries GCE for the instance from the MIG
 func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
 	var matches []*compute.ManagedInstance
 

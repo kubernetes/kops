@@ -82,7 +82,7 @@ func (c *GCEModelContext) SafeClusterName() string {
 	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
 }
 
-// SafeClusterName returns the cluster name escaped and truncated for use as a GCE resource name
+// SafeTruncatedClusterName returns the cluster name escaped and truncated for use as a GCE resource name
 func (c *GCEModelContext) SafeTruncatedClusterName() string {
 	return gce.SafeTruncatedClusterName(c.Cluster.ObjectMeta.Name, 63)
 }
