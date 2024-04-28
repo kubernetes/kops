@@ -1681,6 +1681,7 @@ func Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.Autho
 
 func autoConvert_v1alpha2_AzureSpec_To_kops_AzureSpec(in *AzureSpec, out *kops.AzureSpec, s conversion.Scope) error {
 	out.SubscriptionID = in.SubscriptionID
+	out.StorageAccountID = in.StorageAccountID
 	out.TenantID = in.TenantID
 	out.ResourceGroupName = in.ResourceGroupName
 	out.RouteTableName = in.RouteTableName
@@ -1695,6 +1696,7 @@ func Convert_v1alpha2_AzureSpec_To_kops_AzureSpec(in *AzureSpec, out *kops.Azure
 
 func autoConvert_kops_AzureSpec_To_v1alpha2_AzureSpec(in *kops.AzureSpec, out *AzureSpec, s conversion.Scope) error {
 	out.SubscriptionID = in.SubscriptionID
+	out.StorageAccountID = in.StorageAccountID
 	out.TenantID = in.TenantID
 	out.ResourceGroupName = in.ResourceGroupName
 	out.RouteTableName = in.RouteTableName

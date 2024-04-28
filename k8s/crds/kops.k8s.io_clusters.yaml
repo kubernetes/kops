@@ -410,6 +410,10 @@ spec:
                         description: RouteTableName is the name of the route table
                           attached to the subnet that the cluster is deployed in.
                         type: string
+                      storageAccountID:
+                        description: StorageAccountID specifies the storage account
+                          used for the cluster installation.
+                        type: string
                       subscriptionId:
                         description: SubscriptionID specifies the subscription used
                           for the cluster installation.

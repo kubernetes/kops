@@ -883,6 +883,8 @@ type OpenstackSpec struct {
 type AzureSpec struct {
 	// SubscriptionID specifies the subscription used for the cluster installation.
 	SubscriptionID string `json:"subscriptionID,omitempty"`
+	// StorageAccountID specifies the storage account used for the cluster installation.
+	StorageAccountID string `json:"storageAccountID,omitempty"`
 	// TenantID is the ID of the tenant that the cluster is deployed in.
 	TenantID string `json:"tenantID"`
 	// ResourceGroupName specifies the name of the resource group
