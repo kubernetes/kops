@@ -81,7 +81,7 @@ func NewStdLogger() log.Logger {
 	})
 }
 
-// NewInstanceGroups returns an InstanceGroup wrapper for the specified cloud provider.
+// NewInstanceGroup returns an InstanceGroup wrapper for the specified cloud provider.
 func NewInstanceGroup(cloudProviderID kops.CloudProviderID,
 	instanceGroupType InstanceGroupType, obj interface{}) (InstanceGroup, error,
 ) {

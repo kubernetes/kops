@@ -93,7 +93,7 @@ func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	}
 }
 
-// TestPopulateInstanceGroup_AddTaintsCollision2 ensures we handle taints that are configured in multiple parts of the spec and multiple resources.
+// TestPopulateInstanceGroup_AddTaintsCollision3 ensures we handle taints that are configured in multiple parts of the spec and multiple resources.
 // This one also adds a second taint that we should see in the final result
 func TestPopulateInstanceGroup_AddTaintsCollision3(t *testing.T) {
 	taint := "e2etest:NoSchedule"
