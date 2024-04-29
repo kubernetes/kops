@@ -19,6 +19,7 @@ data:
              "type":"bridge",
              "bridge":"kube-bridge",
              "isDefaultGateway":true,
+             "hairpinMode":true,
              "ipam":{
                 "type":"host-local"
              }
@@ -62,7 +63,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v2.1.0
+        image: docker.io/cloudnativelabs/kube-router:v2.1.1
         args:
         - --run-router=true
         - --run-firewall=true
@@ -116,7 +117,7 @@ spec:
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v2.1.0
+        image: docker.io/cloudnativelabs/kube-router:v2.1.1
         command:
         - /bin/sh
         - -c
