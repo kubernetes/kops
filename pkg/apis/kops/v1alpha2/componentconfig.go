@@ -508,7 +508,7 @@ type KubeAPIServerConfig struct {
 	ServiceAccountIssuer *string `json:"serviceAccountIssuer,omitempty" flag:"service-account-issuer"`
 
 	// AdditionalServiceAccountIssuers can contain additional service account token issuers.
-	AdditionalServiceAccountIssuers []string `json:"additionalServiceAccountIssuers,omitempty" flag:"service-account-issuer,repeat"`
+	AdditionalServiceAccountIssuers []string `json:"additionalServiceAccountIssuers,omitempty"`
 
 	// ServiceAccountJWKSURI overrides the path for the jwks document; this is useful when we are republishing the service account discovery information elsewhere.
 	ServiceAccountJWKSURI *string `json:"serviceAccountJWKSURI,omitempty" flag:"service-account-jwks-uri"`

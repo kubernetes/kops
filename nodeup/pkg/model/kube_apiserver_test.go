@@ -19,7 +19,6 @@ package model
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
@@ -197,38 +196,4 @@ func TestKubeAPIServerBuilderARM64(t *testing.T) {
 		builder.Architecture = architectures.ArchitectureArm64
 		return builder.Build(target)
 	})
-}
-
-func TestSortServiceAccountIssuers(t *testing.T) {
-	type testCase struct {
-		name          string
-		flags         []string
-		currentIssuer string
-		oldIssuers    []string
-		expected      []string
-	}
-
-	testCases := []testCase{
-		{
-			name:          "flags without old issuers",
-			flags:         []string{"--bar=foo", "--service-account-issuer=https://foo"},
-			currentIssuer: "https://foo",
-			oldIssuers:    nil,
-			expected:      []string{"--bar=foo", "--service-account-issuer=https://foo"},
-		},
-		{
-			name:          "flags without with old issuers",
-			flags:         []string{"--bar=foo", "--service-account-issuer=https://aa", "--service-account-issuer=https://bar", "--service-account-issuer=https://foo", "--zz=zz"},
-			currentIssuer: "https://foo",
-			oldIssuers:    []string{"https://aa", "https://bar"},
-			expected:      []string{"--bar=foo", "--service-account-issuer=https://foo", "--service-account-issuer=https://aa", "--service-account-issuer=https://bar", "--zz=zz"},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := sortServiceAccountIssuers(tc.flags, tc.currentIssuer, tc.oldIssuers)
-			assert.Equal(t, tc.expected, actual)
-		})
-	}
 }
