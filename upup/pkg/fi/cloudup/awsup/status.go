@@ -43,7 +43,7 @@ func (c *awsCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops
 	return status, nil
 }
 
-// FindEtcdStatus discovers the status of the cluster, by looking for the tagged etcd volumes
+// FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
 func (c *MockAWSCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
 	etcdStatus, err := findEtcdStatus(c, cluster)
 	if err != nil {

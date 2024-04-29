@@ -60,7 +60,7 @@ type BootstrapChannelBuilder struct {
 
 var _ fi.CloudupModelBuilder = &BootstrapChannelBuilder{}
 
-// networkSelector is the labels set on networking addons
+// networkingSelector is the labels set on networking addons
 //
 // The role.kubernetes.io/networking is used to label anything related to a networking addin,
 // so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
