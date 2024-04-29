@@ -830,9 +830,6 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		}
 	}
 
-	if c.IsKubernetesLT("1.22") && len(v.AdditionalServiceAccountIssuers) > 0 {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("additionalServiceAccountIssuers"), "additionalServiceAccountIssuers requires Kubernetes 1.22+"))
-	}
 	return allErrs
 }
 

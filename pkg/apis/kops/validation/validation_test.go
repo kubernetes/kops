@@ -308,23 +308,6 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Unsupported value::KubeAPIServer.logFormat"},
 		},
-		{
-			Input: kops.KubeAPIServerConfig{
-				AdditionalServiceAccountIssuers: []string{"https://foo.bar"},
-			},
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					Authorization: &kops.AuthorizationSpec{
-						RBAC: &kops.RBACAuthorizationSpec{},
-					},
-					KubernetesVersion: "1.21.0",
-					CloudProvider: kops.CloudProviderSpec{
-						AWS: &kops.AWSSpec{},
-					},
-				},
-			},
-			ExpectedErrors: []string{"Forbidden::KubeAPIServer.additionalServiceAccountIssuers"},
-		},
 	}
 	for _, g := range grid {
 		if g.Cluster == nil {
