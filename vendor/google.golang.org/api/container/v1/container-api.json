@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240327",
+  "revision": "20240409",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2718,6 +2718,10 @@
       "description": "Specifies options for controlling advanced machine features.",
       "id": "AdvancedMachineFeatures",
       "properties": {
+        "enableNestedVirtualization": {
+          "description": "Whether or not to enable nested virtualization (defaults to false).",
+          "type": "boolean"
+        },
         "threadsPerCore": {
           "description": "The number of threads per physical core. To disable simultaneous multithreading (SMT) set this to 1. If unset, the maximum number of threads supported per core by the underlying processor is assumed.",
           "format": "int64",
@@ -5108,7 +5112,7 @@
           "description": "GatewayAPIConfig contains the desired config of Gateway API on this cluster."
         },
         "inTransitEncryptionConfig": {
-          "description": "Specify the details of in-transit encryption.",
+          "description": "Specify the details of in-transit encryption. Now named inter-node transparent encryption.",
           "enum": [
             "IN_TRANSIT_ENCRYPTION_CONFIG_UNSPECIFIED",
             "IN_TRANSIT_ENCRYPTION_DISABLED",
@@ -6552,12 +6556,14 @@
           "enum": [
             "MODE_UNSPECIFIED",
             "DISABLED",
-            "BASIC"
+            "BASIC",
+            "ENTERPRISE"
           ],
           "enumDescriptions": [
             "Default value not specified.",
             "Disables Security Posture features on the cluster.",
-            "Applies Security Posture features on the cluster."
+            "Applies Security Posture features on the cluster.",
+            "Applies the Security Posture off cluster Enterprise level features."
           ],
           "type": "string"
         },

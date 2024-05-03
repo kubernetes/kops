@@ -96,8 +96,8 @@ const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
-	// See, edit, configure, and delete your Google Cloud data and see the
-	// email address for your Google Account.
+	// See, edit, configure, and delete your Google Cloud data and see the email
+	// address for your Google Account.
 	CloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 )
 
@@ -548,171 +548,132 @@ type RolesService struct {
 	s *Service
 }
 
-// AccessRestrictions: Access related restrictions on the workforce
-// pool.
+// AccessRestrictions: Access related restrictions on the workforce pool.
 type AccessRestrictions struct {
-	// AllowedServices: Optional. Immutable. Services allowed for web
-	// sign-in with the workforce pool. If not set by default there are no
-	// restrictions.
+	// AllowedServices: Optional. Immutable. Services allowed for web sign-in with
+	// the workforce pool. If not set by default there are no restrictions.
 	AllowedServices []*ServiceConfig `json:"allowedServices,omitempty"`
-
 	// DisableProgrammaticSignin: Optional. Disable programmatic sign-in by
-	// disabling token issue via the Security Token API endpoint. See
-	// [Security Token Service API]
-	// (https://cloud.google.com/iam/docs/reference/sts/rest).
+	// disabling token issue via the Security Token API endpoint. See [Security
+	// Token Service API] (https://cloud.google.com/iam/docs/reference/sts/rest).
 	DisableProgrammaticSignin bool `json:"disableProgrammaticSignin,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AllowedServices") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AllowedServices") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AllowedServices") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AccessRestrictions) MarshalJSON() ([]byte, error) {
 	type NoMethod AccessRestrictions
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// AdminAuditData: Audit log information specific to Cloud IAM admin
-// APIs. This message is serialized as an `Any` type in the
-// `ServiceData` message of an `AuditLog` message.
+// AdminAuditData: Audit log information specific to Cloud IAM admin APIs. This
+// message is serialized as an `Any` type in the `ServiceData` message of an
+// `AuditLog` message.
 type AdminAuditData struct {
-	// PermissionDelta: The permission_delta when when creating or updating
-	// a Role.
+	// PermissionDelta: The permission_delta when when creating or updating a Role.
 	PermissionDelta *PermissionDelta `json:"permissionDelta,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "PermissionDelta") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PermissionDelta") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "PermissionDelta") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AdminAuditData) MarshalJSON() ([]byte, error) {
 	type NoMethod AdminAuditData
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditConfig: Specifies the audit configuration for a service. The
 // configuration determines which permission types are logged, and what
-// identities, if any, are exempted from logging. An AuditConfig must
-// have one or more AuditLogConfigs. If there are AuditConfigs for both
-// `allServices` and a specific service, the union of the two
-// AuditConfigs is used for that service: the log_types specified in
-// each AuditConfig are enabled, and the exempted_members in each
-// AuditLogConfig are exempted. Example Policy with multiple
-// AuditConfigs: { "audit_configs": [ { "service": "allServices",
-// "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members":
-// [ "user:jose@example.com" ] }, { "log_type": "DATA_WRITE" }, {
-// "log_type": "ADMIN_READ" } ] }, { "service":
-// "sampleservice.googleapis.com", "audit_log_configs": [ { "log_type":
-// "DATA_READ" }, { "log_type": "DATA_WRITE", "exempted_members": [
-// "user:aliya@example.com" ] } ] } ] } For sampleservice, this policy
-// enables DATA_READ, DATA_WRITE and ADMIN_READ logging. It also exempts
-// `jose@example.com` from DATA_READ logging, and `aliya@example.com`
-// from DATA_WRITE logging.
+// identities, if any, are exempted from logging. An AuditConfig must have one
+// or more AuditLogConfigs. If there are AuditConfigs for both `allServices`
+// and a specific service, the union of the two AuditConfigs is used for that
+// service: the log_types specified in each AuditConfig are enabled, and the
+// exempted_members in each AuditLogConfig are exempted. Example Policy with
+// multiple AuditConfigs: { "audit_configs": [ { "service": "allServices",
+// "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members": [
+// "user:jose@example.com" ] }, { "log_type": "DATA_WRITE" }, { "log_type":
+// "ADMIN_READ" } ] }, { "service": "sampleservice.googleapis.com",
+// "audit_log_configs": [ { "log_type": "DATA_READ" }, { "log_type":
+// "DATA_WRITE", "exempted_members": [ "user:aliya@example.com" ] } ] } ] } For
+// sampleservice, this policy enables DATA_READ, DATA_WRITE and ADMIN_READ
+// logging. It also exempts `jose@example.com` from DATA_READ logging, and
+// `aliya@example.com` from DATA_WRITE logging.
 type AuditConfig struct {
-	// AuditLogConfigs: The configuration for logging of each type of
-	// permission.
+	// AuditLogConfigs: The configuration for logging of each type of permission.
 	AuditLogConfigs []*AuditLogConfig `json:"auditLogConfigs,omitempty"`
-
-	// Service: Specifies a service that will be enabled for audit logging.
-	// For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
-	// `allServices` is a special value that covers all services.
+	// Service: Specifies a service that will be enabled for audit logging. For
+	// example, `storage.googleapis.com`, `cloudsql.googleapis.com`. `allServices`
+	// is a special value that covers all services.
 	Service string `json:"service,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AuditLogConfigs") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AuditLogConfigs") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AuditLogConfigs") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AuditConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// AuditData: Audit log information specific to Cloud IAM. This message
-// is serialized as an `Any` type in the `ServiceData` message of an
-// `AuditLog` message.
+// AuditData: Audit log information specific to Cloud IAM. This message is
+// serialized as an `Any` type in the `ServiceData` message of an `AuditLog`
+// message.
 type AuditData struct {
-	// PolicyDelta: Policy delta between the original policy and the newly
-	// set policy.
+	// PolicyDelta: Policy delta between the original policy and the newly set
+	// policy.
 	PolicyDelta *PolicyDelta `json:"policyDelta,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "PolicyDelta") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PolicyDelta") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "PolicyDelta") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AuditData) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditData
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditLogConfig: Provides the configuration for logging a type of
-// permissions. Example: { "audit_log_configs": [ { "log_type":
-// "DATA_READ", "exempted_members": [ "user:jose@example.com" ] }, {
-// "log_type": "DATA_WRITE" } ] } This enables 'DATA_READ' and
-// 'DATA_WRITE' logging, while exempting jose@example.com from DATA_READ
-// logging.
+// permissions. Example: { "audit_log_configs": [ { "log_type": "DATA_READ",
+// "exempted_members": [ "user:jose@example.com" ] }, { "log_type":
+// "DATA_WRITE" } ] } This enables 'DATA_READ' and 'DATA_WRITE' logging, while
+// exempting jose@example.com from DATA_READ logging.
 type AuditLogConfig struct {
-	// ExemptedMembers: Specifies the identities that do not cause logging
-	// for this type of permission. Follows the same format of
-	// Binding.members.
+	// ExemptedMembers: Specifies the identities that do not cause logging for this
+	// type of permission. Follows the same format of Binding.members.
 	ExemptedMembers []string `json:"exemptedMembers,omitempty"`
-
 	// LogType: The log type that this config enables.
 	//
 	// Possible values:
@@ -721,201 +682,170 @@ type AuditLogConfig struct {
 	//   "DATA_WRITE" - Data writes. Example: CloudSQL Users create
 	//   "DATA_READ" - Data reads. Example: CloudSQL Users list
 	LogType string `json:"logType,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ExemptedMembers") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ExemptedMembers") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ExemptedMembers") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AuditLogConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditLogConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditableService: Contains information about an auditable service.
 type AuditableService struct {
-	// Name: Public name of the service. For example, the service name for
-	// Cloud IAM is 'iam.googleapis.com'.
+	// Name: Public name of the service. For example, the service name for IAM is
+	// 'iam.googleapis.com'.
 	Name string `json:"name,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Name") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Name") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *AuditableService) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditableService
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Aws: Represents an Amazon Web Services identity provider.
 type Aws struct {
 	// AccountId: Required. The AWS account ID.
 	AccountId string `json:"accountId,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AccountId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AccountId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AccountId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Aws) MarshalJSON() ([]byte, error) {
 	type NoMethod Aws
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Binding: Associates `members`, or principals, with a `role`.
 type Binding struct {
 	// Condition: The condition that is associated with this binding. If the
-	// condition evaluates to `true`, then this binding applies to the
-	// current request. If the condition evaluates to `false`, then this
-	// binding does not apply to the current request. However, a different
-	// role binding might grant the same role to one or more of the
-	// principals in this binding. To learn which resources support
-	// conditions in their IAM policies, see the IAM documentation
+	// condition evaluates to `true`, then this binding applies to the current
+	// request. If the condition evaluates to `false`, then this binding does not
+	// apply to the current request. However, a different role binding might grant
+	// the same role to one or more of the principals in this binding. To learn
+	// which resources support conditions in their IAM policies, see the IAM
+	// documentation
 	// (https://cloud.google.com/iam/help/conditions/resource-policies).
 	Condition *Expr `json:"condition,omitempty"`
-
-	// Members: Specifies the principals requesting access for a Google
-	// Cloud resource. `members` can have the following values: *
-	// `allUsers`: A special identifier that represents anyone who is on the
-	// internet; with or without a Google account. *
-	// `allAuthenticatedUsers`: A special identifier that represents anyone
-	// who is authenticated with a Google account or a service account. Does
-	// not include identities that come from external identity providers
-	// (IdPs) through identity federation. * `user:{emailid}`: An email
+	// Members: Specifies the principals requesting access for a Google Cloud
+	// resource. `members` can have the following values: * `allUsers`: A special
+	// identifier that represents anyone who is on the internet; with or without a
+	// Google account. * `allAuthenticatedUsers`: A special identifier that
+	// represents anyone who is authenticated with a Google account or a service
+	// account. Does not include identities that come from external identity
+	// providers (IdPs) through identity federation. * `user:{emailid}`: An email
 	// address that represents a specific Google account. For example,
-	// `alice@example.com` . * `serviceAccount:{emailid}`: An email address
-	// that represents a Google service account. For example,
+	// `alice@example.com` . * `serviceAccount:{emailid}`: An email address that
+	// represents a Google service account. For example,
 	// `my-other-app@appspot.gserviceaccount.com`. *
-	// `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`:
-	//  An identifier for a Kubernetes service account
+	// `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An
+	// identifier for a Kubernetes service account
 	// (https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts).
-	// For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`.
-	// * `group:{emailid}`: An email address that represents a Google group.
-	// For example, `admins@example.com`. * `domain:{domain}`: The G Suite
-	// domain (primary) that represents all the users of that domain. For
-	// example, `google.com` or `example.com`. *
-	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool_
-	// id}/subject/{subject_attribute_value}`: A single identity in a
-	// workforce identity pool. *
-	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
-	// ol_id}/group/{group_id}`: All workforce identities in a group. *
-	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
-	// ol_id}/attribute.{attribute_name}/{attribute_value}`: All workforce
-	// identities with a specific attribute value. *
-	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
-	// ol_id}/*`: All identities in a workforce identity pool. *
-	// `principal://iam.googleapis.com/projects/{project_number}/locations/gl
-	// obal/workloadIdentityPools/{pool_id}/subject/{subject_attribute_value}
-	// `: A single identity in a workload identity pool. *
-	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
-	// /global/workloadIdentityPools/{pool_id}/group/{group_id}`: A workload
-	// identity pool group. *
-	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
-	// /global/workloadIdentityPools/{pool_id}/attribute.{attribute_name}/{at
-	// tribute_value}`: All identities in a workload identity pool with a
-	// certain attribute. *
-	// `principalSet://iam.googleapis.com/projects/{project_number}/locations
-	// /global/workloadIdentityPools/{pool_id}/*`: All identities in a
-	// workload identity pool. * `deleted:user:{emailid}?uid={uniqueid}`: An
-	// email address (plus unique identifier) representing a user that has
-	// been recently deleted. For example,
-	// `alice@example.com?uid=123456789012345678901`. If the user is
-	// recovered, this value reverts to `user:{emailid}` and the recovered
-	// user retains the role in the binding. *
-	// `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address
-	// (plus unique identifier) representing a service account that has been
+	// For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. *
+	// `group:{emailid}`: An email address that represents a Google group. For
+	// example, `admins@example.com`. * `domain:{domain}`: The G Suite domain
+	// (primary) that represents all the users of that domain. For example,
+	// `google.com` or `example.com`. *
+	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool_id}/sub
+	// ject/{subject_attribute_value}`: A single identity in a workforce identity
+	// pool. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// group/{group_id}`: All workforce identities in a group. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// attribute.{attribute_name}/{attribute_value}`: All workforce identities with
+	// a specific attribute value. *
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool_id}/
+	// *`: All identities in a workforce identity pool. *
+	// `principal://iam.googleapis.com/projects/{project_number}/locations/global/wo
+	// rkloadIdentityPools/{pool_id}/subject/{subject_attribute_value}`: A single
+	// identity in a workload identity pool. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/group/{group_id}`: A workload identity pool
+	// group. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/attribute.{attribute_name}/{attribute_value}
+	// `: All identities in a workload identity pool with a certain attribute. *
+	// `principalSet://iam.googleapis.com/projects/{project_number}/locations/global
+	// /workloadIdentityPools/{pool_id}/*`: All identities in a workload identity
+	// pool. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus
+	// unique identifier) representing a user that has been recently deleted. For
+	// example, `alice@example.com?uid=123456789012345678901`. If the user is
+	// recovered, this value reverts to `user:{emailid}` and the recovered user
+	// retains the role in the binding. *
+	// `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus
+	// unique identifier) representing a service account that has been recently
+	// deleted. For example,
+	// `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the
+	// service account is undeleted, this value reverts to
+	// `serviceAccount:{emailid}` and the undeleted service account retains the
+	// role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email
+	// address (plus unique identifier) representing a Google group that has been
 	// recently deleted. For example,
-	// `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`.
-	// If the service account is undeleted, this value reverts to
-	// `serviceAccount:{emailid}` and the undeleted service account retains
-	// the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`:
-	// An email address (plus unique identifier) representing a Google group
-	// that has been recently deleted. For example,
-	// `admins@example.com?uid=123456789012345678901`. If the group is
-	// recovered, this value reverts to `group:{emailid}` and the recovered
-	// group retains the role in the binding. *
-	// `deleted:principal://iam.googleapis.com/locations/global/workforcePool
-	// s/{pool_id}/subject/{subject_attribute_value}`: Deleted single
-	// identity in a workforce identity pool. For example,
-	// `deleted:principal://iam.googleapis.com/locations/global/workforcePool
-	// s/my-pool-id/subject/my-subject-attribute-value`.
+	// `admins@example.com?uid=123456789012345678901`. If the group is recovered,
+	// this value reverts to `group:{emailid}` and the recovered group retains the
+	// role in the binding. *
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePools/{pool
+	// _id}/subject/{subject_attribute_value}`: Deleted single identity in a
+	// workforce identity pool. For example,
+	// `deleted:principal://iam.googleapis.com/locations/global/workforcePools/my-po
+	// ol-id/subject/my-subject-attribute-value`.
 	Members []string `json:"members,omitempty"`
-
-	// Role: Role that is assigned to the list of `members`, or principals.
-	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an
-	// overview of the IAM roles and permissions, see the IAM documentation
+	// Role: Role that is assigned to the list of `members`, or principals. For
+	// example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an overview
+	// of the IAM roles and permissions, see the IAM documentation
 	// (https://cloud.google.com/iam/docs/roles-overview). For a list of the
 	// available pre-defined roles, see here
 	// (https://cloud.google.com/iam/docs/understanding-roles).
 	Role string `json:"role,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Condition") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Condition") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Condition") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Binding) MarshalJSON() ([]byte, error) {
 	type NoMethod Binding
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// BindingDelta: One delta entry for Binding. Each individual change
-// (only one member in each entry) to a binding will be a separate
-// entry.
+// BindingDelta: One delta entry for Binding. Each individual change (only one
+// member in each entry) to a binding will be a separate entry.
 type BindingDelta struct {
 	// Action: The action that was performed on a Binding. Required
 	//
@@ -924,209 +854,161 @@ type BindingDelta struct {
 	//   "ADD" - Addition of a Binding.
 	//   "REMOVE" - Removal of a Binding.
 	Action string `json:"action,omitempty"`
-
 	// Condition: The condition that is associated with this binding.
 	Condition *Expr `json:"condition,omitempty"`
-
-	// Member: A single identity requesting access for a Google Cloud
-	// resource. Follows the same format of Binding.members. Required
+	// Member: A single identity requesting access for a Google Cloud resource.
+	// Follows the same format of Binding.members. Required
 	Member string `json:"member,omitempty"`
-
-	// Role: Role that is assigned to `members`. For example,
-	// `roles/viewer`, `roles/editor`, or `roles/owner`. Required
+	// Role: Role that is assigned to `members`. For example, `roles/viewer`,
+	// `roles/editor`, or `roles/owner`. Required
 	Role string `json:"role,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Action") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Action") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Action") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *BindingDelta) MarshalJSON() ([]byte, error) {
 	type NoMethod BindingDelta
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // CreateRoleRequest: The request to create a new role.
 type CreateRoleRequest struct {
 	// Role: The Role resource to create.
 	Role *Role `json:"role,omitempty"`
-
-	// RoleId: The role ID to use for this role. A role ID may contain
-	// alphanumeric characters, underscores (`_`), and periods (`.`). It
-	// must contain a minimum of 3 characters and a maximum of 64
-	// characters.
+	// RoleId: The role ID to use for this role. A role ID may contain alphanumeric
+	// characters, underscores (`_`), and periods (`.`). It must contain a minimum
+	// of 3 characters and a maximum of 64 characters.
 	RoleId string `json:"roleId,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Role") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Role") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Role") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Role") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *CreateRoleRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateRoleRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// CreateServiceAccountKeyRequest: The service account key create
-// request.
+// CreateServiceAccountKeyRequest: The service account key create request.
 type CreateServiceAccountKeyRequest struct {
 	// KeyAlgorithm: Which type of key and algorithm to use for the key. The
-	// default is currently a 2K RSA key. However this may change in the
-	// future.
+	// default is currently a 2K RSA key. However this may change in the future.
 	//
 	// Possible values:
 	//   "KEY_ALG_UNSPECIFIED" - An unspecified key algorithm.
 	//   "KEY_ALG_RSA_1024" - 1k RSA Key.
 	//   "KEY_ALG_RSA_2048" - 2k RSA Key.
 	KeyAlgorithm string `json:"keyAlgorithm,omitempty"`
-
-	// PrivateKeyType: The output format of the private key. The default
-	// value is `TYPE_GOOGLE_CREDENTIALS_FILE`, which is the Google
-	// Credentials File format.
+	// PrivateKeyType: The output format of the private key. The default value is
+	// `TYPE_GOOGLE_CREDENTIALS_FILE`, which is the Google Credentials File format.
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Unspecified. Equivalent to
 	// `TYPE_GOOGLE_CREDENTIALS_FILE`.
-	//   "TYPE_PKCS12_FILE" - PKCS12 format. The password for the PKCS12
-	// file is `notasecret`. For more information, see
-	// https://tools.ietf.org/html/rfc7292.
+	//   "TYPE_PKCS12_FILE" - PKCS12 format. The password for the PKCS12 file is
+	// `notasecret`. For more information, see https://tools.ietf.org/html/rfc7292.
 	//   "TYPE_GOOGLE_CREDENTIALS_FILE" - Google Credentials File format.
 	PrivateKeyType string `json:"privateKeyType,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "KeyAlgorithm") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "KeyAlgorithm") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "KeyAlgorithm") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *CreateServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateServiceAccountKeyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // CreateServiceAccountRequest: The service account create request.
 type CreateServiceAccountRequest struct {
-	// AccountId: Required. The account id that is used to generate the
-	// service account email address and a stable unique id. It is unique
-	// within a project, must be 6-30 characters long, and match the regular
-	// expression `[a-z]([-a-z0-9]*[a-z0-9])` to comply with RFC1035.
+	// AccountId: Required. The account id that is used to generate the service
+	// account email address and a stable unique id. It is unique within a project,
+	// must be 6-30 characters long, and match the regular expression
+	// `[a-z]([-a-z0-9]*[a-z0-9])` to comply with RFC1035.
 	AccountId string `json:"accountId,omitempty"`
-
-	// ServiceAccount: The ServiceAccount resource to create. Currently,
-	// only the following values are user assignable: `display_name` and
-	// `description`.
+	// ServiceAccount: The ServiceAccount resource to create. Currently, only the
+	// following values are user assignable: `display_name` and `description`.
 	ServiceAccount *ServiceAccount `json:"serviceAccount,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AccountId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AccountId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AccountId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *CreateServiceAccountRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateServiceAccountRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// DisableServiceAccountKeyRequest: The service account key disable
-// request.
+// DisableServiceAccountKeyRequest: The service account key disable request.
 type DisableServiceAccountKeyRequest struct {
-	// ExtendedStatusMessage: Optional. Usable by internal google services
-	// only. An extended_status_message can be used to include additional
-	// information about the key, such as its private key data being exposed
-	// on a public repository like GitHub.
+	// ExtendedStatusMessage: Optional. Usable by internal google services only. An
+	// extended_status_message can be used to include additional information about
+	// the key, such as its private key data being exposed on a public repository
+	// like GitHub.
 	ExtendedStatusMessage string `json:"extendedStatusMessage,omitempty"`
-
-	// ServiceAccountKeyDisableReason: Optional. Describes the reason this
-	// key is being disabled. If unspecified, the default value of
+	// ServiceAccountKeyDisableReason: Optional. Describes the reason this key is
+	// being disabled. If unspecified, the default value of
 	// SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
 	//
 	// Possible values:
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified
-	// disable reason
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by
-	// the user
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified disable
+	// reason
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by the user
 	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED" - Google detected this
-	// Service Account external key's private key data as exposed, typically
-	// in a public repository on GitHub or similar.
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This
-	// service account external key was detected as compromised and used by
-	// an attacker.
+	// Service Account external key's private key data as exposed, typically in a
+	// public repository on GitHub or similar.
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This service
+	// account external key was detected as compromised and used by an attacker.
 	ServiceAccountKeyDisableReason string `json:"serviceAccountKeyDisableReason,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "ExtendedStatusMessage") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "ExtendedStatusMessage") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "ExtendedStatusMessage") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *DisableServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod DisableServiceAccountKeyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // DisableServiceAccountRequest: The service account disable request.
@@ -1134,18 +1016,15 @@ type DisableServiceAccountRequest struct {
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
-// duplicated empty messages in your APIs. A typical example is to use
-// it as the request or the response type of an API method. For
-// instance: service Foo { rpc Bar(google.protobuf.Empty) returns
-// (google.protobuf.Empty); }
+// duplicated empty messages in your APIs. A typical example is to use it as
+// the request or the response type of an API method. For instance: service Foo
+// { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
 type Empty struct {
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
 }
 
-// EnableServiceAccountKeyRequest: The service account key enable
-// request.
+// EnableServiceAccountKeyRequest: The service account key enable request.
 type EnableServiceAccountKeyRequest struct {
 }
 
@@ -1153,503 +1032,404 @@ type EnableServiceAccountKeyRequest struct {
 type EnableServiceAccountRequest struct {
 }
 
-// Expr: Represents a textual expression in the Common Expression
-// Language (CEL) syntax. CEL is a C-like expression language. The
-// syntax and semantics of CEL are documented at
-// https://github.com/google/cel-spec. Example (Comparison): title:
-// "Summary size limit" description: "Determines if a summary is less
-// than 100 chars" expression: "document.summary.size() < 100" Example
-// (Equality): title: "Requestor is owner" description: "Determines if
+// Expr: Represents a textual expression in the Common Expression Language
+// (CEL) syntax. CEL is a C-like expression language. The syntax and semantics
+// of CEL are documented at https://github.com/google/cel-spec. Example
+// (Comparison): title: "Summary size limit" description: "Determines if a
+// summary is less than 100 chars" expression: "document.summary.size() < 100"
+// Example (Equality): title: "Requestor is owner" description: "Determines if
 // requestor is the document owner" expression: "document.owner ==
 // request.auth.claims.email" Example (Logic): title: "Public documents"
-// description: "Determine whether the document should be publicly
-// visible" expression: "document.type != 'private' && document.type !=
-// 'internal'" Example (Data Manipulation): title: "Notification string"
-// description: "Create a notification string with a timestamp."
-// expression: "'New message received at ' +
-// string(document.create_time)" The exact variables and functions that
-// may be referenced within an expression are determined by the service
-// that evaluates it. See the service documentation for additional
+// description: "Determine whether the document should be publicly visible"
+// expression: "document.type != 'private' && document.type != 'internal'"
+// Example (Data Manipulation): title: "Notification string" description:
+// "Create a notification string with a timestamp." expression: "'New message
+// received at ' + string(document.create_time)" The exact variables and
+// functions that may be referenced within an expression are determined by the
+// service that evaluates it. See the service documentation for additional
 // information.
 type Expr struct {
-	// Description: Optional. Description of the expression. This is a
-	// longer text which describes the expression, e.g. when hovered over it
-	// in a UI.
+	// Description: Optional. Description of the expression. This is a longer text
+	// which describes the expression, e.g. when hovered over it in a UI.
 	Description string `json:"description,omitempty"`
-
-	// Expression: Textual representation of an expression in Common
-	// Expression Language syntax.
+	// Expression: Textual representation of an expression in Common Expression
+	// Language syntax.
 	Expression string `json:"expression,omitempty"`
-
-	// Location: Optional. String indicating the location of the expression
-	// for error reporting, e.g. a file name and a position in the file.
+	// Location: Optional. String indicating the location of the expression for
+	// error reporting, e.g. a file name and a position in the file.
 	Location string `json:"location,omitempty"`
-
-	// Title: Optional. Title for the expression, i.e. a short string
-	// describing its purpose. This can be used e.g. in UIs which allow to
-	// enter the expression.
+	// Title: Optional. Title for the expression, i.e. a short string describing
+	// its purpose. This can be used e.g. in UIs which allow to enter the
+	// expression.
 	Title string `json:"title,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Expr) MarshalJSON() ([]byte, error) {
 	type NoMethod Expr
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ExtendedStatus: Extended status can store additional metadata. For
-// example, for keys disabled due to their private key data being
-// expoesed we may include a message with more information about the
-// exposure.
+// ExtendedStatus: Extended status can store additional metadata. For example,
+// for keys disabled due to their private key data being expoesed we may
+// include a message with more information about the exposure.
 type ExtendedStatus struct {
 	// Key: The key for this extended status.
 	//
 	// Possible values:
 	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_UNSPECIFIED" - Unspecified
 	// extended status, should not be used.
-	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_EXPOSED" - This key has
-	// been detected as exposed. extended_status_value may contain
-	// information about the exposure (public GitHub repo, open internet,
-	// etc.)
-	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_COMPROMISE_DETECTED" -
-	// This key was implicated in a compromise or other attack.
-	// extended_status_value may contain information about the abuse
-	// perpetrated.
+	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_EXPOSED" - This key has been
+	// detected as exposed. extended_status_value may contain information about the
+	// exposure (public GitHub repo, open internet, etc.)
+	//   "SERVICE_ACCOUNT_KEY_EXTENDED_STATUS_KEY_COMPROMISE_DETECTED" - This key
+	// was implicated in a compromise or other attack. extended_status_value may
+	// contain information about the abuse perpetrated.
 	Key string `json:"key,omitempty"`
-
 	// Value: The value for the extended status.
 	Value string `json:"value,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Key") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Key") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Key") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Key") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ExtendedStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod ExtendedStatus
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GetIamPolicyRequest: Request message for `GetIamPolicy` method.
 type GetIamPolicyRequest struct {
-	// Options: OPTIONAL: A `GetPolicyOptions` object for specifying options
-	// to `GetIamPolicy`.
+	// Options: OPTIONAL: A `GetPolicyOptions` object for specifying options to
+	// `GetIamPolicy`.
 	Options *GetPolicyOptions `json:"options,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Options") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Options") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Options") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Options") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GetIamPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GetPolicyOptions: Encapsulates settings provided to GetIamPolicy.
 type GetPolicyOptions struct {
-	// RequestedPolicyVersion: Optional. The maximum policy version that
-	// will be used to format the policy. Valid values are 0, 1, and 3.
-	// Requests specifying an invalid value will be rejected. Requests for
-	// policies with any conditional role bindings must specify version 3.
-	// Policies with no conditional role bindings may specify any valid
-	// value or leave the field unset. The policy in the response might use
-	// the policy version that you specified, or it might use a lower policy
-	// version. For example, if you specify version 3, but the policy has no
-	// conditional role bindings, the response uses version 1. To learn
-	// which resources support conditions in their IAM policies, see the IAM
-	// documentation
+	// RequestedPolicyVersion: Optional. The maximum policy version that will be
+	// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+	// an invalid value will be rejected. Requests for policies with any
+	// conditional role bindings must specify version 3. Policies with no
+	// conditional role bindings may specify any valid value or leave the field
+	// unset. The policy in the response might use the policy version that you
+	// specified, or it might use a lower policy version. For example, if you
+	// specify version 3, but the policy has no conditional role bindings, the
+	// response uses version 1. To learn which resources support conditions in
+	// their IAM policies, see the IAM documentation
 	// (https://cloud.google.com/iam/help/conditions/resource-policies).
 	RequestedPolicyVersion int64 `json:"requestedPolicyVersion,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "RequestedPolicyVersion") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "RequestedPolicyVersion") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "RequestedPolicyVersion")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "RequestedPolicyVersion") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GetPolicyOptions) MarshalJSON() ([]byte, error) {
 	type NoMethod GetPolicyOptions
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client:
-// Represents the OAuth 2.0 client credential configuration for
-// retrieving additional user attributes that are not present in the
-// initial authentication credentials from the identity provider, e.g.
-// groups. See https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
-// for more details on client credentials grant flow.
+// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client: Represents
+// the OAuth 2.0 client credential configuration for retrieving additional user
+// attributes that are not present in the initial authentication credentials
+// from the identity provider, e.g. groups. See
+// https://datatracker.ietf.org/doc/html/rfc6749#section-4.4 for more details
+// on client credentials grant flow.
 type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client struct {
-	// AttributesType: Required. Represents the IdP and type of claims that
-	// should be fetched.
+	// AttributesType: Required. Represents the IdP and type of claims that should
+	// be fetched.
 	//
 	// Possible values:
 	//   "ATTRIBUTES_TYPE_UNSPECIFIED" - No AttributesType specified.
-	//   "AZURE_AD_GROUPS_MAIL" - Used to get the user's group claims from
-	// the Azure AD identity provider using configuration provided in
+	//   "AZURE_AD_GROUPS_MAIL" - Used to get the user's group claims from the
+	// Azure AD identity provider using configuration provided in
 	// ExtraAttributesOAuth2Client and `mail` property of the
 	// `microsoft.graph.group` object is used for claim mapping. See
 	// https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties
-	// for more details on `microsoft.graph.group` properties. The
-	// attributes obtained from idntity provider are mapped to
-	// `assertion.groups`.
+	// for more details on `microsoft.graph.group` properties. The attributes
+	// obtained from idntity provider are mapped to `assertion.groups`.
 	AttributesType string `json:"attributesType,omitempty"`
-
-	// ClientId: Required. The OAuth 2.0 client ID for retrieving extra
-	// attributes from the identity provider. Required to get the Access
-	// Token using client credentials grant flow.
+	// ClientId: Required. The OAuth 2.0 client ID for retrieving extra attributes
+	// from the identity provider. Required to get the Access Token using client
+	// credentials grant flow.
 	ClientId string `json:"clientId,omitempty"`
-
-	// ClientSecret: Required. The OAuth 2.0 client secret for retrieving
-	// extra attributes from the identity provider. Required to get the
-	// Access Token using client credentials grant flow.
+	// ClientSecret: Required. The OAuth 2.0 client secret for retrieving extra
+	// attributes from the identity provider. Required to get the Access Token
+	// using client credentials grant flow.
 	ClientSecret *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret `json:"clientSecret,omitempty"`
-
-	// IssuerUri: Required. The OIDC identity provider's issuer URI. Must be
-	// a valid URI using the `https` scheme. Required to get the OIDC
-	// discovery document.
+	// IssuerUri: Required. The OIDC identity provider's issuer URI. Must be a
+	// valid URI using the `https` scheme. Required to get the OIDC discovery
+	// document.
 	IssuerUri string `json:"issuerUri,omitempty"`
-
-	// QueryParameters: Optional. Represents the parameters to control which
-	// claims are fetched from an IdP.
+	// QueryParameters: Optional. Represents the parameters to control which claims
+	// are fetched from an IdP.
 	QueryParameters *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters `json:"queryParameters,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AttributesType") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AttributesType") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AttributesType") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryP
-// arameters: Represents the parameters to control which claims are
-// fetched from an IdP.
+// GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParamete
+// rs: Represents the parameters to control which claims are fetched from an
+// IdP.
 type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters struct {
-	// Filter: Optional. The filter used to request specific records from
-	// IdP. In case of attributes type as AZURE_AD_GROUPS_MAIL, it
-	// represents the filter used to request specific groups for users from
-	// IdP. By default all the groups associated with the user are fetched.
-	// The groups that are used should be mail enabled and security enabled.
-	// See https://learn.microsoft.com/en-us/graph/search-query-parameter
-	// for more details.
+	// Filter: Optional. The filter used to request specific records from IdP. In
+	// case of attributes type as AZURE_AD_GROUPS_MAIL, it represents the filter
+	// used to request specific groups for users from IdP. By default, all of the
+	// groups associated with the user are fetched. The groups should be mail
+	// enabled and security enabled. See
+	// https://learn.microsoft.com/en-us/graph/search-query-parameter for more
+	// details.
 	Filter string `json:"filter,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Filter") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Filter") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Filter") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderOidc: Represents an OpenId
-// Connect 1.0 identity provider.
+// GoogleIamAdminV1WorkforcePoolProviderOidc: Represents an OpenId Connect 1.0
+// identity provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
-	// ClientId: Required. The client ID. Must match the audience claim of
-	// the JWT issued by the identity provider.
+	// ClientId: Required. The client ID. Must match the audience claim of the JWT
+	// issued by the identity provider.
 	ClientId string `json:"clientId,omitempty"`
-
-	// ClientSecret: The optional client secret. Required to enable
-	// Authorization Code flow for web sign-in.
+	// ClientSecret: The optional client secret. Required to enable Authorization
+	// Code flow for web sign-in.
 	ClientSecret *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret `json:"clientSecret,omitempty"`
-
-	// IssuerUri: Required. The OIDC issuer URI. Must be a valid URI using
-	// the `https` scheme.
+	// IssuerUri: Required. The OIDC issuer URI. Must be a valid URI using the
+	// `https` scheme.
 	IssuerUri string `json:"issuerUri,omitempty"`
-
-	// JwksJson: OIDC JWKs in JSON String format. For details on the
-	// definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not
-	// set, the `jwks_uri` from the discovery document(fetched from the
-	// .well-known path of the `issuer_uri`) will be used. Currently, RSA
-	// and EC asymmetric keys are supported. The JWK must use following
-	// format and include only the following fields: { "keys": [ { "kty":
-	// "RSA/EC", "alg": "", "use": "sig", "kid": "", "n": "", "e": "", "x":
-	// "", "y": "", "crv": "" } ] }
+	// JwksJson: OIDC JWKs in JSON String format. For details on the definition of
+	// a JWK, see https://tools.ietf.org/html/rfc7517. If not set, the `jwks_uri`
+	// from the discovery document(fetched from the .well-known path of the
+	// `issuer_uri`) will be used. Currently, RSA and EC asymmetric keys are
+	// supported. The JWK must use following format and include only the following
+	// fields: { "keys": [ { "kty": "RSA/EC", "alg": "", "use": "sig", "kid": "",
+	// "n": "", "e": "", "x": "", "y": "", "crv": "" } ] }
 	JwksJson string `json:"jwksJson,omitempty"`
-
-	// WebSsoConfig: Required. Configuration for web single sign-on for the
-	// OIDC provider. Here, web sign-in refers to console sign-in and gcloud
-	// sign-in through the browser.
+	// WebSsoConfig: Required. Configuration for web single sign-on for the OIDC
+	// provider. Here, web sign-in refers to console sign-in and gcloud sign-in
+	// through the browser.
 	WebSsoConfig *GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig `json:"webSsoConfig,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ClientId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ClientId") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ClientId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderOidc) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidc
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret: Representation
-// of a client secret configured for the OIDC provider.
+// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret: Representation of a
+// client secret configured for the OIDC provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret struct {
 	// Value: The value of the client secret.
 	Value *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue `json:"value,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Value") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Value") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Value") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcClientSecret
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue:
-// Representation of the value of the client secret.
+// GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue: Representation
+// of the value of the client secret.
 type GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue struct {
 	// PlainText: Input only. The plain text of the client secret value. For
 	// security reasons, this field is only used for input and will never be
 	// populated in any response.
 	PlainText string `json:"plainText,omitempty"`
-
-	// Thumbprint: Output only. A thumbprint to represent the current client
-	// secret value.
+	// Thumbprint: Output only. A thumbprint to represent the current client secret
+	// value.
 	Thumbprint string `json:"thumbprint,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "PlainText") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PlainText") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "PlainText") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcClientSecretValue
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig: Configuration
-// for web single sign-on for the OIDC provider.
+// GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig: Configuration for web
+// single sign-on for the OIDC provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig struct {
 	// AdditionalScopes: Additional scopes to request for in the OIDC
-	// authentication request on top of scopes requested by default. By
-	// default, the `openid`, `profile` and `email` scopes that are
-	// supported by the identity provider are requested. Each additional
-	// scope may be at most 256 characters. A maximum of 10 additional
-	// scopes may be configured.
+	// authentication request on top of scopes requested by default. By default,
+	// the `openid`, `profile` and `email` scopes that are supported by the
+	// identity provider are requested. Each additional scope may be at most 256
+	// characters. A maximum of 10 additional scopes may be configured.
 	AdditionalScopes []string `json:"additionalScopes,omitempty"`
-
-	// AssertionClaimsBehavior: Required. The behavior for how OIDC Claims
-	// are included in the `assertion` object used for attribute mapping and
-	// attribute condition.
+	// AssertionClaimsBehavior: Required. The behavior for how OIDC Claims are
+	// included in the `assertion` object used for attribute mapping and attribute
+	// condition.
 	//
 	// Possible values:
-	//   "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED" - No assertion claims
-	// behavior specified.
-	//   "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS" - Merge the UserInfo
-	// Endpoint Claims with ID Token Claims, preferring UserInfo Claim
-	// Values for the same Claim Name. This option is available only for the
-	// Authorization Code Flow.
+	//   "ASSERTION_CLAIMS_BEHAVIOR_UNSPECIFIED" - No assertion claims behavior
+	// specified.
+	//   "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS" - Merge the UserInfo Endpoint
+	// Claims with ID Token Claims, preferring UserInfo Claim Values for the same
+	// Claim Name. This option is available only for the Authorization Code Flow.
 	//   "ONLY_ID_TOKEN_CLAIMS" - Only include ID Token Claims.
 	AssertionClaimsBehavior string `json:"assertionClaimsBehavior,omitempty"`
-
 	// ResponseType: Required. The Response Type to request for in the OIDC
 	// Authorization Request for web sign-in. The `CODE` Response Type is
 	// recommended to avoid the Implicit Flow, for security reasons.
 	//
 	// Possible values:
 	//   "RESPONSE_TYPE_UNSPECIFIED" - No Response Type specified.
-	//   "CODE" - The `response_type=code` selection uses the Authorization
-	// Code Flow for web sign-in. Requires a configured client secret.
-	//   "ID_TOKEN" - The `response_type=id_token` selection uses the
-	// Implicit Flow for web sign-in.
+	//   "CODE" - The `response_type=code` selection uses the Authorization Code
+	// Flow for web sign-in. Requires a configured client secret.
+	//   "ID_TOKEN" - The `response_type=id_token` selection uses the Implicit Flow
+	// for web sign-in.
 	ResponseType string `json:"responseType,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AdditionalScopes") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AdditionalScopes") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AdditionalScopes") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderOidcWebSsoConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // GoogleIamAdminV1WorkforcePoolProviderSaml: Represents a SAML identity
 // provider.
 type GoogleIamAdminV1WorkforcePoolProviderSaml struct {
-	// IdpMetadataXml: Required. SAML Identity provider configuration
-	// metadata xml doc. The xml document should comply with SAML 2.0
-	// specification
+	// IdpMetadataXml: Required. SAML Identity provider configuration metadata xml
+	// doc. The xml document should comply with SAML 2.0 specification
 	// (https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf).
 	// The max size of the acceptable xml document will be bounded to 128k
 	// characters. The metadata xml document should satisfy the following
-	// constraints: 1) Must contain an Identity Provider Entity ID. 2) Must
-	// contain at least one non-expired signing key certificate. 3) For each
-	// signing key: a) Valid from should be no more than 7 days from now. b)
-	// Valid to should be no more than 15 years in the future. 4) Up to 3
-	// IdP signing keys are allowed in the metadata xml. When updating the
-	// provider's metadata xml, at least one non-expired signing key must
-	// overlap with the existing metadata. This requirement is skipped if
-	// there are no non-expired signing keys present in the existing
-	// metadata.
+	// constraints: 1) Must contain an Identity Provider Entity ID. 2) Must contain
+	// at least one non-expired signing key certificate. 3) For each signing key:
+	// a) Valid from should be no more than 7 days from now. b) Valid to should be
+	// no more than 15 years in the future. 4) Up to 3 IdP signing keys are allowed
+	// in the metadata xml. When updating the provider's metadata xml, at least one
+	// non-expired signing key must overlap with the existing metadata. This
+	// requirement is skipped if there are no non-expired signing keys present in
+	// the existing metadata.
 	IdpMetadataXml string `json:"idpMetadataXml,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "IdpMetadataXml") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "IdpMetadataXml") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "IdpMetadataXml") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *GoogleIamAdminV1WorkforcePoolProviderSaml) MarshalJSON() ([]byte, error) {
 	type NoMethod GoogleIamAdminV1WorkforcePoolProviderSaml
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // KeyData: Represents a public key data along with its format.
@@ -1660,15 +1440,13 @@ type KeyData struct {
 	//   "KEY_FORMAT_UNSPECIFIED" - No format has been specified. This is an
 	// invalid format and must not be used.
 	//   "RSA_X509_PEM" - A RSA public key wrapped in an X.509v3 certificate
-	// ([RFC5280] ( https://www.ietf.org/rfc/rfc5280.txt)), encoded in
-	// base64, and wrapped in [public certificate
+	// ([RFC5280] ( https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64, and
+	// wrapped in [public certificate
 	// label](https://datatracker.ietf.org/doc/html/rfc7468#section-5.1).
 	Format string `json:"format,omitempty"`
-
-	// Key: Output only. The key data. The format of the key is represented
-	// by the format field.
+	// Key: Output only. The key data. The format of the key is represented by the
+	// format field.
 	Key string `json:"key,omitempty"`
-
 	// KeySpec: Required. The specifications for the key.
 	//
 	// Possible values:
@@ -1677,189 +1455,152 @@ type KeyData struct {
 	//   "RSA_3072" - A 3072 bit RSA key.
 	//   "RSA_4096" - A 4096 bit RSA key.
 	KeySpec string `json:"keySpec,omitempty"`
-
-	// NotAfterTime: Output only. Latest timestamp when this key is valid.
-	// Attempts to use this key after this time will fail. Only present if
-	// the key data represents a X.509 certificate.
+	// NotAfterTime: Output only. Latest timestamp when this key is valid. Attempts
+	// to use this key after this time will fail. Only present if the key data
+	// represents a X.509 certificate.
 	NotAfterTime string `json:"notAfterTime,omitempty"`
-
-	// NotBeforeTime: Output only. Earliest timestamp when this key is
-	// valid. Attempts to use this key before this time will fail. Only
-	// present if the key data represents a X.509 certificate.
+	// NotBeforeTime: Output only. Earliest timestamp when this key is valid.
+	// Attempts to use this key before this time will fail. Only present if the key
+	// data represents a X.509 certificate.
 	NotBeforeTime string `json:"notBeforeTime,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Format") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Format") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Format") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *KeyData) MarshalJSON() ([]byte, error) {
 	type NoMethod KeyData
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// LintPolicyRequest: The request to lint a Cloud IAM policy object.
+// LintPolicyRequest: The request to lint an IAM policy object.
 type LintPolicyRequest struct {
 	// Condition: google.iam.v1.Binding.condition object to be linted.
 	Condition *Expr `json:"condition,omitempty"`
-
-	// FullResourceName: The full resource name of the policy this lint
-	// request is about. The name follows the Google Cloud format for full
-	// resource names. For example, a Cloud project with ID `my-project`
-	// will be named
-	// `//cloudresourcemanager.googleapis.com/projects/my-project`. The
-	// resource name is not used to read a policy from IAM. Only the data in
-	// the request object is linted.
+	// FullResourceName: The full resource name of the policy this lint request is
+	// about. The name follows the Google Cloud format for full resource names. For
+	// example, a Google Cloud project with ID `my-project` will be named
+	// `//cloudresourcemanager.googleapis.com/projects/my-project`. The resource
+	// name is not used to read a policy from IAM. Only the data in the request
+	// object is linted.
 	FullResourceName string `json:"fullResourceName,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Condition") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Condition") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Condition") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LintPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod LintPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// LintPolicyResponse: The response of a lint operation. An empty
-// response indicates the operation was able to fully execute and no
-// lint issue was found.
+// LintPolicyResponse: The response of a lint operation. An empty response
+// indicates the operation was able to fully execute and no lint issue was
+// found.
 type LintPolicyResponse struct {
-	// LintResults: List of lint results sorted by `severity` in descending
-	// order.
+	// LintResults: List of lint results sorted by `severity` in descending order.
 	LintResults []*LintResult `json:"lintResults,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "LintResults") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "LintResults") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "LintResults") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LintPolicyResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LintPolicyResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // LintResult: Structured response of a single validation unit.
 type LintResult struct {
 	// DebugMessage: Human readable debug message associated with the issue.
 	DebugMessage string `json:"debugMessage,omitempty"`
-
-	// FieldName: The name of the field for which this lint result is about.
-	// For nested messages `field_name` consists of names of the embedded
-	// fields separated by period character. The top-level qualifier is the
-	// input object to lint in the request. For example, the `field_name`
-	// value `condition.expression` identifies a lint result for the
-	// `expression` field of the provided condition.
+	// FieldName: The name of the field for which this lint result is about. For
+	// nested messages `field_name` consists of names of the embedded fields
+	// separated by period character. The top-level qualifier is the input object
+	// to lint in the request. For example, the `field_name` value
+	// `condition.expression` identifies a lint result for the `expression` field
+	// of the provided condition.
 	FieldName string `json:"fieldName,omitempty"`
-
 	// Level: The validation unit level.
 	//
 	// Possible values:
 	//   "LEVEL_UNSPECIFIED" - Level is unspecified.
-	//   "CONDITION" - A validation unit which operates on an individual
-	// condition within a binding.
+	//   "CONDITION" - A validation unit which operates on an individual condition
+	// within a binding.
 	Level string `json:"level,omitempty"`
-
-	// LocationOffset: 0-based character position of problematic construct
-	// within the object identified by `field_name`. Currently, this is
-	// populated only for condition expression.
+	// LocationOffset: 0-based character position of problematic construct within
+	// the object identified by `field_name`. Currently, this is populated only for
+	// condition expression.
 	LocationOffset int64 `json:"locationOffset,omitempty"`
-
 	// Severity: The validation unit severity.
 	//
 	// Possible values:
 	//   "SEVERITY_UNSPECIFIED" - Severity is unspecified.
-	//   "ERROR" - A validation unit returns an error only for critical
-	// issues. If an attempt is made to set the problematic policy without
-	// rectifying the critical issue, it causes the `setPolicy` operation to
-	// fail.
-	//   "WARNING" - Any issue which is severe enough but does not cause an
-	// error. For example, suspicious constructs in the input object will
-	// not necessarily fail `setPolicy`, but there is a high likelihood that
-	// they won't behave as expected during policy evaluation in
-	// `checkPolicy`. This includes the following common scenarios: -
-	// Unsatisfiable condition: Expired timestamp in date/time condition. -
-	// Ineffective condition: Condition on a pair which is granted
-	// unconditionally in another binding of the same policy.
+	//   "ERROR" - A validation unit returns an error only for critical issues. If
+	// an attempt is made to set the problematic policy without rectifying the
+	// critical issue, it causes the `setPolicy` operation to fail.
+	//   "WARNING" - Any issue which is severe enough but does not cause an error.
+	// For example, suspicious constructs in the input object will not necessarily
+	// fail `setPolicy`, but there is a high likelihood that they won't behave as
+	// expected during policy evaluation in `checkPolicy`. This includes the
+	// following common scenarios: - Unsatisfiable condition: Expired timestamp in
+	// date/time condition. - Ineffective condition: Condition on a pair which is
+	// granted unconditionally in another binding of the same policy.
 	//   "NOTICE" - Reserved for the issues that are not severe as
-	// `ERROR`/`WARNING`, but need special handling. For instance, messages
-	// about skipped validation units are issued as `NOTICE`.
-	//   "INFO" - Any informative statement which is not severe enough to
-	// raise `ERROR`/`WARNING`/`NOTICE`, like auto-correction
-	// recommendations on the input content. Note that current version of
-	// the linter does not utilize `INFO`.
+	// `ERROR`/`WARNING`, but need special handling. For instance, messages about
+	// skipped validation units are issued as `NOTICE`.
+	//   "INFO" - Any informative statement which is not severe enough to raise
+	// `ERROR`/`WARNING`/`NOTICE`, like auto-correction recommendations on the
+	// input content. Note that current version of the linter does not utilize
+	// `INFO`.
 	//   "DEPRECATED" - Deprecated severity level.
 	Severity string `json:"severity,omitempty"`
-
 	// ValidationUnitName: The validation unit name, for instance
 	// "lintValidationUnits/ConditionComplexityCheck".
 	ValidationUnitName string `json:"validationUnitName,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "DebugMessage") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DebugMessage") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "DebugMessage") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *LintResult) MarshalJSON() ([]byte, error) {
 	type NoMethod LintResult
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListOauthClientCredentialsResponse: Response message for
@@ -1868,70 +1609,53 @@ type ListOauthClientCredentialsResponse struct {
 	// OauthClientCredentials: A list of oauth client credentials.
 	OauthClientCredentials []*OauthClientCredential `json:"oauthClientCredentials,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g.
-	// "OauthClientCredentials") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "OauthClientCredentials") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "OauthClientCredentials")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "OauthClientCredentials") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListOauthClientCredentialsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListOauthClientCredentialsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListOauthClientsResponse: Response message for ListOauthClients.
 type ListOauthClientsResponse struct {
-	// NextPageToken: Optional. A token, which can be sent as `page_token`
-	// to retrieve the next page. If this field is omitted, there are no
-	// subsequent pages.
+	// NextPageToken: Optional. A token, which can be sent as `page_token` to
+	// retrieve the next page. If this field is omitted, there are no subsequent
+	// pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// OauthClients: A list of oauth clients.
 	OauthClients []*OauthClient `json:"oauthClients,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListOauthClientsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListOauthClientsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListRolesResponse: The response containing the roles defined under a
@@ -1940,745 +1664,567 @@ type ListRolesResponse struct {
 	// NextPageToken: To retrieve the next page of results, set
 	// `ListRolesRequest.page_token` to this value.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Roles: The Roles defined on this resource.
 	Roles []*Role `json:"roles,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListRolesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListRolesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ListServiceAccountKeysResponse: The service account keys list
-// response.
+// ListServiceAccountKeysResponse: The service account keys list response.
 type ListServiceAccountKeysResponse struct {
 	// Keys: The public keys for the service account.
 	Keys []*ServiceAccountKey `json:"keys,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Keys") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Keys") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Keys") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Keys") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListServiceAccountKeysResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListServiceAccountKeysResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListServiceAccountsResponse: The service account list response.
 type ListServiceAccountsResponse struct {
 	// Accounts: The list of matching service accounts.
 	Accounts []*ServiceAccount `json:"accounts,omitempty"`
-
 	// NextPageToken: To retrieve the next page of results, set
 	// ListServiceAccountsRequest.page_token to this value.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Accounts") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Accounts") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Accounts") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListServiceAccountsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListServiceAccountsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkforcePoolProviderKeysResponse: Response message for
 // ListWorkforcePoolProviderKeys.
 type ListWorkforcePoolProviderKeysResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// WorkforcePoolProviderKeys: A list of WorkforcePoolProviderKeys.
 	WorkforcePoolProviderKeys []*WorkforcePoolProviderKey `json:"workforcePoolProviderKeys,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkforcePoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkforcePoolProviderKeysResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkforcePoolProvidersResponse: Response message for
 // ListWorkforcePoolProviders.
 type ListWorkforcePoolProvidersResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// WorkforcePoolProviders: A list of providers.
 	WorkforcePoolProviders []*WorkforcePoolProvider `json:"workforcePoolProviders,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkforcePoolProvidersResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkforcePoolProvidersResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkforcePoolsResponse: Response message for ListWorkforcePools.
 type ListWorkforcePoolsResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// WorkforcePools: A list of pools.
 	WorkforcePools []*WorkforcePool `json:"workforcePools,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkforcePoolsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkforcePoolsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkloadIdentityPoolProviderKeysResponse: Response message for
 // ListWorkloadIdentityPoolProviderKeys.
 type ListWorkloadIdentityPoolProviderKeysResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
-	// WorkloadIdentityPoolProviderKeys: A list of
-	// WorkloadIdentityPoolProviderKey
+	// WorkloadIdentityPoolProviderKeys: A list of WorkloadIdentityPoolProviderKey
 	WorkloadIdentityPoolProviderKeys []*WorkloadIdentityPoolProviderKey `json:"workloadIdentityPoolProviderKeys,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkloadIdentityPoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkloadIdentityPoolProviderKeysResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkloadIdentityPoolProvidersResponse: Response message for
 // ListWorkloadIdentityPoolProviders.
 type ListWorkloadIdentityPoolProvidersResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// WorkloadIdentityPoolProviders: A list of providers.
 	WorkloadIdentityPoolProviders []*WorkloadIdentityPoolProvider `json:"workloadIdentityPoolProviders,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkloadIdentityPoolProvidersResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkloadIdentityPoolProvidersResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ListWorkloadIdentityPoolsResponse: Response message for
 // ListWorkloadIdentityPools.
 type ListWorkloadIdentityPoolsResponse struct {
-	// NextPageToken: A token, which can be sent as `page_token` to retrieve
-	// the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve the
+	// next page. If this field is omitted, there are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// WorkloadIdentityPools: A list of pools.
 	WorkloadIdentityPools []*WorkloadIdentityPool `json:"workloadIdentityPools,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ListWorkloadIdentityPoolsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListWorkloadIdentityPoolsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // OauthClient: Represents an oauth client. Used to access Google Cloud
-// resources on behave of a user by using OAuth2 Protocol to obtain an
-// access token from Google Cloud Platform.
+// resources on behave of a user by using OAuth2 Protocol to obtain an access
+// token from Google Cloud Platform.
 type OauthClient struct {
-	// AllowedGrantTypes: Required. The list of OAuth grant type is allowed
-	// for the oauth client.
+	// AllowedGrantTypes: Required. The list of OAuth grant type is allowed for the
+	// oauth client.
 	//
 	// Possible values:
 	//   "GRANT_TYPE_UNSPECIFIED" - should not be used
 	//   "AUTHORIZATION_CODE_GRANT" - authorization code grant
 	//   "REFRESH_TOKEN_GRANT" - refresh token grant
 	AllowedGrantTypes []string `json:"allowedGrantTypes,omitempty"`
-
-	// AllowedRedirectUris: Required. The list of redirect uris that is
-	// allowed to redirect back when authorization process is completed.
+	// AllowedRedirectUris: Required. The list of redirect uris that is allowed to
+	// redirect back when authorization process is completed.
 	AllowedRedirectUris []string `json:"allowedRedirectUris,omitempty"`
-
-	// AllowedScopes: Required. The list of scopes that the oauth client is
-	// allowed to request during OAuth flows. The following scopes are
-	// supported: * `https://www.googleapis.com/auth/cloud-platform`: See,
-	// edit, configure, and delete your Google Cloud data and see the email
-	// address for your Google Account. * `openid`: Associate you with your
-	// personal info on Google Cloud. * `email`: See your Google Cloud
-	// Account email address.
+	// AllowedScopes: Required. The list of scopes that the oauth client is allowed
+	// to request during OAuth flows. The following scopes are supported: *
+	// `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and
+	// delete your Google Cloud data and see the email address for your Google
+	// Account. * `openid`: Associate you with your personal info on Google Cloud.
+	// * `email`: See your Google Cloud Account email address.
 	AllowedScopes []string `json:"allowedScopes,omitempty"`
-
 	// ClientId: Output only. The system-generated oauth client id.
 	ClientId string `json:"clientId,omitempty"`
-
-	// ClientType: Immutable. The type of oauth client. either public or
-	// private.
+	// ClientType: Immutable. The type of oauth client. either public or private.
 	//
 	// Possible values:
 	//   "CLIENT_TYPE_UNSPECIFIED" - should not be used
 	//   "PUBLIC_CLIENT" - public client has no secret
 	//   "CONFIDENTIAL_CLIENT" - private client
 	ClientType string `json:"clientType,omitempty"`
-
-	// Description: Optional. A user-specified description of the oauth
-	// client. Cannot exceed 256 characters.
+	// Description: Optional. A user-specified description of the oauth client.
+	// Cannot exceed 256 characters.
 	Description string `json:"description,omitempty"`
-
-	// Disabled: Optional. Whether the oauth client is disabled. You cannot
-	// use a disabled oauth client for login.
+	// Disabled: Optional. Whether the oauth client is disabled. You cannot use a
+	// disabled oauth client for login.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: Optional. A user-specified display name of the oauth
-	// client. Cannot exceed 32 characters.
+	// DisplayName: Optional. A user-specified display name of the oauth client.
+	// Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// ExpireTime: Output only. Time after which the oauth client will be
 	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// Name: Immutable. The resource name of the oauth client.
-	// Format:`projects/{project}/locations/{location}/oauthClients/{oauth_cl
-	// ient}`.
+	// Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}`.
 	Name string `json:"name,omitempty"`
-
 	// State: Output only. The state of the oauth client.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - Default value. This value is unused.
 	//   "ACTIVE" - The oauth client is active.
-	//   "DELETED" - The oauth client is soft-deleted. Soft-deleted oauth
-	// client is permanently deleted after approximately 30 days unless
-	// restored via UndeleteOauthClient.
+	//   "DELETED" - The oauth client is soft-deleted. Soft-deleted oauth client is
+	// permanently deleted after approximately 30 days unless restored via
+	// UndeleteOauthClient.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "AllowedGrantTypes")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AllowedGrantTypes") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AllowedGrantTypes") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AllowedGrantTypes") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *OauthClient) MarshalJSON() ([]byte, error) {
 	type NoMethod OauthClient
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // OauthClientCredential: Represents an oauth client credential. Used to
-// authenticate an oauth client while accessing Google Cloud resources
-// on behalf of a user by using OAuth2 Protocol.
+// authenticate an oauth client while accessing Google Cloud resources on
+// behalf of a user by using OAuth2 Protocol.
 type OauthClientCredential struct {
 	// ClientSecret: Output only. The system-generated oauth client secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
-
-	// Disabled: Optional. Whether the oauth client credential is disabled.
-	// You cannot use a disabled oauth client credential for OAuth.
+	// Disabled: Optional. Whether the oauth client credential is disabled. You
+	// cannot use a disabled oauth client credential for OAuth.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: Optional. A user-specified display name of the oauth
-	// client credential Cannot exceed 32 characters.
+	// DisplayName: Optional. A user-specified display name of the oauth client
+	// credential Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// Name: Immutable. The resource name of the oauth client credential.
-	// Format:
-	// `projects/{project}/locations/{location}/oauthClients/{oauth_client}/c
-	// redentials/{credential}`
+	// Name: Immutable. The resource name of the oauth client credential. Format:
+	// `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credenti
+	// als/{credential}`
 	Name string `json:"name,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ClientSecret") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ClientSecret") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ClientSecret") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *OauthClientCredential) MarshalJSON() ([]byte, error) {
 	type NoMethod OauthClientCredential
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Oidc: Represents an OpenId Connect 1.0 identity provider.
 type Oidc struct {
-	// AllowedAudiences: Acceptable values for the `aud` field (audience) in
-	// the OIDC token. Token exchange requests are rejected if the token
-	// audience does not match one of the configured values. Each audience
-	// may be at most 256 characters. A maximum of 10 audiences may be
-	// configured. If this list is empty, the OIDC token audience must be
-	// equal to the full canonical resource name of the
-	// WorkloadIdentityPoolProvider, with or without the HTTPS prefix. For
-	// example: ```
-	// //iam.googleapis.com/projects//locations//workloadIdentityPools//provi
-	// ders/
+	// AllowedAudiences: Acceptable values for the `aud` field (audience) in the
+	// OIDC token. Token exchange requests are rejected if the token audience does
+	// not match one of the configured values. Each audience may be at most 256
+	// characters. A maximum of 10 audiences may be configured. If this list is
+	// empty, the OIDC token audience must be equal to the full canonical resource
+	// name of the WorkloadIdentityPoolProvider, with or without the HTTPS prefix.
+	// For example: ```
+	// //iam.googleapis.com/projects//locations//workloadIdentityPools//providers/
 	// https://iam.googleapis.com/projects//locations//workloadIdentityPools//providers/
 	// ```
 	AllowedAudiences []string `json:"allowedAudiences,omitempty"`
-
 	// IssuerUri: Required. The OIDC issuer URL. Must be an HTTPS endpoint.
 	IssuerUri string `json:"issuerUri,omitempty"`
-
-	// JwksJson: Optional. OIDC JWKs in JSON String format. For details on
-	// the definition of a JWK, see https://tools.ietf.org/html/rfc7517. If
-	// not set, the `jwks_uri` from the discovery document(fetched from the
-	// .well-known path of the `issuer_uri`) will be used. Currently, RSA
-	// and EC asymmetric keys are supported. The JWK must use following
-	// format and include only the following fields: { "keys": [ { "kty":
-	// "RSA/EC", "alg": "", "use": "sig", "kid": "", "n": "", "e": "", "x":
-	// "", "y": "", "crv": "" } ] }
+	// JwksJson: Optional. OIDC JWKs in JSON String format. For details on the
+	// definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not set,
+	// the `jwks_uri` from the discovery document(fetched from the .well-known path
+	// of the `issuer_uri`) will be used. Currently, RSA and EC asymmetric keys are
+	// supported. The JWK must use following format and include only the following
+	// fields: { "keys": [ { "kty": "RSA/EC", "alg": "", "use": "sig", "kid": "",
+	// "n": "", "e": "", "x": "", "y": "", "crv": "" } ] }
 	JwksJson string `json:"jwksJson,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AllowedAudiences") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AllowedAudiences") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AllowedAudiences") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Oidc) MarshalJSON() ([]byte, error) {
 	type NoMethod Oidc
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Operation: This resource represents a long-running operation that is
-// the result of a network API call.
+// Operation: This resource represents a long-running operation that is the
+// result of a network API call.
 type Operation struct {
-	// Done: If the value is `false`, it means the operation is still in
-	// progress. If `true`, the operation is completed, and either `error`
-	// or `response` is available.
+	// Done: If the value is `false`, it means the operation is still in progress.
+	// If `true`, the operation is completed, and either `error` or `response` is
+	// available.
 	Done bool `json:"done,omitempty"`
-
-	// Error: The error result of the operation in case of failure or
-	// cancellation.
+	// Error: The error result of the operation in case of failure or cancellation.
 	Error *Status `json:"error,omitempty"`
-
 	// Metadata: Service-specific metadata associated with the operation. It
-	// typically contains progress information and common metadata such as
-	// create time. Some services might not provide such metadata. Any
-	// method that returns a long-running operation should document the
-	// metadata type, if any.
+	// typically contains progress information and common metadata such as create
+	// time. Some services might not provide such metadata. Any method that returns
+	// a long-running operation should document the metadata type, if any.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-
-	// Name: The server-assigned name, which is only unique within the same
-	// service that originally returns it. If you use the default HTTP
-	// mapping, the `name` should be a resource name ending with
-	// `operations/{unique_id}`.
+	// Name: The server-assigned name, which is only unique within the same service
+	// that originally returns it. If you use the default HTTP mapping, the `name`
+	// should be a resource name ending with `operations/{unique_id}`.
 	Name string `json:"name,omitempty"`
-
-	// Response: The normal, successful response of the operation. If the
-	// original method returns no data on success, such as `Delete`, the
-	// response is `google.protobuf.Empty`. If the original method is
-	// standard `Get`/`Create`/`Update`, the response should be the
-	// resource. For other methods, the response should have the type
-	// `XxxResponse`, where `Xxx` is the original method name. For example,
-	// if the original method name is `TakeSnapshot()`, the inferred
-	// response type is `TakeSnapshotResponse`.
+	// Response: The normal, successful response of the operation. If the original
+	// method returns no data on success, such as `Delete`, the response is
+	// `google.protobuf.Empty`. If the original method is standard
+	// `Get`/`Create`/`Update`, the response should be the resource. For other
+	// methods, the response should have the type `XxxResponse`, where `Xxx` is the
+	// original method name. For example, if the original method name is
+	// `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
 	Response googleapi.RawMessage `json:"response,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Done") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Done") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Done") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Done") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
 	type NoMethod Operation
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// OperationMetadata: Represents the metadata of the long-running
-// operation.
+// OperationMetadata: Represents the metadata of the long-running operation.
 type OperationMetadata struct {
 	// ApiVersion: Output only. API version used to start the operation.
 	ApiVersion string `json:"apiVersion,omitempty"`
-
-	// CancelRequested: Output only. Identifies whether the user has
-	// requested cancellation of the operation. Operations that have been
-	// cancelled successfully have Operation.error value with a
-	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+	// CancelRequested: Output only. Identifies whether the user has requested
+	// cancellation of the operation. Operations that have been cancelled
+	// successfully have Operation.error value with a google.rpc.Status.code of 1,
+	// corresponding to `Code.CANCELLED`.
 	CancelRequested bool `json:"cancelRequested,omitempty"`
-
 	// CreateTime: Output only. The time the operation was created.
 	CreateTime string `json:"createTime,omitempty"`
-
 	// EndTime: Output only. The time the operation finished running.
 	EndTime string `json:"endTime,omitempty"`
-
-	// StatusDetail: Output only. Human-readable status of the operation, if
-	// any.
+	// StatusDetail: Output only. Human-readable status of the operation, if any.
 	StatusDetail string `json:"statusDetail,omitempty"`
-
-	// Target: Output only. Server-defined resource path for the target of
-	// the operation.
+	// Target: Output only. Server-defined resource path for the target of the
+	// operation.
 	Target string `json:"target,omitempty"`
-
 	// Verb: Output only. Name of the verb executed by the operation.
 	Verb string `json:"verb,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiVersion") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiVersion") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiVersion") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *OperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod OperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // PatchServiceAccountKeyRequest: The service account key patch request.
 type PatchServiceAccountKeyRequest struct {
 	// ServiceAccountKey: Required. The service account key to update.
 	ServiceAccountKey *ServiceAccountKey `json:"serviceAccountKey,omitempty"`
-
-	// UpdateMask: Required. The update mask to apply to the service account
-	// key. Only the following fields are eligible for patching: - contact -
-	// description
+	// UpdateMask: Required. The update mask to apply to the service account key.
+	// Only the following fields are eligible for patching: - contact - description
 	UpdateMask string `json:"updateMask,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "ServiceAccountKey")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "ServiceAccountKey") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ServiceAccountKey") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ServiceAccountKey") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *PatchServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod PatchServiceAccountKeyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// PatchServiceAccountRequest: The service account patch request. You
-// can patch only the `display_name` and `description` fields. You must
-// use the `update_mask` field to specify which of these fields you want
-// to patch. Only the fields specified in the request are guaranteed to
-// be returned in the response. Other fields may be empty in the
-// response.
+// PatchServiceAccountRequest: The service account patch request. You can patch
+// only the `display_name` and `description` fields. You must use the
+// `update_mask` field to specify which of these fields you want to patch. Only
+// the fields specified in the request are guaranteed to be returned in the
+// response. Other fields may be empty in the response.
 type PatchServiceAccountRequest struct {
 	ServiceAccount *ServiceAccount `json:"serviceAccount,omitempty"`
-
-	UpdateMask string `json:"updateMask,omitempty"`
-
+	UpdateMask     string          `json:"updateMask,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "ServiceAccount") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ServiceAccount") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "ServiceAccount") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *PatchServiceAccountRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod PatchServiceAccountRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Permission: A permission which can be included by a role.
 type Permission struct {
-	// ApiDisabled: The service API associated with the permission is not
-	// enabled.
+	// ApiDisabled: The service API associated with the permission is not enabled.
 	ApiDisabled bool `json:"apiDisabled,omitempty"`
-
 	// CustomRolesSupportLevel: The current custom role support level.
 	//
 	// Possible values:
-	//   "SUPPORTED" - Default state. Permission is fully supported for
-	// custom role use.
-	//   "TESTING" - Permission is being tested to check custom role
-	// compatibility.
+	//   "SUPPORTED" - Default state. Permission is fully supported for custom role
+	// use.
+	//   "TESTING" - Permission is being tested to check custom role compatibility.
 	//   "NOT_SUPPORTED" - Permission is not supported for custom role use.
 	CustomRolesSupportLevel string `json:"customRolesSupportLevel,omitempty"`
-
-	// Description: A brief description of what this Permission is used for.
-	// This permission can ONLY be used in predefined roles.
+	// Description: A brief description of what this Permission is used for. This
+	// permission can ONLY be used in predefined roles.
 	Description string `json:"description,omitempty"`
-
 	// Name: The name of this Permission.
-	Name string `json:"name,omitempty"`
-
-	OnlyInPredefinedRoles bool `json:"onlyInPredefinedRoles,omitempty"`
-
-	// PrimaryPermission: The preferred name for this permission. If
-	// present, then this permission is an alias of, and equivalent to, the
-	// listed primary_permission.
+	Name                  string `json:"name,omitempty"`
+	OnlyInPredefinedRoles bool   `json:"onlyInPredefinedRoles,omitempty"`
+	// PrimaryPermission: The preferred name for this permission. If present, then
+	// this permission is an alias of, and equivalent to, the listed
+	// primary_permission.
 	PrimaryPermission string `json:"primaryPermission,omitempty"`
-
 	// Stage: The current launch stage of the permission.
 	//
 	// Possible values:
@@ -2687,316 +2233,251 @@ type Permission struct {
 	//   "GA" - The permission is generally available.
 	//   "DEPRECATED" - The permission is being deprecated.
 	Stage string `json:"stage,omitempty"`
-
 	// Title: The title of this Permission.
 	Title string `json:"title,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "ApiDisabled") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ApiDisabled") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ApiDisabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Permission) MarshalJSON() ([]byte, error) {
 	type NoMethod Permission
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// PermissionDelta: A PermissionDelta message to record the
-// added_permissions and removed_permissions inside a role.
+// PermissionDelta: A PermissionDelta message to record the added_permissions
+// and removed_permissions inside a role.
 type PermissionDelta struct {
 	// AddedPermissions: Added permissions.
 	AddedPermissions []string `json:"addedPermissions,omitempty"`
-
 	// RemovedPermissions: Removed permissions.
 	RemovedPermissions []string `json:"removedPermissions,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "AddedPermissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AddedPermissions") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AddedPermissions") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *PermissionDelta) MarshalJSON() ([]byte, error) {
 	type NoMethod PermissionDelta
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Policy: An Identity and Access Management (IAM) policy, which
-// specifies access controls for Google Cloud resources. A `Policy` is a
-// collection of `bindings`. A `binding` binds one or more `members`, or
-// principals, to a single `role`. Principals can be user accounts,
-// service accounts, Google groups, and domains (such as G Suite). A
-// `role` is a named list of permissions; each `role` can be an IAM
-// predefined role or a user-created custom role. For some types of
-// Google Cloud resources, a `binding` can also specify a `condition`,
-// which is a logical expression that allows access to a resource only
-// if the expression evaluates to `true`. A condition can add
-// constraints based on attributes of the request, the resource, or
-// both. To learn which resources support conditions in their IAM
-// policies, see the IAM documentation
-// (https://cloud.google.com/iam/help/conditions/resource-policies).
-// **JSON example:** ``` { "bindings": [ { "role":
+// Policy: An Identity and Access Management (IAM) policy, which specifies
+// access controls for Google Cloud resources. A `Policy` is a collection of
+// `bindings`. A `binding` binds one or more `members`, or principals, to a
+// single `role`. Principals can be user accounts, service accounts, Google
+// groups, and domains (such as G Suite). A `role` is a named list of
+// permissions; each `role` can be an IAM predefined role or a user-created
+// custom role. For some types of Google Cloud resources, a `binding` can also
+// specify a `condition`, which is a logical expression that allows access to a
+// resource only if the expression evaluates to `true`. A condition can add
+// constraints based on attributes of the request, the resource, or both. To
+// learn which resources support conditions in their IAM policies, see the IAM
+// documentation
+// (https://cloud.google.com/iam/help/conditions/resource-policies). **JSON
+// example:** ``` { "bindings": [ { "role":
 // "roles/resourcemanager.organizationAdmin", "members": [
-// "user:mike@example.com", "group:admins@example.com",
-// "domain:google.com",
-// "serviceAccount:my-project-id@appspot.gserviceaccount.com" ] }, {
-// "role": "roles/resourcemanager.organizationViewer", "members": [
+// "user:mike@example.com", "group:admins@example.com", "domain:google.com",
+// "serviceAccount:my-project-id@appspot.gserviceaccount.com" ] }, { "role":
+// "roles/resourcemanager.organizationViewer", "members": [
 // "user:eve@example.com" ], "condition": { "title": "expirable access",
 // "description": "Does not grant access after Sep 2020", "expression":
-// "request.time < timestamp('2020-10-01T00:00:00.000Z')", } } ],
-// "etag": "BwWWja0YfJA=", "version": 3 } ``` **YAML example:** ```
-// bindings: - members: - user:mike@example.com -
-// group:admins@example.com - domain:google.com -
-// serviceAccount:my-project-id@appspot.gserviceaccount.com role:
-// roles/resourcemanager.organizationAdmin - members: -
+// "request.time < timestamp('2020-10-01T00:00:00.000Z')", } } ], "etag":
+// "BwWWja0YfJA=", "version": 3 } ``` **YAML example:** ``` bindings: -
+// members: - user:mike@example.com - group:admins@example.com -
+// domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com
+// role: roles/resourcemanager.organizationAdmin - members: -
 // user:eve@example.com role: roles/resourcemanager.organizationViewer
-// condition: title: expirable access description: Does not grant access
-// after Sep 2020 expression: request.time <
-// timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3
-// ``` For a description of IAM and its features, see the IAM
-// documentation (https://cloud.google.com/iam/docs/).
+// condition: title: expirable access description: Does not grant access after
+// Sep 2020 expression: request.time < timestamp('2020-10-01T00:00:00.000Z')
+// etag: BwWWja0YfJA= version: 3 ``` For a description of IAM and its features,
+// see the IAM documentation (https://cloud.google.com/iam/docs/).
 type Policy struct {
-	// AuditConfigs: Specifies cloud audit logging configuration for this
-	// policy.
+	// AuditConfigs: Specifies cloud audit logging configuration for this policy.
 	AuditConfigs []*AuditConfig `json:"auditConfigs,omitempty"`
-
-	// Bindings: Associates a list of `members`, or principals, with a
-	// `role`. Optionally, may specify a `condition` that determines how and
-	// when the `bindings` are applied. Each of the `bindings` must contain
-	// at least one principal. The `bindings` in a `Policy` can refer to up
-	// to 1,500 principals; up to 250 of these principals can be Google
-	// groups. Each occurrence of a principal counts towards these limits.
-	// For example, if the `bindings` grant 50 different roles to
-	// `user:alice@example.com`, and not to any other principal, then you
-	// can add another 1,450 principals to the `bindings` in the `Policy`.
+	// Bindings: Associates a list of `members`, or principals, with a `role`.
+	// Optionally, may specify a `condition` that determines how and when the
+	// `bindings` are applied. Each of the `bindings` must contain at least one
+	// principal. The `bindings` in a `Policy` can refer to up to 1,500 principals;
+	// up to 250 of these principals can be Google groups. Each occurrence of a
+	// principal counts towards these limits. For example, if the `bindings` grant
+	// 50 different roles to `user:alice@example.com`, and not to any other
+	// principal, then you can add another 1,450 principals to the `bindings` in
+	// the `Policy`.
 	Bindings []*Binding `json:"bindings,omitempty"`
-
-	// Etag: `etag` is used for optimistic concurrency control as a way to
-	// help prevent simultaneous updates of a policy from overwriting each
-	// other. It is strongly suggested that systems make use of the `etag`
-	// in the read-modify-write cycle to perform policy updates in order to
-	// avoid race conditions: An `etag` is returned in the response to
-	// `getIamPolicy`, and systems are expected to put that etag in the
-	// request to `setIamPolicy` to ensure that their change will be applied
-	// to the same version of the policy. **Important:** If you use IAM
-	// Conditions, you must include the `etag` field whenever you call
-	// `setIamPolicy`. If you omit this field, then IAM allows you to
-	// overwrite a version `3` policy with a version `1` policy, and all of
+	// Etag: `etag` is used for optimistic concurrency control as a way to help
+	// prevent simultaneous updates of a policy from overwriting each other. It is
+	// strongly suggested that systems make use of the `etag` in the
+	// read-modify-write cycle to perform policy updates in order to avoid race
+	// conditions: An `etag` is returned in the response to `getIamPolicy`, and
+	// systems are expected to put that etag in the request to `setIamPolicy` to
+	// ensure that their change will be applied to the same version of the policy.
+	// **Important:** If you use IAM Conditions, you must include the `etag` field
+	// whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+	// you to overwrite a version `3` policy with a version `1` policy, and all of
 	// the conditions in the version `3` policy are lost.
 	Etag string `json:"etag,omitempty"`
-
-	// Version: Specifies the format of the policy. Valid values are `0`,
-	// `1`, and `3`. Requests that specify an invalid value are rejected.
-	// Any operation that affects conditional role bindings must specify
-	// version `3`. This requirement applies to the following operations: *
-	// Getting a policy that includes a conditional role binding * Adding a
-	// conditional role binding to a policy * Changing a conditional role
-	// binding in a policy * Removing any role binding, with or without a
-	// condition, from a policy that includes conditions **Important:** If
-	// you use IAM Conditions, you must include the `etag` field whenever
-	// you call `setIamPolicy`. If you omit this field, then IAM allows you
-	// to overwrite a version `3` policy with a version `1` policy, and all
-	// of the conditions in the version `3` policy are lost. If a policy
-	// does not include any conditions, operations on that policy may
-	// specify any valid version or leave the field unset. To learn which
-	// resources support conditions in their IAM policies, see the IAM
-	// documentation
+	// Version: Specifies the format of the policy. Valid values are `0`, `1`, and
+	// `3`. Requests that specify an invalid value are rejected. Any operation that
+	// affects conditional role bindings must specify version `3`. This requirement
+	// applies to the following operations: * Getting a policy that includes a
+	// conditional role binding * Adding a conditional role binding to a policy *
+	// Changing a conditional role binding in a policy * Removing any role binding,
+	// with or without a condition, from a policy that includes conditions
+	// **Important:** If you use IAM Conditions, you must include the `etag` field
+	// whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+	// you to overwrite a version `3` policy with a version `1` policy, and all of
+	// the conditions in the version `3` policy are lost. If a policy does not
+	// include any conditions, operations on that policy may specify any valid
+	// version or leave the field unset. To learn which resources support
+	// conditions in their IAM policies, see the IAM documentation
 	// (https://cloud.google.com/iam/help/conditions/resource-policies).
 	Version int64 `json:"version,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "AuditConfigs") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AuditConfigs") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AuditConfigs") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Policy) MarshalJSON() ([]byte, error) {
 	type NoMethod Policy
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // PolicyDelta: The difference delta between two policies.
 type PolicyDelta struct {
 	// BindingDeltas: The delta for Bindings between two policies.
 	BindingDeltas []*BindingDelta `json:"bindingDeltas,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "BindingDeltas") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "BindingDeltas") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "BindingDeltas") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *PolicyDelta) MarshalJSON() ([]byte, error) {
 	type NoMethod PolicyDelta
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // QueryAuditableServicesRequest: A request to get the list of auditable
 // services for a resource.
 type QueryAuditableServicesRequest struct {
-	// FullResourceName: Required. The full resource name to query from the
-	// list of auditable services. The name follows the Google Cloud
-	// Platform resource format. For example, a Cloud Platform project with
-	// id `my-project` will be named
-	// `//cloudresourcemanager.googleapis.com/projects/my-project`.
+	// FullResourceName: Required. The full resource name to query from the list of
+	// auditable services. The name follows the Google Cloud Platform resource
+	// format. For example, a Cloud Platform project with id `my-project` will be
+	// named `//cloudresourcemanager.googleapis.com/projects/my-project`.
 	FullResourceName string `json:"fullResourceName,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "FullResourceName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "FullResourceName") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "FullResourceName") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryAuditableServicesRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryAuditableServicesRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueryAuditableServicesResponse: A response containing a list of
-// auditable services for a resource.
+// QueryAuditableServicesResponse: A response containing a list of auditable
+// services for a resource.
 type QueryAuditableServicesResponse struct {
 	// Services: The auditable services for a resource.
 	Services []*AuditableService `json:"services,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Services") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Services") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Services") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryAuditableServicesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryAuditableServicesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // QueryGrantableRolesRequest: The grantable role query request.
 type QueryGrantableRolesRequest struct {
-	// FullResourceName: Required. The full resource name to query from the
-	// list of grantable roles. The name follows the Google Cloud Platform
-	// resource format. For example, a Cloud Platform project with id
-	// `my-project` will be named
+	// FullResourceName: Required. The full resource name to query from the list of
+	// grantable roles. The name follows the Google Cloud Platform resource format.
+	// For example, a Cloud Platform project with id `my-project` will be named
 	// `//cloudresourcemanager.googleapis.com/projects/my-project`.
 	FullResourceName string `json:"fullResourceName,omitempty"`
-
-	// PageSize: Optional limit on the number of roles to include in the
-	// response. The default is 300, and the maximum is 1,000.
+	// PageSize: Optional limit on the number of roles to include in the response.
+	// The default is 300, and the maximum is 1,000.
 	PageSize int64 `json:"pageSize,omitempty"`
-
 	// PageToken: Optional pagination token returned in an earlier
 	// QueryGrantableRolesResponse.
 	PageToken string `json:"pageToken,omitempty"`
-
 	// Possible values:
-	//   "BASIC" - Omits the `included_permissions` field. This is the
-	// default value.
+	//   "BASIC" - Omits the `included_permissions` field. This is the default
+	// value.
 	//   "FULL" - Returns all fields.
 	View string `json:"view,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "FullResourceName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "FullResourceName") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "FullResourceName") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryGrantableRolesRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryGrantableRolesRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // QueryGrantableRolesResponse: The grantable role query response.
@@ -3004,232 +2485,182 @@ type QueryGrantableRolesResponse struct {
 	// NextPageToken: To retrieve the next page of results, set
 	// `QueryGrantableRolesRequest.page_token` to this value.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Roles: The list of matching roles.
 	Roles []*Role `json:"roles,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryGrantableRolesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryGrantableRolesResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueryTestablePermissionsRequest: A request to get permissions which
-// can be tested on a resource.
+// QueryTestablePermissionsRequest: A request to get permissions which can be
+// tested on a resource.
 type QueryTestablePermissionsRequest struct {
-	// FullResourceName: Required. The full resource name to query from the
-	// list of testable permissions. The name follows the Google Cloud
-	// Platform resource format. For example, a Cloud Platform project with
-	// id `my-project` will be named
-	// `//cloudresourcemanager.googleapis.com/projects/my-project`.
+	// FullResourceName: Required. The full resource name to query from the list of
+	// testable permissions. The name follows the Google Cloud Platform resource
+	// format. For example, a Cloud Platform project with id `my-project` will be
+	// named `//cloudresourcemanager.googleapis.com/projects/my-project`.
 	FullResourceName string `json:"fullResourceName,omitempty"`
-
-	// PageSize: Optional limit on the number of permissions to include in
-	// the response. The default is 100, and the maximum is 1,000.
+	// PageSize: Optional limit on the number of permissions to include in the
+	// response. The default is 100, and the maximum is 1,000.
 	PageSize int64 `json:"pageSize,omitempty"`
-
 	// PageToken: Optional pagination token returned in an earlier
 	// QueryTestablePermissionsRequest.
 	PageToken string `json:"pageToken,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "FullResourceName") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "FullResourceName") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "FullResourceName") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryTestablePermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryTestablePermissionsRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueryTestablePermissionsResponse: The response containing permissions
-// which can be tested on a resource.
+// QueryTestablePermissionsResponse: The response containing permissions which
+// can be tested on a resource.
 type QueryTestablePermissionsResponse struct {
 	// NextPageToken: To retrieve the next page of results, set
 	// `QueryTestableRolesRequest.page_token` to this value.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-
 	// Permissions: The Permissions testable on the requested resource.
 	Permissions []*Permission `json:"permissions,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "NextPageToken") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *QueryTestablePermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod QueryTestablePermissionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ReconciliationOperationMetadata: Operation metadata returned by the
-// CLH during resource state reconciliation.
+// ReconciliationOperationMetadata: Operation metadata returned by the CLH
+// during resource state reconciliation.
 type ReconciliationOperationMetadata struct {
 	// DeleteResource: DEPRECATED. Use exclusive_action instead.
 	DeleteResource bool `json:"deleteResource,omitempty"`
-
 	// ExclusiveAction: Excluisive action returned by the CLH.
 	//
 	// Possible values:
 	//   "UNKNOWN_REPAIR_ACTION" - Unknown repair action.
-	//   "DELETE" - The resource has to be deleted. When using this bit, the
-	// CLH should fail the operation. DEPRECATED. Instead use
-	// DELETE_RESOURCE OperationSignal in SideChannel.
-	//   "RETRY" - This resource could not be repaired but the repair should
-	// be tried again at a later time. This can happen if there is a
-	// dependency that needs to be resolved first- e.g. if a parent resource
-	// must be repaired before a child resource.
+	//   "DELETE" - The resource has to be deleted. When using this bit, the CLH
+	// should fail the operation. DEPRECATED. Instead use DELETE_RESOURCE
+	// OperationSignal in SideChannel.
+	//   "RETRY" - This resource could not be repaired but the repair should be
+	// tried again at a later time. This can happen if there is a dependency that
+	// needs to be resolved first- e.g. if a parent resource must be repaired
+	// before a child resource.
 	ExclusiveAction string `json:"exclusiveAction,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "DeleteResource") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "DeleteResource") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "DeleteResource") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ReconciliationOperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod ReconciliationOperationMetadata
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Role: A role in the Identity and Access Management API.
 type Role struct {
-	// Deleted: The current deleted state of the role. This field is read
-	// only. It will be ignored in calls to CreateRole and UpdateRole.
+	// Deleted: The current deleted state of the role. This field is read only. It
+	// will be ignored in calls to CreateRole and UpdateRole.
 	Deleted bool `json:"deleted,omitempty"`
-
 	// Description: Optional. A human-readable description for the role.
 	Description string `json:"description,omitempty"`
-
 	// Etag: Used to perform a consistent read-modify-write.
 	Etag string `json:"etag,omitempty"`
-
-	// IncludedPermissions: The names of the permissions this role grants
-	// when bound in an IAM policy.
+	// IncludedPermissions: The names of the permissions this role grants when
+	// bound in an IAM policy.
 	IncludedPermissions []string `json:"includedPermissions,omitempty"`
-
-	// Name: The name of the role. When `Role` is used in `CreateRole`, the
-	// role name must not be set. When `Role` is used in output and other
-	// input such as `UpdateRole`, the role name is the complete path. For
-	// example, `roles/logging.viewer` for predefined roles,
-	// `organizations/{ORGANIZATION_ID}/roles/myRole` for organization-level
-	// custom roles, and `projects/{PROJECT_ID}/roles/myRole` for
-	// project-level custom roles.
+	// Name: The name of the role. When `Role` is used in `CreateRole`, the role
+	// name must not be set. When `Role` is used in output and other input such as
+	// `UpdateRole`, the role name is the complete path. For example,
+	// `roles/logging.viewer` for predefined roles,
+	// `organizations/{ORGANIZATION_ID}/roles/myRole` for organization-level custom
+	// roles, and `projects/{PROJECT_ID}/roles/myRole` for project-level custom
+	// roles.
 	Name string `json:"name,omitempty"`
-
-	// Stage: The current launch stage of the role. If the `ALPHA` launch
-	// stage has been selected for a role, the `stage` field will not be
-	// included in the returned definition for the role.
+	// Stage: The current launch stage of the role. If the `ALPHA` launch stage has
+	// been selected for a role, the `stage` field will not be included in the
+	// returned definition for the role.
 	//
 	// Possible values:
-	//   "ALPHA" - The user has indicated this role is currently in an Alpha
-	// phase. If this launch stage is selected, the `stage` field will not
-	// be included when requesting the definition for a given role.
-	//   "BETA" - The user has indicated this role is currently in a Beta
-	// phase.
+	//   "ALPHA" - The user has indicated this role is currently in an Alpha phase.
+	// If this launch stage is selected, the `stage` field will not be included
+	// when requesting the definition for a given role.
+	//   "BETA" - The user has indicated this role is currently in a Beta phase.
 	//   "GA" - The user has indicated this role is generally available.
-	//   "DEPRECATED" - The user has indicated this role is being
-	// deprecated.
-	//   "DISABLED" - This role is disabled and will not contribute
-	// permissions to any principals it is granted to in policies.
-	//   "EAP" - The user has indicated this role is currently in an EAP
-	// phase.
+	//   "DEPRECATED" - The user has indicated this role is being deprecated.
+	//   "DISABLED" - This role is disabled and will not contribute permissions to
+	// any principals it is granted to in policies.
+	//   "EAP" - The user has indicated this role is currently in an EAP phase.
 	Stage string `json:"stage,omitempty"`
-
-	// Title: Optional. A human-readable title for the role. Typically this
-	// is limited to 100 UTF-8 bytes.
+	// Title: Optional. A human-readable title for the role. Typically this is
+	// limited to 100 UTF-8 bytes.
 	Title string `json:"title,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Deleted") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Deleted") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Deleted") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Deleted") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Role) MarshalJSON() ([]byte, error) {
 	type NoMethod Role
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // Saml: Represents an SAML 2.0 identity provider.
@@ -3238,192 +2669,154 @@ type Saml struct {
 	// metadata XML doc. The XML document must comply with the SAML 2.0
 	// specification
 	// (https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf).
-	// The maximum size of an acceptable XML document is 128K characters.
-	// The SAML metadata XML document must satisfy the following
-	// constraints: * Must contain an IdP Entity ID. * Must contain at least
-	// one non-expired signing certificate. * For each signing certificate,
-	// the expiration must be: * From no more than 7 days in the future. *
-	// To no more than 15 years in the future. * Up to three IdP signing
-	// keys are allowed. When updating the provider's metadata XML, at least
-	// one non-expired signing key must overlap with the existing metadata.
-	// This requirement is skipped if there are no non-expired signing keys
-	// present in the existing metadata.
+	// The maximum size of an acceptable XML document is 128K characters. The SAML
+	// metadata XML document must satisfy the following constraints: * Must contain
+	// an IdP Entity ID. * Must contain at least one non-expired signing
+	// certificate. * For each signing certificate, the expiration must be: * From
+	// no more than 7 days in the future. * To no more than 15 years in the future.
+	// * Up to three IdP signing keys are allowed. When updating the provider's
+	// metadata XML, at least one non-expired signing key must overlap with the
+	// existing metadata. This requirement is skipped if there are no non-expired
+	// signing keys present in the existing metadata.
 	IdpMetadataXml string `json:"idpMetadataXml,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "IdpMetadataXml") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "IdpMetadataXml") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "IdpMetadataXml") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Saml) MarshalJSON() ([]byte, error) {
 	type NoMethod Saml
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ServiceAccount: An IAM service account. A service account is an
-// account for an application or a virtual machine (VM) instance, not a
-// person. You can use a service account to call Google APIs. To learn
-// more, read the overview of service accounts
-// (https://cloud.google.com/iam/help/service-accounts/overview). When
-// you create a service account, you specify the project ID that owns
-// the service account, as well as a name that must be unique within the
-// project. IAM uses these values to create an email address that
-// identifies the service account. //
+// ServiceAccount: An IAM service account. A service account is an account for
+// an application or a virtual machine (VM) instance, not a person. You can use
+// a service account to call Google APIs. To learn more, read the overview of
+// service accounts
+// (https://cloud.google.com/iam/help/service-accounts/overview). When you
+// create a service account, you specify the project ID that owns the service
+// account, as well as a name that must be unique within the project. IAM uses
+// these values to create an email address that identifies the service account.
+// //
 type ServiceAccount struct {
-	// Description: Optional. A user-specified, human-readable description
-	// of the service account. The maximum length is 256 UTF-8 bytes.
+	// Description: Optional. A user-specified, human-readable description of the
+	// service account. The maximum length is 256 UTF-8 bytes.
 	Description string `json:"description,omitempty"`
-
 	// Disabled: Output only. Whether the service account is disabled.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: Optional. A user-specified, human-readable name for the
-	// service account. The maximum length is 100 UTF-8 bytes.
+	// DisplayName: Optional. A user-specified, human-readable name for the service
+	// account. The maximum length is 100 UTF-8 bytes.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// Email: Output only. The email address of the service account.
 	Email string `json:"email,omitempty"`
-
 	// Etag: Deprecated. Do not use.
 	Etag string `json:"etag,omitempty"`
-
-	// Name: The resource name of the service account. Use one of the
-	// following formats: *
-	// `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-	// `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-	// alternative, you can use the `-` wildcard character instead of the
-	// project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-	// `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-	// the `-` wildcard character, because it can cause response messages to
-	// contain misleading error codes. For example, if you try to access the
-	// service account `projects/-/serviceAccounts/fake@example.com`, which
-	// does not exist, the response contains an HTTP `403 Forbidden` error
-	// instead of a `404 Not Found` error.
+	// Name: The resource name of the service account. Use one of the following
+	// formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+	// `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+	// can use the `-` wildcard character instead of the project ID: *
+	// `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+	// `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-`
+	// wildcard character, because it can cause response messages to contain
+	// misleading error codes. For example, if you try to access the service
+	// account `projects/-/serviceAccounts/fake@example.com`, which does not exist,
+	// the response contains an HTTP `403 Forbidden` error instead of a `404 Not
+	// Found` error.
 	Name string `json:"name,omitempty"`
-
 	// Oauth2ClientId: Output only. The OAuth 2.0 client ID for the service
 	// account.
 	Oauth2ClientId string `json:"oauth2ClientId,omitempty"`
-
-	// ProjectId: Output only. The ID of the project that owns the service
-	// account.
+	// ProjectId: Output only. The ID of the project that owns the service account.
 	ProjectId string `json:"projectId,omitempty"`
-
 	// UniqueId: Output only. The unique, stable numeric ID for the service
-	// account. Each service account retains its unique ID even if you
-	// delete the service account. For example, if you delete a service
-	// account, then create a new service account with the same name, the
-	// new service account has a different unique ID than the deleted
-	// service account.
+	// account. Each service account retains its unique ID even if you delete the
+	// service account. For example, if you delete a service account, then create a
+	// new service account with the same name, the new service account has a
+	// different unique ID than the deleted service account.
 	UniqueId string `json:"uniqueId,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ServiceAccount) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceAccount
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ServiceAccountKey: Represents a service account key. A service
-// account has two sets of key-pairs: user-managed, and system-managed.
-// User-managed key-pairs can be created and deleted by users. Users are
-// responsible for rotating these keys periodically to ensure security
-// of their service accounts. Users retain the private key of these
-// key-pairs, and Google retains ONLY the public key. System-managed
-// keys are automatically rotated by Google, and are used for signing
-// for a maximum of two weeks. The rotation process is probabilistic,
-// and usage of the new key will gradually ramp up and down over the
-// key's lifetime. If you cache the public key set for a service
-// account, we recommend that you update the cache every 15 minutes.
-// User-managed keys can be added and removed at any time, so it is
-// important to update the cache frequently. For Google-managed keys,
-// Google will publish a key at least 6 hours before it is first used
-// for signing and will keep publishing it for at least 6 hours after it
-// was last used for signing. Public keys for all service accounts are
-// also published at the OAuth2 Service Account API.
+// ServiceAccountKey: Represents a service account key. A service account has
+// two sets of key-pairs: user-managed, and system-managed. User-managed
+// key-pairs can be created and deleted by users. Users are responsible for
+// rotating these keys periodically to ensure security of their service
+// accounts. Users retain the private key of these key-pairs, and Google
+// retains ONLY the public key. System-managed keys are automatically rotated
+// by Google, and are used for signing for a maximum of two weeks. The rotation
+// process is probabilistic, and usage of the new key will gradually ramp up
+// and down over the key's lifetime. If you cache the public key set for a
+// service account, we recommend that you update the cache every 15 minutes.
+// User-managed keys can be added and removed at any time, so it is important
+// to update the cache frequently. For Google-managed keys, Google will publish
+// a key at least 6 hours before it is first used for signing and will keep
+// publishing it for at least 6 hours after it was last used for signing.
+// Public keys for all service accounts are also published at the OAuth2
+// Service Account API.
 type ServiceAccountKey struct {
-	// Contact: Optional. A user provided email address as the point of
-	// contact for this service account key. Must be an email address. Limit
-	// 64 characters.
+	// Contact: Optional. A user provided email address as the point of contact for
+	// this service account key. Must be an email address. Limit 64 characters.
 	Contact string `json:"contact,omitempty"`
-
-	// Creator: Output only. The cloud identity that created this service
-	// account key. Populated automatically when the key is created and not
-	// editable by the user.
+	// Creator: Output only. The cloud identity that created this service account
+	// key. Populated automatically when the key is created and not editable by the
+	// user.
 	Creator string `json:"creator,omitempty"`
-
-	// Description: Optional. A user provided description of this service
-	// account key.
+	// Description: Optional. A user provided description of this service account
+	// key.
 	Description string `json:"description,omitempty"`
-
-	// DisableReason: optional. If the key is disabled, it may have a
-	// DisableReason describing why it was disabled.
+	// DisableReason: optional. If the key is disabled, it may have a DisableReason
+	// describing why it was disabled.
 	//
 	// Possible values:
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified
-	// disable reason
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by
-	// the user
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified disable
+	// reason
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by the user
 	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED" - Google detected this
-	// Service Account external key's private key data as exposed, typically
-	// in a public repository on GitHub or similar.
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This
-	// service account external key was detected as compromised and used by
-	// an attacker.
+	// Service Account external key's private key data as exposed, typically in a
+	// public repository on GitHub or similar.
+	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This service
+	// account external key was detected as compromised and used by an attacker.
 	DisableReason string `json:"disableReason,omitempty"`
-
 	// Disabled: The key status.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// ExtendedStatus: Extended Status provides permanent information about
-	// a service account key. For example, if this key was detected as
-	// exposed or compromised, that information will remain for the lifetime
-	// of the key in the extended_status.
+	// ExtendedStatus: Extended Status provides permanent information about a
+	// service account key. For example, if this key was detected as exposed or
+	// compromised, that information will remain for the lifetime of the key in the
+	// extended_status.
 	ExtendedStatus []*ExtendedStatus `json:"extendedStatus,omitempty"`
-
-	// KeyAlgorithm: Specifies the algorithm (and possibly key size) for the
-	// key.
+	// KeyAlgorithm: Specifies the algorithm (and possibly key size) for the key.
 	//
 	// Possible values:
 	//   "KEY_ALG_UNSPECIFIED" - An unspecified key algorithm.
 	//   "KEY_ALG_RSA_1024" - 1k RSA Key.
 	//   "KEY_ALG_RSA_2048" - 2k RSA Key.
 	KeyAlgorithm string `json:"keyAlgorithm,omitempty"`
-
 	// KeyOrigin: The key origin.
 	//
 	// Possible values:
@@ -3431,412 +2824,324 @@ type ServiceAccountKey struct {
 	//   "USER_PROVIDED" - Key is provided by user.
 	//   "GOOGLE_PROVIDED" - Key is provided by Google.
 	KeyOrigin string `json:"keyOrigin,omitempty"`
-
 	// KeyType: The key type.
 	//
 	// Possible values:
-	//   "KEY_TYPE_UNSPECIFIED" - Unspecified key type. The presence of this
-	// in the message will immediately result in an error.
-	//   "USER_MANAGED" - User-managed keys (managed and rotated by the
-	// user).
-	//   "SYSTEM_MANAGED" - System-managed keys (managed and rotated by
-	// Google).
+	//   "KEY_TYPE_UNSPECIFIED" - Unspecified key type. The presence of this in the
+	// message will immediately result in an error.
+	//   "USER_MANAGED" - User-managed keys (managed and rotated by the user).
+	//   "SYSTEM_MANAGED" - System-managed keys (managed and rotated by Google).
 	KeyType string `json:"keyType,omitempty"`
-
-	// Name: The resource name of the service account key in the following
-	// format `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
+	// Name: The resource name of the service account key in the following format
+	// `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
 	Name string `json:"name,omitempty"`
-
 	// PrivateKeyData: The private key data. Only provided in
-	// `CreateServiceAccountKey` responses. Make sure to keep the private
-	// key data secure because it allows for the assertion of the service
-	// account identity. When base64 decoded, the private key data can be
-	// used to authenticate with Google API client libraries and with gcloud
-	// auth activate-service-account.
+	// `CreateServiceAccountKey` responses. Make sure to keep the private key data
+	// secure because it allows for the assertion of the service account identity.
+	// When base64 decoded, the private key data can be used to authenticate with
+	// Google API client libraries and with gcloud auth activate-service-account.
 	PrivateKeyData string `json:"privateKeyData,omitempty"`
-
-	// PrivateKeyType: The output format for the private key. Only provided
-	// in `CreateServiceAccountKey` responses, not in `GetServiceAccountKey`
-	// or `ListServiceAccountKey` responses. Google never exposes
-	// system-managed private keys, and never retains user-managed private
-	// keys.
+	// PrivateKeyType: The output format for the private key. Only provided in
+	// `CreateServiceAccountKey` responses, not in `GetServiceAccountKey` or
+	// `ListServiceAccountKey` responses. Google never exposes system-managed
+	// private keys, and never retains user-managed private keys.
 	//
 	// Possible values:
 	//   "TYPE_UNSPECIFIED" - Unspecified. Equivalent to
 	// `TYPE_GOOGLE_CREDENTIALS_FILE`.
-	//   "TYPE_PKCS12_FILE" - PKCS12 format. The password for the PKCS12
-	// file is `notasecret`. For more information, see
-	// https://tools.ietf.org/html/rfc7292.
+	//   "TYPE_PKCS12_FILE" - PKCS12 format. The password for the PKCS12 file is
+	// `notasecret`. For more information, see https://tools.ietf.org/html/rfc7292.
 	//   "TYPE_GOOGLE_CREDENTIALS_FILE" - Google Credentials File format.
 	PrivateKeyType string `json:"privateKeyType,omitempty"`
-
-	// PublicKeyData: The public key data. Only provided in
-	// `GetServiceAccountKey` responses.
+	// PublicKeyData: The public key data. Only provided in `GetServiceAccountKey`
+	// responses.
 	PublicKeyData string `json:"publicKeyData,omitempty"`
-
 	// ValidAfterTime: The key can be used after this timestamp.
 	ValidAfterTime string `json:"validAfterTime,omitempty"`
-
 	// ValidBeforeTime: The key can be used before this timestamp. For
-	// system-managed key pairs, this timestamp is the end time for the
-	// private key signing operation. The public key could still be used for
-	// verification for a few hours after this time.
+	// system-managed key pairs, this timestamp is the end time for the private key
+	// signing operation. The public key could still be used for verification for a
+	// few hours after this time.
 	ValidBeforeTime string `json:"validBeforeTime,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Contact") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Contact") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Contact") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Contact") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ServiceAccountKey) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceAccountKey
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // ServiceConfig: Configuration for a service.
 type ServiceConfig struct {
-	// Domain: Optional. Domain name of the service. Example:
-	// console.cloud.google
+	// Domain: Optional. Domain name of the service. Example: console.cloud.google
 	Domain string `json:"domain,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Domain") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Domain") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Domain") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *ServiceConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // SetIamPolicyRequest: Request message for `SetIamPolicy` method.
 type SetIamPolicyRequest struct {
-	// Policy: REQUIRED: The complete policy to be applied to the
-	// `resource`. The size of the policy is limited to a few 10s of KB. An
-	// empty policy is a valid policy but certain Google Cloud services
-	// (such as Projects) might reject them.
+	// Policy: REQUIRED: The complete policy to be applied to the `resource`. The
+	// size of the policy is limited to a few 10s of KB. An empty policy is a valid
+	// policy but certain Google Cloud services (such as Projects) might reject
+	// them.
 	Policy *Policy `json:"policy,omitempty"`
-
-	// UpdateMask: OPTIONAL: A FieldMask specifying which fields of the
-	// policy to modify. Only the fields in the mask will be modified. If no
-	// mask is provided, the following default mask is used: `paths:
-	// "bindings, etag"
+	// UpdateMask: OPTIONAL: A FieldMask specifying which fields of the policy to
+	// modify. Only the fields in the mask will be modified. If no mask is
+	// provided, the following default mask is used: `paths: "bindings, etag"
 	UpdateMask string `json:"updateMask,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Policy") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Policy") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Policy") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SetIamPolicyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SignBlobRequest: Deprecated. Migrate to Service Account Credentials
-// API (https://cloud.google.com/iam/help/credentials/migrate-api). The
-// service account sign blob request.
+// SignBlobRequest: Deprecated. Migrate to Service Account Credentials API
+// (https://cloud.google.com/iam/help/credentials/migrate-api). The service
+// account sign blob request.
 type SignBlobRequest struct {
-	// BytesToSign: Required. Deprecated. Migrate to Service Account
-	// Credentials API
-	// (https://cloud.google.com/iam/help/credentials/migrate-api). The
-	// bytes to sign.
+	// BytesToSign: Required. Deprecated. Migrate to Service Account Credentials
+	// API (https://cloud.google.com/iam/help/credentials/migrate-api). The bytes
+	// to sign.
 	BytesToSign string `json:"bytesToSign,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "BytesToSign") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "BytesToSign") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "BytesToSign") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SignBlobRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SignBlobRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SignBlobResponse: Deprecated. Migrate to Service Account Credentials
-// API (https://cloud.google.com/iam/help/credentials/migrate-api). The
-// service account sign blob response.
+// SignBlobResponse: Deprecated. Migrate to Service Account Credentials API
+// (https://cloud.google.com/iam/help/credentials/migrate-api). The service
+// account sign blob response.
 type SignBlobResponse struct {
 	// KeyId: Deprecated. Migrate to Service Account Credentials API
-	// (https://cloud.google.com/iam/help/credentials/migrate-api). The id
-	// of the key used to sign the blob.
+	// (https://cloud.google.com/iam/help/credentials/migrate-api). The id of the
+	// key used to sign the blob.
 	KeyId string `json:"keyId,omitempty"`
-
 	// Signature: Deprecated. Migrate to Service Account Credentials API
-	// (https://cloud.google.com/iam/help/credentials/migrate-api). The
-	// signed blob.
+	// (https://cloud.google.com/iam/help/credentials/migrate-api). The signed
+	// blob.
 	Signature string `json:"signature,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "KeyId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "KeyId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "KeyId") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SignBlobResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SignBlobResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SignJwtRequest: Deprecated. Migrate to Service Account Credentials
-// API (https://cloud.google.com/iam/help/credentials/migrate-api). The
-// service account sign JWT request.
+// SignJwtRequest: Deprecated. Migrate to Service Account Credentials API
+// (https://cloud.google.com/iam/help/credentials/migrate-api). The service
+// account sign JWT request.
 type SignJwtRequest struct {
-	// Payload: Required. Deprecated. Migrate to Service Account Credentials
-	// API (https://cloud.google.com/iam/help/credentials/migrate-api). The
-	// JWT payload to sign. Must be a serialized JSON object that contains a
-	// JWT Claims Set. For example: `{"sub": "user@example.com", "iat":
-	// 313435}` If the JWT Claims Set contains an expiration time (`exp`)
-	// claim, it must be an integer timestamp that is not in the past and no
-	// more than 12 hours in the future. If the JWT Claims Set does not
-	// contain an expiration time (`exp`) claim, this claim is added
-	// automatically, with a timestamp that is 1 hour in the future.
+	// Payload: Required. Deprecated. Migrate to Service Account Credentials API
+	// (https://cloud.google.com/iam/help/credentials/migrate-api). The JWT payload
+	// to sign. Must be a serialized JSON object that contains a JWT Claims Set.
+	// For example: `{"sub": "user@example.com", "iat": 313435}` If the JWT Claims
+	// Set contains an expiration time (`exp`) claim, it must be an integer
+	// timestamp that is not in the past and no more than 12 hours in the future.
+	// If the JWT Claims Set does not contain an expiration time (`exp`) claim,
+	// this claim is added automatically, with a timestamp that is 1 hour in the
+	// future.
 	Payload string `json:"payload,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Payload") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Payload") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Payload") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Payload") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SignJwtRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SignJwtRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// SignJwtResponse: Deprecated. Migrate to Service Account Credentials
-// API (https://cloud.google.com/iam/help/credentials/migrate-api). The
-// service account sign JWT response.
+// SignJwtResponse: Deprecated. Migrate to Service Account Credentials API
+// (https://cloud.google.com/iam/help/credentials/migrate-api). The service
+// account sign JWT response.
 type SignJwtResponse struct {
 	// KeyId: Deprecated. Migrate to Service Account Credentials API
-	// (https://cloud.google.com/iam/help/credentials/migrate-api). The id
-	// of the key used to sign the JWT.
+	// (https://cloud.google.com/iam/help/credentials/migrate-api). The id of the
+	// key used to sign the JWT.
 	KeyId string `json:"keyId,omitempty"`
-
 	// SignedJwt: Deprecated. Migrate to Service Account Credentials API
-	// (https://cloud.google.com/iam/help/credentials/migrate-api). The
-	// signed JWT.
+	// (https://cloud.google.com/iam/help/credentials/migrate-api). The signed JWT.
 	SignedJwt string `json:"signedJwt,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "KeyId") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "KeyId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "KeyId") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *SignJwtResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SignJwtResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// Status: The `Status` type defines a logical error model that is
-// suitable for different programming environments, including REST APIs
-// and RPC APIs. It is used by gRPC (https://github.com/grpc). Each
-// `Status` message contains three pieces of data: error code, error
-// message, and error details. You can find out more about this error
-// model and how to work with it in the API Design Guide
-// (https://cloud.google.com/apis/design/errors).
+// Status: The `Status` type defines a logical error model that is suitable for
+// different programming environments, including REST APIs and RPC APIs. It is
+// used by gRPC (https://github.com/grpc). Each `Status` message contains three
+// pieces of data: error code, error message, and error details. You can find
+// out more about this error model and how to work with it in the API Design
+// Guide (https://cloud.google.com/apis/design/errors).
 type Status struct {
-	// Code: The status code, which should be an enum value of
-	// google.rpc.Code.
+	// Code: The status code, which should be an enum value of google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
-
-	// Details: A list of messages that carry the error details. There is a
-	// common set of message types for APIs to use.
+	// Details: A list of messages that carry the error details. There is a common
+	// set of message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
-
-	// Message: A developer-facing error message, which should be in
-	// English. Any user-facing error message should be localized and sent
-	// in the google.rpc.Status.details field, or localized by the client.
+	// Message: A developer-facing error message, which should be in English. Any
+	// user-facing error message should be localized and sent in the
+	// google.rpc.Status.details field, or localized by the client.
 	Message string `json:"message,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Code") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Code") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Code") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Code") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	type NoMethod Status
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// TestIamPermissionsRequest: Request message for `TestIamPermissions`
-// method.
+// TestIamPermissionsRequest: Request message for `TestIamPermissions` method.
 type TestIamPermissionsRequest struct {
-	// Permissions: The set of permissions to check for the `resource`.
-	// Permissions with wildcards (such as `*` or `storage.*`) are not
-	// allowed. For more information see IAM Overview
+	// Permissions: The set of permissions to check for the `resource`. Permissions
+	// with wildcards (such as `*` or `storage.*`) are not allowed. For more
+	// information see IAM Overview
 	// (https://cloud.google.com/iam/docs/overview#permissions).
 	Permissions []string `json:"permissions,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // TestIamPermissionsResponse: Response message for `TestIamPermissions`
 // method.
 type TestIamPermissionsResponse struct {
-	// Permissions: A subset of `TestPermissionsRequest.permissions` that
-	// the caller is allowed.
+	// Permissions: A subset of `TestPermissionsRequest.permissions` that the
+	// caller is allowed.
 	Permissions []string `json:"permissions,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Permissions") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Permissions") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Permissions") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // UndeleteOauthClientRequest: Request message for UndeleteOauthClient.
@@ -3847,28 +3152,22 @@ type UndeleteOauthClientRequest struct {
 type UndeleteRoleRequest struct {
 	// Etag: Used to perform a consistent read-modify-write.
 	Etag string `json:"etag,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Etag") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Etag") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Etag") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Etag") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *UndeleteRoleRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod UndeleteRoleRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // UndeleteServiceAccountRequest: The service account undelete request.
@@ -3879,32 +3178,24 @@ type UndeleteServiceAccountResponse struct {
 	// RestoredAccount: Metadata for the restored service account.
 	RestoredAccount *ServiceAccount `json:"restoredAccount,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "RestoredAccount") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "RestoredAccount") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "RestoredAccount") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *UndeleteServiceAccountResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod UndeleteServiceAccountResponse
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // UndeleteWorkforcePoolProviderKeyRequest: Request message for
@@ -3917,8 +3208,7 @@ type UndeleteWorkforcePoolProviderKeyRequest struct {
 type UndeleteWorkforcePoolProviderRequest struct {
 }
 
-// UndeleteWorkforcePoolRequest: Request message for
-// UndeleteWorkforcePool.
+// UndeleteWorkforcePoolRequest: Request message for UndeleteWorkforcePool.
 type UndeleteWorkforcePoolRequest struct {
 }
 
@@ -3942,298 +3232,240 @@ type UndeleteWorkloadIdentityPoolProviderRequest struct {
 type UndeleteWorkloadIdentityPoolRequest struct {
 }
 
-// UploadServiceAccountKeyRequest: The service account key upload
-// request.
+// UploadServiceAccountKeyRequest: The service account key upload request.
 type UploadServiceAccountKeyRequest struct {
-	// PublicKeyData: The public key to associate with the service account.
-	// Must be an RSA public key that is wrapped in an X.509 v3 certificate.
-	// Include the first line, `-----BEGIN CERTIFICATE-----`, and the last
-	// line, `-----END CERTIFICATE-----`.
+	// PublicKeyData: The public key to associate with the service account. Must be
+	// an RSA public key that is wrapped in an X.509 v3 certificate. Include the
+	// first line, `-----BEGIN CERTIFICATE-----`, and the last line, `-----END
+	// CERTIFICATE-----`.
 	PublicKeyData string `json:"publicKeyData,omitempty"`
-
 	// ForceSendFields is a list of field names (e.g. "PublicKeyData") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "PublicKeyData") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "PublicKeyData") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *UploadServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod UploadServiceAccountKeyRequest
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePool: Represents a collection of external workforces.
-// Provides namespaces for federated users that can be referenced in IAM
-// policies.
+// WorkforcePool: Represents a collection of external workforces. Provides
+// namespaces for federated users that can be referenced in IAM policies.
 type WorkforcePool struct {
-	// AccessRestrictions: Optional. Configure access restrictions on the
-	// workforce pool users. This is an optional field. If specified web
-	// sign-in can be restricted to given set of services or programmatic
-	// sign-in can be disabled for pool users.
+	// AccessRestrictions: Optional. Configure access restrictions on the workforce
+	// pool users. This is an optional field. If specified web sign-in can be
+	// restricted to given set of services or programmatic sign-in can be disabled
+	// for pool users.
 	AccessRestrictions *AccessRestrictions `json:"accessRestrictions,omitempty"`
-
-	// Description: A user-specified description of the pool. Cannot exceed
-	// 256 characters.
+	// Description: A user-specified description of the pool. Cannot exceed 256
+	// characters.
 	Description string `json:"description,omitempty"`
-
-	// Disabled: Disables the workforce pool. You cannot use a disabled pool
-	// to exchange tokens, or use existing tokens to access resources. If
-	// the pool is re-enabled, existing tokens grant access again.
+	// Disabled: Disables the workforce pool. You cannot use a disabled pool to
+	// exchange tokens, or use existing tokens to access resources. If the pool is
+	// re-enabled, existing tokens grant access again.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: A user-specified display name of the pool in Google
-	// Cloud Console. Cannot exceed 32 characters.
+	// DisplayName: A user-specified display name of the pool in Google Cloud
+	// Console. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// ExpireTime: Output only. Time after which the workforce pool will be
 	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// Name: Output only. The resource name of the pool. Format:
 	// `locations/{location}/workforcePools/{workforce_pool_id}`
 	Name string `json:"name,omitempty"`
-
 	// Parent: Immutable. The resource name of the parent. Format:
 	// `organizations/{org-id}`.
 	Parent string `json:"parent,omitempty"`
-
-	// SessionDuration: Duration that the Google Cloud access tokens,
-	// console sign-in sessions, and `gcloud` sign-in sessions from this
-	// pool are valid. Must be greater than 15 minutes (900s) and less than
-	// 12 hours (43200s). If `session_duration` is not configured, minted
-	// credentials have a default duration of one hour (3600s). For SAML
-	// providers, the lifetime of the token is the minimum of the
-	// `session_duration` and the `SessionNotOnOrAfter` claim in the SAML
-	// assertion.
+	// SessionDuration: Duration that the Google Cloud access tokens, console
+	// sign-in sessions, and `gcloud` sign-in sessions from this pool are valid.
+	// Must be greater than 15 minutes (900s) and less than 12 hours (43200s). If
+	// `session_duration` is not configured, minted credentials have a default
+	// duration of one hour (3600s). For SAML providers, the lifetime of the token
+	// is the minimum of the `session_duration` and the `SessionNotOnOrAfter` claim
+	// in the SAML assertion.
 	SessionDuration string `json:"sessionDuration,omitempty"`
-
 	// State: Output only. The state of the pool.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
-	//   "ACTIVE" - The pool is active and may be used in Google Cloud
-	// policies.
-	//   "DELETED" - The pool is soft-deleted. Soft-deleted pools are
-	// permanently deleted after approximately 30 days. You can restore a
-	// soft-deleted pool using UndeleteWorkforcePool. You cannot reuse the
-	// ID of a soft-deleted pool until it is permanently deleted. While a
-	// pool is deleted, you cannot use it to exchange tokens, or use
-	// existing tokens to access resources. If the pool is undeleted,
-	// existing tokens grant access again.
+	//   "ACTIVE" - The pool is active and may be used in Google Cloud policies.
+	//   "DELETED" - The pool is soft-deleted. Soft-deleted pools are permanently
+	// deleted after approximately 30 days. You can restore a soft-deleted pool
+	// using UndeleteWorkforcePool. You cannot reuse the ID of a soft-deleted pool
+	// until it is permanently deleted. While a pool is deleted, you cannot use it
+	// to exchange tokens, or use existing tokens to access resources. If the pool
+	// is undeleted, existing tokens grant access again.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "AccessRestrictions")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AccessRestrictions") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AccessRestrictions") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AccessRestrictions") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkforcePool) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkforcePool
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePoolProvider: A configuration for an external identity
-// provider.
+// WorkforcePoolProvider: A configuration for an external identity provider.
 type WorkforcePoolProvider struct {
 	// AttributeCondition: A Common Expression Language
-	// (https://opensource.google/projects/cel) expression, in plain text,
-	// to restrict what otherwise valid authentication credentials issued by
-	// the provider should not be accepted. The expression must output a
-	// boolean representing whether to allow the federation. The following
-	// keywords may be referenced in the expressions: * `assertion`: JSON
-	// representing the authentication credential issued by the provider. *
-	// `google`: The Google attributes mapped from the assertion in the
-	// `attribute_mappings`. `google.profile_photo`, `google.display_name`
-	// and `google.posix_username` are not supported. * `attribute`: The
-	// custom attributes mapped from the assertion in the
-	// `attribute_mappings`. The maximum length of the attribute condition
-	// expression is 4096 characters. If unspecified, all valid
-	// authentication credentials will be accepted. The following example
-	// shows how to only allow credentials with a mapped `google.groups`
-	// value of `admins`: ``` "'admins' in google.groups" ```
+	// (https://opensource.google/projects/cel) expression, in plain text, to
+	// restrict what otherwise valid authentication credentials issued by the
+	// provider should not be accepted. The expression must output a boolean
+	// representing whether to allow the federation. The following keywords may be
+	// referenced in the expressions: * `assertion`: JSON representing the
+	// authentication credential issued by the provider. * `google`: The Google
+	// attributes mapped from the assertion in the `attribute_mappings`.
+	// `google.profile_photo`, `google.display_name` and `google.posix_username`
+	// are not supported. * `attribute`: The custom attributes mapped from the
+	// assertion in the `attribute_mappings`. The maximum length of the attribute
+	// condition expression is 4096 characters. If unspecified, all valid
+	// authentication credentials will be accepted. The following example shows how
+	// to only allow credentials with a mapped `google.groups` value of `admins`:
+	// ``` "'admins' in google.groups" ```
 	AttributeCondition string `json:"attributeCondition,omitempty"`
-
 	// AttributeMapping: Required. Maps attributes from the authentication
 	// credentials issued by an external identity provider to Google Cloud
-	// attributes, such as `subject` and `segment`. Each key must be a
-	// string specifying the Google Cloud IAM attribute to map to. The
-	// following keys are supported: * `google.subject`: The principal IAM
-	// is authenticating. You can reference this value in IAM bindings. This
-	// is also the subject that appears in Cloud Logging logs. This is a
-	// required field and the mapped subject cannot exceed 127 bytes. *
-	// `google.groups`: Groups the authenticating user belongs to. You can
-	// grant groups access to resources using an IAM `principalSet` binding;
-	// access applies to all members of the group. * `google.display_name`:
-	// The name of the authenticated user. This is an optional field and the
-	// mapped display name cannot exceed 100 bytes. If not set,
-	// `google.subject` will be displayed instead. This attribute cannot be
-	// referenced in IAM bindings. * `google.profile_photo`: The URL that
-	// specifies the authenticated user's thumbnail photo. This is an
-	// optional field. When set, the image will be visible as the user's
-	// profile picture. If not set, a generic user icon will be displayed
-	// instead. This attribute cannot be referenced in IAM bindings. *
-	// `google.posix_username`: The Linux username used by OS Login. This is
-	// an optional field and the mapped POSIX username cannot exceed 32
-	// characters, The key must match the regex "^a-zA-Z0-9._{0,31}$". This
-	// attribute cannot be referenced in IAM bindings. You can also provide
-	// custom attributes by specifying `attribute.{custom_attribute}`, where
-	// {custom_attribute} is the name of the custom attribute to be mapped.
-	// You can define a maximum of 50 custom attributes. The maximum length
-	// of a mapped attribute key is 100 characters, and the key may only
-	// contain the characters [a-z0-9_]. You can reference these attributes
-	// in IAM policies to define fine-grained access for a workforce pool to
-	// Google Cloud resources. For example: * `google.subject`:
-	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool}
-	// /subject/{value}` * `google.groups`:
-	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
-	// ol}/group/{value}` * `attribute.{custom_attribute}`:
-	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
-	// ol}/attribute.{custom_attribute}/{value}` Each value must be a
-	// [Common Expression Language] (https://opensource.google/projects/cel)
-	// function that maps an identity provider credential to the normalized
-	// attribute specified by the corresponding map key. You can use the
-	// `assertion` keyword in the expression to access a JSON representation
-	// of the authentication credential issued by the provider. The maximum
-	// length of an attribute mapping expression is 2048 characters. When
-	// evaluated, the total size of all mapped attributes must not exceed
-	// 4KB. For OIDC providers, you must supply a custom mapping that
-	// includes the `google.subject` attribute. For example, the following
-	// maps the `sub` claim of the incoming credential to the `subject`
-	// attribute on a Google token: ``` {"google.subject": "assertion.sub"}
-	// ```
+	// attributes, such as `subject` and `segment`. Each key must be a string
+	// specifying the Google Cloud IAM attribute to map to. The following keys are
+	// supported: * `google.subject`: The principal IAM is authenticating. You can
+	// reference this value in IAM bindings. This is also the subject that appears
+	// in Cloud Logging logs. This is a required field and the mapped subject
+	// cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user
+	// belongs to. You can grant groups access to resources using an IAM
+	// `principalSet` binding; access applies to all members of the group. *
+	// `google.display_name`: The name of the authenticated user. This is an
+	// optional field and the mapped display name cannot exceed 100 bytes. If not
+	// set, `google.subject` will be displayed instead. This attribute cannot be
+	// referenced in IAM bindings. * `google.profile_photo`: The URL that specifies
+	// the authenticated user's thumbnail photo. This is an optional field. When
+	// set, the image will be visible as the user's profile picture. If not set, a
+	// generic user icon will be displayed instead. This attribute cannot be
+	// referenced in IAM bindings. * `google.posix_username`: The Linux username
+	// used by OS Login. This is an optional field and the mapped POSIX username
+	// cannot exceed 32 characters, The key must match the regex
+	// "^a-zA-Z0-9._{0,31}$". This attribute cannot be referenced in IAM bindings.
+	// You can also provide custom attributes by specifying
+	// `attribute.{custom_attribute}`, where {custom_attribute} is the name of the
+	// custom attribute to be mapped. You can define a maximum of 50 custom
+	// attributes. The maximum length of a mapped attribute key is 100 characters,
+	// and the key may only contain the characters [a-z0-9_]. You can reference
+	// these attributes in IAM policies to define fine-grained access for a
+	// workforce pool to Google Cloud resources. For example: * `google.subject`:
+	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subjec
+	// t/{value}` * `google.groups`:
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/gro
+	// up/{value}` * `attribute.{custom_attribute}`:
+	// `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/att
+	// ribute.{custom_attribute}/{value}` Each value must be a [Common Expression
+	// Language] (https://opensource.google/projects/cel) function that maps an
+	// identity provider credential to the normalized attribute specified by the
+	// corresponding map key. You can use the `assertion` keyword in the expression
+	// to access a JSON representation of the authentication credential issued by
+	// the provider. The maximum length of an attribute mapping expression is 2048
+	// characters. When evaluated, the total size of all mapped attributes must not
+	// exceed 4KB. For OIDC providers, you must supply a custom mapping that
+	// includes the `google.subject` attribute. For example, the following maps the
+	// `sub` claim of the incoming credential to the `subject` attribute on a
+	// Google token: ``` {"google.subject": "assertion.sub"} ```
 	AttributeMapping map[string]string `json:"attributeMapping,omitempty"`
-
-	// Description: A user-specified description of the provider. Cannot
-	// exceed 256 characters.
+	// Description: A user-specified description of the provider. Cannot exceed 256
+	// characters.
 	Description string `json:"description,omitempty"`
-
-	// Disabled: Disables the workforce pool provider. You cannot use a
-	// disabled provider to exchange tokens. However, existing tokens still
-	// grant access.
+	// Disabled: Disables the workforce pool provider. You cannot use a disabled
+	// provider to exchange tokens. However, existing tokens still grant access.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: A user-specified display name for the provider. Cannot
-	// exceed 32 characters.
+	// DisplayName: A user-specified display name for the provider. Cannot exceed
+	// 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// ExpireTime: Output only. Time after which the workload pool provider
-	// will be permanently purged and cannot be recovered.
+	// ExpireTime: Output only. Time after which the workload pool provider will be
+	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-
-	// ExtraAttributesOauth2Client: Optional. The configuration for OAuth
-	// 2.0 client used to get the additional user attributes. This should be
-	// used when users can't get the desired claims in authentication
-	// credentials. Currently this configuration is only supported with OIDC
-	// protocol.
+	// ExtraAttributesOauth2Client: Optional. The configuration for OAuth 2.0
+	// client used to get the additional user attributes. This should be used when
+	// users can't get the desired claims in authentication credentials. Currently
+	// this configuration is only supported with OIDC protocol.
 	ExtraAttributesOauth2Client *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client `json:"extraAttributesOauth2Client,omitempty"`
-
 	// Name: Output only. The resource name of the provider. Format:
-	// `locations/{location}/workforcePools/{workforce_pool_id}/providers/{pr
-	// ovider_id}`
+	// `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_
+	// id}`
 	Name string `json:"name,omitempty"`
-
 	// Oidc: An OpenId Connect 1.0 identity provider configuration.
 	Oidc *GoogleIamAdminV1WorkforcePoolProviderOidc `json:"oidc,omitempty"`
-
 	// Saml: A SAML identity provider configuration.
 	Saml *GoogleIamAdminV1WorkforcePoolProviderSaml `json:"saml,omitempty"`
-
 	// State: Output only. The state of the provider.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
 	//   "ACTIVE" - The provider is active and may be used to validate
 	// authentication credentials.
-	//   "DELETED" - The provider is soft-deleted. Soft-deleted providers
-	// are permanently deleted after approximately 30 days. You can restore
-	// a soft-deleted provider using UndeleteWorkforcePoolProvider.
+	//   "DELETED" - The provider is soft-deleted. Soft-deleted providers are
+	// permanently deleted after approximately 30 days. You can restore a
+	// soft-deleted provider using UndeleteWorkforcePoolProvider.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "AttributeCondition")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AttributeCondition") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AttributeCondition") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AttributeCondition") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkforcePoolProvider) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkforcePoolProvider
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // WorkforcePoolProviderKey: Represents a public key configuration for a
-// Workforce Pool Provider. The key can be configured in your identity
-// provider to encrypt SAML assertions. Google holds the corresponding
-// private key, which it uses to decrypt encrypted tokens.
+// Workforce Pool Provider. The key can be configured in your identity provider
+// to encrypt SAML assertions. Google holds the corresponding private key,
+// which it uses to decrypt encrypted tokens.
 type WorkforcePoolProviderKey struct {
-	// ExpireTime: Output only. The time after which the key will be
-	// permanently deleted and cannot be recovered. Note that the key may
-	// get purged before this time if the total limit of keys per provider
-	// is exceeded.
+	// ExpireTime: Output only. The time after which the key will be permanently
+	// deleted and cannot be recovered. Note that the key may get purged before
+	// this time if the total limit of keys per provider is exceeded.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// KeyData: Immutable. Public half of the asymmetric key.
 	KeyData *KeyData `json:"keyData,omitempty"`
-
 	// Name: Output only. The resource name of the key.
 	Name string `json:"name,omitempty"`
-
 	// State: Output only. The state of the key.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
 	//   "ACTIVE" - The key is active.
-	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are
-	// permanently deleted after approximately 30 days. You can restore a
-	// soft-deleted key using UndeleteWorkforcePoolProviderKey.
+	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are permanently
+	// deleted after approximately 30 days. You can restore a soft-deleted key
+	// using UndeleteWorkforcePoolProviderKey.
 	State string `json:"state,omitempty"`
-
 	// Use: Required. The purpose of the key.
 	//
 	// Possible values:
@@ -4241,96 +3473,74 @@ type WorkforcePoolProviderKey struct {
 	//   "ENCRYPTION" - The key is used for encryption.
 	Use string `json:"use,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ExpireTime") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ExpireTime") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ExpireTime") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkforcePoolProviderKey) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkforcePoolProviderKey
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkloadIdentityPool: Represents a collection of workload identities.
-// You can define IAM policies to grant these identities access to
-// Google Cloud resources.
+// WorkloadIdentityPool: Represents a collection of workload identities. You
+// can define IAM policies to grant these identities access to Google Cloud
+// resources.
 type WorkloadIdentityPool struct {
 	// Description: A description of the pool. Cannot exceed 256 characters.
 	Description string `json:"description,omitempty"`
-
-	// Disabled: Whether the pool is disabled. You cannot use a disabled
-	// pool to exchange tokens, or use existing tokens to access resources.
-	// If the pool is re-enabled, existing tokens grant access again.
+	// Disabled: Whether the pool is disabled. You cannot use a disabled pool to
+	// exchange tokens, or use existing tokens to access resources. If the pool is
+	// re-enabled, existing tokens grant access again.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: A display name for the pool. Cannot exceed 32
-	// characters.
+	// DisplayName: A display name for the pool. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
-	// ExpireTime: Output only. Time after which the workload identity pool
-	// will be permanently purged and cannot be recovered.
+	// ExpireTime: Output only. Time after which the workload identity pool will be
+	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// Name: Output only. The resource name of the pool.
 	Name string `json:"name,omitempty"`
-
 	// State: Output only. The state of the pool.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
-	//   "ACTIVE" - The pool is active, and may be used in Google Cloud
-	// policies.
-	//   "DELETED" - The pool is soft-deleted. Soft-deleted pools are
-	// permanently deleted after approximately 30 days. You can restore a
-	// soft-deleted pool using UndeleteWorkloadIdentityPool. You cannot
-	// reuse the ID of a soft-deleted pool until it is permanently deleted.
-	// While a pool is deleted, you cannot use it to exchange tokens, or use
-	// existing tokens to access resources. If the pool is undeleted,
-	// existing tokens grant access again.
+	//   "ACTIVE" - The pool is active, and may be used in Google Cloud policies.
+	//   "DELETED" - The pool is soft-deleted. Soft-deleted pools are permanently
+	// deleted after approximately 30 days. You can restore a soft-deleted pool
+	// using UndeleteWorkloadIdentityPool. You cannot reuse the ID of a
+	// soft-deleted pool until it is permanently deleted. While a pool is deleted,
+	// you cannot use it to exchange tokens, or use existing tokens to access
+	// resources. If the pool is undeleted, existing tokens grant access again.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Description") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkloadIdentityPool) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPool
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 // WorkloadIdentityPoolOperationMetadata: Metadata for long-running
@@ -4338,171 +3548,138 @@ func (s *WorkloadIdentityPool) MarshalJSON() ([]byte, error) {
 type WorkloadIdentityPoolOperationMetadata struct {
 }
 
-// WorkloadIdentityPoolProvider: A configuration for an external
-// identity provider.
+// WorkloadIdentityPoolProvider: A configuration for an external identity
+// provider.
 type WorkloadIdentityPoolProvider struct {
 	// AttributeCondition: A Common Expression Language
-	// (https://opensource.google/projects/cel) expression, in plain text,
-	// to restrict what otherwise valid authentication credentials issued by
-	// the provider should not be accepted. The expression must output a
-	// boolean representing whether to allow the federation. The following
-	// keywords may be referenced in the expressions: * `assertion`: JSON
-	// representing the authentication credential issued by the provider. *
-	// `google`: The Google attributes mapped from the assertion in the
-	// `attribute_mappings`. * `attribute`: The custom attributes mapped
-	// from the assertion in the `attribute_mappings`. The maximum length of
-	// the attribute condition expression is 4096 characters. If
-	// unspecified, all valid authentication credential are accepted. The
-	// following example shows how to only allow credentials with a mapped
-	// `google.groups` value of `admins`: ``` "'admins' in google.groups"
-	// ```
+	// (https://opensource.google/projects/cel) expression, in plain text, to
+	// restrict what otherwise valid authentication credentials issued by the
+	// provider should not be accepted. The expression must output a boolean
+	// representing whether to allow the federation. The following keywords may be
+	// referenced in the expressions: * `assertion`: JSON representing the
+	// authentication credential issued by the provider. * `google`: The Google
+	// attributes mapped from the assertion in the `attribute_mappings`. *
+	// `attribute`: The custom attributes mapped from the assertion in the
+	// `attribute_mappings`. The maximum length of the attribute condition
+	// expression is 4096 characters. If unspecified, all valid authentication
+	// credential are accepted. The following example shows how to only allow
+	// credentials with a mapped `google.groups` value of `admins`: ``` "'admins'
+	// in google.groups" ```
 	AttributeCondition string `json:"attributeCondition,omitempty"`
-
-	// AttributeMapping:  Maps attributes from authentication credentials
-	// issued by an external identity provider to Google Cloud attributes,
-	// such as `subject` and `segment`. Each key must be a string specifying
-	// the Google Cloud IAM attribute to map to. The following keys are
-	// supported: * `google.subject`: The principal IAM is authenticating.
-	// You can reference this value in IAM bindings. This is also the
-	// subject that appears in Cloud Logging logs. Cannot exceed 127 bytes.
-	// * `google.groups`: Groups the external identity belongs to. You can
-	// grant groups access to resources using an IAM `principalSet` binding;
-	// access applies to all members of the group. You can also provide
-	// custom attributes by specifying `attribute.{custom_attribute}`, where
-	// `{custom_attribute}` is the name of the custom attribute to be
-	// mapped. You can define a maximum of 50 custom attributes. The maximum
-	// length of a mapped attribute key is 100 characters, and the key may
-	// only contain the characters [a-z0-9_]. You can reference these
-	// attributes in IAM policies to define fine-grained access for a
-	// workload to Google Cloud resources. For example: * `google.subject`:
-	// `principal://iam.googleapis.com/projects/{project}/locations/{location
-	// }/workloadIdentityPools/{pool}/subject/{value}` * `google.groups`:
-	// `principalSet://iam.googleapis.com/projects/{project}/locations/{locat
-	// ion}/workloadIdentityPools/{pool}/group/{value}` *
-	// `attribute.{custom_attribute}`:
-	// `principalSet://iam.googleapis.com/projects/{project}/locations/{locat
-	// ion}/workloadIdentityPools/{pool}/attribute.{custom_attribute}/{value}
-	// ` Each value must be a [Common Expression Language]
-	// (https://opensource.google/projects/cel) function that maps an
-	// identity provider credential to the normalized attribute specified by
-	// the corresponding map key. You can use the `assertion` keyword in the
-	// expression to access a JSON representation of the authentication
-	// credential issued by the provider. The maximum length of an attribute
-	// mapping expression is 2048 characters. When evaluated, the total size
-	// of all mapped attributes must not exceed 8KB. For AWS providers, if
-	// no attribute mapping is defined, the following default mapping
-	// applies: ``` { "google.subject":"assertion.arn",
+	// AttributeMapping:  Maps attributes from authentication credentials issued by
+	// an external identity provider to Google Cloud attributes, such as `subject`
+	// and `segment`. Each key must be a string specifying the Google Cloud IAM
+	// attribute to map to. The following keys are supported: * `google.subject`:
+	// The principal IAM is authenticating. You can reference this value in IAM
+	// bindings. This is also the subject that appears in Cloud Logging logs.
+	// Cannot exceed 127 bytes. * `google.groups`: Groups the external identity
+	// belongs to. You can grant groups access to resources using an IAM
+	// `principalSet` binding; access applies to all members of the group. You can
+	// also provide custom attributes by specifying `attribute.{custom_attribute}`,
+	// where `{custom_attribute}` is the name of the custom attribute to be mapped.
+	// You can define a maximum of 50 custom attributes. The maximum length of a
+	// mapped attribute key is 100 characters, and the key may only contain the
+	// characters [a-z0-9_]. You can reference these attributes in IAM policies to
+	// define fine-grained access for a workload to Google Cloud resources. For
+	// example: * `google.subject`:
+	// `principal://iam.googleapis.com/projects/{project}/locations/{location}/workl
+	// oadIdentityPools/{pool}/subject/{value}` * `google.groups`:
+	// `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/wo
+	// rkloadIdentityPools/{pool}/group/{value}` * `attribute.{custom_attribute}`:
+	// `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/wo
+	// rkloadIdentityPools/{pool}/attribute.{custom_attribute}/{value}` Each value
+	// must be a [Common Expression Language]
+	// (https://opensource.google/projects/cel) function that maps an identity
+	// provider credential to the normalized attribute specified by the
+	// corresponding map key. You can use the `assertion` keyword in the expression
+	// to access a JSON representation of the authentication credential issued by
+	// the provider. The maximum length of an attribute mapping expression is 2048
+	// characters. When evaluated, the total size of all mapped attributes must not
+	// exceed 8KB. For AWS providers, if no attribute mapping is defined, the
+	// following default mapping applies: ``` { "google.subject":"assertion.arn",
 	// "attribute.aws_role": "assertion.arn.contains('assumed-role')" " ?
-	// assertion.arn.extract('{account_arn}assumed-role/')" " +
-	// 'assumed-role/'" " +
-	// assertion.arn.extract('assumed-role/{role_name}/')" " :
-	// assertion.arn", } ``` If any custom attribute mappings are defined,
-	// they must include a mapping to the `google.subject` attribute. For
-	// OIDC providers, you must supply a custom mapping, which must include
-	// the `google.subject` attribute. For example, the following maps the
-	// `sub` claim of the incoming credential to the `subject` attribute on
-	// a Google token: ``` {"google.subject": "assertion.sub"} ```
+	// assertion.arn.extract('{account_arn}assumed-role/')" " + 'assumed-role/'" "
+	// + assertion.arn.extract('assumed-role/{role_name}/')" " : assertion.arn", }
+	// ``` If any custom attribute mappings are defined, they must include a
+	// mapping to the `google.subject` attribute. For OIDC providers, you must
+	// supply a custom mapping, which must include the `google.subject` attribute.
+	// For example, the following maps the `sub` claim of the incoming credential
+	// to the `subject` attribute on a Google token: ``` {"google.subject":
+	// "assertion.sub"} ```
 	AttributeMapping map[string]string `json:"attributeMapping,omitempty"`
-
 	// Aws: An Amazon Web Services identity provider.
 	Aws *Aws `json:"aws,omitempty"`
-
-	// Description: A description for the provider. Cannot exceed 256
-	// characters.
+	// Description: A description for the provider. Cannot exceed 256 characters.
 	Description string `json:"description,omitempty"`
-
 	// Disabled: Whether the provider is disabled. You cannot use a disabled
-	// provider to exchange tokens. However, existing tokens still grant
-	// access.
+	// provider to exchange tokens. However, existing tokens still grant access.
 	Disabled bool `json:"disabled,omitempty"`
-
-	// DisplayName: A display name for the provider. Cannot exceed 32
-	// characters.
+	// DisplayName: A display name for the provider. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-
 	// ExpireTime: Output only. Time after which the workload identity pool
 	// provider will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// Name: Output only. The resource name of the provider.
 	Name string `json:"name,omitempty"`
-
 	// Oidc: An OpenId Connect 1.0 identity provider.
 	Oidc *Oidc `json:"oidc,omitempty"`
-
 	// Saml: An SAML 2.0 identity provider.
 	Saml *Saml `json:"saml,omitempty"`
-
 	// State: Output only. The state of the provider.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
 	//   "ACTIVE" - The provider is active, and may be used to validate
 	// authentication credentials.
-	//   "DELETED" - The provider is soft-deleted. Soft-deleted providers
-	// are permanently deleted after approximately 30 days. You can restore
-	// a soft-deleted provider using UndeleteWorkloadIdentityPoolProvider.
-	// You cannot reuse the ID of a soft-deleted provider until it is
-	// permanently deleted.
+	//   "DELETED" - The provider is soft-deleted. Soft-deleted providers are
+	// permanently deleted after approximately 30 days. You can restore a
+	// soft-deleted provider using UndeleteWorkloadIdentityPoolProvider. You cannot
+	// reuse the ID of a soft-deleted provider until it is permanently deleted.
 	State string `json:"state,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "AttributeCondition")
-	// to unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AttributeCondition") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "AttributeCondition") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AttributeCondition") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkloadIdentityPoolProvider) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPoolProvider
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkloadIdentityPoolProviderKey: Represents a public key
-// configuration for your workload identity pool provider. The key can
-// be configured in your identity provider to encrypt the SAML
-// assertions. Google holds the corresponding private key which it uses
-// to decrypt encrypted tokens.
+// WorkloadIdentityPoolProviderKey: Represents a public key configuration for
+// your workload identity pool provider. The key can be configured in your
+// identity provider to encrypt the SAML assertions. Google holds the
+// corresponding private key which it uses to decrypt encrypted tokens.
 type WorkloadIdentityPoolProviderKey struct {
-	// ExpireTime: Output only. Time after which the key will be permanently
-	// purged and cannot be recovered. Note that the key may get purged
-	// before this timestamp if the total limit of keys per provider is
-	// crossed.
+	// ExpireTime: Output only. Time after which the key will be permanently purged
+	// and cannot be recovered. Note that the key may get purged before this
+	// timestamp if the total limit of keys per provider is crossed.
 	ExpireTime string `json:"expireTime,omitempty"`
-
 	// KeyData: Immutable. Public half of the asymmetric key.
 	KeyData *KeyData `json:"keyData,omitempty"`
-
 	// Name: Output only. The resource name of the key.
 	Name string `json:"name,omitempty"`
-
 	// State: Output only. The state of the key.
 	//
 	// Possible values:
 	//   "STATE_UNSPECIFIED" - State unspecified.
 	//   "ACTIVE" - The key is active.
-	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are
-	// permanently deleted after approximately 30 days. You can restore a
-	// soft-deleted key using UndeleteWorkloadIdentityPoolProviderKey. While
-	// a key is deleted, you cannot use it during the federation.
+	//   "DELETED" - The key is soft-deleted. Soft-deleted keys are permanently
+	// deleted after approximately 30 days. You can restore a soft-deleted key
+	// using UndeleteWorkloadIdentityPoolProviderKey. While a key is deleted, you
+	// cannot use it during the federation.
 	State string `json:"state,omitempty"`
-
 	// Use: Required. The purpose of the key.
 	//
 	// Possible values:
@@ -4510,34 +3687,25 @@ type WorkloadIdentityPoolProviderKey struct {
 	//   "ENCRYPTION" - The public key is used for encryption purposes.
 	Use string `json:"use,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "ExpireTime") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "ExpireTime") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "ExpireTime") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *WorkloadIdentityPoolProviderKey) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadIdentityPoolProviderKey
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "iam.iamPolicies.lintPolicy":
 
 type IamPoliciesLintPolicyCall struct {
 	s                 *Service
@@ -4548,10 +3716,9 @@ type IamPoliciesLintPolicyCall struct {
 }
 
 // LintPolicy: Lints, or validates, an IAM policy. Currently checks the
-// google.iam.v1.Binding.condition field, which contains a condition
-// expression for a role binding. Successful calls to this method always
-// return an HTTP `200 OK` status code, even if the linter detects an
-// issue in the IAM policy.
+// google.iam.v1.Binding.condition field, which contains a condition expression
+// for a role binding. Successful calls to this method always return an HTTP
+// `200 OK` status code, even if the linter detects an issue in the IAM policy.
 func (r *IamPoliciesService) LintPolicy(lintpolicyrequest *LintPolicyRequest) *IamPoliciesLintPolicyCall {
 	c := &IamPoliciesLintPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.lintpolicyrequest = lintpolicyrequest
@@ -4559,23 +3726,21 @@ func (r *IamPoliciesService) LintPolicy(lintpolicyrequest *LintPolicyRequest) *I
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *IamPoliciesLintPolicyCall) Fields(s ...googleapi.Field) *IamPoliciesLintPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *IamPoliciesLintPolicyCall) Context(ctx context.Context) *IamPoliciesLintPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *IamPoliciesLintPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4584,18 +3749,12 @@ func (c *IamPoliciesLintPolicyCall) Header() http.Header {
 }
 
 func (c *IamPoliciesLintPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.lintpolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/iamPolicies:lintPolicy")
@@ -4609,12 +3768,11 @@ func (c *IamPoliciesLintPolicyCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "iam.iamPolicies.lintPolicy" call.
-// Exactly one of *LintPolicyResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *LintPolicyResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *LintPolicyResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *IamPoliciesLintPolicyCall) Do(opts ...googleapi.CallOption) (*LintPolicyResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4645,28 +3803,7 @@ func (c *IamPoliciesLintPolicyCall) Do(opts ...googleapi.CallOption) (*LintPolic
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lints, or validates, an IAM policy. Currently checks the google.iam.v1.Binding.condition field, which contains a condition expression for a role binding. Successful calls to this method always return an HTTP `200 OK` status code, even if the linter detects an issue in the IAM policy.",
-	//   "flatPath": "v1/iamPolicies:lintPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "iam.iamPolicies.lintPolicy",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/iamPolicies:lintPolicy",
-	//   "request": {
-	//     "$ref": "LintPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "LintPolicyResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.iamPolicies.queryAuditableServices":
 
 type IamPoliciesQueryAuditableServicesCall struct {
 	s                             *Service
@@ -4676,9 +3813,9 @@ type IamPoliciesQueryAuditableServicesCall struct {
 	header_                       http.Header
 }
 
-// QueryAuditableServices: Returns a list of services that allow you to
-// opt into audit logs that are not generated by default. To learn more
-// about audit logs, see the Logging documentation
+// QueryAuditableServices: Returns a list of services that allow you to opt
+// into audit logs that are not generated by default. To learn more about audit
+// logs, see the Logging documentation
 // (https://cloud.google.com/logging/docs/audit).
 func (r *IamPoliciesService) QueryAuditableServices(queryauditableservicesrequest *QueryAuditableServicesRequest) *IamPoliciesQueryAuditableServicesCall {
 	c := &IamPoliciesQueryAuditableServicesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -4687,23 +3824,21 @@ func (r *IamPoliciesService) QueryAuditableServices(queryauditableservicesreques
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *IamPoliciesQueryAuditableServicesCall) Fields(s ...googleapi.Field) *IamPoliciesQueryAuditableServicesCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *IamPoliciesQueryAuditableServicesCall) Context(ctx context.Context) *IamPoliciesQueryAuditableServicesCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *IamPoliciesQueryAuditableServicesCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4712,18 +3847,12 @@ func (c *IamPoliciesQueryAuditableServicesCall) Header() http.Header {
 }
 
 func (c *IamPoliciesQueryAuditableServicesCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.queryauditableservicesrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/iamPolicies:queryAuditableServices")
@@ -4737,12 +3866,11 @@ func (c *IamPoliciesQueryAuditableServicesCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.iamPolicies.queryAuditableServices" call.
-// Exactly one of *QueryAuditableServicesResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *QueryAuditableServicesResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *QueryAuditableServicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *IamPoliciesQueryAuditableServicesCall) Do(opts ...googleapi.CallOption) (*QueryAuditableServicesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4773,28 +3901,7 @@ func (c *IamPoliciesQueryAuditableServicesCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns a list of services that allow you to opt into audit logs that are not generated by default. To learn more about audit logs, see the [Logging documentation](https://cloud.google.com/logging/docs/audit).",
-	//   "flatPath": "v1/iamPolicies:queryAuditableServices",
-	//   "httpMethod": "POST",
-	//   "id": "iam.iamPolicies.queryAuditableServices",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/iamPolicies:queryAuditableServices",
-	//   "request": {
-	//     "$ref": "QueryAuditableServicesRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "QueryAuditableServicesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.create":
 
 type LocationsWorkforcePoolsCreateCall struct {
 	s             *Service
@@ -4805,8 +3912,8 @@ type LocationsWorkforcePoolsCreateCall struct {
 	header_       http.Header
 }
 
-// Create: Creates a new WorkforcePool. You cannot reuse the name of a
-// deleted pool until 30 days after deletion.
+// Create: Creates a new WorkforcePool. You cannot reuse the name of a deleted
+// pool until 30 days after deletion.
 //
 //   - location: The location of the pool to create. Format:
 //     `locations/{location}`.
@@ -4817,35 +3924,32 @@ func (r *LocationsWorkforcePoolsService) Create(location string, workforcepool *
 	return c
 }
 
-// WorkforcePoolId sets the optional parameter "workforcePoolId": The ID
-// to use for the pool, which becomes the final component of the
-// resource name. The IDs must be a globally unique string of 6 to 63
-// lowercase letters, digits, or hyphens. It must start with a letter,
-// and cannot have a trailing hyphen. The prefix `gcp-` is reserved for
-// use by Google, and may not be specified.
+// WorkforcePoolId sets the optional parameter "workforcePoolId": The ID to use
+// for the pool, which becomes the final component of the resource name. The
+// IDs must be a globally unique string of 6 to 63 lowercase letters, digits,
+// or hyphens. It must start with a letter, and cannot have a trailing hyphen.
+// The prefix `gcp-` is reserved for use by Google, and may not be specified.
 func (c *LocationsWorkforcePoolsCreateCall) WorkforcePoolId(workforcePoolId string) *LocationsWorkforcePoolsCreateCall {
 	c.urlParams_.Set("workforcePoolId", workforcePoolId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -4854,18 +3958,12 @@ func (c *LocationsWorkforcePoolsCreateCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepool)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+location}/workforcePools")
@@ -4882,12 +3980,10 @@ func (c *LocationsWorkforcePoolsCreateCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.locations.workforcePools.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -4918,43 +4014,7 @@ func (c *LocationsWorkforcePoolsCreateCall) Do(opts ...googleapi.CallOption) (*O
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new WorkforcePool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.create",
-	//   "parameterOrder": [
-	//     "location"
-	//   ],
-	//   "parameters": {
-	//     "location": {
-	//       "description": "The location of the pool to create. Format: `locations/{location}`.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workforcePoolId": {
-	//       "description": "The ID to use for the pool, which becomes the final component of the resource name. The IDs must be a globally unique string of 6 to 63 lowercase letters, digits, or hyphens. It must start with a letter, and cannot have a trailing hyphen. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+location}/workforcePools",
-	//   "request": {
-	//     "$ref": "WorkforcePool"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.delete":
 
 type LocationsWorkforcePoolsDeleteCall struct {
 	s          *Service
@@ -4964,14 +4024,14 @@ type LocationsWorkforcePoolsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePool. You cannot use a deleted
-// WorkforcePool to exchange external credentials for Google Cloud
-// credentials. However, deletion does not revoke credentials that have
-// already been issued. Credentials issued for a deleted pool do not
-// grant access to resources. If the pool is undeleted, and the
-// credentials are not expired, they grant access again. You can
-// undelete a pool for 30 days. After 30 days, deletion is permanent.
-// You cannot update deleted pools. However, you can view and list them.
+// Delete: Deletes a WorkforcePool. You cannot use a deleted WorkforcePool to
+// exchange external credentials for Google Cloud credentials. However,
+// deletion does not revoke credentials that have already been issued.
+// Credentials issued for a deleted pool do not grant access to resources. If
+// the pool is undeleted, and the credentials are not expired, they grant
+// access again. You can undelete a pool for 30 days. After 30 days, deletion
+// is permanent. You cannot update deleted pools. However, you can view and
+// list them.
 //
 //   - name: The name of the pool to delete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}`.
@@ -4982,23 +4042,21 @@ func (r *LocationsWorkforcePoolsService) Delete(name string) *LocationsWorkforce
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5007,12 +4065,7 @@ func (c *LocationsWorkforcePoolsDeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -5030,12 +4083,10 @@ func (c *LocationsWorkforcePoolsDeleteCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.locations.workforcePools.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5066,35 +4117,7 @@ func (c *LocationsWorkforcePoolsDeleteCall) Do(opts ...googleapi.CallOption) (*O
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkforcePool. You cannot use a deleted WorkforcePool to exchange external credentials for Google Cloud credentials. However, deletion does not revoke credentials that have already been issued. Credentials issued for a deleted pool do not grant access to resources. If the pool is undeleted, and the credentials are not expired, they grant access again. You can undelete a pool for 30 days. After 30 days, deletion is permanent. You cannot update deleted pools. However, you can view and list them.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.locations.workforcePools.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to delete. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.get":
 
 type LocationsWorkforcePoolsGetCall struct {
 	s            *Service
@@ -5116,33 +4139,29 @@ func (r *LocationsWorkforcePoolsService) Get(name string) *LocationsWorkforcePoo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5151,12 +4170,7 @@ func (c *LocationsWorkforcePoolsGetCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5177,12 +4191,10 @@ func (c *LocationsWorkforcePoolsGetCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "iam.locations.workforcePools.get" call.
-// Exactly one of *WorkforcePool or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *WorkforcePool.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePool.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePool, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5213,35 +4225,7 @@ func (c *LocationsWorkforcePoolsGetCall) Do(opts ...googleapi.CallOption) (*Work
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual WorkforcePool.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkforcePool"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.getIamPolicy":
 
 type LocationsWorkforcePoolsGetIamPolicyCall struct {
 	s                   *Service
@@ -5254,10 +4238,9 @@ type LocationsWorkforcePoolsGetIamPolicyCall struct {
 
 // GetIamPolicy: Gets IAM policies on a WorkforcePool.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *LocationsWorkforcePoolsService) GetIamPolicy(resource string, getiampolicyrequest *GetIamPolicyRequest) *LocationsWorkforcePoolsGetIamPolicyCall {
 	c := &LocationsWorkforcePoolsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5266,23 +4249,21 @@ func (r *LocationsWorkforcePoolsService) GetIamPolicy(resource string, getiampol
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsGetIamPolicyCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsGetIamPolicyCall) Context(ctx context.Context) *LocationsWorkforcePoolsGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5291,18 +4272,12 @@ func (c *LocationsWorkforcePoolsGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.getiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:getIamPolicy")
@@ -5319,12 +4294,10 @@ func (c *LocationsWorkforcePoolsGetIamPolicyCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.locations.workforcePools.getIamPolicy" call.
-// Exactly one of *Policy or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Policy.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5355,38 +4328,7 @@ func (c *LocationsWorkforcePoolsGetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets IAM policies on a WorkforcePool.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:getIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "request": {
-	//     "$ref": "GetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.list":
 
 type LocationsWorkforcePoolsListCall struct {
 	s            *Service
@@ -5397,9 +4339,8 @@ type LocationsWorkforcePoolsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted WorkforcePools under the specified
-// parent. If `show_deleted` is set to `true`, then deleted pools are
-// also listed.
+// List: Lists all non-deleted WorkforcePools under the specified parent. If
+// `show_deleted` is set to `true`, then deleted pools are also listed.
 //
 // - location: The location of the pool. Format: `locations/{location}`.
 func (r *LocationsWorkforcePoolsService) List(location string) *LocationsWorkforcePoolsListCall {
@@ -5408,65 +4349,60 @@ func (r *LocationsWorkforcePoolsService) List(location string) *LocationsWorkfor
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of pools to return. If unspecified, at most 50 pools will be
-// returned. The maximum value is 1000; values above 1000 are truncated
-// to 1000.
+// PageSize sets the optional parameter "pageSize": The maximum number of pools
+// to return. If unspecified, at most 50 pools will be returned. The maximum
+// value is 1000; values above 1000 are truncated to 1000.
 func (c *LocationsWorkforcePoolsListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkforcePools` call. Provide this to
-// retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkforcePools` call. Provide this to retrieve the
+// subsequent page.
 func (c *LocationsWorkforcePoolsListCall) PageToken(pageToken string) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Parent sets the optional parameter "parent": Required. The parent
-// resource to list pools for. Format: `organizations/{org-id}`.
+// Parent sets the optional parameter "parent": Required. The parent resource
+// to list pools for. Format: `organizations/{org-id}`.
 func (c *LocationsWorkforcePoolsListCall) Parent(parent string) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("parent", parent)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted pools.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted pools.
 func (c *LocationsWorkforcePoolsListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsListCall) Context(ctx context.Context) *LocationsWorkforcePoolsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5475,12 +4411,7 @@ func (c *LocationsWorkforcePoolsListCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -5501,12 +4432,11 @@ func (c *LocationsWorkforcePoolsListCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "iam.locations.workforcePools.list" call.
-// Exactly one of *ListWorkforcePoolsResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *ListWorkforcePoolsResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *ListWorkforcePoolsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5537,53 +4467,6 @@ func (c *LocationsWorkforcePoolsListCall) Do(opts ...googleapi.CallOption) (*Lis
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkforcePools under the specified parent. If `show_deleted` is set to `true`, then deleted pools are also listed.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.list",
-	//   "parameterOrder": [
-	//     "location"
-	//   ],
-	//   "parameters": {
-	//     "location": {
-	//       "description": "The location of the pool. Format: `locations/{location}`.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "The maximum number of pools to return. If unspecified, at most 50 pools will be returned. The maximum value is 1000; values above 1000 are truncated to 1000.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkforcePools` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource to list pools for. Format: `organizations/{org-id}`.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft-deleted pools.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+location}/workforcePools",
-	//   "response": {
-	//     "$ref": "ListWorkforcePoolsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -5591,7 +4474,7 @@ func (c *LocationsWorkforcePoolsListCall) Do(opts ...googleapi.CallOption) (*Lis
 // The provided context supersedes any context provided to the Context method.
 func (c *LocationsWorkforcePoolsListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -5606,8 +4489,6 @@ func (c *LocationsWorkforcePoolsListCall) Pages(ctx context.Context, f func(*Lis
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "iam.locations.workforcePools.patch":
 
 type LocationsWorkforcePoolsPatchCall struct {
 	s             *Service
@@ -5629,31 +4510,29 @@ func (r *LocationsWorkforcePoolsService) Patch(name string, workforcepool *Workf
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *LocationsWorkforcePoolsPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsPatchCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsPatchCall) Context(ctx context.Context) *LocationsWorkforcePoolsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5662,18 +4541,12 @@ func (c *LocationsWorkforcePoolsPatchCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepool)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -5690,12 +4563,10 @@ func (c *LocationsWorkforcePoolsPatchCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "iam.locations.workforcePools.patch" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5726,44 +4597,7 @@ func (c *LocationsWorkforcePoolsPatchCall) Do(opts ...googleapi.CallOption) (*Op
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing WorkforcePool.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.locations.workforcePools.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource name of the pool. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "WorkforcePool"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.setIamPolicy":
 
 type LocationsWorkforcePoolsSetIamPolicyCall struct {
 	s                   *Service
@@ -5776,10 +4610,9 @@ type LocationsWorkforcePoolsSetIamPolicyCall struct {
 
 // SetIamPolicy: Sets IAM policies on a WorkforcePool.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *LocationsWorkforcePoolsService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *LocationsWorkforcePoolsSetIamPolicyCall {
 	c := &LocationsWorkforcePoolsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5788,23 +4621,21 @@ func (r *LocationsWorkforcePoolsService) SetIamPolicy(resource string, setiampol
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsSetIamPolicyCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsSetIamPolicyCall) Context(ctx context.Context) *LocationsWorkforcePoolsSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5813,18 +4644,12 @@ func (c *LocationsWorkforcePoolsSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -5841,12 +4666,10 @@ func (c *LocationsWorkforcePoolsSetIamPolicyCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.locations.workforcePools.setIamPolicy" call.
-// Exactly one of *Policy or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Policy.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -5877,38 +4700,7 @@ func (c *LocationsWorkforcePoolsSetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets IAM policies on a WorkforcePool.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.testIamPermissions":
 
 type LocationsWorkforcePoolsTestIamPermissionsCall struct {
 	s                         *Service
@@ -5919,14 +4711,14 @@ type LocationsWorkforcePoolsTestIamPermissionsCall struct {
 	header_                   http.Header
 }
 
-// TestIamPermissions: Returns the caller's permissions on the
-// WorkforcePool. If the pool doesn't exist, this call returns an empty
-// set of permissions. It doesn't return a `NOT_FOUND` error.
+// TestIamPermissions: Returns the caller's permissions on the WorkforcePool.
+// If the pool doesn't exist, this call returns an empty set of permissions. It
+// doesn't return a `NOT_FOUND` error.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *LocationsWorkforcePoolsService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *LocationsWorkforcePoolsTestIamPermissionsCall {
 	c := &LocationsWorkforcePoolsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5935,23 +4727,21 @@ func (r *LocationsWorkforcePoolsService) TestIamPermissions(resource string, tes
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Context(ctx context.Context) *LocationsWorkforcePoolsTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -5960,18 +4750,12 @@ func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -5988,12 +4772,11 @@ func (c *LocationsWorkforcePoolsTestIamPermissionsCall) doRequest(alt string) (*
 }
 
 // Do executes the "iam.locations.workforcePools.testIamPermissions" call.
-// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6024,38 +4807,7 @@ func (c *LocationsWorkforcePoolsTestIamPermissionsCall) Do(opts ...googleapi.Cal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Returns the caller's permissions on the WorkforcePool. If the pool doesn't exist, this call returns an empty set of permissions. It doesn't return a `NOT_FOUND` error.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.undelete":
 
 type LocationsWorkforcePoolsUndeleteCall struct {
 	s                            *Service
@@ -6066,8 +4818,8 @@ type LocationsWorkforcePoolsUndeleteCall struct {
 	header_                      http.Header
 }
 
-// Undelete: Undeletes a WorkforcePool, as long as it was deleted fewer
-// than 30 days ago.
+// Undelete: Undeletes a WorkforcePool, as long as it was deleted fewer than 30
+// days ago.
 //
 //   - name: The name of the pool to undelete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}`.
@@ -6079,23 +4831,21 @@ func (r *LocationsWorkforcePoolsService) Undelete(name string, undeleteworkforce
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6104,18 +4854,12 @@ func (c *LocationsWorkforcePoolsUndeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkforcepoolrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -6132,12 +4876,10 @@ func (c *LocationsWorkforcePoolsUndeleteCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "iam.locations.workforcePools.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6168,38 +4910,7 @@ func (c *LocationsWorkforcePoolsUndeleteCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkforcePool, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to undelete. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkforcePoolRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.operations.get":
 
 type LocationsWorkforcePoolsOperationsGetCall struct {
 	s            *Service
@@ -6210,9 +4921,9 @@ type LocationsWorkforcePoolsOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *LocationsWorkforcePoolsOperationsService) Get(name string) *LocationsWorkforcePoolsOperationsGetCall {
@@ -6222,33 +4933,29 @@ func (r *LocationsWorkforcePoolsOperationsService) Get(name string) *LocationsWo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsOperationsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsOperationsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsOperationsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6257,12 +4964,7 @@ func (c *LocationsWorkforcePoolsOperationsGetCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6283,12 +4985,10 @@ func (c *LocationsWorkforcePoolsOperationsGetCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "iam.locations.workforcePools.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6319,35 +5019,7 @@ func (c *LocationsWorkforcePoolsOperationsGetCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.create":
 
 type LocationsWorkforcePoolsProvidersCreateCall struct {
 	s                     *Service
@@ -6358,9 +5030,8 @@ type LocationsWorkforcePoolsProvidersCreateCall struct {
 	header_               http.Header
 }
 
-// Create: Creates a new WorkforcePoolProvider in a WorkforcePool. You
-// cannot reuse the name of a deleted provider until 30 days after
-// deletion.
+// Create: Creates a new WorkforcePoolProvider in a WorkforcePool. You cannot
+// reuse the name of a deleted provider until 30 days after deletion.
 //
 //   - parent: The pool to create this provider in. Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}`.
@@ -6372,33 +5043,31 @@ func (r *LocationsWorkforcePoolsProvidersService) Create(parent string, workforc
 }
 
 // WorkforcePoolProviderId sets the optional parameter
-// "workforcePoolProviderId": Required. The ID for the provider, which
-// becomes the final component of the resource name. This value must be
-// 4-32 characters, and may contain the characters [a-z0-9-]. The prefix
-// `gcp-` is reserved for use by Google, and may not be specified.
+// "workforcePoolProviderId": Required. The ID for the provider, which becomes
+// the final component of the resource name. This value must be 4-32
+// characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is
+// reserved for use by Google, and may not be specified.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) WorkforcePoolProviderId(workforcePoolProviderId string) *LocationsWorkforcePoolsProvidersCreateCall {
 	c.urlParams_.Set("workforcePoolProviderId", workforcePoolProviderId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6407,18 +5076,12 @@ func (c *LocationsWorkforcePoolsProvidersCreateCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepoolprovider)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/providers")
@@ -6435,12 +5098,10 @@ func (c *LocationsWorkforcePoolsProvidersCreateCall) doRequest(alt string) (*htt
 }
 
 // Do executes the "iam.locations.workforcePools.providers.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6471,43 +5132,7 @@ func (c *LocationsWorkforcePoolsProvidersCreateCall) Do(opts ...googleapi.CallOp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new WorkforcePoolProvider in a WorkforcePool. You cannot reuse the name of a deleted provider until 30 days after deletion.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.providers.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The pool to create this provider in. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workforcePoolProviderId": {
-	//       "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/providers",
-	//   "request": {
-	//     "$ref": "WorkforcePoolProvider"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.delete":
 
 type LocationsWorkforcePoolsProvidersDeleteCall struct {
 	s          *Service
@@ -6517,15 +5142,15 @@ type LocationsWorkforcePoolsProvidersDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePoolProvider. Deleting a provider does not
-// revoke credentials that have already been issued; they continue to
-// grant access. You can undelete a provider for 30 days. After 30 days,
-// deletion is permanent. You cannot update deleted providers. However,
-// you can view and list them.
+// Delete: Deletes a WorkforcePoolProvider. Deleting a provider does not revoke
+// credentials that have already been issued; they continue to grant access.
+// You can undelete a provider for 30 days. After 30 days, deletion is
+// permanent. You cannot update deleted providers. However, you can view and
+// list them.
 //
 //   - name: The name of the provider to delete. Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
-//     provider_id}`.
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provide
+//     r_id}`.
 func (r *LocationsWorkforcePoolsProvidersService) Delete(name string) *LocationsWorkforcePoolsProvidersDeleteCall {
 	c := &LocationsWorkforcePoolsProvidersDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6533,23 +5158,21 @@ func (r *LocationsWorkforcePoolsProvidersService) Delete(name string) *Locations
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6558,12 +5181,7 @@ func (c *LocationsWorkforcePoolsProvidersDeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -6581,12 +5199,10 @@ func (c *LocationsWorkforcePoolsProvidersDeleteCall) doRequest(alt string) (*htt
 }
 
 // Do executes the "iam.locations.workforcePools.providers.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6617,35 +5233,7 @@ func (c *LocationsWorkforcePoolsProvidersDeleteCall) Do(opts ...googleapi.CallOp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkforcePoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.locations.workforcePools.providers.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to delete. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.get":
 
 type LocationsWorkforcePoolsProvidersGetCall struct {
 	s            *Service
@@ -6659,8 +5247,8 @@ type LocationsWorkforcePoolsProvidersGetCall struct {
 // Get: Gets an individual WorkforcePoolProvider.
 //
 //   - name: The name of the provider to retrieve. Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
-//     provider_id}`.
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provide
+//     r_id}`.
 func (r *LocationsWorkforcePoolsProvidersService) Get(name string) *LocationsWorkforcePoolsProvidersGetCall {
 	c := &LocationsWorkforcePoolsProvidersGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6668,33 +5256,29 @@ func (r *LocationsWorkforcePoolsProvidersService) Get(name string) *LocationsWor
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6703,12 +5287,7 @@ func (c *LocationsWorkforcePoolsProvidersGetCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6729,12 +5308,11 @@ func (c *LocationsWorkforcePoolsProvidersGetCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.locations.workforcePools.providers.get" call.
-// Exactly one of *WorkforcePoolProvider or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *WorkforcePoolProvider.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProvider.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *LocationsWorkforcePoolsProvidersGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProvider, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6765,35 +5343,7 @@ func (c *LocationsWorkforcePoolsProvidersGetCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual WorkforcePoolProvider.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkforcePoolProvider"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.list":
 
 type LocationsWorkforcePoolsProvidersListCall struct {
 	s            *Service
@@ -6804,9 +5354,8 @@ type LocationsWorkforcePoolsProvidersListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted WorkforcePoolProviders in a
-// WorkforcePool. If `show_deleted` is set to `true`, then deleted
-// providers are also listed.
+// List: Lists all non-deleted WorkforcePoolProviders in a WorkforcePool. If
+// `show_deleted` is set to `true`, then deleted providers are also listed.
 //
 //   - parent: The pool to list providers for. Format:
 //     `locations/{location}/workforcePools/{workforce_pool_id}`.
@@ -6816,58 +5365,53 @@ func (r *LocationsWorkforcePoolsProvidersService) List(parent string) *Locations
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of providers to return. If unspecified, at most 50 providers are
-// returned. The maximum value is 100; values above 100 are truncated to
-// 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// providers to return. If unspecified, at most 50 providers are returned. The
+// maximum value is 100; values above 100 are truncated to 100.
 func (c *LocationsWorkforcePoolsProvidersListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkforcePoolProviders` call. Provide
-// this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkforcePoolProviders` call. Provide this to retrieve
+// the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted providers.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted providers.
 func (c *LocationsWorkforcePoolsProvidersListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersListCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -6876,12 +5420,7 @@ func (c *LocationsWorkforcePoolsProvidersListCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -6902,13 +5441,11 @@ func (c *LocationsWorkforcePoolsProvidersListCall) doRequest(alt string) (*http.
 }
 
 // Do executes the "iam.locations.workforcePools.providers.list" call.
-// Exactly one of *ListWorkforcePoolProvidersResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListWorkforcePoolProvidersResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkforcePoolProvidersResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolProvidersResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -6939,48 +5476,6 @@ func (c *LocationsWorkforcePoolsProvidersListCall) Do(opts ...googleapi.CallOpti
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkforcePoolProviders in a WorkforcePool. If `show_deleted` is set to `true`, then deleted providers are also listed.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of providers to return. If unspecified, at most 50 providers are returned. The maximum value is 100; values above 100 are truncated to 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkforcePoolProviders` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The pool to list providers for. Format: `locations/{location}/workforcePools/{workforce_pool_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft-deleted providers.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/providers",
-	//   "response": {
-	//     "$ref": "ListWorkforcePoolProvidersResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -6988,7 +5483,7 @@ func (c *LocationsWorkforcePoolsProvidersListCall) Do(opts ...googleapi.CallOpti
 // The provided context supersedes any context provided to the Context method.
 func (c *LocationsWorkforcePoolsProvidersListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolProvidersResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -7004,8 +5499,6 @@ func (c *LocationsWorkforcePoolsProvidersListCall) Pages(ctx context.Context, f 
 	}
 }
 
-// method id "iam.locations.workforcePools.providers.patch":
-
 type LocationsWorkforcePoolsProvidersPatchCall struct {
 	s                     *Service
 	name                  string
@@ -7018,8 +5511,8 @@ type LocationsWorkforcePoolsProvidersPatchCall struct {
 // Patch: Updates an existing WorkforcePoolProvider.
 //
 //   - name: Output only. The resource name of the provider. Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
-//     provider_id}`.
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provide
+//     r_id}`.
 func (r *LocationsWorkforcePoolsProvidersService) Patch(name string, workforcepoolprovider *WorkforcePoolProvider) *LocationsWorkforcePoolsProvidersPatchCall {
 	c := &LocationsWorkforcePoolsProvidersPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7027,31 +5520,29 @@ func (r *LocationsWorkforcePoolsProvidersService) Patch(name string, workforcepo
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *LocationsWorkforcePoolsProvidersPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersPatchCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersPatchCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7060,18 +5551,12 @@ func (c *LocationsWorkforcePoolsProvidersPatchCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepoolprovider)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -7088,12 +5573,10 @@ func (c *LocationsWorkforcePoolsProvidersPatchCall) doRequest(alt string) (*http
 }
 
 // Do executes the "iam.locations.workforcePools.providers.patch" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7124,44 +5607,7 @@ func (c *LocationsWorkforcePoolsProvidersPatchCall) Do(opts ...googleapi.CallOpt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing WorkforcePoolProvider.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.locations.workforcePools.providers.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource name of the provider. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "WorkforcePoolProvider"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.undelete":
 
 type LocationsWorkforcePoolsProvidersUndeleteCall struct {
 	s                                    *Service
@@ -7172,12 +5618,12 @@ type LocationsWorkforcePoolsProvidersUndeleteCall struct {
 	header_                              http.Header
 }
 
-// Undelete: Undeletes a WorkforcePoolProvider, as long as it was
-// deleted fewer than 30 days ago.
+// Undelete: Undeletes a WorkforcePoolProvider, as long as it was deleted fewer
+// than 30 days ago.
 //
 //   - name: The name of the provider to undelete. Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
-//     provider_id}`.
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provide
+//     r_id}`.
 func (r *LocationsWorkforcePoolsProvidersService) Undelete(name string, undeleteworkforcepoolproviderrequest *UndeleteWorkforcePoolProviderRequest) *LocationsWorkforcePoolsProvidersUndeleteCall {
 	c := &LocationsWorkforcePoolsProvidersUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7186,23 +5632,21 @@ func (r *LocationsWorkforcePoolsProvidersService) Undelete(name string, undelete
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7211,18 +5655,12 @@ func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkforcepoolproviderrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -7239,12 +5677,10 @@ func (c *LocationsWorkforcePoolsProvidersUndeleteCall) doRequest(alt string) (*h
 }
 
 // Do executes the "iam.locations.workforcePools.providers.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7275,38 +5711,7 @@ func (c *LocationsWorkforcePoolsProvidersUndeleteCall) Do(opts ...googleapi.Call
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkforcePoolProvider, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.providers.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to undelete. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkforcePoolProviderRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.keys.create":
 
 type LocationsWorkforcePoolsProvidersKeysCreateCall struct {
 	s                        *Service
@@ -7317,8 +5722,7 @@ type LocationsWorkforcePoolsProvidersKeysCreateCall struct {
 	header_                  http.Header
 }
 
-// Create: Creates a new WorkforcePoolProviderKey in a
-// WorkforcePoolProvider.
+// Create: Creates a new WorkforcePoolProviderKey in a WorkforcePoolProvider.
 //
 // - parent: The provider to create this key in.
 func (r *LocationsWorkforcePoolsProvidersKeysService) Create(parent string, workforcepoolproviderkey *WorkforcePoolProviderKey) *LocationsWorkforcePoolsProvidersKeysCreateCall {
@@ -7329,32 +5733,30 @@ func (r *LocationsWorkforcePoolsProvidersKeysService) Create(parent string, work
 }
 
 // WorkforcePoolProviderKeyId sets the optional parameter
-// "workforcePoolProviderKeyId": Required. The ID to use for the key,
-// which becomes the final component of the resource name. This value
-// must be 4-32 characters, and may contain the characters [a-z0-9-].
+// "workforcePoolProviderKeyId": Required. The ID to use for the key, which
+// becomes the final component of the resource name. This value must be 4-32
+// characters, and may contain the characters [a-z0-9-].
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) WorkforcePoolProviderKeyId(workforcePoolProviderKeyId string) *LocationsWorkforcePoolsProvidersKeysCreateCall {
 	c.urlParams_.Set("workforcePoolProviderKeyId", workforcePoolProviderKeyId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7363,18 +5765,12 @@ func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workforcepoolproviderkey)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
@@ -7391,12 +5787,10 @@ func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) doRequest(alt string) (
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7427,43 +5821,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new WorkforcePoolProviderKey in a WorkforcePoolProvider.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.providers.keys.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The provider to create this key in.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workforcePoolProviderKeyId": {
-	//       "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-].",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/keys",
-	//   "request": {
-	//     "$ref": "WorkforcePoolProviderKey"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.keys.delete":
 
 type LocationsWorkforcePoolsProvidersKeysDeleteCall struct {
 	s          *Service
@@ -7473,8 +5831,8 @@ type LocationsWorkforcePoolsProvidersKeysDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePoolProviderKey. You can undelete a key
-// for 30 days. After 30 days, deletion is permanent.
+// Delete: Deletes a WorkforcePoolProviderKey. You can undelete a key for 30
+// days. After 30 days, deletion is permanent.
 //
 // - name: The name of the key to delete.
 func (r *LocationsWorkforcePoolsProvidersKeysService) Delete(name string) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
@@ -7484,23 +5842,21 @@ func (r *LocationsWorkforcePoolsProvidersKeysService) Delete(name string) *Locat
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7509,12 +5865,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -7532,12 +5883,10 @@ func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) doRequest(alt string) (
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7568,35 +5917,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysDeleteCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkforcePoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.locations.workforcePools.providers.keys.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the key to delete.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.keys.get":
 
 type LocationsWorkforcePoolsProvidersKeysGetCall struct {
 	s            *Service
@@ -7617,33 +5938,29 @@ func (r *LocationsWorkforcePoolsProvidersKeysService) Get(name string) *Location
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersKeysGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7652,12 +5969,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7678,12 +5990,11 @@ func (c *LocationsWorkforcePoolsProvidersKeysGetCall) doRequest(alt string) (*ht
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.get" call.
-// Exactly one of *WorkforcePoolProviderKey or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *WorkforcePoolProviderKey.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7714,35 +6025,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysGetCall) Do(opts ...googleapi.CallO
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a WorkforcePoolProviderKey.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.keys.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the key to retrieve.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkforcePoolProviderKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.keys.list":
 
 type LocationsWorkforcePoolsProvidersKeysListCall struct {
 	s            *Service
@@ -7754,69 +6037,65 @@ type LocationsWorkforcePoolsProvidersKeysListCall struct {
 }
 
 // List: Lists all non-deleted WorkforcePoolProviderKeys in a
-// WorkforcePoolProvider. If `show_deleted` is set to `true`, then
-// deleted keys are also listed.
+// WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted keys
+// are also listed.
 //
 //   - parent: The provider resource to list encryption keys for. Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{
-//     provider_id}`.
+//     `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provide
+//     r_id}`.
 func (r *LocationsWorkforcePoolsProvidersKeysService) List(parent string) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c := &LocationsWorkforcePoolsProvidersKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of keys to return. If unspecified, all keys are returned. The maximum
-// value is 10; values above 10 are truncated to 10.
+// PageSize sets the optional parameter "pageSize": The maximum number of keys
+// to return. If unspecified, all keys are returned. The maximum value is 10;
+// values above 10 are truncated to 10.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkforcePoolProviderKeys` call.
-// Provide this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkforcePoolProviderKeys` call. Provide this to
+// retrieve the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted keys.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted keys.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -7825,12 +6104,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysListCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -7851,13 +6125,11 @@ func (c *LocationsWorkforcePoolsProvidersKeysListCall) doRequest(alt string) (*h
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.list" call.
-// Exactly one of *ListWorkforcePoolProviderKeysResponse or error will
-// be non-nil. Any non-2xx status code is an error. Response headers are
-// in either
+// Any non-2xx status code is an error. Response headers are in either
 // *ListWorkforcePoolProviderKeysResponse.ServerResponse.Header or (if a
 // response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolProviderKeysResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -7888,48 +6160,6 @@ func (c *LocationsWorkforcePoolsProvidersKeysListCall) Do(opts ...googleapi.Call
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkforcePoolProviderKeys in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted keys are also listed.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.keys.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkforcePoolProviderKeys` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The provider resource to list encryption keys for. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft-deleted keys.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/keys",
-	//   "response": {
-	//     "$ref": "ListWorkforcePoolProviderKeysResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -7937,7 +6167,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysListCall) Do(opts ...googleapi.Call
 // The provided context supersedes any context provided to the Context method.
 func (c *LocationsWorkforcePoolsProvidersKeysListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolProviderKeysResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -7953,8 +6183,6 @@ func (c *LocationsWorkforcePoolsProvidersKeysListCall) Pages(ctx context.Context
 	}
 }
 
-// method id "iam.locations.workforcePools.providers.keys.undelete":
-
 type LocationsWorkforcePoolsProvidersKeysUndeleteCall struct {
 	s                                       *Service
 	name                                    string
@@ -7964,8 +6192,8 @@ type LocationsWorkforcePoolsProvidersKeysUndeleteCall struct {
 	header_                                 http.Header
 }
 
-// Undelete: Undeletes a WorkforcePoolProviderKey, as long as it was
-// deleted fewer than 30 days ago.
+// Undelete: Undeletes a WorkforcePoolProviderKey, as long as it was deleted
+// fewer than 30 days ago.
 //
 // - name: The name of the key to undelete.
 func (r *LocationsWorkforcePoolsProvidersKeysService) Undelete(name string, undeleteworkforcepoolproviderkeyrequest *UndeleteWorkforcePoolProviderKeyRequest) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
@@ -7976,23 +6204,21 @@ func (r *LocationsWorkforcePoolsProvidersKeysService) Undelete(name string, unde
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8001,18 +6227,12 @@ func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Header() http.Header 
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkforcepoolproviderkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -8029,12 +6249,10 @@ func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) doRequest(alt string)
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8065,38 +6283,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysUndeleteCall) Do(opts ...googleapi.
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkforcePoolProviderKey, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.providers.keys.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the key to undelete.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkforcePoolProviderKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.keys.operations.get":
 
 type LocationsWorkforcePoolsProvidersKeysOperationsGetCall struct {
 	s            *Service
@@ -8107,9 +6294,9 @@ type LocationsWorkforcePoolsProvidersKeysOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *LocationsWorkforcePoolsProvidersKeysOperationsService) Get(name string) *LocationsWorkforcePoolsProvidersKeysOperationsGetCall {
@@ -8119,33 +6306,29 @@ func (r *LocationsWorkforcePoolsProvidersKeysOperationsService) Get(name string)
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersKeysOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersKeysOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersKeysOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8154,12 +6337,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Header() http.He
 }
 
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8180,12 +6358,10 @@ func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) doRequest(alt st
 }
 
 // Do executes the "iam.locations.workforcePools.providers.keys.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8216,35 +6392,7 @@ func (c *LocationsWorkforcePoolsProvidersKeysOperationsGetCall) Do(opts ...googl
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/keys/{keysId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.keys.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/keys/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.providers.operations.get":
 
 type LocationsWorkforcePoolsProvidersOperationsGetCall struct {
 	s            *Service
@@ -8255,9 +6403,9 @@ type LocationsWorkforcePoolsProvidersOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *LocationsWorkforcePoolsProvidersOperationsService) Get(name string) *LocationsWorkforcePoolsProvidersOperationsGetCall {
@@ -8267,33 +6415,29 @@ func (r *LocationsWorkforcePoolsProvidersOperationsService) Get(name string) *Lo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8302,12 +6446,7 @@ func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Header() http.Header
 }
 
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8328,12 +6467,10 @@ func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) doRequest(alt string
 }
 
 // Do executes the "iam.locations.workforcePools.providers.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8364,35 +6501,7 @@ func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Do(opts ...googleapi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.providers.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.subjects.delete":
 
 type LocationsWorkforcePoolsSubjectsDeleteCall struct {
 	s          *Service
@@ -8402,27 +6511,26 @@ type LocationsWorkforcePoolsSubjectsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePoolSubject. Subject must not already be
-// in a deleted state. A WorkforcePoolSubject is automatically created
-// the first time an external credential is exchanged for a Google Cloud
-// credential using a mapped `google.subject` attribute. There is no
-// endpoint to manually create a WorkforcePoolSubject. For 30 days after
-// a WorkforcePoolSubject is deleted, using the same `google.subject`
-// attribute in token exchanges with Google Cloud STS fails. Call
-// UndeleteWorkforcePoolSubject to undelete a WorkforcePoolSubject that
-// has been deleted, within within 30 days of deleting it. After 30
-// days, the WorkforcePoolSubject is permanently deleted. At this point,
-// a token exchange with Google Cloud STS that uses the same mapped
-// `google.subject` attribute automatically creates a new
+// Delete: Deletes a WorkforcePoolSubject. Subject must not already be in a
+// deleted state. A WorkforcePoolSubject is automatically created the first
+// time an external credential is exchanged for a Google Cloud credential using
+// a mapped `google.subject` attribute. There is no endpoint to manually create
+// a WorkforcePoolSubject. For 30 days after a WorkforcePoolSubject is deleted,
+// using the same `google.subject` attribute in token exchanges with Google
+// Cloud STS fails. Call UndeleteWorkforcePoolSubject to undelete a
+// WorkforcePoolSubject that has been deleted, within within 30 days of
+// deleting it. After 30 days, the WorkforcePoolSubject is permanently deleted.
+// At this point, a token exchange with Google Cloud STS that uses the same
+// mapped `google.subject` attribute automatically creates a new
 // WorkforcePoolSubject that is unrelated to the previously deleted
 // WorkforcePoolSubject but has the same `google.subject` value.
 //
-//   - name: The resource name of the WorkforcePoolSubject. Special
-//     characters, like `/` and `:`, must be escaped, because all URLs
-//     need to conform to the "When to Escape and Unescape" section of
-//     RFC3986 (https://www.ietf.org/rfc/rfc2396.txt). Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{s
-//     ubject_id}`.
+//   - name: The resource name of the WorkforcePoolSubject. Special characters,
+//     like `/` and `:`, must be escaped, because all URLs need to conform to the
+//     "When to Escape and Unescape" section of RFC3986
+//     (https://www.ietf.org/rfc/rfc2396.txt). Format:
+//     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_
+//     id}`.
 func (r *LocationsWorkforcePoolsSubjectsService) Delete(name string) *LocationsWorkforcePoolsSubjectsDeleteCall {
 	c := &LocationsWorkforcePoolsSubjectsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -8430,23 +6538,21 @@ func (r *LocationsWorkforcePoolsSubjectsService) Delete(name string) *LocationsW
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsSubjectsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsSubjectsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8455,12 +6561,7 @@ func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsSubjectsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -8478,12 +6579,10 @@ func (c *LocationsWorkforcePoolsSubjectsDeleteCall) doRequest(alt string) (*http
 }
 
 // Do executes the "iam.locations.workforcePools.subjects.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8514,35 +6613,7 @@ func (c *LocationsWorkforcePoolsSubjectsDeleteCall) Do(opts ...googleapi.CallOpt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkforcePoolSubject. Subject must not already be in a deleted state. A WorkforcePoolSubject is automatically created the first time an external credential is exchanged for a Google Cloud credential using a mapped `google.subject` attribute. There is no endpoint to manually create a WorkforcePoolSubject. For 30 days after a WorkforcePoolSubject is deleted, using the same `google.subject` attribute in token exchanges with Google Cloud STS fails. Call UndeleteWorkforcePoolSubject to undelete a WorkforcePoolSubject that has been deleted, within within 30 days of deleting it. After 30 days, the WorkforcePoolSubject is permanently deleted. At this point, a token exchange with Google Cloud STS that uses the same mapped `google.subject` attribute automatically creates a new WorkforcePoolSubject that is unrelated to the previously deleted WorkforcePoolSubject but has the same `google.subject` value.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.locations.workforcePools.subjects.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.subjects.undelete":
 
 type LocationsWorkforcePoolsSubjectsUndeleteCall struct {
 	s                                   *Service
@@ -8553,15 +6624,15 @@ type LocationsWorkforcePoolsSubjectsUndeleteCall struct {
 	header_                             http.Header
 }
 
-// Undelete: Undeletes a WorkforcePoolSubject, as long as it was deleted
-// fewer than 30 days ago.
+// Undelete: Undeletes a WorkforcePoolSubject, as long as it was deleted fewer
+// than 30 days ago.
 //
-//   - name: The resource name of the WorkforcePoolSubject. Special
-//     characters, like `/` and `:`, must be escaped, because all URLs
-//     need to conform to the "When to Escape and Unescape" section of
-//     RFC3986 (https://www.ietf.org/rfc/rfc2396.txt). Format:
-//     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{s
-//     ubject_id}`.
+//   - name: The resource name of the WorkforcePoolSubject. Special characters,
+//     like `/` and `:`, must be escaped, because all URLs need to conform to the
+//     "When to Escape and Unescape" section of RFC3986
+//     (https://www.ietf.org/rfc/rfc2396.txt). Format:
+//     `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_
+//     id}`.
 func (r *LocationsWorkforcePoolsSubjectsService) Undelete(name string, undeleteworkforcepoolsubjectrequest *UndeleteWorkforcePoolSubjectRequest) *LocationsWorkforcePoolsSubjectsUndeleteCall {
 	c := &LocationsWorkforcePoolsSubjectsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -8570,23 +6641,21 @@ func (r *LocationsWorkforcePoolsSubjectsService) Undelete(name string, undeletew
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsSubjectsUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsSubjectsUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8595,18 +6664,12 @@ func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Header() http.Header {
 }
 
 func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkforcepoolsubjectrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -8623,12 +6686,10 @@ func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) doRequest(alt string) (*ht
 }
 
 // Do executes the "iam.locations.workforcePools.subjects.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8659,38 +6720,7 @@ func (c *LocationsWorkforcePoolsSubjectsUndeleteCall) Do(opts ...googleapi.CallO
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkforcePoolSubject, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.locations.workforcePools.subjects.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the WorkforcePoolSubject. Special characters, like `/` and `:`, must be escaped, because all URLs need to conform to the \"When to Escape and Unescape\" section of [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{location}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkforcePoolSubjectRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.locations.workforcePools.subjects.operations.get":
 
 type LocationsWorkforcePoolsSubjectsOperationsGetCall struct {
 	s            *Service
@@ -8701,9 +6731,9 @@ type LocationsWorkforcePoolsSubjectsOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *LocationsWorkforcePoolsSubjectsOperationsService) Get(name string) *LocationsWorkforcePoolsSubjectsOperationsGetCall {
@@ -8713,33 +6743,29 @@ func (r *LocationsWorkforcePoolsSubjectsOperationsService) Get(name string) *Loc
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsSubjectsOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsSubjectsOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsSubjectsOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8748,12 +6774,7 @@ func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Header() http.Header 
 }
 
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -8774,12 +6795,10 @@ func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) doRequest(alt string)
 }
 
 // Do executes the "iam.locations.workforcePools.subjects.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8810,35 +6829,7 @@ func (c *LocationsWorkforcePoolsSubjectsOperationsGetCall) Do(opts ...googleapi.
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/subjects/{subjectsId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.locations.workforcePools.subjects.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^locations/[^/]+/workforcePools/[^/]+/subjects/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.organizations.roles.create":
 
 type OrganizationsRolesCreateCall struct {
 	s                 *Service
@@ -8851,28 +6842,26 @@ type OrganizationsRolesCreateCall struct {
 
 // Create: Creates a new custom Role.
 //
-//   - parent: The `parent` parameter's value depends on the target
-//     resource for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - parent: The `parent` parameter's value depends on the target resource for
+//     the request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `parent` value format is described below: *
 //     `projects.roles.create()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/create):
-//     `projects/{PROJECT_ID}`. This method creates project-level custom
-//     roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/create):
+//     `projects/{PROJECT_ID}`. This method creates project-level custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
 //     `organizations.roles.create()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/create):
-//     `organizations/{ORGANIZATION_ID}`. This method creates
-//     organization-level custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     ` Note: Wildcard (*) values are invalid; you must specify a
-//     complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/create):
+//     `organizations/{ORGANIZATION_ID}`. This method creates organization-level
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles`
+//     Note: Wildcard (*) values are invalid; you must specify a complete project
+//     ID or organization ID.
 func (r *OrganizationsRolesService) Create(parent string, createrolerequest *CreateRoleRequest) *OrganizationsRolesCreateCall {
 	c := &OrganizationsRolesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -8881,23 +6870,21 @@ func (r *OrganizationsRolesService) Create(parent string, createrolerequest *Cre
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesCreateCall) Fields(s ...googleapi.Field) *OrganizationsRolesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesCreateCall) Context(ctx context.Context) *OrganizationsRolesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -8906,18 +6893,12 @@ func (c *OrganizationsRolesCreateCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createrolerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/roles")
@@ -8934,12 +6915,10 @@ func (c *OrganizationsRolesCreateCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "iam.organizations.roles.create" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *OrganizationsRolesCreateCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -8970,38 +6949,7 @@ func (c *OrganizationsRolesCreateCall) Do(opts ...googleapi.CallOption) (*Role, 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new custom Role.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles",
-	//   "httpMethod": "POST",
-	//   "id": "iam.organizations.roles.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "The `parent` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `parent` value format is described below: * [`projects.roles.create()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/create): `projects/{PROJECT_ID}`. This method creates project-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` * [`organizations.roles.create()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/create): `organizations/{ORGANIZATION_ID}`. This method creates organization-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/roles",
-	//   "request": {
-	//     "$ref": "CreateRoleRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.organizations.roles.delete":
 
 type OrganizationsRolesDeleteCall struct {
 	s          *Service
@@ -9011,38 +6959,37 @@ type OrganizationsRolesDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a custom Role. When you delete a custom role, the
-// following changes occur immediately: * You cannot bind a principal to
-// the custom role in an IAM Policy. * Existing bindings to the custom
-// role are not changed, but they have no effect. * By default, the
-// response from ListRoles does not include the custom role. You have 7
-// days to undelete the custom role. After 7 days, the following changes
-// occur: * The custom role is permanently deleted and cannot be
-// recovered. * If an IAM policy contains a binding to the custom role,
-// the binding is permanently removed.
+// Delete: Deletes a custom Role. When you delete a custom role, the following
+// changes occur immediately: * You cannot bind a principal to the custom role
+// in an IAM Policy. * Existing bindings to the custom role are not changed,
+// but they have no effect. * By default, the response from ListRoles does not
+// include the custom role. You have 7 days to undelete the custom role. After
+// 7 days, the following changes occur: * The custom role is permanently
+// deleted and cannot be recovered. * If an IAM policy contains a binding to
+// the custom role, the binding is permanently removed.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.delete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/delete):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.delete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/delete):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method deletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/delete):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.delete()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/delete):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     deletes only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *OrganizationsRolesService) Delete(name string) *OrganizationsRolesDeleteCall {
 	c := &OrganizationsRolesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9057,23 +7004,21 @@ func (c *OrganizationsRolesDeleteCall) Etag(etag string) *OrganizationsRolesDele
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesDeleteCall) Fields(s ...googleapi.Field) *OrganizationsRolesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesDeleteCall) Context(ctx context.Context) *OrganizationsRolesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9082,12 +7027,7 @@ func (c *OrganizationsRolesDeleteCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -9105,12 +7045,10 @@ func (c *OrganizationsRolesDeleteCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "iam.organizations.roles.delete" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *OrganizationsRolesDeleteCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9141,41 +7079,7 @@ func (c *OrganizationsRolesDeleteCall) Do(opts ...googleapi.CallOption) (*Role, 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a custom Role. When you delete a custom role, the following changes occur immediately: * You cannot bind a principal to the custom role in an IAM Policy. * Existing bindings to the custom role are not changed, but they have no effect. * By default, the response from ListRoles does not include the custom role. You have 7 days to undelete the custom role. After 7 days, the following changes occur: * The custom role is permanently deleted and cannot be recovered. * If an IAM policy contains a binding to the custom role, the binding is permanently removed.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles/{rolesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.organizations.roles.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "etag": {
-	//       "description": "Used to perform a consistent read-modify-write.",
-	//       "format": "byte",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.delete()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/delete): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.delete()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/delete): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.organizations.roles.get":
 
 type OrganizationsRolesGetCall struct {
 	s            *Service
@@ -9188,36 +7092,34 @@ type OrganizationsRolesGetCall struct {
 
 // Get: Gets the definition of a Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `roles`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `roles`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles/get):
-//     `roles/{ROLE_NAME}`. This method returns results from all
-//     predefined roles
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles/get):
+//     `roles/{ROLE_NAME}`. This method returns results from all predefined roles
 //     (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-//     in Cloud IAM. Example request URL:
-//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` *
-//     `projects.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/get):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method returns only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     in IAM. Example request URL:
+//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * `projects.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/get):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/get):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     returns only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *OrganizationsRolesService) Get(name string) *OrganizationsRolesGetCall {
 	c := &OrganizationsRolesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9225,33 +7127,29 @@ func (r *OrganizationsRolesService) Get(name string) *OrganizationsRolesGetCall 
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesGetCall) Fields(s ...googleapi.Field) *OrganizationsRolesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *OrganizationsRolesGetCall) IfNoneMatch(entityTag string) *OrganizationsRolesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesGetCall) Context(ctx context.Context) *OrganizationsRolesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9260,12 +7158,7 @@ func (c *OrganizationsRolesGetCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9286,12 +7179,10 @@ func (c *OrganizationsRolesGetCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "iam.organizations.roles.get" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *OrganizationsRolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9322,35 +7213,7 @@ func (c *OrganizationsRolesGetCall) Do(opts ...googleapi.CallOption) (*Role, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the definition of a Role.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles/{rolesId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.organizations.roles.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`roles.get()`](https://cloud.google.com/iam/reference/rest/v1/roles/get): `roles/{ROLE_NAME}`. This method returns results from all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * [`projects.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/get): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.organizations.roles.list":
 
 type OrganizationsRolesListCall struct {
 	s            *Service
@@ -9361,77 +7224,74 @@ type OrganizationsRolesListCall struct {
 	header_      http.Header
 }
 
-// List: Lists every predefined Role that IAM supports, or every custom
-// role that is defined for an organization or project.
+// List: Lists every predefined Role that IAM supports, or every custom role
+// that is defined for an organization or project.
 //
-//   - parent: The `parent` parameter's value depends on the target
-//     resource for the request, namely `roles`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+//   - parent: The `parent` parameter's value depends on the target resource for
+//     the request, namely `roles`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `parent` value format is described below: *
 //     `roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles/list): An
-//     empty string. This method doesn't require a resource; it simply
-//     returns all predefined roles
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles/list): An empty
+//     string. This method doesn't require a resource; it simply returns all
+//     predefined roles
 //     (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-//     in Cloud IAM. Example request URL:
-//     `https://iam.googleapis.com/v1/roles` * `projects.roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/list):
-//     `projects/{PROJECT_ID}`. This method lists all project-level custom
-//     roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
+//     in IAM. Example request URL: `https://iam.googleapis.com/v1/roles` *
+//     `projects.roles.list()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/list):
+//     `projects/{PROJECT_ID}`. This method lists all project-level custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
 //     `organizations.roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list):
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/list):
 //     `organizations/{ORGANIZATION_ID}`. This method lists all
 //     organization-level custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     ` Note: Wildcard (*) values are invalid; you must specify a
-//     complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles`
+//     Note: Wildcard (*) values are invalid; you must specify a complete project
+//     ID or organization ID.
 func (r *OrganizationsRolesService) List(parent string) *OrganizationsRolesListCall {
 	c := &OrganizationsRolesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Optional limit on
-// the number of roles to include in the response. The default is 300,
-// and the maximum is 1,000.
+// PageSize sets the optional parameter "pageSize": Optional limit on the
+// number of roles to include in the response. The default is 300, and the
+// maximum is 1,000.
 func (c *OrganizationsRolesListCall) PageSize(pageSize int64) *OrganizationsRolesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Optional
-// pagination token returned in an earlier ListRolesResponse.
+// PageToken sets the optional parameter "pageToken": Optional pagination token
+// returned in an earlier ListRolesResponse.
 func (c *OrganizationsRolesListCall) PageToken(pageToken string) *OrganizationsRolesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Include Roles
-// that have been deleted.
+// ShowDeleted sets the optional parameter "showDeleted": Include Roles that
+// have been deleted.
 func (c *OrganizationsRolesListCall) ShowDeleted(showDeleted bool) *OrganizationsRolesListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
-// View sets the optional parameter "view": Optional view for the
-// returned Role objects. When `FULL` is specified, the
-// `includedPermissions` field is returned, which includes a list of all
-// permissions in the role. The default value is `BASIC`, which does not
-// return the `includedPermissions` field.
+// View sets the optional parameter "view": Optional view for the returned Role
+// objects. When `FULL` is specified, the `includedPermissions` field is
+// returned, which includes a list of all permissions in the role. The default
+// value is `BASIC`, which does not return the `includedPermissions` field.
 //
 // Possible values:
 //
-//	"BASIC" - Omits the `included_permissions` field. This is the
+//	"BASIC" - Omits the `included_permissions` field. This is the default
 //
-// default value.
+// value.
 //
 //	"FULL" - Returns all fields.
 func (c *OrganizationsRolesListCall) View(view string) *OrganizationsRolesListCall {
@@ -9440,33 +7300,29 @@ func (c *OrganizationsRolesListCall) View(view string) *OrganizationsRolesListCa
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesListCall) Fields(s ...googleapi.Field) *OrganizationsRolesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *OrganizationsRolesListCall) IfNoneMatch(entityTag string) *OrganizationsRolesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesListCall) Context(ctx context.Context) *OrganizationsRolesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9475,12 +7331,7 @@ func (c *OrganizationsRolesListCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -9501,12 +7352,11 @@ func (c *OrganizationsRolesListCall) doRequest(alt string) (*http.Response, erro
 }
 
 // Do executes the "iam.organizations.roles.list" call.
-// Exactly one of *ListRolesResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListRolesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListRolesResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *OrganizationsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9537,61 +7387,6 @@ func (c *OrganizationsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRole
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every predefined Role that IAM supports, or every custom role that is defined for an organization or project.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles",
-	//   "httpMethod": "GET",
-	//   "id": "iam.organizations.roles.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional limit on the number of roles to include in the response. The default is 300, and the maximum is 1,000.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional pagination token returned in an earlier ListRolesResponse.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The `parent` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `parent` value format is described below: * [`roles.list()`](https://cloud.google.com/iam/reference/rest/v1/roles/list): An empty string. This method doesn't require a resource; it simply returns all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles` * [`projects.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/list): `projects/{PROJECT_ID}`. This method lists all project-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` * [`organizations.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list): `organizations/{ORGANIZATION_ID}`. This method lists all organization-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Include Roles that have been deleted.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "view": {
-	//       "description": "Optional view for the returned Role objects. When `FULL` is specified, the `includedPermissions` field is returned, which includes a list of all permissions in the role. The default value is `BASIC`, which does not return the `includedPermissions` field.",
-	//       "enum": [
-	//         "BASIC",
-	//         "FULL"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Omits the `included_permissions` field. This is the default value.",
-	//         "Returns all fields."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/roles",
-	//   "response": {
-	//     "$ref": "ListRolesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -9599,7 +7394,7 @@ func (c *OrganizationsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRole
 // The provided context supersedes any context provided to the Context method.
 func (c *OrganizationsRolesListCall) Pages(ctx context.Context, f func(*ListRolesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -9615,8 +7410,6 @@ func (c *OrganizationsRolesListCall) Pages(ctx context.Context, f func(*ListRole
 	}
 }
 
-// method id "iam.organizations.roles.patch":
-
 type OrganizationsRolesPatchCall struct {
 	s          *Service
 	name       string
@@ -9628,28 +7421,28 @@ type OrganizationsRolesPatchCall struct {
 
 // Patch: Updates the definition of a custom Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.patch()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/patch):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.patch()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/patch):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method updates only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/patch):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.patch()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/patch):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     updates only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *OrganizationsRolesService) Patch(name string, role *Role) *OrganizationsRolesPatchCall {
 	c := &OrganizationsRolesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9657,31 +7450,29 @@ func (r *OrganizationsRolesService) Patch(name string, role *Role) *Organization
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": A mask
-// describing which fields in the Role have changed.
+// UpdateMask sets the optional parameter "updateMask": A mask describing which
+// fields in the Role have changed.
 func (c *OrganizationsRolesPatchCall) UpdateMask(updateMask string) *OrganizationsRolesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesPatchCall) Fields(s ...googleapi.Field) *OrganizationsRolesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesPatchCall) Context(ctx context.Context) *OrganizationsRolesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9690,18 +7481,12 @@ func (c *OrganizationsRolesPatchCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.role)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -9718,12 +7503,10 @@ func (c *OrganizationsRolesPatchCall) doRequest(alt string) (*http.Response, err
 }
 
 // Do executes the "iam.organizations.roles.patch" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *OrganizationsRolesPatchCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9754,44 +7537,7 @@ func (c *OrganizationsRolesPatchCall) Do(opts ...googleapi.CallOption) (*Role, e
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the definition of a custom Role.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles/{rolesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.organizations.roles.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.patch()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/patch): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.patch()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/patch): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "A mask describing which fields in the Role have changed.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "Role"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.organizations.roles.undelete":
 
 type OrganizationsRolesUndeleteCall struct {
 	s                   *Service
@@ -9804,28 +7550,28 @@ type OrganizationsRolesUndeleteCall struct {
 
 // Undelete: Undeletes a custom Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.undelete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/undelete):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/undelete):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.undelete()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/undelete):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
 //     undeletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.undelete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/undelete):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method undeletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *OrganizationsRolesService) Undelete(name string, undeleterolerequest *UndeleteRoleRequest) *OrganizationsRolesUndeleteCall {
 	c := &OrganizationsRolesUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9834,23 +7580,21 @@ func (r *OrganizationsRolesService) Undelete(name string, undeleterolerequest *U
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *OrganizationsRolesUndeleteCall) Fields(s ...googleapi.Field) *OrganizationsRolesUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *OrganizationsRolesUndeleteCall) Context(ctx context.Context) *OrganizationsRolesUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *OrganizationsRolesUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9859,18 +7603,12 @@ func (c *OrganizationsRolesUndeleteCall) Header() http.Header {
 }
 
 func (c *OrganizationsRolesUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleterolerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -9887,12 +7625,10 @@ func (c *OrganizationsRolesUndeleteCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "iam.organizations.roles.undelete" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *OrganizationsRolesUndeleteCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -9923,38 +7659,7 @@ func (c *OrganizationsRolesUndeleteCall) Do(opts ...googleapi.CallOption) (*Role
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a custom Role.",
-	//   "flatPath": "v1/organizations/{organizationsId}/roles/{rolesId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.organizations.roles.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.undelete()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/undelete): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.undelete()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/undelete): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^organizations/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteRoleRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.permissions.queryTestablePermissions":
 
 type PermissionsQueryTestablePermissionsCall struct {
 	s                               *Service
@@ -9964,9 +7669,9 @@ type PermissionsQueryTestablePermissionsCall struct {
 	header_                         http.Header
 }
 
-// QueryTestablePermissions: Lists every permission that you can test on
-// a resource. A permission is testable if you can check whether a
-// principal has that permission on the resource.
+// QueryTestablePermissions: Lists every permission that you can test on a
+// resource. A permission is testable if you can check whether a principal has
+// that permission on the resource.
 func (r *PermissionsService) QueryTestablePermissions(querytestablepermissionsrequest *QueryTestablePermissionsRequest) *PermissionsQueryTestablePermissionsCall {
 	c := &PermissionsQueryTestablePermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.querytestablepermissionsrequest = querytestablepermissionsrequest
@@ -9974,23 +7679,21 @@ func (r *PermissionsService) QueryTestablePermissions(querytestablepermissionsre
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *PermissionsQueryTestablePermissionsCall) Fields(s ...googleapi.Field) *PermissionsQueryTestablePermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *PermissionsQueryTestablePermissionsCall) Context(ctx context.Context) *PermissionsQueryTestablePermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *PermissionsQueryTestablePermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -9999,18 +7702,12 @@ func (c *PermissionsQueryTestablePermissionsCall) Header() http.Header {
 }
 
 func (c *PermissionsQueryTestablePermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.querytestablepermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/permissions:queryTestablePermissions")
@@ -10024,12 +7721,11 @@ func (c *PermissionsQueryTestablePermissionsCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.permissions.queryTestablePermissions" call.
-// Exactly one of *QueryTestablePermissionsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *QueryTestablePermissionsResponse.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *QueryTestablePermissionsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *PermissionsQueryTestablePermissionsCall) Do(opts ...googleapi.CallOption) (*QueryTestablePermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10060,25 +7756,6 @@ func (c *PermissionsQueryTestablePermissionsCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every permission that you can test on a resource. A permission is testable if you can check whether a principal has that permission on the resource.",
-	//   "flatPath": "v1/permissions:queryTestablePermissions",
-	//   "httpMethod": "POST",
-	//   "id": "iam.permissions.queryTestablePermissions",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/permissions:queryTestablePermissions",
-	//   "request": {
-	//     "$ref": "QueryTestablePermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "QueryTestablePermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -10086,7 +7763,7 @@ func (c *PermissionsQueryTestablePermissionsCall) Do(opts ...googleapi.CallOptio
 // The provided context supersedes any context provided to the Context method.
 func (c *PermissionsQueryTestablePermissionsCall) Pages(ctx context.Context, f func(*QueryTestablePermissionsResponse) error) error {
 	c.ctx_ = ctx
-	defer func(pt string) { c.querytestablepermissionsrequest.PageToken = pt }(c.querytestablepermissionsrequest.PageToken) // reset paging to original point
+	defer func(pt string) { c.querytestablepermissionsrequest.PageToken = pt }(c.querytestablepermissionsrequest.PageToken)
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -10102,8 +7779,6 @@ func (c *PermissionsQueryTestablePermissionsCall) Pages(ctx context.Context, f f
 	}
 }
 
-// method id "iam.projects.locations.oauthClients.create":
-
 type ProjectsLocationsOauthClientsCreateCall struct {
 	s           *Service
 	parent      string
@@ -10113,8 +7788,8 @@ type ProjectsLocationsOauthClientsCreateCall struct {
 	header_     http.Header
 }
 
-// Create: Creates a new OauthClient. You cannot reuse the name of a
-// deleted oauth client until 30 days after deletion.
+// Create: Creates a new OauthClient. You cannot reuse the name of a deleted
+// oauth client until 30 days after deletion.
 //
 //   - parent: The parent resource to create the oauth client in. The only
 //     supported location is `global`.
@@ -10125,35 +7800,33 @@ func (r *ProjectsLocationsOauthClientsService) Create(parent string, oauthclient
 	return c
 }
 
-// OauthClientId sets the optional parameter "oauthClientId": Required.
-// The ID to use for the oauth client, which becomes the final component
-// of the resource name. This value should be a string of 6 to 63
-// lowercase letters, digits, or hyphens. It must start with a letter,
-// and cannot have a trailing hyphen. The prefix `gcp-` is reserved for
-// use by Google, and may not be specified.
+// OauthClientId sets the optional parameter "oauthClientId": Required. The ID
+// to use for the oauth client, which becomes the final component of the
+// resource name. This value should be a string of 6 to 63 lowercase letters,
+// digits, or hyphens. It must start with a letter, and cannot have a trailing
+// hyphen. The prefix `gcp-` is reserved for use by Google, and may not be
+// specified.
 func (c *ProjectsLocationsOauthClientsCreateCall) OauthClientId(oauthClientId string) *ProjectsLocationsOauthClientsCreateCall {
 	c.urlParams_.Set("oauthClientId", oauthClientId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCreateCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10162,18 +7835,12 @@ func (c *ProjectsLocationsOauthClientsCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclient)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/oauthClients")
@@ -10190,12 +7857,10 @@ func (c *ProjectsLocationsOauthClientsCreateCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.projects.locations.oauthClients.create" call.
-// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *OauthClient.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsCreateCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10226,43 +7891,7 @@ func (c *ProjectsLocationsOauthClientsCreateCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new OauthClient. You cannot reuse the name of a deleted oauth client until 30 days after deletion.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.oauthClients.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "oauthClientId": {
-	//       "description": "Required. The ID to use for the oauth client, which becomes the final component of the resource name. This value should be a string of 6 to 63 lowercase letters, digits, or hyphens. It must start with a letter, and cannot have a trailing hyphen. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource to create the oauth client in. The only supported location is `global`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/oauthClients",
-	//   "request": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "response": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.delete":
 
 type ProjectsLocationsOauthClientsDeleteCall struct {
 	s          *Service
@@ -10273,18 +7902,16 @@ type ProjectsLocationsOauthClientsDeleteCall struct {
 }
 
 // Delete: Deletes a OauthClient. You cannot use a deleted oauth client.
-// However, deletion does not revoke access tokens that have already
-// been issued; they continue to grant access. Deletion does revoke
-// refresh tokens that have already been issued; They cannot be used to
-// renew an access token. If the oauth client is undeleted, and the
-// refresh tokens are not expired, they are valid for token exchange
-// again. You can undelete an oauth client for 30 days. After 30 days,
-// deletion is permanent. You cannot update deleted oauth clients.
-// However, you can view and list them.
+// However, deletion does not revoke access tokens that have already been
+// issued; they continue to grant access. Deletion does revoke refresh tokens
+// that have already been issued; They cannot be used to renew an access token.
+// If the oauth client is undeleted, and the refresh tokens are not expired,
+// they are valid for token exchange again. You can undelete an oauth client
+// for 30 days. After 30 days, deletion is permanent. You cannot update deleted
+// oauth clients. However, you can view and list them.
 //
 //   - name: The name of the oauth client to delete. Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     `.
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.
 func (r *ProjectsLocationsOauthClientsService) Delete(name string) *ProjectsLocationsOauthClientsDeleteCall {
 	c := &ProjectsLocationsOauthClientsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10292,23 +7919,21 @@ func (r *ProjectsLocationsOauthClientsService) Delete(name string) *ProjectsLoca
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsDeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10317,12 +7942,7 @@ func (c *ProjectsLocationsOauthClientsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -10340,12 +7960,10 @@ func (c *ProjectsLocationsOauthClientsDeleteCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.projects.locations.oauthClients.delete" call.
-// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *OauthClient.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsDeleteCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10376,35 +7994,7 @@ func (c *ProjectsLocationsOauthClientsDeleteCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a OauthClient. You cannot use a deleted oauth client. However, deletion does not revoke access tokens that have already been issued; they continue to grant access. Deletion does revoke refresh tokens that have already been issued; They cannot be used to renew an access token. If the oauth client is undeleted, and the refresh tokens are not expired, they are valid for token exchange again. You can undelete an oauth client for 30 days. After 30 days, deletion is permanent. You cannot update deleted oauth clients. However, you can view and list them.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.locations.oauthClients.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the oauth client to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.get":
 
 type ProjectsLocationsOauthClientsGetCall struct {
 	s            *Service
@@ -10418,8 +8008,7 @@ type ProjectsLocationsOauthClientsGetCall struct {
 // Get: Gets an individual OauthClient.
 //
 //   - name: The name of the oauth client to retrieve. Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     `.
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.
 func (r *ProjectsLocationsOauthClientsService) Get(name string) *ProjectsLocationsOauthClientsGetCall {
 	c := &ProjectsLocationsOauthClientsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10427,33 +8016,29 @@ func (r *ProjectsLocationsOauthClientsService) Get(name string) *ProjectsLocatio
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOauthClientsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsGetCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10462,12 +8047,7 @@ func (c *ProjectsLocationsOauthClientsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10488,12 +8068,10 @@ func (c *ProjectsLocationsOauthClientsGetCall) doRequest(alt string) (*http.Resp
 }
 
 // Do executes the "iam.projects.locations.oauthClients.get" call.
-// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *OauthClient.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsGetCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10524,35 +8102,7 @@ func (c *ProjectsLocationsOauthClientsGetCall) Do(opts ...googleapi.CallOption) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual OauthClient.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.oauthClients.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the oauth client to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.list":
 
 type ProjectsLocationsOauthClientsListCall struct {
 	s            *Service
@@ -10563,9 +8113,8 @@ type ProjectsLocationsOauthClientsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted OauthClientss in a project. If
-// `show_deleted` is set to `true`, then deleted oauth clients are also
-// listed.
+// List: Lists all non-deleted OauthClientss in a project. If `show_deleted` is
+// set to `true`, then deleted oauth clients are also listed.
 //
 // - parent: The parent to list oauth clients for.
 func (r *ProjectsLocationsOauthClientsService) List(parent string) *ProjectsLocationsOauthClientsListCall {
@@ -10574,58 +8123,53 @@ func (r *ProjectsLocationsOauthClientsService) List(parent string) *ProjectsLoca
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of oauth clients to return. If unspecified, at most 50 oauth clients
-// will be returned. The maximum value is 100; values above 100 are
-// truncated to 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of oauth
+// clients to return. If unspecified, at most 50 oauth clients will be
+// returned. The maximum value is 100; values above 100 are truncated to 100.
 func (c *ProjectsLocationsOauthClientsListCall) PageSize(pageSize int64) *ProjectsLocationsOauthClientsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListOauthClients` call. Provide this to
-// retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListOauthClients` call. Provide this to retrieve the
+// subsequent page.
 func (c *ProjectsLocationsOauthClientsListCall) PageToken(pageToken string) *ProjectsLocationsOauthClientsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted oauth clients.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted oauth clients.
 func (c *ProjectsLocationsOauthClientsListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsOauthClientsListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOauthClientsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsListCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10634,12 +8178,7 @@ func (c *ProjectsLocationsOauthClientsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -10660,12 +8199,11 @@ func (c *ProjectsLocationsOauthClientsListCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.projects.locations.oauthClients.list" call.
-// Exactly one of *ListOauthClientsResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
 // *ListOauthClientsResponse.ServerResponse.Header or (if a response was
 // returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsListCall) Do(opts ...googleapi.CallOption) (*ListOauthClientsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10696,48 +8234,6 @@ func (c *ProjectsLocationsOauthClientsListCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted OauthClientss in a project. If `show_deleted` is set to `true`, then deleted oauth clients are also listed.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.oauthClients.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional. The maximum number of oauth clients to return. If unspecified, at most 50 oauth clients will be returned. The maximum value is 100; values above 100 are truncated to 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional. A page token, received from a previous `ListOauthClients` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent to list oauth clients for.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Optional. Whether to return soft-deleted oauth clients.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/oauthClients",
-	//   "response": {
-	//     "$ref": "ListOauthClientsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -10745,7 +8241,7 @@ func (c *ProjectsLocationsOauthClientsListCall) Do(opts ...googleapi.CallOption)
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsOauthClientsListCall) Pages(ctx context.Context, f func(*ListOauthClientsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -10761,8 +8257,6 @@ func (c *ProjectsLocationsOauthClientsListCall) Pages(ctx context.Context, f fun
 	}
 }
 
-// method id "iam.projects.locations.oauthClients.patch":
-
 type ProjectsLocationsOauthClientsPatchCall struct {
 	s           *Service
 	name        string
@@ -10775,8 +8269,8 @@ type ProjectsLocationsOauthClientsPatchCall struct {
 // Patch: Updates an existing OauthClient.
 //
 //   - name: Immutable. The resource name of the oauth client.
-//     Format:`projects/{project}/locations/{location}/oauthClients/{oauth_
-//     client}`.
+//     Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}
+//     `.
 func (r *ProjectsLocationsOauthClientsService) Patch(name string, oauthclient *OauthClient) *ProjectsLocationsOauthClientsPatchCall {
 	c := &ProjectsLocationsOauthClientsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10784,31 +8278,29 @@ func (r *ProjectsLocationsOauthClientsService) Patch(name string, oauthclient *O
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *ProjectsLocationsOauthClientsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsOauthClientsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsPatchCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10817,18 +8309,12 @@ func (c *ProjectsLocationsOauthClientsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclient)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -10845,12 +8331,10 @@ func (c *ProjectsLocationsOauthClientsPatchCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "iam.projects.locations.oauthClients.patch" call.
-// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *OauthClient.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsPatchCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -10881,44 +8365,7 @@ func (c *ProjectsLocationsOauthClientsPatchCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing OauthClient.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.locations.oauthClients.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Immutable. The resource name of the oauth client. Format:`projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "response": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.undelete":
 
 type ProjectsLocationsOauthClientsUndeleteCall struct {
 	s                          *Service
@@ -10929,12 +8376,11 @@ type ProjectsLocationsOauthClientsUndeleteCall struct {
 	header_                    http.Header
 }
 
-// Undelete: Undeletes a OauthClient, as long as it was deleted fewer
-// than 30 days ago.
+// Undelete: Undeletes a OauthClient, as long as it was deleted fewer than 30
+// days ago.
 //
 //   - name: The name of the oauth client to undelete. Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     `.
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.
 func (r *ProjectsLocationsOauthClientsService) Undelete(name string, undeleteoauthclientrequest *UndeleteOauthClientRequest) *ProjectsLocationsOauthClientsUndeleteCall {
 	c := &ProjectsLocationsOauthClientsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10943,23 +8389,21 @@ func (r *ProjectsLocationsOauthClientsService) Undelete(name string, undeleteoau
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsUndeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -10968,18 +8412,12 @@ func (c *ProjectsLocationsOauthClientsUndeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteoauthclientrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -10996,12 +8434,10 @@ func (c *ProjectsLocationsOauthClientsUndeleteCall) doRequest(alt string) (*http
 }
 
 // Do executes the "iam.projects.locations.oauthClients.undelete" call.
-// Exactly one of *OauthClient or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *OauthClient.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClient.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsUndeleteCall) Do(opts ...googleapi.CallOption) (*OauthClient, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11032,38 +8468,7 @@ func (c *ProjectsLocationsOauthClientsUndeleteCall) Do(opts ...googleapi.CallOpt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a OauthClient, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.oauthClients.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the oauth client to undelete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteOauthClientRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "OauthClient"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.credentials.create":
 
 type ProjectsLocationsOauthClientsCredentialsCreateCall struct {
 	s                     *Service
@@ -11076,8 +8481,7 @@ type ProjectsLocationsOauthClientsCredentialsCreateCall struct {
 
 // Create: Creates a new OauthClientCredential.
 //
-//   - parent: The parent resource to create the oauth client Credential
-//     in.
+// - parent: The parent resource to create the oauth client Credential in.
 func (r *ProjectsLocationsOauthClientsCredentialsService) Create(parent string, oauthclientcredential *OauthClientCredential) *ProjectsLocationsOauthClientsCredentialsCreateCall {
 	c := &ProjectsLocationsOauthClientsCredentialsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -11086,34 +8490,31 @@ func (r *ProjectsLocationsOauthClientsCredentialsService) Create(parent string, 
 }
 
 // OauthClientCredentialId sets the optional parameter
-// "oauthClientCredentialId": Required. The ID to use for the oauth
-// client credential, which becomes the final component of the resource
-// name. This value should be 4-32 characters, and may contain the
-// characters [a-z0-9-]. The prefix `gcp-` is reserved for use by
-// Google, and may not be specified.
+// "oauthClientCredentialId": Required. The ID to use for the oauth client
+// credential, which becomes the final component of the resource name. This
+// value should be 4-32 characters, and may contain the characters [a-z0-9-].
+// The prefix `gcp-` is reserved for use by Google, and may not be specified.
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) OauthClientCredentialId(oauthClientCredentialId string) *ProjectsLocationsOauthClientsCredentialsCreateCall {
 	c.urlParams_.Set("oauthClientCredentialId", oauthClientCredentialId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11122,18 +8523,12 @@ func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Header() http.Heade
 }
 
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclientcredential)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/credentials")
@@ -11150,12 +8545,11 @@ func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) doRequest(alt strin
 }
 
 // Do executes the "iam.projects.locations.oauthClients.credentials.create" call.
-// Exactly one of *OauthClientCredential or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *OauthClientCredential.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11186,43 +8580,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsCreateCall) Do(opts ...googleap
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new OauthClientCredential.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.oauthClients.credentials.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "oauthClientCredentialId": {
-	//       "description": "Required. The ID to use for the oauth client credential, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource to create the oauth client Credential in.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/credentials",
-	//   "request": {
-	//     "$ref": "OauthClientCredential"
-	//   },
-	//   "response": {
-	//     "$ref": "OauthClientCredential"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.credentials.delete":
 
 type ProjectsLocationsOauthClientsCredentialsDeleteCall struct {
 	s          *Service
@@ -11232,12 +8590,12 @@ type ProjectsLocationsOauthClientsCredentialsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a OauthClientCredential. Before deleting an oauth
-// client credential, it should first be disabled.
+// Delete: Deletes a OauthClientCredential. Before deleting an oauth client
+// credential, it should first be disabled.
 //
 //   - name: The name of the oauth client credential to delete. Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     /credentials/{credential}`.
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}/creden
+//     tials/{credential}`.
 func (r *ProjectsLocationsOauthClientsCredentialsService) Delete(name string) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
 	c := &ProjectsLocationsOauthClientsCredentialsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11245,23 +8603,21 @@ func (r *ProjectsLocationsOauthClientsCredentialsService) Delete(name string) *P
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11270,12 +8626,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Header() http.Heade
 }
 
 func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -11293,12 +8644,10 @@ func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) doRequest(alt strin
 }
 
 // Do executes the "iam.projects.locations.oauthClients.credentials.delete" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11329,35 +8678,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsDeleteCall) Do(opts ...googleap
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a OauthClientCredential. Before deleting an oauth client credential, it should first be disabled.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.locations.oauthClients.credentials.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the oauth client credential to delete. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.credentials.get":
 
 type ProjectsLocationsOauthClientsCredentialsGetCall struct {
 	s            *Service
@@ -11371,8 +8692,8 @@ type ProjectsLocationsOauthClientsCredentialsGetCall struct {
 // Get: Gets an individual OauthClientCredential.
 //
 //   - name: The name of the oauth client credential to retrieve. Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     /credentials/{credential}`.
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}/creden
+//     tials/{credential}`.
 func (r *ProjectsLocationsOauthClientsCredentialsService) Get(name string) *ProjectsLocationsOauthClientsCredentialsGetCall {
 	c := &ProjectsLocationsOauthClientsCredentialsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11380,33 +8701,29 @@ func (r *ProjectsLocationsOauthClientsCredentialsService) Get(name string) *Proj
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsCredentialsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11415,12 +8732,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11441,12 +8753,11 @@ func (c *ProjectsLocationsOauthClientsCredentialsGetCall) doRequest(alt string) 
 }
 
 // Do executes the "iam.projects.locations.oauthClients.credentials.get" call.
-// Exactly one of *OauthClientCredential or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *OauthClientCredential.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11477,35 +8788,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsGetCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual OauthClientCredential.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.oauthClients.credentials.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the oauth client credential to retrieve. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "OauthClientCredential"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.credentials.list":
 
 type ProjectsLocationsOauthClientsCredentialsListCall struct {
 	s            *Service
@@ -11526,33 +8809,29 @@ func (r *ProjectsLocationsOauthClientsCredentialsService) List(parent string) *P
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsOauthClientsCredentialsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11561,12 +8840,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsListCall) Header() http.Header 
 }
 
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -11587,13 +8861,11 @@ func (c *ProjectsLocationsOauthClientsCredentialsListCall) doRequest(alt string)
 }
 
 // Do executes the "iam.projects.locations.oauthClients.credentials.list" call.
-// Exactly one of *ListOauthClientCredentialsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListOauthClientCredentialsResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListOauthClientCredentialsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsOauthClientsCredentialsListCall) Do(opts ...googleapi.CallOption) (*ListOauthClientCredentialsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11624,35 +8896,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsListCall) Do(opts ...googleapi.
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all OauthClientCredentialss in a OauthClient.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.oauthClients.credentials.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent to list oauth client credentials for.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/credentials",
-	//   "response": {
-	//     "$ref": "ListOauthClientCredentialsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.oauthClients.credentials.patch":
 
 type ProjectsLocationsOauthClientsCredentialsPatchCall struct {
 	s                     *Service
@@ -11665,10 +8909,9 @@ type ProjectsLocationsOauthClientsCredentialsPatchCall struct {
 
 // Patch: Updates an existing OauthClientCredential.
 //
-//   - name: Immutable. The resource name of the oauth client credential.
-//     Format:
-//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}
-//     /credentials/{credential}`.
+//   - name: Immutable. The resource name of the oauth client credential. Format:
+//     `projects/{project}/locations/{location}/oauthClients/{oauth_client}/creden
+//     tials/{credential}`.
 func (r *ProjectsLocationsOauthClientsCredentialsService) Patch(name string, oauthclientcredential *OauthClientCredential) *ProjectsLocationsOauthClientsCredentialsPatchCall {
 	c := &ProjectsLocationsOauthClientsCredentialsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11676,31 +8919,29 @@ func (r *ProjectsLocationsOauthClientsCredentialsService) Patch(name string, oau
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsOauthClientsCredentialsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsOauthClientsCredentialsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Context(ctx context.Context) *ProjectsLocationsOauthClientsCredentialsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11709,18 +8950,12 @@ func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Header() http.Header
 }
 
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.oauthclientcredential)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -11737,12 +8972,11 @@ func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) doRequest(alt string
 }
 
 // Do executes the "iam.projects.locations.oauthClients.credentials.patch" call.
-// Exactly one of *OauthClientCredential or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *OauthClientCredential.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *OauthClientCredential.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Do(opts ...googleapi.CallOption) (*OauthClientCredential, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11773,44 +9007,7 @@ func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Do(opts ...googleapi
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing OauthClientCredential.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/oauthClients/{oauthClientsId}/credentials/{credentialsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.locations.oauthClients.credentials.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Immutable. The resource name of the oauth client credential. Format: `projects/{project}/locations/{location}/oauthClients/{oauth_client}/credentials/{credential}`",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/oauthClients/[^/]+/credentials/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "OauthClientCredential"
-	//   },
-	//   "response": {
-	//     "$ref": "OauthClientCredential"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.create":
 
 type ProjectsLocationsWorkloadIdentityPoolsCreateCall struct {
 	s                    *Service
@@ -11821,11 +9018,11 @@ type ProjectsLocationsWorkloadIdentityPoolsCreateCall struct {
 	header_              http.Header
 }
 
-// Create: Creates a new WorkloadIdentityPool. You cannot reuse the name
-// of a deleted pool until 30 days after deletion.
+// Create: Creates a new WorkloadIdentityPool. You cannot reuse the name of a
+// deleted pool until 30 days after deletion.
 //
-//   - parent: The parent resource to create the pool in. The only
-//     supported location is `global`.
+//   - parent: The parent resource to create the pool in. The only supported
+//     location is `global`.
 func (r *ProjectsLocationsWorkloadIdentityPoolsService) Create(parent string, workloadidentitypool *WorkloadIdentityPool) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -11833,35 +9030,32 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) Create(parent string, wo
 	return c
 }
 
-// WorkloadIdentityPoolId sets the optional parameter
-// "workloadIdentityPoolId": Required. The ID to use for the pool, which
-// becomes the final component of the resource name. This value should
-// be 4-32 characters, and may contain the characters [a-z0-9-]. The
-// prefix `gcp-` is reserved for use by Google, and may not be
-// specified.
+// WorkloadIdentityPoolId sets the optional parameter "workloadIdentityPoolId":
+// Required. The ID to use for the pool, which becomes the final component of
+// the resource name. This value should be 4-32 characters, and may contain the
+// characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and
+// may not be specified.
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) WorkloadIdentityPoolId(workloadIdentityPoolId string) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
 	c.urlParams_.Set("workloadIdentityPoolId", workloadIdentityPoolId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -11870,18 +9064,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Header() http.Header 
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypool)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/workloadIdentityPools")
@@ -11898,12 +9086,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) doRequest(alt string)
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -11934,43 +9120,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Do(opts ...googleapi.
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent resource to create the pool in. The only supported location is `global`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workloadIdentityPoolId": {
-	//       "description": "Required. The ID to use for the pool, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/workloadIdentityPools",
-	//   "request": {
-	//     "$ref": "WorkloadIdentityPool"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.delete":
 
 type ProjectsLocationsWorkloadIdentityPoolsDeleteCall struct {
 	s          *Service
@@ -11980,14 +9130,14 @@ type ProjectsLocationsWorkloadIdentityPoolsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkloadIdentityPool. You cannot use a deleted pool
-// to exchange external credentials for Google Cloud credentials.
-// However, deletion does not revoke credentials that have already been
-// issued. Credentials issued for a deleted pool do not grant access to
-// resources. If the pool is undeleted, and the credentials are not
-// expired, they grant access again. You can undelete a pool for 30
-// days. After 30 days, deletion is permanent. You cannot update deleted
-// pools. However, you can view and list them.
+// Delete: Deletes a WorkloadIdentityPool. You cannot use a deleted pool to
+// exchange external credentials for Google Cloud credentials. However,
+// deletion does not revoke credentials that have already been issued.
+// Credentials issued for a deleted pool do not grant access to resources. If
+// the pool is undeleted, and the credentials are not expired, they grant
+// access again. You can undelete a pool for 30 days. After 30 days, deletion
+// is permanent. You cannot update deleted pools. However, you can view and
+// list them.
 //
 // - name: The name of the pool to delete.
 func (r *ProjectsLocationsWorkloadIdentityPoolsService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
@@ -11997,23 +9147,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) Delete(name string) *Pro
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12022,12 +9170,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Header() http.Header 
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -12045,12 +9188,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) doRequest(alt string)
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12081,35 +9222,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Do(opts ...googleapi.
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkloadIdentityPool. You cannot use a deleted pool to exchange external credentials for Google Cloud credentials. However, deletion does not revoke credentials that have already been issued. Credentials issued for a deleted pool do not grant access to resources. If the pool is undeleted, and the credentials are not expired, they grant access again. You can undelete a pool for 30 days. After 30 days, deletion is permanent. You cannot update deleted pools. However, you can view and list them.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.locations.workloadIdentityPools.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to delete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsGetCall struct {
 	s            *Service
@@ -12130,33 +9243,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) Get(name string) *Projec
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12165,12 +9274,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12191,12 +9295,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) doRequest(alt string) (*
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.get" call.
-// Exactly one of *WorkloadIdentityPool or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *WorkloadIdentityPool.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkloadIdentityPool.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPool, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12227,35 +9330,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Do(opts ...googleapi.Cal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual WorkloadIdentityPool.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to retrieve.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkloadIdentityPool"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.list":
 
 type ProjectsLocationsWorkloadIdentityPoolsListCall struct {
 	s            *Service
@@ -12276,57 +9351,53 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) List(parent string) *Pro
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of pools to return. If unspecified, at most 50 pools are returned.
-// The maximum value is 1000; values above are 1000 truncated to 1000.
+// PageSize sets the optional parameter "pageSize": The maximum number of pools
+// to return. If unspecified, at most 50 pools are returned. The maximum value
+// is 1000; values above are 1000 truncated to 1000.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkloadIdentityPools` call. Provide
-// this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkloadIdentityPools` call. Provide this to retrieve
+// the subsequent page.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted pools.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted pools.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12335,12 +9406,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12361,13 +9427,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) doRequest(alt string) (
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.list" call.
-// Exactly one of *ListWorkloadIdentityPoolsResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListWorkloadIdentityPoolsResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkloadIdentityPoolsResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12398,48 +9462,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Do(opts ...googleapi.Ca
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkloadIdentityPools in a project. If `show_deleted` is set to `true`, then deleted pools are also listed.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of pools to return. If unspecified, at most 50 pools are returned. The maximum value is 1000; values above are 1000 truncated to 1000.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkloadIdentityPools` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent resource to list pools for.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft-deleted pools.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/workloadIdentityPools",
-	//   "response": {
-	//     "$ref": "ListWorkloadIdentityPoolsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -12447,7 +9469,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Do(opts ...googleapi.Ca
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -12462,8 +9484,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Pages(ctx context.Conte
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.patch":
 
 type ProjectsLocationsWorkloadIdentityPoolsPatchCall struct {
 	s                    *Service
@@ -12484,31 +9504,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) Patch(name string, workl
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12517,18 +9535,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypool)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -12545,12 +9557,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) doRequest(alt string) 
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.patch" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12581,44 +9591,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing WorkloadIdentityPool.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.locations.workloadIdentityPools.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource name of the pool.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "WorkloadIdentityPool"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.undelete":
 
 type ProjectsLocationsWorkloadIdentityPoolsUndeleteCall struct {
 	s                                   *Service
@@ -12629,8 +9602,8 @@ type ProjectsLocationsWorkloadIdentityPoolsUndeleteCall struct {
 	header_                             http.Header
 }
 
-// Undelete: Undeletes a WorkloadIdentityPool, as long as it was deleted
-// fewer than 30 days ago.
+// Undelete: Undeletes a WorkloadIdentityPool, as long as it was deleted fewer
+// than 30 days ago.
 //
 // - name: The name of the pool to undelete.
 func (r *ProjectsLocationsWorkloadIdentityPoolsService) Undelete(name string, undeleteworkloadidentitypoolrequest *UndeleteWorkloadIdentityPoolRequest) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
@@ -12641,23 +9614,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsService) Undelete(name string, un
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12666,18 +9637,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Header() http.Heade
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -12694,12 +9659,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) doRequest(alt strin
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12730,38 +9693,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Do(opts ...googleap
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkloadIdentityPool, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the pool to undelete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkloadIdentityPoolRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall struct {
 	s            *Service
@@ -12772,9 +9704,9 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperations
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
@@ -12784,33 +9716,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperat
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12819,12 +9747,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperat
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12845,12 +9768,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperat
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -12881,35 +9802,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesOperat
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall struct {
 	s            *Service
@@ -12920,9 +9813,9 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSo
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
@@ -12932,33 +9825,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorklo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -12967,12 +9856,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorklo
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -12993,12 +9877,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorklo
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorkloadSourcesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13029,35 +9911,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesWorklo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}/workloadSources/{workloadSourcesId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.workloadSources.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+/workloadSources/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.namespaces.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall struct {
 	s            *Service
@@ -13068,9 +9922,9 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
@@ -13080,33 +9934,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsService) Get(
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13115,12 +9965,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Head
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -13141,12 +9986,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) doRe
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.namespaces.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13177,35 +10020,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsNamespacesOperationsGetCall) Do(o
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.namespaces.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall struct {
 	s            *Service
@@ -13216,9 +10031,9 @@ type ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall {
@@ -13228,33 +10043,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsOperationsService) Get(name strin
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13263,12 +10074,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Header() http.
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -13289,12 +10095,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) doRequest(alt 
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13325,35 +10129,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Do(opts ...goo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.create":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall struct {
 	s                            *Service
@@ -13365,8 +10141,8 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall struct {
 }
 
 // Create: Creates a new WorkloadIdentityPoolProvider in a
-// WorkloadIdentityPool. You cannot reuse the name of a deleted provider
-// until 30 days after deletion.
+// WorkloadIdentityPool. You cannot reuse the name of a deleted provider until
+// 30 days after deletion.
 //
 // - parent: The pool to create this provider in.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Create(parent string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
@@ -13377,34 +10153,31 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Create(parent s
 }
 
 // WorkloadIdentityPoolProviderId sets the optional parameter
-// "workloadIdentityPoolProviderId": Required. The ID for the provider,
-// which becomes the final component of the resource name. This value
-// must be 4-32 characters, and may contain the characters [a-z0-9-].
-// The prefix `gcp-` is reserved for use by Google, and may not be
-// specified.
+// "workloadIdentityPoolProviderId": Required. The ID for the provider, which
+// becomes the final component of the resource name. This value must be 4-32
+// characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is
+// reserved for use by Google, and may not be specified.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) WorkloadIdentityPoolProviderId(workloadIdentityPoolProviderId string) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
 	c.urlParams_.Set("workloadIdentityPoolProviderId", workloadIdentityPoolProviderId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13413,18 +10186,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Header() htt
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolprovider)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/providers")
@@ -13441,12 +10208,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) doRequest(al
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13477,43 +10242,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Do(opts ...g
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new WorkloadIdentityPoolProvider in a WorkloadIdentityPool. You cannot reuse the name of a deleted provider until 30 days after deletion.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The pool to create this provider in.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workloadIdentityPoolProviderId": {
-	//       "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/providers",
-	//   "request": {
-	//     "$ref": "WorkloadIdentityPoolProvider"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.delete":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall struct {
 	s          *Service
@@ -13523,11 +10252,11 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkloadIdentityPoolProvider. Deleting a provider
-// does not revoke credentials that have already been issued; they
-// continue to grant access. You can undelete a provider for 30 days.
-// After 30 days, deletion is permanent. You cannot update deleted
-// providers. However, you can view and list them.
+// Delete: Deletes a WorkloadIdentityPoolProvider. Deleting a provider does not
+// revoke credentials that have already been issued; they continue to grant
+// access. You can undelete a provider for 30 days. After 30 days, deletion is
+// permanent. You cannot update deleted providers. However, you can view and
+// list them.
 //
 // - name: The name of the provider to delete.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
@@ -13537,23 +10266,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Delete(name str
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13562,12 +10289,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Header() htt
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -13585,12 +10307,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) doRequest(al
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13621,35 +10341,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Do(opts ...g
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a WorkloadIdentityPoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to delete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall struct {
 	s            *Service
@@ -13670,33 +10362,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Get(name string
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13705,12 +10393,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Header() http.H
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -13731,12 +10414,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) doRequest(alt s
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.get" call.
-// Exactly one of *WorkloadIdentityPoolProvider or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *WorkloadIdentityPoolProvider.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkloadIdentityPoolProvider.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPoolProvider, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13767,35 +10449,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Do(opts ...goog
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual WorkloadIdentityPoolProvider.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to retrieve.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkloadIdentityPoolProvider"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.list":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersListCall struct {
 	s            *Service
@@ -13807,8 +10461,8 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersListCall struct {
 }
 
 // List: Lists all non-deleted WorkloadIdentityPoolProviders in a
-// WorkloadIdentityPool. If `show_deleted` is set to `true`, then
-// deleted providers are also listed.
+// WorkloadIdentityPool. If `show_deleted` is set to `true`, then deleted
+// providers are also listed.
 //
 // - parent: The pool to list providers for.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) List(parent string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
@@ -13817,58 +10471,53 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) List(parent str
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of providers to return. If unspecified, at most 50 providers are
-// returned. The maximum value is 100; values above 100 are truncated to
-// 100.
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// providers to return. If unspecified, at most 50 providers are returned. The
+// maximum value is 100; values above 100 are truncated to 100.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkloadIdentityPoolProviders` call.
-// Provide this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkloadIdentityPoolProviders` call. Provide this to
+// retrieve the subsequent page.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft-deleted providers.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted providers.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -13877,12 +10526,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Header() http.
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -13903,14 +10547,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) doRequest(alt 
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.list" call.
-// Exactly one of *ListWorkloadIdentityPoolProvidersResponse or error
-// will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *ListWorkloadIdentityPoolProvidersResponse.ServerResponse.Header or
-// (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkloadIdentityPoolProvidersResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolProvidersResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -13941,48 +10582,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Do(opts ...goo
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkloadIdentityPoolProviders in a WorkloadIdentityPool. If `show_deleted` is set to `true`, then deleted providers are also listed.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of providers to return. If unspecified, at most 50 providers are returned. The maximum value is 100; values above 100 are truncated to 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviders` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The pool to list providers for.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft-deleted providers.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/providers",
-	//   "response": {
-	//     "$ref": "ListWorkloadIdentityPoolProvidersResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -13990,7 +10589,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Do(opts ...goo
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolProvidersResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -14005,8 +10604,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Pages(ctx cont
 		c.PageToken(x.NextPageToken)
 	}
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.patch":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall struct {
 	s                            *Service
@@ -14027,31 +10624,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Patch(name stri
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Required. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Required. The list of
+// fields to update.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) UpdateMask(updateMask string) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14060,18 +10655,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Header() http
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolprovider)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -14088,12 +10677,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) doRequest(alt
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.patch" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14124,44 +10711,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Do(opts ...go
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates an existing WorkloadIdentityPoolProvider.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Output only. The resource name of the provider.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "Required. The list of fields to update.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "WorkloadIdentityPoolProvider"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.undelete":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall struct {
 	s                                           *Service
@@ -14184,23 +10734,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Undelete(name s
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14209,18 +10757,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Header() h
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolproviderrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -14237,12 +10779,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) doRequest(
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14273,38 +10813,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Do(opts ..
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a WorkloadIdentityPoolProvider, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the provider to undelete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkloadIdentityPoolProviderRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.create":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall struct {
 	s                               *Service
@@ -14327,33 +10836,30 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Create(pare
 }
 
 // WorkloadIdentityPoolProviderKeyId sets the optional parameter
-// "workloadIdentityPoolProviderKeyId": Required. The ID to use for the
-// key, which becomes the final component of the resource name. This
-// value should be 4-32 characters, and may contain the characters
-// [a-z0-9-].
+// "workloadIdentityPoolProviderKeyId": Required. The ID to use for the key,
+// which becomes the final component of the resource name. This value should be
+// 4-32 characters, and may contain the characters [a-z0-9-].
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) WorkloadIdentityPoolProviderKeyId(workloadIdentityPoolProviderKeyId string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
 	c.urlParams_.Set("workloadIdentityPoolProviderKeyId", workloadIdentityPoolProviderKeyId)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14362,18 +10868,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Header()
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolproviderkey)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/keys")
@@ -14390,12 +10890,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) doReques
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.create" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14426,43 +10924,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysCreateCall) Do(opts 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Create a new WorkloadIdentityPoolProviderKey in a WorkloadIdentityPoolProvider.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "Required. The parent provider resource to create the key in.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "workloadIdentityPoolProviderKeyId": {
-	//       "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/keys",
-	//   "request": {
-	//     "$ref": "WorkloadIdentityPoolProviderKey"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.delete":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall struct {
 	s          *Service
@@ -14472,8 +10934,8 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes an WorkloadIdentityPoolProviderKey. You can undelete
-// a key for 30 days. After 30 days, deletion is permanent.
+// Delete: Deletes an WorkloadIdentityPoolProviderKey. You can undelete a key
+// for 30 days. After 30 days, deletion is permanent.
 //
 // - name: The name of the encryption key to delete.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
@@ -14483,23 +10945,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Delete(name
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14508,12 +10968,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Header()
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -14531,12 +10986,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) doReques
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.delete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14567,35 +11020,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysDeleteCall) Do(opts 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes an WorkloadIdentityPoolProviderKey. You can undelete a key for 30 days. After 30 days, deletion is permanent.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the encryption key to delete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall struct {
 	s            *Service
@@ -14616,33 +11041,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Get(name st
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14651,12 +11072,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Header() ht
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -14677,12 +11093,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) doRequest(a
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.get" call.
-// Exactly one of *WorkloadIdentityPoolProviderKey or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *WorkloadIdentityPoolProviderKey.ServerResponse.Header or (if
-// a response was returned at all) in error.(*googleapi.Error).Header.
-// Use googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkloadIdentityPoolProviderKey.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPoolProviderKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14713,35 +11128,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysGetCall) Do(opts ...
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets an individual WorkloadIdentityPoolProviderKey.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the key to retrieve.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "WorkloadIdentityPoolProviderKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.list":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall struct {
 	s            *Service
@@ -14752,9 +11139,8 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted WorkloadIdentityPoolProviderKeys in a
-// project. If show_deleted is set to `true`, then deleted pools are
-// also listed.
+// List: Lists all non-deleted WorkloadIdentityPoolProviderKeys in a project.
+// If show_deleted is set to `true`, then deleted pools are also listed.
 //
 // - parent: The parent provider resource to list encryption keys for.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) List(parent string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
@@ -14763,57 +11149,53 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) List(parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number
-// of keys to return. If unspecified, all keys are returned. The maximum
-// value is 10; values above 10 are truncated to 10.
+// PageSize sets the optional parameter "pageSize": The maximum number of keys
+// to return. If unspecified, all keys are returned. The maximum value is 10;
+// values above 10 are truncated to 10.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token,
-// received from a previous `ListWorkloadIdentityPoolProviderKeys` call.
-// Provide this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to
+// retrieve the subsequent page.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to
-// return soft deleted resources as well.
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft deleted resources as well.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14822,12 +11204,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Header() h
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -14848,14 +11225,11 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) doRequest(
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.list" call.
-// Exactly one of *ListWorkloadIdentityPoolProviderKeysResponse or error
-// will be non-nil. Any non-2xx status code is an error. Response
-// headers are in either
-// *ListWorkloadIdentityPoolProviderKeysResponse.ServerResponse.Header
-// or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkloadIdentityPoolProviderKeysResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolProviderKeysResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -14886,48 +11260,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Do(opts ..
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists all non-deleted WorkloadIdentityPoolProviderKeys in a project. If show_deleted is set to `true`, then deleted pools are also listed.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "The maximum number of keys to return. If unspecified, all keys are returned. The maximum value is 10; values above 10 are truncated to 10.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "Required. The parent provider resource to list encryption keys for.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Whether to return soft deleted resources as well.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/keys",
-	//   "response": {
-	//     "$ref": "ListWorkloadIdentityPoolProviderKeysResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -14935,7 +11267,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Do(opts ..
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolProviderKeysResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -14951,8 +11283,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysListCall) Pages(ctx 
 	}
 }
 
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.undelete":
-
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall struct {
 	s                                              *Service
 	name                                           string
@@ -14962,8 +11292,8 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall struct {
 	header_                                        http.Header
 }
 
-// Undelete: Undeletes an WorkloadIdentityPoolProviderKey, as long as it
-// was deleted fewer than 30 days ago.
+// Undelete: Undeletes an WorkloadIdentityPoolProviderKey, as long as it was
+// deleted fewer than 30 days ago.
 //
 // - name: The name of the encryption key to undelete.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Undelete(name string, undeleteworkloadidentitypoolproviderkeyrequest *UndeleteWorkloadIdentityPoolProviderKeyRequest) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
@@ -14974,23 +11304,21 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysService) Undelete(na
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -14999,18 +11327,12 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Header
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolproviderkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -15027,12 +11349,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) doRequ
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.undelete" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15063,38 +11383,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysUndeleteCall) Do(opt
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes an WorkloadIdentityPoolProviderKey, as long as it was deleted fewer than 30 days ago.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The name of the encryption key to undelete.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteWorkloadIdentityPoolProviderKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.keys.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall struct {
 	s            *Service
@@ -15105,9 +11394,9 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall struct
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall {
@@ -15117,33 +11406,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsService) G
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -15152,12 +11437,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) H
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -15178,12 +11458,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) d
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.keys.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15214,35 +11492,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersKeysOperationsGetCall) D
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/keys/{keysId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.keys.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/keys/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.locations.workloadIdentityPools.providers.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall struct {
 	s            *Service
@@ -15253,9 +11503,9 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation. Clients can
-// use this method to poll the operation result at intervals as
-// recommended by the API service.
+// Get: Gets the latest state of a long-running operation. Clients can use this
+// method to poll the operation result at intervals as recommended by the API
+// service.
 //
 // - name: The name of the operation resource.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall {
@@ -15265,33 +11515,29 @@ func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsService) Get(n
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -15300,12 +11546,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Heade
 }
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -15326,12 +11567,10 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) doReq
 }
 
 // Do executes the "iam.projects.locations.workloadIdentityPools.providers.operations.get" call.
-// Exactly one of *Operation or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15362,35 +11601,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Do(op
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}/operations/{operationsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.locations.workloadIdentityPools.providers.operations.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the operation resource.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+/operations/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Operation"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.roles.create":
 
 type ProjectsRolesCreateCall struct {
 	s                 *Service
@@ -15403,28 +11614,26 @@ type ProjectsRolesCreateCall struct {
 
 // Create: Creates a new custom Role.
 //
-//   - parent: The `parent` parameter's value depends on the target
-//     resource for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - parent: The `parent` parameter's value depends on the target resource for
+//     the request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `parent` value format is described below: *
 //     `projects.roles.create()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/create):
-//     `projects/{PROJECT_ID}`. This method creates project-level custom
-//     roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/create):
+//     `projects/{PROJECT_ID}`. This method creates project-level custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
 //     `organizations.roles.create()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/create):
-//     `organizations/{ORGANIZATION_ID}`. This method creates
-//     organization-level custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     ` Note: Wildcard (*) values are invalid; you must specify a
-//     complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/create):
+//     `organizations/{ORGANIZATION_ID}`. This method creates organization-level
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles`
+//     Note: Wildcard (*) values are invalid; you must specify a complete project
+//     ID or organization ID.
 func (r *ProjectsRolesService) Create(parent string, createrolerequest *CreateRoleRequest) *ProjectsRolesCreateCall {
 	c := &ProjectsRolesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -15433,23 +11642,21 @@ func (r *ProjectsRolesService) Create(parent string, createrolerequest *CreateRo
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesCreateCall) Fields(s ...googleapi.Field) *ProjectsRolesCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesCreateCall) Context(ctx context.Context) *ProjectsRolesCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -15458,18 +11665,12 @@ func (c *ProjectsRolesCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createrolerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/roles")
@@ -15486,12 +11687,10 @@ func (c *ProjectsRolesCreateCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "iam.projects.roles.create" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsRolesCreateCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15522,38 +11721,7 @@ func (c *ProjectsRolesCreateCall) Do(opts ...googleapi.CallOption) (*Role, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a new custom Role.",
-	//   "flatPath": "v1/projects/{projectsId}/roles",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.roles.create",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "parent": {
-	//       "description": "The `parent` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `parent` value format is described below: * [`projects.roles.create()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/create): `projects/{PROJECT_ID}`. This method creates project-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` * [`organizations.roles.create()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/create): `organizations/{ORGANIZATION_ID}`. This method creates organization-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/roles",
-	//   "request": {
-	//     "$ref": "CreateRoleRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.roles.delete":
 
 type ProjectsRolesDeleteCall struct {
 	s          *Service
@@ -15563,38 +11731,37 @@ type ProjectsRolesDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a custom Role. When you delete a custom role, the
-// following changes occur immediately: * You cannot bind a principal to
-// the custom role in an IAM Policy. * Existing bindings to the custom
-// role are not changed, but they have no effect. * By default, the
-// response from ListRoles does not include the custom role. You have 7
-// days to undelete the custom role. After 7 days, the following changes
-// occur: * The custom role is permanently deleted and cannot be
-// recovered. * If an IAM policy contains a binding to the custom role,
-// the binding is permanently removed.
+// Delete: Deletes a custom Role. When you delete a custom role, the following
+// changes occur immediately: * You cannot bind a principal to the custom role
+// in an IAM Policy. * Existing bindings to the custom role are not changed,
+// but they have no effect. * By default, the response from ListRoles does not
+// include the custom role. You have 7 days to undelete the custom role. After
+// 7 days, the following changes occur: * The custom role is permanently
+// deleted and cannot be recovered. * If an IAM policy contains a binding to
+// the custom role, the binding is permanently removed.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.delete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/delete):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.delete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/delete):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method deletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/delete):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.delete()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/delete):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     deletes only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *ProjectsRolesService) Delete(name string) *ProjectsRolesDeleteCall {
 	c := &ProjectsRolesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -15609,23 +11776,21 @@ func (c *ProjectsRolesDeleteCall) Etag(etag string) *ProjectsRolesDeleteCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesDeleteCall) Fields(s ...googleapi.Field) *ProjectsRolesDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesDeleteCall) Context(ctx context.Context) *ProjectsRolesDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -15634,12 +11799,7 @@ func (c *ProjectsRolesDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -15657,12 +11817,10 @@ func (c *ProjectsRolesDeleteCall) doRequest(alt string) (*http.Response, error) 
 }
 
 // Do executes the "iam.projects.roles.delete" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsRolesDeleteCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15693,41 +11851,7 @@ func (c *ProjectsRolesDeleteCall) Do(opts ...googleapi.CallOption) (*Role, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a custom Role. When you delete a custom role, the following changes occur immediately: * You cannot bind a principal to the custom role in an IAM Policy. * Existing bindings to the custom role are not changed, but they have no effect. * By default, the response from ListRoles does not include the custom role. You have 7 days to undelete the custom role. After 7 days, the following changes occur: * The custom role is permanently deleted and cannot be recovered. * If an IAM policy contains a binding to the custom role, the binding is permanently removed.",
-	//   "flatPath": "v1/projects/{projectsId}/roles/{rolesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.roles.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "etag": {
-	//       "description": "Used to perform a consistent read-modify-write.",
-	//       "format": "byte",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.delete()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/delete): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.delete()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/delete): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method deletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.roles.get":
 
 type ProjectsRolesGetCall struct {
 	s            *Service
@@ -15740,36 +11864,34 @@ type ProjectsRolesGetCall struct {
 
 // Get: Gets the definition of a Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `roles`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `roles`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles/get):
-//     `roles/{ROLE_NAME}`. This method returns results from all
-//     predefined roles
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles/get):
+//     `roles/{ROLE_NAME}`. This method returns results from all predefined roles
 //     (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-//     in Cloud IAM. Example request URL:
-//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` *
-//     `projects.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/get):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method returns only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     in IAM. Example request URL:
+//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * `projects.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/get):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/get):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     returns only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *ProjectsRolesService) Get(name string) *ProjectsRolesGetCall {
 	c := &ProjectsRolesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -15777,33 +11899,29 @@ func (r *ProjectsRolesService) Get(name string) *ProjectsRolesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesGetCall) Fields(s ...googleapi.Field) *ProjectsRolesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsRolesGetCall) IfNoneMatch(entityTag string) *ProjectsRolesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesGetCall) Context(ctx context.Context) *ProjectsRolesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -15812,12 +11930,7 @@ func (c *ProjectsRolesGetCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -15838,12 +11951,10 @@ func (c *ProjectsRolesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "iam.projects.roles.get" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsRolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -15874,35 +11985,7 @@ func (c *ProjectsRolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the definition of a Role.",
-	//   "flatPath": "v1/projects/{projectsId}/roles/{rolesId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.roles.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`roles.get()`](https://cloud.google.com/iam/reference/rest/v1/roles/get): `roles/{ROLE_NAME}`. This method returns results from all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * [`projects.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/get): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.roles.list":
 
 type ProjectsRolesListCall struct {
 	s            *Service
@@ -15913,77 +11996,74 @@ type ProjectsRolesListCall struct {
 	header_      http.Header
 }
 
-// List: Lists every predefined Role that IAM supports, or every custom
-// role that is defined for an organization or project.
+// List: Lists every predefined Role that IAM supports, or every custom role
+// that is defined for an organization or project.
 //
-//   - parent: The `parent` parameter's value depends on the target
-//     resource for the request, namely `roles`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+//   - parent: The `parent` parameter's value depends on the target resource for
+//     the request, namely `roles`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `parent` value format is described below: *
 //     `roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles/list): An
-//     empty string. This method doesn't require a resource; it simply
-//     returns all predefined roles
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles/list): An empty
+//     string. This method doesn't require a resource; it simply returns all
+//     predefined roles
 //     (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-//     in Cloud IAM. Example request URL:
-//     `https://iam.googleapis.com/v1/roles` * `projects.roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/list):
-//     `projects/{PROJECT_ID}`. This method lists all project-level custom
-//     roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
+//     in IAM. Example request URL: `https://iam.googleapis.com/v1/roles` *
+//     `projects.roles.list()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/list):
+//     `projects/{PROJECT_ID}`. This method lists all project-level custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
 //     `organizations.roles.list()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list):
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/list):
 //     `organizations/{ORGANIZATION_ID}`. This method lists all
 //     organization-level custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles).
-//     Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     ` Note: Wildcard (*) values are invalid; you must specify a
-//     complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+//     request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles`
+//     Note: Wildcard (*) values are invalid; you must specify a complete project
+//     ID or organization ID.
 func (r *ProjectsRolesService) List(parent string) *ProjectsRolesListCall {
 	c := &ProjectsRolesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Optional limit on
-// the number of roles to include in the response. The default is 300,
-// and the maximum is 1,000.
+// PageSize sets the optional parameter "pageSize": Optional limit on the
+// number of roles to include in the response. The default is 300, and the
+// maximum is 1,000.
 func (c *ProjectsRolesListCall) PageSize(pageSize int64) *ProjectsRolesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Optional
-// pagination token returned in an earlier ListRolesResponse.
+// PageToken sets the optional parameter "pageToken": Optional pagination token
+// returned in an earlier ListRolesResponse.
 func (c *ProjectsRolesListCall) PageToken(pageToken string) *ProjectsRolesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Include Roles
-// that have been deleted.
+// ShowDeleted sets the optional parameter "showDeleted": Include Roles that
+// have been deleted.
 func (c *ProjectsRolesListCall) ShowDeleted(showDeleted bool) *ProjectsRolesListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
-// View sets the optional parameter "view": Optional view for the
-// returned Role objects. When `FULL` is specified, the
-// `includedPermissions` field is returned, which includes a list of all
-// permissions in the role. The default value is `BASIC`, which does not
-// return the `includedPermissions` field.
+// View sets the optional parameter "view": Optional view for the returned Role
+// objects. When `FULL` is specified, the `includedPermissions` field is
+// returned, which includes a list of all permissions in the role. The default
+// value is `BASIC`, which does not return the `includedPermissions` field.
 //
 // Possible values:
 //
-//	"BASIC" - Omits the `included_permissions` field. This is the
+//	"BASIC" - Omits the `included_permissions` field. This is the default
 //
-// default value.
+// value.
 //
 //	"FULL" - Returns all fields.
 func (c *ProjectsRolesListCall) View(view string) *ProjectsRolesListCall {
@@ -15992,33 +12072,29 @@ func (c *ProjectsRolesListCall) View(view string) *ProjectsRolesListCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesListCall) Fields(s ...googleapi.Field) *ProjectsRolesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsRolesListCall) IfNoneMatch(entityTag string) *ProjectsRolesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesListCall) Context(ctx context.Context) *ProjectsRolesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16027,12 +12103,7 @@ func (c *ProjectsRolesListCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -16053,12 +12124,11 @@ func (c *ProjectsRolesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "iam.projects.roles.list" call.
-// Exactly one of *ListRolesResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListRolesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListRolesResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16089,61 +12159,6 @@ func (c *ProjectsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResp
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every predefined Role that IAM supports, or every custom role that is defined for an organization or project.",
-	//   "flatPath": "v1/projects/{projectsId}/roles",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.roles.list",
-	//   "parameterOrder": [
-	//     "parent"
-	//   ],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional limit on the number of roles to include in the response. The default is 300, and the maximum is 1,000.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional pagination token returned in an earlier ListRolesResponse.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The `parent` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `parent` value format is described below: * [`roles.list()`](https://cloud.google.com/iam/reference/rest/v1/roles/list): An empty string. This method doesn't require a resource; it simply returns all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles` * [`projects.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/list): `projects/{PROJECT_ID}`. This method lists all project-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` * [`organizations.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list): `organizations/{ORGANIZATION_ID}`. This method lists all organization-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Include Roles that have been deleted.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "view": {
-	//       "description": "Optional view for the returned Role objects. When `FULL` is specified, the `includedPermissions` field is returned, which includes a list of all permissions in the role. The default value is `BASIC`, which does not return the `includedPermissions` field.",
-	//       "enum": [
-	//         "BASIC",
-	//         "FULL"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Omits the `included_permissions` field. This is the default value.",
-	//         "Returns all fields."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+parent}/roles",
-	//   "response": {
-	//     "$ref": "ListRolesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -16151,7 +12166,7 @@ func (c *ProjectsRolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResp
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsRolesListCall) Pages(ctx context.Context, f func(*ListRolesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -16167,8 +12182,6 @@ func (c *ProjectsRolesListCall) Pages(ctx context.Context, f func(*ListRolesResp
 	}
 }
 
-// method id "iam.projects.roles.patch":
-
 type ProjectsRolesPatchCall struct {
 	s          *Service
 	name       string
@@ -16180,28 +12193,28 @@ type ProjectsRolesPatchCall struct {
 
 // Patch: Updates the definition of a custom Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.patch()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/patch):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.patch()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/patch):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method updates only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/patch):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.patch()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/patch):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     updates only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *ProjectsRolesService) Patch(name string, role *Role) *ProjectsRolesPatchCall {
 	c := &ProjectsRolesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -16209,31 +12222,29 @@ func (r *ProjectsRolesService) Patch(name string, role *Role) *ProjectsRolesPatc
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": A mask
-// describing which fields in the Role have changed.
+// UpdateMask sets the optional parameter "updateMask": A mask describing which
+// fields in the Role have changed.
 func (c *ProjectsRolesPatchCall) UpdateMask(updateMask string) *ProjectsRolesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesPatchCall) Fields(s ...googleapi.Field) *ProjectsRolesPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesPatchCall) Context(ctx context.Context) *ProjectsRolesPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16242,18 +12253,12 @@ func (c *ProjectsRolesPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.role)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -16270,12 +12275,10 @@ func (c *ProjectsRolesPatchCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "iam.projects.roles.patch" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsRolesPatchCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16306,44 +12309,7 @@ func (c *ProjectsRolesPatchCall) Do(opts ...googleapi.CallOption) (*Role, error)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Updates the definition of a custom Role.",
-	//   "flatPath": "v1/projects/{projectsId}/roles/{rolesId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.roles.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.patch()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/patch): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.patch()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/patch): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method updates only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "updateMask": {
-	//       "description": "A mask describing which fields in the Role have changed.",
-	//       "format": "google-fieldmask",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "Role"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.roles.undelete":
 
 type ProjectsRolesUndeleteCall struct {
 	s                   *Service
@@ -16356,28 +12322,28 @@ type ProjectsRolesUndeleteCall struct {
 
 // Undelete: Undeletes a custom Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles) or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles) or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `projects.roles.undelete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/undelete):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/undelete):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.undelete()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/undelete):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
 //     undeletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.undelete()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/undelete):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method undeletes only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *ProjectsRolesService) Undelete(name string, undeleterolerequest *UndeleteRoleRequest) *ProjectsRolesUndeleteCall {
 	c := &ProjectsRolesUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -16386,23 +12352,21 @@ func (r *ProjectsRolesService) Undelete(name string, undeleterolerequest *Undele
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsRolesUndeleteCall) Fields(s ...googleapi.Field) *ProjectsRolesUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsRolesUndeleteCall) Context(ctx context.Context) *ProjectsRolesUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsRolesUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16411,18 +12375,12 @@ func (c *ProjectsRolesUndeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsRolesUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleterolerequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -16439,12 +12397,10 @@ func (c *ProjectsRolesUndeleteCall) doRequest(alt string) (*http.Response, error
 }
 
 // Do executes the "iam.projects.roles.undelete" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsRolesUndeleteCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16475,38 +12431,7 @@ func (c *ProjectsRolesUndeleteCall) Do(opts ...googleapi.CallOption) (*Role, err
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Undeletes a custom Role.",
-	//   "flatPath": "v1/projects/{projectsId}/roles/{rolesId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.roles.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles) or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`projects.roles.undelete()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/undelete): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.undelete()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/undelete): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method undeletes only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteRoleRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.create":
 
 type ProjectsServiceAccountsCreateCall struct {
 	s                           *Service
@@ -16529,23 +12454,21 @@ func (r *ProjectsServiceAccountsService) Create(name string, createserviceaccoun
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsCreateCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsCreateCall) Context(ctx context.Context) *ProjectsServiceAccountsCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16554,18 +12477,12 @@ func (c *ProjectsServiceAccountsCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createserviceaccountrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}/serviceAccounts")
@@ -16582,12 +12499,10 @@ func (c *ProjectsServiceAccountsCreateCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.projects.serviceAccounts.create" call.
-// Exactly one of *ServiceAccount or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ServiceAccount.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccount.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsCreateCall) Do(opts ...googleapi.CallOption) (*ServiceAccount, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16618,38 +12533,7 @@ func (c *ProjectsServiceAccountsCreateCall) Do(opts ...googleapi.CallOption) (*S
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.create",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the project associated with the service accounts, such as `projects/my-project-123`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/serviceAccounts",
-	//   "request": {
-	//     "$ref": "CreateServiceAccountRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccount"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.delete":
 
 type ProjectsServiceAccountsDeleteCall struct {
 	s          *Service
@@ -16659,32 +12543,29 @@ type ProjectsServiceAccountsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a ServiceAccount. **Warning:** After you delete a
-// service account, you might not be able to undelete it. If you know
-// that you need to re-enable the service account in the future, use
-// DisableServiceAccount instead. If you delete a service account, IAM
-// permanently removes the service account 30 days later. Google Cloud
-// cannot recover the service account after it is permanently removed,
-// even if you file a support request. To help avoid unplanned outages,
-// we recommend that you disable the service account before you delete
-// it. Use DisableServiceAccount to disable the service account, then
-// wait at least 24 hours and watch for unintended consequences. If
-// there are no unintended consequences, you can delete the service
-// account.
+// Delete: Deletes a ServiceAccount. **Warning:** After you delete a service
+// account, you might not be able to undelete it. If you know that you need to
+// re-enable the service account in the future, use DisableServiceAccount
+// instead. If you delete a service account, IAM permanently removes the
+// service account 30 days later. Google Cloud cannot recover the service
+// account after it is permanently removed, even if you file a support request.
+// To help avoid unplanned outages, we recommend that you disable the service
+// account before you delete it. Use DisableServiceAccount to disable the
+// service account, then wait at least 24 hours and watch for unintended
+// consequences. If there are no unintended consequences, you can delete the
+// service account.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Delete(name string) *ProjectsServiceAccountsDeleteCall {
 	c := &ProjectsServiceAccountsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -16692,23 +12573,21 @@ func (r *ProjectsServiceAccountsService) Delete(name string) *ProjectsServiceAcc
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsDeleteCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsDeleteCall) Context(ctx context.Context) *ProjectsServiceAccountsDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16717,12 +12596,7 @@ func (c *ProjectsServiceAccountsDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -16740,12 +12614,10 @@ func (c *ProjectsServiceAccountsDeleteCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.projects.serviceAccounts.delete" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16776,35 +12648,7 @@ func (c *ProjectsServiceAccountsDeleteCall) Do(opts ...googleapi.CallOption) (*E
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a ServiceAccount. **Warning:** After you delete a service account, you might not be able to undelete it. If you know that you need to re-enable the service account in the future, use DisableServiceAccount instead. If you delete a service account, IAM permanently removes the service account 30 days later. Google Cloud cannot recover the service account after it is permanently removed, even if you file a support request. To help avoid unplanned outages, we recommend that you disable the service account before you delete it. Use DisableServiceAccount to disable the service account, then wait at least 24 hours and watch for unintended consequences. If there are no unintended consequences, you can delete the service account.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.serviceAccounts.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.disable":
 
 type ProjectsServiceAccountsDisableCall struct {
 	s                            *Service
@@ -16815,32 +12659,29 @@ type ProjectsServiceAccountsDisableCall struct {
 	header_                      http.Header
 }
 
-// Disable: Disables a ServiceAccount immediately. If an application
-// uses the service account to authenticate, that application can no
-// longer call Google APIs or access Google Cloud resources. Existing
-// access tokens for the service account are rejected, and requests for
-// new access tokens will fail. To re-enable the service account, use
-// EnableServiceAccount. After you re-enable the service account, its
-// existing access tokens will be accepted, and you can request new
-// access tokens. To help avoid unplanned outages, we recommend that you
-// disable the service account before you delete it. Use this method to
-// disable the service account, then wait at least 24 hours and watch
-// for unintended consequences. If there are no unintended consequences,
+// Disable: Disables a ServiceAccount immediately. If an application uses the
+// service account to authenticate, that application can no longer call Google
+// APIs or access Google Cloud resources. Existing access tokens for the
+// service account are rejected, and requests for new access tokens will fail.
+// To re-enable the service account, use EnableServiceAccount. After you
+// re-enable the service account, its existing access tokens will be accepted,
+// and you can request new access tokens. To help avoid unplanned outages, we
+// recommend that you disable the service account before you delete it. Use
+// this method to disable the service account, then wait at least 24 hours and
+// watch for unintended consequences. If there are no unintended consequences,
 // you can delete the service account with DeleteServiceAccount.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Disable(name string, disableserviceaccountrequest *DisableServiceAccountRequest) *ProjectsServiceAccountsDisableCall {
 	c := &ProjectsServiceAccountsDisableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -16849,23 +12690,21 @@ func (r *ProjectsServiceAccountsService) Disable(name string, disableserviceacco
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsDisableCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsDisableCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsDisableCall) Context(ctx context.Context) *ProjectsServiceAccountsDisableCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsDisableCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -16874,18 +12713,12 @@ func (c *ProjectsServiceAccountsDisableCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsDisableCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.disableserviceaccountrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:disable")
@@ -16902,12 +12735,10 @@ func (c *ProjectsServiceAccountsDisableCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "iam.projects.serviceAccounts.disable" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsDisableCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -16938,38 +12769,7 @@ func (c *ProjectsServiceAccountsDisableCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Disables a ServiceAccount immediately. If an application uses the service account to authenticate, that application can no longer call Google APIs or access Google Cloud resources. Existing access tokens for the service account are rejected, and requests for new access tokens will fail. To re-enable the service account, use EnableServiceAccount. After you re-enable the service account, its existing access tokens will be accepted, and you can request new access tokens. To help avoid unplanned outages, we recommend that you disable the service account before you delete it. Use this method to disable the service account, then wait at least 24 hours and watch for unintended consequences. If there are no unintended consequences, you can delete the service account with DeleteServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:disable",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.disable",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:disable",
-	//   "request": {
-	//     "$ref": "DisableServiceAccountRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.enable":
 
 type ProjectsServiceAccountsEnableCall struct {
 	s                           *Service
@@ -16980,26 +12780,23 @@ type ProjectsServiceAccountsEnableCall struct {
 	header_                     http.Header
 }
 
-// Enable: Enables a ServiceAccount that was disabled by
-// DisableServiceAccount. If the service account is already enabled,
-// then this method has no effect. If the service account was disabled
-// by other means—for example, if Google disabled the service account
-// because it was compromised—you cannot use this method to enable the
-// service account.
+// Enable: Enables a ServiceAccount that was disabled by DisableServiceAccount.
+// If the service account is already enabled, then this method has no effect.
+// If the service account was disabled by other means—for example, if Google
+// disabled the service account because it was compromised—you cannot use
+// this method to enable the service account.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Enable(name string, enableserviceaccountrequest *EnableServiceAccountRequest) *ProjectsServiceAccountsEnableCall {
 	c := &ProjectsServiceAccountsEnableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -17008,23 +12805,21 @@ func (r *ProjectsServiceAccountsService) Enable(name string, enableserviceaccoun
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsEnableCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsEnableCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsEnableCall) Context(ctx context.Context) *ProjectsServiceAccountsEnableCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsEnableCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17033,18 +12828,12 @@ func (c *ProjectsServiceAccountsEnableCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsEnableCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.enableserviceaccountrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:enable")
@@ -17061,12 +12850,10 @@ func (c *ProjectsServiceAccountsEnableCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.projects.serviceAccounts.enable" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsEnableCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17097,38 +12884,7 @@ func (c *ProjectsServiceAccountsEnableCall) Do(opts ...googleapi.CallOption) (*E
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Enables a ServiceAccount that was disabled by DisableServiceAccount. If the service account is already enabled, then this method has no effect. If the service account was disabled by other means—for example, if Google disabled the service account because it was compromised—you cannot use this method to enable the service account.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:enable",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.enable",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:enable",
-	//   "request": {
-	//     "$ref": "EnableServiceAccountRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.get":
 
 type ProjectsServiceAccountsGetCall struct {
 	s            *Service
@@ -17141,19 +12897,17 @@ type ProjectsServiceAccountsGetCall struct {
 
 // Get: Gets a ServiceAccount.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Get(name string) *ProjectsServiceAccountsGetCall {
 	c := &ProjectsServiceAccountsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -17161,33 +12915,29 @@ func (r *ProjectsServiceAccountsService) Get(name string) *ProjectsServiceAccoun
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsGetCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsServiceAccountsGetCall) IfNoneMatch(entityTag string) *ProjectsServiceAccountsGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsGetCall) Context(ctx context.Context) *ProjectsServiceAccountsGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17196,12 +12946,7 @@ func (c *ProjectsServiceAccountsGetCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -17222,12 +12967,10 @@ func (c *ProjectsServiceAccountsGetCall) doRequest(alt string) (*http.Response, 
 }
 
 // Do executes the "iam.projects.serviceAccounts.get" call.
-// Exactly one of *ServiceAccount or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ServiceAccount.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccount.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsGetCall) Do(opts ...googleapi.CallOption) (*ServiceAccount, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17258,35 +13001,7 @@ func (c *ProjectsServiceAccountsGetCall) Do(opts ...googleapi.CallOption) (*Serv
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.serviceAccounts.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "ServiceAccount"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.getIamPolicy":
 
 type ProjectsServiceAccountsGetIamPolicyCall struct {
 	s          *Service
@@ -17296,21 +13011,19 @@ type ProjectsServiceAccountsGetIamPolicyCall struct {
 	header_    http.Header
 }
 
-// GetIamPolicy: Gets the IAM policy that is attached to a
-// ServiceAccount. This IAM policy specifies which principals have
-// access to the service account. This method does not tell you whether
-// the service account has been granted any roles on other resources. To
-// check whether a service account has role grants on a resource, use
-// the `getIamPolicy` method for that resource. For example, to view the
-// role grants for a project, call the Resource Manager API's
-// `projects.getIamPolicy`
+// GetIamPolicy: Gets the IAM policy that is attached to a ServiceAccount. This
+// IAM policy specifies which principals have access to the service account.
+// This method does not tell you whether the service account has been granted
+// any roles on other resources. To check whether a service account has role
+// grants on a resource, use the `getIamPolicy` method for that resource. For
+// example, to view the role grants for a project, call the Resource Manager
+// API's `projects.getIamPolicy`
 // (https://cloud.google.com/resource-manager/reference/rest/v1/projects/getIamPolicy)
 // method.
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being requested.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsServiceAccountsService) GetIamPolicy(resource string) *ProjectsServiceAccountsGetIamPolicyCall {
 	c := &ProjectsServiceAccountsGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -17318,17 +13031,16 @@ func (r *ProjectsServiceAccountsService) GetIamPolicy(resource string) *Projects
 }
 
 // OptionsRequestedPolicyVersion sets the optional parameter
-// "options.requestedPolicyVersion": The maximum policy version that
-// will be used to format the policy. Valid values are 0, 1, and 3.
-// Requests specifying an invalid value will be rejected. Requests for
-// policies with any conditional role bindings must specify version 3.
-// Policies with no conditional role bindings may specify any valid
-// value or leave the field unset. The policy in the response might use
-// the policy version that you specified, or it might use a lower policy
-// version. For example, if you specify version 3, but the policy has no
-// conditional role bindings, the response uses version 1. To learn
-// which resources support conditions in their IAM policies, see the IAM
-// documentation
+// "options.requestedPolicyVersion": The maximum policy version that will be
+// used to format the policy. Valid values are 0, 1, and 3. Requests specifying
+// an invalid value will be rejected. Requests for policies with any
+// conditional role bindings must specify version 3. Policies with no
+// conditional role bindings may specify any valid value or leave the field
+// unset. The policy in the response might use the policy version that you
+// specified, or it might use a lower policy version. For example, if you
+// specify version 3, but the policy has no conditional role bindings, the
+// response uses version 1. To learn which resources support conditions in
+// their IAM policies, see the IAM documentation
 // (https://cloud.google.com/iam/help/conditions/resource-policies).
 func (c *ProjectsServiceAccountsGetIamPolicyCall) OptionsRequestedPolicyVersion(optionsRequestedPolicyVersion int64) *ProjectsServiceAccountsGetIamPolicyCall {
 	c.urlParams_.Set("options.requestedPolicyVersion", fmt.Sprint(optionsRequestedPolicyVersion))
@@ -17336,23 +13048,21 @@ func (c *ProjectsServiceAccountsGetIamPolicyCall) OptionsRequestedPolicyVersion(
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsGetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsGetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsGetIamPolicyCall) Context(ctx context.Context) *ProjectsServiceAccountsGetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsGetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17361,12 +13071,7 @@ func (c *ProjectsServiceAccountsGetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -17384,12 +13089,10 @@ func (c *ProjectsServiceAccountsGetIamPolicyCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.projects.serviceAccounts.getIamPolicy" call.
-// Exactly one of *Policy or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Policy.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17420,41 +13123,7 @@ func (c *ProjectsServiceAccountsGetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the IAM policy that is attached to a ServiceAccount. This IAM policy specifies which principals have access to the service account. This method does not tell you whether the service account has been granted any roles on other resources. To check whether a service account has role grants on a resource, use the `getIamPolicy` method for that resource. For example, to view the role grants for a project, call the Resource Manager API's [`projects.getIamPolicy`](https://cloud.google.com/resource-manager/reference/rest/v1/projects/getIamPolicy) method.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:getIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.getIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "options.requestedPolicyVersion": {
-	//       "description": "Optional. The maximum policy version that will be used to format the policy. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. Requests for policies with any conditional role bindings must specify version 3. Policies with no conditional role bindings may specify any valid value or leave the field unset. The policy in the response might use the policy version that you specified, or it might use a lower policy version. For example, if you specify version 3, but the policy has no conditional role bindings, the response uses version 1. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies).",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:getIamPolicy",
-	//   "response": {
-	//     "$ref": "Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.list":
 
 type ProjectsServiceAccountsListCall struct {
 	s            *Service
@@ -17475,52 +13144,47 @@ func (r *ProjectsServiceAccountsService) List(name string) *ProjectsServiceAccou
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Optional limit on
-// the number of service accounts to include in the response. Further
-// accounts can subsequently be obtained by including the
-// ListServiceAccountsResponse.next_page_token in a subsequent request.
-// The default is 20, and the maximum is 100.
+// PageSize sets the optional parameter "pageSize": Optional limit on the
+// number of service accounts to include in the response. Further accounts can
+// subsequently be obtained by including the
+// ListServiceAccountsResponse.next_page_token in a subsequent request. The
+// default is 20, and the maximum is 100.
 func (c *ProjectsServiceAccountsListCall) PageSize(pageSize int64) *ProjectsServiceAccountsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Optional
-// pagination token returned in an earlier
-// ListServiceAccountsResponse.next_page_token.
+// PageToken sets the optional parameter "pageToken": Optional pagination token
+// returned in an earlier ListServiceAccountsResponse.next_page_token.
 func (c *ProjectsServiceAccountsListCall) PageToken(pageToken string) *ProjectsServiceAccountsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsListCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsServiceAccountsListCall) IfNoneMatch(entityTag string) *ProjectsServiceAccountsListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsListCall) Context(ctx context.Context) *ProjectsServiceAccountsListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17529,12 +13193,7 @@ func (c *ProjectsServiceAccountsListCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -17555,12 +13214,11 @@ func (c *ProjectsServiceAccountsListCall) doRequest(alt string) (*http.Response,
 }
 
 // Do executes the "iam.projects.serviceAccounts.list" call.
-// Exactly one of *ListServiceAccountsResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *ListServiceAccountsResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *ListServiceAccountsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsListCall) Do(opts ...googleapi.CallOption) (*ListServiceAccountsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17591,43 +13249,6 @@ func (c *ProjectsServiceAccountsListCall) Do(opts ...googleapi.CallOption) (*Lis
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every ServiceAccount that belongs to a specific project.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.serviceAccounts.list",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the project associated with the service accounts, such as `projects/my-project-123`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "pageSize": {
-	//       "description": "Optional limit on the number of service accounts to include in the response. Further accounts can subsequently be obtained by including the ListServiceAccountsResponse.next_page_token in a subsequent request. The default is 20, and the maximum is 100.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional pagination token returned in an earlier ListServiceAccountsResponse.next_page_token.",
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/serviceAccounts",
-	//   "response": {
-	//     "$ref": "ListServiceAccountsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -17635,7 +13256,7 @@ func (c *ProjectsServiceAccountsListCall) Do(opts ...googleapi.CallOption) (*Lis
 // The provided context supersedes any context provided to the Context method.
 func (c *ProjectsServiceAccountsListCall) Pages(ctx context.Context, f func(*ListServiceAccountsResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -17651,8 +13272,6 @@ func (c *ProjectsServiceAccountsListCall) Pages(ctx context.Context, f func(*Lis
 	}
 }
 
-// method id "iam.projects.serviceAccounts.patch":
-
 type ProjectsServiceAccountsPatchCall struct {
 	s                          *Service
 	name                       string
@@ -17664,19 +13283,17 @@ type ProjectsServiceAccountsPatchCall struct {
 
 // Patch: Patches a ServiceAccount.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Patch(name string, patchserviceaccountrequest *PatchServiceAccountRequest) *ProjectsServiceAccountsPatchCall {
 	c := &ProjectsServiceAccountsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -17685,23 +13302,21 @@ func (r *ProjectsServiceAccountsService) Patch(name string, patchserviceaccountr
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsPatchCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsPatchCall) Context(ctx context.Context) *ProjectsServiceAccountsPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17710,18 +13325,12 @@ func (c *ProjectsServiceAccountsPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.patchserviceaccountrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -17738,12 +13347,10 @@ func (c *ProjectsServiceAccountsPatchCall) doRequest(alt string) (*http.Response
 }
 
 // Do executes the "iam.projects.serviceAccounts.patch" call.
-// Exactly one of *ServiceAccount or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ServiceAccount.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccount.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsPatchCall) Do(opts ...googleapi.CallOption) (*ServiceAccount, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17774,38 +13381,7 @@ func (c *ProjectsServiceAccountsPatchCall) Do(opts ...googleapi.CallOption) (*Se
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Patches a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}",
-	//   "httpMethod": "PATCH",
-	//   "id": "iam.projects.serviceAccounts.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "PatchServiceAccountRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccount"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.setIamPolicy":
 
 type ProjectsServiceAccountsSetIamPolicyCall struct {
 	s                   *Service
@@ -17816,25 +13392,23 @@ type ProjectsServiceAccountsSetIamPolicyCall struct {
 	header_             http.Header
 }
 
-// SetIamPolicy: Sets the IAM policy that is attached to a
-// ServiceAccount. Use this method to grant or revoke access to the
-// service account. For example, you could grant a principal the ability
-// to impersonate the service account. This method does not enable the
-// service account to access other resources. To grant roles to a
-// service account on a resource, follow these steps: 1. Call the
-// resource's `getIamPolicy` method to get its current IAM policy. 2.
-// Edit the policy so that it binds the service account to an IAM role
-// for the resource. 3. Call the resource's `setIamPolicy` method to
-// update its IAM policy. For detailed instructions, see Manage access
-// to project, folders, and organizations
+// SetIamPolicy: Sets the IAM policy that is attached to a ServiceAccount. Use
+// this method to grant or revoke access to the service account. For example,
+// you could grant a principal the ability to impersonate the service account.
+// This method does not enable the service account to access other resources.
+// To grant roles to a service account on a resource, follow these steps: 1.
+// Call the resource's `getIamPolicy` method to get its current IAM policy. 2.
+// Edit the policy so that it binds the service account to an IAM role for the
+// resource. 3. Call the resource's `setIamPolicy` method to update its IAM
+// policy. For detailed instructions, see Manage access to project, folders,
+// and organizations
 // (https://cloud.google.com/iam/help/service-accounts/granting-access-to-service-accounts)
 // or Manage access to other resources
 // (https://cloud.google.com/iam/help/access/manage-other-resources).
 //
-//   - resource: REQUIRED: The resource for which the policy is being
-//     specified. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being specified.
+//     See Resource names (https://cloud.google.com/apis/design/resource_names)
+//     for the appropriate value for this field.
 func (r *ProjectsServiceAccountsService) SetIamPolicy(resource string, setiampolicyrequest *SetIamPolicyRequest) *ProjectsServiceAccountsSetIamPolicyCall {
 	c := &ProjectsServiceAccountsSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -17843,23 +13417,21 @@ func (r *ProjectsServiceAccountsService) SetIamPolicy(resource string, setiampol
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsSetIamPolicyCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsSetIamPolicyCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsSetIamPolicyCall) Context(ctx context.Context) *ProjectsServiceAccountsSetIamPolicyCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsSetIamPolicyCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -17868,18 +13440,12 @@ func (c *ProjectsServiceAccountsSetIamPolicyCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setiampolicyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setIamPolicy")
@@ -17896,12 +13462,10 @@ func (c *ProjectsServiceAccountsSetIamPolicyCall) doRequest(alt string) (*http.R
 }
 
 // Do executes the "iam.projects.serviceAccounts.setIamPolicy" call.
-// Exactly one of *Policy or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Policy.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Policy.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -17932,38 +13496,7 @@ func (c *ProjectsServiceAccountsSetIamPolicyCall) Do(opts ...googleapi.CallOptio
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Sets the IAM policy that is attached to a ServiceAccount. Use this method to grant or revoke access to the service account. For example, you could grant a principal the ability to impersonate the service account. This method does not enable the service account to access other resources. To grant roles to a service account on a resource, follow these steps: 1. Call the resource's `getIamPolicy` method to get its current IAM policy. 2. Edit the policy so that it binds the service account to an IAM role for the resource. 3. Call the resource's `setIamPolicy` method to update its IAM policy. For detailed instructions, see [Manage access to project, folders, and organizations](https://cloud.google.com/iam/help/service-accounts/granting-access-to-service-accounts) or [Manage access to other resources](https://cloud.google.com/iam/help/access/manage-other-resources).",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:setIamPolicy",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.setIamPolicy",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:setIamPolicy",
-	//   "request": {
-	//     "$ref": "SetIamPolicyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Policy"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.signBlob":
 
 type ProjectsServiceAccountsSignBlobCall struct {
 	s               *Service
@@ -17976,26 +13509,25 @@ type ProjectsServiceAccountsSignBlobCall struct {
 
 // SignBlob: **Note:** This method is deprecated. Use the `signBlob`
 // (https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signBlob)
-// method in the IAM Service Account Credentials API instead. If you
-// currently use this method, see the migration guide
+// method in the IAM Service Account Credentials API instead. If you currently
+// use this method, see the migration guide
 // (https://cloud.google.com/iam/help/credentials/migrate-api) for
 // instructions. Signs a blob using the system-managed private key for a
 // ServiceAccount.
 //
 //   - name: Deprecated. Migrate to Service Account Credentials API
-//     (https://cloud.google.com/iam/help/credentials/migrate-api). The
-//     resource name of the service account. Use one of the following
-//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}`
-//   - `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//     (https://cloud.google.com/iam/help/credentials/migrate-api). The resource
+//     name of the service account. Use one of the following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) SignBlob(name string, signblobrequest *SignBlobRequest) *ProjectsServiceAccountsSignBlobCall {
 	c := &ProjectsServiceAccountsSignBlobCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18004,23 +13536,21 @@ func (r *ProjectsServiceAccountsService) SignBlob(name string, signblobrequest *
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsSignBlobCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsSignBlobCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsSignBlobCall) Context(ctx context.Context) *ProjectsServiceAccountsSignBlobCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsSignBlobCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18029,18 +13559,12 @@ func (c *ProjectsServiceAccountsSignBlobCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsSignBlobCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.signblobrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:signBlob")
@@ -18057,12 +13581,11 @@ func (c *ProjectsServiceAccountsSignBlobCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "iam.projects.serviceAccounts.signBlob" call.
-// Exactly one of *SignBlobResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *SignBlobResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SignBlobResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsSignBlobCall) Do(opts ...googleapi.CallOption) (*SignBlobResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18093,39 +13616,7 @@ func (c *ProjectsServiceAccountsSignBlobCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "deprecated": true,
-	//   "description": "**Note:** This method is deprecated. Use the [`signBlob`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signBlob) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a blob using the system-managed private key for a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signBlob",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.signBlob",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:signBlob",
-	//   "request": {
-	//     "$ref": "SignBlobRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SignBlobResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.signJwt":
 
 type ProjectsServiceAccountsSignJwtCall struct {
 	s              *Service
@@ -18138,26 +13629,25 @@ type ProjectsServiceAccountsSignJwtCall struct {
 
 // SignJwt: **Note:** This method is deprecated. Use the `signJwt`
 // (https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signJwt)
-// method in the IAM Service Account Credentials API instead. If you
-// currently use this method, see the migration guide
+// method in the IAM Service Account Credentials API instead. If you currently
+// use this method, see the migration guide
 // (https://cloud.google.com/iam/help/credentials/migrate-api) for
-// instructions. Signs a JSON Web Token (JWT) using the system-managed
-// private key for a ServiceAccount.
+// instructions. Signs a JSON Web Token (JWT) using the system-managed private
+// key for a ServiceAccount.
 //
 //   - name: Deprecated. Migrate to Service Account Credentials API
-//     (https://cloud.google.com/iam/help/credentials/migrate-api). The
-//     resource name of the service account. Use one of the following
-//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}`
-//   - `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//     (https://cloud.google.com/iam/help/credentials/migrate-api). The resource
+//     name of the service account. Use one of the following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) SignJwt(name string, signjwtrequest *SignJwtRequest) *ProjectsServiceAccountsSignJwtCall {
 	c := &ProjectsServiceAccountsSignJwtCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18166,23 +13656,21 @@ func (r *ProjectsServiceAccountsService) SignJwt(name string, signjwtrequest *Si
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsSignJwtCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsSignJwtCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsSignJwtCall) Context(ctx context.Context) *ProjectsServiceAccountsSignJwtCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsSignJwtCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18191,18 +13679,12 @@ func (c *ProjectsServiceAccountsSignJwtCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsSignJwtCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.signjwtrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:signJwt")
@@ -18219,12 +13701,11 @@ func (c *ProjectsServiceAccountsSignJwtCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "iam.projects.serviceAccounts.signJwt" call.
-// Exactly one of *SignJwtResponse or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *SignJwtResponse.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *SignJwtResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsSignJwtCall) Do(opts ...googleapi.CallOption) (*SignJwtResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18255,39 +13736,7 @@ func (c *ProjectsServiceAccountsSignJwtCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "deprecated": true,
-	//   "description": "**Note:** This method is deprecated. Use the [`signJwt`](https://cloud.google.com/iam/help/rest-credentials/v1/projects.serviceAccounts/signJwt) method in the IAM Service Account Credentials API instead. If you currently use this method, see the [migration guide](https://cloud.google.com/iam/help/credentials/migrate-api) for instructions. Signs a JSON Web Token (JWT) using the system-managed private key for a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:signJwt",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.signJwt",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:signJwt",
-	//   "request": {
-	//     "$ref": "SignJwtRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "SignJwtResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.testIamPermissions":
 
 type ProjectsServiceAccountsTestIamPermissionsCall struct {
 	s                         *Service
@@ -18298,13 +13747,13 @@ type ProjectsServiceAccountsTestIamPermissionsCall struct {
 	header_                   http.Header
 }
 
-// TestIamPermissions: Tests whether the caller has the specified
-// permissions on a ServiceAccount.
+// TestIamPermissions: Tests whether the caller has the specified permissions
+// on a ServiceAccount.
 //
-//   - resource: REQUIRED: The resource for which the policy detail is
-//     being requested. See Resource names
-//     (https://cloud.google.com/apis/design/resource_names) for the
-//     appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the appropriate
+//     value for this field.
 func (r *ProjectsServiceAccountsService) TestIamPermissions(resource string, testiampermissionsrequest *TestIamPermissionsRequest) *ProjectsServiceAccountsTestIamPermissionsCall {
 	c := &ProjectsServiceAccountsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -18313,23 +13762,21 @@ func (r *ProjectsServiceAccountsService) TestIamPermissions(resource string, tes
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsTestIamPermissionsCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) Context(ctx context.Context) *ProjectsServiceAccountsTestIamPermissionsCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18338,18 +13785,12 @@ func (c *ProjectsServiceAccountsTestIamPermissionsCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testiampermissionsrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:testIamPermissions")
@@ -18366,12 +13807,11 @@ func (c *ProjectsServiceAccountsTestIamPermissionsCall) doRequest(alt string) (*
 }
 
 // Do executes the "iam.projects.serviceAccounts.testIamPermissions" call.
-// Exactly one of *TestIamPermissionsResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *TestIamPermissionsResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *TestIamPermissionsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestIamPermissionsResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18402,38 +13842,7 @@ func (c *ProjectsServiceAccountsTestIamPermissionsCall) Do(opts ...googleapi.Cal
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Tests whether the caller has the specified permissions on a ServiceAccount.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:testIamPermissions",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.testIamPermissions",
-	//   "parameterOrder": [
-	//     "resource"
-	//   ],
-	//   "parameters": {
-	//     "resource": {
-	//       "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+resource}:testIamPermissions",
-	//   "request": {
-	//     "$ref": "TestIamPermissionsRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "TestIamPermissionsResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.undelete":
 
 type ProjectsServiceAccountsUndeleteCall struct {
 	s                             *Service
@@ -18444,26 +13853,23 @@ type ProjectsServiceAccountsUndeleteCall struct {
 	header_                       http.Header
 }
 
-// Undelete: Restores a deleted ServiceAccount. **Important:** It is not
-// always possible to restore a deleted service account. Use this method
-// only as a last resort. After you delete a service account, IAM
-// permanently removes the service account 30 days later. There is no
-// way to restore a deleted service account that has been permanently
-// removed.
+// Undelete: Restores a deleted ServiceAccount. **Important:** It is not always
+// possible to restore a deleted service account. Use this method only as a
+// last resort. After you delete a service account, IAM permanently removes the
+// service account 30 days later. There is no way to restore a deleted service
+// account that has been permanently removed.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Undelete(name string, undeleteserviceaccountrequest *UndeleteServiceAccountRequest) *ProjectsServiceAccountsUndeleteCall {
 	c := &ProjectsServiceAccountsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18472,23 +13878,21 @@ func (r *ProjectsServiceAccountsService) Undelete(name string, undeleteserviceac
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsUndeleteCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsUndeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsUndeleteCall) Context(ctx context.Context) *ProjectsServiceAccountsUndeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsUndeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18497,18 +13901,12 @@ func (c *ProjectsServiceAccountsUndeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteserviceaccountrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
@@ -18525,12 +13923,11 @@ func (c *ProjectsServiceAccountsUndeleteCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "iam.projects.serviceAccounts.undelete" call.
-// Exactly one of *UndeleteServiceAccountResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *UndeleteServiceAccountResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *UndeleteServiceAccountResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsUndeleteCall) Do(opts ...googleapi.CallOption) (*UndeleteServiceAccountResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18561,38 +13958,7 @@ func (c *ProjectsServiceAccountsUndeleteCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Restores a deleted ServiceAccount. **Important:** It is not always possible to restore a deleted service account. Use this method only as a last resort. After you delete a service account, IAM permanently removes the service account 30 days later. There is no way to restore a deleted service account that has been permanently removed.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}:undelete",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.undelete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:undelete",
-	//   "request": {
-	//     "$ref": "UndeleteServiceAccountRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "UndeleteServiceAccountResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.update":
 
 type ProjectsServiceAccountsUpdateCall struct {
 	s              *Service
@@ -18603,23 +13969,21 @@ type ProjectsServiceAccountsUpdateCall struct {
 	header_        http.Header
 }
 
-// Update: **Note:** We are in the process of deprecating this method.
-// Use PatchServiceAccount instead. Updates a ServiceAccount. You can
-// update only the `display_name` field.
+// Update: **Note:** We are in the process of deprecating this method. Use
+// PatchServiceAccount instead. Updates a ServiceAccount. You can update only
+// the `display_name` field.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Update(name string, serviceaccount *ServiceAccount) *ProjectsServiceAccountsUpdateCall {
 	c := &ProjectsServiceAccountsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18628,23 +13992,21 @@ func (r *ProjectsServiceAccountsService) Update(name string, serviceaccount *Ser
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsUpdateCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsUpdateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsUpdateCall) Context(ctx context.Context) *ProjectsServiceAccountsUpdateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsUpdateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18653,18 +14015,12 @@ func (c *ProjectsServiceAccountsUpdateCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsUpdateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.serviceaccount)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
@@ -18681,12 +14037,10 @@ func (c *ProjectsServiceAccountsUpdateCall) doRequest(alt string) (*http.Respons
 }
 
 // Do executes the "iam.projects.serviceAccounts.update" call.
-// Exactly one of *ServiceAccount or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *ServiceAccount.ServerResponse.Header or (if a response was returned
-// at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccount.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsUpdateCall) Do(opts ...googleapi.CallOption) (*ServiceAccount, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18717,38 +14071,7 @@ func (c *ProjectsServiceAccountsUpdateCall) Do(opts ...googleapi.CallOption) (*S
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "**Note:** We are in the process of deprecating this method. Use PatchServiceAccount instead. Updates a ServiceAccount. You can update only the `display_name` field.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}",
-	//   "httpMethod": "PUT",
-	//   "id": "iam.projects.serviceAccounts.update",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "request": {
-	//     "$ref": "ServiceAccount"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccount"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.create":
 
 type ProjectsServiceAccountsKeysCreateCall struct {
 	s                              *Service
@@ -18761,19 +14084,17 @@ type ProjectsServiceAccountsKeysCreateCall struct {
 
 // Create: Creates a ServiceAccountKey.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Create(name string, createserviceaccountkeyrequest *CreateServiceAccountKeyRequest) *ProjectsServiceAccountsKeysCreateCall {
 	c := &ProjectsServiceAccountsKeysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18782,23 +14103,21 @@ func (r *ProjectsServiceAccountsKeysService) Create(name string, createserviceac
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysCreateCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysCreateCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysCreateCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysCreateCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysCreateCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18807,18 +14126,12 @@ func (c *ProjectsServiceAccountsKeysCreateCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysCreateCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createserviceaccountkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}/keys")
@@ -18835,12 +14148,11 @@ func (c *ProjectsServiceAccountsKeysCreateCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.create" call.
-// Exactly one of *ServiceAccountKey or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ServiceAccountKey.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccountKey.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsKeysCreateCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -18871,38 +14183,7 @@ func (c *ProjectsServiceAccountsKeysCreateCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Creates a ServiceAccountKey.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.keys.create",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/keys",
-	//   "request": {
-	//     "$ref": "CreateServiceAccountKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccountKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.delete":
 
 type ProjectsServiceAccountsKeysDeleteCall struct {
 	s          *Service
@@ -18912,25 +14193,23 @@ type ProjectsServiceAccountsKeysDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a ServiceAccountKey. Deleting a service account key
-// does not revoke short-lived credentials that have been issued based
-// on the service account key.
+// Delete: Deletes a ServiceAccountKey. Deleting a service account key does not
+// revoke short-lived credentials that have been issued based on the service
+// account key.
 //
 //   - name: The resource name of the service account key. Use one of the
 //     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
-//     ` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
-//     As an alternative, you can use the `-` wildcard character instead
-//     of the project ID: *
-//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
-//     possible, avoid using the `-` wildcard character, because it can
-//     cause response messages to contain misleading error codes. For
-//     example, if you try to access the service account key
-//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
-//     does not exist, the response contains an HTTP `403 Forbidden` error
-//     instead of a `404 Not Found` error.
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the project
+//     ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible,
+//     avoid using the `-` wildcard character, because it can cause response
+//     messages to contain misleading error codes. For example, if you try to
+//     access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does
+//     not exist, the response contains an HTTP `403 Forbidden` error instead of
+//     a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Delete(name string) *ProjectsServiceAccountsKeysDeleteCall {
 	c := &ProjectsServiceAccountsKeysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -18938,23 +14217,21 @@ func (r *ProjectsServiceAccountsKeysService) Delete(name string) *ProjectsServic
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysDeleteCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysDeleteCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysDeleteCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysDeleteCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysDeleteCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -18963,12 +14240,7 @@ func (c *ProjectsServiceAccountsKeysDeleteCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -18986,12 +14258,10 @@ func (c *ProjectsServiceAccountsKeysDeleteCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.delete" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsKeysDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19022,35 +14292,7 @@ func (c *ProjectsServiceAccountsKeysDeleteCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Deletes a ServiceAccountKey. Deleting a service account key does not revoke short-lived credentials that have been issued based on the service account key.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "iam.projects.serviceAccounts.keys.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.disable":
 
 type ProjectsServiceAccountsKeysDisableCall struct {
 	s                               *Service
@@ -19061,24 +14303,22 @@ type ProjectsServiceAccountsKeysDisableCall struct {
 	header_                         http.Header
 }
 
-// Disable: Disable a ServiceAccountKey. A disabled service account key
-// can be re-enabled with EnableServiceAccountKey.
+// Disable: Disable a ServiceAccountKey. A disabled service account key can be
+// re-enabled with EnableServiceAccountKey.
 //
 //   - name: The resource name of the service account key. Use one of the
 //     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
-//     ` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
-//     As an alternative, you can use the `-` wildcard character instead
-//     of the project ID: *
-//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
-//     possible, avoid using the `-` wildcard character, because it can
-//     cause response messages to contain misleading error codes. For
-//     example, if you try to access the service account key
-//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
-//     does not exist, the response contains an HTTP `403 Forbidden` error
-//     instead of a `404 Not Found` error.
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the project
+//     ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible,
+//     avoid using the `-` wildcard character, because it can cause response
+//     messages to contain misleading error codes. For example, if you try to
+//     access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does
+//     not exist, the response contains an HTTP `403 Forbidden` error instead of
+//     a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Disable(name string, disableserviceaccountkeyrequest *DisableServiceAccountKeyRequest) *ProjectsServiceAccountsKeysDisableCall {
 	c := &ProjectsServiceAccountsKeysDisableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -19087,23 +14327,21 @@ func (r *ProjectsServiceAccountsKeysService) Disable(name string, disableservice
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysDisableCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysDisableCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysDisableCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysDisableCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysDisableCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19112,18 +14350,12 @@ func (c *ProjectsServiceAccountsKeysDisableCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysDisableCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.disableserviceaccountkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:disable")
@@ -19140,12 +14372,10 @@ func (c *ProjectsServiceAccountsKeysDisableCall) doRequest(alt string) (*http.Re
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.disable" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsKeysDisableCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19176,38 +14406,7 @@ func (c *ProjectsServiceAccountsKeysDisableCall) Do(opts ...googleapi.CallOption
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Disable a ServiceAccountKey. A disabled service account key can be re-enabled with EnableServiceAccountKey.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}:disable",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.keys.disable",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:disable",
-	//   "request": {
-	//     "$ref": "DisableServiceAccountKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.enable":
 
 type ProjectsServiceAccountsKeysEnableCall struct {
 	s                              *Service
@@ -19222,19 +14421,17 @@ type ProjectsServiceAccountsKeysEnableCall struct {
 //
 //   - name: The resource name of the service account key. Use one of the
 //     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
-//     ` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
-//     As an alternative, you can use the `-` wildcard character instead
-//     of the project ID: *
-//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
-//     possible, avoid using the `-` wildcard character, because it can
-//     cause response messages to contain misleading error codes. For
-//     example, if you try to access the service account key
-//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
-//     does not exist, the response contains an HTTP `403 Forbidden` error
-//     instead of a `404 Not Found` error.
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the project
+//     ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible,
+//     avoid using the `-` wildcard character, because it can cause response
+//     messages to contain misleading error codes. For example, if you try to
+//     access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does
+//     not exist, the response contains an HTTP `403 Forbidden` error instead of
+//     a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Enable(name string, enableserviceaccountkeyrequest *EnableServiceAccountKeyRequest) *ProjectsServiceAccountsKeysEnableCall {
 	c := &ProjectsServiceAccountsKeysEnableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -19243,23 +14440,21 @@ func (r *ProjectsServiceAccountsKeysService) Enable(name string, enableserviceac
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysEnableCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysEnableCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysEnableCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysEnableCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysEnableCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19268,18 +14463,12 @@ func (c *ProjectsServiceAccountsKeysEnableCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysEnableCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.enableserviceaccountkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:enable")
@@ -19296,12 +14485,10 @@ func (c *ProjectsServiceAccountsKeysEnableCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.enable" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Empty.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsKeysEnableCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19332,38 +14519,7 @@ func (c *ProjectsServiceAccountsKeysEnableCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Enable a ServiceAccountKey.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}:enable",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.keys.enable",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:enable",
-	//   "request": {
-	//     "$ref": "EnableServiceAccountKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.get":
 
 type ProjectsServiceAccountsKeysGetCall struct {
 	s            *Service
@@ -19378,28 +14534,26 @@ type ProjectsServiceAccountsKeysGetCall struct {
 //
 //   - name: The resource name of the service account key. Use one of the
 //     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
-//     ` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
-//     As an alternative, you can use the `-` wildcard character instead
-//     of the project ID: *
-//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
-//     possible, avoid using the `-` wildcard character, because it can
-//     cause response messages to contain misleading error codes. For
-//     example, if you try to access the service account key
-//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
-//     does not exist, the response contains an HTTP `403 Forbidden` error
-//     instead of a `404 Not Found` error.
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the project
+//     ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible,
+//     avoid using the `-` wildcard character, because it can cause response
+//     messages to contain misleading error codes. For example, if you try to
+//     access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does
+//     not exist, the response contains an HTTP `403 Forbidden` error instead of
+//     a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Get(name string) *ProjectsServiceAccountsKeysGetCall {
 	c := &ProjectsServiceAccountsKeysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// PublicKeyType sets the optional parameter "publicKeyType": The output
-// format of the public key. The default is `TYPE_NONE`, which means
-// that the public key is not returned.
+// PublicKeyType sets the optional parameter "publicKeyType": The output format
+// of the public key. The default is `TYPE_NONE`, which means that the public
+// key is not returned.
 //
 // Possible values:
 //
@@ -19412,33 +14566,29 @@ func (c *ProjectsServiceAccountsKeysGetCall) PublicKeyType(publicKeyType string)
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysGetCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsServiceAccountsKeysGetCall) IfNoneMatch(entityTag string) *ProjectsServiceAccountsKeysGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysGetCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19447,12 +14597,7 @@ func (c *ProjectsServiceAccountsKeysGetCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -19473,12 +14618,11 @@ func (c *ProjectsServiceAccountsKeysGetCall) doRequest(alt string) (*http.Respon
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.get" call.
-// Exactly one of *ServiceAccountKey or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ServiceAccountKey.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccountKey.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsKeysGetCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19509,50 +14653,7 @@ func (c *ProjectsServiceAccountsKeysGetCall) Do(opts ...googleapi.CallOption) (*
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets a ServiceAccountKey.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.serviceAccounts.keys.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     },
-	//     "publicKeyType": {
-	//       "description": "Optional. The output format of the public key. The default is `TYPE_NONE`, which means that the public key is not returned.",
-	//       "enum": [
-	//         "TYPE_NONE",
-	//         "TYPE_X509_PEM_FILE",
-	//         "TYPE_RAW_PUBLIC_KEY"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Do not return the public key.",
-	//         "X509 PEM format.",
-	//         "Raw public key."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "ServiceAccountKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.list":
 
 type ProjectsServiceAccountsKeysListCall struct {
 	s            *Service
@@ -19565,76 +14666,64 @@ type ProjectsServiceAccountsKeysListCall struct {
 
 // List: Lists every ServiceAccountKey for a service account.
 //
-//   - name: The resource name of the service account. Use one of the
-//     following formats: *
-//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//   - name: The resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) List(name string) *ProjectsServiceAccountsKeysListCall {
 	c := &ProjectsServiceAccountsKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
 	return c
 }
 
-// KeyTypes sets the optional parameter "keyTypes": Filters the types of
-// keys the user wants to include in the list response. Duplicate key
-// types are not allowed. If no key type is provided, all keys are
-// returned.
+// KeyTypes sets the optional parameter "keyTypes": Filters the types of keys
+// the user wants to include in the list response. Duplicate key types are not
+// allowed. If no key type is provided, all keys are returned.
 //
 // Possible values:
 //
-//	"KEY_TYPE_UNSPECIFIED" - Unspecified key type. The presence of this
+//	"KEY_TYPE_UNSPECIFIED" - Unspecified key type. The presence of this in the
 //
-// in the message will immediately result in an error.
+// message will immediately result in an error.
 //
-//	"USER_MANAGED" - User-managed keys (managed and rotated by the
-//
-// user).
-//
-//	"SYSTEM_MANAGED" - System-managed keys (managed and rotated by
-//
-// Google).
+//	"USER_MANAGED" - User-managed keys (managed and rotated by the user).
+//	"SYSTEM_MANAGED" - System-managed keys (managed and rotated by Google).
 func (c *ProjectsServiceAccountsKeysListCall) KeyTypes(keyTypes ...string) *ProjectsServiceAccountsKeysListCall {
 	c.urlParams_.SetMulti("keyTypes", append([]string{}, keyTypes...))
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysListCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *ProjectsServiceAccountsKeysListCall) IfNoneMatch(entityTag string) *ProjectsServiceAccountsKeysListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysListCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19643,12 +14732,7 @@ func (c *ProjectsServiceAccountsKeysListCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -19669,12 +14753,11 @@ func (c *ProjectsServiceAccountsKeysListCall) doRequest(alt string) (*http.Respo
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.list" call.
-// Exactly one of *ListServiceAccountKeysResponse or error will be
-// non-nil. Any non-2xx status code is an error. Response headers are in
-// either *ListServiceAccountKeysResponse.ServerResponse.Header or (if a
-// response was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListServiceAccountKeysResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *ProjectsServiceAccountsKeysListCall) Do(opts ...googleapi.CallOption) (*ListServiceAccountKeysResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19705,51 +14788,7 @@ func (c *ProjectsServiceAccountsKeysListCall) Do(opts ...googleapi.CallOption) (
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every ServiceAccountKey for a service account.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys",
-	//   "httpMethod": "GET",
-	//   "id": "iam.projects.serviceAccounts.keys.list",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "keyTypes": {
-	//       "description": "Filters the types of keys the user wants to include in the list response. Duplicate key types are not allowed. If no key type is provided, all keys are returned.",
-	//       "enum": [
-	//         "KEY_TYPE_UNSPECIFIED",
-	//         "USER_MANAGED",
-	//         "SYSTEM_MANAGED"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Unspecified key type. The presence of this in the message will immediately result in an error.",
-	//         "User-managed keys (managed and rotated by the user).",
-	//         "System-managed keys (managed and rotated by Google)."
-	//       ],
-	//       "location": "query",
-	//       "repeated": true,
-	//       "type": "string"
-	//     },
-	//     "name": {
-	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/keys",
-	//   "response": {
-	//     "$ref": "ListServiceAccountKeysResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.patch":
 
 type ProjectsServiceAccountsKeysPatchCall struct {
 	s                             *Service
@@ -19762,8 +14801,7 @@ type ProjectsServiceAccountsKeysPatchCall struct {
 
 // Patch: Patches a ServiceAccountKey.
 //
-//   - name: The resource name of the service account key in the following
-//     format
+//   - name: The resource name of the service account key in the following format
 //     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
 func (r *ProjectsServiceAccountsKeysService) Patch(name string, patchserviceaccountkeyrequest *PatchServiceAccountKeyRequest) *ProjectsServiceAccountsKeysPatchCall {
 	c := &ProjectsServiceAccountsKeysPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -19773,23 +14811,21 @@ func (r *ProjectsServiceAccountsKeysService) Patch(name string, patchserviceacco
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysPatchCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysPatchCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysPatchCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysPatchCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysPatchCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19798,18 +14834,12 @@ func (c *ProjectsServiceAccountsKeysPatchCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.patchserviceaccountkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:patch")
@@ -19826,12 +14856,11 @@ func (c *ProjectsServiceAccountsKeysPatchCall) doRequest(alt string) (*http.Resp
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.patch" call.
-// Exactly one of *ServiceAccountKey or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ServiceAccountKey.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccountKey.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsKeysPatchCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -19862,38 +14891,7 @@ func (c *ProjectsServiceAccountsKeysPatchCall) Do(opts ...googleapi.CallOption) 
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Patches a ServiceAccountKey.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys/{keysId}:patch",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.keys.patch",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account key in the following format `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}:patch",
-	//   "request": {
-	//     "$ref": "PatchServiceAccountKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccountKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.projects.serviceAccounts.keys.upload":
 
 type ProjectsServiceAccountsKeysUploadCall struct {
 	s                              *Service
@@ -19904,24 +14902,22 @@ type ProjectsServiceAccountsKeysUploadCall struct {
 	header_                        http.Header
 }
 
-// Upload: Uploads the public key portion of a key pair that you manage,
-// and associates the public key with a ServiceAccount. After you upload
-// the public key, you can use the private key from the key pair as a
-// service account key.
+// Upload: Uploads the public key portion of a key pair that you manage, and
+// associates the public key with a ServiceAccount. After you upload the public
+// key, you can use the private key from the key pair as a service account key.
 //
 //   - name: The resource name of the service account key. Use one of the
 //     following formats: *
 //     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
-//     alternative, you can use the `-` wildcard character instead of the
-//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
-//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
-//     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to
-//     access the service account
-//     `projects/-/serviceAccounts/fake@example.com`, which does not
-//     exist, the response contains an HTTP `403 Forbidden` error instead
-//     of a `404 Not Found` error.
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you
+//     can use the `-` wildcard character instead of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the
+//     `-` wildcard character, because it can cause response messages to contain
+//     misleading error codes. For example, if you try to access the service
+//     account `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead of a
+//     `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Upload(name string, uploadserviceaccountkeyrequest *UploadServiceAccountKeyRequest) *ProjectsServiceAccountsKeysUploadCall {
 	c := &ProjectsServiceAccountsKeysUploadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -19930,23 +14926,21 @@ func (r *ProjectsServiceAccountsKeysService) Upload(name string, uploadserviceac
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *ProjectsServiceAccountsKeysUploadCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysUploadCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *ProjectsServiceAccountsKeysUploadCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysUploadCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *ProjectsServiceAccountsKeysUploadCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -19955,18 +14949,12 @@ func (c *ProjectsServiceAccountsKeysUploadCall) Header() http.Header {
 }
 
 func (c *ProjectsServiceAccountsKeysUploadCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.uploadserviceaccountkeyrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}/keys:upload")
@@ -19983,12 +14971,11 @@ func (c *ProjectsServiceAccountsKeysUploadCall) doRequest(alt string) (*http.Res
 }
 
 // Do executes the "iam.projects.serviceAccounts.keys.upload" call.
-// Exactly one of *ServiceAccountKey or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ServiceAccountKey.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ServiceAccountKey.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *ProjectsServiceAccountsKeysUploadCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -20019,38 +15006,7 @@ func (c *ProjectsServiceAccountsKeysUploadCall) Do(opts ...googleapi.CallOption)
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Uploads the public key portion of a key pair that you manage, and associates the public key with a ServiceAccount. After you upload the public key, you can use the private key from the key pair as a service account key.",
-	//   "flatPath": "v1/projects/{projectsId}/serviceAccounts/{serviceAccountsId}/keys:upload",
-	//   "httpMethod": "POST",
-	//   "id": "iam.projects.serviceAccounts.keys.upload",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}/keys:upload",
-	//   "request": {
-	//     "$ref": "UploadServiceAccountKeyRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "ServiceAccountKey"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.roles.get":
 
 type RolesGetCall struct {
 	s            *Service
@@ -20063,36 +15019,34 @@ type RolesGetCall struct {
 
 // Get: Gets the definition of a Role.
 //
-//   - name: The `name` parameter's value depends on the target resource
-//     for the request, namely `roles`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+//   - name: The `name` parameter's value depends on the target resource for the
+//     request, namely `roles`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 //     `organizations`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 //     Each resource type's `name` value format is described below: *
 //     `roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/roles/get):
-//     `roles/{ROLE_NAME}`. This method returns results from all
-//     predefined roles
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/roles/get):
+//     `roles/{ROLE_NAME}`. This method returns results from all predefined roles
 //     (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-//     in Cloud IAM. Example request URL:
-//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` *
-//     `projects.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/projects.roles/get):
-//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns
-//     only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the project level. Example request URL:
-//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_R
-//     OLE_ID}` * `organizations.roles.get()`
-//     (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get):
-//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This
-//     method returns only custom roles
-//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that
-//     have been created at the organization level. Example request URL:
-//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles
-//     /{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must
-//     specify a complete project ID or organization ID.
+//     in IAM. Example request URL:
+//     `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * `projects.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/get):
+//     `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only
+//     custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the project level. Example request URL:
+//     `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}
+//     ` * `organizations.roles.get()`
+//     (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/get):
+//     `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method
+//     returns only custom roles
+//     (https://cloud.google.com/iam/docs/understanding-custom-roles) that have
+//     been created at the organization level. Example request URL:
+//     `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTO
+//     M_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a
+//     complete project ID or organization ID.
 func (r *RolesService) Get(name string) *RolesGetCall {
 	c := &RolesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -20100,33 +15054,29 @@ func (r *RolesService) Get(name string) *RolesGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *RolesGetCall) Fields(s ...googleapi.Field) *RolesGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *RolesGetCall) IfNoneMatch(entityTag string) *RolesGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *RolesGetCall) Context(ctx context.Context) *RolesGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *RolesGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -20135,12 +15085,7 @@ func (c *RolesGetCall) Header() http.Header {
 }
 
 func (c *RolesGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -20161,12 +15106,10 @@ func (c *RolesGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "iam.roles.get" call.
-// Exactly one of *Role or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
+// Any non-2xx status code is an error. Response headers are in either
 // *Role.ServerResponse.Header or (if a response was returned at all) in
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was
-// returned.
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *RolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -20197,35 +15140,7 @@ func (c *RolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Gets the definition of a Role.",
-	//   "flatPath": "v1/roles/{rolesId}",
-	//   "httpMethod": "GET",
-	//   "id": "iam.roles.get",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The `name` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `name` value format is described below: * [`roles.get()`](https://cloud.google.com/iam/reference/rest/v1/roles/get): `roles/{ROLE_NAME}`. This method returns results from all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles/{ROLE_NAME}` * [`projects.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/get): `projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the project level. Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles/{CUSTOM_ROLE_ID}` * [`organizations.roles.get()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/get): `organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}`. This method returns only [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) that have been created at the organization level. Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles/{CUSTOM_ROLE_ID}` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "path",
-	//       "pattern": "^roles/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Role"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
-
-// method id "iam.roles.list":
 
 type RolesListCall struct {
 	s            *Service
@@ -20235,79 +15150,76 @@ type RolesListCall struct {
 	header_      http.Header
 }
 
-// List: Lists every predefined Role that IAM supports, or every custom
-// role that is defined for an organization or project.
+// List: Lists every predefined Role that IAM supports, or every custom role
+// that is defined for an organization or project.
 func (r *RolesService) List() *RolesListCall {
 	c := &RolesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Optional limit on
-// the number of roles to include in the response. The default is 300,
-// and the maximum is 1,000.
+// PageSize sets the optional parameter "pageSize": Optional limit on the
+// number of roles to include in the response. The default is 300, and the
+// maximum is 1,000.
 func (c *RolesListCall) PageSize(pageSize int64) *RolesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Optional
-// pagination token returned in an earlier ListRolesResponse.
+// PageToken sets the optional parameter "pageToken": Optional pagination token
+// returned in an earlier ListRolesResponse.
 func (c *RolesListCall) PageToken(pageToken string) *RolesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Parent sets the optional parameter "parent": The `parent` parameter's
-// value depends on the target resource for the request, namely `roles`
-// (https://cloud.google.com/iam/reference/rest/v1/roles), `projects`
-// (https://cloud.google.com/iam/reference/rest/v1/projects.roles), or
+// Parent sets the optional parameter "parent": The `parent` parameter's value
+// depends on the target resource for the request, namely `roles`
+// (https://cloud.google.com/iam/docs/reference/rest/v1/roles), `projects`
+// (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles), or
 // `organizations`
-// (https://cloud.google.com/iam/reference/rest/v1/organizations.roles).
+// (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles).
 // Each resource type's `parent` value format is described below: *
 // `roles.list()`
-// (https://cloud.google.com/iam/reference/rest/v1/roles/list): An empty
+// (https://cloud.google.com/iam/docs/reference/rest/v1/roles/list): An empty
 // string. This method doesn't require a resource; it simply returns all
 // predefined roles
-// (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles)
-// in Cloud IAM. Example request URL:
-// `https://iam.googleapis.com/v1/roles` * `projects.roles.list()`
-// (https://cloud.google.com/iam/reference/rest/v1/projects.roles/list):
-// `projects/{PROJECT_ID}`. This method lists all project-level custom
-// roles (https://cloud.google.com/iam/docs/understanding-custom-roles).
-// Example request URL:
-// `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
+// (https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in
+// IAM. Example request URL: `https://iam.googleapis.com/v1/roles` *
+// `projects.roles.list()`
+// (https://cloud.google.com/iam/docs/reference/rest/v1/projects.roles/list):
+// `projects/{PROJECT_ID}`. This method lists all project-level custom roles
+// (https://cloud.google.com/iam/docs/understanding-custom-roles). Example
+// request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` *
 // `organizations.roles.list()`
-// (https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list):
-// `organizations/{ORGANIZATION_ID}`. This method lists all
-// organization-level custom roles
-// (https://cloud.google.com/iam/docs/understanding-custom-roles).
+// (https://cloud.google.com/iam/docs/reference/rest/v1/organizations.roles/list):
+// `organizations/{ORGANIZATION_ID}`. This method lists all organization-level
+// custom roles (https://cloud.google.com/iam/docs/understanding-custom-roles).
 // Example request URL:
-// `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles`
-// Note: Wildcard (*) values are invalid; you must specify a complete
-// project ID or organization ID.
+// `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note:
+// Wildcard (*) values are invalid; you must specify a complete project ID or
+// organization ID.
 func (c *RolesListCall) Parent(parent string) *RolesListCall {
 	c.urlParams_.Set("parent", parent)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Include Roles
-// that have been deleted.
+// ShowDeleted sets the optional parameter "showDeleted": Include Roles that
+// have been deleted.
 func (c *RolesListCall) ShowDeleted(showDeleted bool) *RolesListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
-// View sets the optional parameter "view": Optional view for the
-// returned Role objects. When `FULL` is specified, the
-// `includedPermissions` field is returned, which includes a list of all
-// permissions in the role. The default value is `BASIC`, which does not
-// return the `includedPermissions` field.
+// View sets the optional parameter "view": Optional view for the returned Role
+// objects. When `FULL` is specified, the `includedPermissions` field is
+// returned, which includes a list of all permissions in the role. The default
+// value is `BASIC`, which does not return the `includedPermissions` field.
 //
 // Possible values:
 //
-//	"BASIC" - Omits the `included_permissions` field. This is the
+//	"BASIC" - Omits the `included_permissions` field. This is the default
 //
-// default value.
+// value.
 //
 //	"FULL" - Returns all fields.
 func (c *RolesListCall) View(view string) *RolesListCall {
@@ -20316,33 +15228,29 @@ func (c *RolesListCall) View(view string) *RolesListCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *RolesListCall) Fields(s ...googleapi.Field) *RolesListCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *RolesListCall) IfNoneMatch(entityTag string) *RolesListCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *RolesListCall) Context(ctx context.Context) *RolesListCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *RolesListCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -20351,12 +15259,7 @@ func (c *RolesListCall) Header() http.Header {
 }
 
 func (c *RolesListCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -20374,12 +15277,11 @@ func (c *RolesListCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "iam.roles.list" call.
-// Exactly one of *ListRolesResponse or error will be non-nil. Any
-// non-2xx status code is an error. Response headers are in either
-// *ListRolesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListRolesResponse.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
 func (c *RolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -20410,57 +15312,6 @@ func (c *RolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResponse, er
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists every predefined Role that IAM supports, or every custom role that is defined for an organization or project.",
-	//   "flatPath": "v1/roles",
-	//   "httpMethod": "GET",
-	//   "id": "iam.roles.list",
-	//   "parameterOrder": [],
-	//   "parameters": {
-	//     "pageSize": {
-	//       "description": "Optional limit on the number of roles to include in the response. The default is 300, and the maximum is 1,000.",
-	//       "format": "int32",
-	//       "location": "query",
-	//       "type": "integer"
-	//     },
-	//     "pageToken": {
-	//       "description": "Optional pagination token returned in an earlier ListRolesResponse.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "parent": {
-	//       "description": "The `parent` parameter's value depends on the target resource for the request, namely [`roles`](https://cloud.google.com/iam/reference/rest/v1/roles), [`projects`](https://cloud.google.com/iam/reference/rest/v1/projects.roles), or [`organizations`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles). Each resource type's `parent` value format is described below: * [`roles.list()`](https://cloud.google.com/iam/reference/rest/v1/roles/list): An empty string. This method doesn't require a resource; it simply returns all [predefined roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles) in Cloud IAM. Example request URL: `https://iam.googleapis.com/v1/roles` * [`projects.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/projects.roles/list): `projects/{PROJECT_ID}`. This method lists all project-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/projects/{PROJECT_ID}/roles` * [`organizations.roles.list()`](https://cloud.google.com/iam/reference/rest/v1/organizations.roles/list): `organizations/{ORGANIZATION_ID}`. This method lists all organization-level [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles). Example request URL: `https://iam.googleapis.com/v1/organizations/{ORGANIZATION_ID}/roles` Note: Wildcard (*) values are invalid; you must specify a complete project ID or organization ID.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "showDeleted": {
-	//       "description": "Include Roles that have been deleted.",
-	//       "location": "query",
-	//       "type": "boolean"
-	//     },
-	//     "view": {
-	//       "description": "Optional view for the returned Role objects. When `FULL` is specified, the `includedPermissions` field is returned, which includes a list of all permissions in the role. The default value is `BASIC`, which does not return the `includedPermissions` field.",
-	//       "enum": [
-	//         "BASIC",
-	//         "FULL"
-	//       ],
-	//       "enumDescriptions": [
-	//         "Omits the `included_permissions` field. This is the default value.",
-	//         "Returns all fields."
-	//       ],
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/roles",
-	//   "response": {
-	//     "$ref": "ListRolesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -20468,7 +15319,7 @@ func (c *RolesListCall) Do(opts ...googleapi.CallOption) (*ListRolesResponse, er
 // The provided context supersedes any context provided to the Context method.
 func (c *RolesListCall) Pages(ctx context.Context, f func(*ListRolesResponse) error) error {
 	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
 	for {
 		x, err := c.Do()
 		if err != nil {
@@ -20484,8 +15335,6 @@ func (c *RolesListCall) Pages(ctx context.Context, f func(*ListRolesResponse) er
 	}
 }
 
-// method id "iam.roles.queryGrantableRoles":
-
 type RolesQueryGrantableRolesCall struct {
 	s                          *Service
 	querygrantablerolesrequest *QueryGrantableRolesRequest
@@ -20494,9 +15343,9 @@ type RolesQueryGrantableRolesCall struct {
 	header_                    http.Header
 }
 
-// QueryGrantableRoles: Lists roles that can be granted on a Google
-// Cloud resource. A role is grantable if the IAM policy for the
-// resource can contain bindings to the role.
+// QueryGrantableRoles: Lists roles that can be granted on a Google Cloud
+// resource. A role is grantable if the IAM policy for the resource can contain
+// bindings to the role.
 func (r *RolesService) QueryGrantableRoles(querygrantablerolesrequest *QueryGrantableRolesRequest) *RolesQueryGrantableRolesCall {
 	c := &RolesQueryGrantableRolesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.querygrantablerolesrequest = querygrantablerolesrequest
@@ -20504,23 +15353,21 @@ func (r *RolesService) QueryGrantableRoles(querygrantablerolesrequest *QueryGran
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *RolesQueryGrantableRolesCall) Fields(s ...googleapi.Field) *RolesQueryGrantableRolesCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *RolesQueryGrantableRolesCall) Context(ctx context.Context) *RolesQueryGrantableRolesCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *RolesQueryGrantableRolesCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -20529,18 +15376,12 @@ func (c *RolesQueryGrantableRolesCall) Header() http.Header {
 }
 
 func (c *RolesQueryGrantableRolesCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.querygrantablerolesrequest)
 	if err != nil {
 		return nil, err
 	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/roles:queryGrantableRoles")
@@ -20554,12 +15395,11 @@ func (c *RolesQueryGrantableRolesCall) doRequest(alt string) (*http.Response, er
 }
 
 // Do executes the "iam.roles.queryGrantableRoles" call.
-// Exactly one of *QueryGrantableRolesResponse or error will be non-nil.
 // Any non-2xx status code is an error. Response headers are in either
-// *QueryGrantableRolesResponse.ServerResponse.Header or (if a response
-// was returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was
-// because http.StatusNotModified was returned.
+// *QueryGrantableRolesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
 func (c *RolesQueryGrantableRolesCall) Do(opts ...googleapi.CallOption) (*QueryGrantableRolesResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -20590,25 +15430,6 @@ func (c *RolesQueryGrantableRolesCall) Do(opts ...googleapi.CallOption) (*QueryG
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "description": "Lists roles that can be granted on a Google Cloud resource. A role is grantable if the IAM policy for the resource can contain bindings to the role.",
-	//   "flatPath": "v1/roles:queryGrantableRoles",
-	//   "httpMethod": "POST",
-	//   "id": "iam.roles.queryGrantableRoles",
-	//   "parameterOrder": [],
-	//   "parameters": {},
-	//   "path": "v1/roles:queryGrantableRoles",
-	//   "request": {
-	//     "$ref": "QueryGrantableRolesRequest"
-	//   },
-	//   "response": {
-	//     "$ref": "QueryGrantableRolesResponse"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform"
-	//   ]
-	// }
-
 }
 
 // Pages invokes f for each page of results.
@@ -20616,7 +15437,7 @@ func (c *RolesQueryGrantableRolesCall) Do(opts ...googleapi.CallOption) (*QueryG
 // The provided context supersedes any context provided to the Context method.
 func (c *RolesQueryGrantableRolesCall) Pages(ctx context.Context, f func(*QueryGrantableRolesResponse) error) error {
 	c.ctx_ = ctx
-	defer func(pt string) { c.querygrantablerolesrequest.PageToken = pt }(c.querygrantablerolesrequest.PageToken) // reset paging to original point
+	defer func(pt string) { c.querygrantablerolesrequest.PageToken = pt }(c.querygrantablerolesrequest.PageToken)
 	for {
 		x, err := c.Do()
 		if err != nil {

@@ -2183,6 +2183,10 @@ type EC2API interface {
 	GetInstanceMetadataDefaultsWithContext(aws.Context, *ec2.GetInstanceMetadataDefaultsInput, ...request.Option) (*ec2.GetInstanceMetadataDefaultsOutput, error)
 	GetInstanceMetadataDefaultsRequest(*ec2.GetInstanceMetadataDefaultsInput) (*request.Request, *ec2.GetInstanceMetadataDefaultsOutput)
 
+	GetInstanceTpmEkPub(*ec2.GetInstanceTpmEkPubInput) (*ec2.GetInstanceTpmEkPubOutput, error)
+	GetInstanceTpmEkPubWithContext(aws.Context, *ec2.GetInstanceTpmEkPubInput, ...request.Option) (*ec2.GetInstanceTpmEkPubOutput, error)
+	GetInstanceTpmEkPubRequest(*ec2.GetInstanceTpmEkPubInput) (*request.Request, *ec2.GetInstanceTpmEkPubOutput)
+
 	GetInstanceTypesFromInstanceRequirements(*ec2.GetInstanceTypesFromInstanceRequirementsInput) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 	GetInstanceTypesFromInstanceRequirementsWithContext(aws.Context, *ec2.GetInstanceTypesFromInstanceRequirementsInput, ...request.Option) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 	GetInstanceTypesFromInstanceRequirementsRequest(*ec2.GetInstanceTypesFromInstanceRequirementsInput) (*request.Request, *ec2.GetInstanceTypesFromInstanceRequirementsOutput)
