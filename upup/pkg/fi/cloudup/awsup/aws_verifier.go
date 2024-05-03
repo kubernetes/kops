@@ -37,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/wellknownports"
@@ -154,6 +155,7 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 	}
 	signedHeaders := sets.New(strings.Split(reqURL.Query().Get("X-Amz-SignedHeaders"), ",")...)
 	if !signedHeaders.Has("x-kops-request-sha") {
+		klog.Warningf("unexpected signed headers value, want x-kops-request-sha, got %q", signedHeaders.UnsortedList())
 		return nil, fmt.Errorf("unexpected signed headers value")
 	}
 
