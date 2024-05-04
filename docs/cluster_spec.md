@@ -424,6 +424,8 @@ spec:
 
 Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
 
+**Note**: As of kOps 1.26, ControlPlane is being used as a role for the master instances. Previously, the master role was Master.
+
 ```yaml
 spec:
   kubeAPIServer:
@@ -436,7 +438,7 @@ spec:
   - name: audit-policy-config
     path: /etc/kubernetes/audit/policy-config.yaml
     roles:
-    - Master
+    - ControlPlane
     content: |
       apiVersion: audit.k8s.io/v1
       kind: Policy
@@ -456,6 +458,8 @@ Example policy file can be found [here](https://raw.githubusercontent.com/kubern
 
 Webhook backend sends audit events to a remote API, which is assumed to be the same API as `kube-apiserver` exposes.
 
+**Note**: As of kOps 1.26, ControlPlane is being used as a role for the master instances. Previously, the master role was Master.
+
 ```yaml
 spec:
   kubeAPIServer:
@@ -465,7 +469,7 @@ spec:
   - name: audit-webhook-config
     path: /etc/kubernetes/audit/webhook-config.yaml
     roles:
-    - Master
+    - ControlPlane
     content: |
       apiVersion: v1
       kind: Config
@@ -1141,8 +1145,8 @@ spec:
   - name: iptable-restore
     # Note if path is not specified, the default is /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
-    # Note if roles are not specified, the default is all roles
-    roles: [Master,Node,Bastion] # a list of roles to apply the asset to
+    # Note if roles are not specified, the default is all roles. As of kOps 1.26, ControlPlane is being used as a role for the master instances. Previously, the master role was Master.
+    roles: [ControlPlane,Node,Bastion] # a list of roles to apply the asset to
     content: |
       some file content
 ```
