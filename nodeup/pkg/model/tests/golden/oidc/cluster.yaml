@@ -38,6 +38,12 @@ spec:
     - claim2=value2
     oidcUsernameClaim: user
     oidcUsernamePrefix: 'oidc:'
+    serviceAccountIssuer: https://huh.com/multisaissuer.example.com
+    additionalServiceAccountIssuers:
+    - https://foobar.com
+    - https://aaa.com
+    - https://hello.com
+    - https://dorld.com
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.23.0
