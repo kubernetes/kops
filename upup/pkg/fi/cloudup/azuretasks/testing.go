@@ -26,6 +26,7 @@ import (
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/google/uuid"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -56,6 +57,7 @@ type MockAzureCloud struct {
 	LoadBalancersClient             *MockLoadBalancersClient
 	PublicIPAddressesClient         *MockPublicIPAddressesClient
 	NatGatewaysClient               *MockNatGatewaysClient
+	StorageAccountsClient           *MockStorageAccountsClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -106,6 +108,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		NatGatewaysClient: &MockNatGatewaysClient{
 			NGWs: map[string]*network.NatGateway{},
 		},
+		StorageAccountsClient: &MockStorageAccountsClient{
+			SAs: map[string]*armstorage.Account{},
+		},
 	}
 }
 
@@ -129,8 +134,14 @@ func (c *MockAzureCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("FindVPCInfo not implemented on azureCloud")
 }
 
+// FindVNetInfo returns the VPCInfo.
 func (c *MockAzureCloud) FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error) {
 	return nil, errors.New("FindVNetInfo not implemented on azureCloud")
+}
+
+// FindStorageAccountInfo returns the storage account info.
+func (c *MockAzureCloud) FindStorageAccountInfo(name string) (*armstorage.Account, error) {
+	return nil, errors.New("FindStorageAccountInfo not implemented on azureCloud")
 }
 
 // DeleteInstance deletes the instance.
@@ -539,7 +550,7 @@ func (c *MockRoleAssignmentsClient) Create(
 }
 
 // List returns a slice of role assignments.
-func (c *MockRoleAssignmentsClient) List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error) {
+func (c *MockRoleAssignmentsClient) List(ctx context.Context, scope string) ([]*authz.RoleAssignment, error) {
 	var l []*authz.RoleAssignment
 	for _, ra := range c.RAs {
 		l = append(l, ra)
@@ -797,4 +808,20 @@ func (c *MockNatGatewaysClient) Delete(ctx context.Context, resourceGroupName, n
 	}
 	delete(c.NGWs, ngwName)
 	return nil
+}
+
+// MockStorageAccountsClient is a mock implementation of Nat Gateway client.
+type MockStorageAccountsClient struct {
+	SAs map[string]*armstorage.Account
+}
+
+var _ azure.StorageAccountsClient = &MockStorageAccountsClient{}
+
+// List returns a slice of Storage Accounts.
+func (c *MockStorageAccountsClient) List(ctx context.Context) ([]*armstorage.Account, error) {
+	var l []*armstorage.Account
+	for _, sa := range c.SAs {
+		l = append(l, sa)
+	}
+	return l, nil
 }
