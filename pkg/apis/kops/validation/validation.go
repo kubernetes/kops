@@ -732,6 +732,13 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	if v.AuthenticationConfigFile != "" && c.Spec.Authentication != nil && c.Spec.Authentication.OIDC != nil {
+		o := c.Spec.Authentication.OIDC
+		if o.UsernameClaim != nil || o.UsernamePrefix != nil || o.GroupsClaims != nil || o.GroupsPrefix != nil || o.IssuerURL != nil || o.ClientID != nil || o.RequiredClaims != nil {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("authenticationConfigFile"), "authenticationConfigFile is mutually exclusive with OIDC options, remove all existing OIDC options to use authenticationConfigFile"))
+		}
+	}
+
 	if fi.ValueOf(v.EnableBootstrapAuthToken) {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableBootstrapTokenAuth"), "bootstrap tokens are not supported"))
 	}

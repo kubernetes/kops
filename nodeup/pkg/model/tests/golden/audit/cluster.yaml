@@ -65,6 +65,7 @@ spec:
     auditPolicyFile: /etc/kubernetes/audit/policy-config.yaml
     auditWebhookBatchMaxWait: 5s
     auditWebhookConfigFile: /etc/kubernetes/audit/webhook-config.yaml
+    authenticationConfigFile: /etc/kubernetes/authentication-config.yaml
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.28.0
