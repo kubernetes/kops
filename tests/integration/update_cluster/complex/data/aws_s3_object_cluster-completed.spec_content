@@ -29,7 +29,7 @@ spec:
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
-      version: v1.28.0
+      version: v1.30.0
     manageStorageClasses: true
   cloudControllerManager:
     allocateNodeCIDRs: true
@@ -38,7 +38,7 @@ spec:
     concurrentNodeSyncs: 5
     configureCloudRoutes: false
     enableLeaderMigration: true
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.15
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.19
     leaderElection:
       leaderElect: true
   cloudLabels:
