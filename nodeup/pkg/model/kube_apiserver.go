@@ -678,6 +678,9 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 			"/usr/local/bin/kube-apiserver",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
+		for _, issuer := range kubeAPIServer.AdditionalServiceAccountIssuers {
+			container.Args = append(container.Args, "--service-account-issuer="+issuer)
+		}
 	}
 
 	for _, path := range b.SSLHostPaths() {
