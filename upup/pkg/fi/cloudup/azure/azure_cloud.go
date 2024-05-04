@@ -64,6 +64,7 @@ type AzureCloud interface {
 
 type azureCloudImplementation struct {
 	subscriptionID                  string
+	resourceGroupName               string
 	location                        string
 	tags                            map[string]string
 	resourceGroupsClient            ResourceGroupsClient
@@ -85,16 +86,17 @@ type azureCloudImplementation struct {
 var _ fi.Cloud = &azureCloudImplementation{}
 
 // NewAzureCloud creates a new AzureCloud.
-func NewAzureCloud(subscriptionID, location string, tags map[string]string) (AzureCloud, error) {
+func NewAzureCloud(subscriptionID, resourceGroupName, location string, tags map[string]string) (AzureCloud, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating an identity: %s", err)
 	}
 
 	azureCloudImpl := &azureCloudImplementation{
-		subscriptionID: subscriptionID,
-		location:       location,
-		tags:           tags,
+		subscriptionID:    subscriptionID,
+		resourceGroupName: resourceGroupName,
+		location:          location,
+		tags:              tags,
 	}
 
 	if azureCloudImpl.resourceGroupsClient, err = newResourceGroupsClientImpl(subscriptionID, cred); err != nil {
@@ -195,7 +197,7 @@ func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.V
 func (c *azureCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	vmssName := i.CloudInstanceGroup.HumanName
 	instanceID := strings.TrimPrefix(i.ID, vmssName+"_")
-	return c.vmscaleSetVMsClient.Delete(context.TODO(), "my.k8s", vmssName, instanceID)
+	return c.vmscaleSetVMsClient.Delete(context.TODO(), c.resourceGroupName, vmssName, instanceID)
 }
 
 // DeregisterInstance drains a cloud instance and loadbalancers.

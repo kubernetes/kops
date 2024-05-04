@@ -157,7 +157,9 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 			cloudTags := map[string]string{azure.TagClusterName: cluster.ObjectMeta.Name}
 
-			azureCloud, err := azure.NewAzureCloud(cluster.Spec.CloudProvider.Azure.SubscriptionID, region, cloudTags)
+			subscriptionID := cluster.Spec.CloudProvider.Azure.SubscriptionID
+			resourceGroupName := cluster.Spec.CloudProvider.Azure.ResourceGroupName
+			azureCloud, err := azure.NewAzureCloud(subscriptionID, resourceGroupName, region, cloudTags)
 			if err != nil {
 				return nil, err
 			}
