@@ -275,7 +275,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.16.2
+    app.kubernetes.io/version: v1.18.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -300,7 +300,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.16.2
+    app.kubernetes.io/version: v1.18.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: amazon-vpc-cni
@@ -317,7 +317,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.16.2
+    app.kubernetes.io/version: v1.18.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -354,7 +354,6 @@ rules:
   - list
   - watch
   - get
-  - update
 - apiGroups:
   - ""
   - events.k8s.io
@@ -399,7 +398,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.16.2
+    app.kubernetes.io/version: v1.18.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -423,7 +422,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.16.2
+    app.kubernetes.io/version: v1.18.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -515,7 +514,7 @@ spec:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
           value: many-addons.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.16.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.18.1
         livenessProbe:
           exec:
             command:
@@ -571,7 +570,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.0.7
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.1.1
         name: aws-eks-nodeagent
         resources:
           requests:
@@ -597,7 +596,7 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.16.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.18.1
         name: aws-vpc-cni-init
         resources:
           requests:
