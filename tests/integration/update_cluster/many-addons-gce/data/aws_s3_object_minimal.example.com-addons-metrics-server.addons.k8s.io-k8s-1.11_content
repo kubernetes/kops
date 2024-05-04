@@ -49,11 +49,14 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - nodes/metrics
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
   - pods
   - nodes
-  - nodes/metrics
-  - namespaces
-  - configmaps
   verbs:
   - get
   - list
@@ -173,7 +176,7 @@ spec:
         - --kubelet-preferred-address-types=InternalIP
         - --cert-dir=/tmp
         - --kubelet-insecure-tls
-        image: registry.k8s.io/metrics-server/metrics-server:v0.6.4
+        image: registry.k8s.io/metrics-server/metrics-server:v0.7.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -197,12 +200,18 @@ spec:
           periodSeconds: 10
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 100m
+            memory: 200Mi
         securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /tmp
           name: tmp-dir
