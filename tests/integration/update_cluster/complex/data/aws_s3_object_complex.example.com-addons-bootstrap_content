@@ -106,21 +106,21 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
-    manifestHash: e5087fe4df1676c9d497b29a8aee52c45ddb6e4352665c32417cec755c6ba012
+    manifestHash: 904efad45a2ff29d5abc3357121317223e3d1b9256be90ba38178954fee50687
     name: authentication.aws
     selector:
       role.kubernetes.io/authentication: "1"
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 82074c9f079b6bf85b323acce3f6c18ccc49d62d3c59656ecdd28198ed48729d
+    manifestHash: f5e8eb0f7ea5f67171220291b816bb70927047da82a309ec353c341aa80b7ee1
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 2c76a4399f5b8b08191997a0a0418a35870466849d90005b1bbb9e5e681bab2b
+    manifestHash: 08d1c973d4ebf0aece5a8e2bfb768c0b2f9a9951479808216636b70fa8c6dc5e
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

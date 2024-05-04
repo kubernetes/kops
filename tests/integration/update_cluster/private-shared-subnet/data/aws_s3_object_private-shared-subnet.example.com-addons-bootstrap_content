@@ -99,14 +99,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: dd022b9885343a90cb851de8b6f826f23cf253e929d2805877d5e1097d70e2c2
+    manifestHash: c43d32122f10f30ca971cdc61b5a028666d7b82257656f99d5aa0e9f198bec8e
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 578e1135782cb90818d8dde40566eeb4ac7f20b8bf6f535c7d0a816f959f8a77
+    manifestHash: 848442739f6592d5f6630fbb464982d6dc932dd92b9025ebdccf93051153c9cb
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
