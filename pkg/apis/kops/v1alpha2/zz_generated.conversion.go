@@ -4906,6 +4906,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	// INFO: in.OIDCClientID opted out of conversion generation
 	// INFO: in.OIDCRequiredClaim opted out of conversion generation
 	out.OIDCCAFile = in.OIDCCAFile
+	out.AuthenticationConfigFile = in.AuthenticationConfigFile
 	out.ProxyClientCertFile = in.ProxyClientCertFile
 	out.ProxyClientKeyFile = in.ProxyClientKeyFile
 	out.AuditLogFormat = in.AuditLogFormat
@@ -5020,6 +5021,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCRequiredClaim = in.OIDCRequiredClaim
 	out.OIDCCAFile = in.OIDCCAFile
+	out.AuthenticationConfigFile = in.AuthenticationConfigFile
 	out.ProxyClientCertFile = in.ProxyClientCertFile
 	out.ProxyClientKeyFile = in.ProxyClientKeyFile
 	out.AuditLogFormat = in.AuditLogFormat

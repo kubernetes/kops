@@ -399,6 +399,9 @@ type KubeAPIServerConfig struct {
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
+	// AuthenticationConfigFile is the location of the authentication-config
+	// this option is mutually exclusive with all OIDC options
+	AuthenticationConfigFile string `json:"authenticationConfigFile,omitempty" flag:"authentication-config"`
 	// ProxyClientCertFile is not admin-configurable.
 	ProxyClientCertFile *string `json:"-"`
 	// ProxyClientKeyFile is not admin-configurable.

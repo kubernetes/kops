@@ -310,6 +310,21 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Unsupported value::KubeAPIServer.logFormat"},
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthenticationConfigFile: "/foo/bar",
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Authentication: &kops.AuthenticationSpec{
+						OIDC: &kops.OIDCAuthenticationSpec{
+							ClientID: fi.PtrTo("foo"),
+						},
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::KubeAPIServer.authenticationConfigFile"},
+		},
 	}
 	for _, g := range grid {
 		if g.Cluster == nil {

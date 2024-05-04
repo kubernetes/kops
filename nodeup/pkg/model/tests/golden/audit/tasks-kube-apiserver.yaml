@@ -28,6 +28,7 @@ contents: |
       - --audit-policy-file=/etc/kubernetes/audit/policy-config.yaml
       - --audit-webhook-batch-max-wait=5s
       - --audit-webhook-config-file=/etc/kubernetes/audit/webhook-config.yaml
+      - --authentication-config=/etc/kubernetes/authentication-config.yaml
       - --authorization-mode=AlwaysAllow
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
