@@ -625,7 +625,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
-		a, err := awsup.NewAWSAuthenticator(region)
+		a, err := awsup.NewAWSAuthenticator(ctx, region)
 		if err != nil {
 			return nil, err
 		}

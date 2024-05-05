@@ -22,20 +22,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
 const AWSAuthenticationTokenPrefix = "x-aws-sts "
 
 type awsAuthenticator struct {
-	sts *sts.STS
+	sts *sts.Client
 }
 
 var _ bootstrap.Authenticator = &awsAuthenticator{}
@@ -55,32 +54,46 @@ func RegionFromMetadata(ctx context.Context) (string, error) {
 	return resp.Region, nil
 }
 
-func NewAWSAuthenticator(region string) (bootstrap.Authenticator, error) {
-	config := aws.NewConfig().
-		WithCredentialsChainVerboseErrors(true).
-		WithRegion(region).
-		WithSTSRegionalEndpoint(endpoints.RegionalSTSEndpoint)
-	sess, err := session.NewSession(config)
+func NewAWSAuthenticator(ctx context.Context, region string) (bootstrap.Authenticator, error) {
+	config, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load aws config: %w", err)
 	}
 	return &awsAuthenticator{
-		sts: sts.New(sess, config),
+		sts: sts.NewFromConfig(config),
 	}, nil
+}
+
+type awsV2Token struct {
+	URL          string      `json:"url"`
+	Method       string      `json:"method"`
+	SignedHeader http.Header `json:"headers"`
 }
 
 func (a *awsAuthenticator) CreateToken(body []byte) (string, error) {
 	sha := sha256.Sum256(body)
 
-	stsRequest, _ := a.sts.GetCallerIdentityRequest(nil)
+	presignClient := sts.NewPresignClient(a.sts)
 
 	// Ensure the signature is only valid for this particular body content.
-	stsRequest.HTTPRequest.Header.Add("X-Kops-Request-SHA", base64.RawStdEncoding.EncodeToString(sha[:]))
-
-	if err := stsRequest.Sign(); err != nil {
-		return "", err
+	stsRequest, err := presignClient.PresignGetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{}, func(po *sts.PresignOptions) {
+		po.ClientOptions = append(po.ClientOptions, func(o *sts.Options) {
+			o.APIOptions = append(o.APIOptions, smithyhttp.AddHeaderValue("X-Kops-Request-SHA", base64.RawStdEncoding.EncodeToString(sha[:])))
+		})
+	})
+	if err != nil {
+		return "", fmt.Errorf("building AWS STS presigned request: %w", err)
 	}
 
-	headers, _ := json.Marshal(stsRequest.HTTPRequest.Header)
-	return AWSAuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(headers), nil
+	awsV2Token := &awsV2Token{
+		URL:          stsRequest.URL,
+		Method:       stsRequest.Method,
+		SignedHeader: stsRequest.SignedHeader,
+	}
+	token, err := json.Marshal(awsV2Token)
+	if err != nil {
+		return "", fmt.Errorf("converting token to json: %w", err)
+	}
+
+	return AWSAuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(token), nil
 }
