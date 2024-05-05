@@ -153,7 +153,7 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 	if err != nil {
 		return nil, fmt.Errorf("parsing STS request URL: %v", err)
 	}
-	signedHeaders := sets.New(strings.Split(reqURL.Query().Get("X-Amz-SignedHeaders"), ",")...)
+	signedHeaders := sets.New(strings.Split(reqURL.Query().Get("X-Amz-SignedHeaders"), ";")...)
 	if !signedHeaders.Has("x-kops-request-sha") {
 		klog.Warningf("unexpected signed headers value, want x-kops-request-sha, got %q", signedHeaders.UnsortedList())
 		return nil, fmt.Errorf("unexpected signed headers value")
