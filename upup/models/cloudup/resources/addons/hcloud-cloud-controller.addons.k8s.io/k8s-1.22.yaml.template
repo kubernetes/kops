@@ -10,25 +10,28 @@ stringData:
   network: "{{ HCLOUD_NETWORK }}"
   token: "{{ HCLOUD_TOKEN }}"
 ---
+# Source: hcloud-cloud-controller-manager/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cloud-controller-manager
+  name: hcloud-cloud-controller-manager
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: hcloud-cloud-controller-manager/templates/clusterrolebinding.yaml
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: system:cloud-controller-manager
+  name: "system:hcloud-cloud-controller-manager"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: cloud-controller-manager
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: hcloud-cloud-controller-manager
+    namespace: kube-system
 ---
+# Source: hcloud-cloud-controller-manager/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,50 +48,50 @@ spec:
       labels:
         app: hcloud-cloud-controller-manager
     spec:
-      containers:
-      - command:
-        - /bin/hcloud-cloud-controller-manager
-        {{- range $arg := CloudControllerConfigArgv }}
-        - "{{ $arg }}"
-        {{- end }}
-        env:
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: HCLOUD_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: token
-              name: hcloud
-        - name: HCLOUD_NETWORK
-          valueFrom:
-            secretKeyRef:
-              key: network
-              name: hcloud
-        image: '{{ .ExternalCloudControllerManager.Image }}'
-        name: hcloud-cloud-controller-manager
-        ports:
-        - containerPort: 8233
-          name: metrics
-        resources:
-          requests:
-            cpu: 100m
-            memory: 50Mi
+      serviceAccountName: hcloud-cloud-controller-manager
       dnsPolicy: Default
-      priorityClassName: system-cluster-critical
-      serviceAccountName: cloud-controller-manager
       tolerations:
-      - effect: NoSchedule
-        key: node.cloudprovider.kubernetes.io/uninitialized
-        value: "true"
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
-        operator: Exists
-      - effect: NoExecute
-        key: node.kubernetes.io/not-ready
+        # Allow HCCM itself to schedule on nodes that have not yet been initialized by HCCM.
+        - key: "node.cloudprovider.kubernetes.io/uninitialized"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+
+        # Allow HCCM to schedule on control plane nodes.
+        - key: "node-role.kubernetes.io/master"
+          effect: NoSchedule
+          operator: Exists
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: NoSchedule
+          operator: Exists
+
+        - key: "node.kubernetes.io/not-ready"
+          effect: "NoExecute"
+      containers:
+        - name: hcloud-cloud-controller-manager
+          command:
+            - "/bin/hcloud-cloud-controller-manager"
+            {{- range $arg := CloudControllerConfigArgv }}
+            - "{{ $arg }}"
+            {{- end }}
+          env:
+            - name: HCLOUD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: token
+                  name: hcloud
+            - name: HCLOUD_NETWORK
+              valueFrom:
+                secretKeyRef:
+                  key: network
+                  name: hcloud
+          image: '{{ .ExternalCloudControllerManager.Image }}'
+          ports:
+            - name: metrics
+              containerPort: 8233
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+      priorityClassName: system-cluster-critical

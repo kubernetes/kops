@@ -18,7 +18,7 @@ spec:
     cloudProvider: hcloud
     clusterCIDR: 100.96.0.0/11
     configureCloudRoutes: false
-    image: hetznercloud/hcloud-cloud-controller-manager:v1.16.0
+    image: hetznercloud/hcloud-cloud-controller-manager:v1.19.0
     leaderElection:
       leaderElect: false
   cloudProvider: hetzner

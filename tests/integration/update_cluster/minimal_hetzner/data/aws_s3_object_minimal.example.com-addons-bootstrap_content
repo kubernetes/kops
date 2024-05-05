@@ -34,14 +34,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.22
     manifest: hcloud-cloud-controller.addons.k8s.io/k8s-1.22.yaml
-    manifestHash: 6afe8a04e648a1df0a64e22dfe70f7f2b6b82a121c6595a3078f9bdcebbb7cd1
+    manifestHash: 734a1bfdeb92881a6fee5079b13805bb25a519ab7dc2b13f8b192c9107b1faa4
     name: hcloud-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: hcloud-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.22
     manifest: hcloud-csi-driver.addons.k8s.io/k8s-1.22.yaml
-    manifestHash: f86445654ced20b614f6031d14a5fea5cf61fdc98f39968407af67a0ddb258e9
+    manifestHash: 17957f9bc33c605a2dca8ce3ff59844023fc8079bb1a4f08025eb5e18d0c2968
     name: hcloud-csi-driver.addons.k8s.io
     selector:
       k8s-addon: hcloud-csi-driver.addons.k8s.io
