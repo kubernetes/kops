@@ -9865,6 +9865,7 @@ spec:
         - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.12.10
         - --max-concurrent-challenges=60
         - --enable-certificate-owner-ref=true
+        - --feature-gates=AdditionalCertificateOutputFormats=true
         env:
         - name: POD_NAMESPACE
           valueFrom:

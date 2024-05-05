@@ -12,6 +12,8 @@ spec:
     enabled: true
   certManager:
     enabled: true
+    featureGates:
+      AdditionalCertificateOutputFormats: true
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
