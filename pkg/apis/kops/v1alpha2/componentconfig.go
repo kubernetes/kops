@@ -1205,6 +1205,9 @@ type CertManagerConfig struct {
 
 	// HostedZoneIDs is a list of route53 hostedzone IDs that cert-manager will be allowed to do dns-01 validation for
 	HostedZoneIDs []string `json:"hostedZoneIDs,omitempty"`
+
+	// FeatureGates is a list of experimental features that can be enabled or disabled.
+	FeatureGates map[string]bool `json:"featureGates,omitempty"`
 }
 
 // LoadBalancerControllerSpec determines the AWS LB controller configuration.
