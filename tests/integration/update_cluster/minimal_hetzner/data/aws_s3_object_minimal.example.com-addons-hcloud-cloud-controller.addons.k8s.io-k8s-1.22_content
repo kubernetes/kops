@@ -22,7 +22,7 @@ metadata:
     addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: hcloud-cloud-controller.addons.k8s.io
-  name: cloud-controller-manager
+  name: hcloud-cloud-controller-manager
   namespace: kube-system
 
 ---
@@ -35,14 +35,14 @@ metadata:
     addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: hcloud-cloud-controller.addons.k8s.io
-  name: system:cloud-controller-manager
+  name: system:hcloud-cloud-controller-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
 - kind: ServiceAccount
-  name: cloud-controller-manager
+  name: hcloud-cloud-controller-manager
   namespace: kube-system
 
 ---
@@ -82,10 +82,6 @@ spec:
         - --v=2
         - --use-service-account-credentials=true
         env:
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
         - name: HCLOUD_TOKEN
           valueFrom:
             secretKeyRef:
@@ -96,7 +92,7 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.16.0
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.19.0
         name: hcloud-cloud-controller-manager
         ports:
         - containerPort: 8233
@@ -107,7 +103,7 @@ spec:
             memory: 50Mi
       dnsPolicy: Default
       priorityClassName: system-cluster-critical
-      serviceAccountName: cloud-controller-manager
+      serviceAccountName: hcloud-cloud-controller-manager
       tolerations:
       - effect: NoSchedule
         key: node.cloudprovider.kubernetes.io/uninitialized
