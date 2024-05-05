@@ -107,8 +107,8 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-// NewCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
-// NewCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
+// NewDOCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
+// NewDOCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
 func NewDOCloud(region string) (DOCloud, error) {
 	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {

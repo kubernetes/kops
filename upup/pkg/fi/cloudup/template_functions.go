@@ -938,7 +938,7 @@ type ClusterAutoscalerNodeGroup struct {
 	Other     string
 }
 
-// GetClusterAutoscalerGroups returns a map containing ClusterAutoscaler info for each instance group of type Node.
+// GetClusterAutoscalerNodeGroups returns a map containing ClusterAutoscaler info for each instance group of type Node.
 func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]ClusterAutoscalerNodeGroup {
 	cluster := tf.Cluster
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
