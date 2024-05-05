@@ -151,7 +151,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-warmpool.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: QB4S43BpTVaupTBMXZRUgao8xHAuRfSjD6f257SwWg4=
+NodeupConfigHash: pawqEbpCGcCLcF2QPQquyl5GN9Pt9yVfbUD2cRZiQPk=
 
 __EOF_KUBE_ENV
 

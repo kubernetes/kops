@@ -20,7 +20,7 @@ spec:
     clusterName: minimal.example.com
     configureCloudRoutes: false
     enableLeaderMigration: true
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.15
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.19
     leaderElection:
       leaderElect: true
   cloudProvider: aws
