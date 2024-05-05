@@ -8,6 +8,8 @@ spec:
     enabled: true
   certManager:
     enabled: true
+    featureGates:
+      AdditionalCertificateOutputFormats: true
   clusterAutoscaler:
     enabled: true
     podAnnotations:
