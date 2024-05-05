@@ -302,6 +302,12 @@ spec:
                       Enabled enables the cert manager.
                       Default: false
                     type: boolean
+                  featureGates:
+                    additionalProperties:
+                      type: boolean
+                    description: FeatureGates is a list of experimental features that
+                      can be enabled or disabled.
+                    type: object
                   hostedZoneIDs:
                     description: HostedZoneIDs is a list of route53 hostedzone IDs
                       that cert-manager will be allowed to do dns-01 validation for
