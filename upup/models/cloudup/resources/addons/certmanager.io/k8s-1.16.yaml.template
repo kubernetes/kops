@@ -5440,6 +5440,9 @@ spec:
           - --default-issuer-kind=ClusterIssuer
           - --default-issuer-group=cert-manager.io
           {{ end }}
+          {{ range $key, $value := .CertManager.FeatureGates }}
+          - --feature-gates={{ $key }}={{ $value }}
+          {{ end }}
           ports:
           - containerPort: 9402
             name: http-metrics
