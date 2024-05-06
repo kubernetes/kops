@@ -48,13 +48,17 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 			case 25:
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.3"
 			case 26:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.8"
 			case 27:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.3"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.7"
 			case 28:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.4"
+			case 29:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.2"
+			case 30:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.0"
 			default:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.0"
 			}
 		}
 		cas.Image = fi.PtrTo(image)
