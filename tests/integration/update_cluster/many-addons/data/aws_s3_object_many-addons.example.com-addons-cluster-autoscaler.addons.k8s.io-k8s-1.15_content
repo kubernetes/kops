@@ -348,7 +348,7 @@ spec:
         env:
         - name: AWS_REGION
           value: us-test-1
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.4
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
