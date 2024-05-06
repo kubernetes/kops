@@ -43,7 +43,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: main
-    version: 3.5.9
+    version: 3.5.13
   - backups:
       backupStore: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/backups/etcd/events
     etcdMembers:
@@ -52,7 +52,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: events
-    version: 3.5.9
+    version: 3.5.13
   externalDns:
     provider: dns-controller
   keyStore: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/pki
