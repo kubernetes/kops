@@ -39,7 +39,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: main
-    version: 3.5.9
+    version: 3.5.13
   - backups:
       backupStore: memfs://clusters.example.com/sharedvpc.example.com/backups/etcd/events
     etcdMembers:
@@ -48,7 +48,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: events
-    version: 3.5.9
+    version: 3.5.13
   externalDns:
     provider: dns-controller
   iam:
