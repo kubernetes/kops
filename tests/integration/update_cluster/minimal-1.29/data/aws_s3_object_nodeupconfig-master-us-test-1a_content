@@ -62,7 +62,7 @@ Assets:
   - bea582731cd9585b838d60fe63c5e6e9f74616eaea09982497a636f618e8d3a3@https://dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/amd64/kubectl
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
   - f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
-  - c2371c009dd8b7738663333d91e5ab50d204f8bcae24201f45d59060d12c3a23@https://github.com/containerd/containerd/releases/download/v1.7.13/containerd-1.7.13-linux-amd64.tar.gz
+  - 4f4f2c3c7d14fd59a404961a3a3341303c2fdeeba0e78808c209f606e828f99c@https://github.com/containerd/containerd/releases/download/v1.7.16/containerd-1.7.16-linux-amd64.tar.gz
   - aadeef400b8f05645768c1476d1023f7875b78f52c7ff1967a6dbce236b8cbd8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64
   - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
@@ -73,7 +73,7 @@ Assets:
   - 247a1b42dbdbba49be382759f7561c56ce1a41da8b0b7a731b979c5c8024013a@https://dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.29.0-alpha.0/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
   - 525e2b62ba92a1b6f3dc9612449a84aa61652e680f7ebf4eff579795fe464b57@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz
-  - 118759e398f35337109592b4d237538872dc12a207d38832b9d04515d0acbc4d@https://github.com/containerd/containerd/releases/download/v1.7.13/containerd-1.7.13-linux-arm64.tar.gz
+  - 2d4373de40a6f58cd0f29377c0257b35697a987248e6268520586996771d7a75@https://github.com/containerd/containerd/releases/download/v1.7.16/containerd-1.7.16-linux-arm64.tar.gz
   - 879f910a05c95c10c64ad8eb7d5e3aa8e4b30e65587b3d68e009a3565aed5bb8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.arm64
   - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
@@ -322,7 +322,7 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.1.12
-  version: 1.7.13
+  version: 1.7.16
 etcdManifests:
 - memfs://tests/minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://tests/minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml
