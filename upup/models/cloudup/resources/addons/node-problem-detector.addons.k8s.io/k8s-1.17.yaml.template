@@ -1,8 +1,6 @@
 {{ with .NodeProblemDetector }}
-# Sourced from https://github.com/kubernetes/node-problem-detector/tree/v0.8.8
+# Sourced from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/node-problem-detector/npd.yaml
 ---
-# We need service account and role binding for node-problem-detector
-# see: https://github.com/kubernetes/node-problem-detector/issues/149 for details
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -26,7 +24,6 @@ subjects:
   name: node-problem-detector
   namespace: kube-system
 ---
-# Source: node-problem-detector/deployment/node-problem-detector.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -57,8 +54,12 @@ spec:
         command:
         - /node-problem-detector
         - --logtostderr
-        - --config.system-log-monitor=/config/kernel-monitor.json,/config/docker-monitor.json
+        - --config.system-log-monitor=/config/kernel-monitor.json,/config/systemd-monitor.json
+        - --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json,/config/health-checker-containerd.json,/config/health-checker-kubelet.json
+        - --config.system-stats-monitor=/config/system-stats-monitor.json
         image: {{ .Image }}
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: {{ .CPULimit }}
@@ -66,8 +67,6 @@ spec:
           requests:
             cpu: {{ .CPURequest }}
             memory: {{ .MemoryRequest }}
-        securityContext:
-          privileged: true
         env:
         - name: NODE_NAME
           valueFrom:
@@ -85,9 +84,16 @@ spec:
         - name: localtime
           mountPath: /etc/localtime
           readOnly: true
-        - name: config
-          mountPath: /config
+        - mountPath: /etc/machine-id
+          name: machine-id
           readOnly: true
+        - mountPath: /run/systemd/system
+          name: systemd
+        - mountPath: /var/run/dbus/
+          name: dbus
+          mountPropagation: Bidirectional
+      priorityClassName: system-node-critical
+      serviceAccountName: node-problem-detector
       volumes:
       - name: log
         # Config `log` to your system log directory
@@ -99,116 +105,24 @@ spec:
       - name: localtime
         hostPath:
           path: /etc/localtime
-      - name: config
-        configMap:
-          name: node-problem-detector-config
-          items:
-          - key: kernel-monitor.json
-            path: kernel-monitor.json
-          - key: docker-monitor.json
-            path: docker-monitor.json
-      priorityClassName: system-node-critical
-      serviceAccountName: node-problem-detector
+          type: "FileOrCreate"
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+          type: "File"
+      - name: systemd
+        hostPath:
+          path: /run/systemd/system/
+          type: ""
+      - name: dbus
+        hostPath:
+          path: /var/run/dbus/
+          type: ""
       tolerations:
-        - effect: NoSchedule
-          operator: Exists
-        - effect: NoExecute
-          operator: Exists
----
-# Source: node-problem-detector/deployment/node-problem-detector-config.yaml
-apiVersion: v1
-data:
-  kernel-monitor.json: |
-    {
-        "plugin": "kmsg",
-        "logPath": "/dev/kmsg",
-        "lookback": "5m",
-        "bufferSize": 10,
-        "source": "kernel-monitor",
-        "conditions": [
-            {
-                "type": "KernelDeadlock",
-                "reason": "KernelHasNoDeadlock",
-                "message": "kernel has no deadlock"
-            },
-            {
-                "type": "ReadonlyFilesystem",
-                "reason": "FilesystemIsNotReadOnly",
-                "message": "Filesystem is not read-only"
-            }
-        ],
-        "rules": [
-            {
-                "type": "temporary",
-                "reason": "OOMKilling",
-                "pattern": "Kill process \\d+ (.+) score \\d+ or sacrifice child\\nKilled process \\d+ (.+) total-vm:\\d+kB, anon-rss:\\d+kB, file-rss:\\d+kB.*"
-            },
-            {
-                "type": "temporary",
-                "reason": "TaskHung",
-                "pattern": "task \\S+:\\w+ blocked for more than \\w+ seconds\\."
-            },
-            {
-                "type": "temporary",
-                "reason": "UnregisterNetDevice",
-                "pattern": "unregister_netdevice: waiting for \\w+ to become free. Usage count = \\d+"
-            },
-            {
-                "type": "temporary",
-                "reason": "KernelOops",
-                "pattern": "BUG: unable to handle kernel NULL pointer dereference at .*"
-            },
-            {
-                "type": "temporary",
-                "reason": "KernelOops",
-                "pattern": "divide error: 0000 \\[#\\d+\\] SMP"
-            },
-            {
-    			"type": "temporary",
-    			"reason": "MemoryReadError",
-    			"pattern": "CE memory read error .*"
-            },
-            {
-                "type": "permanent",
-                "condition": "KernelDeadlock",
-                "reason": "AUFSUmountHung",
-                "pattern": "task umount\\.aufs:\\w+ blocked for more than \\w+ seconds\\."
-            },
-            {
-                "type": "permanent",
-                "condition": "KernelDeadlock",
-                "reason": "DockerHung",
-                "pattern": "task docker:\\w+ blocked for more than \\w+ seconds\\."
-            },
-            {
-                "type": "permanent",
-                "condition": "ReadonlyFilesystem",
-                "reason": "FilesystemIsReadOnly",
-                "pattern": "Remounting filesystem read-only"
-            }
-        ]
-    }
-  docker-monitor.json: |
-    {
-        "plugin": "journald",
-        "pluginConfig": {
-            "source": "dockerd"
-        },
-        "logPath": "/var/log/journal",
-        "lookback": "5m",
-        "bufferSize": 10,
-        "source": "docker-monitor",
-        "conditions": [],
-        "rules": [
-            {
-                "type": "temporary",
-                "reason": "CorruptDockerImage",
-                "pattern": "Error trying v2 registry: failed to register layer: rename /var/lib/docker/image/(.+) /var/lib/docker/image/(.+): directory not empty.*"
-            }
-        ]
-    }
-kind: ConfigMap
-metadata:
-  name: node-problem-detector-config
-  namespace: kube-system
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
 {{ end }}

@@ -620,12 +620,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/k8s-1.17.yaml"
 			id := "k8s-1.17"
 
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.PtrTo(key),
 				Selector: map[string]string{"k8s-addon": key},
 				Manifest: fi.PtrTo(location),
 				Id:       id,
 			})
+			addon.BuildPrune = true
 		}
 	}
 
