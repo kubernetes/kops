@@ -737,6 +737,14 @@ resource "aws_s3_object" "many-addons-example-com-addons-networking-amazon-vpc-r
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "many-addons-example-com-addons-node-problem-detector-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_many-addons.example.com-addons-node-problem-detector.addons.k8s.io-k8s-1.17_content")
+  key                    = "tests/many-addons.example.com/addons/node-problem-detector.addons.k8s.io/k8s-1.17.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "many-addons-example-com-addons-node-termination-handler-aws-k8s-1-11" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_many-addons.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
