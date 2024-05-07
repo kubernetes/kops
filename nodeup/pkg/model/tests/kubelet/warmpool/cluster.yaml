@@ -21,7 +21,8 @@ spec:
     name: events
   iam: {}
   kubelet:
-    podManifestPath: "/etc/kubernetes/manifests"
+    podManifestPath: /etc/kubernetes/manifests
+    resolvConf: /run/systemd/resolve/resolv.conf
   kubernetesVersion: v1.24.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
