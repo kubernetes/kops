@@ -42,27 +42,27 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if npd.CPURequest == nil {
-		defaultCPURequest := resource.MustParse("10m")
+		defaultCPURequest := resource.MustParse("20m")
 		npd.CPURequest = &defaultCPURequest
 	}
 
 	if npd.MemoryRequest == nil {
-		defaultMemoryRequest := resource.MustParse("80Mi")
+		defaultMemoryRequest := resource.MustParse("100Mi")
 		npd.MemoryRequest = &defaultMemoryRequest
 	}
 
 	if npd.CPULimit == nil {
-		defaultCPULimit := resource.MustParse("10m")
+		defaultCPULimit := resource.MustParse("200m")
 		npd.CPULimit = &defaultCPULimit
 	}
 
 	if npd.MemoryLimit == nil {
-		defaultMemoryLimit := resource.MustParse("80Mi")
+		defaultMemoryLimit := resource.MustParse("100Mi")
 		npd.MemoryLimit = &defaultMemoryLimit
 	}
 
 	if npd.Image == nil {
-		npd.Image = fi.PtrTo("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.12")
+		npd.Image = fi.PtrTo("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.18")
 	}
 
 	return nil

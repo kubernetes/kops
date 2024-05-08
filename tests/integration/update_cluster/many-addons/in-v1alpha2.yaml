@@ -41,6 +41,8 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     amazonvpc: {}
+  nodeProblemDetector:
+    enabled: true
   nodeTerminationHandler:
     enabled: true
   nonMasqueradeCIDR: 172.20.0.0/16

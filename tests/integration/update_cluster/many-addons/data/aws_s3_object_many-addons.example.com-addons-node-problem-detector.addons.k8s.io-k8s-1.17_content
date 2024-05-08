@@ -1,20 +1,27 @@
-{{ with .NodeProblemDetector }}
-# Sourced from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/node-problem-detector/npd.yaml
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: node-problem-detector.addons.k8s.io
+    app: node-problem-detector
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: node-problem-detector.addons.k8s.io
   name: node-problem-detector
   namespace: kube-system
-  labels:
-    app: node-problem-detector
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: node-problem-detector
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: node-problem-detector.addons.k8s.io
     app: node-problem-detector
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: node-problem-detector.addons.k8s.io
+  name: node-problem-detector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -23,66 +30,72 @@ subjects:
 - kind: ServiceAccount
   name: node-problem-detector
   namespace: kube-system
+
 ---
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: node-problem-detector.addons.k8s.io
+    app: node-problem-detector
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: node-problem-detector.addons.k8s.io
   name: node-problem-detector
   namespace: kube-system
-  labels:
-    app: node-problem-detector
 spec:
   selector:
     matchLabels:
       app: node-problem-detector
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: node-problem-detector
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/os
-                    operator: In
-                    values:
-                      - linux
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
-      - name: node-problem-detector
-        command:
+      - command:
         - /node-problem-detector
         - --logtostderr
         - --config.system-log-monitor=/config/kernel-monitor.json,/config/systemd-monitor.json
         - --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json,/config/health-checker-containerd.json,/config/health-checker-kubelet.json
         - --config.system-stats-monitor=/config/system-stats-monitor.json
-        image: {{ .Image }}
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: {{ .CPULimit }}
-            memory: {{ .MemoryLimit }}
-          requests:
-            cpu: {{ .CPURequest }}
-            memory: {{ .MemoryRequest }}
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        image: registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.18
+        name: node-problem-detector
+        resources:
+          limits:
+            cpu: 200m
+            memory: 100Mi
+          requests:
+            cpu: 20m
+            memory: 100Mi
+        securityContext:
+          privileged: true
         volumeMounts:
-        - name: log
-          mountPath: /var/log
+        - mountPath: /var/log
+          name: log
           readOnly: true
-        - name: kmsg
-          mountPath: /dev/kmsg
+        - mountPath: /dev/kmsg
+          name: kmsg
           readOnly: true
-        # Make sure node problem detector is in the same timezone
-        # with the host.
-        - name: localtime
-          mountPath: /etc/localtime
+        - mountPath: /etc/localtime
+          name: localtime
           readOnly: true
         - mountPath: /etc/machine-id
           name: machine-id
@@ -90,39 +103,37 @@ spec:
         - mountPath: /run/systemd/system
           name: systemd
         - mountPath: /var/run/dbus/
-          name: dbus
           mountPropagation: Bidirectional
+          name: dbus
       priorityClassName: system-node-critical
       serviceAccountName: node-problem-detector
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
       volumes:
-      - name: log
-        # Config `log` to your system log directory
-        hostPath:
+      - hostPath:
           path: /var/log/
-      - name: kmsg
-        hostPath:
+        name: log
+      - hostPath:
           path: /dev/kmsg
-      - name: localtime
-        hostPath:
+        name: kmsg
+      - hostPath:
           path: /etc/localtime
-          type: "FileOrCreate"
-      - name: machine-id
-        hostPath:
+          type: FileOrCreate
+        name: localtime
+      - hostPath:
           path: /etc/machine-id
-          type: "File"
-      - name: systemd
-        hostPath:
+          type: File
+        name: machine-id
+      - hostPath:
           path: /run/systemd/system/
           type: ""
-      - name: dbus
-        hostPath:
+        name: systemd
+      - hostPath:
           path: /var/run/dbus/
           type: ""
-      tolerations:
-      - operator: "Exists"
-        effect: "NoExecute"
-      - operator: "Exists"
-        effect: "NoSchedule"
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
-{{ end }}
+        name: dbus

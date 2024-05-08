@@ -213,11 +213,12 @@ const (
 	ciliumAddon  = "networking.cilium.io-k8s-1.16"
 	flannelAddon = "networking.flannel-k8s-1.25"
 
-	certManagerAddon       = "certmanager.io-k8s-1.16"
-	clusterAutoscalerAddon = "cluster-autoscaler.addons.k8s.io-k8s-1.15"
-	dnsControllerAddon     = "dns-controller.addons.k8s.io-k8s-1.12"
-	leaderElectionAddon    = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
-	metricsServerAddon     = "metrics-server.addons.k8s.io-k8s-1.11"
+	certManagerAddon         = "certmanager.io-k8s-1.16"
+	clusterAutoscalerAddon   = "cluster-autoscaler.addons.k8s.io-k8s-1.15"
+	dnsControllerAddon       = "dns-controller.addons.k8s.io-k8s-1.12"
+	leaderElectionAddon      = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
+	metricsServerAddon       = "metrics-server.addons.k8s.io-k8s-1.11"
+	nodeProblemDetectorAddon = "node-problem-detector.addons.k8s.io-k8s-1.17"
 )
 
 // TestMinimalAWS runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -816,6 +817,7 @@ func TestManyAddons(t *testing.T) {
 			awsEBSCSIAddon,
 			dnsControllerAddon,
 			awsCCMAddon,
+			nodeProblemDetectorAddon,
 		).
 		runTestTerraformAWS(t)
 }
