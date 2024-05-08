@@ -18,6 +18,7 @@ package distributions
 
 import (
 	"fmt"
+	"os"
 )
 
 // Distribution represents a particular version of an operating system.
@@ -98,13 +99,14 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 // See https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
 func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 	switch d.project {
-	case "debian":
-		return d.version >= 12
 	case "ubuntu":
 		return d.version >= 18.04
 	case "flatcar":
 		return true
 	default:
+		if _, err := os.Stat("/run/systemd/resolve/resolv.conf"); err == nil {
+			return true
+		}
 		return false
 	}
 }
