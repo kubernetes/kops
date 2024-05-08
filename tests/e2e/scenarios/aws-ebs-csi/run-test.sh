@@ -33,7 +33,13 @@ REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go get github.com/onsi/ginkgo/ginkgo
 
-git clone --branch v1.4.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
+CSI_VERSION=$(kubectl get deployment -n kube-system ebs-csi-controller -o jsonpath='{.spec.template.spec.containers[?(@.name=="ebs-plugin")].image}' | cut -d':' -f2-)
+CLONE_ARGS=
+if [ -n "$CSI_VERSION" ]; then
+    CLONE_ARGS="-b ${CSI_VERSION}"
+fi
+# shellcheck disable=SC2086
+git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 
 # shellcheck disable=SC2164
 cd tests/e2e-kubernetes/
