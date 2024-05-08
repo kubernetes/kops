@@ -42,10 +42,8 @@ var (
 	DistributionDebian11        = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
 	DistributionDebian12        = Distribution{packageFormat: "deb", project: "debian", id: "bookworm", version: 12}
 	DistributionUbuntu2004      = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
-	DistributionUbuntu2010      = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
-	DistributionUbuntu2104      = Distribution{packageFormat: "deb", project: "ubuntu", id: "hirsute", version: 21.04}
-	DistributionUbuntu2110      = Distribution{packageFormat: "deb", project: "ubuntu", id: "impish", version: 21.10}
 	DistributionUbuntu2204      = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
+	DistributionUbuntu2404      = Distribution{packageFormat: "deb", project: "ubuntu", id: "noble", version: 24.04}
 	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
 	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
@@ -99,9 +97,7 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 // See https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
 func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 	switch d.project {
-	case "ubuntu":
-		return d.version >= 18.04
-	case "flatcar":
+	case "ubuntu", "flatcar":
 		return true
 	default:
 		if _, err := os.Stat("/run/systemd/resolve/resolv.conf"); err == nil {
