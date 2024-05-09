@@ -58,19 +58,19 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240426
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20240126
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20240426
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240126
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240501
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240126
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240501
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.27.0"
@@ -82,19 +82,19 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.18.0"
-    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20230918
+    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20240426
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20230919
+    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20240501
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.27.0"
-    - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202308310
+    - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202404270
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:22.04.202310040
+    - name: Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:22.04.202405010
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.27.0"
@@ -103,14 +103,20 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.30.0"
+    recommendedVersion: 1.30.0
+    requiredVersion: 1.30.0
+  - range: ">=1.29.0"
+    recommendedVersion: 1.29.4
+    requiredVersion: 1.29.0
   - range: ">=1.28.0"
-    recommendedVersion: 1.28.6
+    recommendedVersion: 1.28.9
     requiredVersion: 1.28.0
   - range: ">=1.27.0"
-    recommendedVersion: 1.27.10
+    recommendedVersion: 1.27.13
     requiredVersion: 1.27.0
   - range: ">=1.26.0"
-    recommendedVersion: 1.26.13
+    recommendedVersion: 1.26.15
     requiredVersion: 1.26.0
   - range: ">=1.25.0"
     recommendedVersion: 1.25.16
@@ -161,28 +167,36 @@ spec:
     recommendedVersion: 1.11.10
     requiredVersion: 1.11.10
   kopsVersions:
+  - range: ">=1.30.0-alpha.1"
+    recommendedVersion: "1.29.0-beta.1"
+    #requiredVersion: 1.30.0
+    kubernetesVersion: 1.30.0
+  - range: ">=1.29.0-alpha.1"
+    recommendedVersion: "1.29.0-beta.1"
+    #requiredVersion: 1.29.0
+    kubernetesVersion: 1.29.3
   - range: ">=1.28.0-alpha.1"
-    recommendedVersion: "1.28.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.28.0
-    kubernetesVersion: 1.28.6
+    kubernetesVersion: 1.28.8
   - range: ">=1.27.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.27.0
-    kubernetesVersion: 1.27.10
+    kubernetesVersion: 1.27.12
   - range: ">=1.26.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.26.0
-    kubernetesVersion: 1.26.13
+    kubernetesVersion: 1.26.15
   - range: ">=1.25.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.25.0
     kubernetesVersion: 1.25.16
   - range: ">=1.24.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.24.0
     kubernetesVersion: 1.24.17
   - range: ">=1.23.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.28.4"
     #requiredVersion: 1.23.0
     kubernetesVersion: 1.23.17
   - range: ">=1.22.0-alpha.1"
