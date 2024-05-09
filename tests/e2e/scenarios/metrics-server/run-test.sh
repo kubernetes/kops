@@ -28,7 +28,13 @@ kops-up
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 
-git clone --branch v0.6.0 https://github.com/kubernetes-sigs/metrics-server.git .
+MS_VERSION=$(kubectl get deployment -n kube-system metrics-server -o jsonpath='{.spec.template.spec.containers[?(@.name=="metrics-server")].image}' | cut -d':' -f2-)
+CLONE_ARGS=
+if [ -n "$MS_VERSION" ]; then
+    CLONE_ARGS="-b ${MS_VERSION}"
+fi
+# shellcheck disable=SC2086
+git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/metrics-server.git .
 
 # some of the metrics only show when requested
 kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods"
