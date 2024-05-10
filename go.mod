@@ -20,6 +20,7 @@ require (
 	github.com/cert-manager/cert-manager v1.14.5
 	github.com/digitalocean/godo v1.115.0
 	github.com/go-ini/ini v1.67.0
+	github.com/go-jose/go-jose/v4 v4.0.1
 	github.com/go-logr/logr v1.4.1
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/gogo/protobuf v1.3.2
@@ -60,7 +61,6 @@ require (
 	google.golang.org/protobuf v1.34.1
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/square/go-jose.v2 v2.6.0
 	helm.sh/helm/v3 v3.14.4
 	k8s.io/api v0.29.4
 	k8s.io/apimachinery v0.29.4
