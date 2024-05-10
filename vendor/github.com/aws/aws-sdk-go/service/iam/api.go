@@ -1400,6 +1400,10 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 //     The request processing has failed because of an unknown error, exception
 //     or failure.
 //
+//   - ErrCodeOpenIdIdpCommunicationErrorException "OpenIdIdpCommunicationError"
+//     The request failed because IAM cannot connect to the OpenID Connect identity
+//     provider URL.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateOpenIDConnectProvider
 func (c *IAM) CreateOpenIDConnectProvider(input *CreateOpenIDConnectProviderInput) (*CreateOpenIDConnectProviderOutput, error) {
 	req, out := c.CreateOpenIDConnectProviderRequest(input)
@@ -13673,7 +13677,7 @@ func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstance
 
 // RemoveRoleFromInstanceProfile API operation for AWS Identity and Access Management.
 //
-// Removes the specified IAM role from the specified EC2 instance profile.
+// Removes the specified IAM role from the specified Amazon EC2 instance profile.
 //
 // Make sure that you do not have any Amazon EC2 instances running with the
 // role you are about to remove from the instance profile. Removing a role from
@@ -19920,11 +19924,14 @@ type CreateOpenIDConnectProviderInput struct {
 	// lets you maintain multiple thumbprints if the identity provider is rotating
 	// certificates.
 	//
+	// This parameter is optional. If it is not included, IAM will retrieve and
+	// use the top intermediate certificate authority (CA) thumbprint of the OpenID
+	// Connect identity provider server certificate.
+	//
 	// The server certificate thumbprint is the hex-encoded SHA-1 hash value of
 	// the X.509 certificate used by the domain where the OpenID Connect provider
 	// makes its keys available. It is always a 40-character string.
 	//
-	// You must provide at least one thumbprint when creating an IAM OIDC provider.
 	// For example, assume that the OIDC provider is server.example.com and the
 	// provider stores its keys at https://keys.server.example.com/openid-connect.
 	// In that case, the thumbprint string would be the hex-encoded SHA-1 hash value
@@ -19933,9 +19940,7 @@ type CreateOpenIDConnectProviderInput struct {
 	// For more information about obtaining the OIDC provider thumbprint, see Obtaining
 	// the thumbprint for an OpenID Connect provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/identity-providers-oidc-obtain-thumbprint.html)
 	// in the IAM user Guide.
-	//
-	// ThumbprintList is a required field
-	ThumbprintList []*string `type:"list" required:"true"`
+	ThumbprintList []*string `type:"list"`
 
 	// The URL of the identity provider. The URL must begin with https:// and should
 	// correspond to the iss claim in the provider's OpenID Connect ID tokens. Per
@@ -19973,9 +19978,6 @@ func (s CreateOpenIDConnectProviderInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateOpenIDConnectProviderInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateOpenIDConnectProviderInput"}
-	if s.ThumbprintList == nil {
-		invalidParams.Add(request.NewErrParamRequired("ThumbprintList"))
-	}
 	if s.Url == nil {
 		invalidParams.Add(request.NewErrParamRequired("Url"))
 	}
@@ -36400,12 +36402,12 @@ type SimulateCustomPolicyInput struct {
 	// can omit this parameter. The following list shows each of the supported scenario
 	// values and the resources that you must define to run the simulation.
 	//
-	// Each of the EC2 scenarios requires that you specify instance, image, and
-	// security group resources. If your scenario includes an EBS volume, then you
-	// must specify that volume as a resource. If the EC2 scenario includes VPC,
-	// then you must supply the network interface resource. If it includes an IP
-	// subnet, then you must specify the subnet resource. For more information on
-	// the EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
+	// Each of the Amazon EC2 scenarios requires that you specify instance, image,
+	// and security group resources. If your scenario includes an EBS volume, then
+	// you must specify that volume as a resource. If the Amazon EC2 scenario includes
+	// VPC, then you must supply the network interface resource. If it includes
+	// an IP subnet, then you must specify the subnet resource. For more information
+	// on the Amazon EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
 	// in the Amazon EC2 User Guide.
 	//
 	//    * EC2-VPC-InstanceStore instance, image, security group, network interface
@@ -36783,12 +36785,12 @@ type SimulatePrincipalPolicyInput struct {
 	// can omit this parameter. The following list shows each of the supported scenario
 	// values and the resources that you must define to run the simulation.
 	//
-	// Each of the EC2 scenarios requires that you specify instance, image, and
-	// security group resources. If your scenario includes an EBS volume, then you
-	// must specify that volume as a resource. If the EC2 scenario includes VPC,
-	// then you must supply the network interface resource. If it includes an IP
-	// subnet, then you must specify the subnet resource. For more information on
-	// the EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
+	// Each of the Amazon EC2 scenarios requires that you specify instance, image,
+	// and security group resources. If your scenario includes an EBS volume, then
+	// you must specify that volume as a resource. If the Amazon EC2 scenario includes
+	// VPC, then you must supply the network interface resource. If it includes
+	// an IP subnet, then you must specify the subnet resource. For more information
+	// on the Amazon EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
 	// in the Amazon EC2 User Guide.
 	//
 	//    * EC2-VPC-InstanceStore instance, image, security group, network interface
@@ -39565,6 +39567,9 @@ type UpdateRoleInput struct {
 	// operations to create a console URL. For more information, see Using IAM roles
 	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html) in the
 	// IAM User Guide.
+	//
+	// IAM role credentials provided by Amazon EC2 instances assigned to the role
+	// are not subject to the specified maximum session duration.
 	MaxSessionDuration *int64 `min:"3600" type:"integer"`
 
 	// The name of the role that you want to modify.

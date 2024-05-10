@@ -35,8 +35,8 @@ github.com/evanphx/json-patch/v5,https://github.com/evanphx/json-patch/blob/v5.7
 github.com/felixge/httpsnoop,https://github.com/felixge/httpsnoop/blob/v1.0.4/LICENSE.txt,MIT
 github.com/fsnotify/fsnotify,https://github.com/fsnotify/fsnotify/blob/v1.7.0/LICENSE,BSD-3-Clause
 github.com/go-asn1-ber/asn1-ber,https://github.com/go-asn1-ber/asn1-ber/blob/v1.5.5/LICENSE,MIT
-github.com/go-jose/go-jose/v3,https://github.com/go-jose/go-jose/blob/v3.0.1/LICENSE,Apache-2.0
-github.com/go-jose/go-jose/v3/json,https://github.com/go-jose/go-jose/blob/v3.0.1/json/LICENSE,BSD-3-Clause
+github.com/go-jose/go-jose/v3,https://github.com/go-jose/go-jose/blob/v3.0.3/LICENSE,Apache-2.0
+github.com/go-jose/go-jose/v3/json,https://github.com/go-jose/go-jose/blob/v3.0.3/json/LICENSE,BSD-3-Clause
 github.com/go-ldap/ldap/v3,https://github.com/go-ldap/ldap/blob/v3.4.6/v3/LICENSE,MIT
 github.com/go-logr/logr,https://github.com/go-logr/logr/blob/v1.4.1/LICENSE,Apache-2.0
 github.com/go-logr/stdr,https://github.com/go-logr/stdr/blob/v1.2.2/LICENSE,Apache-2.0
@@ -120,13 +120,13 @@ go.opentelemetry.io/otel/trace,https://github.com/open-telemetry/opentelemetry-g
 go.opentelemetry.io/proto/otlp,https://github.com/open-telemetry/opentelemetry-proto-go/blob/otlp/v1.0.0/otlp/LICENSE,Apache-2.0
 go.uber.org/multierr,https://github.com/uber-go/multierr/blob/v1.11.0/LICENSE.txt,MIT
 go.uber.org/zap,https://github.com/uber-go/zap/blob/v1.26.0/LICENSE.txt,MIT
-golang.org/x/crypto,https://cs.opensource.google/go/x/crypto/+/v0.17.0:LICENSE,BSD-3-Clause
+golang.org/x/crypto,https://cs.opensource.google/go/x/crypto/+/v0.22.0:LICENSE,BSD-3-Clause
 golang.org/x/exp,https://cs.opensource.google/go/x/exp/+/02704c96:LICENSE,BSD-3-Clause
-golang.org/x/net,https://cs.opensource.google/go/x/net/+/v0.19.0:LICENSE,BSD-3-Clause
+golang.org/x/net,https://cs.opensource.google/go/x/net/+/v0.24.0:LICENSE,BSD-3-Clause
 golang.org/x/oauth2,https://cs.opensource.google/go/x/oauth2/+/v0.15.0:LICENSE,BSD-3-Clause
 golang.org/x/sync,https://cs.opensource.google/go/x/sync/+/v0.5.0:LICENSE,BSD-3-Clause
-golang.org/x/sys,https://cs.opensource.google/go/x/sys/+/v0.16.0:LICENSE,BSD-3-Clause
-golang.org/x/term,https://cs.opensource.google/go/x/term/+/v0.15.0:LICENSE,BSD-3-Clause
+golang.org/x/sys,https://cs.opensource.google/go/x/sys/+/v0.19.0:LICENSE,BSD-3-Clause
+golang.org/x/term,https://cs.opensource.google/go/x/term/+/v0.19.0:LICENSE,BSD-3-Clause
 golang.org/x/text,https://cs.opensource.google/go/x/text/+/v0.14.0:LICENSE,BSD-3-Clause
 golang.org/x/time/rate,https://cs.opensource.google/go/x/time/+/v0.5.0:LICENSE,BSD-3-Clause
 gomodules.xyz/jsonpatch/v2,https://github.com/gomodules/jsonpatch/blob/v2.4.0/v2/LICENSE,Apache-2.0
@@ -135,7 +135,7 @@ google.golang.org/api/internal/third_party/uritemplates,https://github.com/googl
 google.golang.org/genproto/googleapis/api,https://github.com/googleapis/go-genproto/blob/50ed04b92917/googleapis/api/LICENSE,Apache-2.0
 google.golang.org/genproto/googleapis/rpc,https://github.com/googleapis/go-genproto/blob/50ed04b92917/googleapis/rpc/LICENSE,Apache-2.0
 google.golang.org/grpc,https://github.com/grpc/grpc-go/blob/v1.60.1/LICENSE,Apache-2.0
-google.golang.org/protobuf,https://github.com/protocolbuffers/protobuf-go/blob/v1.32.0/LICENSE,BSD-3-Clause
+google.golang.org/protobuf,https://github.com/protocolbuffers/protobuf-go/blob/v1.33.0/LICENSE,BSD-3-Clause
 gopkg.in/inf.v0,https://github.com/go-inf/inf/blob/v0.9.1/LICENSE,BSD-3-Clause
 gopkg.in/ini.v1,https://github.com/go-ini/ini/blob/v1.67.0/LICENSE,Apache-2.0
 gopkg.in/natefinch/lumberjack.v2,https://github.com/natefinch/lumberjack/blob/v2.2.1/LICENSE,MIT
