@@ -76,7 +76,7 @@ type Image struct {
 	CreatedAt time.Time `json:"created_at"`
 
 	// UpdatedAt is the date when the last change has been made to the image or
-	// it's properties.
+	// its properties.
 	UpdatedAt time.Time `json:"updated_at"`
 
 	// File is the trailing path after the glance endpoint that represent the

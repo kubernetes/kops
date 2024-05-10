@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"sync"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -52,7 +53,7 @@ func NewDynamicRESTMapper(cfg *rest.Config, httpClient *http.Client) (meta.RESTM
 // client for discovery information to do REST mappings.
 type mapper struct {
 	mapper      meta.RESTMapper
-	client      *discovery.DiscoveryClient
+	client      discovery.DiscoveryInterface
 	knownGroups map[string]*restmapper.APIGroupResources
 	apiGroups   map[string]*metav1.APIGroup
 
@@ -179,23 +180,28 @@ func (m *mapper) addKnownGroupAndReload(groupName string, versions ...string) er
 		Group:              metav1.APIGroup{Name: groupName},
 		VersionedResources: make(map[string][]metav1.APIResource),
 	}
+
+	// Update information for group resources about versioned resources.
+	// The number of API calls is equal to the number of versions: /apis/<group>/<version>.
+	// If we encounter a missing API version (NotFound error), we will remove the group from
+	// the m.apiGroups and m.knownGroups caches.
+	// If this happens, in the next call the group will be added back to apiGroups
+	// and only the existing versions will be loaded in knownGroups.
+	groupVersionResources, err := m.fetchGroupVersionResourcesLocked(groupName, versions...)
+	if err != nil {
+		return fmt.Errorf("failed to get API group resources: %w", err)
+	}
+
 	if _, ok := m.knownGroups[groupName]; ok {
 		groupResources = m.knownGroups[groupName]
 	}
 
-	// Update information for group resources about versioned resources.
-	// The number of API calls is equal to the number of versions: /apis/<group>/<version>.
-	groupVersionResources, err := m.fetchGroupVersionResources(groupName, versions...)
-	if err != nil {
-		return fmt.Errorf("failed to get API group resources: %w", err)
-	}
-	for version, resources := range groupVersionResources {
-		groupResources.VersionedResources[version.Version] = resources.APIResources
-	}
-
 	// Update information for group resources about the API group by adding new versions.
 	// Ignore the versions that are already registered.
-	for _, version := range versions {
+	for groupVersion, resources := range groupVersionResources {
+		version := groupVersion.Version
+
+		groupResources.VersionedResources[version] = resources.APIResources
 		found := false
 		for _, v := range groupResources.Group.Versions {
 			if v.Version == version {
@@ -216,12 +222,7 @@ func (m *mapper) addKnownGroupAndReload(groupName string, versions ...string) er
 	m.knownGroups[groupName] = groupResources
 
 	// Finally, update the group with received information and regenerate the mapper.
-	updatedGroupResources := make([]*restmapper.APIGroupResources, 0, len(m.knownGroups))
-	for _, agr := range m.knownGroups {
-		updatedGroupResources = append(updatedGroupResources, agr)
-	}
-
-	m.mapper = restmapper.NewDiscoveryRESTMapper(updatedGroupResources)
+	m.refreshMapper()
 	return nil
 }
 
@@ -267,8 +268,9 @@ func (m *mapper) findAPIGroupByName(groupName string) (*metav1.APIGroup, error) 
 	return nil, fmt.Errorf("failed to find API group %q", groupName)
 }
 
-// fetchGroupVersionResources fetches the resources for the specified group and its versions.
-func (m *mapper) fetchGroupVersionResources(groupName string, versions ...string) (map[schema.GroupVersion]*metav1.APIResourceList, error) {
+// fetchGroupVersionResourcesLocked fetches the resources for the specified group and its versions.
+// This method might modify the cache so it needs to be called under the lock.
+func (m *mapper) fetchGroupVersionResourcesLocked(groupName string, versions ...string) (map[schema.GroupVersion]*metav1.APIResourceList, error) {
 	groupVersionResources := make(map[schema.GroupVersion]*metav1.APIResourceList)
 	failedGroups := make(map[schema.GroupVersion]error)
 
@@ -276,9 +278,30 @@ func (m *mapper) fetchGroupVersionResources(groupName string, versions ...string
 		groupVersion := schema.GroupVersion{Group: groupName, Version: version}
 
 		apiResourceList, err := m.client.ServerResourcesForGroupVersion(groupVersion.String())
+		if apierrors.IsNotFound(err) {
+			// If the version is not found, we remove the group from the cache
+			// so it gets refreshed on the next call.
+			cacheInvalidated := false
+			if m.isAPIGroupCached(groupVersion) {
+				delete(m.apiGroups, groupName)
+				cacheInvalidated = true
+			}
+			if m.isGroupVersionCached(groupVersion) {
+				delete(m.knownGroups, groupName)
+				cacheInvalidated = true
+			}
+			// It's important to refresh the mapper after invalidating the cache, since returning an error
+			// aborts the call and leaves the underlying mapper unchanged. If not refreshed, the next call
+			// will still return a match for the NotFound version.
+			if cacheInvalidated {
+				m.refreshMapper()
+			}
+		}
+
 		if err != nil {
 			failedGroups[groupVersion] = err
 		}
+
 		if apiResourceList != nil {
 			// even in case of error, some fallback might have been returned.
 			groupVersionResources[groupVersion] = apiResourceList
@@ -286,8 +309,43 @@ func (m *mapper) fetchGroupVersionResources(groupName string, versions ...string
 	}
 
 	if len(failedGroups) > 0 {
-		return nil, &discovery.ErrGroupDiscoveryFailed{Groups: failedGroups}
+		err := ErrResourceDiscoveryFailed(failedGroups)
+		return nil, &err
 	}
 
 	return groupVersionResources, nil
+}
+
+// isGroupVersionCached checks if a version for a group is cached in the known groups cache.
+func (m *mapper) isGroupVersionCached(gv schema.GroupVersion) bool {
+	if cachedGroup, ok := m.knownGroups[gv.Group]; ok {
+		_, cached := cachedGroup.VersionedResources[gv.Version]
+		return cached
+	}
+
+	return false
+}
+
+// isAPIGroupCached checks if a version for a group is cached in the api groups cache.
+func (m *mapper) isAPIGroupCached(gv schema.GroupVersion) bool {
+	cachedGroup, ok := m.apiGroups[gv.Group]
+	if !ok {
+		return false
+	}
+
+	for _, version := range cachedGroup.Versions {
+		if version.Version == gv.Version {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (m *mapper) refreshMapper() {
+	updatedGroupResources := make([]*restmapper.APIGroupResources, 0, len(m.knownGroups))
+	for _, agr := range m.knownGroups {
+		updatedGroupResources = append(updatedGroupResources, agr)
+	}
+	m.mapper = restmapper.NewDiscoveryRESTMapper(updatedGroupResources)
 }

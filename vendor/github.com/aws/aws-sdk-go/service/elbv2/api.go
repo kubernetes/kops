@@ -5648,7 +5648,7 @@ type CreateLoadBalancerInput struct {
 	// groups for the load balancer.
 	SecurityGroups []*string `type:"list"`
 
-	// The IDs of the public subnets. You can specify only one subnet per Availability
+	// The IDs of the subnets. You can specify only one subnet per Availability
 	// Zone. You must specify either subnets or subnet mappings, but not both.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
@@ -5670,7 +5670,7 @@ type CreateLoadBalancerInput struct {
 	// Zones. You cannot specify Elastic IP addresses for your subnets.
 	SubnetMappings []*SubnetMapping `type:"list"`
 
-	// The IDs of the public subnets. You can specify only one subnet per Availability
+	// The IDs of the subnets. You can specify only one subnet per Availability
 	// Zone. You must specify either subnets or subnet mappings, but not both. To
 	// specify an Elastic IP address, specify subnet mappings instead of subnets.
 	//
@@ -9259,6 +9259,9 @@ type LoadBalancerAttribute struct {
 	//    * idle_timeout.timeout_seconds - The idle timeout value, in seconds. The
 	//    valid range is 1-4000 seconds. The default is 60 seconds.
 	//
+	//    * client_keep_alive.seconds - The client keep alive value, in seconds.
+	//    The valid range is 60-604800 seconds. The default is 3600 seconds.
+	//
 	//    * connection_logs.s3.enabled - Indicates whether connection logs are enabled.
 	//    The value is true or false. The default is false.
 	//
@@ -11672,6 +11675,8 @@ type SourceIpConditionConfig struct {
 	// IP address of the request matches one of the CIDR blocks. This condition
 	// is not satisfied by the addresses in the X-Forwarded-For header. To search
 	// for addresses in the X-Forwarded-For header, use HttpHeaderConditionConfig.
+	//
+	// The total number of values must be less than, or equal to five.
 	Values []*string `type:"list"`
 }
 
@@ -12333,6 +12338,13 @@ type TargetGroupAttribute struct {
 	//    * target_health_state.unhealthy.connection_termination.enabled - Indicates
 	//    whether the load balancer terminates connections to unhealthy targets.
 	//    The value is true or false. The default is true.
+	//
+	//    * target_health_state.unhealthy.draining_interval_seconds - The amount
+	//    of time for Elastic Load Balancing to wait before changing the state of
+	//    an unhealthy target from unhealthy.draining to unhealthy. The range is
+	//    0-360000 seconds. The default value is 0 seconds. Note: This attribute
+	//    can only be configured when target_health_state.unhealthy.connection_termination.enabled
+	//    is false.
 	//
 	// The following attributes are supported only by Gateway Load Balancers:
 	//
@@ -13152,6 +13164,9 @@ const (
 	// TargetHealthStateEnumUnhealthy is a TargetHealthStateEnum enum value
 	TargetHealthStateEnumUnhealthy = "unhealthy"
 
+	// TargetHealthStateEnumUnhealthyDraining is a TargetHealthStateEnum enum value
+	TargetHealthStateEnumUnhealthyDraining = "unhealthy.draining"
+
 	// TargetHealthStateEnumUnused is a TargetHealthStateEnum enum value
 	TargetHealthStateEnumUnused = "unused"
 
@@ -13168,6 +13183,7 @@ func TargetHealthStateEnum_Values() []string {
 		TargetHealthStateEnumInitial,
 		TargetHealthStateEnumHealthy,
 		TargetHealthStateEnumUnhealthy,
+		TargetHealthStateEnumUnhealthyDraining,
 		TargetHealthStateEnumUnused,
 		TargetHealthStateEnumDraining,
 		TargetHealthStateEnumUnavailable,

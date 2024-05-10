@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
@@ -54,69 +53,4 @@ func (s *API) WaitForSnapshot(req *WaitForSnapshotRequest, opts ...scw.RequestOp
 		return nil, errors.Wrap(err, "waiting for snapshot failed")
 	}
 	return snapshot.(*Snapshot), nil
-}
-
-type UpdateSnapshotRequest struct {
-	Zone       scw.Zone
-	SnapshotID string
-	Name       *string   `json:"name,omitempty"`
-	Tags       *[]string `json:"tags,omitempty"`
-}
-
-type UpdateSnapshotResponse struct {
-	Snapshot *Snapshot
-}
-
-func (s *API) UpdateSnapshot(req *UpdateSnapshotRequest, opts ...scw.RequestOption) (*UpdateSnapshotResponse, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.SnapshotID) == "" {
-		return nil, errors.New("field SnapshotID cannot be empty in request")
-	}
-
-	getSnapshotResponse, err := s.GetSnapshot(&GetSnapshotRequest{
-		Zone:       req.Zone,
-		SnapshotID: req.SnapshotID,
-	}, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	setRequest := &setSnapshotRequest{
-		SnapshotID:       getSnapshotResponse.Snapshot.ID,
-		Zone:             getSnapshotResponse.Snapshot.Zone,
-		ID:               getSnapshotResponse.Snapshot.ID,
-		Name:             getSnapshotResponse.Snapshot.Name,
-		CreationDate:     getSnapshotResponse.Snapshot.CreationDate,
-		ModificationDate: getSnapshotResponse.Snapshot.ModificationDate,
-		Organization:     getSnapshotResponse.Snapshot.Organization,
-		Project:          getSnapshotResponse.Snapshot.Project,
-	}
-
-	// Override the values that need to be updated
-	if req.Name != nil {
-		setRequest.Name = *req.Name
-	}
-
-	if req.Tags != nil {
-		setRequest.Tags = req.Tags
-	}
-
-	setRes, err := s.setSnapshot(setRequest, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &UpdateSnapshotResponse{
-		Snapshot: setRes.Snapshot,
-	}, nil
 }

@@ -44,6 +44,18 @@ const (
 	//
 	// The requested resource can't be found.
 	ErrCodeNotFoundException = "NotFoundException"
+
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// The requested resource can't be found.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
+	// ErrCodeThrottlingException for service response error code
+	// "ThrottlingException".
+	//
+	// You've made too many requests exceeding service quotas.
+	ErrCodeThrottlingException = "ThrottlingException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
@@ -53,4 +65,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidNextTokenException": newErrorInvalidNextTokenException,
 	"InvalidParameterException": newErrorInvalidParameterException,
 	"NotFoundException":         newErrorNotFoundException,
+	"ResourceNotFoundException": newErrorResourceNotFoundException,
+	"ThrottlingException":       newErrorThrottlingException,
 }

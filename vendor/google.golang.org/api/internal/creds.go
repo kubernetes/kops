@@ -15,7 +15,10 @@ import (
 	"os"
 	"time"
 
+	"cloud.google.com/go/auth/credentials"
+	"cloud.google.com/go/auth/oauth2adapt"
 	"golang.org/x/oauth2"
+	"google.golang.org/api/internal/cert"
 	"google.golang.org/api/internal/impersonate"
 
 	"golang.org/x/oauth2/google"
@@ -26,6 +29,9 @@ const quotaProjectEnvVar = "GOOGLE_CLOUD_QUOTA_PROJECT"
 // Creds returns credential information obtained from DialSettings, or if none, then
 // it returns default credential information.
 func Creds(ctx context.Context, ds *DialSettings) (*google.Credentials, error) {
+	if ds.IsNewAuthLibraryEnabled() {
+		return credsNewAuth(ctx, ds)
+	}
 	creds, err := baseCreds(ctx, ds)
 	if err != nil {
 		return nil, err
@@ -34,6 +40,59 @@ func Creds(ctx context.Context, ds *DialSettings) (*google.Credentials, error) {
 		return impersonateCredentials(ctx, creds, ds)
 	}
 	return creds, nil
+}
+
+func credsNewAuth(ctx context.Context, settings *DialSettings) (*google.Credentials, error) {
+	// Preserve old options behavior
+	if settings.InternalCredentials != nil {
+		return settings.InternalCredentials, nil
+	} else if settings.Credentials != nil {
+		return settings.Credentials, nil
+	} else if settings.TokenSource != nil {
+		return &google.Credentials{TokenSource: settings.TokenSource}, nil
+	}
+
+	if settings.AuthCredentials != nil {
+		return oauth2adapt.Oauth2CredentialsFromAuthCredentials(settings.AuthCredentials), nil
+	}
+
+	var useSelfSignedJWT bool
+	var aud string
+	var scopes []string
+	// If scoped JWTs are enabled user provided an aud, allow self-signed JWT.
+	if settings.EnableJwtWithScope || len(settings.Audiences) > 0 {
+		useSelfSignedJWT = true
+	}
+
+	if len(settings.Scopes) > 0 {
+		scopes = make([]string, len(settings.Scopes))
+		copy(scopes, settings.Scopes)
+	}
+	if len(settings.Audiences) > 0 {
+		aud = settings.Audiences[0]
+	}
+	// Only default scopes if user did not also set an audience.
+	if len(settings.Scopes) == 0 && aud == "" && len(settings.DefaultScopes) > 0 {
+		scopes = make([]string, len(settings.DefaultScopes))
+		copy(scopes, settings.DefaultScopes)
+	}
+	if len(scopes) == 0 && aud == "" {
+		aud = settings.DefaultAudience
+	}
+
+	creds, err := credentials.DetectDefault(&credentials.DetectOptions{
+		Scopes:           scopes,
+		Audience:         aud,
+		CredentialsFile:  settings.CredentialsFile,
+		CredentialsJSON:  settings.CredentialsJSON,
+		UseSelfSignedJWT: useSelfSignedJWT,
+		Client:           oauth2.NewClient(ctx, nil),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return oauth2adapt.Oauth2CredentialsFromAuthCredentials(creds), nil
 }
 
 func baseCreds(ctx context.Context, ds *DialSettings) (*google.Credentials, error) {
@@ -78,9 +137,8 @@ const (
 // met:
 //
 //	(1) At least one of the following is true:
-//	    (a) No scope is provided
-//	    (b) Scope for self-signed JWT flow is enabled
-//	    (c) Audiences are explicitly provided by users
+//	    (a) Scope for self-signed JWT flow is enabled
+//	    (b) Audiences are explicitly provided by users
 //	(2) No service account impersontation
 //
 // - Otherwise, executes standard OAuth 2.0 flow
@@ -91,11 +149,11 @@ func credentialsFromJSON(ctx context.Context, data []byte, ds *DialSettings) (*g
 
 	// Determine configurations for the OAuth2 transport, which is separate from the API transport.
 	// The OAuth2 transport and endpoint will be configured for mTLS if applicable.
-	clientCertSource, oauth2Endpoint, err := getClientCertificateSourceAndEndpoint(oauth2DialSettings(ds))
+	clientCertSource, err := getClientCertificateSource(ds)
 	if err != nil {
 		return nil, err
 	}
-	params.TokenURL = oauth2Endpoint
+	params.TokenURL = oAuth2Endpoint(clientCertSource)
 	if clientCertSource != nil {
 		tlsConfig := &tls.Config{
 			GetClientCertificate: clientCertSource,
@@ -125,20 +183,35 @@ func credentialsFromJSON(ctx context.Context, data []byte, ds *DialSettings) (*g
 	return cred, err
 }
 
+func oAuth2Endpoint(clientCertSource cert.Source) string {
+	if isMTLS(clientCertSource) {
+		return google.MTLSTokenURL
+	}
+	return google.Endpoint.TokenURL
+}
+
 func isSelfSignedJWTFlow(data []byte, ds *DialSettings) (bool, error) {
-	if (ds.EnableJwtWithScope || ds.HasCustomAudience()) &&
-		ds.ImpersonationConfig == nil {
-		// Check if JSON is a service account and if so create a self-signed JWT.
-		var f struct {
-			Type string `json:"type"`
-			// The rest JSON fields are omitted because they are not used.
-		}
-		if err := json.Unmarshal(data, &f); err != nil {
-			return false, err
-		}
-		return f.Type == serviceAccountKey, nil
+	// For non-GDU universe domains, token exchange is impossible and services
+	// must support self-signed JWTs with scopes.
+	if !ds.IsUniverseDomainGDU() {
+		return typeServiceAccount(data)
+	}
+	if (ds.EnableJwtWithScope || ds.HasCustomAudience()) && ds.ImpersonationConfig == nil {
+		return typeServiceAccount(data)
 	}
 	return false, nil
+}
+
+// typeServiceAccount checks if JSON data is for a service account.
+func typeServiceAccount(data []byte) (bool, error) {
+	var f struct {
+		Type string `json:"type"`
+		// The remaining JSON fields are omitted because they are not used.
+	}
+	if err := json.Unmarshal(data, &f); err != nil {
+		return false, err
+	}
+	return f.Type == serviceAccountKey, nil
 }
 
 func selfSignedJWTTokenSource(data []byte, ds *DialSettings) (oauth2.TokenSource, error) {
@@ -189,15 +262,6 @@ func impersonateCredentials(ctx context.Context, creds *google.Credentials, ds *
 	}, nil
 }
 
-// oauth2DialSettings returns the settings to be used by the OAuth2 transport, which is separate from the API transport.
-func oauth2DialSettings(ds *DialSettings) *DialSettings {
-	var ods DialSettings
-	ods.DefaultEndpoint = google.Endpoint.TokenURL
-	ods.DefaultMTLSEndpoint = google.MTLSTokenURL
-	ods.ClientCertSource = ds.ClientCertSource
-	return &ods
-}
-
 // customHTTPClient constructs an HTTPClient using the provided tlsConfig, to support mTLS.
 func customHTTPClient(tlsConfig *tls.Config) *http.Client {
 	trans := baseTransport()
@@ -219,4 +283,15 @@ func baseTransport() *http.Transport {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 	}
+}
+
+// ErrUniverseNotMatch composes an error string from the provided universe
+// domain sources (DialSettings and Credentials, respectively).
+func ErrUniverseNotMatch(settingsUD, credsUD string) error {
+	return fmt.Errorf(
+		"the configured universe domain (%q) does not match the universe "+
+			"domain found in the credentials (%q). If you haven't configured "+
+			"WithUniverseDomain explicitly, \"googleapis.com\" is the default",
+		settingsUD,
+		credsUD)
 }

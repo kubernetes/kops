@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"net"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -546,13 +545,8 @@ func newVariableFromType(t interface{}) interface{} {
 
 func newHTTPClient() *http.Client {
 	return &http.Client{
-		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			DialContext:           (&net.Dialer{Timeout: 5 * time.Second}).DialContext,
-			TLSHandshakeTimeout:   5 * time.Second,
-			ResponseHeaderTimeout: 30 * time.Second,
-			MaxIdleConnsPerHost:   20,
-		},
+		Timeout:   30 * time.Second,
+		Transport: http.DefaultTransport.(*http.Transport).Clone(),
 	}
 }
 

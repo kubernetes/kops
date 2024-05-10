@@ -367,14 +367,15 @@ const (
 	//
 	//    * You don't have permission to access the managed node.
 	//
-	//    * Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+	//    * Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 	//    Verify that SSM Agent is running.
 	//
 	//    * SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 	//    Agent.
 	//
-	//    * The managed node isn't in valid state. Valid states are: Running, Pending,
-	//    Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+	//    * The managed node isn't in a valid state. Valid states are: Running,
+	//    Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+	//    Terminated.
 	ErrCodeInvalidInstanceId = "InvalidInstanceId"
 
 	// ErrCodeInvalidInstanceInformationFilterValue for service response error code
@@ -382,6 +383,12 @@ const (
 	//
 	// The specified filter value isn't valid.
 	ErrCodeInvalidInstanceInformationFilterValue = "InvalidInstanceInformationFilterValue"
+
+	// ErrCodeInvalidInstancePropertyFilterValue for service response error code
+	// "InvalidInstancePropertyFilterValue".
+	//
+	// The specified filter value isn't valid.
+	ErrCodeInvalidInstancePropertyFilterValue = "InvalidInstancePropertyFilterValue"
 
 	// ErrCodeInvalidInventoryGroupException for service response error code
 	// "InvalidInventoryGroupException".
@@ -506,7 +513,8 @@ const (
 	// The role name can't contain invalid characters. Also verify that you specified
 	// an IAM role for notifications that includes the required trust policy. For
 	// information about configuring the IAM role for Run Command notifications,
-	// see Configuring Amazon SNS Notifications for Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-sns-notifications.html)
+	// see Monitoring Systems Manager status changes using Amazon SNS notifications
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/monitoring-sns-notifications.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	ErrCodeInvalidRole = "InvalidRole"
 
@@ -565,6 +573,13 @@ const (
 	//
 	// The inventory item size has exceeded the size limit.
 	ErrCodeItemSizeLimitExceededException = "ItemSizeLimitExceededException"
+
+	// ErrCodeMalformedResourcePolicyDocumentException for service response error code
+	// "MalformedResourcePolicyDocumentException".
+	//
+	// The specified policy document is malformed or invalid, or excessive PutResourcePolicy
+	// or DeleteResourcePolicy calls have been made.
+	ErrCodeMalformedResourcePolicyDocumentException = "MalformedResourcePolicyDocumentException"
 
 	// ErrCodeMaxDocumentSizeExceeded for service response error code
 	// "MaxDocumentSizeExceeded".
@@ -782,6 +797,12 @@ const (
 	// in the Amazon Web Services General Reference.
 	ErrCodeResourceLimitExceededException = "ResourceLimitExceededException"
 
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// The specified parameter to be shared could not be found.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
 	// ErrCodeResourcePolicyConflictException for service response error code
 	// "ResourcePolicyConflictException".
 	//
@@ -804,6 +825,12 @@ const (
 	// than 1024 bytes in size. And only one policy can be attached to OpsItemGroup.
 	// Verify these limits and try again.
 	ErrCodeResourcePolicyLimitExceededException = "ResourcePolicyLimitExceededException"
+
+	// ErrCodeResourcePolicyNotFoundException for service response error code
+	// "ResourcePolicyNotFoundException".
+	//
+	// No policies with the specified policy ID and hash could be found.
+	ErrCodeResourcePolicyNotFoundException = "ResourcePolicyNotFoundException"
 
 	// ErrCodeServiceSettingNotFound for service response error code
 	// "ServiceSettingNotFound".
@@ -874,7 +901,7 @@ const (
 	// Patching for applications released by Microsoft is only available on EC2
 	// instances and advanced instances. To patch applications released by Microsoft
 	// on on-premises servers and VMs, you must enable advanced instances. For more
-	// information, see Enabling the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
+	// information, see Turning on the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	ErrCodeUnsupportedFeatureRequiredException = "UnsupportedFeatureRequiredException"
 
@@ -911,8 +938,8 @@ const (
 	// "UnsupportedPlatformType".
 	//
 	// The document doesn't support the platform type of the given managed node
-	// ID(s). For example, you sent an document for a Windows managed node to a
-	// Linux node.
+	// IDs. For example, you sent an document for a Windows managed node to a Linux
+	// node.
 	ErrCodeUnsupportedPlatformType = "UnsupportedPlatformType"
 )
 
@@ -970,6 +997,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidFilterValue":                             newErrorInvalidFilterValue,
 	"InvalidInstanceId":                              newErrorInvalidInstanceId,
 	"InvalidInstanceInformationFilterValue":          newErrorInvalidInstanceInformationFilterValue,
+	"InvalidInstancePropertyFilterValue":             newErrorInvalidInstancePropertyFilterValue,
 	"InvalidInventoryGroupException":                 newErrorInvalidInventoryGroupException,
 	"InvalidInventoryItemContextException":           newErrorInvalidInventoryItemContextException,
 	"InvalidInventoryRequestException":               newErrorInvalidInventoryRequestException,
@@ -998,6 +1026,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvocationDoesNotExist":                         newErrorInvocationDoesNotExist,
 	"ItemContentMismatchException":                   newErrorItemContentMismatchException,
 	"ItemSizeLimitExceededException":                 newErrorItemSizeLimitExceededException,
+	"MalformedResourcePolicyDocumentException":       newErrorMalformedResourcePolicyDocumentException,
 	"MaxDocumentSizeExceeded":                        newErrorMaxDocumentSizeExceeded,
 	"OpsItemAccessDeniedException":                   newErrorOpsItemAccessDeniedException,
 	"OpsItemAlreadyExistsException":                  newErrorOpsItemAlreadyExistsException,
@@ -1028,9 +1057,11 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ResourceDataSyncNotFoundException":              newErrorResourceDataSyncNotFoundException,
 	"ResourceInUseException":                         newErrorResourceInUseException,
 	"ResourceLimitExceededException":                 newErrorResourceLimitExceededException,
+	"ResourceNotFoundException":                      newErrorResourceNotFoundException,
 	"ResourcePolicyConflictException":                newErrorResourcePolicyConflictException,
 	"ResourcePolicyInvalidParameterException":        newErrorResourcePolicyInvalidParameterException,
 	"ResourcePolicyLimitExceededException":           newErrorResourcePolicyLimitExceededException,
+	"ResourcePolicyNotFoundException":                newErrorResourcePolicyNotFoundException,
 	"ServiceSettingNotFound":                         newErrorServiceSettingNotFound,
 	"StatusUnchanged":                                newErrorStatusUnchanged,
 	"SubTypeCountLimitExceededException":             newErrorSubTypeCountLimitExceededException,

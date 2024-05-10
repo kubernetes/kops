@@ -142,6 +142,13 @@ const (
 	// not exist. The error message describes the resource.
 	ErrCodeNoSuchEntityException = "NoSuchEntity"
 
+	// ErrCodeOpenIdIdpCommunicationErrorException for service response error code
+	// "OpenIdIdpCommunicationError".
+	//
+	// The request failed because IAM cannot connect to the OpenID Connect identity
+	// provider URL.
+	ErrCodeOpenIdIdpCommunicationErrorException = "OpenIdIdpCommunicationError"
+
 	// ErrCodePasswordPolicyViolationException for service response error code
 	// "PasswordPolicyViolation".
 	//

@@ -22,13 +22,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/go-sev-guest/abi"
 	labi "github.com/google/go-sev-guest/client/linuxabi"
+	spb "github.com/google/go-sev-guest/proto/sevsnp"
 	"golang.org/x/sys/unix"
 )
 
 const (
 	// defaultSevGuestDevicePath is the platform's usual device path to the SEV guest.
 	defaultSevGuestDevicePath = "/dev/sev-guest"
+	installURL                = "https://github.com/google/go-sev-guest/blob/main/INSTALL.md"
 )
 
 // These flags should not be needed for long term health of the project as the Linux kernel
@@ -50,7 +53,7 @@ func (d *LinuxDevice) Open(path string) error {
 	fd, err := unix.Open(path, unix.O_RDWR, 0)
 	if err != nil {
 		d.fd = -1
-		return fmt.Errorf("could not open AMD SEV guest device at %s: %v", path, err)
+		return fmt.Errorf("could not open AMD SEV guest device at %s (see %s): %v", path, installURL, err)
 	}
 	d.fd = fd
 	return nil
@@ -114,4 +117,9 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 		return result, nil
 	}
 	return 0, fmt.Errorf("unexpected request value: %v", req)
+}
+
+// Product returns the current CPU's associated AMD SEV product information.
+func (d *LinuxDevice) Product() *spb.SevProduct {
+	return abi.SevProduct()
 }

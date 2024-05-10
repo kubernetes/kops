@@ -279,6 +279,13 @@ type SSMAPI interface {
 	DescribeInstancePatchesPages(*ssm.DescribeInstancePatchesInput, func(*ssm.DescribeInstancePatchesOutput, bool) bool) error
 	DescribeInstancePatchesPagesWithContext(aws.Context, *ssm.DescribeInstancePatchesInput, func(*ssm.DescribeInstancePatchesOutput, bool) bool, ...request.Option) error
 
+	DescribeInstanceProperties(*ssm.DescribeInstancePropertiesInput) (*ssm.DescribeInstancePropertiesOutput, error)
+	DescribeInstancePropertiesWithContext(aws.Context, *ssm.DescribeInstancePropertiesInput, ...request.Option) (*ssm.DescribeInstancePropertiesOutput, error)
+	DescribeInstancePropertiesRequest(*ssm.DescribeInstancePropertiesInput) (*request.Request, *ssm.DescribeInstancePropertiesOutput)
+
+	DescribeInstancePropertiesPages(*ssm.DescribeInstancePropertiesInput, func(*ssm.DescribeInstancePropertiesOutput, bool) bool) error
+	DescribeInstancePropertiesPagesWithContext(aws.Context, *ssm.DescribeInstancePropertiesInput, func(*ssm.DescribeInstancePropertiesOutput, bool) bool, ...request.Option) error
+
 	DescribeInventoryDeletions(*ssm.DescribeInventoryDeletionsInput) (*ssm.DescribeInventoryDeletionsOutput, error)
 	DescribeInventoryDeletionsWithContext(aws.Context, *ssm.DescribeInventoryDeletionsInput, ...request.Option) (*ssm.DescribeInventoryDeletionsOutput, error)
 	DescribeInventoryDeletionsRequest(*ssm.DescribeInventoryDeletionsInput) (*request.Request, *ssm.DescribeInventoryDeletionsOutput)

@@ -1,6 +1,7 @@
 package hcloud
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -16,6 +17,7 @@ const (
 	ErrorCodeNotFound              ErrorCode = "not_found"               // Resource not found
 	ErrorCodeInvalidInput          ErrorCode = "invalid_input"           // Validation error
 	ErrorCodeForbidden             ErrorCode = "forbidden"               // Insufficient permissions
+	ErrorCodeUnauthorized          ErrorCode = "unauthorized"            // Request was made with an invalid or unknown token
 	ErrorCodeJSONError             ErrorCode = "json_error"              // Invalid JSON in request
 	ErrorCodeLocked                ErrorCode = "locked"                  // Item is locked (Another action is running)
 	ErrorCodeResourceLimitExceeded ErrorCode = "resource_limit_exceeded" // Resource limit exceeded
@@ -29,6 +31,7 @@ const (
 	ErrorUnsupportedError          ErrorCode = "unsupported_error"       // The given resource does not support this
 
 	// Server related error codes.
+
 	ErrorCodeInvalidServerType     ErrorCode = "invalid_server_type"     // The server type does not fit for the given server or is deprecated
 	ErrorCodeServerNotStopped      ErrorCode = "server_not_stopped"      // The action requires a stopped server
 	ErrorCodeNetworksOverlap       ErrorCode = "networks_overlap"        // The network IP range overlaps with one of the server networks
@@ -36,6 +39,7 @@ const (
 	ErrorCodeServerAlreadyAttached ErrorCode = "server_already_attached" // The server is already attached to the resource
 
 	// Load Balancer related error codes.
+
 	ErrorCodeIPNotOwned                       ErrorCode = "ip_not_owned"                          // The IP you are trying to add as a target is not owned by the Project owner
 	ErrorCodeSourcePortAlreadyUsed            ErrorCode = "source_port_already_used"              // The source port you are trying to add is already in use
 	ErrorCodeCloudResourceIPNotAllowed        ErrorCode = "cloud_resource_ip_not_allowed"         // The IP you are trying to add as a target belongs to a Hetzner Cloud resource
@@ -47,15 +51,18 @@ const (
 	ErrorCodeLoadBalancerNotAttachedToNetwork ErrorCode = "load_balancer_not_attached_to_network" // The Load Balancer is not attached to a network
 
 	// Network related error codes.
+
 	ErrorCodeIPNotAvailable     ErrorCode = "ip_not_available"        // The provided Network IP is not available
 	ErrorCodeNoSubnetAvailable  ErrorCode = "no_subnet_available"     // No Subnet or IP is available for the Load Balancer/Server within the network
 	ErrorCodeVSwitchAlreadyUsed ErrorCode = "vswitch_id_already_used" // The given Robot vSwitch ID is already registered in another network
 
 	// Volume related error codes.
+
 	ErrorCodeNoSpaceLeftInLocation ErrorCode = "no_space_left_in_location" // There is no volume space left in the given location
 	ErrorCodeVolumeAlreadyAttached ErrorCode = "volume_already_attached"   // Volume is already attached to a server, detach first
 
 	// Firewall related error codes.
+
 	ErrorCodeFirewallAlreadyApplied   ErrorCode = "firewall_already_applied"    // Firewall was already applied on resource
 	ErrorCodeFirewallAlreadyRemoved   ErrorCode = "firewall_already_removed"    // Firewall was already removed from the resource
 	ErrorCodeIncompatibleNetworkType  ErrorCode = "incompatible_network_type"   // The Network type is incompatible for the given resource
@@ -64,6 +71,7 @@ const (
 	ErrorCodeFirewallResourceNotFound ErrorCode = "firewall_resource_not_found" // Resource a firewall should be attached to / detached from not found
 
 	// Certificate related error codes.
+
 	ErrorCodeCAARecordDoesNotAllowCA                        ErrorCode = "caa_record_does_not_allow_ca"                          // CAA record does not allow certificate authority
 	ErrorCodeCADNSValidationFailed                          ErrorCode = "ca_dns_validation_failed"                              // Certificate Authority: DNS validation failed
 	ErrorCodeCATooManyAuthorizationsFailedRecently          ErrorCode = "ca_too_many_authorizations_failed_recently"            // Certificate Authority: Too many authorizations failed recently
@@ -72,12 +80,13 @@ const (
 	ErrorCodeCloudNotVerifyDomainDelegatedToZone            ErrorCode = "could_not_verify_domain_delegated_to_zone"             // Could not verify domain delegated to zone
 	ErrorCodeDNSZoneNotFound                                ErrorCode = "dns_zone_not_found"                                    // DNS zone not found
 
-	// Deprecated error codes
-	// The actual value of this error code is limit_reached. The new error code
-	// rate_limit_exceeded for ratelimiting was introduced before Hetzner Cloud
-	// launched into the public. To make clients using the old error code still
-	// work as expected, we set the value of the old error code to that of the
-	// new error code.
+	// Deprecated error codes.
+
+	// Deprecated: The actual value of this error code is limit_reached. The
+	// new error code rate_limit_exceeded for rate limiting was introduced
+	// before Hetzner Cloud launched into the public. To make clients using the
+	// old error code still work as expected, we set the value of the old error
+	// code to that of the new error code.
 	ErrorCodeLimitReached = ErrorCodeRateLimitExceeded
 )
 
@@ -86,10 +95,24 @@ type Error struct {
 	Code    ErrorCode
 	Message string
 	Details interface{}
+
+	response *Response
 }
 
 func (e Error) Error() string {
+	if resp := e.Response(); resp != nil {
+		correlationID := resp.internalCorrelationID()
+		if correlationID != "" {
+			// For easier debugging, the error string contains the Correlation ID of the response.
+			return fmt.Sprintf("%s (%s, %s)", e.Message, e.Code, correlationID)
+		}
+	}
 	return fmt.Sprintf("%s (%s)", e.Message, e.Code)
+}
+
+// Response returns the [Response] that contained the error if available.
+func (e Error) Response() *Response {
+	return e.response
 }
 
 // ErrorDetailsInvalidInput contains the details of an 'invalid_input' error.
@@ -105,7 +128,8 @@ type ErrorDetailsInvalidInputField struct {
 
 // IsError returns whether err is an API error with the given error code.
 func IsError(err error, code ErrorCode) bool {
-	apiErr, ok := err.(Error)
+	var apiErr Error
+	ok := errors.As(err, &apiErr)
 	return ok && apiErr.Code == code
 }
 
