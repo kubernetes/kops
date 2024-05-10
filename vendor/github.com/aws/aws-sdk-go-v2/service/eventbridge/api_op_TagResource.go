@@ -15,13 +15,18 @@ import (
 // resource. Tags can help you organize and categorize your resources. You can also
 // use them to scope user permissions by granting a user permission to access or
 // change only resources with certain tag values. In EventBridge, rules and event
-// buses can be tagged. Tags don't have any semantic meaning to Amazon Web Services
-// and are interpreted strictly as strings of characters. You can use the
-// TagResource action with a resource that already has tags. If you specify a new
-// tag key, this tag is appended to the list of tags associated with the resource.
-// If you specify a tag key that is already associated with the resource, the new
-// tag value that you specify replaces the previous value for that tag. You can
-// associate as many as 50 tags with a resource.
+// buses can be tagged.
+//
+// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
+// strictly as strings of characters.
+//
+// You can use the TagResource action with a resource that already has tags. If
+// you specify a new tag key, this tag is appended to the list of tags associated
+// with the resource. If you specify a tag key that is already associated with the
+// resource, the new tag value that you specify replaces the previous value for
+// that tag.
+//
+// You can associate as many as 50 tags with a resource.
 func (c *Client) TagResource(ctx context.Context, params *TagResourceInput, optFns ...func(*Options)) (*TagResourceOutput, error) {
 	if params == nil {
 		params = &TagResourceInput{}

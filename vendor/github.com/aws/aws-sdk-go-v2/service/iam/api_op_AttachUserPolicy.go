@@ -10,14 +10,19 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Attaches the specified managed policy to the specified user. You use this
-// operation to attach a managed policy to a user. To embed an inline policy in a
-// user, use PutUserPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutUserPolicy.html)
-// . As a best practice, you can validate your IAM policies. To learn more, see
-// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
-// in the IAM User Guide. For more information about policies, see Managed
-// policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide.
+// Attaches the specified managed policy to the specified user.
+//
+// You use this operation to attach a managed policy to a user. To embed an inline
+// policy in a user, use [PutUserPolicy]PutUserPolicy .
+//
+// As a best practice, you can validate your IAM policies. To learn more, see [Validating IAM policies] in
+// the IAM User Guide.
+//
+// For more information about policies, see [Managed policies and inline policies] in the IAM User Guide.
+//
+// [Validating IAM policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html
+// [PutUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutUserPolicy.html
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) AttachUserPolicy(ctx context.Context, params *AttachUserPolicyInput, optFns ...func(*Options)) (*AttachUserPolicyOutput, error) {
 	if params == nil {
 		params = &AttachUserPolicyInput{}
@@ -35,17 +40,23 @@ func (c *Client) AttachUserPolicy(ctx context.Context, params *AttachUserPolicyI
 
 type AttachUserPolicyInput struct {
 
-	// The Amazon Resource Name (ARN) of the IAM policy you want to attach. For more
-	// information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// The Amazon Resource Name (ARN) of the IAM policy you want to attach.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicyArn *string
 
-	// The name (friendly name, not ARN) of the IAM user to attach the policy to. This
-	// parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters consisting of upper and lowercase alphanumeric characters
-	// with no spaces. You can also include any of the following characters: _+=,.@-
+	// The name (friendly name, not ARN) of the IAM user to attach the policy to.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string

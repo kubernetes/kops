@@ -11,12 +11,16 @@ import (
 )
 
 // Replaces the current set of policies for the specified load balancer port with
-// the specified set of policies. To enable back-end server authentication, use
-// SetLoadBalancerPoliciesForBackendServer . For more information about setting
-// policies, see Update the SSL Negotiation Configuration (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/ssl-config-update.html)
-// , Duration-Based Session Stickiness (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-sticky-sessions.html#enable-sticky-sessions-duration)
-// , and Application-Controlled Session Stickiness (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-sticky-sessions.html#enable-sticky-sessions-application)
-// in the Classic Load Balancers Guide.
+// the specified set of policies.
+//
+// To enable back-end server authentication, use SetLoadBalancerPoliciesForBackendServer.
+//
+// For more information about setting policies, see [Update the SSL Negotiation Configuration], [Duration-Based Session Stickiness], and [Application-Controlled Session Stickiness] in the Classic Load
+// Balancers Guide.
+//
+// [Update the SSL Negotiation Configuration]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/ssl-config-update.html
+// [Duration-Based Session Stickiness]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-sticky-sessions.html#enable-sticky-sessions-duration
+// [Application-Controlled Session Stickiness]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-sticky-sessions.html#enable-sticky-sessions-application
 func (c *Client) SetLoadBalancerPoliciesOfListener(ctx context.Context, params *SetLoadBalancerPoliciesOfListenerInput, optFns ...func(*Options)) (*SetLoadBalancerPoliciesOfListenerOutput, error) {
 	if params == nil {
 		params = &SetLoadBalancerPoliciesOfListenerInput{}

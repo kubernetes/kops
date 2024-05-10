@@ -12,15 +12,20 @@ import (
 	"time"
 )
 
-// Retrieves the forecast data for a predictive scaling policy. Load forecasts are
-// predictions of the hourly load values using historical load data from CloudWatch
-// and an analysis of historical trends. Capacity forecasts are represented as
-// predicted values for the minimum capacity that is needed on an hourly basis,
-// based on the hourly load forecast. A minimum of 24 hours of data is required to
-// create the initial forecasts. However, having a full 14 days of historical data
-// results in more accurate forecasts. For more information, see Predictive
-// scaling for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// Retrieves the forecast data for a predictive scaling policy.
+//
+// Load forecasts are predictions of the hourly load values using historical load
+// data from CloudWatch and an analysis of historical trends. Capacity forecasts
+// are represented as predicted values for the minimum capacity that is needed on
+// an hourly basis, based on the hourly load forecast.
+//
+// A minimum of 24 hours of data is required to create the initial forecasts.
+// However, having a full 14 days of historical data results in more accurate
+// forecasts.
+//
+// For more information, see [Predictive scaling for Amazon EC2 Auto Scaling] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Predictive scaling for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html
 func (c *Client) GetPredictiveScalingForecast(ctx context.Context, params *GetPredictiveScalingForecastInput, optFns ...func(*Options)) (*GetPredictiveScalingForecastOutput, error) {
 	if params == nil {
 		params = &GetPredictiveScalingForecastInput{}
@@ -44,10 +49,11 @@ type GetPredictiveScalingForecastInput struct {
 	AutoScalingGroupName *string
 
 	// The exclusive end time of the time range for the forecast data to get. The
-	// maximum time duration between the start and end time is 30 days. Although this
-	// parameter can accept a date and time that is more than two days in the future,
-	// the availability of forecast data has limits. Amazon EC2 Auto Scaling only
-	// issues forecasts for periods of two days in advance.
+	// maximum time duration between the start and end time is 30 days.
+	//
+	// Although this parameter can accept a date and time that is more than two days
+	// in the future, the availability of forecast data has limits. Amazon EC2 Auto
+	// Scaling only issues forecasts for periods of two days in advance.
 	//
 	// This member is required.
 	EndTime *time.Time

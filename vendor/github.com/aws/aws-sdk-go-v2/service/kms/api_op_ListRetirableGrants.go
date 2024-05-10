@@ -12,36 +12,50 @@ import (
 )
 
 // Returns information about all grants in the Amazon Web Services account and
-// Region that have the specified retiring principal. You can specify any principal
-// in your Amazon Web Services account. The grants that are returned include grants
-// for KMS keys in your Amazon Web Services account and other Amazon Web Services
-// accounts. You might use this operation to determine which grants you may retire.
-// To retire a grant, use the RetireGrant operation. For detailed information
-// about grants, including grant terminology, see Grants in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html)
-// in the Key Management Service Developer Guide . For examples of working with
-// grants in several programming languages, see Programming grants (https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html)
-// . Cross-account use: You must specify a principal in your Amazon Web Services
+// Region that have the specified retiring principal.
+//
+// You can specify any principal in your Amazon Web Services account. The grants
+// that are returned include grants for KMS keys in your Amazon Web Services
+// account and other Amazon Web Services accounts. You might use this operation to
+// determine which grants you may retire. To retire a grant, use the RetireGrantoperation.
+//
+// For detailed information about grants, including grant terminology, see [Grants in KMS] in the
+// Key Management Service Developer Guide . For examples of working with grants in
+// several programming languages, see [Programming grants].
+//
+// Cross-account use: You must specify a principal in your Amazon Web Services
 // account. This operation returns a list of grants where the retiring principal
 // specified in the ListRetirableGrants request is the same retiring principal on
 // the grant. This can include grants on KMS keys owned by other Amazon Web
 // Services accounts, but you do not need kms:ListRetirableGrants permission (or
 // any other additional permission) in any Amazon Web Services account other than
-// your own. Required permissions: kms:ListRetirableGrants (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (IAM policy) in your Amazon Web Services account. KMS authorizes
-// ListRetirableGrants requests by evaluating the caller account's
+// your own.
+//
+// Required permissions: [kms:ListRetirableGrants] (IAM policy) in your Amazon Web Services account.
+//
+// KMS authorizes ListRetirableGrants requests by evaluating the caller account's
 // kms:ListRetirableGrants permissions. The authorized resource in
 // ListRetirableGrants calls is the retiring principal specified in the request.
 // KMS does not evaluate the caller's permissions to verify their access to any KMS
-// keys or grants that might be returned by the ListRetirableGrants call. Related
-// operations:
-//   - CreateGrant
-//   - ListGrants
-//   - RetireGrant
-//   - RevokeGrant
+// keys or grants that might be returned by the ListRetirableGrants call.
+//
+// Related operations:
+//
+// # CreateGrant
+//
+// # ListGrants
+//
+// # RetireGrant
+//
+// # RevokeGrant
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [Programming grants]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html
+// [kms:ListRetirableGrants]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [Grants in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
 func (c *Client) ListRetirableGrants(ctx context.Context, params *ListRetirableGrantsInput, optFns ...func(*Options)) (*ListRetirableGrantsOutput, error) {
 	if params == nil {
 		params = &ListRetirableGrantsInput{}
@@ -60,21 +74,25 @@ func (c *Client) ListRetirableGrants(ctx context.Context, params *ListRetirableG
 type ListRetirableGrantsInput struct {
 
 	// The retiring principal for which to list grants. Enter a principal in your
-	// Amazon Web Services account. To specify the retiring principal, use the Amazon
-	// Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of an Amazon Web Services principal. Valid principals include Amazon Web
-	// Services accounts, IAM users, IAM roles, federated users, and assumed role
-	// users. For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
-	// in the Identity and Access Management User Guide .
+	// Amazon Web Services account.
+	//
+	// To specify the retiring principal, use the [Amazon Resource Name (ARN)] of an Amazon Web Services
+	// principal. Valid principals include Amazon Web Services accounts, IAM users, IAM
+	// roles, federated users, and assumed role users. For help with the ARN syntax for
+	// a principal, see [IAM ARNs]in the Identity and Access Management User Guide .
+	//
+	// [IAM ARNs]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns
+	// [Amazon Resource Name (ARN)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	RetiringPrincipal *string
 
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 100, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 100,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit *int32
 
 	// Use this parameter in a subsequent request after you receive a response with
@@ -198,9 +216,10 @@ var _ ListRetirableGrantsAPIClient = (*Client)(nil)
 type ListRetirableGrantsPaginatorOptions struct {
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 100, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 100,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

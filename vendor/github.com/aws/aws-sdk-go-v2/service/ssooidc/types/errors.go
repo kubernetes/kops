@@ -188,7 +188,7 @@ func (e *InvalidClientMetadataException) ErrorCode() string {
 func (e *InvalidClientMetadataException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // Indicates that a request contains an invalid grant. This can occur if a client
-// makes a CreateToken request with an invalid grant type.
+// makes a CreateTokenrequest with an invalid grant type.
 type InvalidGrantException struct {
 	Message *string
 

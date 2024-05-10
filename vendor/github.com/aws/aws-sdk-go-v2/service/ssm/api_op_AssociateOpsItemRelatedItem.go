@@ -44,8 +44,11 @@ type AssociateOpsItemRelatedItemInput struct {
 	OpsItemId *string
 
 	// The type of resource that you want to associate with an OpsItem. OpsCenter
-	// supports the following types: AWS::SSMIncidents::IncidentRecord : an Incident
-	// Manager incident. AWS::SSM::Document : a Systems Manager (SSM) document.
+	// supports the following types:
+	//
+	// AWS::SSMIncidents::IncidentRecord : an Incident Manager incident.
+	//
+	// AWS::SSM::Document : a Systems Manager (SSM) document.
 	//
 	// This member is required.
 	ResourceType *string

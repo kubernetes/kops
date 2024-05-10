@@ -14,12 +14,14 @@ import (
 // Removes authorization to submit an AssociateVPCWithHostedZone request to
 // associate a specified VPC with a hosted zone that was created by a different
 // account. You must use the account that created the hosted zone to submit a
-// DeleteVPCAssociationAuthorization request. Sending this request only prevents
-// the Amazon Web Services account that created the VPC from associating the VPC
-// with the Amazon Route 53 hosted zone in the future. If the VPC is already
-// associated with the hosted zone, DeleteVPCAssociationAuthorization won't
-// disassociate the VPC from the hosted zone. If you want to delete an existing
-// association, use DisassociateVPCFromHostedZone .
+// DeleteVPCAssociationAuthorization request.
+//
+// Sending this request only prevents the Amazon Web Services account that created
+// the VPC from associating the VPC with the Amazon Route 53 hosted zone in the
+// future. If the VPC is already associated with the hosted zone,
+// DeleteVPCAssociationAuthorization won't disassociate the VPC from the hosted
+// zone. If you want to delete an existing association, use
+// DisassociateVPCFromHostedZone .
 func (c *Client) DeleteVPCAssociationAuthorization(ctx context.Context, params *DeleteVPCAssociationAuthorizationInput, optFns ...func(*Options)) (*DeleteVPCAssociationAuthorizationOutput, error) {
 	if params == nil {
 		params = &DeleteVPCAssociationAuthorizationInput{}

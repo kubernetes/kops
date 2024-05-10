@@ -11,10 +11,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets information about the traffic sources for the specified Auto Scaling
-// group. You can optionally provide a traffic source type. If you provide a
-// traffic source type, then the results only include that traffic source type. If
-// you do not provide a traffic source type, then the results include all the
+// Gets information about the traffic sources for the specified Auto Scaling group.
+//
+// You can optionally provide a traffic source type. If you provide a traffic
+// source type, then the results only include that traffic source type.
+//
+// If you do not provide a traffic source type, then the results include all the
 // traffic sources for the specified Auto Scaling group.
 func (c *Client) DescribeTrafficSources(ctx context.Context, params *DescribeTrafficSourcesInput, optFns ...func(*Options)) (*DescribeTrafficSourcesOutput, error) {
 	if params == nil {
@@ -45,11 +47,15 @@ type DescribeTrafficSourcesInput struct {
 	// previous call.)
 	NextToken *string
 
-	// The traffic source type that you want to describe. The following lists the
-	// valid values:
+	// The traffic source type that you want to describe.
+	//
+	// The following lists the valid values:
+	//
 	//   - elb if the traffic source is a Classic Load Balancer.
+	//
 	//   - elbv2 if the traffic source is a Application Load Balancer, Gateway Load
 	//   Balancer, or Network Load Balancer.
+	//
 	//   - vpc-lattice if the traffic source is VPC Lattice.
 	TrafficSourceType *string
 

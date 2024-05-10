@@ -10,9 +10,11 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Sets the health status of the specified instance. For more information, see
-// Health checks for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// Sets the health status of the specified instance.
+//
+// For more information, see [Health checks for Auto Scaling instances] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Health checks for Auto Scaling instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html
 func (c *Client) SetInstanceHealth(ctx context.Context, params *SetInstanceHealthInput, optFns ...func(*Options)) (*SetInstanceHealthOutput, error) {
 	if params == nil {
 		params = &SetInstanceHealthInput{}
@@ -45,9 +47,12 @@ type SetInstanceHealthInput struct {
 	// If the Auto Scaling group of the specified instance has a HealthCheckGracePeriod
 	// specified for the group, by default, this call respects the grace period. Set
 	// this to False , to have the call not respect the grace period associated with
-	// the group. For more information about the health check grace period, see
-	// CreateAutoScalingGroup (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CreateAutoScalingGroup.html)
-	// in the Amazon EC2 Auto Scaling API Reference.
+	// the group.
+	//
+	// For more information about the health check grace period, see [CreateAutoScalingGroup] in the Amazon
+	// EC2 Auto Scaling API Reference.
+	//
+	// [CreateAutoScalingGroup]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CreateAutoScalingGroup.html
 	ShouldRespectGracePeriod *bool
 
 	noSmithyDocumentSerde

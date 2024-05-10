@@ -11,10 +11,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes the specified policies or all policies used for SSL negotiation. For
-// more information, see Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
-// in the Application Load Balancers Guide or Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies)
-// in the Network Load Balancers Guide.
+// Describes the specified policies or all policies used for SSL negotiation.
+//
+// For more information, see [Security policies] in the Application Load Balancers Guide or [Security policies] in the
+// Network Load Balancers Guide.
+//
+// [Security policies]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies
 func (c *Client) DescribeSSLPolicies(ctx context.Context, params *DescribeSSLPoliciesInput, optFns ...func(*Options)) (*DescribeSSLPoliciesOutput, error) {
 	if params == nil {
 		params = &DescribeSSLPoliciesInput{}
@@ -32,7 +34,7 @@ func (c *Client) DescribeSSLPolicies(ctx context.Context, params *DescribeSSLPol
 
 type DescribeSSLPoliciesInput struct {
 
-	// The type of load balancer. The default lists the SSL policies for all load
+	//  The type of load balancer. The default lists the SSL policies for all load
 	// balancers.
 	LoadBalancerType types.LoadBalancerTypeEnum
 

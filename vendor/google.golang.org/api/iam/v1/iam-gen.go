@@ -92,7 +92,6 @@ const apiVersion = "v1"
 const basePath = "https://iam.googleapis.com/"
 const basePathTemplate = "https://iam.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://iam.mtls.googleapis.com/"
-const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
@@ -111,7 +110,7 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
 	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
-	opts = append(opts, internaloption.WithDefaultUniverseDomain(defaultUniverseDomain))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -2790,8 +2789,8 @@ type ServiceAccountKey struct {
 	// Description: Optional. A user provided description of this service account
 	// key.
 	Description string `json:"description,omitempty"`
-	// DisableReason: optional. If the key is disabled, it may have a DisableReason
-	// describing why it was disabled.
+	// DisableReason: Output only. optional. If the key is disabled, it may have a
+	// DisableReason describing why it was disabled.
 	//
 	// Possible values:
 	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified disable
@@ -2805,10 +2804,10 @@ type ServiceAccountKey struct {
 	DisableReason string `json:"disableReason,omitempty"`
 	// Disabled: The key status.
 	Disabled bool `json:"disabled,omitempty"`
-	// ExtendedStatus: Extended Status provides permanent information about a
-	// service account key. For example, if this key was detected as exposed or
-	// compromised, that information will remain for the lifetime of the key in the
-	// extended_status.
+	// ExtendedStatus: Output only. Extended Status provides permanent information
+	// about a service account key. For example, if this key was detected as
+	// exposed or compromised, that information will remain for the lifetime of the
+	// key in the extended_status.
 	ExtendedStatus []*ExtendedStatus `json:"extendedStatus,omitempty"`
 	// KeyAlgorithm: Specifies the algorithm (and possibly key size) for the key.
 	//

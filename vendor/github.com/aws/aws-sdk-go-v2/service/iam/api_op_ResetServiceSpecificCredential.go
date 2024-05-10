@@ -32,19 +32,25 @@ func (c *Client) ResetServiceSpecificCredential(ctx context.Context, params *Res
 
 type ResetServiceSpecificCredentialInput struct {
 
-	// The unique identifier of the service-specific credential. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters that can consist of any upper or lowercased letter or digit.
+	// The unique identifier of the service-specific credential.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters that can consist of
+	// any upper or lowercased letter or digit.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	ServiceSpecificCredentialId *string
 
 	// The name of the IAM user associated with the service-specific credential. If
 	// this value is not specified, then the operation assumes the user whose
-	// credentials are used to call the operation. This parameter allows (through its
-	// regex pattern (http://wikipedia.org/wiki/regex) ) a string of characters
-	// consisting of upper and lowercase alphanumeric characters with no spaces. You
-	// can also include any of the following characters: _+=,.@-
+	// credentials are used to call the operation.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde
@@ -53,8 +59,10 @@ type ResetServiceSpecificCredentialInput struct {
 type ResetServiceSpecificCredentialOutput struct {
 
 	// A structure with details about the updated service-specific credential,
-	// including the new password. This is the only time that you can access the
-	// password. You cannot recover the password later, but you can reset it again.
+	// including the new password.
+	//
+	// This is the only time that you can access the password. You cannot recover the
+	// password later, but you can reset it again.
 	ServiceSpecificCredential *types.ServiceSpecificCredential
 
 	// Metadata pertaining to the operation's result.

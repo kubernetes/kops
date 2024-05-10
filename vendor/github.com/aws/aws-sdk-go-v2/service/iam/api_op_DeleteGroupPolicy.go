@@ -10,11 +10,13 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the specified inline policy that is embedded in the specified IAM
-// group. A group can also have managed policies attached to it. To detach a
-// managed policy from a group, use DetachGroupPolicy . For more information about
-// policies, refer to Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide.
+// Deletes the specified inline policy that is embedded in the specified IAM group.
+//
+// A group can also have managed policies attached to it. To detach a managed
+// policy from a group, use DetachGroupPolicy. For more information about policies, refer to [Managed policies and inline policies] in
+// the IAM User Guide.
+//
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) DeleteGroupPolicy(ctx context.Context, params *DeleteGroupPolicyInput, optFns ...func(*Options)) (*DeleteGroupPolicyOutput, error) {
 	if params == nil {
 		params = &DeleteGroupPolicyInput{}
@@ -33,18 +35,24 @@ func (c *Client) DeleteGroupPolicy(ctx context.Context, params *DeleteGroupPolic
 type DeleteGroupPolicyInput struct {
 
 	// The name (friendly name, not ARN) identifying the group that the policy is
-	// embedded in. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	// embedded in.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	GroupName *string
 
-	// The name identifying the policy document to delete. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name identifying the policy document to delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	PolicyName *string

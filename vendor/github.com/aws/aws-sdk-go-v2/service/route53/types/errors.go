@@ -145,18 +145,21 @@ func (e *ConcurrentModification) ErrorCode() string {
 func (e *ConcurrentModification) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The cause of this error depends on the operation that you're performing:
+//
 //   - Create a public hosted zone: Two hosted zones that have the same name or
 //     that have a parent/child relationship (example.com and test.example.com) can't
 //     have any common name servers. You tried to create a hosted zone that has the
 //     same name as an existing hosted zone or that's the parent or child of an
 //     existing hosted zone, and you specified a delegation set that shares one or more
-//     name servers with the existing hosted zone. For more information, see
-//     CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html)
-//     .
+//     name servers with the existing hosted zone. For more information, see [CreateReusableDelegationSet].
+//
 //   - Create a private hosted zone: A hosted zone with the specified name already
 //     exists and is already associated with the Amazon VPC that you specified.
+//
 //   - Associate VPCs with a private hosted zone: The VPC that you specified is
 //     already associated with another hosted zone that has the same name.
+//
+// [CreateReusableDelegationSet]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html
 type ConflictingDomainExists struct {
 	Message *string
 
@@ -373,11 +376,14 @@ func (e *DNSSECNotFound) ErrorCode() string {
 }
 func (e *DNSSECNotFound) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The health check you're attempting to create already exists. Amazon Route 53
+//	The health check you're attempting to create already exists. Amazon Route 53
+//
 // returns this error when you submit a request that has the following values:
+//
 //   - The same value for CallerReference as an existing health check, and one or
 //     more values that differ from the existing health check that has the same caller
 //     reference.
+//
 //   - The same value for CallerReference as a health check that you created and
 //     later deleted, regardless of the other settings in the request.
 type HealthCheckAlreadyExists struct {
@@ -620,14 +626,19 @@ func (e *IncompatibleVersion) ErrorFault() smithy.ErrorFault { return smithy.Fau
 
 // Amazon Route 53 doesn't have the permissions required to create log streams and
 // send query logs to log streams. Possible causes include the following:
+//
 //   - There is no resource policy that specifies the log group ARN in the value
 //     for Resource .
+//
 //   - The resource policy that includes the log group ARN in the value for
 //     Resource doesn't have the necessary permissions.
+//
 //   - The resource policy hasn't finished propagating yet.
+//
 //   - The Key management service (KMS) key you specified doesn’t exist or it
 //     can’t be used with the log group associated with query log. Update or provide a
 //     resource policy to grant permissions for the KMS key.
+//
 //   - The Key management service (KMS) key you specified is marked as disabled
 //     for the log group associated with query log. Update or provide a resource policy
 //     to grant permissions for the KMS key.
@@ -1091,9 +1102,10 @@ func (e *LastVPCAssociation) ErrorCode() string {
 func (e *LastVPCAssociation) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // This operation can't be completed because the current account has reached the
-// limit on the resource you are trying to create. To request a higher limit,
-// create a case (http://aws.amazon.com/route53-request) with the Amazon Web
-// Services Support Center.
+// limit on the resource you are trying to create. To request a higher limit, [create a case]with
+// the Amazon Web Services Support Center.
+//
+// [create a case]: http://aws.amazon.com/route53-request
 type LimitsExceeded struct {
 	Message *string
 
@@ -1250,8 +1262,9 @@ func (e *NoSuchDelegationSet) ErrorCode() string {
 func (e *NoSuchDelegationSet) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // Amazon Route 53 doesn't support the specified geographic location. For a list
-// of supported geolocation codes, see the GeoLocation (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GeoLocation.html)
-// data type.
+// of supported geolocation codes, see the [GeoLocation]data type.
+//
+// [GeoLocation]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GeoLocation.html
 type NoSuchGeoLocation struct {
 	Message *string
 
@@ -1571,15 +1584,21 @@ func (e *ThrottlingException) ErrorCode() string {
 func (e *ThrottlingException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // This health check can't be created because the current account has reached the
-// limit on the number of active health checks. For information about default
-// limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-// in the Amazon Route 53 Developer Guide. For information about how to get the
-// current limit for an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html)
-// . To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-// with the Amazon Web Services Support Center. You have reached the maximum number
-// of active health checks for an Amazon Web Services account. To request a higher
-// limit, create a case (http://aws.amazon.com/route53-request) with the Amazon
-// Web Services Support Center.
+// limit on the number of active health checks.
+//
+// For information about default limits, see [Limits] in the Amazon Route 53 Developer
+// Guide.
+//
+// For information about how to get the current limit for an account, see [GetAccountLimit]. To
+// request a higher limit, [create a case]with the Amazon Web Services Support Center.
+//
+// You have reached the maximum number of active health checks for an Amazon Web
+// Services account. To request a higher limit, [create a case]with the Amazon Web Services
+// Support Center.
+//
+// [Limits]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html
+// [GetAccountLimit]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html
+// [create a case]: http://aws.amazon.com/route53-request
 type TooManyHealthChecks struct {
 	Message *string
 
@@ -1608,13 +1627,23 @@ func (e *TooManyHealthChecks) ErrorFault() smithy.ErrorFault { return smithy.Fau
 // This operation can't be completed either because the current account has
 // reached the limit on the number of hosted zones or because you've reached the
 // limit on the number of hosted zones that can be associated with a reusable
-// delegation set. For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-// in the Amazon Route 53 Developer Guide. To get the current limit on hosted zones
-// that can be created by an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html)
-// . To get the current limit on hosted zones that can be associated with a
-// reusable delegation set, see GetReusableDelegationSetLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetReusableDelegationSetLimit.html)
-// . To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-// with the Amazon Web Services Support Center.
+// delegation set.
+//
+// For information about default limits, see [Limits] in the Amazon Route 53 Developer
+// Guide.
+//
+// To get the current limit on hosted zones that can be created by an account, see [GetAccountLimit]
+// .
+//
+// To get the current limit on hosted zones that can be associated with a reusable
+// delegation set, see [GetReusableDelegationSetLimit].
+//
+// To request a higher limit, [create a case] with the Amazon Web Services Support Center.
+//
+// [GetReusableDelegationSetLimit]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetReusableDelegationSetLimit.html
+// [Limits]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html
+// [GetAccountLimit]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html
+// [create a case]: http://aws.amazon.com/route53-request
 type TooManyHostedZones struct {
 	Message *string
 
@@ -1668,12 +1697,18 @@ func (e *TooManyKeySigningKeys) ErrorCode() string {
 func (e *TooManyKeySigningKeys) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // This traffic policy can't be created because the current account has reached
-// the limit on the number of traffic policies. For information about default
-// limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-// in the Amazon Route 53 Developer Guide. To get the current limit for an account,
-// see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html)
-// . To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-// with the Amazon Web Services Support Center.
+// the limit on the number of traffic policies.
+//
+// For information about default limits, see [Limits] in the Amazon Route 53 Developer
+// Guide.
+//
+// To get the current limit for an account, see [GetAccountLimit].
+//
+// To request a higher limit, [create a case] with the Amazon Web Services Support Center.
+//
+// [Limits]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html
+// [GetAccountLimit]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html
+// [create a case]: http://aws.amazon.com/route53-request
 type TooManyTrafficPolicies struct {
 	Message *string
 
@@ -1700,12 +1735,18 @@ func (e *TooManyTrafficPolicies) ErrorCode() string {
 func (e *TooManyTrafficPolicies) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // This traffic policy instance can't be created because the current account has
-// reached the limit on the number of traffic policy instances. For information
-// about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-// in the Amazon Route 53 Developer Guide. For information about how to get the
-// current limit for an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html)
-// . To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-// with the Amazon Web Services Support Center.
+// reached the limit on the number of traffic policy instances.
+//
+// For information about default limits, see [Limits] in the Amazon Route 53 Developer
+// Guide.
+//
+// For information about how to get the current limit for an account, see [GetAccountLimit].
+//
+// To request a higher limit, [create a case] with the Amazon Web Services Support Center.
+//
+// [Limits]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html
+// [GetAccountLimit]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html
+// [create a case]: http://aws.amazon.com/route53-request
 type TooManyTrafficPolicyInstances struct {
 	Message *string
 
@@ -1733,10 +1774,14 @@ func (e *TooManyTrafficPolicyInstances) ErrorFault() smithy.ErrorFault { return 
 
 // This traffic policy version can't be created because you've reached the limit
 // of 1000 on the number of versions that you can create for the current traffic
-// policy. To create more traffic policy versions, you can use GetTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html)
-// to get the traffic policy document for a specified traffic policy version, and
-// then use CreateTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html)
-// to create a new traffic policy using the traffic policy document.
+// policy.
+//
+// To create more traffic policy versions, you can use [GetTrafficPolicy] to get the traffic policy
+// document for a specified traffic policy version, and then use [CreateTrafficPolicy]to create a new
+// traffic policy using the traffic policy document.
+//
+// [CreateTrafficPolicy]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html
+// [GetTrafficPolicy]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html
 type TooManyTrafficPolicyVersionsForCurrentPolicy struct {
 	Message *string
 

@@ -12,14 +12,23 @@ import (
 )
 
 // Creates, changes, or deletes CIDR blocks within a collection. Contains
-// authoritative IP information mapping blocks to one or multiple locations. A
-// change request can update multiple locations in a collection at a time, which is
-// helpful if you want to move one or more CIDR blocks from one location to another
-// in one transaction, without downtime. Limits The max number of CIDR blocks
-// included in the request is 1000. As a result, big updates require multiple API
-// calls. PUT and DELETE_IF_EXISTS Use ChangeCidrCollection to perform the
-// following actions:
+// authoritative IP information mapping blocks to one or multiple locations.
+//
+// A change request can update multiple locations in a collection at a time, which
+// is helpful if you want to move one or more CIDR blocks from one location to
+// another in one transaction, without downtime.
+//
+// # Limits
+//
+// The max number of CIDR blocks included in the request is 1000. As a result, big
+// updates require multiple API calls.
+//
+// PUT and DELETE_IF_EXISTS
+//
+// Use ChangeCidrCollection to perform the following actions:
+//
 //   - PUT : Create a CIDR block within the specified collection.
+//
 //   - DELETE_IF_EXISTS : Delete an existing CIDR block from the collection.
 func (c *Client) ChangeCidrCollection(ctx context.Context, params *ChangeCidrCollectionInput, optFns ...func(*Options)) (*ChangeCidrCollectionOutput, error) {
 	if params == nil {
@@ -38,7 +47,7 @@ func (c *Client) ChangeCidrCollection(ctx context.Context, params *ChangeCidrCol
 
 type ChangeCidrCollectionInput struct {
 
-	// Information about changes to a CIDR collection.
+	//  Information about changes to a CIDR collection.
 	//
 	// This member is required.
 	Changes []types.CidrCollectionChange
@@ -49,13 +58,16 @@ type ChangeCidrCollectionInput struct {
 	Id *string
 
 	// A sequential counter that Amazon Route 53 sets to 1 when you create a
-	// collection and increments it by 1 each time you update the collection. We
-	// recommend that you use ListCidrCollection to get the current value of
+	// collection and increments it by 1 each time you update the collection.
+	//
+	// We recommend that you use ListCidrCollection to get the current value of
 	// CollectionVersion for the collection that you want to update, and then include
 	// that value with the change request. This prevents Route 53 from overwriting an
 	// intervening update:
+	//
 	//   - If the value in the request matches the value of CollectionVersion in the
 	//   collection, Route 53 updates the collection.
+	//
 	//   - If the value of CollectionVersion in the collection is greater than the
 	//   value in the request, the collection was changed after you got the version
 	//   number. Route 53 does not update the collection, and it returns a

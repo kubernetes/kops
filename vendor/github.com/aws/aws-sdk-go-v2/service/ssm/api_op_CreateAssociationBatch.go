@@ -12,12 +12,14 @@ import (
 )
 
 // Associates the specified Amazon Web Services Systems Manager document (SSM
-// document) with the specified managed nodes or targets. When you associate a
-// document with one or more managed nodes using IDs or tags, Amazon Web Services
-// Systems Manager Agent (SSM Agent) running on the managed node processes the
-// document and configures the node as specified. If you associate a document with
-// a managed node that already has an associated document, the system returns the
-// AssociationAlreadyExists exception.
+// document) with the specified managed nodes or targets.
+//
+// When you associate a document with one or more managed nodes using IDs or tags,
+// Amazon Web Services Systems Manager Agent (SSM Agent) running on the managed
+// node processes the document and configures the node as specified.
+//
+// If you associate a document with a managed node that already has an associated
+// document, the system returns the AssociationAlreadyExists exception.
 func (c *Client) CreateAssociationBatch(ctx context.Context, params *CreateAssociationBatchInput, optFns ...func(*Options)) (*CreateAssociationBatchOutput, error) {
 	if params == nil {
 		params = &CreateAssociationBatchInput{}

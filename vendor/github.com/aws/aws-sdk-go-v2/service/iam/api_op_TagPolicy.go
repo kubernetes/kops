@@ -12,8 +12,9 @@ import (
 )
 
 // Adds one or more tags to an IAM customer managed policy. If a tag with the same
-// key name already exists, then that tag is overwritten with the new value. A tag
-// consists of a key name and an associated value. By assigning tags to your
+// key name already exists, then that tag is overwritten with the new value.
+//
+// A tag consists of a key name and an associated value. By assigning tags to your
 // resources, you can do the following:
 //
 //   - Administrative grouping and discovery - Attach tags to resources to aid in
@@ -24,17 +25,18 @@ import (
 //   - Access control - Include tags in IAM user-based and resource-based
 //     policies. You can use tags to restrict access to only an IAM customer managed
 //     policy that has a specified tag attached. For examples of policies that show how
-//     to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//     in the IAM User Guide.
+//     to use tags to control access, see [Control access using IAM tags]in the IAM User Guide.
 //
 //   - If any one of the tags is invalid or if you exceed the allowed maximum
 //     number of tags, then the entire request fails and the resource is not created.
-//     For more information about tagging, see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
-//     in the IAM User Guide.
+//     For more information about tagging, see [Tagging IAM resources]in the IAM User Guide.
 //
 //   - Amazon Web Services always interprets the tag Value as a single string. If
 //     you need to store an array, you can store comma-separated values in the string.
 //     However, you must interpret the value in your code.
+//
+// [Control access using IAM tags]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html
+// [Tagging IAM resources]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
 func (c *Client) TagPolicy(ctx context.Context, params *TagPolicyInput, optFns ...func(*Options)) (*TagPolicyOutput, error) {
 	if params == nil {
 		params = &TagPolicyInput{}
@@ -52,10 +54,13 @@ func (c *Client) TagPolicy(ctx context.Context, params *TagPolicyInput, optFns .
 
 type TagPolicyInput struct {
 
-	// The ARN of the IAM customer managed policy to which you want to add tags. This
-	// parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters consisting of upper and lowercase alphanumeric characters
-	// with no spaces. You can also include any of the following characters: _+=,.@-
+	// The ARN of the IAM customer managed policy to which you want to add tags.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	PolicyArn *string

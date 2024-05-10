@@ -13,8 +13,10 @@ import (
 )
 
 // Gets information about the scheduled actions that haven't run or that have not
-// reached their end time. To describe the scaling activities for scheduled actions
-// that have already run, call the DescribeScalingActivities API.
+// reached their end time.
+//
+// To describe the scaling activities for scheduled actions that have already run,
+// call the DescribeScalingActivitiesAPI.
 func (c *Client) DescribeScheduledActions(ctx context.Context, params *DescribeScheduledActionsInput, optFns ...func(*Options)) (*DescribeScheduledActionsOutput, error) {
 	if params == nil {
 		params = &DescribeScheduledActionsInput{}
@@ -49,7 +51,9 @@ type DescribeScheduledActionsInput struct {
 
 	// The names of one or more scheduled actions. If you omit this property, all
 	// scheduled actions are described. If you specify an unknown scheduled action, it
-	// is ignored with no error. Array Members: Maximum number of 50 actions.
+	// is ignored with no error.
+	//
+	// Array Members: Maximum number of 50 actions.
 	ScheduledActionNames []string
 
 	// The earliest scheduled start time to return. If scheduled action names are

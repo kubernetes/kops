@@ -34,9 +34,12 @@ type ListReusableDelegationSetsInput struct {
 
 	// If the value of IsTruncated in the previous response was true , you have more
 	// reusable delegation sets. To get another group, submit another
-	// ListReusableDelegationSets request. For the value of marker , specify the value
-	// of NextMarker from the previous response, which is the ID of the first reusable
-	// delegation set that Amazon Route 53 will return if you submit another request.
+	// ListReusableDelegationSets request.
+	//
+	// For the value of marker , specify the value of NextMarker from the previous
+	// response, which is the ID of the first reusable delegation set that Amazon Route
+	// 53 will return if you submit another request.
+	//
 	// If the value of IsTruncated in the previous response was false , there are no
 	// more reusable delegation sets to get.
 	Marker *string

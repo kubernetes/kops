@@ -12,10 +12,12 @@ import (
 
 // Changes the password for the specified IAM user. You can use the CLI, the
 // Amazon Web Services API, or the Users page in the IAM console to change the
-// password for any IAM user. Use ChangePassword to change your own password in
-// the My Security Credentials page in the Amazon Web Services Management Console.
-// For more information about modifying passwords, see Managing passwords (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html)
-// in the IAM User Guide.
+// password for any IAM user. Use ChangePasswordto change your own password in the My Security
+// Credentials page in the Amazon Web Services Management Console.
+//
+// For more information about modifying passwords, see [Managing passwords] in the IAM User Guide.
+//
+// [Managing passwords]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html
 func (c *Client) UpdateLoginProfile(ctx context.Context, params *UpdateLoginProfileInput, optFns ...func(*Options)) (*UpdateLoginProfileOutput, error) {
 	if params == nil {
 		params = &UpdateLoginProfileInput{}
@@ -33,26 +35,36 @@ func (c *Client) UpdateLoginProfile(ctx context.Context, params *UpdateLoginProf
 
 type UpdateLoginProfileInput struct {
 
-	// The name of the user whose password you want to update. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the user whose password you want to update.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string
 
-	// The new password for the specified IAM user. The regex pattern (http://wikipedia.org/wiki/regex)
-	// used to validate this parameter is a string of characters consisting of the
-	// following:
+	// The new password for the specified IAM user.
+	//
+	// The [regex pattern] used to validate this parameter is a string of characters consisting of
+	// the following:
+	//
 	//   - Any printable ASCII character ranging from the space character ( \u0020 )
 	//   through the end of the ASCII character range
+	//
 	//   - The printable characters in the Basic Latin and Latin-1 Supplement
 	//   character set (through \u00FF )
+	//
 	//   - The special characters tab ( \u0009 ), line feed ( \u000A ), and carriage
 	//   return ( \u000D )
+	//
 	// However, the format can be further restricted by the account administrator by
 	// setting a password policy on the Amazon Web Services account. For more
-	// information, see UpdateAccountPasswordPolicy .
+	// information, see UpdateAccountPasswordPolicy.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	Password *string
 
 	// Allows this new password to be used only once by requiring the specified IAM

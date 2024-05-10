@@ -35,7 +35,12 @@ type DescribeAssociationExecutionsInput struct {
 	AssociationId *string
 
 	// Filters for the request. You can specify the following filters and values.
-	// ExecutionId (EQUAL) Status (EQUAL) CreatedTime (EQUAL, GREATER_THAN, LESS_THAN)
+	//
+	// ExecutionId (EQUAL)
+	//
+	// Status (EQUAL)
+	//
+	// CreatedTime (EQUAL, GREATER_THAN, LESS_THAN)
 	Filters []types.AssociationExecutionFilter
 
 	// The maximum number of items to return for this call. The call also returns a

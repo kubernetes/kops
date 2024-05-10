@@ -15,14 +15,18 @@ import (
 // pool is a pool of pre-initialized EC2 instances that sits alongside the Auto
 // Scaling group. Whenever your application needs to scale out, the Auto Scaling
 // group can draw on the warm pool to meet its new desired capacity. For more
-// information and example configurations, see Warm pools for Amazon EC2 Auto
-// Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
-// in the Amazon EC2 Auto Scaling User Guide. This operation must be called from
-// the Region in which the Auto Scaling group was created. This operation cannot be
-// called on an Auto Scaling group that has a mixed instances policy or a launch
-// template or launch configuration that requests Spot Instances. You can view the
-// instances in the warm pool using the DescribeWarmPool API call. If you are no
-// longer using a warm pool, you can delete it by calling the DeleteWarmPool API.
+// information and example configurations, see [Warm pools for Amazon EC2 Auto Scaling]in the Amazon EC2 Auto Scaling User
+// Guide.
+//
+// This operation must be called from the Region in which the Auto Scaling group
+// was created. This operation cannot be called on an Auto Scaling group that has a
+// mixed instances policy or a launch template or launch configuration that
+// requests Spot Instances.
+//
+// You can view the instances in the warm pool using the DescribeWarmPool API call. If you are no
+// longer using a warm pool, you can delete it by calling the DeleteWarmPoolAPI.
+//
+// [Warm pools for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html
 func (c *Client) PutWarmPool(ctx context.Context, params *PutWarmPoolInput, optFns ...func(*Options)) (*PutWarmPoolOutput, error) {
 	if params == nil {
 		params = &PutWarmPoolInput{}
@@ -54,17 +58,21 @@ type PutWarmPoolInput struct {
 	// pool or in any state except Terminated for the Auto Scaling group. This is an
 	// optional property. Specify it only if you do not want the warm pool size to be
 	// determined by the difference between the group's maximum capacity and its
-	// desired capacity. If a value for MaxGroupPreparedCapacity is not specified,
-	// Amazon EC2 Auto Scaling launches and maintains the difference between the
-	// group's maximum capacity and its desired capacity. If you specify a value for
+	// desired capacity.
+	//
+	// If a value for MaxGroupPreparedCapacity is not specified, Amazon EC2 Auto
+	// Scaling launches and maintains the difference between the group's maximum
+	// capacity and its desired capacity. If you specify a value for
 	// MaxGroupPreparedCapacity , Amazon EC2 Auto Scaling uses the difference between
-	// the MaxGroupPreparedCapacity and the desired capacity instead. The size of the
-	// warm pool is dynamic. Only when MaxGroupPreparedCapacity and MinSize are set to
-	// the same value does the warm pool have an absolute size. If the desired capacity
-	// of the Auto Scaling group is higher than the MaxGroupPreparedCapacity , the
-	// capacity of the warm pool is 0, unless you specify a value for MinSize . To
-	// remove a value that you previously set, include the property but specify -1 for
-	// the value.
+	// the MaxGroupPreparedCapacity and the desired capacity instead.
+	//
+	// The size of the warm pool is dynamic. Only when MaxGroupPreparedCapacity and
+	// MinSize are set to the same value does the warm pool have an absolute size.
+	//
+	// If the desired capacity of the Auto Scaling group is higher than the
+	// MaxGroupPreparedCapacity , the capacity of the warm pool is 0, unless you
+	// specify a value for MinSize . To remove a value that you previously set, include
+	// the property but specify -1 for the value.
 	MaxGroupPreparedCapacity *int32
 
 	// Specifies the minimum number of instances to maintain in the warm pool. This

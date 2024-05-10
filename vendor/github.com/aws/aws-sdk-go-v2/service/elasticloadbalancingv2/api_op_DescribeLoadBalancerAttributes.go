@@ -12,14 +12,20 @@ import (
 )
 
 // Describes the attributes for the specified Application Load Balancer, Network
-// Load Balancer, or Gateway Load Balancer. For more information, see the
-// following:
-//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#load-balancer-attributes)
-//     in the Application Load Balancers Guide
-//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#load-balancer-attributes)
-//     in the Network Load Balancers Guide
-//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes)
-//     in the Gateway Load Balancers Guide
+// Load Balancer, or Gateway Load Balancer.
+//
+// For more information, see the following:
+//
+// [Load balancer attributes]
+//   - in the Application Load Balancers Guide
+//
+// [Load balancer attributes]
+//   - in the Network Load Balancers Guide
+//
+// [Load balancer attributes]
+//   - in the Gateway Load Balancers Guide
+//
+// [Load balancer attributes]: https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes
 func (c *Client) DescribeLoadBalancerAttributes(ctx context.Context, params *DescribeLoadBalancerAttributesInput, optFns ...func(*Options)) (*DescribeLoadBalancerAttributesOutput, error) {
 	if params == nil {
 		params = &DescribeLoadBalancerAttributesInput{}

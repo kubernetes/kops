@@ -11,46 +11,67 @@ import (
 )
 
 // Immediately initiates rotation of the key material of the specified symmetric
-// encryption KMS key. You can perform on-demand rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand)
-// of the key material in customer managed KMS keys, regardless of whether or not
-// automatic key rotation (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable)
-// is enabled. On-demand rotations do not change existing automatic rotation
-// schedules. For example, consider a KMS key that has automatic key rotation
-// enabled with a rotation period of 730 days. If the key is scheduled to
-// automatically rotate on April 14, 2024, and you perform an on-demand rotation on
-// April 10, 2024, the key will automatically rotate, as scheduled, on April 14,
-// 2024 and every 730 days thereafter. You can perform on-demand key rotation a
-// maximum of 10 times per KMS key. You can use the KMS console to view the number
-// of remaining on-demand rotations available for a KMS key. You can use
-// GetKeyRotationStatus to identify any in progress on-demand rotations. You can
-// use ListKeyRotations to identify the date that completed on-demand rotations
-// were performed. You can monitor rotation of the key material for your KMS keys
-// in CloudTrail and Amazon CloudWatch. On-demand key rotation is supported only on
-// symmetric encryption KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks)
-// . You cannot perform on-demand rotation of asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
-// , HMAC KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html)
-// , KMS keys with imported key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
-// , or KMS keys in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
-// . To perform on-demand rotation of a set of related multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate)
-// , invoke the on-demand rotation on the primary key. You cannot initiate
-// on-demand rotation of Amazon Web Services managed KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk)
-// . KMS always rotates the key material of Amazon Web Services managed keys every
-// year. Rotation of Amazon Web Services owned KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk)
-// is managed by the Amazon Web Services service that owns the key. The KMS key
-// that you use for this operation must be in a compatible key state. For details,
-// see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
-// in the Key Management Service Developer Guide. Cross-account use: No. You cannot
-// perform this operation on a KMS key in a different Amazon Web Services account.
-// Required permissions: kms:RotateKeyOnDemand (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (key policy) Related operations:
-//   - EnableKeyRotation
-//   - DisableKeyRotation
-//   - GetKeyRotationStatus
-//   - ListKeyRotations
+// encryption KMS key.
+//
+// You can perform [on-demand rotation] of the key material in customer managed KMS keys, regardless
+// of whether or not [automatic key rotation]is enabled. On-demand rotations do not change existing
+// automatic rotation schedules. For example, consider a KMS key that has automatic
+// key rotation enabled with a rotation period of 730 days. If the key is scheduled
+// to automatically rotate on April 14, 2024, and you perform an on-demand rotation
+// on April 10, 2024, the key will automatically rotate, as scheduled, on April 14,
+// 2024 and every 730 days thereafter.
+//
+// You can perform on-demand key rotation a maximum of 10 times per KMS key. You
+// can use the KMS console to view the number of remaining on-demand rotations
+// available for a KMS key.
+//
+// You can use GetKeyRotationStatus to identify any in progress on-demand rotations. You can use ListKeyRotations to
+// identify the date that completed on-demand rotations were performed. You can
+// monitor rotation of the key material for your KMS keys in CloudTrail and Amazon
+// CloudWatch.
+//
+// On-demand key rotation is supported only on [symmetric encryption KMS keys]. You cannot perform on-demand
+// rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To perform on-demand
+// rotation of a set of related [multi-Region keys], invoke the on-demand rotation on the primary key.
+//
+// You cannot initiate on-demand rotation of [Amazon Web Services managed KMS keys]. KMS always rotates the key material
+// of Amazon Web Services managed keys every year. Rotation of [Amazon Web Services owned KMS keys]is managed by the
+// Amazon Web Services service that owns the key.
+//
+// The KMS key that you use for this operation must be in a compatible key state.
+// For details, see [Key states of KMS keys]in the Key Management Service Developer Guide.
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in a
+// different Amazon Web Services account.
+//
+// Required permissions: [kms:RotateKeyOnDemand] (key policy)
+//
+// Related operations:
+//
+// # EnableKeyRotation
+//
+// # DisableKeyRotation
+//
+// # GetKeyRotationStatus
+//
+// # ListKeyRotations
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [on-demand rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand
+// [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk
+// [automatic key rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable
+// [kms:RotateKeyOnDemand]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
+// [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
+// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
+// [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
+// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
+// [symmetric encryption KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
 func (c *Client) RotateKeyOnDemand(ctx context.Context, params *RotateKeyOnDemandInput, optFns ...func(*Options)) (*RotateKeyOnDemandOutput, error) {
 	if params == nil {
 		params = &RotateKeyOnDemandInput{}
@@ -69,17 +90,25 @@ func (c *Client) RotateKeyOnDemand(ctx context.Context, params *RotateKeyOnDeman
 type RotateKeyOnDemandInput struct {
 
 	// Identifies a symmetric encryption KMS key. You cannot perform on-demand
-	// rotation of asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
-	// , HMAC KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html)
-	// , KMS keys with imported key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
-	// , or KMS keys in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
-	// . To perform on-demand rotation of a set of related multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate)
-	// , invoke the on-demand rotation on the primary key. Specify the key ID or key
-	// ARN of the KMS key. For example:
+	// rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To perform on-demand
+	// rotation of a set of related [multi-Region keys], invoke the on-demand rotation on the primary key.
+	//
+	// Specify the key ID or key ARN of the KMS key.
+	//
+	// For example:
+	//
 	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Key ARN:
 	//   arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
-	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey .
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
+	//
+	// [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
+	// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
+	// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
+	// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
 	//
 	// This member is required.
 	KeyId *string

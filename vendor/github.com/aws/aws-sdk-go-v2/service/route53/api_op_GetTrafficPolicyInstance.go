@@ -11,10 +11,13 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets information about a specified traffic policy instance. Use
-// GetTrafficPolicyInstance with the id of new traffic policy instance to confirm
-// that the CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance request
-// completed successfully. For more information, see the State response element.
+// Gets information about a specified traffic policy instance.
+//
+// Use GetTrafficPolicyInstance with the id of new traffic policy instance to
+// confirm that the CreateTrafficPolicyInstance or an UpdateTrafficPolicyInstance
+// request completed successfully. For more information, see the State response
+// element.
+//
 // In the Route 53 console, traffic policy instances are known as policy records.
 func (c *Client) GetTrafficPolicyInstance(ctx context.Context, params *GetTrafficPolicyInstanceInput, optFns ...func(*Options)) (*GetTrafficPolicyInstanceOutput, error) {
 	if params == nil {

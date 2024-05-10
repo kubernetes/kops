@@ -12,10 +12,11 @@ import (
 )
 
 // Adds one or more tags to an OpenID Connect (OIDC)-compatible identity provider.
-// For more information about these providers, see About web identity federation (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html)
-// . If a tag with the same key name already exists, then that tag is overwritten
-// with the new value. A tag consists of a key name and an associated value. By
-// assigning tags to your resources, you can do the following:
+// For more information about these providers, see [About web identity federation]. If a tag with the same key
+// name already exists, then that tag is overwritten with the new value.
+//
+// A tag consists of a key name and an associated value. By assigning tags to your
+// resources, you can do the following:
 //
 //   - Administrative grouping and discovery - Attach tags to resources to aid in
 //     organization and search. For example, you could search for all resources with
@@ -25,17 +26,19 @@ import (
 //   - Access control - Include tags in IAM identity-based and resource-based
 //     policies. You can use tags to restrict access to only an OIDC provider that has
 //     a specified tag attached. For examples of policies that show how to use tags to
-//     control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//     in the IAM User Guide.
+//     control access, see [Control access using IAM tags]in the IAM User Guide.
 //
 //   - If any one of the tags is invalid or if you exceed the allowed maximum
 //     number of tags, then the entire request fails and the resource is not created.
-//     For more information about tagging, see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
-//     in the IAM User Guide.
+//     For more information about tagging, see [Tagging IAM resources]in the IAM User Guide.
 //
 //   - Amazon Web Services always interprets the tag Value as a single string. If
 //     you need to store an array, you can store comma-separated values in the string.
 //     However, you must interpret the value in your code.
+//
+// [Control access using IAM tags]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html
+// [Tagging IAM resources]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
+// [About web identity federation]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html
 func (c *Client) TagOpenIDConnectProvider(ctx context.Context, params *TagOpenIDConnectProviderInput, optFns ...func(*Options)) (*TagOpenIDConnectProviderOutput, error) {
 	if params == nil {
 		params = &TagOpenIDConnectProviderInput{}
@@ -54,10 +57,12 @@ func (c *Client) TagOpenIDConnectProvider(ctx context.Context, params *TagOpenID
 type TagOpenIDConnectProviderInput struct {
 
 	// The ARN of the OIDC identity provider in IAM to which you want to add tags.
-	// This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	OpenIDConnectProviderArn *string

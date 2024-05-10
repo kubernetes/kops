@@ -13,14 +13,16 @@ import (
 )
 
 // Creates a new OpsItem. You must have permission in Identity and Access
-// Management (IAM) to create a new OpsItem. For more information, see Set up
-// OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
-// in the Amazon Web Services Systems Manager User Guide. Operations engineers and
-// IT professionals use Amazon Web Services Systems Manager OpsCenter to view,
-// investigate, and remediate operational issues impacting the performance and
-// health of their Amazon Web Services resources. For more information, see Amazon
-// Web Services Systems Manager OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
-// in the Amazon Web Services Systems Manager User Guide.
+// Management (IAM) to create a new OpsItem. For more information, see [Set up OpsCenter]in the
+// Amazon Web Services Systems Manager User Guide.
+//
+// Operations engineers and IT professionals use Amazon Web Services Systems
+// Manager OpsCenter to view, investigate, and remediate operational issues
+// impacting the performance and health of their Amazon Web Services resources. For
+// more information, see [Amazon Web Services Systems Manager OpsCenter]in the Amazon Web Services Systems Manager User Guide.
+//
+// [Amazon Web Services Systems Manager OpsCenter]: https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html
+// [Set up OpsCenter]: https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html
 func (c *Client) CreateOpsItem(ctx context.Context, params *CreateOpsItemInput, optFns ...func(*Options)) (*CreateOpsItemOutput, error) {
 	if params == nil {
 		params = &CreateOpsItemInput{}
@@ -39,14 +41,17 @@ func (c *Client) CreateOpsItem(ctx context.Context, params *CreateOpsItemInput, 
 type CreateOpsItemInput struct {
 
 	// User-defined text that contains information about the OpsItem, in Markdown
-	// format. Provide enough information so that users viewing this OpsItem for the
-	// first time understand the issue.
+	// format.
+	//
+	// Provide enough information so that users viewing this OpsItem for the first
+	// time understand the issue.
 	//
 	// This member is required.
 	Description *string
 
-	// The origin of the OpsItem, such as Amazon EC2 or Systems Manager. The source
-	// name can't contain the following strings: aws , amazon , and amzn .
+	// The origin of the OpsItem, such as Amazon EC2 or Systems Manager.
+	//
+	// The source name can't contain the following strings: aws , amazon , and amzn .
 	//
 	// This member is required.
 	Source *string
@@ -59,8 +64,10 @@ type CreateOpsItemInput struct {
 
 	// The target Amazon Web Services account where you want to create an OpsItem. To
 	// make this call, your account must be configured to work with OpsItems across
-	// accounts. For more information, see Set up OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// accounts. For more information, see [Set up OpsCenter]in the Amazon Web Services Systems Manager
+	// User Guide.
+	//
+	// [Set up OpsCenter]: https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-setup.html
 	AccountId *string
 
 	// The time a runbook workflow ended. Currently reported only for the OpsItem type
@@ -82,29 +89,43 @@ type CreateOpsItemInput struct {
 	// the OpsItem. For example, you can specify log files, error strings, license
 	// keys, troubleshooting tips, or other relevant data. You enter operational data
 	// as key-value pairs. The key has a maximum length of 128 characters. The value
-	// has a maximum size of 20 KB. Operational data keys can't begin with the
-	// following: amazon , aws , amzn , ssm , /amazon , /aws , /amzn , /ssm . You can
-	// choose to make the data searchable by other users in the account or you can
-	// restrict search access. Searchable data means that all users with access to the
-	// OpsItem Overview page (as provided by the DescribeOpsItems API operation) can
-	// view and search on the specified data. Operational data that isn't searchable is
-	// only viewable by users who have access to the OpsItem (as provided by the
-	// GetOpsItem API operation). Use the /aws/resources key in OperationalData to
-	// specify a related resource in the request. Use the /aws/automations key in
-	// OperationalData to associate an Automation runbook with the OpsItem. To view
-	// Amazon Web Services CLI example commands that use these keys, see Create
-	// OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// has a maximum size of 20 KB.
+	//
+	// Operational data keys can't begin with the following: amazon , aws , amzn , ssm
+	// , /amazon , /aws , /amzn , /ssm .
+	//
+	// You can choose to make the data searchable by other users in the account or you
+	// can restrict search access. Searchable data means that all users with access to
+	// the OpsItem Overview page (as provided by the DescribeOpsItemsAPI operation) can view and
+	// search on the specified data. Operational data that isn't searchable is only
+	// viewable by users who have access to the OpsItem (as provided by the GetOpsItemAPI
+	// operation).
+	//
+	// Use the /aws/resources key in OperationalData to specify a related resource in
+	// the request. Use the /aws/automations key in OperationalData to associate an
+	// Automation runbook with the OpsItem. To view Amazon Web Services CLI example
+	// commands that use these keys, see [Create OpsItems manually]in the Amazon Web Services Systems Manager
+	// User Guide.
+	//
+	// [Create OpsItems manually]: https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html
 	OperationalData map[string]types.OpsItemDataValue
 
 	// The type of OpsItem to create. Systems Manager supports the following types of
 	// OpsItems:
-	//   - /aws/issue This type of OpsItem is used for default OpsItems created by
-	//   OpsCenter.
-	//   - /aws/changerequest This type of OpsItem is used by Change Manager for
-	//   reviewing and approving or rejecting change requests.
-	//   - /aws/insight This type of OpsItem is used by OpsCenter for aggregating and
-	//   reporting on duplicate OpsItems.
+	//
+	//   - /aws/issue
+	//
+	// This type of OpsItem is used for default OpsItems created by OpsCenter.
+	//
+	//   - /aws/changerequest
+	//
+	// This type of OpsItem is used by Change Manager for reviewing and approving or
+	//   rejecting change requests.
+	//
+	//   - /aws/insight
+	//
+	// This type of OpsItem is used by OpsCenter for aggregating and reporting on
+	//   duplicate OpsItems.
 	OpsItemType *string
 
 	// The time specified in a change request for a runbook workflow to end. Currently
@@ -126,11 +147,15 @@ type CreateOpsItemInput struct {
 	// Specify a severity to assign to an OpsItem.
 	Severity *string
 
-	// Optional metadata that you assign to a resource. Tags use a key-value pair. For
-	// example: Key=Department,Value=Finance To add tags to a new OpsItem, a user must
-	// have IAM permissions for both the ssm:CreateOpsItems operation and the
-	// ssm:AddTagsToResource operation. To add tags to an existing OpsItem, use the
-	// AddTagsToResource operation.
+	// Optional metadata that you assign to a resource.
+	//
+	// Tags use a key-value pair. For example:
+	//
+	//     Key=Department,Value=Finance
+	//
+	// To add tags to a new OpsItem, a user must have IAM permissions for both the
+	// ssm:CreateOpsItems operation and the ssm:AddTagsToResource operation. To add
+	// tags to an existing OpsItem, use the AddTagsToResourceoperation.
 	Tags []types.Tag
 
 	noSmithyDocumentSerde

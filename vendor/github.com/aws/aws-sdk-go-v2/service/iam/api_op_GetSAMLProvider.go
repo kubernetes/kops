@@ -13,9 +13,11 @@ import (
 )
 
 // Returns the SAML provider metadocument that was uploaded when the IAM SAML
-// provider resource object was created or updated. This operation requires
-// Signature Version 4 (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
-// .
+// provider resource object was created or updated.
+//
+// This operation requires [Signature Version 4].
+//
+// [Signature Version 4]: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
 func (c *Client) GetSAMLProvider(ctx context.Context, params *GetSAMLProviderInput, optFns ...func(*Options)) (*GetSAMLProviderOutput, error) {
 	if params == nil {
 		params = &GetSAMLProviderInput{}
@@ -34,9 +36,12 @@ func (c *Client) GetSAMLProvider(ctx context.Context, params *GetSAMLProviderInp
 type GetSAMLProviderInput struct {
 
 	// The Amazon Resource Name (ARN) of the SAML provider resource object in IAM to
-	// get information about. For more information about ARNs, see Amazon Resource
-	// Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// get information about.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	SAMLProviderArn *string
@@ -55,8 +60,9 @@ type GetSAMLProviderOutput struct {
 
 	// A list of tags that are attached to the specified IAM SAML provider. The
 	// returned list of tags is sorted by tag key. For more information about tagging,
-	// see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
-	// in the IAM User Guide.
+	// see [Tagging IAM resources]in the IAM User Guide.
+	//
+	// [Tagging IAM resources]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
 	Tags []types.Tag
 
 	// The expiration date and time for the SAML provider.

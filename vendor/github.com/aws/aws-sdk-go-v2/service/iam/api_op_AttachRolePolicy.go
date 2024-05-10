@@ -12,16 +12,24 @@ import (
 
 // Attaches the specified managed policy to the specified IAM role. When you
 // attach a managed policy to a role, the managed policy becomes part of the role's
-// permission (access) policy. You cannot use a managed policy as the role's trust
-// policy. The role's trust policy is created at the same time as the role, using
-// CreateRole (https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html)
-// . You can update a role's trust policy using UpdateAssumerolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html)
-// . Use this operation to attach a managed policy to a role. To embed an inline
-// policy in a role, use PutRolePolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutRolePolicy.html)
-// . For more information about policies, see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide. As a best practice, you can validate your IAM policies.
-// To learn more, see Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
+// permission (access) policy.
+//
+// You cannot use a managed policy as the role's trust policy. The role's trust
+// policy is created at the same time as the role, using [CreateRole]CreateRole . You can
+// update a role's trust policy using [UpdateAssumerolePolicy]UpdateAssumerolePolicy .
+//
+// Use this operation to attach a managed policy to a role. To embed an inline
+// policy in a role, use [PutRolePolicy]PutRolePolicy . For more information about policies, see [Managed policies and inline policies]
 // in the IAM User Guide.
+//
+// As a best practice, you can validate your IAM policies. To learn more, see [Validating IAM policies] in
+// the IAM User Guide.
+//
+// [Validating IAM policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html
+// [UpdateAssumerolePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAssumeRolePolicy.html
+// [PutRolePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutRolePolicy.html
+// [CreateRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateRole.html
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) AttachRolePolicy(ctx context.Context, params *AttachRolePolicyInput, optFns ...func(*Options)) (*AttachRolePolicyOutput, error) {
 	if params == nil {
 		params = &AttachRolePolicyInput{}
@@ -39,17 +47,23 @@ func (c *Client) AttachRolePolicy(ctx context.Context, params *AttachRolePolicyI
 
 type AttachRolePolicyInput struct {
 
-	// The Amazon Resource Name (ARN) of the IAM policy you want to attach. For more
-	// information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// The Amazon Resource Name (ARN) of the IAM policy you want to attach.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicyArn *string
 
-	// The name (friendly name, not ARN) of the role to attach the policy to. This
-	// parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters consisting of upper and lowercase alphanumeric characters
-	// with no spaces. You can also include any of the following characters: _+=,.@-
+	// The name (friendly name, not ARN) of the role to attach the policy to.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	RoleName *string

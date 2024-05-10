@@ -14,13 +14,16 @@ import (
 // Provides information about one or more of your managed nodes, including the
 // operating system platform, SSM Agent version, association status, and IP
 // address. This operation does not return information for nodes that are either
-// Stopped or Terminated. If you specify one or more node IDs, the operation
-// returns information for those managed nodes. If you don't specify node IDs, it
-// returns information for all your managed nodes. If you specify a node ID that
-// isn't valid or a node that you don't own, you receive an error. The IamRole
-// field returned for this API operation is the Identity and Access Management
-// (IAM) role assigned to on-premises managed nodes. This operation does not return
-// the IAM role for EC2 instances.
+// Stopped or Terminated.
+//
+// If you specify one or more node IDs, the operation returns information for
+// those managed nodes. If you don't specify node IDs, it returns information for
+// all your managed nodes. If you specify a node ID that isn't valid or a node that
+// you don't own, you receive an error.
+//
+// The IamRole field returned for this API operation is the Identity and Access
+// Management (IAM) role assigned to on-premises managed nodes. This operation does
+// not return the IAM role for EC2 instances.
 func (c *Client) DescribeInstanceInformation(ctx context.Context, params *DescribeInstanceInformationInput, optFns ...func(*Options)) (*DescribeInstanceInformationOutput, error) {
 	if params == nil {
 		params = &DescribeInstanceInformationInput{}
@@ -46,8 +49,10 @@ type DescribeInstanceInformationInput struct {
 
 	// This is a legacy method. We recommend that you don't use this method. Instead,
 	// use the Filters data type. Filters enables you to return node information by
-	// filtering based on tags applied to managed nodes. Attempting to use
-	// InstanceInformationFilterList and Filters leads to an exception error.
+	// filtering based on tags applied to managed nodes.
+	//
+	// Attempting to use InstanceInformationFilterList and Filters leads to an
+	// exception error.
 	InstanceInformationFilterList []types.InstanceInformationFilter
 
 	// The maximum number of items to return for this call. The call also returns a

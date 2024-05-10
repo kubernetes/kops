@@ -11,9 +11,10 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Sets the priorities of the specified rules. You can reorder the rules as long
-// as there are no priority conflicts in the new order. Any existing rules that you
-// do not specify retain their current priority.
+// Sets the priorities of the specified rules.
+//
+// You can reorder the rules as long as there are no priority conflicts in the new
+// order. Any existing rules that you do not specify retain their current priority.
 func (c *Client) SetRulePriorities(ctx context.Context, params *SetRulePrioritiesInput, optFns ...func(*Options)) (*SetRulePrioritiesOutput, error) {
 	if params == nil {
 		params = &SetRulePrioritiesInput{}

@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.115.0] - 2024-05-08
+
+- #688 - @asaha2 - load balancers: support glb active-passive fail-over settings, currently in closed beta
+
+## [v1.114.0] - 2024-04-12
+
+- #686 - @greeshmapill - APPS-8386: Add comments to mark deprecation of unused instance size fields
+- #685 - @jcodybaker - APPS-8711: container termination controls
+- #682 - @dependabot[bot] - Bump golang.org/x/net from 0.17.0 to 0.23.0
+
 ## [v1.113.0] - 2024-04-12
 
 - #679 - @bhardwajRahul - Enable ui_connection parameter for Opensearch

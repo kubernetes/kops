@@ -18,11 +18,14 @@ import (
 // it possible to manage them using Systems Manager capabilities. You use the
 // activation code and ID when installing SSM Agent on machines in your hybrid
 // environment. For more information about requirements for managing on-premises
-// machines using Systems Manager, see Setting up Amazon Web Services Systems
-// Manager for hybrid and multicloud environments (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances.html)
-// in the Amazon Web Services Systems Manager User Guide. Amazon Elastic Compute
-// Cloud (Amazon EC2) instances, edge devices, and on-premises servers and VMs that
-// are configured for Systems Manager are all called managed nodes.
+// machines using Systems Manager, see [Setting up Amazon Web Services Systems Manager for hybrid and multicloud environments]in the Amazon Web Services Systems Manager
+// User Guide.
+//
+// Amazon Elastic Compute Cloud (Amazon EC2) instances, edge devices, and
+// on-premises servers and VMs that are configured for Systems Manager are all
+// called managed nodes.
+//
+// [Setting up Amazon Web Services Systems Manager for hybrid and multicloud environments]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances.html
 func (c *Client) CreateActivation(ctx context.Context, params *CreateActivationInput, optFns ...func(*Options)) (*CreateActivationOutput, error) {
 	if params == nil {
 		params = &CreateActivationInput{}
@@ -43,22 +46,28 @@ type CreateActivationInput struct {
 	// The name of the Identity and Access Management (IAM) role that you want to
 	// assign to the managed node. This IAM role must provide AssumeRole permissions
 	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com
-	// . For more information, see Create an IAM service role for a hybrid and
-	// multicloud environment (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
-	// in the Amazon Web Services Systems Manager User Guide. You can't specify an IAM
-	// service-linked role for this parameter. You must create a unique role.
+	// . For more information, see [Create an IAM service role for a hybrid and multicloud environment]in the Amazon Web Services Systems Manager User
+	// Guide.
+	//
+	// You can't specify an IAM service-linked role for this parameter. You must
+	// create a unique role.
+	//
+	// [Create an IAM service role for a hybrid and multicloud environment]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html
 	//
 	// This member is required.
 	IamRole *string
 
 	// The name of the registered, managed node as it will appear in the Amazon Web
 	// Services Systems Manager console or when you use the Amazon Web Services command
-	// line tools to list Systems Manager resources. Don't enter personally
-	// identifiable information in this field.
+	// line tools to list Systems Manager resources.
+	//
+	// Don't enter personally identifiable information in this field.
 	DefaultInstanceName *string
 
 	// A user-defined description of the resource that you want to register with
-	// Systems Manager. Don't enter personally identifiable information in this field.
+	// Systems Manager.
+	//
+	// Don't enter personally identifiable information in this field.
 	Description *string
 
 	// The date by which this activation request should expire, in timestamp format,
@@ -79,18 +88,23 @@ type CreateActivationInput struct {
 	// example, you might want to tag an activation to identify which servers or
 	// virtual machines (VMs) in your on-premises environment you intend to activate.
 	// In this case, you could specify the following key-value pairs:
+	//
 	//   - Key=OS,Value=Windows
+	//
 	//   - Key=Environment,Value=Production
+	//
 	// When you install SSM Agent on your on-premises servers and VMs, you specify an
 	// activation ID and code. When you specify the activation ID and code, tags
 	// assigned to the activation are automatically applied to the on-premises servers
-	// or VMs. You can't add tags to or delete tags from an existing activation. You
-	// can tag your on-premises servers, edge devices, and VMs after they connect to
-	// Systems Manager for the first time and are assigned a managed node ID. This
-	// means they are listed in the Amazon Web Services Systems Manager console with an
-	// ID that is prefixed with "mi-". For information about how to add tags to your
-	// managed nodes, see AddTagsToResource . For information about how to remove tags
-	// from your managed nodes, see RemoveTagsFromResource .
+	// or VMs.
+	//
+	// You can't add tags to or delete tags from an existing activation. You can tag
+	// your on-premises servers, edge devices, and VMs after they connect to Systems
+	// Manager for the first time and are assigned a managed node ID. This means they
+	// are listed in the Amazon Web Services Systems Manager console with an ID that is
+	// prefixed with "mi-". For information about how to add tags to your managed
+	// nodes, see AddTagsToResource. For information about how to remove tags from your managed nodes,
+	// see RemoveTagsFromResource.
 	Tags []types.Tag
 
 	noSmithyDocumentSerde

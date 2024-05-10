@@ -10,8 +10,10 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the specified listener. Alternatively, your listener is deleted when
-// you delete the load balancer to which it is attached.
+// Deletes the specified listener.
+//
+// Alternatively, your listener is deleted when you delete the load balancer to
+// which it is attached.
 func (c *Client) DeleteListener(ctx context.Context, params *DeleteListenerInput, optFns ...func(*Options)) (*DeleteListenerOutput, error) {
 	if params == nil {
 		params = &DeleteListenerInput{}

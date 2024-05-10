@@ -12,15 +12,20 @@ import (
 )
 
 // Lists the server certificates stored in IAM that have the specified path
-// prefix. If none exist, the operation returns an empty list. You can paginate the
-// results using the MaxItems and Marker parameters. For more information about
-// working with server certificates, see Working with server certificates (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html)
-// in the IAM User Guide. This topic also includes a list of Amazon Web Services
-// services that can use the server certificates that you manage with IAM. IAM
-// resource-listing operations return a subset of the available attributes for the
-// resource. For example, this operation does not return tags, even though they are
-// an attribute of the returned object. To view all of the information for a
-// servercertificate, see GetServerCertificate .
+// prefix. If none exist, the operation returns an empty list.
+//
+// You can paginate the results using the MaxItems and Marker parameters.
+//
+// For more information about working with server certificates, see [Working with server certificates] in the IAM
+// User Guide. This topic also includes a list of Amazon Web Services services that
+// can use the server certificates that you manage with IAM.
+//
+// IAM resource-listing operations return a subset of the available attributes for
+// the resource. For example, this operation does not return tags, even though they
+// are an attribute of the returned object. To view all of the information for a
+// servercertificate, see GetServerCertificate.
+//
+// [Working with server certificates]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html
 func (c *Client) ListServerCertificates(ctx context.Context, params *ListServerCertificatesInput, optFns ...func(*Options)) (*ListServerCertificatesOutput, error) {
 	if params == nil {
 		params = &ListServerCertificatesInput{}
@@ -46,22 +51,27 @@ type ListServerCertificatesInput struct {
 
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	MaxItems *int32
 
-	// The path prefix for filtering the results. For example: /company/servercerts
+	//  The path prefix for filtering the results. For example: /company/servercerts
 	// would get all server certificates for which the path starts with
-	// /company/servercerts . This parameter is optional. If it is not included, it
-	// defaults to a slash (/), listing all server certificates. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters consisting of either a forward slash (/) by itself or a string that
-	// must begin and end with forward slashes. In addition, it can contain any ASCII
-	// character from the ! ( \u0021 ) through the DEL character ( \u007F ), including
-	// most punctuation characters, digits, and upper and lowercased letters.
+	// /company/servercerts .
+	//
+	// This parameter is optional. If it is not included, it defaults to a slash (/),
+	// listing all server certificates. This parameter allows (through its [regex pattern]) a string
+	// of characters consisting of either a forward slash (/) by itself or a string
+	// that must begin and end with forward slashes. In addition, it can contain any
+	// ASCII character from the ! ( \u0021 ) through the DEL character ( \u007F ),
+	// including most punctuation characters, digits, and upper and lowercased letters.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	PathPrefix *string
 
 	noSmithyDocumentSerde
@@ -182,11 +192,13 @@ var _ ListServerCertificatesAPIClient = (*Client)(nil)
 type ListServerCertificatesPaginatorOptions struct {
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

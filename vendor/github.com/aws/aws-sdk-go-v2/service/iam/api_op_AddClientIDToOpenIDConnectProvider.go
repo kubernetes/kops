@@ -11,8 +11,9 @@ import (
 )
 
 // Adds a new client ID (also known as audience) to the list of client IDs already
-// registered for the specified IAM OpenID Connect (OIDC) provider resource. This
-// operation is idempotent; it does not fail or return an error if you add an
+// registered for the specified IAM OpenID Connect (OIDC) provider resource.
+//
+// This operation is idempotent; it does not fail or return an error if you add an
 // existing client ID to the provider.
 func (c *Client) AddClientIDToOpenIDConnectProvider(ctx context.Context, params *AddClientIDToOpenIDConnectProviderInput, optFns ...func(*Options)) (*AddClientIDToOpenIDConnectProviderOutput, error) {
 	if params == nil {
@@ -39,7 +40,7 @@ type AddClientIDToOpenIDConnectProviderInput struct {
 
 	// The Amazon Resource Name (ARN) of the IAM OpenID Connect (OIDC) provider
 	// resource to add the client ID to. You can get a list of OIDC provider ARNs by
-	// using the ListOpenIDConnectProviders operation.
+	// using the ListOpenIDConnectProvidersoperation.
 	//
 	// This member is required.
 	OpenIDConnectProviderArn *string

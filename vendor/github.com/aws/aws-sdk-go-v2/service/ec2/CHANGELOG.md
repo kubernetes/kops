@@ -1,3 +1,8 @@
+# v1.161.0 (2024-05-08)
+
+* **Feature**: Adding Precision Hardware Clock (PHC) to public API DescribeInstanceTypes
+* **Bug Fix**: GoDoc improvement
+
 # v1.160.0 (2024-05-02)
 
 * **Feature**: This release includes a new API for retrieving the public endorsement key of the EC2 instance's Nitro Trusted Platform Module (NitroTPM).

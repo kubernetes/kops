@@ -17,9 +17,11 @@ import (
 )
 
 // Retrieves information about the specified IAM user, including the user's
-// creation date, path, unique ID, and ARN. If you do not specify a user name, IAM
-// determines the user name implicitly based on the Amazon Web Services access key
-// ID used to sign the request to this operation.
+// creation date, path, unique ID, and ARN.
+//
+// If you do not specify a user name, IAM determines the user name implicitly
+// based on the Amazon Web Services access key ID used to sign the request to this
+// operation.
 func (c *Client) GetUser(ctx context.Context, params *GetUserInput, optFns ...func(*Options)) (*GetUserOutput, error) {
 	if params == nil {
 		params = &GetUserInput{}
@@ -37,11 +39,14 @@ func (c *Client) GetUser(ctx context.Context, params *GetUserInput, optFns ...fu
 
 type GetUserInput struct {
 
-	// The name of the user to get information about. This parameter is optional. If
-	// it is not included, it defaults to the user making the request. This parameter
-	// allows (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string
-	// of characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the user to get information about.
+	//
+	// This parameter is optional. If it is not included, it defaults to the user
+	// making the request. This parameter allows (through its [regex pattern]) a string of characters
+	// consisting of upper and lowercase alphanumeric characters with no spaces. You
+	// can also include any of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde
@@ -50,21 +55,26 @@ type GetUserInput struct {
 // Contains the response to a successful GetUser request.
 type GetUserOutput struct {
 
-	// A structure containing details about the IAM user. Due to a service issue,
-	// password last used data does not include password use from May 3, 2018 22:50 PDT
-	// to May 23, 2018 14:08 PDT. This affects last sign-in (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_finding-unused.html)
-	// dates shown in the IAM console and password last used dates in the IAM
-	// credential report (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_getting-report.html)
-	// , and returned by this operation. If users signed in during the affected time,
-	// the password last used date that is returned is the date the user last signed in
-	// before May 3, 2018. For users that signed in after May 23, 2018 14:08 PDT, the
-	// returned password last used date is accurate. You can use password last used
-	// information to identify unused credentials for deletion. For example, you might
-	// delete users who did not sign in to Amazon Web Services in the last 90 days. In
-	// cases like this, we recommend that you adjust your evaluation window to include
-	// dates after May 23, 2018. Alternatively, if your users use access keys to access
-	// Amazon Web Services programmatically you can refer to access key last used
-	// information because it is accurate for all dates.
+	// A structure containing details about the IAM user.
+	//
+	// Due to a service issue, password last used data does not include password use
+	// from May 3, 2018 22:50 PDT to May 23, 2018 14:08 PDT. This affects [last sign-in]dates shown
+	// in the IAM console and password last used dates in the [IAM credential report], and returned by this
+	// operation. If users signed in during the affected time, the password last used
+	// date that is returned is the date the user last signed in before May 3, 2018.
+	// For users that signed in after May 23, 2018 14:08 PDT, the returned password
+	// last used date is accurate.
+	//
+	// You can use password last used information to identify unused credentials for
+	// deletion. For example, you might delete users who did not sign in to Amazon Web
+	// Services in the last 90 days. In cases like this, we recommend that you adjust
+	// your evaluation window to include dates after May 23, 2018. Alternatively, if
+	// your users use access keys to access Amazon Web Services programmatically you
+	// can refer to access key last used information because it is accurate for all
+	// dates.
+	//
+	// [IAM credential report]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_getting-report.html
+	// [last sign-in]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_finding-unused.html
 	//
 	// This member is required.
 	User *types.User
@@ -190,12 +200,13 @@ type UserExistsWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *GetUserInput, *GetUserOutput, error) (bool, error)
 }
 

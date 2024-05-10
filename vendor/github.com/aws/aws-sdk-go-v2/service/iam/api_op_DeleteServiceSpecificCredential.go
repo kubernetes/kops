@@ -29,19 +29,25 @@ func (c *Client) DeleteServiceSpecificCredential(ctx context.Context, params *De
 type DeleteServiceSpecificCredentialInput struct {
 
 	// The unique identifier of the service-specific credential. You can get this
-	// value by calling ListServiceSpecificCredentials . This parameter allows (through
-	// its regex pattern (http://wikipedia.org/wiki/regex) ) a string of characters
-	// that can consist of any upper or lowercased letter or digit.
+	// value by calling ListServiceSpecificCredentials.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters that can consist of
+	// any upper or lowercased letter or digit.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	ServiceSpecificCredentialId *string
 
 	// The name of the IAM user associated with the service-specific credential. If
 	// this value is not specified, then the operation assumes the user whose
-	// credentials are used to call the operation. This parameter allows (through its
-	// regex pattern (http://wikipedia.org/wiki/regex) ) a string of characters
-	// consisting of upper and lowercase alphanumeric characters with no spaces. You
-	// can also include any of the following characters: _+=,.@-
+	// credentials are used to call the operation.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde

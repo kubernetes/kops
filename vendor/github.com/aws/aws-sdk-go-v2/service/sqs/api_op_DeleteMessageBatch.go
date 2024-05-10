@@ -11,11 +11,13 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes up to ten messages from the specified queue. This is a batch version of
-// DeleteMessage . The result of the action on each message is reported
-// individually in the response. Because the batch request can result in a
-// combination of successful and unsuccessful actions, you should check for batch
-// errors even when the call returns an HTTP status code of 200 .
+// Deletes up to ten messages from the specified queue. This is a batch version of DeleteMessage
+// . The result of the action on each message is reported individually in the
+// response.
+//
+// Because the batch request can result in a combination of successful and
+// unsuccessful actions, you should check for batch errors even when the call
+// returns an HTTP status code of 200 .
 func (c *Client) DeleteMessageBatch(ctx context.Context, params *DeleteMessageBatchInput, optFns ...func(*Options)) (*DeleteMessageBatchOutput, error) {
 	if params == nil {
 		params = &DeleteMessageBatchInput{}
@@ -38,8 +40,9 @@ type DeleteMessageBatchInput struct {
 	// This member is required.
 	Entries []types.DeleteMessageBatchRequestEntry
 
-	// The URL of the Amazon SQS queue from which messages are deleted. Queue URLs and
-	// names are case-sensitive.
+	// The URL of the Amazon SQS queue from which messages are deleted.
+	//
+	// Queue URLs and names are case-sensitive.
 	//
 	// This member is required.
 	QueueUrl *string
@@ -47,9 +50,8 @@ type DeleteMessageBatchInput struct {
 	noSmithyDocumentSerde
 }
 
-// For each message in the batch, the response contains a
-// DeleteMessageBatchResultEntry tag if the message is deleted or a
-// BatchResultErrorEntry tag if the message can't be deleted.
+// For each message in the batch, the response contains a DeleteMessageBatchResultEntry tag if the message is
+// deleted or a BatchResultErrorEntrytag if the message can't be deleted.
 type DeleteMessageBatchOutput struct {
 
 	// A list of BatchResultErrorEntry items.

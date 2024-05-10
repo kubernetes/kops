@@ -13,12 +13,16 @@ import (
 
 // Creates a password for the specified IAM user. A password allows an IAM user to
 // access Amazon Web Services services through the Amazon Web Services Management
-// Console. You can use the CLI, the Amazon Web Services API, or the Users page in
-// the IAM console to create a password for any IAM user. Use ChangePassword to
-// update your own existing password in the My Security Credentials page in the
-// Amazon Web Services Management Console. For more information about managing
-// passwords, see Managing passwords (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html)
-// in the IAM User Guide.
+// Console.
+//
+// You can use the CLI, the Amazon Web Services API, or the Users page in the IAM
+// console to create a password for any IAM user. Use ChangePasswordto update your own existing
+// password in the My Security Credentials page in the Amazon Web Services
+// Management Console.
+//
+// For more information about managing passwords, see [Managing passwords] in the IAM User Guide.
+//
+// [Managing passwords]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html
 func (c *Client) CreateLoginProfile(ctx context.Context, params *CreateLoginProfileInput, optFns ...func(*Options)) (*CreateLoginProfileOutput, error) {
 	if params == nil {
 		params = &CreateLoginProfileInput{}
@@ -36,24 +40,29 @@ func (c *Client) CreateLoginProfile(ctx context.Context, params *CreateLoginProf
 
 type CreateLoginProfileInput struct {
 
-	// The new password for the user. The regex pattern (http://wikipedia.org/wiki/regex)
-	// that is used to validate this parameter is a string of characters. That string
-	// can include almost any printable ASCII character from the space ( \u0020 )
-	// through the end of the ASCII character range ( \u00FF ). You can also include
+	// The new password for the user.
+	//
+	// The [regex pattern] that is used to validate this parameter is a string of characters. That
+	// string can include almost any printable ASCII character from the space ( \u0020
+	// ) through the end of the ASCII character range ( \u00FF ). You can also include
 	// the tab ( \u0009 ), line feed ( \u000A ), and carriage return ( \u000D )
 	// characters. Any of these characters are valid in a password. However, many
 	// tools, such as the Amazon Web Services Management Console, might restrict the
 	// ability to type certain characters because they have special meaning within that
 	// tool.
 	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
+	//
 	// This member is required.
 	Password *string
 
 	// The name of the IAM user to create a password for. The user must already exist.
-	// This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string

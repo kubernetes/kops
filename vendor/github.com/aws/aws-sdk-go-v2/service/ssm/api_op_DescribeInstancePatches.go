@@ -35,14 +35,30 @@ type DescribeInstancePatchesInput struct {
 	// This member is required.
 	InstanceId *string
 
-	// Each element in the array is a structure containing a key-value pair. Supported
-	// keys for DescribeInstancePatches include the following:
-	//   - Classification Sample values: Security | SecurityUpdates
-	//   - KBId Sample values: KB4480056 | java-1.7.0-openjdk.x86_64
-	//   - Severity Sample values: Important | Medium | Low
-	//   - State Sample values: Installed | InstalledOther | InstalledPendingReboot For
-	//   lists of all State values, see Understanding patch compliance state values (https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-compliance-states.html)
-	//   in the Amazon Web Services Systems Manager User Guide.
+	// Each element in the array is a structure containing a key-value pair.
+	//
+	// Supported keys for DescribeInstancePatches include the following:
+	//
+	//   - Classification
+	//
+	// Sample values: Security | SecurityUpdates
+	//
+	//   - KBId
+	//
+	// Sample values: KB4480056 | java-1.7.0-openjdk.x86_64
+	//
+	//   - Severity
+	//
+	// Sample values: Important | Medium | Low
+	//
+	//   - State
+	//
+	// Sample values: Installed | InstalledOther | InstalledPendingReboot
+	//
+	// For lists of all State values, see [Understanding patch compliance state values]in the Amazon Web Services Systems Manager
+	//   User Guide.
+	//
+	// [Understanding patch compliance state values]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-compliance-states.html
 	Filters []types.PatchOrchestratorFilter
 
 	// The maximum number of patches to return (per page).
@@ -62,12 +78,19 @@ type DescribeInstancePatchesOutput struct {
 	NextToken *string
 
 	// Each entry in the array is a structure containing:
+	//
 	//   - Title (string)
+	//
 	//   - KBId (string)
+	//
 	//   - Classification (string)
+	//
 	//   - Severity (string)
+	//
 	//   - State (string, such as "INSTALLED" or "FAILED")
+	//
 	//   - InstalledTime (DateTime)
+	//
 	//   - InstalledBy (string)
 	Patches []types.PatchComplianceData
 

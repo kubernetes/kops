@@ -11,9 +11,10 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Use UpdateRole instead. Modifies only the description of a role. This operation
-// performs the same function as the Description parameter in the UpdateRole
-// operation.
+// Use UpdateRole instead.
+//
+// Modifies only the description of a role. This operation performs the same
+// function as the Description parameter in the UpdateRole operation.
 func (c *Client) UpdateRoleDescription(ctx context.Context, params *UpdateRoleDescriptionInput, optFns ...func(*Options)) (*UpdateRoleDescriptionOutput, error) {
 	if params == nil {
 		params = &UpdateRoleDescriptionInput{}

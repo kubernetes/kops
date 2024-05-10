@@ -1466,6 +1466,17 @@ func awsAwsjson10_serializeDocumentMessageBodySystemAttributeMap(v map[string]ty
 	return nil
 }
 
+func awsAwsjson10_serializeDocumentMessageSystemAttributeList(v []types.MessageSystemAttributeName, value smithyjson.Value) error {
+	array := value.Array()
+	defer array.Close()
+
+	for i := range v {
+		av := array.Value()
+		av.String(string(v[i]))
+	}
+	return nil
+}
+
 func awsAwsjson10_serializeDocumentMessageSystemAttributeValue(v *types.MessageSystemAttributeValue, value smithyjson.Value) error {
 	object := value.Object()
 	defer object.Close()
@@ -1903,6 +1914,13 @@ func awsAwsjson10_serializeOpDocumentReceiveMessageInput(v *ReceiveMessageInput,
 	if v.MessageAttributeNames != nil {
 		ok := object.Key("MessageAttributeNames")
 		if err := awsAwsjson10_serializeDocumentMessageAttributeNameList(v.MessageAttributeNames, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.MessageSystemAttributeNames != nil {
+		ok := object.Key("MessageSystemAttributeNames")
+		if err := awsAwsjson10_serializeDocumentMessageSystemAttributeList(v.MessageSystemAttributeNames, ok); err != nil {
 			return err
 		}
 	}

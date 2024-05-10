@@ -16,14 +16,17 @@ import (
 	"time"
 )
 
-// Gets information about the Auto Scaling groups in the account and Region. If
-// you specify Auto Scaling group names, the output includes information for only
-// the specified Auto Scaling groups. If you specify filters, the output includes
-// information for only those Auto Scaling groups that meet the filter criteria. If
-// you do not specify group names or filters, the output includes information for
-// all Auto Scaling groups. This operation also returns information about instances
-// in Auto Scaling groups. To retrieve information about the instances in a warm
-// pool, you must call the DescribeWarmPool API.
+// Gets information about the Auto Scaling groups in the account and Region.
+//
+// If you specify Auto Scaling group names, the output includes information for
+// only the specified Auto Scaling groups. If you specify filters, the output
+// includes information for only those Auto Scaling groups that meet the filter
+// criteria. If you do not specify group names or filters, the output includes
+// information for all Auto Scaling groups.
+//
+// This operation also returns information about instances in Auto Scaling groups.
+// To retrieve information about the instances in a warm pool, you must call the DescribeWarmPool
+// API.
 func (c *Client) DescribeAutoScalingGroups(ctx context.Context, params *DescribeAutoScalingGroupsInput, optFns ...func(*Options)) (*DescribeAutoScalingGroupsOutput, error) {
 	if params == nil {
 		params = &DescribeAutoScalingGroupsInput{}
@@ -42,8 +45,9 @@ func (c *Client) DescribeAutoScalingGroups(ctx context.Context, params *Describe
 type DescribeAutoScalingGroupsInput struct {
 
 	// The names of the Auto Scaling groups. By default, you can only specify up to 50
-	// names. You can optionally increase this limit using the MaxRecords property. If
-	// you omit this property, all Auto Scaling groups are described.
+	// names. You can optionally increase this limit using the MaxRecords property.
+	//
+	// If you omit this property, all Auto Scaling groups are described.
 	AutoScalingGroupNames []string
 
 	// One or more filters to limit the results based on specific tags.
@@ -280,12 +284,13 @@ type GroupExistsWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *DescribeAutoScalingGroupsInput, *DescribeAutoScalingGroupsOutput, error) (bool, error)
 }
 
@@ -476,12 +481,13 @@ type GroupInServiceWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *DescribeAutoScalingGroupsInput, *DescribeAutoScalingGroupsOutput, error) (bool, error)
 }
 
@@ -673,12 +679,13 @@ type GroupNotExistsWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *DescribeAutoScalingGroupsInput, *DescribeAutoScalingGroupsOutput, error) (bool, error)
 }
 

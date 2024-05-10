@@ -45,8 +45,11 @@ type ApiDestination struct {
 type AppSyncParameters struct {
 
 	// The GraphQL operation; that is, the query, mutation, or subscription to be
-	// parsed and executed by the GraphQL service. For more information, see Operations (https://docs.aws.amazon.com/appsync/latest/devguide/graphql-architecture.html#graphql-operations)
-	// in the AppSync User Guide.
+	// parsed and executed by the GraphQL service.
+	//
+	// For more information, see [Operations] in the AppSync User Guide.
+	//
+	// [Operations]: https://docs.aws.amazon.com/appsync/latest/devguide/graphql-architecture.html#graphql-operations
 	GraphQLOperation *string
 
 	noSmithyDocumentSerde
@@ -162,9 +165,10 @@ type BatchRetryStrategy struct {
 	noSmithyDocumentSerde
 }
 
-// The details of a capacity provider strategy. To learn more, see
-// CapacityProviderStrategyItem (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CapacityProviderStrategyItem.html)
-// in the Amazon ECS API Reference.
+// The details of a capacity provider strategy. To learn more, see [CapacityProviderStrategyItem] in the Amazon
+// ECS API Reference.
+//
+// [CapacityProviderStrategyItem]: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CapacityProviderStrategyItem.html
 type CapacityProviderStrategyItem struct {
 
 	// The short name of the capacity provider.
@@ -191,8 +195,10 @@ type CapacityProviderStrategyItem struct {
 // supported condition is membership in a certain Amazon Web Services organization.
 // The string must contain Type , Key , and Value fields. The Value field
 // specifies the ID of the Amazon Web Services organization. Following is an
-// example value for Condition : '{"Type" : "StringEquals", "Key":
-// "aws:PrincipalOrgID", "Value": "o-1234567890"}'
+// example value for Condition :
+//
+//	'{"Type" : "StringEquals", "Key": "aws:PrincipalOrgID", "Value":
+//	"o-1234567890"}'
 type Condition struct {
 
 	// Specifies the key for the condition. Currently the only supported key is
@@ -219,8 +225,9 @@ type Condition struct {
 // Contains information about a connection.
 type Connection struct {
 
-	// The authorization type specified for the connection. OAUTH tokens are refreshed
-	// when a 401 or 407 response is returned.
+	// The authorization type specified for the connection.
+	//
+	// OAUTH tokens are refreshed when a 401 or 407 response is returned.
 	AuthorizationType ConnectionAuthorizationType
 
 	// The ARN of the connection.
@@ -494,20 +501,23 @@ type DeadLetterConfig struct {
 // The custom parameters to be used when the target is an Amazon ECS task.
 type EcsParameters struct {
 
-	// The ARN of the task definition to use if the event target is an Amazon ECS task.
+	// The ARN of the task definition to use if the event target is an Amazon ECS
+	// task.
 	//
 	// This member is required.
 	TaskDefinitionArn *string
 
-	// The capacity provider strategy to use for the task. If a
-	// capacityProviderStrategy is specified, the launchType parameter must be
+	// The capacity provider strategy to use for the task.
+	//
+	// If a capacityProviderStrategy is specified, the launchType parameter must be
 	// omitted. If no capacityProviderStrategy or launchType is specified, the
 	// defaultCapacityProviderStrategy for the cluster is used.
 	CapacityProviderStrategy []CapacityProviderStrategyItem
 
 	// Specifies whether to enable Amazon ECS managed tags for the task. For more
-	// information, see Tagging Your Amazon ECS Resources (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
-	// in the Amazon Elastic Container Service Developer Guide.
+	// information, see [Tagging Your Amazon ECS Resources]in the Amazon Elastic Container Service Developer Guide.
+	//
+	// [Tagging Your Amazon ECS Resources]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html
 	EnableECSManagedTags bool
 
 	// Whether or not to enable the execute command functionality for the containers
@@ -521,14 +531,17 @@ type EcsParameters struct {
 	// Specifies the launch type on which your task is running. The launch type that
 	// you specify here must match one of the launch type (compatibilities) of the
 	// target task. The FARGATE value is supported only in the Regions where Fargate
-	// with Amazon ECS is supported. For more information, see Fargate on Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS-Fargate.html)
-	// in the Amazon Elastic Container Service Developer Guide.
+	// with Amazon ECS is supported. For more information, see [Fargate on Amazon ECS]in the Amazon Elastic
+	// Container Service Developer Guide.
+	//
+	// [Fargate on Amazon ECS]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS-Fargate.html
 	LaunchType LaunchType
 
 	// Use this structure if the Amazon ECS task uses the awsvpc network mode. This
 	// structure specifies the VPC subnets and security groups associated with the
 	// task, and whether a public IP address is to be used. This structure is required
 	// if LaunchType is FARGATE because the awsvpc mode is required for Fargate tasks.
+	//
 	// If you specify NetworkConfiguration when the target ECS task does not use the
 	// awsvpc network mode, the task fails.
 	NetworkConfiguration *NetworkConfiguration
@@ -543,10 +556,13 @@ type EcsParameters struct {
 	PlacementStrategy []PlacementStrategy
 
 	// Specifies the platform version for the task. Specify only the numeric portion
-	// of the platform version, such as 1.1.0 . This structure is used only if
-	// LaunchType is FARGATE . For more information about valid platform versions, see
-	// Fargate Platform Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
-	// in the Amazon Elastic Container Service Developer Guide.
+	// of the platform version, such as 1.1.0 .
+	//
+	// This structure is used only if LaunchType is FARGATE . For more information
+	// about valid platform versions, see [Fargate Platform Versions]in the Amazon Elastic Container Service
+	// Developer Guide.
+	//
+	// [Fargate Platform Versions]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html
 	PlatformVersion *string
 
 	// Specifies whether to propagate the tags from the task definition to the task.
@@ -560,8 +576,9 @@ type EcsParameters struct {
 
 	// The metadata that you apply to the task to help you categorize and organize
 	// them. Each tag consists of a key and an optional value, both of which you
-	// define. To learn more, see RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html#ECS-RunTask-request-tags)
-	// in the Amazon ECS API Reference.
+	// define. To learn more, see [RunTask]in the Amazon ECS API Reference.
+	//
+	// [RunTask]: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html#ECS-RunTask-request-tags
 	Tags []Tag
 
 	// The number of tasks to create based on TaskDefinition . The default is 1.
@@ -571,10 +588,10 @@ type EcsParameters struct {
 }
 
 // A global endpoint used to improve your application's availability by making it
-// regional-fault tolerant. For more information about global endpoints, see
-// Making applications Regional-fault tolerant with global endpoints and event
-// replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
-// in the Amazon EventBridge User Guide.
+// regional-fault tolerant. For more information about global endpoints, see [Making applications Regional-fault tolerant with global endpoints and event replication]in
+// the Amazon EventBridge User Guide.
+//
+// [Making applications Regional-fault tolerant with global endpoints and event replication]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html
 type Endpoint struct {
 
 	// The ARN of the endpoint.
@@ -733,27 +750,46 @@ type InputTransformer struct {
 
 	// Input template where you specify placeholders that will be filled with the
 	// values of the keys from InputPathsMap to customize the data sent to the target.
-	// Enclose each InputPathsMaps value in brackets: <value> If InputTemplate is a
-	// JSON object (surrounded by curly braces), the following restrictions apply:
+	// Enclose each InputPathsMaps value in brackets: <value>
+	//
+	// If InputTemplate is a JSON object (surrounded by curly braces), the following
+	// restrictions apply:
+	//
 	//   - The placeholder cannot be used as an object key.
+	//
 	// The following example shows the syntax for using InputPathsMap and InputTemplate
-	// . "InputTransformer":
+	// .
+	//
+	//     "InputTransformer":
+	//
 	//     {
 	//
 	//     "InputPathsMap": {"instance": "$.detail.instance","status":
 	//     "$.detail.status"},
 	//
 	//     "InputTemplate": " is in state "
-	// } To have the InputTemplate include quote marks within a JSON string, escape
-	// each quote marks with a slash, as in the following example: "InputTransformer":
+	//
+	//     }
+	//
+	// To have the InputTemplate include quote marks within a JSON string, escape each
+	// quote marks with a slash, as in the following example:
+	//
+	//     "InputTransformer":
+	//
 	//     {
 	//
 	//     "InputPathsMap": {"instance": "$.detail.instance","status":
 	//     "$.detail.status"},
 	//
 	//     "InputTemplate": " is in state \"\""
-	// } The InputTemplate can also be valid JSON with varibles in quotes or out, as
-	// in the following example: "InputTransformer":
+	//
+	//     }
+	//
+	// The InputTemplate can also be valid JSON with varibles in quotes or out, as in
+	// the following example:
+	//
+	//     "InputTransformer":
+	//
 	//     {
 	//
 	//     "InputPathsMap": {"instance": "$.detail.instance","status":
@@ -768,10 +804,13 @@ type InputTransformer struct {
 
 	// Map of JSON paths to be extracted from the event. You can then insert these in
 	// the template in InputTemplate to produce the output you want to be sent to the
-	// target. InputPathsMap is an array key-value pairs, where each value is a valid
-	// JSON path. You can have as many as 100 key-value pairs. You must use JSON dot
-	// notation, not bracket notation. The keys cannot start with "Amazon Web
-	// Services."
+	// target.
+	//
+	// InputPathsMap is an array key-value pairs, where each value is a valid JSON
+	// path. You can have as many as 100 key-value pairs. You must use JSON dot
+	// notation, not bracket notation.
+	//
+	// The keys cannot start with "Amazon Web Services."
 	InputPathsMap map[string]string
 
 	noSmithyDocumentSerde
@@ -784,8 +823,9 @@ type InputTransformer struct {
 type KinesisParameters struct {
 
 	// The JSON path to be extracted from the event and used as the partition key. For
-	// more information, see Amazon Kinesis Streams Key Concepts (https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html#partition-key)
-	// in the Amazon Kinesis Streams Developer Guide.
+	// more information, see [Amazon Kinesis Streams Key Concepts]in the Amazon Kinesis Streams Developer Guide.
+	//
+	// [Amazon Kinesis Streams Key Concepts]: https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html#partition-key
 	//
 	// This member is required.
 	PartitionKeyPath *string
@@ -841,15 +881,17 @@ type PartnerEventSourceAccount struct {
 	noSmithyDocumentSerde
 }
 
-// An object representing a constraint on task placement. To learn more, see Task
-// Placement Constraints (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
-// in the Amazon Elastic Container Service Developer Guide.
+// An object representing a constraint on task placement. To learn more, see [Task Placement Constraints] in
+// the Amazon Elastic Container Service Developer Guide.
+//
+// [Task Placement Constraints]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html
 type PlacementConstraint struct {
 
 	// A cluster query language expression to apply to the constraint. You cannot
 	// specify an expression if the constraint type is distinctInstance . To learn
-	// more, see Cluster Query Language (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
-	// in the Amazon Elastic Container Service Developer Guide.
+	// more, see [Cluster Query Language]in the Amazon Elastic Container Service Developer Guide.
+	//
+	// [Cluster Query Language]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html
 	Expression *string
 
 	// The type of constraint. Use distinctInstance to ensure that each task in a
@@ -860,9 +902,10 @@ type PlacementConstraint struct {
 	noSmithyDocumentSerde
 }
 
-// The task placement strategy for a task or service. To learn more, see Task
-// Placement Strategies (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html)
-// in the Amazon Elastic Container Service Service Developer Guide.
+// The task placement strategy for a task or service. To learn more, see [Task Placement Strategies] in the
+// Amazon Elastic Container Service Service Developer Guide.
+//
+// [Task Placement Strategies]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html
 type PlacementStrategy struct {
 
 	// The field to apply the placement strategy against. For the spread placement
@@ -901,80 +944,126 @@ type Primary struct {
 type PutEventsRequestEntry struct {
 
 	// A valid JSON object. There is no other schema imposed. The JSON object may
-	// contain fields and nested sub-objects. Detail , DetailType , and Source are
-	// required for EventBridge to successfully send an event to an event bus. If you
-	// include event entries in a request that do not include each of those properties,
-	// EventBridge fails that entry. If you submit a request in which none of the
-	// entries have each of these properties, EventBridge fails the entire request.
+	// contain fields and nested sub-objects.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Detail *string
 
 	// Free-form string, with a maximum of 128 characters, used to decide what fields
-	// to expect in the event detail. Detail , DetailType , and Source are required
-	// for EventBridge to successfully send an event to an event bus. If you include
-	// event entries in a request that do not include each of those properties,
-	// EventBridge fails that entry. If you submit a request in which none of the
-	// entries have each of these properties, EventBridge fails the entire request.
+	// to expect in the event detail.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	DetailType *string
 
 	// The name or ARN of the event bus to receive the event. Only the rules that are
 	// associated with this event bus are used to match the event. If you omit this,
-	// the default event bus is used. If you're using a global endpoint with a custom
-	// bus, you can enter either the name or Amazon Resource Name (ARN) of the event
-	// bus in either the primary or secondary Region here. EventBridge then determines
-	// the corresponding event bus in the other Region based on the endpoint referenced
-	// by the EndpointId . Specifying the event bus ARN is preferred.
+	// the default event bus is used.
+	//
+	// If you're using a global endpoint with a custom bus, you can enter either the
+	// name or Amazon Resource Name (ARN) of the event bus in either the primary or
+	// secondary Region here. EventBridge then determines the corresponding event bus
+	// in the other Region based on the endpoint referenced by the EndpointId .
+	// Specifying the event bus ARN is preferred.
 	EventBusName *string
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN), which
 	// the event primarily concerns. Any number, including zero, may be present.
 	Resources []string
 
-	// The source of the event. Detail , DetailType , and Source are required for
-	// EventBridge to successfully send an event to an event bus. If you include event
-	// entries in a request that do not include each of those properties, EventBridge
-	// fails that entry. If you submit a request in which none of the entries have each
-	// of these properties, EventBridge fails the entire request.
+	// The source of the event.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Source *string
 
-	// The time stamp of the event, per RFC3339 (https://www.rfc-editor.org/rfc/rfc3339.txt)
-	// . If no time stamp is provided, the time stamp of the PutEvents (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html)
-	// call is used.
+	// The time stamp of the event, per [RFC3339]. If no time stamp is provided, the time stamp
+	// of the [PutEvents]call is used.
+	//
+	// [PutEvents]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
+	// [RFC3339]: https://www.rfc-editor.org/rfc/rfc3339.txt
 	Time *time.Time
 
 	// An X-Ray trace header, which is an http header (X-Amzn-Trace-Id) that contains
-	// the trace-id associated with the event. To learn more about X-Ray trace headers,
-	// see Tracing header (https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader)
-	// in the X-Ray Developer Guide.
+	// the trace-id associated with the event.
+	//
+	// To learn more about X-Ray trace headers, see [Tracing header] in the X-Ray Developer Guide.
+	//
+	// [Tracing header]: https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader
 	TraceHeader *string
 
 	noSmithyDocumentSerde
 }
 
-// Represents the results of an event submitted to an event bus. If the submission
-// was successful, the entry has the event ID in it. Otherwise, you can use the
-// error code and error message to identify the problem with the entry. For
-// information about the errors that are common to all actions, see Common Errors (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
-// .
+// Represents the results of an event submitted to an event bus.
+//
+// If the submission was successful, the entry has the event ID in it. Otherwise,
+// you can use the error code and error message to identify the problem with the
+// entry.
+//
+// For information about the errors that are common to all actions, see [Common Errors].
+//
+// [Common Errors]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html
 type PutEventsResultEntry struct {
 
-	// The error code that indicates why the event submission failed. Retryable errors
-	// include:
-	//   - InternalFailure (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
-	//   The request processing has failed because of an unknown error, exception or
+	// The error code that indicates why the event submission failed.
+	//
+	// Retryable errors include:
+	//
+	// [InternalFailure]
+	//
+	//   - The request processing has failed because of an unknown error, exception or
 	//   failure.
-	//   - ThrottlingException (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
-	//   The request was denied due to request throttling.
+	//
+	// [ThrottlingException]
+	//
+	//   - The request was denied due to request throttling.
+	//
 	// Non-retryable errors include:
-	//   - AccessDeniedException (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html)
-	//   You do not have sufficient access to perform this action.
-	//   - InvalidAccountIdException The account ID provided is not valid.
-	//   - InvalidArgument A specified parameter is not valid.
-	//   - MalformedDetail The JSON provided is not valid.
-	//   - RedactionFailure Redacting the CloudTrail event failed.
-	//   - NotAuthorizedForSourceException You do not have permissions to publish
-	//   events with this source onto this event bus.
-	//   - NotAuthorizedForDetailTypeException You do not have permissions to publish
-	//   events with this detail type onto this event bus.
+	//
+	// [AccessDeniedException]
+	//
+	//   - You do not have sufficient access to perform this action.
+	//
+	//   - InvalidAccountIdException
+	//
+	// The account ID provided is not valid.
+	//
+	//   - InvalidArgument
+	//
+	// A specified parameter is not valid.
+	//
+	//   - MalformedDetail
+	//
+	// The JSON provided is not valid.
+	//
+	//   - RedactionFailure
+	//
+	// Redacting the CloudTrail event failed.
+	//
+	//   - NotAuthorizedForSourceException
+	//
+	// You do not have permissions to publish events with this source onto this event
+	//   bus.
+	//
+	//   - NotAuthorizedForDetailTypeException
+	//
+	// You do not have permissions to publish events with this detail type onto this
+	//   event bus.
+	//
+	// [AccessDeniedException]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html
+	// [InternalFailure]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html
+	// [ThrottlingException]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html
 	ErrorCode *string
 
 	// The error message that explains why the event submission failed.
@@ -990,31 +1079,36 @@ type PutEventsResultEntry struct {
 type PutPartnerEventsRequestEntry struct {
 
 	// A valid JSON string. There is no other schema imposed. The JSON string may
-	// contain fields and nested sub-objects. Detail , DetailType , and Source are
-	// required for EventBridge to successfully send an event to an event bus. If you
-	// include event entries in a request that do not include each of those properties,
-	// EventBridge fails that entry. If you submit a request in which none of the
-	// entries have each of these properties, EventBridge fails the entire request.
+	// contain fields and nested sub-objects.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Detail *string
 
 	// A free-form string, with a maximum of 128 characters, used to decide what
-	// fields to expect in the event detail. Detail , DetailType , and Source are
-	// required for EventBridge to successfully send an event to an event bus. If you
-	// include event entries in a request that do not include each of those properties,
-	// EventBridge fails that entry. If you submit a request in which none of the
-	// entries have each of these properties, EventBridge fails the entire request.
+	// fields to expect in the event detail.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	DetailType *string
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN), which
 	// the event primarily concerns. Any number, including zero, may be present.
 	Resources []string
 
-	// The event source that is generating the entry. Detail , DetailType , and Source
-	// are required for EventBridge to successfully send an event to an event bus. If
-	// you include event entries in a request that do not include each of those
-	// properties, EventBridge fails that entry. If you submit a request in which none
-	// of the entries have each of these properties, EventBridge fails the entire
-	// request.
+	// The event source that is generating the entry.
+	//
+	// Detail , DetailType , and Source are required for EventBridge to successfully
+	// send an event to an event bus. If you include event entries in a request that do
+	// not include each of those properties, EventBridge fails that entry. If you
+	// submit a request in which none of the entries have each of these properties,
+	// EventBridge fails the entire request.
 	Source *string
 
 	// The date and time of the event.
@@ -1127,8 +1221,9 @@ type Replay struct {
 	EventSourceArn *string
 
 	// A time stamp for the time to start replaying events. This is determined by the
-	// time in the event as described in Time (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html#eventbridge-Type-PutEventsRequestEntry-Time)
-	// .
+	// time in the event as described in [Time].
+	//
+	// [Time]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html#eventbridge-Type-PutEventsRequestEntry-Time
 	EventStartTime *time.Time
 
 	// A time stamp for the time that the replay completed.
@@ -1212,9 +1307,10 @@ type Rule struct {
 	// the default event bus is used.
 	EventBusName *string
 
-	// The event pattern of the rule. For more information, see Events and Event
-	// Patterns (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html)
-	// in the Amazon EventBridge User Guide.
+	// The event pattern of the rule. For more information, see [Events and Event Patterns] in the Amazon
+	// EventBridge User Guide.
+	//
+	// [Events and Event Patterns]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html
 	EventPattern *string
 
 	// If the rule was created on behalf of your account by an Amazon Web Services
@@ -1226,16 +1322,17 @@ type Rule struct {
 	Name *string
 
 	// The Amazon Resource Name (ARN) of the role that is used for target invocation.
-	// If you're setting an event bus in another account as the target and that account
-	// granted permission to your account through an organization instead of directly
-	// by the account ID, you must specify a RoleArn with proper permissions in the
-	// Target structure, instead of here in this parameter.
+	//
+	// If you're setting an event bus in another account as the target and that
+	// account granted permission to your account through an organization instead of
+	// directly by the account ID, you must specify a RoleArn with proper permissions
+	// in the Target structure, instead of here in this parameter.
 	RoleArn *string
 
 	// The scheduling expression. For example, "cron(0 20 * * ? *)", "rate(5
-	// minutes)". For more information, see Creating an Amazon EventBridge rule that
-	// runs on a schedule (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html)
-	// .
+	// minutes)". For more information, see [Creating an Amazon EventBridge rule that runs on a schedule].
+	//
+	// [Creating an Amazon EventBridge rule that runs on a schedule]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html
 	ScheduleExpression *string
 
 	// The state of the rule.
@@ -1345,14 +1442,16 @@ type Tag struct {
 }
 
 // Targets are the resources to be invoked when a rule is triggered. For a
-// complete list of services and resources that can be set as a target, see
-// PutTargets (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutTargets.html)
-// . If you are setting the event bus of another account as the target, and that
+// complete list of services and resources that can be set as a target, see [PutTargets].
+//
+// If you are setting the event bus of another account as the target, and that
 // account granted permission to your account through an organization instead of
 // directly by the account ID, then you must specify a RoleArn with proper
-// permissions in the Target structure. For more information, see Sending and
-// Receiving Events Between Amazon Web Services Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
-// in the Amazon EventBridge User Guide.
+// permissions in the Target structure. For more information, see [Sending and Receiving Events Between Amazon Web Services Accounts] in the Amazon
+// EventBridge User Guide.
+//
+// [Sending and Receiving Events Between Amazon Web Services Accounts]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html
+// [PutTargets]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutTargets.html
 type Target struct {
 
 	// The Amazon Resource Name (ARN) of the target.
@@ -1371,8 +1470,9 @@ type Target struct {
 	AppSyncParameters *AppSyncParameters
 
 	// If the event target is an Batch job, this contains the job definition, job
-	// name, and other parameters. For more information, see Jobs (https://docs.aws.amazon.com/batch/latest/userguide/jobs.html)
-	// in the Batch User Guide.
+	// name, and other parameters. For more information, see [Jobs]in the Batch User Guide.
+	//
+	// [Jobs]: https://docs.aws.amazon.com/batch/latest/userguide/jobs.html
 	BatchParameters *BatchParameters
 
 	// The DeadLetterConfig that defines the target queue to send dead-letter queue
@@ -1380,30 +1480,34 @@ type Target struct {
 	DeadLetterConfig *DeadLetterConfig
 
 	// Contains the Amazon ECS task definition and task count to be used, if the event
-	// target is an Amazon ECS task. For more information about Amazon ECS tasks, see
-	// Task Definitions  (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html)
+	// target is an Amazon ECS task. For more information about Amazon ECS tasks, see [Task Definitions]
 	// in the Amazon EC2 Container Service Developer Guide.
+	//
+	// [Task Definitions]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html
 	EcsParameters *EcsParameters
 
 	// Contains the HTTP parameters to use when the target is a API Gateway endpoint
-	// or EventBridge ApiDestination. If you specify an API Gateway API or EventBridge
-	// ApiDestination as a target, you can use this parameter to specify headers, path
-	// parameters, and query string keys/values as part of your target invoking
-	// request. If you're using ApiDestinations, the corresponding Connection can also
-	// have these values configured. In case of any conflicting keys, values from the
-	// Connection take precedence.
+	// or EventBridge ApiDestination.
+	//
+	// If you specify an API Gateway API or EventBridge ApiDestination as a target,
+	// you can use this parameter to specify headers, path parameters, and query string
+	// keys/values as part of your target invoking request. If you're using
+	// ApiDestinations, the corresponding Connection can also have these values
+	// configured. In case of any conflicting keys, values from the Connection take
+	// precedence.
 	HttpParameters *HttpParameters
 
 	// Valid JSON text passed to the target. In this case, nothing from the event
-	// itself is passed to the target. For more information, see The JavaScript Object
-	// Notation (JSON) Data Interchange Format (http://www.rfc-editor.org/rfc/rfc7159.txt)
-	// .
+	// itself is passed to the target. For more information, see [The JavaScript Object Notation (JSON) Data Interchange Format].
+	//
+	// [The JavaScript Object Notation (JSON) Data Interchange Format]: http://www.rfc-editor.org/rfc/rfc7159.txt
 	Input *string
 
 	// The value of the JSONPath that is used for extracting part of the matched event
 	// when passing it to the target. You may use JSON dot notation or bracket
-	// notation. For more information about JSON paths, see JSONPath (http://goessner.net/articles/JsonPath/)
-	// .
+	// notation. For more information about JSON paths, see [JSONPath].
+	//
+	// [JSONPath]: http://goessner.net/articles/JsonPath/
 	InputPath *string
 
 	// Settings to enable you to provide custom input to a target based on certain
@@ -1417,9 +1521,11 @@ type Target struct {
 	KinesisParameters *KinesisParameters
 
 	// Contains the Amazon Redshift Data API parameters to use when the target is a
-	// Amazon Redshift cluster. If you specify a Amazon Redshift Cluster as a Target,
-	// you can use this to specify parameters to invoke the Amazon Redshift Data API
-	// ExecuteStatement based on EventBridge events.
+	// Amazon Redshift cluster.
+	//
+	// If you specify a Amazon Redshift Cluster as a Target, you can use this to
+	// specify parameters to invoke the Amazon Redshift Data API ExecuteStatement based
+	// on EventBridge events.
 	RedshiftDataParameters *RedshiftDataParameters
 
 	// The RetryPolicy object that contains the retry policy configuration to use for
@@ -1435,13 +1541,16 @@ type Target struct {
 	RunCommandParameters *RunCommandParameters
 
 	// Contains the SageMaker Model Building Pipeline parameters to start execution of
-	// a SageMaker Model Building Pipeline. If you specify a SageMaker Model Building
-	// Pipeline as a target, you can use this to specify parameters to start a pipeline
-	// execution based on EventBridge events.
+	// a SageMaker Model Building Pipeline.
+	//
+	// If you specify a SageMaker Model Building Pipeline as a target, you can use
+	// this to specify parameters to start a pipeline execution based on EventBridge
+	// events.
 	SageMakerPipelineParameters *SageMakerPipelineParameters
 
-	// Contains the message group ID to use when the target is a FIFO queue. If you
-	// specify an SQS FIFO queue as a target, the queue must have content-based
+	// Contains the message group ID to use when the target is a FIFO queue.
+	//
+	// If you specify an SQS FIFO queue as a target, the queue must have content-based
 	// deduplication enabled.
 	SqsParameters *SqsParameters
 

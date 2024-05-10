@@ -12,19 +12,28 @@ import (
 
 // Deletes the specified IAM user. Unlike the Amazon Web Services Management
 // Console, when you delete a user programmatically, you must delete the items
-// attached to the user manually, or the deletion fails. For more information, see
-// Deleting an IAM user (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli)
+// attached to the user manually, or the deletion fails. For more information, see [Deleting an IAM user]
 // . Before attempting to delete a user, remove the following items:
-//   - Password ( DeleteLoginProfile )
-//   - Access keys ( DeleteAccessKey )
-//   - Signing certificate ( DeleteSigningCertificate )
-//   - SSH public key ( DeleteSSHPublicKey )
-//   - Git credentials ( DeleteServiceSpecificCredential )
-//   - Multi-factor authentication (MFA) device ( DeactivateMFADevice ,
-//     DeleteVirtualMFADevice )
-//   - Inline policies ( DeleteUserPolicy )
-//   - Attached managed policies ( DetachUserPolicy )
-//   - Group memberships ( RemoveUserFromGroup )
+//
+//   - Password (DeleteLoginProfile )
+//
+//   - Access keys (DeleteAccessKey )
+//
+//   - Signing certificate (DeleteSigningCertificate )
+//
+//   - SSH public key (DeleteSSHPublicKey )
+//
+//   - Git credentials (DeleteServiceSpecificCredential )
+//
+//   - Multi-factor authentication (MFA) device (DeactivateMFADevice , DeleteVirtualMFADevice)
+//
+//   - Inline policies (DeleteUserPolicy )
+//
+//   - Attached managed policies (DetachUserPolicy )
+//
+//   - Group memberships (RemoveUserFromGroup )
+//
+// [Deleting an IAM user]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli
 func (c *Client) DeleteUser(ctx context.Context, params *DeleteUserInput, optFns ...func(*Options)) (*DeleteUserOutput, error) {
 	if params == nil {
 		params = &DeleteUserInput{}
@@ -42,10 +51,13 @@ func (c *Client) DeleteUser(ctx context.Context, params *DeleteUserInput, optFns
 
 type DeleteUserInput struct {
 
-	// The name of the user to delete. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	// The name of the user to delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string

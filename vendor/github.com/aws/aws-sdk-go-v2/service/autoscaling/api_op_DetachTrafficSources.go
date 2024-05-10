@@ -12,10 +12,11 @@ import (
 )
 
 // Detaches one or more traffic sources from the specified Auto Scaling group.
+//
 // When you detach a traffic source, it enters the Removing state while
 // deregistering the instances in the group. When all instances are deregistered,
-// then you can no longer describe the traffic source using the
-// DescribeTrafficSources API call. The instances continue to run.
+// then you can no longer describe the traffic source using the DescribeTrafficSourcesAPI call. The
+// instances continue to run.
 func (c *Client) DetachTrafficSources(ctx context.Context, params *DetachTrafficSourcesInput, optFns ...func(*Options)) (*DetachTrafficSourcesOutput, error) {
 	if params == nil {
 		params = &DetachTrafficSourcesInput{}

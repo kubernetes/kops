@@ -67,8 +67,9 @@ type DescribePatchGroupStateOutput struct {
 
 	// The number of managed nodes with patches installed that are specified in a
 	// RejectedPatches list. Patches with a status of INSTALLED_REJECTED were
-	// typically installed before they were added to a RejectedPatches list. If
-	// ALLOW_AS_DEPENDENCY is the specified option for RejectedPatchesAction , the
+	// typically installed before they were added to a RejectedPatches list.
+	//
+	// If ALLOW_AS_DEPENDENCY is the specified option for RejectedPatchesAction , the
 	// value of InstancesWithInstalledRejectedPatches will always be 0 (zero).
 	InstancesWithInstalledRejectedPatches *int32
 

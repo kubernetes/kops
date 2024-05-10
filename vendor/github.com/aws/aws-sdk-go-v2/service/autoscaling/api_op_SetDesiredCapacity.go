@@ -10,11 +10,15 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Sets the size of the specified Auto Scaling group. If a scale-in activity
-// occurs as a result of a new DesiredCapacity value that is lower than the
-// current size of the group, the Auto Scaling group uses its termination policy to
-// determine which instances to terminate. For more information, see Manual scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-manual-scaling.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// Sets the size of the specified Auto Scaling group.
+//
+// If a scale-in activity occurs as a result of a new DesiredCapacity value that
+// is lower than the current size of the group, the Auto Scaling group uses its
+// termination policy to determine which instances to terminate.
+//
+// For more information, see [Manual scaling] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Manual scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-manual-scaling.html
 func (c *Client) SetDesiredCapacity(ctx context.Context, params *SetDesiredCapacityInput, optFns ...func(*Options)) (*SetDesiredCapacityOutput, error) {
 	if params == nil {
 		params = &SetDesiredCapacityInput{}

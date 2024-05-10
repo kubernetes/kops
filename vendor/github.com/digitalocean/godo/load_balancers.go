@@ -290,6 +290,10 @@ type GLBSettings struct {
 	TargetPort uint32 `json:"target_port"`
 	// CDNSettings is the CDN configurations
 	CDN *CDNSettings `json:"cdn"`
+	// RegionPriorities embeds regional priority information for regional active-passive failover policy
+	RegionPriorities map[string]uint32 `json:"region_priorities,omitempty"`
+	// FailoverThreshold embeds failover threshold percentage for regional active-passive failover policy
+	FailoverThreshold uint32 `json:"failover_threshold,omitempty"`
 }
 
 // String creates a human-readable description of a GLBSettings
@@ -299,8 +303,10 @@ func (s GLBSettings) String() string {
 
 func (s GLBSettings) deepCopy() *GLBSettings {
 	settings := &GLBSettings{
-		TargetProtocol: s.TargetProtocol,
-		TargetPort:     s.TargetPort,
+		TargetProtocol:    s.TargetProtocol,
+		TargetPort:        s.TargetPort,
+		RegionPriorities:  s.RegionPriorities,
+		FailoverThreshold: s.FailoverThreshold,
 	}
 	if s.CDN != nil {
 		settings.CDN = &CDNSettings{IsEnabled: s.CDN.IsEnabled}

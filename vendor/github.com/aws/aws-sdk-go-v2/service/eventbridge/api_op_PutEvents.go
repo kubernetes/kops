@@ -13,14 +13,19 @@ import (
 )
 
 // Sends custom events to Amazon EventBridge so that they can be matched to rules.
-// The maximum size for a PutEvents event entry is 256 KB. Entry size is calculated
-// including the event and any necessary characters and keys of the JSON
-// representation of the event. To learn more, see Calculating PutEvents event
-// entry size (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html)
-// in the Amazon EventBridge User Guide PutEvents accepts the data in JSON format.
-// For the JSON number (integer) data type, the constraints are: a minimum value of
-// -9,223,372,036,854,775,808 and a maximum value of 9,223,372,036,854,775,807.
+//
+// The maximum size for a PutEvents event entry is 256 KB. Entry size is
+// calculated including the event and any necessary characters and keys of the JSON
+// representation of the event. To learn more, see [Calculating PutEvents event entry size]in the Amazon EventBridge User
+// Guide
+//
+// PutEvents accepts the data in JSON format. For the JSON number (integer) data
+// type, the constraints are: a minimum value of -9,223,372,036,854,775,808 and a
+// maximum value of 9,223,372,036,854,775,807.
+//
 // PutEvents will only process nested JSON up to 1100 levels deep.
+//
+// [Calculating PutEvents event entry size]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html
 func (c *Client) PutEvents(ctx context.Context, params *PutEventsInput, optFns ...func(*Options)) (*PutEventsOutput, error) {
 	if params == nil {
 		params = &PutEventsInput{}
@@ -47,7 +52,9 @@ type PutEventsInput struct {
 
 	// The URL subdomain of the endpoint. For example, if the URL for Endpoint is
 	// https://abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is
-	// abcde.veo . When using Java, you must include auth-crt on the class path.
+	// abcde.veo .
+	//
+	// When using Java, you must include auth-crt on the class path.
 	EndpointId *string
 
 	noSmithyDocumentSerde
@@ -62,9 +69,10 @@ type PutEventsOutput struct {
 
 	// The successfully and unsuccessfully ingested events results. If the ingestion
 	// was successful, the entry has the event ID in it. Otherwise, you can use the
-	// error code and error message to identify the problem with the entry. For each
-	// record, the index of the response element is the same as the index in the
-	// request array.
+	// error code and error message to identify the problem with the entry.
+	//
+	// For each record, the index of the response element is the same as the index in
+	// the request array.
 	Entries []types.PutEventsResultEntry
 
 	// The number of failed entries.

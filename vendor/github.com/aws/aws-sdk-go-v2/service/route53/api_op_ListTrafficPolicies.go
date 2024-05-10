@@ -13,10 +13,12 @@ import (
 
 // Gets information about the latest version for every traffic policy that is
 // associated with the current Amazon Web Services account. Policies are listed in
-// the order that they were created in. For information about how of deleting a
-// traffic policy affects the response from ListTrafficPolicies , see
-// DeleteTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicy.html)
-// .
+// the order that they were created in.
+//
+// For information about how of deleting a traffic policy affects the response
+// from ListTrafficPolicies , see [DeleteTrafficPolicy].
+//
+// [DeleteTrafficPolicy]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicy.html
 func (c *Client) ListTrafficPolicies(ctx context.Context, params *ListTrafficPoliciesInput, optFns ...func(*Options)) (*ListTrafficPoliciesOutput, error) {
 	if params == nil {
 		params = &ListTrafficPoliciesInput{}
@@ -45,11 +47,13 @@ type ListTrafficPoliciesInput struct {
 	MaxItems *int32
 
 	// (Conditional) For your first request to ListTrafficPolicies , don't include the
-	// TrafficPolicyIdMarker parameter. If you have more traffic policies than the
-	// value of MaxItems , ListTrafficPolicies returns only the first MaxItems traffic
-	// policies. To get the next group of policies, submit another request to
-	// ListTrafficPolicies . For the value of TrafficPolicyIdMarker , specify the value
-	// of TrafficPolicyIdMarker that was returned in the previous response.
+	// TrafficPolicyIdMarker parameter.
+	//
+	// If you have more traffic policies than the value of MaxItems ,
+	// ListTrafficPolicies returns only the first MaxItems traffic policies. To get
+	// the next group of policies, submit another request to ListTrafficPolicies . For
+	// the value of TrafficPolicyIdMarker , specify the value of TrafficPolicyIdMarker
+	// that was returned in the previous response.
 	TrafficPolicyIdMarker *string
 
 	noSmithyDocumentSerde

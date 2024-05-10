@@ -13,9 +13,14 @@ import (
 )
 
 // Creates an API destination, which is an HTTP invocation endpoint configured as
-// a target for events. API destinations do not support private destinations, such
-// as interface VPC endpoints. For more information, see API destinations (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
-// in the EventBridge User Guide.
+// a target for events.
+//
+// API destinations do not support private destinations, such as interface VPC
+// endpoints.
+//
+// For more information, see [API destinations] in the EventBridge User Guide.
+//
+// [API destinations]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html
 func (c *Client) CreateApiDestination(ctx context.Context, params *CreateApiDestinationInput, optFns ...func(*Options)) (*CreateApiDestinationOutput, error) {
 	if params == nil {
 		params = &CreateApiDestinationInput{}

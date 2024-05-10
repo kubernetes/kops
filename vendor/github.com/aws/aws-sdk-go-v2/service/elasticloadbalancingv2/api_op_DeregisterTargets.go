@@ -13,18 +13,26 @@ import (
 
 // Deregisters the specified targets from the specified target group. After the
 // targets are deregistered, they no longer receive traffic from the load balancer.
+//
 // The load balancer stops sending requests to targets that are deregistering, but
 // uses connection draining to ensure that in-flight traffic completes on the
 // existing connections. This deregistration delay is configured by default but can
-// be updated for each target group. For more information, see the following:
-//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#deregistration-delay)
-//     in the Application Load Balancers User Guide
-//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#deregistration-delay)
-//     in the Network Load Balancers User Guide
-//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#deregistration-delay)
-//     in the Gateway Load Balancers User Guide
+// be updated for each target group.
+//
+// For more information, see the following:
+//
+// [Deregistration delay]
+//   - in the Application Load Balancers User Guide
+//
+// [Deregistration delay]
+//   - in the Network Load Balancers User Guide
+//
+// [Deregistration delay]
+//   - in the Gateway Load Balancers User Guide
 //
 // Note: If the specified target does not exist, the action returns successfully.
+//
+// [Deregistration delay]: https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#deregistration-delay
 func (c *Client) DeregisterTargets(ctx context.Context, params *DeregisterTargetsInput, optFns ...func(*Options)) (*DeregisterTargetsOutput, error) {
 	if params == nil {
 		params = &DeregisterTargetsInput{}

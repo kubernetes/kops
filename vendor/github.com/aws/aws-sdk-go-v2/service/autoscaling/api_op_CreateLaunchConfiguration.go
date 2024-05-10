@@ -11,19 +11,24 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Creates a launch configuration. If you exceed your maximum limit of launch
-// configurations, the call fails. To query this limit, call the
-// DescribeAccountLimits API. For information about updating this limit, see
-// Quotas for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html)
-// in the Amazon EC2 Auto Scaling User Guide. For more information, see Launch
-// configurations (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchConfiguration.html)
-// in the Amazon EC2 Auto Scaling User Guide. Amazon EC2 Auto Scaling configures
-// instances launched as part of an Auto Scaling group using either a launch
-// template or a launch configuration. We strongly recommend that you do not use
-// launch configurations. They do not provide full functionality for Amazon EC2
-// Auto Scaling or Amazon EC2. For information about using launch templates, see
-// Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
+// Creates a launch configuration.
+//
+// If you exceed your maximum limit of launch configurations, the call fails. To
+// query this limit, call the DescribeAccountLimitsAPI. For information about updating this limit, see [Quotas for Amazon EC2 Auto Scaling]
 // in the Amazon EC2 Auto Scaling User Guide.
+//
+// For more information, see [Launch configurations] in the Amazon EC2 Auto Scaling User Guide.
+//
+// Amazon EC2 Auto Scaling configures instances launched as part of an Auto
+// Scaling group using either a launch template or a launch configuration. We
+// strongly recommend that you do not use launch configurations. They do not
+// provide full functionality for Amazon EC2 Auto Scaling or Amazon EC2. For
+// information about using launch templates, see [Launch templates]in the Amazon EC2 Auto Scaling
+// User Guide.
+//
+// [Quotas for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html
+// [Launch configurations]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchConfiguration.html
+// [Launch templates]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html
 func (c *Client) CreateLaunchConfiguration(ctx context.Context, params *CreateLaunchConfigurationInput, optFns ...func(*Options)) (*CreateLaunchConfigurationOutput, error) {
 	if params == nil {
 		params = &CreateLaunchConfigurationInput{}
@@ -52,18 +57,24 @@ type CreateLaunchConfigurationInput struct {
 	// public IPv4 address, unless you disabled the option to assign a public IPv4
 	// address on the subnet. If the instance is launched into a nondefault subnet, the
 	// default is not to assign a public IPv4 address, unless you enabled the option to
-	// assign a public IPv4 address on the subnet. If you specify true , each instance
-	// in the Auto Scaling group receives a unique public IPv4 address. For more
-	// information, see Launching Auto Scaling instances in a VPC (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html)
-	// in the Amazon EC2 Auto Scaling User Guide. If you specify this property, you
-	// must specify at least one subnet for VPCZoneIdentifier when you create your
-	// group.
+	// assign a public IPv4 address on the subnet.
+	//
+	// If you specify true , each instance in the Auto Scaling group receives a unique
+	// public IPv4 address. For more information, see [Launching Auto Scaling instances in a VPC]in the Amazon EC2 Auto Scaling
+	// User Guide.
+	//
+	// If you specify this property, you must specify at least one subnet for
+	// VPCZoneIdentifier when you create your group.
+	//
+	// [Launching Auto Scaling instances in a VPC]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html
 	AssociatePublicIpAddress *bool
 
 	// The block device mapping entries that define the block devices to attach to the
 	// instances at launch. By default, the block devices specified in the block device
-	// mapping for the AMI are used. For more information, see Block device mappings (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html)
-	// in the Amazon EC2 User Guide for Linux Instances.
+	// mapping for the AMI are used. For more information, see [Block device mappings]in the Amazon EC2 User
+	// Guide for Linux Instances.
+	//
+	// [Block device mappings]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html
 	BlockDeviceMappings []types.BlockDeviceMapping
 
 	// Available for backward compatibility.
@@ -77,102 +88,132 @@ type CreateLaunchConfigurationInput struct {
 	// an optimized configuration stack to provide optimal I/O performance. This
 	// optimization is not available with all instance types. Additional fees are
 	// incurred when you enable EBS optimization for an instance type that is not
-	// EBS-optimized by default. For more information, see Amazon EBS-optimized
-	// instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html)
-	// in the Amazon EC2 User Guide for Linux Instances. The default value is false .
+	// EBS-optimized by default. For more information, see [Amazon EBS-optimized instances]in the Amazon EC2 User
+	// Guide for Linux Instances.
+	//
+	// The default value is false .
+	//
+	// [Amazon EBS-optimized instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html
 	EbsOptimized *bool
 
 	// The name or the Amazon Resource Name (ARN) of the instance profile associated
 	// with the IAM role for the instance. The instance profile contains the IAM role.
-	// For more information, see IAM role for applications that run on Amazon EC2
-	// instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/us-iam-role.html)
-	// in the Amazon EC2 Auto Scaling User Guide.
+	// For more information, see [IAM role for applications that run on Amazon EC2 instances]in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// [IAM role for applications that run on Amazon EC2 instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/us-iam-role.html
 	IamInstanceProfile *string
 
 	// The ID of the Amazon Machine Image (AMI) that was assigned during registration.
-	// For more information, see Finding a Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
-	// in the Amazon EC2 User Guide for Linux Instances. If you specify InstanceId , an
-	// ImageId is not required.
+	// For more information, see [Finding a Linux AMI]in the Amazon EC2 User Guide for Linux Instances.
+	//
+	// If you specify InstanceId , an ImageId is not required.
+	//
+	// [Finding a Linux AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
 	ImageId *string
 
 	// The ID of the instance to use to create the launch configuration. The new
 	// launch configuration derives attributes from the instance, except for the block
-	// device mapping. To create a launch configuration with a block device mapping or
-	// override any other instance attributes, specify them as part of the same
-	// request. For more information, see Creating a launch configuration using an EC2
-	// instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-lc-with-instanceID.html)
-	// in the Amazon EC2 Auto Scaling User Guide.
+	// device mapping.
+	//
+	// To create a launch configuration with a block device mapping or override any
+	// other instance attributes, specify them as part of the same request.
+	//
+	// For more information, see [Creating a launch configuration using an EC2 instance] in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// [Creating a launch configuration using an EC2 instance]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-lc-with-instanceID.html
 	InstanceId *string
 
 	// Controls whether instances in this group are launched with detailed ( true ) or
-	// basic ( false ) monitoring. The default value is true (enabled). When detailed
-	// monitoring is enabled, Amazon CloudWatch generates metrics every minute and your
-	// account is charged a fee. When you disable detailed monitoring, CloudWatch
-	// generates metrics every 5 minutes. For more information, see Configure
-	// Monitoring for Auto Scaling Instances (https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html)
-	// in the Amazon EC2 Auto Scaling User Guide.
+	// basic ( false ) monitoring.
+	//
+	// The default value is true (enabled).
+	//
+	// When detailed monitoring is enabled, Amazon CloudWatch generates metrics every
+	// minute and your account is charged a fee. When you disable detailed monitoring,
+	// CloudWatch generates metrics every 5 minutes. For more information, see [Configure Monitoring for Auto Scaling Instances]in the
+	// Amazon EC2 Auto Scaling User Guide.
+	//
+	// [Configure Monitoring for Auto Scaling Instances]: https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html
 	InstanceMonitoring *types.InstanceMonitoring
 
 	// Specifies the instance type of the EC2 instance. For information about
-	// available instance types, see Available instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes)
-	// in the Amazon EC2 User Guide for Linux Instances. If you specify InstanceId , an
-	// InstanceType is not required.
+	// available instance types, see [Available instance types]in the Amazon EC2 User Guide for Linux Instances.
+	//
+	// If you specify InstanceId , an InstanceType is not required.
+	//
+	// [Available instance types]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes
 	InstanceType *string
 
-	// The ID of the kernel associated with the AMI. We recommend that you use PV-GRUB
-	// instead of kernels and RAM disks. For more information, see User provided
-	// kernels (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedKernels.html)
-	// in the Amazon EC2 User Guide for Linux Instances.
+	// The ID of the kernel associated with the AMI.
+	//
+	// We recommend that you use PV-GRUB instead of kernels and RAM disks. For more
+	// information, see [User provided kernels]in the Amazon EC2 User Guide for Linux Instances.
+	//
+	// [User provided kernels]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedKernels.html
 	KernelId *string
 
-	// The name of the key pair. For more information, see Amazon EC2 key pairs and
-	// Linux instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
-	// in the Amazon EC2 User Guide for Linux Instances.
+	// The name of the key pair. For more information, see [Amazon EC2 key pairs and Linux instances] in the Amazon EC2 User
+	// Guide for Linux Instances.
+	//
+	// [Amazon EC2 key pairs and Linux instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
 	KeyName *string
 
-	// The metadata options for the instances. For more information, see Configuring
-	// the Instance Metadata Options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
-	// in the Amazon EC2 Auto Scaling User Guide.
+	// The metadata options for the instances. For more information, see [Configuring the Instance Metadata Options] in the
+	// Amazon EC2 Auto Scaling User Guide.
+	//
+	// [Configuring the Instance Metadata Options]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds
 	MetadataOptions *types.InstanceMetadataOptions
 
 	// The tenancy of the instance, either default or dedicated . An instance with
 	// dedicated tenancy runs on isolated, single-tenant hardware and can only be
 	// launched into a VPC. To launch dedicated instances into a shared tenancy VPC (a
 	// VPC with the instance placement tenancy attribute set to default ), you must set
-	// the value of this property to dedicated . For more information, see Configuring
-	// instance tenancy with Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-dedicated-instances.html)
-	// in the Amazon EC2 Auto Scaling User Guide. If you specify PlacementTenancy , you
-	// must specify at least one subnet for VPCZoneIdentifier when you create your
-	// group. Valid values: default | dedicated
+	// the value of this property to dedicated . For more information, see [Configuring instance tenancy with Amazon EC2 Auto Scaling] in the
+	// Amazon EC2 Auto Scaling User Guide.
+	//
+	// If you specify PlacementTenancy , you must specify at least one subnet for
+	// VPCZoneIdentifier when you create your group.
+	//
+	// Valid values: default | dedicated
+	//
+	// [Configuring instance tenancy with Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-dedicated-instances.html
 	PlacementTenancy *string
 
-	// The ID of the RAM disk to select. We recommend that you use PV-GRUB instead of
-	// kernels and RAM disks. For more information, see User provided kernels (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedKernels.html)
-	// in the Amazon EC2 User Guide for Linux Instances.
+	// The ID of the RAM disk to select.
+	//
+	// We recommend that you use PV-GRUB instead of kernels and RAM disks. For more
+	// information, see [User provided kernels]in the Amazon EC2 User Guide for Linux Instances.
+	//
+	// [User provided kernels]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedKernels.html
 	RamdiskId *string
 
 	// A list that contains the security group IDs to assign to the instances in the
-	// Auto Scaling group. For more information, see Control traffic to resources
-	// using security groups (https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html)
-	// in the Amazon Virtual Private Cloud User Guide.
+	// Auto Scaling group. For more information, see [Control traffic to resources using security groups]in the Amazon Virtual Private
+	// Cloud User Guide.
+	//
+	// [Control traffic to resources using security groups]: https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html
 	SecurityGroups []string
 
 	// The maximum hourly price to be paid for any Spot Instance launched to fulfill
 	// the request. Spot Instances are launched when the price you specify exceeds the
-	// current Spot price. For more information, see Request Spot Instances for
-	// fault-tolerant and flexible applications (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-template-spot-instances.html)
-	// in the Amazon EC2 Auto Scaling User Guide. Valid Range: Minimum value of 0.001
+	// current Spot price. For more information, see [Request Spot Instances for fault-tolerant and flexible applications]in the Amazon EC2 Auto Scaling
+	// User Guide.
+	//
+	// Valid Range: Minimum value of 0.001
+	//
 	// When you change your maximum price by creating a new launch configuration,
 	// running instances will continue to run as long as the maximum price for those
 	// running instances is higher than the current Spot price.
+	//
+	// [Request Spot Instances for fault-tolerant and flexible applications]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-template-spot-instances.html
 	SpotPrice *string
 
 	// The user data to make available to the launched EC2 instances. For more
-	// information, see Instance metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-	// (Linux) and Instance metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html)
-	// (Windows). If you are using a command line tool, base64-encoding is performed
-	// for you, and you can load the text from a file. Otherwise, you must provide
-	// base64-encoded text. User data is limited to 16 KB.
+	// information, see [Instance metadata and user data](Linux) and [Instance metadata and user data] (Windows). If you are using a command line tool,
+	// base64-encoding is performed for you, and you can load the text from a file.
+	// Otherwise, you must provide base64-encoded text. User data is limited to 16 KB.
+	//
+	// [Instance metadata and user data]: https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html
 	UserData *string
 
 	noSmithyDocumentSerde

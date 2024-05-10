@@ -12,22 +12,35 @@ import (
 )
 
 // Returns information about all completed key material rotations for the
-// specified KMS key. You must specify the KMS key in all requests. You can refine
-// the key rotations list by limiting the number of rotations returned. For
-// detailed information about automatic and on-demand key rotations, see Rotating
-// KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html)
-// in the Key Management Service Developer Guide. Cross-account use: No. You cannot
-// perform this operation on a KMS key in a different Amazon Web Services account.
-// Required permissions: kms:ListKeyRotations (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (key policy) Related operations:
-//   - EnableKeyRotation
-//   - DisableKeyRotation
-//   - GetKeyRotationStatus
-//   - RotateKeyOnDemand
+// specified KMS key.
+//
+// You must specify the KMS key in all requests. You can refine the key rotations
+// list by limiting the number of rotations returned.
+//
+// For detailed information about automatic and on-demand key rotations, see [Rotating KMS keys] in
+// the Key Management Service Developer Guide.
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in a
+// different Amazon Web Services account.
+//
+// Required permissions: [kms:ListKeyRotations] (key policy)
+//
+// Related operations:
+//
+// # EnableKeyRotation
+//
+// # DisableKeyRotation
+//
+// # GetKeyRotationStatus
+//
+// # RotateKeyOnDemand
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [Rotating KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
+// [kms:ListKeyRotations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
 func (c *Client) ListKeyRotations(ctx context.Context, params *ListKeyRotationsInput, optFns ...func(*Options)) (*ListKeyRotationsOutput, error) {
 	if params == nil {
 		params = &ListKeyRotationsInput{}
@@ -45,21 +58,28 @@ func (c *Client) ListKeyRotations(ctx context.Context, params *ListKeyRotationsI
 
 type ListKeyRotationsInput struct {
 
-	// Gets the key rotations for the specified KMS key. Specify the key ID or key ARN
-	// of the KMS key. For example:
+	// Gets the key rotations for the specified KMS key.
+	//
+	// Specify the key ID or key ARN of the KMS key.
+	//
+	// For example:
+	//
 	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Key ARN:
 	//   arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
-	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey .
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	//
 	// This member is required.
 	KeyId *string
 
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 1000, inclusive. If you do not include a value, it
-	// defaults to 100.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 1000,
+	// inclusive. If you do not include a value, it defaults to 100.
 	Limit *int32
 
 	// Use this parameter in a subsequent request after you receive a response with
@@ -182,9 +202,10 @@ var _ ListKeyRotationsAPIClient = (*Client)(nil)
 type ListKeyRotationsPaginatorOptions struct {
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 1000, inclusive. If you do not include a value, it
-	// defaults to 100.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 1000,
+	// inclusive. If you do not include a value, it defaults to 100.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

@@ -11,19 +11,26 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Attaches one or more traffic sources to the specified Auto Scaling group. You
-// can use any of the following as traffic sources for an Auto Scaling group:
+// Attaches one or more traffic sources to the specified Auto Scaling group.
+//
+// You can use any of the following as traffic sources for an Auto Scaling group:
+//
 //   - Application Load Balancer
+//
 //   - Classic Load Balancer
+//
 //   - Gateway Load Balancer
+//
 //   - Network Load Balancer
+//
 //   - VPC Lattice
 //
 // This operation is additive and does not detach existing traffic sources from
-// the Auto Scaling group. After the operation completes, use the
-// DescribeTrafficSources API to return details about the state of the attachments
-// between traffic sources and your Auto Scaling group. To detach a traffic source
-// from the Auto Scaling group, call the DetachTrafficSources API.
+// the Auto Scaling group.
+//
+// After the operation completes, use the DescribeTrafficSources API to return details about the state
+// of the attachments between traffic sources and your Auto Scaling group. To
+// detach a traffic source from the Auto Scaling group, call the DetachTrafficSourcesAPI.
 func (c *Client) AttachTrafficSources(ctx context.Context, params *AttachTrafficSourcesInput, optFns ...func(*Options)) (*AttachTrafficSourcesOutput, error) {
 	if params == nil {
 		params = &AttachTrafficSourcesInput{}

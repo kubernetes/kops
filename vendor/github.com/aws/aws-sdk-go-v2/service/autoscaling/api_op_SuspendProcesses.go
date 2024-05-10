@@ -11,11 +11,15 @@ import (
 )
 
 // Suspends the specified auto scaling processes, or all processes, for the
-// specified Auto Scaling group. If you suspend either the Launch or Terminate
-// process types, it can prevent other process types from functioning properly. For
-// more information, see Suspending and resuming scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)
-// in the Amazon EC2 Auto Scaling User Guide. To resume processes that have been
-// suspended, call the ResumeProcesses API.
+// specified Auto Scaling group.
+//
+// If you suspend either the Launch or Terminate process types, it can prevent
+// other process types from functioning properly. For more information, see [Suspending and resuming scaling processes]in the
+// Amazon EC2 Auto Scaling User Guide.
+//
+// To resume processes that have been suspended, call the ResumeProcesses API.
+//
+// [Suspending and resuming scaling processes]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html
 func (c *Client) SuspendProcesses(ctx context.Context, params *SuspendProcessesInput, optFns ...func(*Options)) (*SuspendProcessesOutput, error) {
 	if params == nil {
 		params = &SuspendProcessesInput{}
@@ -39,15 +43,25 @@ type SuspendProcessesInput struct {
 	AutoScalingGroupName *string
 
 	// One or more of the following processes:
+	//
 	//   - Launch
+	//
 	//   - Terminate
+	//
 	//   - AddToLoadBalancer
+	//
 	//   - AlarmNotification
+	//
 	//   - AZRebalance
+	//
 	//   - HealthCheck
+	//
 	//   - InstanceRefresh
+	//
 	//   - ReplaceUnhealthy
+	//
 	//   - ScheduledActions
+	//
 	// If you omit this property, all processes are specified.
 	ScalingProcesses []string
 

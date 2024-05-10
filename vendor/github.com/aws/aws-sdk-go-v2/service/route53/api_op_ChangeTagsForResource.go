@@ -11,9 +11,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Adds, edits, or deletes tags for a health check or a hosted zone. For
-// information about using tags for cost allocation, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
-// in the Billing and Cost Management User Guide.
+// Adds, edits, or deletes tags for a health check or a hosted zone.
+//
+// For information about using tags for cost allocation, see [Using Cost Allocation Tags] in the Billing and
+// Cost Management User Guide.
+//
+// [Using Cost Allocation Tags]: https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html
 func (c *Client) ChangeTagsForResource(ctx context.Context, params *ChangeTagsForResourceInput, optFns ...func(*Options)) (*ChangeTagsForResourceOutput, error) {
 	if params == nil {
 		params = &ChangeTagsForResourceInput{}
@@ -39,7 +42,9 @@ type ChangeTagsForResourceInput struct {
 	ResourceId *string
 
 	// The type of the resource.
+	//
 	//   - The resource type for health checks is healthcheck .
+	//
 	//   - The resource type for hosted zones is hostedzone .
 	//
 	// This member is required.
@@ -47,7 +52,9 @@ type ChangeTagsForResourceInput struct {
 
 	// A complex type that contains a list of the tags that you want to add to the
 	// specified health check or hosted zone and/or the tags that you want to edit
-	// Value for. You can add a maximum of 10 tags to a health check or a hosted zone.
+	// Value for.
+	//
+	// You can add a maximum of 10 tags to a health check or a hosted zone.
 	AddTags []types.Tag
 
 	// A complex type that contains a list of the tags that you want to delete from

@@ -13,15 +13,19 @@ import (
 
 // Lists the IAM users that have the specified path prefix. If no path prefix is
 // specified, the operation returns all users in the Amazon Web Services account.
-// If there are none, the operation returns an empty list. IAM resource-listing
-// operations return a subset of the available attributes for the resource. This
-// operation does not return the following attributes, even though they are an
-// attribute of the returned object:
+// If there are none, the operation returns an empty list.
+//
+// IAM resource-listing operations return a subset of the available attributes for
+// the resource. This operation does not return the following attributes, even
+// though they are an attribute of the returned object:
+//
 //   - PermissionsBoundary
+//
 //   - Tags
 //
-// To view all of the information for a user, see GetUser . You can paginate the
-// results using the MaxItems and Marker parameters.
+// To view all of the information for a user, see GetUser.
+//
+// You can paginate the results using the MaxItems and Marker parameters.
 func (c *Client) ListUsers(ctx context.Context, params *ListUsersInput, optFns ...func(*Options)) (*ListUsersOutput, error) {
 	if params == nil {
 		params = &ListUsersInput{}
@@ -47,22 +51,27 @@ type ListUsersInput struct {
 
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	MaxItems *int32
 
-	// The path prefix for filtering the results. For example:
+	//  The path prefix for filtering the results. For example:
 	// /division_abc/subdivision_xyz/ , which would get all user names whose path
-	// starts with /division_abc/subdivision_xyz/ . This parameter is optional. If it
-	// is not included, it defaults to a slash (/), listing all user names. This
-	// parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters consisting of either a forward slash (/) by itself or a
-	// string that must begin and end with forward slashes. In addition, it can contain
-	// any ASCII character from the ! ( \u0021 ) through the DEL character ( \u007F ),
-	// including most punctuation characters, digits, and upper and lowercased letters.
+	// starts with /division_abc/subdivision_xyz/ .
+	//
+	// This parameter is optional. If it is not included, it defaults to a slash (/),
+	// listing all user names. This parameter allows (through its [regex pattern]) a string of
+	// characters consisting of either a forward slash (/) by itself or a string that
+	// must begin and end with forward slashes. In addition, it can contain any ASCII
+	// character from the ! ( \u0021 ) through the DEL character ( \u007F ), including
+	// most punctuation characters, digits, and upper and lowercased letters.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	PathPrefix *string
 
 	noSmithyDocumentSerde
@@ -181,11 +190,13 @@ var _ ListUsersAPIClient = (*Client)(nil)
 type ListUsersPaginatorOptions struct {
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

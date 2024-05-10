@@ -11,9 +11,10 @@ import (
 )
 
 // Deletes the Amazon Web Services Systems Manager document (SSM document) and all
-// managed node associations to the document. Before you delete the document, we
-// recommend that you use DeleteAssociation to disassociate all managed nodes that
-// are associated with the document.
+// managed node associations to the document.
+//
+// Before you delete the document, we recommend that you use DeleteAssociation to disassociate all
+// managed nodes that are associated with the document.
 func (c *Client) DeleteDocument(ctx context.Context, params *DeleteDocumentInput, optFns ...func(*Options)) (*DeleteDocumentOutput, error) {
 	if params == nil {
 		params = &DeleteDocumentInput{}

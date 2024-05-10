@@ -10,8 +10,9 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Retrieves the ca certificate bundle. This action returns a pre-signed S3 URI
-// which is active for ten minutes.
+// Retrieves the ca certificate bundle.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
 func (c *Client) GetTrustStoreCaCertificatesBundle(ctx context.Context, params *GetTrustStoreCaCertificatesBundleInput, optFns ...func(*Options)) (*GetTrustStoreCaCertificatesBundleOutput, error) {
 	if params == nil {
 		params = &GetTrustStoreCaCertificatesBundleInput{}

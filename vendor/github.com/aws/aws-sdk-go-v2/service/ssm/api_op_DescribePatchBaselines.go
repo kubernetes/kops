@@ -29,11 +29,21 @@ func (c *Client) DescribePatchBaselines(ctx context.Context, params *DescribePat
 
 type DescribePatchBaselinesInput struct {
 
-	// Each element in the array is a structure containing a key-value pair. Supported
-	// keys for DescribePatchBaselines include the following:
-	//   - NAME_PREFIX Sample values: AWS- | My-
-	//   - OWNER Sample values: AWS | Self
-	//   - OPERATING_SYSTEM Sample values: AMAZON_LINUX | SUSE | WINDOWS
+	// Each element in the array is a structure containing a key-value pair.
+	//
+	// Supported keys for DescribePatchBaselines include the following:
+	//
+	//   - NAME_PREFIX
+	//
+	// Sample values: AWS- | My-
+	//
+	//   - OWNER
+	//
+	// Sample values: AWS | Self
+	//
+	//   - OPERATING_SYSTEM
+	//
+	// Sample values: AMAZON_LINUX | SUSE | WINDOWS
 	Filters []types.PatchOrchestratorFilter
 
 	// The maximum number of patch baselines to return (per page).

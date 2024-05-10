@@ -12,8 +12,11 @@ import (
 )
 
 // Describes the current Elastic Load Balancing resource limits for your AWS
-// account. For more information, see Limits for Your Classic Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-limits.html)
-// in the Classic Load Balancers Guide.
+// account.
+//
+// For more information, see [Limits for Your Classic Load Balancer] in the Classic Load Balancers Guide.
+//
+// [Limits for Your Classic Load Balancer]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-limits.html
 func (c *Client) DescribeAccountLimits(ctx context.Context, params *DescribeAccountLimitsInput, optFns ...func(*Options)) (*DescribeAccountLimitsOutput, error) {
 	if params == nil {
 		params = &DescribeAccountLimitsInput{}

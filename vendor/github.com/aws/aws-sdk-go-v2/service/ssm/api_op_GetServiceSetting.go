@@ -17,14 +17,16 @@ import (
 // account based on feature or service usage, then the Amazon Web Services service
 // team might create a default setting of false . This means the user can't use
 // this feature unless they change the setting to true and intentionally opt in
-// for a paid feature. Services map a SettingId object to a setting value. Amazon
-// Web Services services teams define the default value for a SettingId . You can't
-// create a new SettingId , but you can overwrite the default value if you have the
-// ssm:UpdateServiceSetting permission for the setting. Use the
-// UpdateServiceSetting API operation to change the default setting. Or use the
-// ResetServiceSetting to change the value back to the original value defined by
-// the Amazon Web Services service team. Query the current service setting for the
-// Amazon Web Services account.
+// for a paid feature.
+//
+// Services map a SettingId object to a setting value. Amazon Web Services
+// services teams define the default value for a SettingId . You can't create a new
+// SettingId , but you can overwrite the default value if you have the
+// ssm:UpdateServiceSetting permission for the setting. Use the UpdateServiceSetting API operation to
+// change the default setting. Or use the ResetServiceSettingto change the value back to the original
+// value defined by the Amazon Web Services service team.
+//
+// Query the current service setting for the Amazon Web Services account.
 func (c *Client) GetServiceSetting(ctx context.Context, params *GetServiceSettingInput, optFns ...func(*Options)) (*GetServiceSettingOutput, error) {
 	if params == nil {
 		params = &GetServiceSettingInput{}
@@ -45,13 +47,21 @@ type GetServiceSettingInput struct {
 
 	// The ID of the service setting to get. The setting ID can be one of the
 	// following.
+	//
 	//   - /ssm/managed-instance/default-ec2-instance-management-role
+	//
 	//   - /ssm/automation/customer-script-log-destination
+	//
 	//   - /ssm/automation/customer-script-log-group-name
+	//
 	//   - /ssm/documents/console/public-sharing-permission
+	//
 	//   - /ssm/managed-instance/activation-tier
+	//
 	//   - /ssm/opsinsights/opscenter
+	//
 	//   - /ssm/parameter-store/default-parameter-tier
+	//
 	//   - /ssm/parameter-store/high-throughput-enabled
 	//
 	// This member is required.

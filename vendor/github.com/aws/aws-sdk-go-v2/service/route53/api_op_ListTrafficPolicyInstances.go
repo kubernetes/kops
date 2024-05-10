@@ -12,13 +12,15 @@ import (
 )
 
 // Gets information about the traffic policy instances that you created by using
-// the current Amazon Web Services account. After you submit an
-// UpdateTrafficPolicyInstance request, there's a brief delay while Amazon Route 53
-// creates the resource record sets that are specified in the traffic policy
-// definition. For more information, see the State response element. Route 53
-// returns a maximum of 100 items in each response. If you have a lot of traffic
-// policy instances, you can use the MaxItems parameter to list them in groups of
-// up to 100.
+// the current Amazon Web Services account.
+//
+// After you submit an UpdateTrafficPolicyInstance request, there's a brief delay
+// while Amazon Route 53 creates the resource record sets that are specified in the
+// traffic policy definition. For more information, see the State response element.
+//
+// Route 53 returns a maximum of 100 items in each response. If you have a lot of
+// traffic policy instances, you can use the MaxItems parameter to list them in
+// groups of up to 100.
 func (c *Client) ListTrafficPolicyInstances(ctx context.Context, params *ListTrafficPolicyInstancesInput, optFns ...func(*Options)) (*ListTrafficPolicyInstancesOutput, error) {
 	if params == nil {
 		params = &ListTrafficPolicyInstancesInput{}
@@ -43,8 +45,10 @@ type ListTrafficPolicyInstancesInput struct {
 	// ListTrafficPolicyInstances request. For the value of HostedZoneId , specify the
 	// value of HostedZoneIdMarker from the previous response, which is the hosted
 	// zone ID of the first traffic policy instance in the next group of traffic policy
-	// instances. If the value of IsTruncated in the previous response was false ,
-	// there are no more traffic policy instances to get.
+	// instances.
+	//
+	// If the value of IsTruncated in the previous response was false , there are no
+	// more traffic policy instances to get.
 	HostedZoneIdMarker *string
 
 	// The maximum number of traffic policy instances that you want Amazon Route 53 to
@@ -61,8 +65,10 @@ type ListTrafficPolicyInstancesInput struct {
 	// ListTrafficPolicyInstances request. For the value of trafficpolicyinstancename ,
 	// specify the value of TrafficPolicyInstanceNameMarker from the previous
 	// response, which is the name of the first traffic policy instance in the next
-	// group of traffic policy instances. If the value of IsTruncated in the previous
-	// response was false , there are no more traffic policy instances to get.
+	// group of traffic policy instances.
+	//
+	// If the value of IsTruncated in the previous response was false , there are no
+	// more traffic policy instances to get.
 	TrafficPolicyInstanceNameMarker *string
 
 	// If the value of IsTruncated in the previous response was true , you have more
@@ -70,8 +76,10 @@ type ListTrafficPolicyInstancesInput struct {
 	// ListTrafficPolicyInstances request. For the value of trafficpolicyinstancetype ,
 	// specify the value of TrafficPolicyInstanceTypeMarker from the previous
 	// response, which is the type of the first traffic policy instance in the next
-	// group of traffic policy instances. If the value of IsTruncated in the previous
-	// response was false , there are no more traffic policy instances to get.
+	// group of traffic policy instances.
+	//
+	// If the value of IsTruncated in the previous response was false , there are no
+	// more traffic policy instances to get.
 	TrafficPolicyInstanceTypeMarker types.RRType
 
 	noSmithyDocumentSerde

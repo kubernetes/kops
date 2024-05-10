@@ -10,10 +10,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the specified target group. You can delete a target group if it is not
-// referenced by any actions. Deleting a target group also deletes any associated
-// health checks. Deleting a target group does not affect its registered targets.
-// For example, any EC2 instances continue to run until you stop or terminate them.
+// Deletes the specified target group.
+//
+// You can delete a target group if it is not referenced by any actions. Deleting
+// a target group also deletes any associated health checks. Deleting a target
+// group does not affect its registered targets. For example, any EC2 instances
+// continue to run until you stop or terminate them.
 func (c *Client) DeleteTargetGroup(ctx context.Context, params *DeleteTargetGroupInput, optFns ...func(*Options)) (*DeleteTargetGroupOutput, error) {
 	if params == nil {
 		params = &DeleteTargetGroupInput{}

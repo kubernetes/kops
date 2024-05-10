@@ -18,15 +18,17 @@ import (
 // values for those parameters. This is by design. You must specify all optional
 // parameters in the call, even if you are not changing the parameters. This
 // includes the Name parameter. Before calling this API action, we recommend that
-// you call the DescribeAssociation API operation and make a note of all optional
-// parameters required for your UpdateAssociation call. In order to call this API
-// operation, a user, group, or role must be granted permission to call the
-// DescribeAssociation API operation. If you don't have permission to call
+// you call the DescribeAssociationAPI operation and make a note of all optional parameters required
+// for your UpdateAssociation call.
+//
+// In order to call this API operation, a user, group, or role must be granted
+// permission to call the DescribeAssociationAPI operation. If you don't have permission to call
 // DescribeAssociation , then you receive the following error: An error occurred
 // (AccessDeniedException) when calling the UpdateAssociation operation: User:
-// isn't authorized to perform: ssm:DescribeAssociation on resource: When you
-// update an association, the association immediately runs against the specified
-// targets. You can add the ApplyOnlyAtCronInterval parameter to run the
+// isn't authorized to perform: ssm:DescribeAssociation on resource:
+//
+// When you update an association, the association immediately runs against the
+// specified targets. You can add the ApplyOnlyAtCronInterval parameter to run the
 // association during the next schedule run.
 func (c *Client) UpdateAssociation(ctx context.Context, params *UpdateAssociationInput, optFns ...func(*Options)) (*UpdateAssociationOutput, error) {
 	if params == nil {
@@ -57,19 +59,22 @@ type UpdateAssociationInput struct {
 	// By default, when you update an association, the system runs it immediately
 	// after it is updated and then according to the schedule you specified. Specify
 	// this option if you don't want an association to run immediately after you update
-	// it. This parameter isn't supported for rate expressions. If you chose this
-	// option when you created an association and later you edit that association or
-	// you make changes to the SSM document on which that association is based (by
-	// using the Documents page in the console), State Manager applies the association
-	// at the next specified cron interval. For example, if you chose the Latest
-	// version of an SSM document when you created an association and you edit the
-	// association by choosing a different document version on the Documents page,
-	// State Manager applies the association at the next specified cron interval if you
-	// previously selected this option. If this option wasn't selected, State Manager
-	// immediately runs the association. You can reset this option. To do so, specify
-	// the no-apply-only-at-cron-interval parameter when you update the association
-	// from the command line. This parameter forces the association to run immediately
-	// after updating it and according to the interval specified.
+	// it. This parameter isn't supported for rate expressions.
+	//
+	// If you chose this option when you created an association and later you edit
+	// that association or you make changes to the SSM document on which that
+	// association is based (by using the Documents page in the console), State Manager
+	// applies the association at the next specified cron interval. For example, if you
+	// chose the Latest version of an SSM document when you created an association and
+	// you edit the association by choosing a different document version on the
+	// Documents page, State Manager applies the association at the next specified cron
+	// interval if you previously selected this option. If this option wasn't selected,
+	// State Manager immediately runs the association.
+	//
+	// You can reset this option. To do so, specify the no-apply-only-at-cron-interval
+	// parameter when you update the association from the command line. This parameter
+	// forces the association to run immediately after updating it and according to the
+	// interval specified.
 	ApplyOnlyAtCronInterval bool
 
 	// The name of the association that you want to update.
@@ -88,44 +93,51 @@ type UpdateAssociationInput struct {
 
 	// The names or Amazon Resource Names (ARNs) of the Change Calendar type documents
 	// you want to gate your associations under. The associations only run when that
-	// change calendar is open. For more information, see Amazon Web Services Systems
-	// Manager Change Calendar (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar)
-	// .
+	// change calendar is open. For more information, see [Amazon Web Services Systems Manager Change Calendar].
+	//
+	// [Amazon Web Services Systems Manager Change Calendar]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar
 	CalendarNames []string
 
 	// The severity level to assign to the association.
 	ComplianceSeverity types.AssociationComplianceSeverity
 
-	// The document version you want update for the association. State Manager doesn't
-	// support running associations that use a new version of a document if that
-	// document is shared from another account. State Manager always runs the default
-	// version of a document if shared from another account, even though the Systems
-	// Manager console shows that a new version was processed. If you want to run an
-	// association using a new version of a document shared form another account, you
-	// must set the document version to default .
+	// The document version you want update for the association.
+	//
+	// State Manager doesn't support running associations that use a new version of a
+	// document if that document is shared from another account. State Manager always
+	// runs the default version of a document if shared from another account, even
+	// though the Systems Manager console shows that a new version was processed. If
+	// you want to run an association using a new version of a document shared form
+	// another account, you must set the document version to default .
 	DocumentVersion *string
 
 	// The number of hours the association can run before it is canceled. Duration
 	// applies to associations that are currently running, and any pending and in
 	// progress commands on all targets. If a target was taken offline for the
 	// association to run, it is made available again immediately, without a reboot.
+	//
 	// The Duration parameter applies only when both these conditions are true:
+	//
 	//   - The association for which you specify a duration is cancelable according to
 	//   the parameters of the SSM command document or Automation runbook associated with
 	//   this execution.
-	//   - The command specifies the ApplyOnlyAtCronInterval (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_UpdateAssociation.html#systemsmanager-UpdateAssociation-request-ApplyOnlyAtCronInterval)
-	//   parameter, which means that the association doesn't run immediately after it is
-	//   updated, but only according to the specified schedule.
+	//
+	//   - The command specifies the [ApplyOnlyAtCronInterval]parameter, which means that the association
+	//   doesn't run immediately after it is updated, but only according to the specified
+	//   schedule.
+	//
+	// [ApplyOnlyAtCronInterval]: https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_UpdateAssociation.html#systemsmanager-UpdateAssociation-request-ApplyOnlyAtCronInterval
 	Duration *int32
 
 	// The maximum number of targets allowed to run the association at the same time.
 	// You can specify a number, for example 10, or a percentage of the target set, for
 	// example 10%. The default value is 100%, which means all targets run the
-	// association at the same time. If a new managed node starts and attempts to run
-	// an association while Systems Manager is running MaxConcurrency associations,
-	// the association is allowed to run. During the next association interval, the new
-	// managed node will process its association within the limit specified for
-	// MaxConcurrency .
+	// association at the same time.
+	//
+	// If a new managed node starts and attempts to run an association while Systems
+	// Manager is running MaxConcurrency associations, the association is allowed to
+	// run. During the next association interval, the new managed node will process its
+	// association within the limit specified for MaxConcurrency .
 	MaxConcurrency *string
 
 	// The number of errors that are allowed before the system stops sending requests
@@ -135,24 +147,33 @@ type UpdateAssociationInput struct {
 	// fourth error is received. If you specify 0, then the system stops sending
 	// requests after the first error is returned. If you run an association on 50
 	// managed nodes and set MaxError to 10%, then the system stops sending the
-	// request when the sixth error is received. Executions that are already running an
-	// association when MaxErrors is reached are allowed to complete, but some of
-	// these executions may fail as well. If you need to ensure that there won't be
-	// more than max-errors failed executions, set MaxConcurrency to 1 so that
-	// executions proceed one at a time.
+	// request when the sixth error is received.
+	//
+	// Executions that are already running an association when MaxErrors is reached
+	// are allowed to complete, but some of these executions may fail as well. If you
+	// need to ensure that there won't be more than max-errors failed executions, set
+	// MaxConcurrency to 1 so that executions proceed one at a time.
 	MaxErrors *string
 
 	// The name of the SSM Command document or Automation runbook that contains the
-	// configuration information for the managed node. You can specify Amazon Web
-	// Services-predefined documents, documents you created, or a document that is
-	// shared with you from another account. For Systems Manager document (SSM
-	// document) that are shared with you from other Amazon Web Services accounts, you
-	// must specify the complete SSM document ARN, in the following format:
-	// arn:aws:ssm:region:account-id:document/document-name For example:
-	// arn:aws:ssm:us-east-2:12345678912:document/My-Shared-Document For Amazon Web
-	// Services-predefined documents and SSM documents you created in your account, you
-	// only need to specify the document name. For example, AWS-ApplyPatchBaseline or
-	// My-Document .
+	// configuration information for the managed node.
+	//
+	// You can specify Amazon Web Services-predefined documents, documents you
+	// created, or a document that is shared with you from another account.
+	//
+	// For Systems Manager document (SSM document) that are shared with you from other
+	// Amazon Web Services accounts, you must specify the complete SSM document ARN, in
+	// the following format:
+	//
+	//     arn:aws:ssm:region:account-id:document/document-name
+	//
+	// For example:
+	//
+	//     arn:aws:ssm:us-east-2:12345678912:document/My-Shared-Document
+	//
+	// For Amazon Web Services-predefined documents and SSM documents you created in
+	// your account, you only need to specify the document name. For example,
+	// AWS-ApplyPatchBaseline or My-Document .
 	Name *string
 
 	// An S3 bucket where you want to store the results of this request.
@@ -170,22 +191,27 @@ type UpdateAssociationInput struct {
 	// example, if you specified a cron schedule of cron(0 0 ? * THU#2 *) , you could
 	// specify an offset of 3 to run the association each Sunday after the second
 	// Thursday of the month. For more information about cron schedules for
-	// associations, see Reference: Cron and rate expressions for Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/reference-cron-and-rate-expressions.html)
-	// in the Amazon Web Services Systems Manager User Guide. To use offsets, you must
-	// specify the ApplyOnlyAtCronInterval parameter. This option tells the system not
-	// to run an association immediately after you create it.
+	// associations, see [Reference: Cron and rate expressions for Systems Manager]in the Amazon Web Services Systems Manager User Guide.
+	//
+	// To use offsets, you must specify the ApplyOnlyAtCronInterval parameter. This
+	// option tells the system not to run an association immediately after you create
+	// it.
+	//
+	// [Reference: Cron and rate expressions for Systems Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/reference-cron-and-rate-expressions.html
 	ScheduleOffset *int32
 
 	// The mode for generating association compliance. You can specify AUTO or MANUAL .
 	// In AUTO mode, the system uses the status of the association execution to
 	// determine the compliance status. If the association execution runs successfully,
 	// then the association is COMPLIANT . If the association execution doesn't run
-	// successfully, the association is NON-COMPLIANT . In MANUAL mode, you must
-	// specify the AssociationId as a parameter for the PutComplianceItems API
+	// successfully, the association is NON-COMPLIANT .
+	//
+	// In MANUAL mode, you must specify the AssociationId as a parameter for the PutComplianceItems API
 	// operation. In this case, compliance data isn't managed by State Manager, a
 	// capability of Amazon Web Services Systems Manager. It is managed by your direct
-	// call to the PutComplianceItems API operation. By default, all associations use
-	// AUTO mode.
+	// call to the PutComplianceItemsAPI operation.
+	//
+	// By default, all associations use AUTO mode.
 	SyncCompliance types.AssociationSyncCompliance
 
 	// A location is a combination of Amazon Web Services Regions and Amazon Web

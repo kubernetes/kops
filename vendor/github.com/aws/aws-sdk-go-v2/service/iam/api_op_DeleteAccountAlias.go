@@ -10,10 +10,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the specified Amazon Web Services account alias. For information about
-// using an Amazon Web Services account alias, see Creating, deleting, and listing
-// an Amazon Web Services account alias (https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html)
-// in the Amazon Web Services Sign-In User Guide.
+//	Deletes the specified Amazon Web Services account alias. For information about
+//
+// using an Amazon Web Services account alias, see [Creating, deleting, and listing an Amazon Web Services account alias]in the Amazon Web Services
+// Sign-In User Guide.
+//
+// [Creating, deleting, and listing an Amazon Web Services account alias]: https://docs.aws.amazon.com/signin/latest/userguide/CreateAccountAlias.html
 func (c *Client) DeleteAccountAlias(ctx context.Context, params *DeleteAccountAliasInput, optFns ...func(*Options)) (*DeleteAccountAliasOutput, error) {
 	if params == nil {
 		params = &DeleteAccountAliasInput{}
@@ -31,10 +33,13 @@ func (c *Client) DeleteAccountAlias(ctx context.Context, params *DeleteAccountAl
 
 type DeleteAccountAliasInput struct {
 
-	// The name of the account alias to delete. This parameter allows (through its
-	// regex pattern (http://wikipedia.org/wiki/regex) ) a string of characters
-	// consisting of lowercase letters, digits, and dashes. You cannot start or finish
-	// with a dash, nor can you have two dashes in a row.
+	// The name of the account alias to delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of
+	// lowercase letters, digits, and dashes. You cannot start or finish with a dash,
+	// nor can you have two dashes in a row.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	AccountAlias *string

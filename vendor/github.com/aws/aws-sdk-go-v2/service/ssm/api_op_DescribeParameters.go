@@ -12,17 +12,22 @@ import (
 )
 
 // Lists the parameters in your Amazon Web Services account or the parameters
-// shared with you when you enable the Shared (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_DescribeParameters.html#systemsmanager-DescribeParameters-request-Shared)
-// option. Request results are returned on a best-effort basis. If you specify
-// MaxResults in the request, the response includes information up to the limit
-// specified. The number of items returned, however, can be between zero and the
-// value of MaxResults . If the service reaches an internal limit while processing
-// the results, it stops the operation and returns the matching values up to that
-// point and a NextToken . You can specify the NextToken in a subsequent call to
-// get the next set of results. If you change the KMS key alias for the KMS key
-// used to encrypt a parameter, then you must also update the key alias the
-// parameter uses to reference KMS. Otherwise, DescribeParameters retrieves
-// whatever the original key alias was referencing.
+// shared with you when you enable the [Shared]option.
+//
+// Request results are returned on a best-effort basis. If you specify MaxResults
+// in the request, the response includes information up to the limit specified. The
+// number of items returned, however, can be between zero and the value of
+// MaxResults . If the service reaches an internal limit while processing the
+// results, it stops the operation and returns the matching values up to that point
+// and a NextToken . You can specify the NextToken in a subsequent call to get the
+// next set of results.
+//
+// If you change the KMS key alias for the KMS key used to encrypt a parameter,
+// then you must also update the key alias the parameter uses to reference KMS.
+// Otherwise, DescribeParameters retrieves whatever the original key alias was
+// referencing.
+//
+// [Shared]: https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_DescribeParameters.html#systemsmanager-DescribeParameters-request-Shared
 func (c *Client) DescribeParameters(ctx context.Context, params *DescribeParametersInput, optFns ...func(*Options)) (*DescribeParametersOutput, error) {
 	if params == nil {
 		params = &DescribeParametersInput{}
@@ -54,15 +59,19 @@ type DescribeParametersInput struct {
 	// Filters to limit the request results.
 	ParameterFilters []types.ParameterStringFilter
 
-	// Lists parameters that are shared with you. By default when using this option,
-	// the command returns parameters that have been shared using a standard Resource
-	// Access Manager Resource Share. In order for a parameter that was shared using
-	// the PutResourcePolicy command to be returned, the associated RAM Resource Share
-	// Created From Policy must have been promoted to a standard Resource Share using
-	// the RAM PromoteResourceShareCreatedFromPolicy (https://docs.aws.amazon.com/ram/latest/APIReference/API_PromoteResourceShareCreatedFromPolicy.html)
-	// API operation. For more information about sharing parameters, see Working with
-	// shared parameters (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// Lists parameters that are shared with you.
+	//
+	// By default when using this option, the command returns parameters that have
+	// been shared using a standard Resource Access Manager Resource Share. In order
+	// for a parameter that was shared using the PutResourcePolicycommand to be returned, the
+	// associated RAM Resource Share Created From Policy must have been promoted to a
+	// standard Resource Share using the RAM [PromoteResourceShareCreatedFromPolicy]API operation.
+	//
+	// For more information about sharing parameters, see [Working with shared parameters] in the Amazon Web Services
+	// Systems Manager User Guide.
+	//
+	// [PromoteResourceShareCreatedFromPolicy]: https://docs.aws.amazon.com/ram/latest/APIReference/API_PromoteResourceShareCreatedFromPolicy.html
+	// [Working with shared parameters]: https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html
 	Shared *bool
 
 	noSmithyDocumentSerde

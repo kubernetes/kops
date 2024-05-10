@@ -14,10 +14,13 @@ import (
 // operation can be performed using the CLI, the Amazon Web Services API, or the My
 // Security Credentials page in the Amazon Web Services Management Console. The
 // Amazon Web Services account root user password is not affected by this
-// operation. Use UpdateLoginProfile to use the CLI, the Amazon Web Services API,
-// or the Users page in the IAM console to change the password for any IAM user.
-// For more information about modifying passwords, see Managing passwords (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html)
-// in the IAM User Guide.
+// operation.
+//
+// Use UpdateLoginProfile to use the CLI, the Amazon Web Services API, or the Users page in the IAM
+// console to change the password for any IAM user. For more information about
+// modifying passwords, see [Managing passwords]in the IAM User Guide.
+//
+// [Managing passwords]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html
 func (c *Client) ChangePassword(ctx context.Context, params *ChangePasswordInput, optFns ...func(*Options)) (*ChangePasswordOutput, error) {
 	if params == nil {
 		params = &ChangePasswordInput{}
@@ -36,15 +39,18 @@ func (c *Client) ChangePassword(ctx context.Context, params *ChangePasswordInput
 type ChangePasswordInput struct {
 
 	// The new password. The new password must conform to the Amazon Web Services
-	// account's password policy, if one exists. The regex pattern (http://wikipedia.org/wiki/regex)
-	// that is used to validate this parameter is a string of characters. That string
-	// can include almost any printable ASCII character from the space ( \u0020 )
-	// through the end of the ASCII character range ( \u00FF ). You can also include
+	// account's password policy, if one exists.
+	//
+	// The [regex pattern] that is used to validate this parameter is a string of characters. That
+	// string can include almost any printable ASCII character from the space ( \u0020
+	// ) through the end of the ASCII character range ( \u00FF ). You can also include
 	// the tab ( \u0009 ), line feed ( \u000A ), and carriage return ( \u000D )
 	// characters. Any of these characters are valid in a password. However, many
 	// tools, such as the Amazon Web Services Management Console, might restrict the
 	// ability to type certain characters because they have special meaning within that
 	// tool.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	NewPassword *string

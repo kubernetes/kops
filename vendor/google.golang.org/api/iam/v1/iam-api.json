@@ -3216,7 +3216,7 @@
       }
     }
   },
-  "revision": "20240418",
+  "revision": "20240502",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -4705,7 +4705,7 @@
           "type": "string"
         },
         "disableReason": {
-          "description": "optional. If the key is disabled, it may have a DisableReason describing why it was disabled.",
+          "description": "Output only. optional. If the key is disabled, it may have a DisableReason describing why it was disabled.",
           "enum": [
             "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED",
             "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED",
@@ -4718,6 +4718,7 @@
             "Google detected this Service Account external key's private key data as exposed, typically in a public repository on GitHub or similar.",
             "This service account external key was detected as compromised and used by an attacker."
           ],
+          "readOnly": true,
           "type": "string"
         },
         "disabled": {
@@ -4725,10 +4726,11 @@
           "type": "boolean"
         },
         "extendedStatus": {
-          "description": "Extended Status provides permanent information about a service account key. For example, if this key was detected as exposed or compromised, that information will remain for the lifetime of the key in the extended_status.",
+          "description": "Output only. Extended Status provides permanent information about a service account key. For example, if this key was detected as exposed or compromised, that information will remain for the lifetime of the key in the extended_status.",
           "items": {
             "$ref": "ExtendedStatus"
           },
+          "readOnly": true,
           "type": "array"
         },
         "keyAlgorithm": {

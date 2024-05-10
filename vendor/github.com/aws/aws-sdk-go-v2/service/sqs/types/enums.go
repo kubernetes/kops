@@ -6,6 +6,7 @@ type MessageSystemAttributeName string
 
 // Enum values for MessageSystemAttributeName
 const (
+	MessageSystemAttributeNameAll                              MessageSystemAttributeName = "All"
 	MessageSystemAttributeNameSenderId                         MessageSystemAttributeName = "SenderId"
 	MessageSystemAttributeNameSentTimestamp                    MessageSystemAttributeName = "SentTimestamp"
 	MessageSystemAttributeNameApproximateReceiveCount          MessageSystemAttributeName = "ApproximateReceiveCount"
@@ -19,9 +20,11 @@ const (
 
 // Values returns all known values for MessageSystemAttributeName. Note that this
 // can be expanded in the future, and so it is only as up to date as the client.
+//
 // The ordering of this slice is not guaranteed to be stable across updates.
 func (MessageSystemAttributeName) Values() []MessageSystemAttributeName {
 	return []MessageSystemAttributeName{
+		"All",
 		"SenderId",
 		"SentTimestamp",
 		"ApproximateReceiveCount",
@@ -43,8 +46,9 @@ const (
 
 // Values returns all known values for MessageSystemAttributeNameForSends. Note
 // that this can be expanded in the future, and so it is only as up to date as the
-// client. The ordering of this slice is not guaranteed to be stable across
-// updates.
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (MessageSystemAttributeNameForSends) Values() []MessageSystemAttributeNameForSends {
 	return []MessageSystemAttributeNameForSends{
 		"AWSTraceHeader",
@@ -80,8 +84,9 @@ const (
 )
 
 // Values returns all known values for QueueAttributeName. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (QueueAttributeName) Values() []QueueAttributeName {
 	return []QueueAttributeName{
 		"All",

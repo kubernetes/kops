@@ -11,10 +11,12 @@ import (
 )
 
 // Deactivates the specified MFA device and removes it from association with the
-// user name for which it was originally enabled. For more information about
-// creating and working with virtual MFA devices, see Enabling a virtual
-// multi-factor authentication (MFA) device (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_VirtualMFA.html)
+// user name for which it was originally enabled.
+//
+// For more information about creating and working with virtual MFA devices, see [Enabling a virtual multi-factor authentication (MFA) device]
 // in the IAM User Guide.
+//
+// [Enabling a virtual multi-factor authentication (MFA) device]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_VirtualMFA.html
 func (c *Client) DeactivateMFADevice(ctx context.Context, params *DeactivateMFADeviceInput, optFns ...func(*Options)) (*DeactivateMFADeviceOutput, error) {
 	if params == nil {
 		params = &DeactivateMFADeviceInput{}
@@ -33,18 +35,24 @@ func (c *Client) DeactivateMFADevice(ctx context.Context, params *DeactivateMFAD
 type DeactivateMFADeviceInput struct {
 
 	// The serial number that uniquely identifies the MFA device. For virtual MFA
-	// devices, the serial number is the device ARN. This parameter allows (through its
-	// regex pattern (http://wikipedia.org/wiki/regex) ) a string of characters
-	// consisting of upper and lowercase alphanumeric characters with no spaces. You
-	// can also include any of the following characters: =,.@:/-
+	// devices, the serial number is the device ARN.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: =,.@:/-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	SerialNumber *string
 
-	// The name of the user whose MFA device you want to deactivate. This parameter
-	// allows (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string
-	// of characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the user whose MFA device you want to deactivate.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string

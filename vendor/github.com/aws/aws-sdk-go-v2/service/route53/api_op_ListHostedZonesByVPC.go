@@ -15,9 +15,11 @@ import (
 // regardless of which Amazon Web Services account or Amazon Web Services service
 // owns the hosted zones. The HostedZoneOwner structure in the response contains
 // one of the following values:
+//
 //   - An OwningAccount element, which contains the account number of either the
 //     current Amazon Web Services account or another Amazon Web Services account. Some
 //     services, such as Cloud Map, create hosted zones using the current account.
+//
 //   - An OwningService element, which identifies the Amazon Web Services service
 //     that created and owns the hosted zone. For example, if a hosted zone was created
 //     by Amazon Elastic File System (Amazon EFS), the value of Owner is
@@ -26,13 +28,19 @@ import (
 // When listing private hosted zones, the hosted zone and the Amazon VPC must
 // belong to the same partition where the hosted zones were created. A partition is
 // a group of Amazon Web Services Regions. Each Amazon Web Services account is
-// scoped to one partition. The following are the supported partitions:
+// scoped to one partition.
+//
+// The following are the supported partitions:
+//
 //   - aws - Amazon Web Services Regions
+//
 //   - aws-cn - China Regions
+//
 //   - aws-us-gov - Amazon Web Services GovCloud (US) Region
 //
-// For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-// in the Amazon Web Services General Reference.
+// For more information, see [Access Management] in the Amazon Web Services General Reference.
+//
+// [Access Management]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 func (c *Client) ListHostedZonesByVPC(ctx context.Context, params *ListHostedZonesByVPCInput, optFns ...func(*Options)) (*ListHostedZonesByVPCOutput, error) {
 	if params == nil {
 		params = &ListHostedZonesByVPCInput{}
@@ -72,9 +80,13 @@ type ListHostedZonesByVPCInput struct {
 
 	// If the previous response included a NextToken element, the specified VPC is
 	// associated with more hosted zones. To get more hosted zones, submit another
-	// ListHostedZonesByVPC request. For the value of NextToken , specify the value of
-	// NextToken from the previous response. If the previous response didn't include a
-	// NextToken element, there are no more hosted zones to get.
+	// ListHostedZonesByVPC request.
+	//
+	// For the value of NextToken , specify the value of NextToken from the previous
+	// response.
+	//
+	// If the previous response didn't include a NextToken element, there are no more
+	// hosted zones to get.
 	NextToken *string
 
 	noSmithyDocumentSerde

@@ -31,9 +31,10 @@ type StartAutomationExecutionInput struct {
 
 	// The name of the SSM document to run. This can be a public document or a custom
 	// document. To run a shared document belonging to another account, specify the
-	// document ARN. For more information about how to use shared documents, see
-	// Sharing SSM documents (https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-ssm-sharing.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// document ARN. For more information about how to use shared documents, see [Sharing SSM documents]in
+	// the Amazon Web Services Systems Manager User Guide.
+	//
+	// [Sharing SSM documents]: https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-ssm-sharing.html
 	//
 	// This member is required.
 	DocumentName *string
@@ -61,10 +62,12 @@ type StartAutomationExecutionInput struct {
 	// automation on additional targets after the first error result is returned. If
 	// you run an automation on 50 resources and set max-errors to 10%, then the system
 	// stops running the automation on additional targets when the sixth error is
-	// received. Executions that are already running an automation when max-errors is
-	// reached are allowed to complete, but some of these executions may fail as well.
-	// If you need to ensure that there won't be more than max-errors failed
-	// executions, set max-concurrency to 1 so the executions proceed one at a time.
+	// received.
+	//
+	// Executions that are already running an automation when max-errors is reached
+	// are allowed to complete, but some of these executions may fail as well. If you
+	// need to ensure that there won't be more than max-errors failed executions, set
+	// max-concurrency to 1 so the executions proceed one at a time.
 	MaxErrors *string
 
 	// The execution mode of the automation. Valid modes include the following: Auto
@@ -80,17 +83,21 @@ type StartAutomationExecutionInput struct {
 	// different ways, such as by purpose, owner, or environment. For example, you
 	// might want to tag an automation to identify an environment or operating system.
 	// In this case, you could specify the following key-value pairs:
+	//
 	//   - Key=environment,Value=test
+	//
 	//   - Key=OS,Value=Windows
+	//
 	// To add tags to an existing automation, use the AddTagsToResource operation.
 	Tags []types.Tag
 
 	// A location is a combination of Amazon Web Services Regions and/or Amazon Web
 	// Services accounts where you want to run the automation. Use this operation to
 	// start an automation in multiple Amazon Web Services Regions and multiple Amazon
-	// Web Services accounts. For more information, see Running Automation workflows
-	// in multiple Amazon Web Services Regions and Amazon Web Services accounts (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation-multiple-accounts-and-regions.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// Web Services accounts. For more information, see [Running Automation workflows in multiple Amazon Web Services Regions and Amazon Web Services accounts]in the Amazon Web Services
+	// Systems Manager User Guide.
+	//
+	// [Running Automation workflows in multiple Amazon Web Services Regions and Amazon Web Services accounts]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation-multiple-accounts-and-regions.html
 	TargetLocations []types.TargetLocation
 
 	// A key-value mapping of document parameters to target resources. Both Targets

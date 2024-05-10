@@ -12,17 +12,28 @@ import (
 )
 
 // Gets a list of all KMS keys in the caller's Amazon Web Services account and
-// Region. Cross-account use: No. You cannot perform this operation on a KMS key in
-// a different Amazon Web Services account. Required permissions: kms:ListKeys (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (IAM policy) Related operations:
-//   - CreateKey
-//   - DescribeKey
-//   - ListAliases
-//   - ListResourceTags
+// Region.
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in a
+// different Amazon Web Services account.
+//
+// Required permissions: [kms:ListKeys] (IAM policy)
+//
+// Related operations:
+//
+// # CreateKey
+//
+// # DescribeKey
+//
+// # ListAliases
+//
+// # ListResourceTags
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [kms:ListKeys]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
 func (c *Client) ListKeys(ctx context.Context, params *ListKeysInput, optFns ...func(*Options)) (*ListKeysOutput, error) {
 	if params == nil {
 		params = &ListKeysInput{}
@@ -42,9 +53,10 @@ type ListKeysInput struct {
 
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 1000, inclusive. If you do not include a value, it
-	// defaults to 100.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 1000,
+	// inclusive. If you do not include a value, it defaults to 100.
 	Limit *int32
 
 	// Use this parameter in a subsequent request after you receive a response with
@@ -163,9 +175,10 @@ var _ ListKeysAPIClient = (*Client)(nil)
 type ListKeysPaginatorOptions struct {
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 1000, inclusive. If you do not include a value, it
-	// defaults to 100.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 1000,
+	// inclusive. If you do not include a value, it defaults to 100.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

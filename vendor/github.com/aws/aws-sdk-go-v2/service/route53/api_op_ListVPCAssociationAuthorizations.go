@@ -13,9 +13,10 @@ import (
 
 // Gets a list of the VPCs that were created by other accounts and that can be
 // associated with a specified hosted zone because you've submitted one or more
-// CreateVPCAssociationAuthorization requests. The response includes a VPCs
-// element with a VPC child element for each VPC that can be associated with the
-// hosted zone.
+// CreateVPCAssociationAuthorization requests.
+//
+// The response includes a VPCs element with a VPC child element for each VPC that
+// can be associated with the hosted zone.
 func (c *Client) ListVPCAssociationAuthorizations(ctx context.Context, params *ListVPCAssociationAuthorizationsInput, optFns ...func(*Options)) (*ListVPCAssociationAuthorizationsOutput, error) {
 	if params == nil {
 		params = &ListVPCAssociationAuthorizationsInput{}
@@ -41,12 +42,12 @@ type ListVPCAssociationAuthorizationsInput struct {
 	// This member is required.
 	HostedZoneId *string
 
-	// Optional: An integer that specifies the maximum number of VPCs that you want
+	//  Optional: An integer that specifies the maximum number of VPCs that you want
 	// Amazon Route 53 to return. If you don't specify a value for MaxResults , Route
 	// 53 returns up to 50 VPCs per page.
 	MaxResults *int32
 
-	// Optional: If a response includes a NextToken element, there are more VPCs that
+	//  Optional: If a response includes a NextToken element, there are more VPCs that
 	// can be associated with the specified hosted zone. To get the next page of
 	// results, submit another request, and include the value of NextToken from the
 	// response in the nexttoken parameter in another ListVPCAssociationAuthorizations
