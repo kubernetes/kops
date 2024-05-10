@@ -282,12 +282,12 @@ spec:
 apiVersion: v1
 data:
   priorities: |-
-    "0":
+    0:
     - nodes.cas-priority-expander.example.com
-    "50":
-    - nodes-low-priority.cas-priority-expander.example.com
-    "100":
+    100:
     - nodes-high-priority.cas-priority-expander.example.com
+    50:
+    - nodes-low-priority.cas-priority-expander.example.com
 kind: ConfigMap
 metadata:
   creationTimestamp: null
