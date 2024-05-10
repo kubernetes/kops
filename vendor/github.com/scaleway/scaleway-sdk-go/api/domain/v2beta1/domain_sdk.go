@@ -1696,6 +1696,10 @@ type DomainSummary struct {
 	TransferRegistrationStatus *DomainRegistrationStatusTransfer `json:"transfer_registration_status,omitempty"`
 
 	OrganizationID string `json:"organization_id"`
+
+	CreatedAt *time.Time `json:"created_at"`
+
+	PendingTrade bool `json:"pending_trade"`
 }
 
 // RenewableDomain: renewable domain.
@@ -1892,41 +1896,59 @@ type Domain struct {
 
 	ProjectID string `json:"project_id"`
 
-	// AutoRenewStatus: default value: feature_status_unknown
+	// AutoRenewStatus: status of the automatic renewal of the domain.
+	// Default value: feature_status_unknown
 	AutoRenewStatus DomainFeatureStatus `json:"auto_renew_status"`
 
+	// Dnssec: status of the DNSSEC configuration of the domain.
 	Dnssec *DomainDNSSEC `json:"dnssec"`
 
+	// EppCode: list of the domain's EPP codes.
 	EppCode []string `json:"epp_code"`
 
+	// ExpiredAt: date of expiration of the domain.
 	ExpiredAt *time.Time `json:"expired_at"`
 
+	// UpdatedAt: domain's last modification date.
 	UpdatedAt *time.Time `json:"updated_at"`
 
 	Registrar string `json:"registrar"`
 
+	// IsExternal: indicates whether Scaleway is the domain's registrar.
 	IsExternal bool `json:"is_external"`
 
-	// Status: default value: status_unknown
+	// Status: status of the domain.
+	// Default value: status_unknown
 	Status DomainStatus `json:"status"`
 
+	// DNSZones: list of the domain's DNS zones.
 	DNSZones []*DNSZone `json:"dns_zones"`
 
+	// OwnerContact: contact information of the domain's owner.
 	OwnerContact *Contact `json:"owner_contact"`
 
+	// TechnicalContact: contact information of the domain's technical contact.
 	TechnicalContact *Contact `json:"technical_contact"`
 
+	// AdministrativeContact: contact information of the domain's administrative contact.
 	AdministrativeContact *Contact `json:"administrative_contact"`
 
+	// ExternalDomainRegistrationStatus: registration status of an external domain, if available.
 	// Precisely one of ExternalDomainRegistrationStatus, TransferRegistrationStatus must be set.
 	ExternalDomainRegistrationStatus *DomainRegistrationStatusExternalDomain `json:"external_domain_registration_status,omitempty"`
 
+	// TransferRegistrationStatus: status of a domain, when available for transfer.
 	// Precisely one of ExternalDomainRegistrationStatus, TransferRegistrationStatus must be set.
 	TransferRegistrationStatus *DomainRegistrationStatusTransfer `json:"transfer_registration_status,omitempty"`
 
+	// Tld: domain's TLD information.
 	Tld *Tld `json:"tld"`
 
+	// LinkedProducts: list of Scaleway resources linked to the domain.
 	LinkedProducts []LinkedProduct `json:"linked_products"`
+
+	// PendingTrade: indicates if a trade is ongoing.
+	PendingTrade bool `json:"pending_trade"`
 }
 
 // ExportRawDNSZoneRequest: export raw dns zone request.

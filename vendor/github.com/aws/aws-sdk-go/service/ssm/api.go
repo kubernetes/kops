@@ -88,7 +88,7 @@ func (c *SSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *requ
 // strictly as a string of characters.
 //
 // For more information about using tags with Amazon Elastic Compute Cloud (Amazon
-// EC2) instances, see Tagging your Amazon EC2 resources (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html)
+// EC2) instances, see Tag your Amazon EC2 resources (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html)
 // in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -306,14 +306,15 @@ func (c *SSM) CancelCommandRequest(input *CancelCommandInput) (req *request.Requ
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - DuplicateInstanceId
 //     You can't specify a managed node ID in more than one association.
@@ -479,7 +480,7 @@ func (c *SSM) CreateActivationRequest(input *CreateActivationInput) (req *reques
 // use the activation code and ID when installing SSM Agent on machines in your
 // hybrid environment. For more information about requirements for managing
 // on-premises machines using Systems Manager, see Setting up Amazon Web Services
-// Systems Manager for hybrid environments (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances.html)
+// Systems Manager for hybrid and multicloud environments (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Amazon Elastic Compute Cloud (Amazon EC2) instances, edge devices, and on-premises
@@ -611,19 +612,20 @@ func (c *SSM) CreateAssociationRequest(input *CreateAssociationInput) (req *requ
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - UnsupportedPlatformType
 //     The document doesn't support the platform type of the given managed node
-//     ID(s). For example, you sent an document for a Windows managed node to a
-//     Linux node.
+//     IDs. For example, you sent an document for a Windows managed node to a Linux
+//     node.
 //
 //   - InvalidOutputLocation
 //     The output location isn't valid or doesn't exist.
@@ -744,14 +746,15 @@ func (c *SSM) CreateAssociationBatchRequest(input *CreateAssociationBatchInput) 
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidParameters
 //     You must specify values for all required parameters in the Amazon Web Services
@@ -766,8 +769,8 @@ func (c *SSM) CreateAssociationBatchRequest(input *CreateAssociationBatchInput) 
 //
 //   - UnsupportedPlatformType
 //     The document doesn't support the platform type of the given managed node
-//     ID(s). For example, you sent an document for a Windows managed node to a
-//     Linux node.
+//     IDs. For example, you sent an document for a Windows managed node to a Linux
+//     node.
 //
 //   - InvalidOutputLocation
 //     The output location isn't valid or doesn't exist.
@@ -1581,14 +1584,15 @@ func (c *SSM) DeleteAssociationRequest(input *DeleteAssociationInput) (req *requ
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - TooManyUpdates
 //     There are concurrent updates for a resource that supports one update at a
@@ -2466,7 +2470,7 @@ func (c *SSM) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req
 //   - Parameter - The resource policy is used to share a parameter with other
 //     accounts using Resource Access Manager (RAM). For more information about
 //     cross-account sharing of parameters, see Working with shared parameters
-//     (systems-manager/latest/userguide/parameter-store-shared-parameters.html)
+//     (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html)
 //     in the Amazon Web Services Systems Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2584,14 +2588,15 @@ func (c *SSM) DeregisterManagedInstanceRequest(input *DeregisterManagedInstanceI
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InternalServerError
 //     An error occurred on the server side.
@@ -3100,14 +3105,15 @@ func (c *SSM) DescribeAssociationRequest(input *DescribeAssociationInput) (req *
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeAssociation
 func (c *SSM) DescribeAssociation(input *DescribeAssociationInput) (*DescribeAssociationOutput, error) {
@@ -4082,7 +4088,7 @@ func (c *SSM) DescribeEffectiveInstanceAssociationsRequest(input *DescribeEffect
 
 // DescribeEffectiveInstanceAssociations API operation for Amazon Simple Systems Manager (SSM).
 //
-// All associations for the managed node(s).
+// All associations for the managed nodes.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4101,14 +4107,15 @@ func (c *SSM) DescribeEffectiveInstanceAssociationsRequest(input *DescribeEffect
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidNextToken
 //     The specified token isn't valid.
@@ -4389,7 +4396,7 @@ func (c *SSM) DescribeInstanceAssociationsStatusRequest(input *DescribeInstanceA
 
 // DescribeInstanceAssociationsStatus API operation for Amazon Simple Systems Manager (SSM).
 //
-// The status of the associations for the managed node(s).
+// The status of the associations for the managed nodes.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4408,14 +4415,15 @@ func (c *SSM) DescribeInstanceAssociationsStatusRequest(input *DescribeInstanceA
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidNextToken
 //     The specified token isn't valid.
@@ -4573,14 +4581,15 @@ func (c *SSM) DescribeInstanceInformationRequest(input *DescribeInstanceInformat
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidNextToken
 //     The specified token isn't valid.
@@ -5016,14 +5025,15 @@ func (c *SSM) DescribeInstancePatchesRequest(input *DescribeInstancePatchesInput
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidFilter
 //     The filter name isn't valid. Verify the you entered the correct name and
@@ -5098,6 +5108,174 @@ func (c *SSM) DescribeInstancePatchesPagesWithContext(ctx aws.Context, input *De
 
 	for p.Next() {
 		if !fn(p.Page().(*DescribeInstancePatchesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeInstanceProperties = "DescribeInstanceProperties"
+
+// DescribeInstancePropertiesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeInstanceProperties operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeInstanceProperties for more information on using the DescribeInstanceProperties
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeInstancePropertiesRequest method.
+//	req, resp := client.DescribeInstancePropertiesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeInstanceProperties
+func (c *SSM) DescribeInstancePropertiesRequest(input *DescribeInstancePropertiesInput) (req *request.Request, output *DescribeInstancePropertiesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeInstanceProperties,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeInstancePropertiesInput{}
+	}
+
+	output = &DescribeInstancePropertiesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeInstanceProperties API operation for Amazon Simple Systems Manager (SSM).
+//
+// An API operation used by the Systems Manager console to display information
+// about Systems Manager managed nodes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation DescribeInstanceProperties for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidNextToken
+//     The specified token isn't valid.
+//
+//   - InvalidFilterKey
+//     The specified key isn't valid.
+//
+//   - InvalidInstanceId
+//     The following problems can cause this exception:
+//
+//   - You don't have permission to access the managed node.
+//
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
+//     Verify that SSM Agent is running.
+//
+//   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
+//     Agent.
+//
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
+//
+//   - InvalidActivationId
+//     The activation ID isn't valid. Verify the you entered the correct ActivationId
+//     or ActivationCode and try again.
+//
+//   - InvalidInstancePropertyFilterValue
+//     The specified filter value isn't valid.
+//
+//   - InternalServerError
+//     An error occurred on the server side.
+//
+//   - InvalidDocument
+//     The specified SSM document doesn't exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeInstanceProperties
+func (c *SSM) DescribeInstanceProperties(input *DescribeInstancePropertiesInput) (*DescribeInstancePropertiesOutput, error) {
+	req, out := c.DescribeInstancePropertiesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeInstancePropertiesWithContext is the same as DescribeInstanceProperties with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeInstanceProperties for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) DescribeInstancePropertiesWithContext(ctx aws.Context, input *DescribeInstancePropertiesInput, opts ...request.Option) (*DescribeInstancePropertiesOutput, error) {
+	req, out := c.DescribeInstancePropertiesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeInstancePropertiesPages iterates over the pages of a DescribeInstanceProperties operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeInstanceProperties method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeInstanceProperties operation.
+//	pageNum := 0
+//	err := client.DescribeInstancePropertiesPages(params,
+//	    func(page *ssm.DescribeInstancePropertiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSM) DescribeInstancePropertiesPages(input *DescribeInstancePropertiesInput, fn func(*DescribeInstancePropertiesOutput, bool) bool) error {
+	return c.DescribeInstancePropertiesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeInstancePropertiesPagesWithContext same as DescribeInstancePropertiesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) DescribeInstancePropertiesPagesWithContext(ctx aws.Context, input *DescribeInstancePropertiesInput, fn func(*DescribeInstancePropertiesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeInstancePropertiesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeInstancePropertiesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstancePropertiesOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -6439,7 +6617,7 @@ func (c *SSM) DescribeOpsItemsRequest(input *DescribeOpsItemsInput) (req *reques
 // Operations engineers and IT professionals use Amazon Web Services Systems
 // Manager OpsCenter to view, investigate, and remediate operational issues
 // impacting the performance and health of their Amazon Web Services resources.
-// For more information, see OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
+// For more information, see Amazon Web Services Systems Manager OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -7720,14 +7898,15 @@ func (c *SSM) GetCommandInvocationRequest(input *GetCommandInvocationInput) (req
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidPluginName
 //     The plugin name isn't valid.
@@ -7995,7 +8174,7 @@ func (c *SSM) GetDeployablePatchSnapshotForInstanceRequest(input *GetDeployableP
 //     Patching for applications released by Microsoft is only available on EC2
 //     instances and advanced instances. To patch applications released by Microsoft
 //     on on-premises servers and VMs, you must enable advanced instances. For more
-//     information, see Enabling the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
+//     information, see Turning on the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
 //     in the Amazon Web Services Systems Manager User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetDeployablePatchSnapshotForInstance
@@ -8901,7 +9080,7 @@ func (c *SSM) GetOpsItemRequest(input *GetOpsItemInput) (req *request.Request, o
 // Operations engineers and IT professionals use Amazon Web Services Systems
 // Manager OpsCenter to view, investigate, and remediate operational issues
 // impacting the performance and health of their Amazon Web Services resources.
-// For more information, see OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
+// For more information, see Amazon Web Services Systems Manager OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -10569,14 +10748,15 @@ func (c *SSM) ListCommandInvocationsRequest(input *ListCommandInvocationsInput) 
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidFilterKey
 //     The specified key isn't valid.
@@ -10728,14 +10908,15 @@ func (c *SSM) ListCommandsRequest(input *ListCommandsInput) (req *request.Reques
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidFilterKey
 //     The specified key isn't valid.
@@ -11552,14 +11733,15 @@ func (c *SSM) ListInventoryEntriesRequest(input *ListInventoryEntriesInput) (req
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidTypeNameException
 //     The parameter type name isn't valid.
@@ -12718,14 +12900,15 @@ func (c *SSM) PutInventoryRequest(input *PutInventoryInput) (req *request.Reques
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidTypeNameException
 //     The parameter type name isn't valid.
@@ -12989,16 +13172,16 @@ func (c *SSM) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *requ
 //   - Parameter - The resource policy is used to share a parameter with other
 //     accounts using Resource Access Manager (RAM). To share a parameter, it
 //     must be in the advanced parameter tier. For information about parameter
-//     tiers, see Managing parameter tiers (https://docs.aws.amazon.com/parameter-store-
-//     advanced-parameters.html). For information about changing an existing
-//     standard parameter to an advanced parameter, see Changing a standard parameter
-//     to an advanced parameter (https://docs.aws.amazon.com/parameter-store-advanced-parameters.html#parameter-
-//     store-advanced-parameters-enabling). To share a SecureString parameter,
-//     it must be encrypted with a customer managed key, and you must share the
-//     key separately through Key Management Service. Amazon Web Services managed
-//     keys cannot be shared. Parameters encrypted with the default Amazon Web
-//     Services managed key can be updated to use a customer managed key instead.
-//     For KMS key definitions, see KMS concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-mgmt)
+//     tiers, see Managing parameter tiers (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-advanced-parameters.html).
+//     For information about changing an existing standard parameter to an advanced
+//     parameter, see Changing a standard parameter to an advanced parameter
+//     (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-advanced-parameters.html#parameter-store-advanced-parameters-enabling).
+//     To share a SecureString parameter, it must be encrypted with a customer
+//     managed key, and you must share the key separately through Key Management
+//     Service. Amazon Web Services managed keys cannot be shared. Parameters
+//     encrypted with the default Amazon Web Services managed key can be updated
+//     to use a customer managed key instead. For KMS key definitions, see KMS
+//     concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html)
 //     in the Key Management Service Developer Guide. While you can share a parameter
 //     using the Systems Manager PutResourcePolicy operation, we recommend using
 //     Resource Access Manager (RAM) instead. This is because using PutResourcePolicy
@@ -13912,14 +14095,15 @@ func (c *SSM) SendCommandRequest(input *SendCommandInput) (req *request.Request,
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidDocument
 //     The specified SSM document doesn't exist.
@@ -13937,8 +14121,8 @@ func (c *SSM) SendCommandRequest(input *SendCommandInput) (req *request.Request,
 //
 //   - UnsupportedPlatformType
 //     The document doesn't support the platform type of the given managed node
-//     ID(s). For example, you sent an document for a Windows managed node to a
-//     Linux node.
+//     IDs. For example, you sent an document for a Windows managed node to a Linux
+//     node.
 //
 //   - MaxDocumentSizeExceeded
 //     The size limit of a document is 64 KB.
@@ -13947,7 +14131,8 @@ func (c *SSM) SendCommandRequest(input *SendCommandInput) (req *request.Request,
 //     The role name can't contain invalid characters. Also verify that you specified
 //     an IAM role for notifications that includes the required trust policy. For
 //     information about configuring the IAM role for Run Command notifications,
-//     see Configuring Amazon SNS Notifications for Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-sns-notifications.html)
+//     see Monitoring Systems Manager status changes using Amazon SNS notifications
+//     (https://docs.aws.amazon.com/systems-manager/latest/userguide/monitoring-sns-notifications.html)
 //     in the Amazon Web Services Systems Manager User Guide.
 //
 //   - InvalidNotificationConfig
@@ -14832,14 +15017,15 @@ func (c *SSM) UpdateAssociationStatusRequest(input *UpdateAssociationStatusInput
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InvalidDocument
 //     The specified SSM document doesn't exist.
@@ -15552,14 +15738,15 @@ func (c *SSM) UpdateManagedInstanceRoleRequest(input *UpdateManagedInstanceRoleI
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 //
 //   - InternalServerError
 //     An error occurred on the server side.
@@ -15638,7 +15825,7 @@ func (c *SSM) UpdateOpsItemRequest(input *UpdateOpsItemInput) (req *request.Requ
 // Operations engineers and IT professionals use Amazon Web Services Systems
 // Manager OpsCenter to view, investigate, and remediate operational issues
 // impacting the performance and health of their Amazon Web Services resources.
-// For more information, see OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
+// For more information, see Amazon Web Services Systems Manager OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
 // in the Amazon Web Services Systems Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -20138,7 +20325,7 @@ type Command struct {
 	// The maximum number of managed nodes that are allowed to run the command at
 	// the same time. You can specify a number of managed nodes, such as 10, or
 	// a percentage of nodes, such as 10%. The default value is 50. For more information
-	// about how to use MaxConcurrency, see Running commands using Systems Manager
+	// about how to use MaxConcurrency, see Amazon Web Services Systems Manager
 	// Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/run-command.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	MaxConcurrency *string `min:"1" type:"string"`
@@ -20146,8 +20333,8 @@ type Command struct {
 	// The maximum number of errors allowed before the system stops sending the
 	// command to additional targets. You can specify a number of errors, such as
 	// 10, or a percentage or errors, such as 10%. The default value is 0. For more
-	// information about how to use MaxErrors, see Running commands using Systems
-	// Manager Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/run-command.html)
+	// information about how to use MaxErrors, see Amazon Web Services Systems Manager
+	// Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/run-command.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	MaxErrors *string `min:"1" type:"string"`
 
@@ -20951,7 +21138,7 @@ func (s *CommandPlugin) SetStatusDetails(v string) *CommandPlugin {
 
 // A summary of the call execution that includes an execution ID, the type of
 // execution (for example, Command), and the date/time of the execution using
-// a datetime object that is saved in the following format: yyyy-MM-dd'T'HH:mm:ss'Z'.
+// a datetime object that is saved in the following format: yyyy-MM-dd'T'HH:mm:ss'Z'
 type ComplianceExecutionSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -20960,7 +21147,7 @@ type ComplianceExecutionSummary struct {
 	ExecutionId *string `type:"string"`
 
 	// The time the execution ran as a datetime object that is saved in the following
-	// format: yyyy-MM-dd'T'HH:mm:ss'Z'.
+	// format: yyyy-MM-dd'T'HH:mm:ss'Z'
 	//
 	// ExecutionTime is a required field
 	ExecutionTime *time.Time `type:"timestamp" required:"true"`
@@ -21474,8 +21661,8 @@ type CreateActivationInput struct {
 	// The name of the Identity and Access Management (IAM) role that you want to
 	// assign to the managed node. This IAM role must provide AssumeRole permissions
 	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com.
-	// For more information, see Create an IAM service role for a hybrid environment
-	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
+	// For more information, see Create an IAM service role for a hybrid and multicloud
+	// environment (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// You can't specify an IAM service-linked role for this parameter. You must
@@ -22139,7 +22326,7 @@ type CreateAssociationInput struct {
 	// The severity level to assign to the association.
 	ComplianceSeverity *string `type:"string" enum:"AssociationComplianceSeverity"`
 
-	// The document version you want to associate with the target(s). Can be a specific
+	// The document version you want to associate with the targets. Can be a specific
 	// version or the default version.
 	//
 	// State Manager doesn't support running associations that use a new version
@@ -22237,7 +22424,7 @@ type CreateAssociationInput struct {
 	// String and GoString methods.
 	Parameters map[string][]*string `type:"map" sensitive:"true"`
 
-	// A cron expression when the association will be applied to the target(s).
+	// A cron expression when the association will be applied to the targets.
 	ScheduleExpression *string `min:"1" type:"string"`
 
 	// Number of days to wait after the scheduled day to run an association. For
@@ -22287,7 +22474,7 @@ type CreateAssociationInput struct {
 	// account, or individual managed node IDs. You can target all managed nodes
 	// in an Amazon Web Services account by specifying the InstanceIds key with
 	// a value of *. For more information about choosing targets for an association,
-	// see Using targets and rate controls with State Manager associations (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state-manager-targets-and-rate-controls.html)
+	// see About targets and rate controls in State Manager associations (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state-manager-targets-and-rate-controls.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Targets []*Target `type:"list"`
 }
@@ -22556,11 +22743,11 @@ type CreateDocumentInput struct {
 	// For examples, see the following topics in the Amazon Web Services Systems
 	// Manager User Guide.
 	//
-	//    * Create an SSM document (Amazon Web Services API) (https://docs.aws.amazon.com/systems-manager/latest/userguide/create-ssm-document-api.html)
+	//    * Create an SSM document (console) (https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-using.html#create-ssm-console)
 	//
-	//    * Create an SSM document (Amazon Web Services CLI) (https://docs.aws.amazon.com/systems-manager/latest/userguide/create-ssm-document-cli.html)
+	//    * Create an SSM document (command line) (https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-using.html#create-ssm-document-cli)
 	//
-	//    * Create an SSM document (API) (https://docs.aws.amazon.com/systems-manager/latest/userguide/create-ssm-document-api.html)
+	//    * Create an SSM document (API) (https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-using.html#create-ssm-document-api)
 	//
 	// Content is a required field
 	Content *string `min:"1" type:"string" required:"true"`
@@ -22590,6 +22777,12 @@ type CreateDocumentInput struct {
 	//    * amazon
 	//
 	//    * amzn
+	//
+	//    * AWSEC2
+	//
+	//    * AWSConfigRemediation
+	//
+	//    * AWSSupport
 	//
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
@@ -22864,6 +23057,9 @@ type CreateMaintenanceWindowInput struct {
 	// The date and time, in ISO-8601 Extended format, for when you want the maintenance
 	// window to become active. StartDate allows you to delay activation of the
 	// maintenance window until the specified future date.
+	//
+	// When using a rate schedule, if you provide a start date that occurs in the
+	// past, the current date and time are used as the start date.
 	StartDate *string `type:"string"`
 
 	// Optional metadata that you assign to a resource. Tags enable you to categorize
@@ -23109,7 +23305,7 @@ type CreateOpsItemInput struct {
 	// Use the /aws/resources key in OperationalData to specify a related resource
 	// in the request. Use the /aws/automations key in OperationalData to associate
 	// an Automation runbook with the OpsItem. To view Amazon Web Services CLI example
-	// commands that use these keys, see Creating OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
+	// commands that use these keys, see Create OpsItems manually (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-manually-create-OpsItems.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
@@ -23570,11 +23766,11 @@ type CreatePatchBaselineInput struct {
 	//    with the patch baseline, and its status is reported as InstalledOther.
 	//    This is the default action if no option is specified.
 	//
-	//    * BLOCK : Packages in the RejectedPatches list, and packages that include
-	//    them as dependencies, aren't installed under any circumstances. If a package
-	//    was installed before it was added to the Rejected patches list, it is
-	//    considered non-compliant with the patch baseline, and its status is reported
-	//    as InstalledRejected.
+	//    * BLOCK: Packages in the Rejected patches list, and packages that include
+	//    them as dependencies, aren't installed by Patch Manager under any circumstances.
+	//    If a package was installed before it was added to the Rejected patches
+	//    list, or is installed outside of Patch Manager afterward, it's considered
+	//    noncompliant with the patch baseline and its status is reported as InstalledRejected.
 	RejectedPatchesAction *string `type:"string" enum:"PatchAction"`
 
 	// Information about the patches to use to update the managed nodes, including
@@ -24308,7 +24504,7 @@ type DeleteInventoryOutput struct {
 	DeletionId *string `type:"string"`
 
 	// A summary of the delete operation. For more information about this summary,
-	// see Deleting custom inventory (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-inventory-custom.html#sysman-inventory-delete-summary)
+	// see Understanding the delete inventory summary (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-inventory-custom.html#sysman-inventory-delete-summary)
 	// in the Amazon Web Services Systems Manager User Guide.
 	DeletionSummary *InventoryDeletionSummary `type:"structure"`
 
@@ -27479,6 +27675,147 @@ func (s *DescribeInstancePatchesOutput) SetPatches(v []*PatchComplianceData) *De
 	return s
 }
 
+type DescribeInstancePropertiesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The request filters to use with the operator.
+	FiltersWithOperator []*InstancePropertyStringFilter `min:"1" type:"list"`
+
+	// An array of instance property filters.
+	InstancePropertyFilterList []*InstancePropertyFilter `min:"1" type:"list"`
+
+	// The maximum number of items to return for the call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token provided by a previous request to use to return the next set of
+	// properties.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstancePropertiesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstancePropertiesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeInstancePropertiesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeInstancePropertiesInput"}
+	if s.FiltersWithOperator != nil && len(s.FiltersWithOperator) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FiltersWithOperator", 1))
+	}
+	if s.InstancePropertyFilterList != nil && len(s.InstancePropertyFilterList) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstancePropertyFilterList", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+	if s.FiltersWithOperator != nil {
+		for i, v := range s.FiltersWithOperator {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FiltersWithOperator", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.InstancePropertyFilterList != nil {
+		for i, v := range s.InstancePropertyFilterList {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "InstancePropertyFilterList", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFiltersWithOperator sets the FiltersWithOperator field's value.
+func (s *DescribeInstancePropertiesInput) SetFiltersWithOperator(v []*InstancePropertyStringFilter) *DescribeInstancePropertiesInput {
+	s.FiltersWithOperator = v
+	return s
+}
+
+// SetInstancePropertyFilterList sets the InstancePropertyFilterList field's value.
+func (s *DescribeInstancePropertiesInput) SetInstancePropertyFilterList(v []*InstancePropertyFilter) *DescribeInstancePropertiesInput {
+	s.InstancePropertyFilterList = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeInstancePropertiesInput) SetMaxResults(v int64) *DescribeInstancePropertiesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstancePropertiesInput) SetNextToken(v string) *DescribeInstancePropertiesInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeInstancePropertiesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Properties for the managed instances.
+	InstanceProperties []*InstanceProperty `type:"list"`
+
+	// The token for the next set of properties to return. Use this token to get
+	// the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstancePropertiesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstancePropertiesOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceProperties sets the InstanceProperties field's value.
+func (s *DescribeInstancePropertiesOutput) SetInstanceProperties(v []*InstanceProperty) *DescribeInstancePropertiesOutput {
+	s.InstanceProperties = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstancePropertiesOutput) SetNextToken(v string) *DescribeInstancePropertiesOutput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeInventoryDeletionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -28876,7 +29213,7 @@ type DescribeParametersInput struct {
 	// API operation.
 	//
 	// For more information about sharing parameters, see Working with shared parameters
-	// (systems-manager/latest/userguide/parameter-store-shared-parameters.html)
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Shared *bool `type:"boolean"`
 }
@@ -34968,8 +35305,11 @@ type GetParametersInput struct {
 	// To query by parameter label, use "Name": "name:label". To query by parameter
 	// version, use "Name": "name:version".
 	//
-	// For more information about shared parameters, see Working with shared parameters
-	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/sharing.html)
+	// The results for GetParameters requests are listed in alphabetical order in
+	// query responses.
+	//
+	// For information about shared parameters, see Working with shared parameters
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// Names is a required field
@@ -35672,8 +36012,8 @@ type HierarchyLevelLimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
-	// A hierarchy can have a maximum of 15 levels. For more information, see Requirements
-	// and constraints for parameter names (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-parameter-name-constraints.html)
+	// A hierarchy can have a maximum of 15 levels. For more information, see About
+	// requirements and constraints for parameter names (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-parameter-name-constraints)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Message_ *string `locationName:"message" type:"string"`
 }
@@ -35941,7 +36281,7 @@ type InstanceAggregatedAssociationOverview struct {
 	// Detailed status information about the aggregated associations.
 	DetailedStatus *string `type:"string"`
 
-	// The number of associations for the managed node(s).
+	// The number of associations for the managed nodes.
 	InstanceAssociationStatusAggregatedCount map[string]*int64 `type:"map"`
 }
 
@@ -35985,7 +36325,7 @@ type InstanceAssociation struct {
 	// Version information for the association on the managed node.
 	AssociationVersion *string `type:"string"`
 
-	// The content of the association document for the managed node(s).
+	// The content of the association document for the managed nodes.
 	Content *string `min:"1" type:"string"`
 
 	// The managed node ID.
@@ -36037,7 +36377,7 @@ func (s *InstanceAssociation) SetInstanceId(v string) *InstanceAssociation {
 // An S3 bucket where you want to store the results of this request.
 //
 // For the minimal permissions required to enable Amazon S3 output for an association,
-// see Creating associations (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-state-assoc.html)
+// see Create an association (console) (https://docs.aws.amazon.com/systems-manager/latest/userguide/state-manager-associations-creating.html#state-manager-associations-console)
 // in the Systems Manager User Guide.
 type InstanceAssociationOutputLocation struct {
 	_ struct{} `type:"structure"`
@@ -36303,8 +36643,8 @@ type InstanceInformation struct {
 	// specified as the DefaultInstanceName property using the CreateActivation
 	// command. It is applied to the managed node by specifying the Activation Code
 	// and Activation ID when you install SSM Agent on the node, as explained in
-	// Install SSM Agent for a hybrid environment (Linux) (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-linux.html)
-	// and Install SSM Agent for a hybrid environment (Windows) (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-win.html).
+	// Install SSM Agent for a hybrid and multicloud environment (Linux) (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-linux.html)
+	// and Install SSM Agent for a hybrid and multicloud environment (Windows) (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-win.html).
 	// To retrieve the Name tag of an EC2 instance, use the Amazon EC2 DescribeInstances
 	// operation. For information, see DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
 	// in the Amazon EC2 API Reference or describe-instances (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)
@@ -36669,8 +37009,8 @@ type InstancePatchState struct {
 	// baseline.
 	//
 	// For more information about the InstallOverrideList parameter, see About the
-	// AWS-RunPatchBaseline (https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-about-aws-runpatchbaseline.html)
-	// SSM document in the Amazon Web Services Systems Manager User Guide.
+	// AWS-RunPatchBaseline SSM document (https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-about-aws-runpatchbaseline.html)
+	// in the Amazon Web Services Systems Manager User Guide.
 	InstallOverrideList *string `min:"1" type:"string"`
 
 	// The number of patches from the patch baseline that are installed on the managed
@@ -37034,6 +37374,410 @@ func (s *InstancePatchStateFilter) SetType(v string) *InstancePatchStateFilter {
 
 // SetValues sets the Values field's value.
 func (s *InstancePatchStateFilter) SetValues(v []*string) *InstancePatchStateFilter {
+	s.Values = v
+	return s
+}
+
+// An object containing various properties of a managed node.
+type InstanceProperty struct {
+	_ struct{} `type:"structure"`
+
+	// The activation ID created by Systems Manager when the server or virtual machine
+	// (VM) was registered
+	ActivationId *string `type:"string"`
+
+	// The version of SSM Agent running on your managed node.
+	AgentVersion *string `type:"string"`
+
+	// The CPU architecture of the node. For example, x86_64.
+	Architecture *string `type:"string"`
+
+	// Status information about the aggregated associations.
+	AssociationOverview *InstanceAggregatedAssociationOverview `type:"structure"`
+
+	// The status of the State Manager association applied to the managed node.
+	AssociationStatus *string `type:"string"`
+
+	// The fully qualified host name of the managed node.
+	ComputerName *string `min:"1" type:"string"`
+
+	// The public IPv4 address assigned to the node. If a public IPv4 address isn't
+	// assigned to the node, this value is blank.
+	IPAddress *string `min:"1" type:"string"`
+
+	// The IAM role used in the hybrid activation to register the node with Systems
+	// Manager.
+	IamRole *string `type:"string"`
+
+	// The ID of the managed node.
+	InstanceId *string `type:"string"`
+
+	// The instance profile attached to the node. If an instance profile isn't attached
+	// to the node, this value is blank.
+	InstanceRole *string `type:"string"`
+
+	// The current state of the node.
+	InstanceState *string `type:"string"`
+
+	// The instance type of the managed node. For example, t3.large.
+	InstanceType *string `type:"string"`
+
+	// The name of the key pair associated with the node. If a key pair isnt't associated
+	// with the node, this value is blank.
+	KeyName *string `type:"string"`
+
+	// The date the association was last run.
+	LastAssociationExecutionDate *time.Time `type:"timestamp"`
+
+	// The date and time when the SSM Agent last pinged the Systems Manager service.
+	LastPingDateTime *time.Time `type:"timestamp"`
+
+	// The last date the association was successfully run.
+	LastSuccessfulAssociationExecutionDate *time.Time `type:"timestamp"`
+
+	// The timestamp for when the node was launched.
+	LaunchTime *time.Time `type:"timestamp"`
+
+	// The value of the EC2 Name tag associated with the node. If a Name tag hasn't
+	// been applied to the node, this value is blank.
+	Name *string `type:"string"`
+
+	// Connection status of the SSM Agent on the managed node.
+	PingStatus *string `type:"string" enum:"PingStatus"`
+
+	// The name of the operating system platform running on your managed node.
+	PlatformName *string `type:"string"`
+
+	// The operating system platform type of the managed node. For example, Windows.
+	PlatformType *string `type:"string" enum:"PlatformType"`
+
+	// The version of the OS platform running on your managed node.
+	PlatformVersion *string `type:"string"`
+
+	// The date the node was registered with Systems Manager.
+	RegistrationDate *time.Time `type:"timestamp"`
+
+	// The type of managed node.
+	ResourceType *string `type:"string"`
+
+	// The ID of the source resource.
+	SourceId *string `type:"string"`
+
+	// The type of the source resource.
+	SourceType *string `type:"string" enum:"SourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceProperty) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceProperty) GoString() string {
+	return s.String()
+}
+
+// SetActivationId sets the ActivationId field's value.
+func (s *InstanceProperty) SetActivationId(v string) *InstanceProperty {
+	s.ActivationId = &v
+	return s
+}
+
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *InstanceProperty) SetAgentVersion(v string) *InstanceProperty {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetArchitecture sets the Architecture field's value.
+func (s *InstanceProperty) SetArchitecture(v string) *InstanceProperty {
+	s.Architecture = &v
+	return s
+}
+
+// SetAssociationOverview sets the AssociationOverview field's value.
+func (s *InstanceProperty) SetAssociationOverview(v *InstanceAggregatedAssociationOverview) *InstanceProperty {
+	s.AssociationOverview = v
+	return s
+}
+
+// SetAssociationStatus sets the AssociationStatus field's value.
+func (s *InstanceProperty) SetAssociationStatus(v string) *InstanceProperty {
+	s.AssociationStatus = &v
+	return s
+}
+
+// SetComputerName sets the ComputerName field's value.
+func (s *InstanceProperty) SetComputerName(v string) *InstanceProperty {
+	s.ComputerName = &v
+	return s
+}
+
+// SetIPAddress sets the IPAddress field's value.
+func (s *InstanceProperty) SetIPAddress(v string) *InstanceProperty {
+	s.IPAddress = &v
+	return s
+}
+
+// SetIamRole sets the IamRole field's value.
+func (s *InstanceProperty) SetIamRole(v string) *InstanceProperty {
+	s.IamRole = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *InstanceProperty) SetInstanceId(v string) *InstanceProperty {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceRole sets the InstanceRole field's value.
+func (s *InstanceProperty) SetInstanceRole(v string) *InstanceProperty {
+	s.InstanceRole = &v
+	return s
+}
+
+// SetInstanceState sets the InstanceState field's value.
+func (s *InstanceProperty) SetInstanceState(v string) *InstanceProperty {
+	s.InstanceState = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *InstanceProperty) SetInstanceType(v string) *InstanceProperty {
+	s.InstanceType = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *InstanceProperty) SetKeyName(v string) *InstanceProperty {
+	s.KeyName = &v
+	return s
+}
+
+// SetLastAssociationExecutionDate sets the LastAssociationExecutionDate field's value.
+func (s *InstanceProperty) SetLastAssociationExecutionDate(v time.Time) *InstanceProperty {
+	s.LastAssociationExecutionDate = &v
+	return s
+}
+
+// SetLastPingDateTime sets the LastPingDateTime field's value.
+func (s *InstanceProperty) SetLastPingDateTime(v time.Time) *InstanceProperty {
+	s.LastPingDateTime = &v
+	return s
+}
+
+// SetLastSuccessfulAssociationExecutionDate sets the LastSuccessfulAssociationExecutionDate field's value.
+func (s *InstanceProperty) SetLastSuccessfulAssociationExecutionDate(v time.Time) *InstanceProperty {
+	s.LastSuccessfulAssociationExecutionDate = &v
+	return s
+}
+
+// SetLaunchTime sets the LaunchTime field's value.
+func (s *InstanceProperty) SetLaunchTime(v time.Time) *InstanceProperty {
+	s.LaunchTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *InstanceProperty) SetName(v string) *InstanceProperty {
+	s.Name = &v
+	return s
+}
+
+// SetPingStatus sets the PingStatus field's value.
+func (s *InstanceProperty) SetPingStatus(v string) *InstanceProperty {
+	s.PingStatus = &v
+	return s
+}
+
+// SetPlatformName sets the PlatformName field's value.
+func (s *InstanceProperty) SetPlatformName(v string) *InstanceProperty {
+	s.PlatformName = &v
+	return s
+}
+
+// SetPlatformType sets the PlatformType field's value.
+func (s *InstanceProperty) SetPlatformType(v string) *InstanceProperty {
+	s.PlatformType = &v
+	return s
+}
+
+// SetPlatformVersion sets the PlatformVersion field's value.
+func (s *InstanceProperty) SetPlatformVersion(v string) *InstanceProperty {
+	s.PlatformVersion = &v
+	return s
+}
+
+// SetRegistrationDate sets the RegistrationDate field's value.
+func (s *InstanceProperty) SetRegistrationDate(v time.Time) *InstanceProperty {
+	s.RegistrationDate = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *InstanceProperty) SetResourceType(v string) *InstanceProperty {
+	s.ResourceType = &v
+	return s
+}
+
+// SetSourceId sets the SourceId field's value.
+func (s *InstanceProperty) SetSourceId(v string) *InstanceProperty {
+	s.SourceId = &v
+	return s
+}
+
+// SetSourceType sets the SourceType field's value.
+func (s *InstanceProperty) SetSourceType(v string) *InstanceProperty {
+	s.SourceType = &v
+	return s
+}
+
+// Describes a filter for a specific list of managed nodes. You can filter node
+// information by using tags. You specify tags by using a key-value mapping.
+type InstancePropertyFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the filter.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" type:"string" required:"true" enum:"InstancePropertyFilterKey"`
+
+	// The filter values.
+	//
+	// ValueSet is a required field
+	ValueSet []*string `locationName:"valueSet" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstancePropertyFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstancePropertyFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstancePropertyFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstancePropertyFilter"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.ValueSet == nil {
+		invalidParams.Add(request.NewErrParamRequired("ValueSet"))
+	}
+	if s.ValueSet != nil && len(s.ValueSet) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ValueSet", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *InstancePropertyFilter) SetKey(v string) *InstancePropertyFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValueSet sets the ValueSet field's value.
+func (s *InstancePropertyFilter) SetValueSet(v []*string) *InstancePropertyFilter {
+	s.ValueSet = v
+	return s
+}
+
+// The filters to describe or get information about your managed nodes.
+type InstancePropertyStringFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The filter key name to describe your managed nodes.
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// The operator used by the filter call.
+	Operator *string `type:"string" enum:"InstancePropertyFilterOperator"`
+
+	// The filter key name to describe your managed nodes.
+	//
+	// Values is a required field
+	Values []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstancePropertyStringFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstancePropertyStringFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstancePropertyStringFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstancePropertyStringFilter"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *InstancePropertyStringFilter) SetKey(v string) *InstancePropertyStringFilter {
+	s.Key = &v
+	return s
+}
+
+// SetOperator sets the Operator field's value.
+func (s *InstancePropertyStringFilter) SetOperator(v string) *InstancePropertyStringFilter {
+	s.Operator = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *InstancePropertyStringFilter) SetValues(v []*string) *InstancePropertyStringFilter {
 	s.Values = v
 	return s
 }
@@ -38533,14 +39277,15 @@ func (s *InvalidFilterValue) RequestID() string {
 //
 //   - You don't have permission to access the managed node.
 //
-//   - Amazon Web Services Systems Manager Agent(SSM Agent) isn't running.
+//   - Amazon Web Services Systems Manager Agent (SSM Agent) isn't running.
 //     Verify that SSM Agent is running.
 //
 //   - SSM Agent isn't registered with the SSM endpoint. Try reinstalling SSM
 //     Agent.
 //
-//   - The managed node isn't in valid state. Valid states are: Running, Pending,
-//     Stopped, and Stopping. Invalid states are: Shutting-down and Terminated.
+//   - The managed node isn't in a valid state. Valid states are: Running,
+//     Pending, Stopped, and Stopping. Invalid states are: Shutting-down and
+//     Terminated.
 type InvalidInstanceId struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -38665,6 +39410,70 @@ func (s *InvalidInstanceInformationFilterValue) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *InvalidInstanceInformationFilterValue) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The specified filter value isn't valid.
+type InvalidInstancePropertyFilterValue struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidInstancePropertyFilterValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidInstancePropertyFilterValue) GoString() string {
+	return s.String()
+}
+
+func newErrorInvalidInstancePropertyFilterValue(v protocol.ResponseMetadata) error {
+	return &InvalidInstancePropertyFilterValue{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *InvalidInstancePropertyFilterValue) Code() string {
+	return "InvalidInstancePropertyFilterValue"
+}
+
+// Message returns the exception's message.
+func (s *InvalidInstancePropertyFilterValue) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *InvalidInstancePropertyFilterValue) OrigErr() error {
+	return nil
+}
+
+func (s *InvalidInstancePropertyFilterValue) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *InvalidInstancePropertyFilterValue) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *InvalidInstancePropertyFilterValue) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -39834,7 +40643,8 @@ func (s *InvalidResultAttributeException) RequestID() string {
 // The role name can't contain invalid characters. Also verify that you specified
 // an IAM role for notifications that includes the required trust policy. For
 // information about configuring the IAM role for Run Command notifications,
-// see Configuring Amazon SNS Notifications for Run Command (https://docs.aws.amazon.com/systems-manager/latest/userguide/rc-sns-notifications.html)
+// see Monitoring Systems Manager status changes using Amazon SNS notifications
+// (https://docs.aws.amazon.com/systems-manager/latest/userguide/monitoring-sns-notifications.html)
 // in the Amazon Web Services Systems Manager User Guide.
 type InvalidRole struct {
 	_            struct{}                  `type:"structure"`
@@ -41358,7 +42168,7 @@ type LabelParameterVersionOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The label doesn't meet the requirements. For information about parameter
-	// label requirements, see Labeling parameters (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-labels.html)
+	// label requirements, see Working with parameter labels (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-labels.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	InvalidLabels []*string `min:"1" type:"list"`
 
@@ -42720,10 +43530,10 @@ func (s *ListInventoryEntriesInput) SetTypeName(v string) *ListInventoryEntriesI
 type ListInventoryEntriesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The time that inventory information was collected for the managed node(s).
+	// The time that inventory information was collected for the managed nodes.
 	CaptureTime *string `type:"string"`
 
-	// A list of inventory items on the managed node(s).
+	// A list of inventory items on the managed nodes.
 	Entries []map[string]*string `type:"list"`
 
 	// The managed node ID targeted by the request to query inventory information.
@@ -42733,7 +43543,7 @@ type ListInventoryEntriesOutput struct {
 	// items to return, the string is empty.
 	NextToken *string `type:"string"`
 
-	// The inventory schema version used by the managed node(s).
+	// The inventory schema version used by the managed nodes.
 	SchemaVersion *string `type:"string"`
 
 	// The type of inventory item returned by the request.
@@ -45682,7 +46492,7 @@ func (s *OpsFilter) SetValues(v []*string) *OpsFilter {
 // timeline graph. For the Amazon Web Services resource, OpsCenter aggregates
 // information from Config, CloudTrail logs, and EventBridge, so you don't have
 // to navigate across multiple console pages during your investigation. For
-// more information, see OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
+// more information, see Amazon Web Services Systems Manager OpsCenter (https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter.html)
 // in the Amazon Web Services Systems Manager User Guide.
 type OpsItem struct {
 	_ struct{} `type:"structure"`
@@ -50111,7 +50921,7 @@ type PutComplianceItemsInput struct {
 
 	// A summary of the call execution that includes an execution ID, the type of
 	// execution (for example, Command), and the date/time of the execution using
-	// a datetime object that is saved in the following format: yyyy-MM-dd'T'HH:mm:ss'Z'.
+	// a datetime object that is saved in the following format: yyyy-MM-dd'T'HH:mm:ss'Z'
 	//
 	// ExecutionSummary is a required field
 	ExecutionSummary *ComplianceExecutionSummary `type:"structure" required:"true"`
@@ -50423,7 +51233,7 @@ type PutParameterInput struct {
 	// successfully, see Setting up notifications or trigger actions based on Parameter
 	// Store events (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-cwe.html).
 	// For more information about AMI format validation , see Native parameter support
-	// for Amazon Machine Image (AMI) IDs (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html).
+	// for Amazon Machine Image IDs (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html).
 	DataType *string `type:"string"`
 
 	// Information about the parameter that you want to add to the system. Optional
@@ -50538,8 +51348,7 @@ type PutParameterInput struct {
 	// Advanced parameters have a content size limit of 8 KB and can be configured
 	// to use parameter policies. You can create a maximum of 100,000 advanced parameters
 	// for each Region in an Amazon Web Services account. Advanced parameters incur
-	// a charge. For more information, see Standard and advanced parameter tiers
-	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-advanced-parameters.html)
+	// a charge. For more information, see Managing parameter tiers (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-advanced-parameters.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// You can change a standard parameter to an advanced parameter any time. But
@@ -50587,7 +51396,7 @@ type PutParameterInput struct {
 	//    account in the current Amazon Web Services Region.
 	//
 	// For more information about configuring the default tier option, see Specifying
-	// a default parameter tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-default-tier.html)
+	// a default parameter tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-advanced-parameters.html#ps-default-tier)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Tier *string `type:"string" enum:"ParameterTier"`
 
@@ -51378,17 +52187,16 @@ type RegisterTaskWithMaintenanceWindowInput struct {
 
 	// The Amazon Resource Name (ARN) of the IAM service role for Amazon Web Services
 	// Systems Manager to assume when running a maintenance window task. If you
-	// do not specify a service role ARN, Systems Manager uses your account's service-linked
-	// role. If no service-linked role for Systems Manager exists in your account,
-	// it is created when you run RegisterTaskWithMaintenanceWindow.
+	// do not specify a service role ARN, Systems Manager uses a service-linked
+	// role in your account. If no appropriate service-linked role for Systems Manager
+	// exists in your account, it is created when you run RegisterTaskWithMaintenanceWindow.
 	//
-	// For more information, see the following topics in the in the Amazon Web Services
-	// Systems Manager User Guide:
-	//
-	//    * Using service-linked roles for Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/using-service-linked-roles.html#slr-permissions)
-	//
-	//    * Should I use a service-linked role or a custom service role to run maintenance
-	//    window tasks? (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html#maintenance-window-tasks-service-role)
+	// However, for an improved security posture, we strongly recommend creating
+	// a custom policy and custom service role for running your maintenance window
+	// tasks. The policy can be crafted to provide only the permissions needed for
+	// your particular maintenance window tasks. For more information, see Setting
+	// up maintenance windows (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html)
+	// in the in the Amazon Web Services Systems Manager User Guide.
 	ServiceRoleArn *string `type:"string"`
 
 	// The targets (either managed nodes or maintenance window targets).
@@ -52874,7 +53682,8 @@ type ResourceDataSyncSource struct {
 	// options, then Systems Manager automatically enables all OpsData sources in
 	// the selected Amazon Web Services Regions for all Amazon Web Services accounts
 	// in your organization (or in the selected organization units). For more information,
-	// see About multiple account and Region resource data syncs (https://docs.aws.amazon.com/systems-manager/latest/userguide/Explorer-resouce-data-sync-multiple-accounts-and-regions.html)
+	// see Setting up Systems Manager Explorer to display data from multiple accounts
+	// and Regions (https://docs.aws.amazon.com/systems-manager/latest/userguide/Explorer-resource-data-sync.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	EnableAllOpsDataSources *bool `type:"boolean"`
 
@@ -52992,7 +53801,8 @@ type ResourceDataSyncSourceWithState struct {
 	// options, then Systems Manager automatically enables all OpsData sources in
 	// the selected Amazon Web Services Regions for all Amazon Web Services accounts
 	// in your organization (or in the selected organization units). For more information,
-	// see About multiple account and Region resource data syncs (https://docs.aws.amazon.com/systems-manager/latest/userguide/Explorer-resouce-data-sync-multiple-accounts-and-regions.html)
+	// see Setting up Systems Manager Explorer to display data from multiple accounts
+	// and Regions (https://docs.aws.amazon.com/systems-manager/latest/userguide/Explorer-resource-data-sync.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	EnableAllOpsDataSources *bool `type:"boolean"`
 
@@ -54211,8 +55021,8 @@ type SendCommandInput struct {
 	// The name of the Amazon Web Services Systems Manager document (SSM document)
 	// to run. This can be a public document or a custom document. To run a shared
 	// document belonging to another account, specify the document Amazon Resource
-	// Name (ARN). For more information about how to use shared documents, see Using
-	// shared SSM documents (https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-using-shared.html)
+	// Name (ARN). For more information about how to use shared documents, see Sharing
+	// SSM documents (https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-using-shared.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// If you specify a document name or ARN that hasn't been shared with your account,
@@ -54244,8 +55054,8 @@ type SendCommandInput struct {
 	// to send commands to, you can a send command to tens, hundreds, or thousands
 	// of nodes at once.
 	//
-	// For more information about how to use targets, see Using targets and rate
-	// controls to send commands to a fleet (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html)
+	// For more information about how to use targets, see Run commands at scale
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	InstanceIds []*string `type:"list"`
 
@@ -54305,8 +55115,8 @@ type SendCommandInput struct {
 	// To send a command to a smaller number of managed nodes, you can use the InstanceIds
 	// option instead.
 	//
-	// For more information about how to use targets, see Sending commands to a
-	// fleet (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html)
+	// For more information about how to use targets, see Run commands at scale
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	Targets []*Target `type:"list"`
 
@@ -55112,7 +55922,7 @@ type StartAutomationExecutionInput struct {
 	// The name of the SSM document to run. This can be a public document or a custom
 	// document. To run a shared document belonging to another account, specify
 	// the document ARN. For more information about how to use shared documents,
-	// see Using shared SSM documents (https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-using-shared.html)
+	// see Sharing SSM documents (https://docs.aws.amazon.com/systems-manager/latest/userguide/documents-ssm-sharing.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// DocumentName is a required field
@@ -56370,42 +57180,42 @@ func (s *Tag) SetValue(v string) *Tag {
 //
 // Supported formats include the following.
 //
-//   - Key=InstanceIds,Values=<instance-id-1>,<instance-id-2>,<instance-id-3>
+// For all Systems Manager capabilities:
 //
-//   - Key=tag:<my-tag-key>,Values=<my-tag-value-1>,<my-tag-value-2>
+//   - Key=tag-key,Values=tag-value-1,tag-value-2
 //
-//   - Key=tag-key,Values=<my-tag-key-1>,<my-tag-key-2>
+// For Automation and Change Manager:
 //
-//   - Run Command and Maintenance window targets only: Key=resource-groups:Name,Values=<resource-group-name>
+//   - Key=tag:tag-key,Values=tag-value
 //
-//   - Maintenance window targets only: Key=resource-groups:ResourceTypeFilters,Values=<resource-type-1>,<resource-type-2>
+//   - Key=ResourceGroup,Values=resource-group-name
 //
-//   - Automation targets only: Key=ResourceGroup;Values=<resource-group-name>
+//   - Key=ParameterValues,Values=value-1,value-2,value-3
 //
-// For example:
+//   - To target all instances in the Amazon Web Services Region: Key=AWS::EC2::Instance,Values=*
+//     Key=InstanceIds,Values=*
 //
-//   - Key=InstanceIds,Values=i-02573cafcfEXAMPLE,i-0471e04240EXAMPLE,i-07782c72faEXAMPLE
+// For Run Command and Maintenance Windows:
 //
-//   - Key=tag:CostCenter,Values=CostCenter1,CostCenter2,CostCenter3
+//   - Key=InstanceIds,Values=instance-id-1,instance-id-2,instance-id-3
 //
-//   - Key=tag-key,Values=Name,Instance-Type,CostCenter
+//   - Key=tag:tag-key,Values=tag-value-1,tag-value-2
 //
-//   - Run Command and Maintenance window targets only: Key=resource-groups:Name,Values=ProductionResourceGroup
-//     This example demonstrates how to target all resources in the resource
-//     group ProductionResourceGroup in your maintenance window.
+//   - Key=resource-groups:Name,Values=resource-group-name
 //
-//   - Maintenance window targets only: Key=resource-groups:ResourceTypeFilters,Values=AWS::EC2::INSTANCE,AWS::EC2::VPC
-//     This example demonstrates how to target only Amazon Elastic Compute Cloud
-//     (Amazon EC2) instances and VPCs in your maintenance window.
+//   - Additionally, Maintenance Windows support targeting resource types:
+//     Key=resource-groups:ResourceTypeFilters,Values=resource-type-1,resource-type-2
 //
-//   - Automation targets only: Key=ResourceGroup,Values=MyResourceGroup
+// For State Manager:
 //
-//   - State Manager association targets only: Key=InstanceIds,Values=* This
-//     example demonstrates how to target all managed instances in the Amazon
-//     Web Services Region where the association was created.
+//   - Key=InstanceIds,Values=instance-id-1,instance-id-2,instance-id-3
+//
+//   - Key=tag:tag-key,Values=tag-value-1,tag-value-2
+//
+//   - To target all instances in the Amazon Web Services Region: Key=InstanceIds,Values=*
 //
 // For more information about how to send commands that target managed nodes
-// using Key,Value parameters, see Targeting multiple instances (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html#send-commands-targeting)
+// using Key,Value parameters, see Targeting multiple managed nodes (https://docs.aws.amazon.com/systems-manager/latest/userguide/send-commands-multiple.html#send-commands-targeting)
 // in the Amazon Web Services Systems Manager User Guide.
 type Target struct {
 	_ struct{} `type:"structure"`
@@ -57177,7 +57987,7 @@ func (s *UnsupportedCalendarException) RequestID() string {
 // Patching for applications released by Microsoft is only available on EC2
 // instances and advanced instances. To patch applications released by Microsoft
 // on on-premises servers and VMs, you must enable advanced instances. For more
-// information, see Enabling the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
+// information, see Turning on the advanced-instances tier (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances-advanced.html)
 // in the Amazon Web Services Systems Manager User Guide.
 type UnsupportedFeatureRequiredException struct {
 	_            struct{}                  `type:"structure"`
@@ -57506,8 +58316,8 @@ func (s *UnsupportedParameterType) RequestID() string {
 }
 
 // The document doesn't support the platform type of the given managed node
-// ID(s). For example, you sent an document for a Windows managed node to a
-// Linux node.
+// IDs. For example, you sent an document for a Windows managed node to a Linux
+// node.
 type UnsupportedPlatformType struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -58522,6 +59332,9 @@ type UpdateMaintenanceWindowInput struct {
 	// The date and time, in ISO-8601 Extended format, for when you want the maintenance
 	// window to become active. StartDate allows you to delay activation of the
 	// maintenance window until the specified future date.
+	//
+	// When using a rate schedule, if you provide a start date that occurs in the
+	// past, the current date and time are used as the start date.
 	StartDate *string `type:"string"`
 
 	// The ID of the maintenance window to update.
@@ -59101,17 +59914,16 @@ type UpdateMaintenanceWindowTaskInput struct {
 
 	// The Amazon Resource Name (ARN) of the IAM service role for Amazon Web Services
 	// Systems Manager to assume when running a maintenance window task. If you
-	// do not specify a service role ARN, Systems Manager uses your account's service-linked
-	// role. If no service-linked role for Systems Manager exists in your account,
-	// it is created when you run RegisterTaskWithMaintenanceWindow.
+	// do not specify a service role ARN, Systems Manager uses a service-linked
+	// role in your account. If no appropriate service-linked role for Systems Manager
+	// exists in your account, it is created when you run RegisterTaskWithMaintenanceWindow.
 	//
-	// For more information, see the following topics in the in the Amazon Web Services
-	// Systems Manager User Guide:
-	//
-	//    * Using service-linked roles for Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/using-service-linked-roles.html#slr-permissions)
-	//
-	//    * Should I use a service-linked role or a custom service role to run maintenance
-	//    window tasks? (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html#maintenance-window-tasks-service-role)
+	// However, for an improved security posture, we strongly recommend creating
+	// a custom policy and custom service role for running your maintenance window
+	// tasks. The policy can be crafted to provide only the permissions needed for
+	// your particular maintenance window tasks. For more information, see Setting
+	// up maintenance windows (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html)
+	// in the in the Amazon Web Services Systems Manager User Guide.
 	ServiceRoleArn *string `type:"string"`
 
 	// The targets (either managed nodes or tags) to modify. Managed nodes are specified
@@ -59532,8 +60344,8 @@ type UpdateManagedInstanceRoleInput struct {
 	// The name of the Identity and Access Management (IAM) role that you want to
 	// assign to the managed node. This IAM role must provide AssumeRole permissions
 	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com.
-	// For more information, see Create an IAM service role for a hybrid environment
-	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
+	// For more information, see Create an IAM service role for a hybrid and multicloud
+	// environment (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
 	// You can't specify an IAM service-linked role for this parameter. You must
@@ -60050,11 +60862,11 @@ type UpdatePatchBaselineInput struct {
 	//    with the patch baseline, and its status is reported as InstalledOther.
 	//    This is the default action if no option is specified.
 	//
-	//    * BLOCK : Packages in the RejectedPatches list, and packages that include
-	//    them as dependencies, aren't installed under any circumstances. If a package
-	//    was installed before it was added to the Rejected patches list, it is
-	//    considered non-compliant with the patch baseline, and its status is reported
-	//    as InstalledRejected.
+	//    * BLOCK: Packages in the Rejected patches list, and packages that include
+	//    them as dependencies, aren't installed by Patch Manager under any circumstances.
+	//    If a package was installed before it was added to the Rejected patches
+	//    list, or is installed outside of Patch Manager afterward, it's considered
+	//    noncompliant with the patch baseline and its status is reported as InstalledRejected.
 	RejectedPatchesAction *string `type:"string" enum:"PatchAction"`
 
 	// If True, then all fields that are required by the CreatePatchBaseline operation
@@ -61586,6 +62398,78 @@ func InstancePatchStateOperatorType_Values() []string {
 		InstancePatchStateOperatorTypeNotEqual,
 		InstancePatchStateOperatorTypeLessThan,
 		InstancePatchStateOperatorTypeGreaterThan,
+	}
+}
+
+const (
+	// InstancePropertyFilterKeyInstanceIds is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyInstanceIds = "InstanceIds"
+
+	// InstancePropertyFilterKeyAgentVersion is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyAgentVersion = "AgentVersion"
+
+	// InstancePropertyFilterKeyPingStatus is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyPingStatus = "PingStatus"
+
+	// InstancePropertyFilterKeyPlatformTypes is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyPlatformTypes = "PlatformTypes"
+
+	// InstancePropertyFilterKeyDocumentName is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyDocumentName = "DocumentName"
+
+	// InstancePropertyFilterKeyActivationIds is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyActivationIds = "ActivationIds"
+
+	// InstancePropertyFilterKeyIamRole is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyIamRole = "IamRole"
+
+	// InstancePropertyFilterKeyResourceType is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyResourceType = "ResourceType"
+
+	// InstancePropertyFilterKeyAssociationStatus is a InstancePropertyFilterKey enum value
+	InstancePropertyFilterKeyAssociationStatus = "AssociationStatus"
+)
+
+// InstancePropertyFilterKey_Values returns all elements of the InstancePropertyFilterKey enum
+func InstancePropertyFilterKey_Values() []string {
+	return []string{
+		InstancePropertyFilterKeyInstanceIds,
+		InstancePropertyFilterKeyAgentVersion,
+		InstancePropertyFilterKeyPingStatus,
+		InstancePropertyFilterKeyPlatformTypes,
+		InstancePropertyFilterKeyDocumentName,
+		InstancePropertyFilterKeyActivationIds,
+		InstancePropertyFilterKeyIamRole,
+		InstancePropertyFilterKeyResourceType,
+		InstancePropertyFilterKeyAssociationStatus,
+	}
+}
+
+const (
+	// InstancePropertyFilterOperatorEqual is a InstancePropertyFilterOperator enum value
+	InstancePropertyFilterOperatorEqual = "Equal"
+
+	// InstancePropertyFilterOperatorNotEqual is a InstancePropertyFilterOperator enum value
+	InstancePropertyFilterOperatorNotEqual = "NotEqual"
+
+	// InstancePropertyFilterOperatorBeginWith is a InstancePropertyFilterOperator enum value
+	InstancePropertyFilterOperatorBeginWith = "BeginWith"
+
+	// InstancePropertyFilterOperatorLessThan is a InstancePropertyFilterOperator enum value
+	InstancePropertyFilterOperatorLessThan = "LessThan"
+
+	// InstancePropertyFilterOperatorGreaterThan is a InstancePropertyFilterOperator enum value
+	InstancePropertyFilterOperatorGreaterThan = "GreaterThan"
+)
+
+// InstancePropertyFilterOperator_Values returns all elements of the InstancePropertyFilterOperator enum
+func InstancePropertyFilterOperator_Values() []string {
+	return []string{
+		InstancePropertyFilterOperatorEqual,
+		InstancePropertyFilterOperatorNotEqual,
+		InstancePropertyFilterOperatorBeginWith,
+		InstancePropertyFilterOperatorLessThan,
+		InstancePropertyFilterOperatorGreaterThan,
 	}
 }
 
