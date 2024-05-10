@@ -270,8 +270,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
 data:
-  priorities: |-
-    {{- ClusterAutoscalerPriorities | ToYAML | nindent 4 }}
+  priorities: |- {{ ClusterAutoscalerPriorities | nindent 4 }}
 {{ end }}
 ---
 # Source: cluster-autoscaler/templates/deployment.yaml
