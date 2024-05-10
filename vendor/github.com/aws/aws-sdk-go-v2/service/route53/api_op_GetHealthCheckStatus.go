@@ -11,9 +11,11 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets status of a specified health check. This API is intended for use during
-// development to diagnose behavior. It doesn’t support production use-cases with
-// high query rates that require immediate and actionable responses.
+// Gets status of a specified health check.
+//
+// This API is intended for use during development to diagnose behavior. It
+// doesn’t support production use-cases with high query rates that require
+// immediate and actionable responses.
 func (c *Client) GetHealthCheckStatus(ctx context.Context, params *GetHealthCheckStatusInput, optFns ...func(*Options)) (*GetHealthCheckStatusOutput, error) {
 	if params == nil {
 		params = &GetHealthCheckStatusInput{}
@@ -34,10 +36,11 @@ type GetHealthCheckStatusInput struct {
 
 	// The ID for the health check that you want the current status for. When you
 	// created the health check, CreateHealthCheck returned the ID in the response, in
-	// the HealthCheckId element. If you want to check the status of a calculated
-	// health check, you must use the Amazon Route 53 console or the CloudWatch
-	// console. You can't use GetHealthCheckStatus to get the status of a calculated
-	// health check.
+	// the HealthCheckId element.
+	//
+	// If you want to check the status of a calculated health check, you must use the
+	// Amazon Route 53 console or the CloudWatch console. You can't use
+	// GetHealthCheckStatus to get the status of a calculated health check.
 	//
 	// This member is required.
 	HealthCheckId *string

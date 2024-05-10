@@ -12,9 +12,14 @@ import (
 )
 
 // Describes the available adjustment types for step scaling and simple scaling
-// policies. The following adjustment types are supported:
+// policies.
+//
+// The following adjustment types are supported:
+//
 //   - ChangeInCapacity
+//
 //   - ExactCapacity
+//
 //   - PercentChangeInCapacity
 func (c *Client) DescribeAdjustmentTypes(ctx context.Context, params *DescribeAdjustmentTypesInput, optFns ...func(*Options)) (*DescribeAdjustmentTypesOutput, error) {
 	if params == nil {

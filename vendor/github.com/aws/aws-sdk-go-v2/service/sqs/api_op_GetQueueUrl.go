@@ -10,12 +10,15 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Returns the URL of an existing Amazon SQS queue. To access a queue that belongs
-// to another AWS account, use the QueueOwnerAWSAccountId parameter to specify the
-// account ID of the queue's owner. The queue's owner must grant you permission to
-// access the queue. For more information about shared queue access, see
-// AddPermission or see Allow Developers to Write Messages to a Shared Queue (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-writing-an-sqs-policy.html#write-messages-to-shared-queue)
-// in the Amazon SQS Developer Guide.
+// Returns the URL of an existing Amazon SQS queue.
+//
+// To access a queue that belongs to another AWS account, use the
+// QueueOwnerAWSAccountId parameter to specify the account ID of the queue's owner.
+// The queue's owner must grant you permission to access the queue. For more
+// information about shared queue access, see AddPermissionor see [Allow Developers to Write Messages to a Shared Queue] in the Amazon SQS Developer
+// Guide.
+//
+// [Allow Developers to Write Messages to a Shared Queue]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-writing-an-sqs-policy.html#write-messages-to-shared-queue
 func (c *Client) GetQueueUrl(ctx context.Context, params *GetQueueUrlInput, optFns ...func(*Options)) (*GetQueueUrlOutput, error) {
 	if params == nil {
 		params = &GetQueueUrlInput{}
@@ -34,8 +37,9 @@ func (c *Client) GetQueueUrl(ctx context.Context, params *GetQueueUrlInput, optF
 type GetQueueUrlInput struct {
 
 	// The name of the queue whose URL must be fetched. Maximum 80 characters. Valid
-	// values: alphanumeric characters, hyphens ( - ), and underscores ( _ ). Queue
-	// URLs and names are case-sensitive.
+	// values: alphanumeric characters, hyphens ( - ), and underscores ( _ ).
+	//
+	// Queue URLs and names are case-sensitive.
 	//
 	// This member is required.
 	QueueName *string
@@ -46,8 +50,9 @@ type GetQueueUrlInput struct {
 	noSmithyDocumentSerde
 }
 
-// For more information, see Interpreting Responses (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-api-responses.html)
-// in the Amazon SQS Developer Guide.
+// For more information, see [Interpreting Responses] in the Amazon SQS Developer Guide.
+//
+// [Interpreting Responses]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-api-responses.html
 type GetQueueUrlOutput struct {
 
 	// The URL of the queue.

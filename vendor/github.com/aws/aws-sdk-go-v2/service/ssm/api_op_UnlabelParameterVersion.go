@@ -33,9 +33,10 @@ type UnlabelParameterVersionInput struct {
 	// This member is required.
 	Labels []string
 
-	// The name of the parameter from which you want to delete one or more labels. You
-	// can't enter the Amazon Resource Name (ARN) for a parameter, only the parameter
-	// name itself.
+	// The name of the parameter from which you want to delete one or more labels.
+	//
+	// You can't enter the Amazon Resource Name (ARN) for a parameter, only the
+	// parameter name itself.
 	//
 	// This member is required.
 	Name *string

@@ -12,6 +12,7 @@ import (
 )
 
 // Retrieve information about one or more parameters in a specific hierarchy.
+//
 // Request results are returned on a best-effort basis. If you specify MaxResults
 // in the request, the response includes information up to the limit specified. The
 // number of items returned, however, can be between zero and the value of
@@ -52,18 +53,22 @@ type GetParametersByPathInput struct {
 	// A token to start the list. Use this token to get the next set of results.
 	NextToken *string
 
-	// Filters to limit the request results. The following Key values are supported
-	// for GetParametersByPath : Type , KeyId , and Label . The following Key values
-	// aren't supported for GetParametersByPath : tag , DataType , Name , Path , and
-	// Tier .
+	// Filters to limit the request results.
+	//
+	// The following Key values are supported for GetParametersByPath : Type , KeyId ,
+	// and Label .
+	//
+	// The following Key values aren't supported for GetParametersByPath : tag ,
+	// DataType , Name , Path , and Tier .
 	ParameterFilters []types.ParameterStringFilter
 
-	// Retrieve all parameters within a hierarchy. If a user has access to a path,
-	// then the user can access all levels of that path. For example, if a user has
-	// permission to access path /a , then the user can also access /a/b . Even if a
-	// user has explicitly been denied access in IAM for parameter /a/b , they can
-	// still call the GetParametersByPath API operation recursively for /a and view
-	// /a/b .
+	// Retrieve all parameters within a hierarchy.
+	//
+	// If a user has access to a path, then the user can access all levels of that
+	// path. For example, if a user has permission to access path /a , then the user
+	// can also access /a/b . Even if a user has explicitly been denied access in IAM
+	// for parameter /a/b , they can still call the GetParametersByPath API operation
+	// recursively for /a and view /a/b .
 	Recursive *bool
 
 	// Retrieve all parameters in a hierarchy with their value decrypted.

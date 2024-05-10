@@ -12,11 +12,16 @@ import (
 
 // Configures an Auto Scaling group to send notifications when specified events
 // take place. Subscribers to the specified topic can have messages delivered to an
-// endpoint such as a web server or an email address. This configuration overwrites
-// any existing configuration. For more information, see Getting Amazon SNS
-// notifications when your Auto Scaling group scales (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ASGettingNotifications.html)
-// in the Amazon EC2 Auto Scaling User Guide. If you exceed your maximum limit of
-// SNS topics, which is 10 per Auto Scaling group, the call fails.
+// endpoint such as a web server or an email address.
+//
+// This configuration overwrites any existing configuration.
+//
+// For more information, see [Getting Amazon SNS notifications when your Auto Scaling group scales] in the Amazon EC2 Auto Scaling User Guide.
+//
+// If you exceed your maximum limit of SNS topics, which is 10 per Auto Scaling
+// group, the call fails.
+//
+// [Getting Amazon SNS notifications when your Auto Scaling group scales]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ASGettingNotifications.html
 func (c *Client) PutNotificationConfiguration(ctx context.Context, params *PutNotificationConfigurationInput, optFns ...func(*Options)) (*PutNotificationConfigurationOutput, error) {
 	if params == nil {
 		params = &PutNotificationConfigurationInput{}
@@ -40,8 +45,7 @@ type PutNotificationConfigurationInput struct {
 	AutoScalingGroupName *string
 
 	// The type of event that causes the notification to be sent. To query the
-	// notification types supported by Amazon EC2 Auto Scaling, call the
-	// DescribeAutoScalingNotificationTypes API.
+	// notification types supported by Amazon EC2 Auto Scaling, call the DescribeAutoScalingNotificationTypesAPI.
 	//
 	// This member is required.
 	NotificationTypes []string

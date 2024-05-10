@@ -12,9 +12,11 @@ import (
 )
 
 // Specifies the health check settings to use when evaluating the health state of
-// your EC2 instances. For more information, see Configure Health Checks for Your
-// Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html)
-// in the Classic Load Balancers Guide.
+// your EC2 instances.
+//
+// For more information, see [Configure Health Checks for Your Load Balancer] in the Classic Load Balancers Guide.
+//
+// [Configure Health Checks for Your Load Balancer]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html
 func (c *Client) ConfigureHealthCheck(ctx context.Context, params *ConfigureHealthCheckInput, optFns ...func(*Options)) (*ConfigureHealthCheckOutput, error) {
 	if params == nil {
 		params = &ConfigureHealthCheckInput{}

@@ -11,16 +11,20 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Registers the specified targets with the specified target group. If the target
-// is an EC2 instance, it must be in the running state when you register it. By
-// default, the load balancer routes requests to registered targets using the
+// Registers the specified targets with the specified target group.
+//
+// If the target is an EC2 instance, it must be in the running state when you
+// register it.
+//
+// By default, the load balancer routes requests to registered targets using the
 // protocol and port for the target group. Alternatively, you can override the port
 // for a target when you register it. You can register each EC2 instance or IP
-// address with the same target group multiple times using different ports. With a
-// Network Load Balancer, you cannot register instances by instance ID if they have
-// the following instance types: C1, CC1, CC2, CG1, CG2, CR1, CS1, G1, G2, HI1,
-// HS1, M1, M2, M3, and T1. You can register instances of these types by IP
-// address.
+// address with the same target group multiple times using different ports.
+//
+// With a Network Load Balancer, you cannot register instances by instance ID if
+// they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1, CS1, G1,
+// G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of these types by
+// IP address.
 func (c *Client) RegisterTargets(ctx context.Context, params *RegisterTargetsInput, optFns ...func(*Options)) (*RegisterTargetsOutput, error) {
 	if params == nil {
 		params = &RegisterTargetsInput{}

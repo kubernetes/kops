@@ -1,3 +1,7 @@
+# v1.32.1 (2024-05-08)
+
+* **Bug Fix**: GoDoc improvement
+
 # v1.32.0 (2024-04-11)
 
 * **Feature**: For CreateOpenIDConnectProvider API, the ThumbprintList parameter is no longer required.

@@ -13,9 +13,11 @@ import (
 
 // Retrieves a list of the public and private hosted zones that are associated
 // with the current Amazon Web Services account. The response includes a
-// HostedZones child element for each hosted zone. Amazon Route 53 returns a
-// maximum of 100 items in each response. If you have a lot of hosted zones, you
-// can use the maxitems parameter to list them in groups of up to 100.
+// HostedZones child element for each hosted zone.
+//
+// Amazon Route 53 returns a maximum of 100 items in each response. If you have a
+// lot of hosted zones, you can use the maxitems parameter to list them in groups
+// of up to 100.
 func (c *Client) ListHostedZones(ctx context.Context, params *ListHostedZonesInput, optFns ...func(*Options)) (*ListHostedZonesOutput, error) {
 	if params == nil {
 		params = &ListHostedZonesInput{}
@@ -40,15 +42,18 @@ type ListHostedZonesInput struct {
 	// reusable delegation set.
 	DelegationSetId *string
 
-	// (Optional) Specifies if the hosted zone is private.
+	//  (Optional) Specifies if the hosted zone is private.
 	HostedZoneType types.HostedZoneType
 
 	// If the value of IsTruncated in the previous response was true , you have more
 	// hosted zones. To get more hosted zones, submit another ListHostedZones request.
+	//
 	// For the value of marker , specify the value of NextMarker from the previous
 	// response, which is the ID of the first hosted zone that Amazon Route 53 will
-	// return if you submit another request. If the value of IsTruncated in the
-	// previous response was false , there are no more hosted zones to get.
+	// return if you submit another request.
+	//
+	// If the value of IsTruncated in the previous response was false , there are no
+	// more hosted zones to get.
 	Marker *string
 
 	// (Optional) The maximum number of hosted zones that you want Amazon Route 53 to
@@ -91,6 +96,7 @@ type ListHostedZonesOutput struct {
 	// If IsTruncated is true , the value of NextMarker identifies the first hosted
 	// zone in the next group of hosted zones. Submit another ListHostedZones request,
 	// and specify the value of NextMarker from the response in the marker parameter.
+	//
 	// This element is present only if IsTruncated is true .
 	NextMarker *string
 

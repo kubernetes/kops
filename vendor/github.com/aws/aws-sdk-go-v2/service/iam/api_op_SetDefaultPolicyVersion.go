@@ -11,11 +11,14 @@ import (
 )
 
 // Sets the specified version of the specified policy as the policy's default
-// (operative) version. This operation affects all users, groups, and roles that
-// the policy is attached to. To list the users, groups, and roles that the policy
-// is attached to, use ListEntitiesForPolicy . For information about managed
-// policies, see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide.
+// (operative) version.
+//
+// This operation affects all users, groups, and roles that the policy is attached
+// to. To list the users, groups, and roles that the policy is attached to, use ListEntitiesForPolicy.
+//
+// For information about managed policies, see [Managed policies and inline policies] in the IAM User Guide.
+//
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) SetDefaultPolicyVersion(ctx context.Context, params *SetDefaultPolicyVersionInput, optFns ...func(*Options)) (*SetDefaultPolicyVersionOutput, error) {
 	if params == nil {
 		params = &SetDefaultPolicyVersionInput{}
@@ -34,15 +37,21 @@ func (c *Client) SetDefaultPolicyVersion(ctx context.Context, params *SetDefault
 type SetDefaultPolicyVersionInput struct {
 
 	// The Amazon Resource Name (ARN) of the IAM policy whose default version you want
-	// to set. For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// to set.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicyArn *string
 
-	// The version of the policy to set as the default (operative) version. For more
-	// information about managed policy versions, see Versioning for managed policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html)
-	// in the IAM User Guide.
+	// The version of the policy to set as the default (operative) version.
+	//
+	// For more information about managed policy versions, see [Versioning for managed policies] in the IAM User Guide.
+	//
+	// [Versioning for managed policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html
 	//
 	// This member is required.
 	VersionId *string

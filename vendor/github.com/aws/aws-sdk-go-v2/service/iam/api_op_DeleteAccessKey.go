@@ -10,12 +10,14 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the access key pair associated with the specified IAM user. If you do
-// not specify a user name, IAM determines the user name implicitly based on the
-// Amazon Web Services access key ID signing the request. This operation works for
-// access keys under the Amazon Web Services account. Consequently, you can use
-// this operation to manage Amazon Web Services account root user credentials even
-// if the Amazon Web Services account has no associated users.
+// Deletes the access key pair associated with the specified IAM user.
+//
+// If you do not specify a user name, IAM determines the user name implicitly
+// based on the Amazon Web Services access key ID signing the request. This
+// operation works for access keys under the Amazon Web Services account.
+// Consequently, you can use this operation to manage Amazon Web Services account
+// root user credentials even if the Amazon Web Services account has no associated
+// users.
 func (c *Client) DeleteAccessKey(ctx context.Context, params *DeleteAccessKeyInput, optFns ...func(*Options)) (*DeleteAccessKeyOutput, error) {
 	if params == nil {
 		params = &DeleteAccessKeyInput{}
@@ -34,17 +36,23 @@ func (c *Client) DeleteAccessKey(ctx context.Context, params *DeleteAccessKeyInp
 type DeleteAccessKeyInput struct {
 
 	// The access key ID for the access key ID and secret access key you want to
-	// delete. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters that can consist of any upper or lowercased letter or
-	// digit.
+	// delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters that can consist of
+	// any upper or lowercased letter or digit.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	AccessKeyId *string
 
-	// The name of the user whose access key pair you want to delete. This parameter
-	// allows (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string
-	// of characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the user whose access key pair you want to delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde

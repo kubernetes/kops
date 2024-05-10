@@ -12,9 +12,11 @@ import (
 
 // Associates one or more security groups with your load balancer in a virtual
 // private cloud (VPC). The specified security groups override the previously
-// associated security groups. For more information, see Security Groups for Load
-// Balancers in a VPC (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-groups.html#elb-vpc-security-groups)
-// in the Classic Load Balancers Guide.
+// associated security groups.
+//
+// For more information, see [Security Groups for Load Balancers in a VPC] in the Classic Load Balancers Guide.
+//
+// [Security Groups for Load Balancers in a VPC]: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-groups.html#elb-vpc-security-groups
 func (c *Client) ApplySecurityGroupsToLoadBalancer(ctx context.Context, params *ApplySecurityGroupsToLoadBalancerInput, optFns ...func(*Options)) (*ApplySecurityGroupsToLoadBalancerOutput, error) {
 	if params == nil {
 		params = &ApplySecurityGroupsToLoadBalancerInput{}

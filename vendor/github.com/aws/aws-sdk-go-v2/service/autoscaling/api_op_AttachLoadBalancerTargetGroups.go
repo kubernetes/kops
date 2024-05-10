@@ -10,27 +10,33 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This API operation is superseded by AttachTrafficSources , which can attach
-// multiple traffic sources types. We recommend using AttachTrafficSources to
-// simplify how you manage traffic sources. However, we continue to support
-// AttachLoadBalancerTargetGroups . You can use both the original
-// AttachLoadBalancerTargetGroups API operation and AttachTrafficSources on the
-// same Auto Scaling group. Attaches one or more target groups to the specified
-// Auto Scaling group. This operation is used with the following load balancer
-// types:
+// This API operation is superseded by AttachTrafficSources, which can attach multiple traffic sources
+// types. We recommend using AttachTrafficSources to simplify how you manage
+// traffic sources. However, we continue to support AttachLoadBalancerTargetGroups
+// . You can use both the original AttachLoadBalancerTargetGroups API operation
+// and AttachTrafficSources on the same Auto Scaling group.
+//
+// Attaches one or more target groups to the specified Auto Scaling group.
+//
+// This operation is used with the following load balancer types:
+//
 //   - Application Load Balancer - Operates at the application layer (layer 7) and
 //     supports HTTP and HTTPS.
+//
 //   - Network Load Balancer - Operates at the transport layer (layer 4) and
 //     supports TCP, TLS, and UDP.
+//
 //   - Gateway Load Balancer - Operates at the network layer (layer 3).
 //
-// To describe the target groups for an Auto Scaling group, call the
-// DescribeLoadBalancerTargetGroups API. To detach the target group from the Auto
-// Scaling group, call the DetachLoadBalancerTargetGroups API. This operation is
-// additive and does not detach existing target groups or Classic Load Balancers
-// from the Auto Scaling group. For more information, see Use Elastic Load
-// Balancing to distribute traffic across the instances in your Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// To describe the target groups for an Auto Scaling group, call the DescribeLoadBalancerTargetGroups API. To
+// detach the target group from the Auto Scaling group, call the DetachLoadBalancerTargetGroupsAPI.
+//
+// This operation is additive and does not detach existing target groups or
+// Classic Load Balancers from the Auto Scaling group.
+//
+// For more information, see [Use Elastic Load Balancing to distribute traffic across the instances in your Auto Scaling group] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Use Elastic Load Balancing to distribute traffic across the instances in your Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html
 func (c *Client) AttachLoadBalancerTargetGroups(ctx context.Context, params *AttachLoadBalancerTargetGroupsInput, optFns ...func(*Options)) (*AttachLoadBalancerTargetGroupsOutput, error) {
 	if params == nil {
 		params = &AttachLoadBalancerTargetGroupsInput{}
@@ -54,9 +60,10 @@ type AttachLoadBalancerTargetGroupsInput struct {
 	AutoScalingGroupName *string
 
 	// The Amazon Resource Names (ARNs) of the target groups. You can specify up to 10
-	// target groups. To get the ARN of a target group, use the Elastic Load Balancing
-	// DescribeTargetGroups (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html)
+	// target groups. To get the ARN of a target group, use the Elastic Load Balancing [DescribeTargetGroups]
 	// API operation.
+	//
+	// [DescribeTargetGroups]: https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html
 	//
 	// This member is required.
 	TargetGroupARNs []string

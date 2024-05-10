@@ -11,8 +11,9 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Lists the targets assigned to the specified rule. The maximum number of results
-// per page for requests is 100.
+// Lists the targets assigned to the specified rule.
+//
+// The maximum number of results per page for requests is 100.
 func (c *Client) ListTargetsByRule(ctx context.Context, params *ListTargetsByRuleInput, optFns ...func(*Options)) (*ListTargetsByRuleOutput, error) {
 	if params == nil {
 		params = &ListTargetsByRuleInput{}

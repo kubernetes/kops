@@ -96,7 +96,6 @@ const apiName = "oauth2"
 const apiVersion = "v2"
 const basePath = "https://www.googleapis.com/"
 const basePathTemplate = "https://www.UNIVERSE_DOMAIN/"
-const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
@@ -122,7 +121,7 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
 	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
-	opts = append(opts, internaloption.WithDefaultUniverseDomain(defaultUniverseDomain))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err

@@ -10,14 +10,19 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Attaches the specified managed policy to the specified IAM group. You use this
-// operation to attach a managed policy to a group. To embed an inline policy in a
-// group, use PutGroupPolicy (https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutGroupPolicy.html)
-// . As a best practice, you can validate your IAM policies. To learn more, see
-// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
-// in the IAM User Guide. For more information about policies, see Managed
-// policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide.
+// Attaches the specified managed policy to the specified IAM group.
+//
+// You use this operation to attach a managed policy to a group. To embed an
+// inline policy in a group, use [PutGroupPolicy]PutGroupPolicy .
+//
+// As a best practice, you can validate your IAM policies. To learn more, see [Validating IAM policies] in
+// the IAM User Guide.
+//
+// For more information about policies, see [Managed policies and inline policies] in the IAM User Guide.
+//
+// [PutGroupPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_PutGroupPolicy.html
+// [Validating IAM policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) AttachGroupPolicy(ctx context.Context, params *AttachGroupPolicyInput, optFns ...func(*Options)) (*AttachGroupPolicyOutput, error) {
 	if params == nil {
 		params = &AttachGroupPolicyInput{}
@@ -35,17 +40,23 @@ func (c *Client) AttachGroupPolicy(ctx context.Context, params *AttachGroupPolic
 
 type AttachGroupPolicyInput struct {
 
-	// The name (friendly name, not ARN) of the group to attach the policy to. This
-	// parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters consisting of upper and lowercase alphanumeric characters
-	// with no spaces. You can also include any of the following characters: _+=,.@-
+	// The name (friendly name, not ARN) of the group to attach the policy to.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	GroupName *string
 
-	// The Amazon Resource Name (ARN) of the IAM policy you want to attach. For more
-	// information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// The Amazon Resource Name (ARN) of the IAM policy you want to attach.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicyArn *string

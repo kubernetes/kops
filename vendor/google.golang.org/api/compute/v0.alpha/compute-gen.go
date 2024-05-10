@@ -97,7 +97,6 @@ const apiVersion = "alpha"
 const basePath = "https://compute.googleapis.com/compute/alpha/"
 const basePathTemplate = "https://compute.UNIVERSE_DOMAIN/compute/alpha/"
 const mtlsBasePath = "https://compute.mtls.googleapis.com/compute/alpha/"
-const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
@@ -138,7 +137,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
 	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
-	opts = append(opts, internaloption.WithDefaultUniverseDomain(defaultUniverseDomain))
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -2098,7 +2096,7 @@ type AccessConfig struct {
 	// PublicPtrDomainName: The DNS domain name for the public PTR record. You can
 	// set this field only if the `setPublicPtr` field is enabled in accessConfig.
 	// If this field is unspecified in ipv6AccessConfig, a default PTR record will
-	// be createc for first IP in associated external IPv6 range.
+	// be created for first IP in associated external IPv6 range.
 	PublicPtrDomainName string `json:"publicPtrDomainName,omitempty"`
 	// SecurityPolicy: [Output Only] The resource URL for the security policy
 	// associated with this access config.
@@ -14607,7 +14605,7 @@ type HTTP2HealthCheck struct {
 	//   "PROXY_V1"
 	ProxyHeader string `json:"proxyHeader,omitempty"`
 	// RequestPath: The request path of the HTTP/2 health check request. The
-	// default value is /.
+	// default value is /. Must comply with RFC3986.
 	RequestPath string `json:"requestPath,omitempty"`
 	// Response: Creates a content-based HTTP/2 health check. In addition to the
 	// required HTTP 200 (OK) status code, you can configure the health check to
@@ -14697,7 +14695,7 @@ type HTTPHealthCheck struct {
 	//   "PROXY_V1"
 	ProxyHeader string `json:"proxyHeader,omitempty"`
 	// RequestPath: The request path of the HTTP health check request. The default
-	// value is /.
+	// value is /. Must comply with RFC3986.
 	RequestPath string `json:"requestPath,omitempty"`
 	// Response: Creates a content-based HTTP health check. In addition to the
 	// required HTTP 200 (OK) status code, you can configure the health check to
@@ -14786,7 +14784,7 @@ type HTTPSHealthCheck struct {
 	//   "PROXY_V1"
 	ProxyHeader string `json:"proxyHeader,omitempty"`
 	// RequestPath: The request path of the HTTPS health check request. The default
-	// value is /.
+	// value is /. Must comply with RFC3986.
 	RequestPath string `json:"requestPath,omitempty"`
 	// Response: Creates a content-based HTTPS health check. In addition to the
 	// required HTTP 200 (OK) status code, you can configure the health check to
@@ -14880,11 +14878,11 @@ type HealthCheck struct {
 	SelfLinkWithId string `json:"selfLinkWithId,omitempty"`
 	// SourceRegions: The list of cloud regions from which health checks are
 	// performed. If any regions are specified, then exactly 3 regions should be
-	// specified. The region names must be valid names of GCP regions. This can
-	// only be set for global health check. If this list is non-empty, then there
-	// are restrictions on what other health check fields are supported and what
-	// other resources can use this health check: - SSL, HTTP2, and GRPC protocols
-	// are not supported. - The TCP request field is not supported. - The
+	// specified. The region names must be valid names of Google Cloud regions.
+	// This can only be set for global health check. If this list is non-empty,
+	// then there are restrictions on what other health check fields are supported
+	// and what other resources can use this health check: - SSL, HTTP2, and GRPC
+	// protocols are not supported. - The TCP request field is not supported. - The
 	// proxyHeader field for HTTP, HTTPS, and TCP is not supported. - The
 	// checkIntervalSec field must be at least 30. - The health check cannot be
 	// used with BackendService nor with managed instance group auto-healing.
@@ -39341,6 +39339,7 @@ type Quota struct {
 	//   "TPU_LITE_PODSLICE_V5"
 	//   "TPU_PODSLICE_V4"
 	//   "URL_MAPS"
+	//   "VARIABLE_IPV6_PUBLIC_DELEGATED_PREFIXES"
 	//   "VPN_GATEWAYS"
 	//   "VPN_TUNNELS"
 	//   "XPN_SERVICE_PROJECTS"
@@ -46564,6 +46563,21 @@ type Scheduling struct {
 	// terminated, in RFC3339 text format. If specified, the instance termination
 	// action will be performed at the termination time.
 	TerminationTime string `json:"terminationTime,omitempty"`
+	// WindowsLicenseOptimizationMode: Represents the Windows Server License
+	// Optimization Mode of the VM. If unspecified, the default mode is `OFF`.
+	//
+	// Possible values:
+	//   "AUTO" - "Automatically maximize savings and minimize performance impact
+	// by matching license optimization mode to current CPU utilization.
+	//   "BALANCED" - Significant license cost savings via moderate throttles (40%
+	// baseline, 10 minute maximum burst at full utilization).
+	//   "COST_OPTIMIZED" - Maximum license cost savings via restrictive throttles
+	// (20% baseline, 3.75 minute maximum burst at full utilization).
+	//   "OFF" - No license cost savings with maximum CPU performance.
+	//   "PERFORMANCE" - Moderate license cost savings via least restrictive
+	// throttles (60% baseline, 22.5 minute maximum burst at full utilization).
+	//   "UNSPECIFIED" - Unspecified license optimization mode defaults to `OFF`.
+	WindowsLicenseOptimizationMode string `json:"windowsLicenseOptimizationMode,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "AutomaticRestart") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -47137,6 +47151,16 @@ type SecurityPolicy struct {
 	// SelfLinkWithId: [Output Only] Server-defined URL for this resource with the
 	// resource id.
 	SelfLinkWithId string `json:"selfLinkWithId,omitempty"`
+	// ShortName: User-provided name of the organization security policy. The name
+	// should be unique in the organization in which the security policy is
+	// created. This should only be used when SecurityPolicyType is CLOUD_ARMOR.
+	// The name must be 1-63 characters long, and comply with
+	// https://www.ietf.org/rfc/rfc1035.txt. Specifically, the name must be 1-63
+	// characters long and match the regular expression
+	// `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+	// lowercase letter, and all following characters must be a dash, lowercase
+	// letter, or digit, except the last character, which cannot be a dash.
+	ShortName string `json:"shortName,omitempty"`
 	// Type: The type indicates the intended use of the security policy. -
 	// CLOUD_ARMOR: Cloud Armor backend security policies can be configured to
 	// filter incoming HTTP requests targeting backend services. They filter
@@ -47449,10 +47473,17 @@ type SecurityPolicyAssociation struct {
 	// DisplayName: [Output Only] The display name of the security policy of the
 	// association.
 	DisplayName string `json:"displayName,omitempty"`
+	// ExcludedFolders: A list of folders to exclude from the security policy.
+	ExcludedFolders []string `json:"excludedFolders,omitempty"`
+	// ExcludedProjects: A list of projects to exclude from the security policy.
+	ExcludedProjects []string `json:"excludedProjects,omitempty"`
 	// Name: The name for an association.
 	Name string `json:"name,omitempty"`
 	// SecurityPolicyId: [Output Only] The security policy ID of the association.
 	SecurityPolicyId string `json:"securityPolicyId,omitempty"`
+	// ShortName: [Output Only] The short name of the security policy of the
+	// association.
+	ShortName string `json:"shortName,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
@@ -50477,16 +50508,17 @@ func (s *SnapshotSettingsAccessLocationAccessLocationPreference) MarshalJSON() (
 
 type SnapshotSettingsStorageLocationSettings struct {
 	// Locations: When the policy is SPECIFIC_LOCATIONS, snapshots will be stored
-	// in the locations listed in this field. Keys are GCS bucket locations.
+	// in the locations listed in this field. Keys are Cloud Storage bucket
+	// locations. Only one location can be specified.
 	Locations map[string]SnapshotSettingsStorageLocationSettingsStorageLocationPreference `json:"locations,omitempty"`
 	// Policy: The chosen location policy.
 	//
 	// Possible values:
 	//   "LOCAL_REGION" - Store snapshot in the same region as with the originating
 	// disk. No additional parameters are needed.
-	//   "NEAREST_MULTI_REGION" - Store snapshot to the nearest multi region GCS
-	// bucket, relative to the originating disk. No additional parameters are
-	// needed.
+	//   "NEAREST_MULTI_REGION" - Store snapshot in the nearest multi region Cloud
+	// Storage bucket, relative to the originating disk. No additional parameters
+	// are needed.
 	//   "SPECIFIC_LOCATIONS" - Store snapshot in the specific locations, as
 	// specified by the user. The list of regions to store must be defined under
 	// the `locations` field.
@@ -50513,7 +50545,8 @@ func (s *SnapshotSettingsStorageLocationSettings) MarshalJSON() ([]byte, error) 
 // SnapshotSettingsStorageLocationSettingsStorageLocationPreference: A
 // structure for specifying storage locations.
 type SnapshotSettingsStorageLocationSettingsStorageLocationPreference struct {
-	// Name: Name of the location. It should be one of the GCS buckets.
+	// Name: Name of the location. It should be one of the Cloud Storage buckets.
+	// Only one location can be specified.
 	Name string `json:"name,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
 	// include in API requests. By default, fields with empty or default values are

@@ -11,20 +11,28 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Creates a new Amazon Web Services secret access key and corresponding Amazon
+//	Creates a new Amazon Web Services secret access key and corresponding Amazon
+//
 // Web Services access key ID for the specified user. The default status for new
-// keys is Active . If you do not specify a user name, IAM determines the user name
-// implicitly based on the Amazon Web Services access key ID signing the request.
-// This operation works for access keys under the Amazon Web Services account.
+// keys is Active .
+//
+// If you do not specify a user name, IAM determines the user name implicitly
+// based on the Amazon Web Services access key ID signing the request. This
+// operation works for access keys under the Amazon Web Services account.
 // Consequently, you can use this operation to manage Amazon Web Services account
 // root user credentials. This is true even if the Amazon Web Services account has
-// no associated users. For information about quotas on the number of keys you can
-// create, see IAM and STS quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
-// in the IAM User Guide. To ensure the security of your Amazon Web Services
-// account, the secret access key is accessible only during key and user creation.
-// You must save the key (for example, in a text file) if you want to be able to
-// access it again. If a secret key is lost, you can delete the access keys for the
-// associated user and then create new keys.
+// no associated users.
+//
+// For information about quotas on the number of keys you can create, see [IAM and STS quotas] in the
+// IAM User Guide.
+//
+// To ensure the security of your Amazon Web Services account, the secret access
+// key is accessible only during key and user creation. You must save the key (for
+// example, in a text file) if you want to be able to access it again. If a secret
+// key is lost, you can delete the access keys for the associated user and then
+// create new keys.
+//
+// [IAM and STS quotas]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html
 func (c *Client) CreateAccessKey(ctx context.Context, params *CreateAccessKeyInput, optFns ...func(*Options)) (*CreateAccessKeyOutput, error) {
 	if params == nil {
 		params = &CreateAccessKeyInput{}
@@ -42,10 +50,13 @@ func (c *Client) CreateAccessKey(ctx context.Context, params *CreateAccessKeyInp
 
 type CreateAccessKeyInput struct {
 
-	// The name of the IAM user that the new key will belong to. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the IAM user that the new key will belong to.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde

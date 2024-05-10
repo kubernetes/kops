@@ -11,9 +11,10 @@ import (
 )
 
 // Disables the specified rule. A disabled rule won't match any events, and won't
-// self-trigger if it has a schedule expression. When you disable a rule, incoming
-// events might continue to match to the disabled rule. Allow a short period of
-// time for changes to take effect.
+// self-trigger if it has a schedule expression.
+//
+// When you disable a rule, incoming events might continue to match to the
+// disabled rule. Allow a short period of time for changes to take effect.
 func (c *Client) DisableRule(ctx context.Context, params *DisableRuleInput, optFns ...func(*Options)) (*DisableRuleOutput, error) {
 	if params == nil {
 		params = &DisableRuleInput{}

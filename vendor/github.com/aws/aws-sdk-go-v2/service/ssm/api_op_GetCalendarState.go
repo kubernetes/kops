@@ -16,13 +16,16 @@ import (
 // returns the state of the calendar at that specific time, and returns the next
 // time that the change calendar state will transition. If you don't specify a
 // time, GetCalendarState uses the current time. Change Calendar entries have two
-// possible states: OPEN or CLOSED . If you specify more than one calendar in a
-// request, the command returns the status of OPEN only if all calendars in the
-// request are open. If one or more calendars in the request are closed, the status
-// returned is CLOSED . For more information about Change Calendar, a capability of
-// Amazon Web Services Systems Manager, see Amazon Web Services Systems Manager
-// Change Calendar (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar.html)
-// in the Amazon Web Services Systems Manager User Guide.
+// possible states: OPEN or CLOSED .
+//
+// If you specify more than one calendar in a request, the command returns the
+// status of OPEN only if all calendars in the request are open. If one or more
+// calendars in the request are closed, the status returned is CLOSED .
+//
+// For more information about Change Calendar, a capability of Amazon Web Services
+// Systems Manager, see [Amazon Web Services Systems Manager Change Calendar]in the Amazon Web Services Systems Manager User Guide.
+//
+// [Amazon Web Services Systems Manager Change Calendar]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar.html
 func (c *Client) GetCalendarState(ctx context.Context, params *GetCalendarStateInput, optFns ...func(*Options)) (*GetCalendarStateOutput, error) {
 	if params == nil {
 		params = &GetCalendarStateInput{}
@@ -48,8 +51,10 @@ type GetCalendarStateInput struct {
 	CalendarNames []string
 
 	// (Optional) The specific time for which you want to get calendar state
-	// information, in ISO 8601 (https://en.wikipedia.org/wiki/ISO_8601) format. If
-	// you don't specify a value or AtTime , the current time is used.
+	// information, in [ISO 8601]format. If you don't specify a value or AtTime , the current
+	// time is used.
+	//
+	// [ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601
 	AtTime *string
 
 	noSmithyDocumentSerde
@@ -57,15 +62,17 @@ type GetCalendarStateInput struct {
 
 type GetCalendarStateOutput struct {
 
-	// The time, as an ISO 8601 (https://en.wikipedia.org/wiki/ISO_8601) string, that
-	// you specified in your command. If you don't specify a time, GetCalendarState
-	// uses the current time.
+	// The time, as an [ISO 8601] string, that you specified in your command. If you don't
+	// specify a time, GetCalendarState uses the current time.
+	//
+	// [ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601
 	AtTime *string
 
-	// The time, as an ISO 8601 (https://en.wikipedia.org/wiki/ISO_8601) string, that
-	// the calendar state will change. If the current calendar state is OPEN ,
-	// NextTransitionTime indicates when the calendar state changes to CLOSED , and
-	// vice-versa.
+	// The time, as an [ISO 8601] string, that the calendar state will change. If the current
+	// calendar state is OPEN , NextTransitionTime indicates when the calendar state
+	// changes to CLOSED , and vice-versa.
+	//
+	// [ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601
 	NextTransitionTime *string
 
 	// The state of the calendar. An OPEN calendar indicates that actions are allowed

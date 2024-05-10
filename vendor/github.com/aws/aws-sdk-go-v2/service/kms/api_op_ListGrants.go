@@ -11,29 +11,45 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets a list of all grants for the specified KMS key. You must specify the KMS
-// key in all requests. You can filter the grant list by grant ID or grantee
-// principal. For detailed information about grants, including grant terminology,
-// see Grants in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html)
-// in the Key Management Service Developer Guide . For examples of working with
-// grants in several programming languages, see Programming grants (https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html)
-// . The GranteePrincipal field in the ListGrants response usually contains the
-// user or role designated as the grantee principal in the grant. However, when the
+// Gets a list of all grants for the specified KMS key.
+//
+// You must specify the KMS key in all requests. You can filter the grant list by
+// grant ID or grantee principal.
+//
+// For detailed information about grants, including grant terminology, see [Grants in KMS] in the
+// Key Management Service Developer Guide . For examples of working with grants in
+// several programming languages, see [Programming grants].
+//
+// The GranteePrincipal field in the ListGrants response usually contains the user
+// or role designated as the grantee principal in the grant. However, when the
 // grantee principal in the grant is an Amazon Web Services service, the
-// GranteePrincipal field contains the service principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-services)
-// , which might represent several different grantee principals. Cross-account use:
-// Yes. To perform this operation on a KMS key in a different Amazon Web Services
-// account, specify the key ARN in the value of the KeyId parameter. Required
-// permissions: kms:ListGrants (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (key policy) Related operations:
-//   - CreateGrant
-//   - ListRetirableGrants
-//   - RetireGrant
-//   - RevokeGrant
+// GranteePrincipal field contains the [service principal], which might represent several different
+// grantee principals.
+//
+// Cross-account use: Yes. To perform this operation on a KMS key in a different
+// Amazon Web Services account, specify the key ARN in the value of the KeyId
+// parameter.
+//
+// Required permissions: [kms:ListGrants] (key policy)
+//
+// Related operations:
+//
+// # CreateGrant
+//
+// # ListRetirableGrants
+//
+// # RetireGrant
+//
+// # RevokeGrant
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [Programming grants]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html
+// [service principal]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-services
+// [Grants in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html
+// [kms:ListGrants]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
 func (c *Client) ListGrants(ctx context.Context, params *ListGrantsInput, optFns ...func(*Options)) (*ListGrantsOutput, error) {
 	if params == nil {
 		params = &ListGrantsInput{}
@@ -52,12 +68,18 @@ func (c *Client) ListGrants(ctx context.Context, params *ListGrantsInput, optFns
 type ListGrantsInput struct {
 
 	// Returns only grants for the specified KMS key. This parameter is required.
+	//
 	// Specify the key ID or key ARN of the KMS key. To specify a KMS key in a
-	// different Amazon Web Services account, you must use the key ARN. For example:
+	// different Amazon Web Services account, you must use the key ARN.
+	//
+	// For example:
+	//
 	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Key ARN:
 	//   arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
-	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey .
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	//
 	// This member is required.
 	KeyId *string
@@ -72,9 +94,10 @@ type ListGrantsInput struct {
 
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 100, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 100,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit *int32
 
 	// Use this parameter in a subsequent request after you receive a response with
@@ -196,9 +219,10 @@ var _ ListGrantsAPIClient = (*Client)(nil)
 type ListGrantsPaginatorOptions struct {
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 100, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 100,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

@@ -41,15 +41,24 @@ func (c *Client) CreateAssociation(ctx context.Context, params *CreateAssociatio
 type CreateAssociationInput struct {
 
 	// The name of the SSM Command document or Automation runbook that contains the
-	// configuration information for the managed node. You can specify Amazon Web
-	// Services-predefined documents, documents you created, or a document that is
-	// shared with you from another Amazon Web Services account. For Systems Manager
-	// documents (SSM documents) that are shared with you from other Amazon Web
-	// Services accounts, you must specify the complete SSM document ARN, in the
-	// following format: arn:partition:ssm:region:account-id:document/document-name
-	// For example: arn:aws:ssm:us-east-2:12345678912:document/My-Shared-Document For
-	// Amazon Web Services-predefined documents and SSM documents you created in your
-	// account, you only need to specify the document name. For example,
+	// configuration information for the managed node.
+	//
+	// You can specify Amazon Web Services-predefined documents, documents you
+	// created, or a document that is shared with you from another Amazon Web Services
+	// account.
+	//
+	// For Systems Manager documents (SSM documents) that are shared with you from
+	// other Amazon Web Services accounts, you must specify the complete SSM document
+	// ARN, in the following format:
+	//
+	//     arn:partition:ssm:region:account-id:document/document-name
+	//
+	// For example:
+	//
+	//     arn:aws:ssm:us-east-2:12345678912:document/My-Shared-Document
+	//
+	// For Amazon Web Services-predefined documents and SSM documents you created in
+	// your account, you only need to specify the document name. For example,
 	// AWS-ApplyPatchBaseline or My-Document .
 	//
 	// This member is required.
@@ -76,54 +85,63 @@ type CreateAssociationInput struct {
 
 	// The names or Amazon Resource Names (ARNs) of the Change Calendar type documents
 	// you want to gate your associations under. The associations only run when that
-	// change calendar is open. For more information, see Amazon Web Services Systems
-	// Manager Change Calendar (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar)
-	// .
+	// change calendar is open. For more information, see [Amazon Web Services Systems Manager Change Calendar].
+	//
+	// [Amazon Web Services Systems Manager Change Calendar]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar
 	CalendarNames []string
 
 	// The severity level to assign to the association.
 	ComplianceSeverity types.AssociationComplianceSeverity
 
 	// The document version you want to associate with the targets. Can be a specific
-	// version or the default version. State Manager doesn't support running
-	// associations that use a new version of a document if that document is shared
-	// from another account. State Manager always runs the default version of a
-	// document if shared from another account, even though the Systems Manager console
-	// shows that a new version was processed. If you want to run an association using
-	// a new version of a document shared form another account, you must set the
-	// document version to default .
+	// version or the default version.
+	//
+	// State Manager doesn't support running associations that use a new version of a
+	// document if that document is shared from another account. State Manager always
+	// runs the default version of a document if shared from another account, even
+	// though the Systems Manager console shows that a new version was processed. If
+	// you want to run an association using a new version of a document shared form
+	// another account, you must set the document version to default .
 	DocumentVersion *string
 
 	// The number of hours the association can run before it is canceled. Duration
 	// applies to associations that are currently running, and any pending and in
 	// progress commands on all targets. If a target was taken offline for the
 	// association to run, it is made available again immediately, without a reboot.
+	//
 	// The Duration parameter applies only when both these conditions are true:
+	//
 	//   - The association for which you specify a duration is cancelable according to
 	//   the parameters of the SSM command document or Automation runbook associated with
 	//   this execution.
-	//   - The command specifies the ApplyOnlyAtCronInterval (https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CreateAssociation.html#systemsmanager-CreateAssociation-request-ApplyOnlyAtCronInterval)
-	//   parameter, which means that the association doesn't run immediately after it is
-	//   created, but only according to the specified schedule.
+	//
+	//   - The command specifies the [ApplyOnlyAtCronInterval]parameter, which means that the association
+	//   doesn't run immediately after it is created, but only according to the specified
+	//   schedule.
+	//
+	// [ApplyOnlyAtCronInterval]: https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CreateAssociation.html#systemsmanager-CreateAssociation-request-ApplyOnlyAtCronInterval
 	Duration *int32
 
-	// The managed node ID. InstanceId has been deprecated. To specify a managed node
-	// ID for an association, use the Targets parameter. Requests that include the
-	// parameter InstanceID with Systems Manager documents (SSM documents) that use
-	// schema version 2.0 or later will fail. In addition, if you use the parameter
-	// InstanceId , you can't use the parameters AssociationName , DocumentVersion ,
-	// MaxErrors , MaxConcurrency , OutputLocation , or ScheduleExpression . To use
-	// these parameters, you must use the Targets parameter.
+	// The managed node ID.
+	//
+	// InstanceId has been deprecated. To specify a managed node ID for an
+	// association, use the Targets parameter. Requests that include the parameter
+	// InstanceID with Systems Manager documents (SSM documents) that use schema
+	// version 2.0 or later will fail. In addition, if you use the parameter InstanceId
+	// , you can't use the parameters AssociationName , DocumentVersion , MaxErrors ,
+	// MaxConcurrency , OutputLocation , or ScheduleExpression . To use these
+	// parameters, you must use the Targets parameter.
 	InstanceId *string
 
 	// The maximum number of targets allowed to run the association at the same time.
 	// You can specify a number, for example 10, or a percentage of the target set, for
 	// example 10%. The default value is 100%, which means all targets run the
-	// association at the same time. If a new managed node starts and attempts to run
-	// an association while Systems Manager is running MaxConcurrency associations,
-	// the association is allowed to run. During the next association interval, the new
-	// managed node will process its association within the limit specified for
-	// MaxConcurrency .
+	// association at the same time.
+	//
+	// If a new managed node starts and attempts to run an association while Systems
+	// Manager is running MaxConcurrency associations, the association is allowed to
+	// run. During the next association interval, the new managed node will process its
+	// association within the limit specified for MaxConcurrency .
 	MaxConcurrency *string
 
 	// The number of errors that are allowed before the system stops sending requests
@@ -133,11 +151,12 @@ type CreateAssociationInput struct {
 	// fourth error is received. If you specify 0, then the system stops sending
 	// requests after the first error is returned. If you run an association on 50
 	// managed nodes and set MaxError to 10%, then the system stops sending the
-	// request when the sixth error is received. Executions that are already running an
-	// association when MaxErrors is reached are allowed to complete, but some of
-	// these executions may fail as well. If you need to ensure that there won't be
-	// more than max-errors failed executions, set MaxConcurrency to 1 so that
-	// executions proceed one at a time.
+	// request when the sixth error is received.
+	//
+	// Executions that are already running an association when MaxErrors is reached
+	// are allowed to complete, but some of these executions may fail as well. If you
+	// need to ensure that there won't be more than max-errors failed executions, set
+	// MaxConcurrency to 1 so that executions proceed one at a time.
 	MaxErrors *string
 
 	// An Amazon Simple Storage Service (Amazon S3) bucket where you want to store the
@@ -154,21 +173,26 @@ type CreateAssociationInput struct {
 	// example, if you specified a cron schedule of cron(0 0 ? * THU#2 *) , you could
 	// specify an offset of 3 to run the association each Sunday after the second
 	// Thursday of the month. For more information about cron schedules for
-	// associations, see Reference: Cron and rate expressions for Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/reference-cron-and-rate-expressions.html)
-	// in the Amazon Web Services Systems Manager User Guide. To use offsets, you must
-	// specify the ApplyOnlyAtCronInterval parameter. This option tells the system not
-	// to run an association immediately after you create it.
+	// associations, see [Reference: Cron and rate expressions for Systems Manager]in the Amazon Web Services Systems Manager User Guide.
+	//
+	// To use offsets, you must specify the ApplyOnlyAtCronInterval parameter. This
+	// option tells the system not to run an association immediately after you create
+	// it.
+	//
+	// [Reference: Cron and rate expressions for Systems Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/reference-cron-and-rate-expressions.html
 	ScheduleOffset *int32
 
 	// The mode for generating association compliance. You can specify AUTO or MANUAL .
 	// In AUTO mode, the system uses the status of the association execution to
 	// determine the compliance status. If the association execution runs successfully,
 	// then the association is COMPLIANT . If the association execution doesn't run
-	// successfully, the association is NON-COMPLIANT . In MANUAL mode, you must
-	// specify the AssociationId as a parameter for the PutComplianceItems API
+	// successfully, the association is NON-COMPLIANT .
+	//
+	// In MANUAL mode, you must specify the AssociationId as a parameter for the PutComplianceItems API
 	// operation. In this case, compliance data isn't managed by State Manager. It is
-	// managed by your direct call to the PutComplianceItems API operation. By
-	// default, all associations use AUTO mode.
+	// managed by your direct call to the PutComplianceItemsAPI operation.
+	//
+	// By default, all associations use AUTO mode.
 	SyncCompliance types.AssociationSyncCompliance
 
 	// Adds or overwrites one or more tags for a State Manager association. Tags are
@@ -191,9 +215,10 @@ type CreateAssociationInput struct {
 	// Amazon Web Services resource groups, all managed nodes in an Amazon Web Services
 	// account, or individual managed node IDs. You can target all managed nodes in an
 	// Amazon Web Services account by specifying the InstanceIds key with a value of *
-	// . For more information about choosing targets for an association, see About
-	// targets and rate controls in State Manager associations (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state-manager-targets-and-rate-controls.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// . For more information about choosing targets for an association, see [About targets and rate controls in State Manager associations]in the
+	// Amazon Web Services Systems Manager User Guide.
+	//
+	// [About targets and rate controls in State Manager associations]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state-manager-targets-and-rate-controls.html
 	Targets []types.Target
 
 	noSmithyDocumentSerde

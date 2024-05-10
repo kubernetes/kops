@@ -11,8 +11,9 @@ import (
 )
 
 // Deletes a traffic policy instance and all of the resource record sets that
-// Amazon Route 53 created when you created the instance. In the Route 53 console,
-// traffic policy instances are known as policy records.
+// Amazon Route 53 created when you created the instance.
+//
+// In the Route 53 console, traffic policy instances are known as policy records.
 func (c *Client) DeleteTrafficPolicyInstance(ctx context.Context, params *DeleteTrafficPolicyInstanceInput, optFns ...func(*Options)) (*DeleteTrafficPolicyInstanceOutput, error) {
 	if params == nil {
 		params = &DeleteTrafficPolicyInstanceInput{}
@@ -31,9 +32,11 @@ func (c *Client) DeleteTrafficPolicyInstance(ctx context.Context, params *Delete
 // A request to delete a specified traffic policy instance.
 type DeleteTrafficPolicyInstanceInput struct {
 
-	// The ID of the traffic policy instance that you want to delete. When you delete
-	// a traffic policy instance, Amazon Route 53 also deletes all of the resource
-	// record sets that were created when you created the traffic policy instance.
+	// The ID of the traffic policy instance that you want to delete.
+	//
+	// When you delete a traffic policy instance, Amazon Route 53 also deletes all of
+	// the resource record sets that were created when you created the traffic policy
+	// instance.
 	//
 	// This member is required.
 	Id *string

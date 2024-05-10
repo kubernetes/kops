@@ -13,10 +13,12 @@ import (
 // Disassociates the specified Amazon Web Services Systems Manager document (SSM
 // document) from the specified managed node. If you created the association by
 // using the Targets parameter, then you must delete the association by using the
-// association ID. When you disassociate a document from a managed node, it doesn't
-// change the configuration of the node. To change the configuration state of a
-// managed node after you disassociate a document, you must create a new document
-// with the desired configuration and associate it with the node.
+// association ID.
+//
+// When you disassociate a document from a managed node, it doesn't change the
+// configuration of the node. To change the configuration state of a managed node
+// after you disassociate a document, you must create a new document with the
+// desired configuration and associate it with the node.
 func (c *Client) DeleteAssociation(ctx context.Context, params *DeleteAssociationInput, optFns ...func(*Options)) (*DeleteAssociationOutput, error) {
 	if params == nil {
 		params = &DeleteAssociationInput{}
@@ -37,13 +39,15 @@ type DeleteAssociationInput struct {
 	// The association ID that you want to delete.
 	AssociationId *string
 
-	// The managed node ID. InstanceId has been deprecated. To specify a managed node
-	// ID for an association, use the Targets parameter. Requests that include the
-	// parameter InstanceID with Systems Manager documents (SSM documents) that use
-	// schema version 2.0 or later will fail. In addition, if you use the parameter
-	// InstanceId , you can't use the parameters AssociationName , DocumentVersion ,
-	// MaxErrors , MaxConcurrency , OutputLocation , or ScheduleExpression . To use
-	// these parameters, you must use the Targets parameter.
+	// The managed node ID.
+	//
+	// InstanceId has been deprecated. To specify a managed node ID for an
+	// association, use the Targets parameter. Requests that include the parameter
+	// InstanceID with Systems Manager documents (SSM documents) that use schema
+	// version 2.0 or later will fail. In addition, if you use the parameter InstanceId
+	// , you can't use the parameters AssociationName , DocumentVersion , MaxErrors ,
+	// MaxConcurrency , OutputLocation , or ScheduleExpression . To use these
+	// parameters, you must use the Targets parameter.
 	InstanceId *string
 
 	// The name of the SSM document.

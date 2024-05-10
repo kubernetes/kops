@@ -12,36 +12,63 @@ import (
 )
 
 // Lists the resource record sets in a specified hosted zone.
-// ListResourceRecordSets returns up to 300 resource record sets at a time in ASCII
-// order, beginning at a position specified by the name and type elements. Sort
-// order ListResourceRecordSets sorts results first by DNS name with the labels
-// reversed, for example: com.example.www. Note the trailing dot, which can change
-// the sort order when the record name contains characters that appear before .
-// (decimal 46) in the ASCII table. These characters include the following: ! " #
-// $ % & ' ( ) * + , - When multiple records have the same DNS name,
-// ListResourceRecordSets sorts results by the record type. Specifying where to
-// start listing records You can use the name and type elements to specify the
-// resource record set that the list begins with: If you do not specify Name or
-// Type The results begin with the first resource record set that the hosted zone
-// contains. If you specify Name but not Type The results begin with the first
-// resource record set in the list whose name is greater than or equal to Name . If
-// you specify Type but not Name Amazon Route 53 returns the InvalidInput error.
+//
+// ListResourceRecordSets returns up to 300 resource record sets at a time in
+// ASCII order, beginning at a position specified by the name and type elements.
+//
+// # Sort order
+//
+// ListResourceRecordSets sorts results first by DNS name with the labels
+// reversed, for example:
+//
+//	com.example.www.
+//
+// Note the trailing dot, which can change the sort order when the record name
+// contains characters that appear before . (decimal 46) in the ASCII table. These
+// characters include the following: ! " # $ % & ' ( ) * + , -
+//
+// When multiple records have the same DNS name, ListResourceRecordSets sorts
+// results by the record type.
+//
+// # Specifying where to start listing records
+//
+// You can use the name and type elements to specify the resource record set that
+// the list begins with:
+//
+// If you do not specify Name or Type The results begin with the first resource
+// record set that the hosted zone contains.
+//
+// If you specify Name but not Type The results begin with the first resource
+// record set in the list whose name is greater than or equal to Name .
+//
+// If you specify Type but not Name Amazon Route 53 returns the InvalidInput error.
+//
 // If you specify both Name and Type The results begin with the first resource
 // record set in the list whose name is greater than or equal to Name , and whose
-// type is greater than or equal to Type . Resource record sets that are PENDING
+// type is greater than or equal to Type .
+//
+// # Resource record sets that are PENDING
+//
 // This action returns the most current version of the records. This includes
 // records that are PENDING , and that are not yet available on all Route 53 DNS
-// servers. Changing resource record sets To ensure that you get an accurate
-// listing of the resource record sets for a hosted zone at a point in time, do not
-// submit a ChangeResourceRecordSets request while you're paging through the
-// results of a ListResourceRecordSets request. If you do, some pages may display
-// results without the latest changes while other pages display results with the
-// latest changes. Displaying the next page of results If a ListResourceRecordSets
-// command returns more than one page of results, the value of IsTruncated is true
-// . To display the next page of results, get the values of NextRecordName ,
-// NextRecordType , and NextRecordIdentifier (if any) from the response. Then
-// submit another ListResourceRecordSets request, and specify those values for
-// StartRecordName , StartRecordType , and StartRecordIdentifier .
+// servers.
+//
+// # Changing resource record sets
+//
+// To ensure that you get an accurate listing of the resource record sets for a
+// hosted zone at a point in time, do not submit a ChangeResourceRecordSets
+// request while you're paging through the results of a ListResourceRecordSets
+// request. If you do, some pages may display results without the latest changes
+// while other pages display results with the latest changes.
+//
+// # Displaying the next page of results
+//
+// If a ListResourceRecordSets command returns more than one page of results, the
+// value of IsTruncated is true . To display the next page of results, get the
+// values of NextRecordName , NextRecordType , and NextRecordIdentifier (if any)
+// from the response. Then submit another ListResourceRecordSets request, and
+// specify those values for StartRecordName , StartRecordType , and
+// StartRecordIdentifier .
 func (c *Client) ListResourceRecordSets(ctx context.Context, params *ListResourceRecordSetsInput, optFns ...func(*Options)) (*ListResourceRecordSetsOutput, error) {
 	if params == nil {
 		params = &ListResourceRecordSetsInput{}
@@ -75,7 +102,7 @@ type ListResourceRecordSetsInput struct {
 	// resource record sets.
 	MaxItems *int32
 
-	// Resource record sets that have a routing policy other than simple: If results
+	//  Resource record sets that have a routing policy other than simple: If results
 	// were truncated for a given DNS name and type, specify the value of
 	// NextRecordIdentifier from the previous response to get the next resource record
 	// set that has the current DNS name and type.
@@ -86,19 +113,31 @@ type ListResourceRecordSetsInput struct {
 	// the first resource record set that has a name greater than the value of name .
 	StartRecordName *string
 
-	// The type of resource record set to begin the record listing from. Valid values
-	// for basic resource record sets: A | AAAA | CAA | CNAME | MX | NAPTR | NS | PTR
-	// | SOA | SPF | SRV | TXT Values for weighted, latency, geolocation, and failover
-	// resource record sets: A | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV |
-	// TXT Values for alias resource record sets:
+	// The type of resource record set to begin the record listing from.
+	//
+	// Valid values for basic resource record sets: A | AAAA | CAA | CNAME | MX | NAPTR
+	// | NS | PTR | SOA | SPF | SRV | TXT
+	//
+	// Values for weighted, latency, geolocation, and failover resource record sets: A
+	// | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV | TXT
+	//
+	// Values for alias resource record sets:
+	//
 	//   - API Gateway custom regional API or edge-optimized API: A
+	//
 	//   - CloudFront distribution: A or AAAA
+	//
 	//   - Elastic Beanstalk environment that has a regionalized subdomain: A
+	//
 	//   - Elastic Load Balancing load balancer: A | AAAA
+	//
 	//   - S3 bucket: A
+	//
 	//   - VPC interface VPC endpoint: A
+	//
 	//   - Another resource record set in this hosted zone: The type of the resource
 	//   record set that the alias references.
+	//
 	// Constraint: Specifying type without specifying name returns an InvalidInput
 	// error.
 	StartRecordType types.RRType
@@ -126,19 +165,24 @@ type ListResourceRecordSetsOutput struct {
 	// This member is required.
 	ResourceRecordSets []types.ResourceRecordSet
 
-	// Resource record sets that have a routing policy other than simple: If results
+	//  Resource record sets that have a routing policy other than simple: If results
 	// were truncated for a given DNS name and type, the value of SetIdentifier for
-	// the next resource record set that has the current DNS name and type. For
-	// information about routing policies, see Choosing a Routing Policy (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html)
-	// in the Amazon Route 53 Developer Guide.
+	// the next resource record set that has the current DNS name and type.
+	//
+	// For information about routing policies, see [Choosing a Routing Policy] in the Amazon Route 53 Developer
+	// Guide.
+	//
+	// [Choosing a Routing Policy]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html
 	NextRecordIdentifier *string
 
-	// If the results were truncated, the name of the next record in the list. This
-	// element is present only if IsTruncated is true.
+	// If the results were truncated, the name of the next record in the list.
+	//
+	// This element is present only if IsTruncated is true.
 	NextRecordName *string
 
-	// If the results were truncated, the type of the next record in the list. This
-	// element is present only if IsTruncated is true.
+	// If the results were truncated, the type of the next record in the list.
+	//
+	// This element is present only if IsTruncated is true.
 	NextRecordType types.RRType
 
 	// Metadata pertaining to the operation's result.

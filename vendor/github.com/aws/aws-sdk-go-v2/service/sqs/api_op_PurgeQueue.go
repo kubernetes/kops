@@ -11,12 +11,19 @@ import (
 )
 
 // Deletes available messages in a queue (including in-flight messages) specified
-// by the QueueURL parameter. When you use the PurgeQueue action, you can't
-// retrieve any messages deleted from a queue. The message deletion process takes
-// up to 60 seconds. We recommend waiting for 60 seconds regardless of your queue's
-// size. Messages sent to the queue before you call PurgeQueue might be received
-// but are deleted within the next minute. Messages sent to the queue after you
-// call PurgeQueue might be deleted while the queue is being purged.
+// by the QueueURL parameter.
+//
+// When you use the PurgeQueue action, you can't retrieve any messages deleted
+// from a queue.
+//
+// The message deletion process takes up to 60 seconds. We recommend waiting for
+// 60 seconds regardless of your queue's size.
+//
+// Messages sent to the queue before you call PurgeQueue might be received but are
+// deleted within the next minute.
+//
+// Messages sent to the queue after you call PurgeQueue might be deleted while the
+// queue is being purged.
 func (c *Client) PurgeQueue(ctx context.Context, params *PurgeQueueInput, optFns ...func(*Options)) (*PurgeQueueOutput, error) {
 	if params == nil {
 		params = &PurgeQueueInput{}
@@ -34,8 +41,9 @@ func (c *Client) PurgeQueue(ctx context.Context, params *PurgeQueueInput, optFns
 
 type PurgeQueueInput struct {
 
-	// The URL of the queue from which the PurgeQueue action deletes messages. Queue
-	// URLs and names are case-sensitive.
+	// The URL of the queue from which the PurgeQueue action deletes messages.
+	//
+	// Queue URLs and names are case-sensitive.
 	//
 	// This member is required.
 	QueueUrl *string

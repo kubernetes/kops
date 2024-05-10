@@ -13,8 +13,10 @@ import (
 
 // Adds one or more tags to an IAM role. The role can be a regular role or a
 // service-linked role. If a tag with the same key name already exists, then that
-// tag is overwritten with the new value. A tag consists of a key name and an
-// associated value. By assigning tags to your resources, you can do the following:
+// tag is overwritten with the new value.
+//
+// A tag consists of a key name and an associated value. By assigning tags to your
+// resources, you can do the following:
 //
 //   - Administrative grouping and discovery - Attach tags to resources to aid in
 //     organization and search. For example, you could search for all resources with
@@ -25,23 +27,24 @@ import (
 //     policies. You can use tags to restrict access to only an IAM role that has a
 //     specified tag attached. You can also restrict access to only those resources
 //     that have a certain tag attached. For examples of policies that show how to use
-//     tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//     in the IAM User Guide.
+//     tags to control access, see [Control access using IAM tags]in the IAM User Guide.
 //
 //   - Cost allocation - Use tags to help track which individuals and teams are
 //     using which Amazon Web Services resources.
 //
 //   - If any one of the tags is invalid or if you exceed the allowed maximum
 //     number of tags, then the entire request fails and the resource is not created.
-//     For more information about tagging, see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
-//     in the IAM User Guide.
+//     For more information about tagging, see [Tagging IAM resources]in the IAM User Guide.
 //
 //   - Amazon Web Services always interprets the tag Value as a single string. If
 //     you need to store an array, you can store comma-separated values in the string.
 //     However, you must interpret the value in your code.
 //
-// For more information about tagging, see Tagging IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
-// in the IAM User Guide.
+// For more information about tagging, see [Tagging IAM identities] in the IAM User Guide.
+//
+// [Control access using IAM tags]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html
+// [Tagging IAM resources]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
+// [Tagging IAM identities]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
 func (c *Client) TagRole(ctx context.Context, params *TagRoleInput, optFns ...func(*Options)) (*TagRoleOutput, error) {
 	if params == nil {
 		params = &TagRoleInput{}
@@ -59,10 +62,13 @@ func (c *Client) TagRole(ctx context.Context, params *TagRoleInput, optFns ...fu
 
 type TagRoleInput struct {
 
-	// The name of the IAM role to which you want to add tags. This parameter accepts
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters that consist of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the IAM role to which you want to add tags.
+	//
+	// This parameter accepts (through its [regex pattern]) a string of characters that consist of
+	// upper and lowercase alphanumeric characters with no spaces. You can also include
+	// any of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	RoleName *string

@@ -11,22 +11,34 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Returns all tags on the specified KMS key. For general information about tags,
-// including the format and syntax, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
-// in the Amazon Web Services General Reference. For information about using tags
-// in KMS, see Tagging keys (https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html)
-// . Cross-account use: No. You cannot perform this operation on a KMS key in a
-// different Amazon Web Services account. Required permissions:
-// kms:ListResourceTags (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (key policy) Related operations:
-//   - CreateKey
-//   - ReplicateKey
-//   - TagResource
-//   - UntagResource
+// Returns all tags on the specified KMS key.
+//
+// For general information about tags, including the format and syntax, see [Tagging Amazon Web Services resources] in
+// the Amazon Web Services General Reference. For information about using tags in
+// KMS, see [Tagging keys].
+//
+// Cross-account use: No. You cannot perform this operation on a KMS key in a
+// different Amazon Web Services account.
+//
+// Required permissions: [kms:ListResourceTags] (key policy)
+//
+// Related operations:
+//
+// # CreateKey
+//
+// # ReplicateKey
+//
+// # TagResource
+//
+// # UntagResource
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [Tagging keys]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
+// [kms:ListResourceTags]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [Tagging Amazon Web Services resources]: https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html
 func (c *Client) ListResourceTags(ctx context.Context, params *ListResourceTagsInput, optFns ...func(*Options)) (*ListResourceTagsOutput, error) {
 	if params == nil {
 		params = &ListResourceTagsInput{}
@@ -44,27 +56,36 @@ func (c *Client) ListResourceTags(ctx context.Context, params *ListResourceTagsI
 
 type ListResourceTagsInput struct {
 
-	// Gets tags on the specified KMS key. Specify the key ID or key ARN of the KMS
-	// key. For example:
+	// Gets tags on the specified KMS key.
+	//
+	// Specify the key ID or key ARN of the KMS key.
+	//
+	// For example:
+	//
 	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Key ARN:
 	//   arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
-	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey .
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	//
 	// This member is required.
 	KeyId *string
 
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 50, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 50,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit *int32
 
 	// Use this parameter in a subsequent request after you receive a response with
 	// truncated results. Set it to the value of NextMarker from the truncated
-	// response you just received. Do not attempt to construct this value. Use only the
-	// value of NextMarker from the truncated response you just received.
+	// response you just received.
+	//
+	// Do not attempt to construct this value. Use only the value of NextMarker from
+	// the truncated response you just received.
 	Marker *string
 
 	noSmithyDocumentSerde
@@ -73,14 +94,17 @@ type ListResourceTagsInput struct {
 type ListResourceTagsOutput struct {
 
 	// When Truncated is true, this element is present and contains the value to use
-	// for the Marker parameter in a subsequent request. Do not assume or infer any
-	// information from this value.
+	// for the Marker parameter in a subsequent request.
+	//
+	// Do not assume or infer any information from this value.
 	NextMarker *string
 
-	// A list of tags. Each tag consists of a tag key and a tag value. Tagging or
-	// untagging a KMS key can allow or deny permission to the KMS key. For details,
-	// see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
-	// in the Key Management Service Developer Guide.
+	// A list of tags. Each tag consists of a tag key and a tag value.
+	//
+	// Tagging or untagging a KMS key can allow or deny permission to the KMS key. For
+	// details, see [ABAC for KMS]in the Key Management Service Developer Guide.
+	//
+	// [ABAC for KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/abac.html
 	Tags []types.Tag
 
 	// A flag that indicates whether there are more items in the list. When this value
@@ -186,9 +210,10 @@ var _ ListResourceTagsAPIClient = (*Client)(nil)
 type ListResourceTagsPaginatorOptions struct {
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
-	// but it might return fewer. This value is optional. If you include a value, it
-	// must be between 1 and 50, inclusive. If you do not include a value, it defaults
-	// to 50.
+	// but it might return fewer.
+	//
+	// This value is optional. If you include a value, it must be between 1 and 50,
+	// inclusive. If you do not include a value, it defaults to 50.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

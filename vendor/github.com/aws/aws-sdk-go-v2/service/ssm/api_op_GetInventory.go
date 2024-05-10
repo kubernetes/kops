@@ -55,7 +55,8 @@ type GetInventoryInput struct {
 
 type GetInventoryOutput struct {
 
-	// Collection of inventory entities such as a collection of managed node inventory.
+	// Collection of inventory entities such as a collection of managed node
+	// inventory.
 	Entities []types.InventoryResultEntity
 
 	// The token to use when requesting the next set of items. If there are no

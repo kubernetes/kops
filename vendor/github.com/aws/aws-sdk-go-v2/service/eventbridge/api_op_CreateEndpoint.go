@@ -35,8 +35,9 @@ func (c *Client) CreateEndpoint(ctx context.Context, params *CreateEndpointInput
 
 type CreateEndpointInput struct {
 
-	// Define the event buses used. The names of the event buses must be identical in
-	// each Region.
+	// Define the event buses used.
+	//
+	// The names of the event buses must be identical in each Region.
 	//
 	// This member is required.
 	EventBuses []types.EndpointEventBus

@@ -10,9 +10,11 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the permissions boundary for the specified IAM user. Deleting the
-// permissions boundary for a user might increase its permissions by allowing the
-// user to perform all the actions granted in its permissions policies.
+// Deletes the permissions boundary for the specified IAM user.
+//
+// Deleting the permissions boundary for a user might increase its permissions by
+// allowing the user to perform all the actions granted in its permissions
+// policies.
 func (c *Client) DeleteUserPermissionsBoundary(ctx context.Context, params *DeleteUserPermissionsBoundaryInput, optFns ...func(*Options)) (*DeleteUserPermissionsBoundaryOutput, error) {
 	if params == nil {
 		params = &DeleteUserPermissionsBoundaryInput{}

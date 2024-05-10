@@ -39,8 +39,9 @@ type CreateTrustStoreInput struct {
 	// This member is required.
 	CaCertificatesBundleS3Key *string
 
-	// The name of the trust store. This name must be unique per region and cannot be
-	// changed after creation.
+	// The name of the trust store.
+	//
+	// This name must be unique per region and cannot be changed after creation.
 	//
 	// This member is required.
 	Name *string

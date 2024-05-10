@@ -11,13 +11,14 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Changes the visibility timeout of multiple messages. This is a batch version of
-// ChangeMessageVisibility . The result of the action on each message is reported
-// individually in the response. You can send up to 10 ChangeMessageVisibility
-// requests with each ChangeMessageVisibilityBatch action. Because the batch
-// request can result in a combination of successful and unsuccessful actions, you
-// should check for batch errors even when the call returns an HTTP status code of
-// 200 .
+// Changes the visibility timeout of multiple messages. This is a batch version of ChangeMessageVisibility
+// . The result of the action on each message is reported individually in the
+// response. You can send up to 10 ChangeMessageVisibilityrequests with each ChangeMessageVisibilityBatch
+// action.
+//
+// Because the batch request can result in a combination of successful and
+// unsuccessful actions, you should check for batch errors even when the call
+// returns an HTTP status code of 200 .
 func (c *Client) ChangeMessageVisibilityBatch(ctx context.Context, params *ChangeMessageVisibilityBatchInput, optFns ...func(*Options)) (*ChangeMessageVisibilityBatchOutput, error) {
 	if params == nil {
 		params = &ChangeMessageVisibilityBatchInput{}
@@ -41,8 +42,9 @@ type ChangeMessageVisibilityBatchInput struct {
 	// This member is required.
 	Entries []types.ChangeMessageVisibilityBatchRequestEntry
 
-	// The URL of the Amazon SQS queue whose messages' visibility is changed. Queue
-	// URLs and names are case-sensitive.
+	// The URL of the Amazon SQS queue whose messages' visibility is changed.
+	//
+	// Queue URLs and names are case-sensitive.
 	//
 	// This member is required.
 	QueueUrl *string
@@ -50,9 +52,8 @@ type ChangeMessageVisibilityBatchInput struct {
 	noSmithyDocumentSerde
 }
 
-// For each message in the batch, the response contains a
-// ChangeMessageVisibilityBatchResultEntry tag if the message succeeds or a
-// BatchResultErrorEntry tag if the message fails.
+// For each message in the batch, the response contains a ChangeMessageVisibilityBatchResultEntry tag if the message
+// succeeds or a BatchResultErrorEntrytag if the message fails.
 type ChangeMessageVisibilityBatchOutput struct {
 
 	// A list of BatchResultErrorEntry items.

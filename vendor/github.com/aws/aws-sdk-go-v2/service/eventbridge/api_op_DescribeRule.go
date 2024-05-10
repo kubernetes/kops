@@ -11,9 +11,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes the specified rule. DescribeRule does not list the targets of a rule.
-// To see the targets associated with a rule, use ListTargetsByRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html)
-// .
+// Describes the specified rule.
+//
+// DescribeRule does not list the targets of a rule. To see the targets associated
+// with a rule, use [ListTargetsByRule].
+//
+// [ListTargetsByRule]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html
 func (c *Client) DescribeRule(ctx context.Context, params *DescribeRuleInput, optFns ...func(*Options)) (*DescribeRuleOutput, error) {
 	if params == nil {
 		params = &DescribeRuleInput{}
@@ -61,8 +64,10 @@ type DescribeRuleOutput struct {
 	// The name of the event bus associated with the rule.
 	EventBusName *string
 
-	// The event pattern. For more information, see Events and Event Patterns (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html)
-	// in the Amazon EventBridge User Guide.
+	// The event pattern. For more information, see [Events and Event Patterns] in the Amazon EventBridge User
+	// Guide.
+	//
+	// [Events and Event Patterns]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html
 	EventPattern *string
 
 	// If this is a managed rule, created by an Amazon Web Services service on your

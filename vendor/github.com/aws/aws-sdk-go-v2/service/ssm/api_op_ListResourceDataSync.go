@@ -13,13 +13,14 @@ import (
 
 // Lists your resource data sync configurations. Includes information about the
 // last time a sync attempted to start, the last sync status, and the last time a
-// sync successfully completed. The number of sync configurations might be too
-// large to return using a single call to ListResourceDataSync . You can limit the
-// number of sync configurations returned by using the MaxResults parameter. To
-// determine whether there are more sync configurations to list, check the value of
-// NextToken in the output. If there are more sync configurations to list, you can
-// request them by specifying the NextToken returned in the call to the parameter
-// of a subsequent call.
+// sync successfully completed.
+//
+// The number of sync configurations might be too large to return using a single
+// call to ListResourceDataSync . You can limit the number of sync configurations
+// returned by using the MaxResults parameter. To determine whether there are more
+// sync configurations to list, check the value of NextToken in the output. If
+// there are more sync configurations to list, you can request them by specifying
+// the NextToken returned in the call to the parameter of a subsequent call.
 func (c *Client) ListResourceDataSync(ctx context.Context, params *ListResourceDataSyncInput, optFns ...func(*Options)) (*ListResourceDataSyncOutput, error) {
 	if params == nil {
 		params = &ListResourceDataSyncInput{}

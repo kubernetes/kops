@@ -42,8 +42,9 @@ type DescribePoliciesInput struct {
 
 	// The names of one or more policies. If you omit this property, all policies are
 	// described. If a group name is provided, the results are limited to that group.
-	// If you specify an unknown policy name, it is ignored with no error. Array
-	// Members: Maximum number of 50 items.
+	// If you specify an unknown policy name, it is ignored with no error.
+	//
+	// Array Members: Maximum number of 50 items.
 	PolicyNames []string
 
 	// One or more policy types. The valid values are SimpleScaling , StepScaling ,

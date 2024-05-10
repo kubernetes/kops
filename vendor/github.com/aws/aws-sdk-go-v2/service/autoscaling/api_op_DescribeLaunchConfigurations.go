@@ -30,7 +30,9 @@ func (c *Client) DescribeLaunchConfigurations(ctx context.Context, params *Descr
 type DescribeLaunchConfigurationsInput struct {
 
 	// The launch configuration names. If you omit this property, all launch
-	// configurations are described. Array Members: Maximum number of 50 items.
+	// configurations are described.
+	//
+	// Array Members: Maximum number of 50 items.
 	LaunchConfigurationNames []string
 
 	// The maximum number of items to return with this call. The default value is 50

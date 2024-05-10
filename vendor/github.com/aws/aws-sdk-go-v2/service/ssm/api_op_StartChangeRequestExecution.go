@@ -38,20 +38,25 @@ type StartChangeRequestExecutionInput struct {
 	DocumentName *string
 
 	// Information about the Automation runbooks that are run during the runbook
-	// workflow. The Automation runbooks specified for the runbook workflow can't run
-	// until all required approvals for the change request have been received.
+	// workflow.
+	//
+	// The Automation runbooks specified for the runbook workflow can't run until all
+	// required approvals for the change request have been received.
 	//
 	// This member is required.
 	Runbooks []types.Runbook
 
 	// Indicates whether the change request can be approved automatically without the
-	// need for manual approvals. If AutoApprovable is enabled in a change template,
-	// then setting AutoApprove to true in StartChangeRequestExecution creates a
-	// change request that bypasses approver review. Change Calendar restrictions are
-	// not bypassed in this scenario. If the state of an associated calendar is CLOSED
-	// , change freeze approvers must still grant permission for this change request to
-	// run. If they don't, the change won't be processed until the calendar state is
-	// again OPEN .
+	// need for manual approvals.
+	//
+	// If AutoApprovable is enabled in a change template, then setting AutoApprove to
+	// true in StartChangeRequestExecution creates a change request that bypasses
+	// approver review.
+	//
+	// Change Calendar restrictions are not bypassed in this scenario. If the state of
+	// an associated calendar is CLOSED , change freeze approvers must still grant
+	// permission for this change request to run. If they don't, the change won't be
+	// processed until the calendar state is again OPEN .
 	AutoApprove bool
 
 	// User-provided details about the change. If no details are provided, content
@@ -79,8 +84,10 @@ type StartChangeRequestExecutionInput struct {
 	ScheduledEndTime *time.Time
 
 	// The date and time specified in the change request to run the Automation
-	// runbooks. The Automation runbooks specified for the runbook workflow can't run
-	// until all required approvals for the change request have been received.
+	// runbooks.
+	//
+	// The Automation runbooks specified for the runbook workflow can't run until all
+	// required approvals for the change request have been received.
 	ScheduledTime *time.Time
 
 	// Optional metadata that you assign to a resource. You can specify a maximum of
@@ -89,7 +96,9 @@ type StartChangeRequestExecutionInput struct {
 	// might want to tag a change request to identify an environment or target Amazon
 	// Web Services Region. In this case, you could specify the following key-value
 	// pairs:
+	//
 	//   - Key=Environment,Value=Production
+	//
 	//   - Key=Region,Value=us-east-2
 	Tags []types.Tag
 

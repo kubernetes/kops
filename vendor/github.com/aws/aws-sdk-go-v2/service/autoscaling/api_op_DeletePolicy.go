@@ -10,11 +10,15 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the specified scaling policy. Deleting either a step scaling policy or
-// a simple scaling policy deletes the underlying alarm action, but does not delete
-// the alarm, even if it no longer has an associated action. For more information,
-// see Deleting a scaling policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// Deletes the specified scaling policy.
+//
+// Deleting either a step scaling policy or a simple scaling policy deletes the
+// underlying alarm action, but does not delete the alarm, even if it no longer has
+// an associated action.
+//
+// For more information, see [Deleting a scaling policy] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Deleting a scaling policy]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html
 func (c *Client) DeletePolicy(ctx context.Context, params *DeletePolicyInput, optFns ...func(*Options)) (*DeletePolicyOutput, error) {
 	if params == nil {
 		params = &DeletePolicyInput{}

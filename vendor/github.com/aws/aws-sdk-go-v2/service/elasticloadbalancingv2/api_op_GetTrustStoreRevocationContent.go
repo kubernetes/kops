@@ -10,8 +10,9 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Retrieves the specified revocation file. This action returns a pre-signed S3
-// URI which is active for ten minutes.
+// Retrieves the specified revocation file.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
 func (c *Client) GetTrustStoreRevocationContent(ctx context.Context, params *GetTrustStoreRevocationContentInput, optFns ...func(*Options)) (*GetTrustStoreRevocationContentOutput, error) {
 	if params == nil {
 		params = &GetTrustStoreRevocationContentInput{}

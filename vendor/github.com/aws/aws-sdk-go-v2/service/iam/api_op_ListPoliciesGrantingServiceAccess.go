@@ -12,31 +12,39 @@ import (
 )
 
 // Retrieves a list of policies that the IAM identity (user, group, or role) can
-// use to access each specified service. This operation does not use other policy
-// types when determining whether a resource could access a service. These other
-// policy types include resource-based policies, access control lists,
-// Organizations policies, IAM permissions boundaries, and STS assume role
-// policies. It only applies permissions policy logic. For more about the
-// evaluation of policy types, see Evaluating policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics)
-// in the IAM User Guide. The list of policies returned by the operation depends on
-// the ARN of the identity that you provide.
+// use to access each specified service.
+//
+// This operation does not use other policy types when determining whether a
+// resource could access a service. These other policy types include resource-based
+// policies, access control lists, Organizations policies, IAM permissions
+// boundaries, and STS assume role policies. It only applies permissions policy
+// logic. For more about the evaluation of policy types, see [Evaluating policies]in the IAM User Guide.
+//
+// The list of policies returned by the operation depends on the ARN of the
+// identity that you provide.
+//
 //   - User – The list of policies includes the managed and inline policies that
 //     are attached to the user directly. The list also includes any additional managed
 //     and inline policies that are attached to the group to which the user belongs.
+//
 //   - Group – The list of policies includes only the managed and inline policies
 //     that are attached to the group directly. Policies that are attached to the
 //     group’s user are not included.
+//
 //   - Role – The list of policies includes only the managed and inline policies
 //     that are attached to the role.
 //
 // For each managed policy, this operation returns the ARN and policy name. For
 // each inline policy, it returns the policy name and the entity to which it is
 // attached. Inline policies do not have an ARN. For more information about these
-// policy types, see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html)
-// in the IAM User Guide. Policies that are attached to users and roles as
-// permissions boundaries are not returned. To view which managed policy is
-// currently used to set the permissions boundary for a user or role, use the
-// GetUser or GetRole operations.
+// policy types, see [Managed policies and inline policies]in the IAM User Guide.
+//
+// Policies that are attached to users and roles as permissions boundaries are not
+// returned. To view which managed policy is currently used to set the permissions
+// boundary for a user or role, use the GetUseror GetRole operations.
+//
+// [Evaluating policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html
 func (c *Client) ListPoliciesGrantingServiceAccess(ctx context.Context, params *ListPoliciesGrantingServiceAccessInput, optFns ...func(*Options)) (*ListPoliciesGrantingServiceAccessOutput, error) {
 	if params == nil {
 		params = &ListPoliciesGrantingServiceAccessInput{}
@@ -61,13 +69,16 @@ type ListPoliciesGrantingServiceAccessInput struct {
 	Arn *string
 
 	// The service namespace for the Amazon Web Services services whose policies you
-	// want to list. To learn the service namespace for a service, see Actions,
-	// resources, and condition keys for Amazon Web Services services (https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html)
-	// in the IAM User Guide. Choose the name of the service to view details for that
-	// service. In the first paragraph, find the service prefix. For example, (service
-	// prefix: a4b) . For more information about service namespaces, see Amazon Web
-	// Services service namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#genref-aws-service-namespaces)
-	// in the Amazon Web Services General Reference.
+	// want to list.
+	//
+	// To learn the service namespace for a service, see [Actions, resources, and condition keys for Amazon Web Services services] in the IAM User Guide.
+	// Choose the name of the service to view details for that service. In the first
+	// paragraph, find the service prefix. For example, (service prefix: a4b) . For
+	// more information about service namespaces, see [Amazon Web Services service namespaces]in the Amazon Web Services
+	// General Reference.
+	//
+	// [Amazon Web Services service namespaces]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#genref-aws-service-namespaces
+	// [Actions, resources, and condition keys for Amazon Web Services services]: https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html
 	//
 	// This member is required.
 	ServiceNamespaces []string

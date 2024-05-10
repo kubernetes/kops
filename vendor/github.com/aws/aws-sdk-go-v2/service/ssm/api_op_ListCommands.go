@@ -36,9 +36,10 @@ type ListCommandsInput struct {
 	// results.
 	Filters []types.CommandFilter
 
-	// (Optional) Lists commands issued against this managed node ID. You can't
-	// specify a managed node ID in the same command that you specify Status = Pending
-	// . This is because the command hasn't reached the managed node yet.
+	// (Optional) Lists commands issued against this managed node ID.
+	//
+	// You can't specify a managed node ID in the same command that you specify Status
+	// = Pending . This is because the command hasn't reached the managed node yet.
 	InstanceId *string
 
 	// (Optional) The maximum number of items to return for this call. The call also

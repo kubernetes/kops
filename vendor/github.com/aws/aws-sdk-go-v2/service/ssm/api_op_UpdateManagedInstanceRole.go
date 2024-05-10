@@ -13,7 +13,7 @@ import (
 // Changes the Identity and Access Management (IAM) role that is assigned to the
 // on-premises server, edge device, or virtual machines (VM). IAM roles are first
 // assigned to these hybrid nodes during the activation process. For more
-// information, see CreateActivation .
+// information, see CreateActivation.
 func (c *Client) UpdateManagedInstanceRole(ctx context.Context, params *UpdateManagedInstanceRoleInput, optFns ...func(*Options)) (*UpdateManagedInstanceRoleOutput, error) {
 	if params == nil {
 		params = &UpdateManagedInstanceRoleInput{}
@@ -34,10 +34,13 @@ type UpdateManagedInstanceRoleInput struct {
 	// The name of the Identity and Access Management (IAM) role that you want to
 	// assign to the managed node. This IAM role must provide AssumeRole permissions
 	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com
-	// . For more information, see Create an IAM service role for a hybrid and
-	// multicloud environment (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
-	// in the Amazon Web Services Systems Manager User Guide. You can't specify an IAM
-	// service-linked role for this parameter. You must create a unique role.
+	// . For more information, see [Create an IAM service role for a hybrid and multicloud environment]in the Amazon Web Services Systems Manager User
+	// Guide.
+	//
+	// You can't specify an IAM service-linked role for this parameter. You must
+	// create a unique role.
+	//
+	// [Create an IAM service role for a hybrid and multicloud environment]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html
 	//
 	// This member is required.
 	IamRole *string

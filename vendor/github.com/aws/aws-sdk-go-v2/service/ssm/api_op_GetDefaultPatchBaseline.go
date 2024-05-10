@@ -13,8 +13,10 @@ import (
 
 // Retrieves the default patch baseline. Amazon Web Services Systems Manager
 // supports creating multiple default patch baselines. For example, you can create
-// a default patch baseline for each operating system. If you don't specify an
-// operating system value, the default patch baseline for Windows is returned.
+// a default patch baseline for each operating system.
+//
+// If you don't specify an operating system value, the default patch baseline for
+// Windows is returned.
 func (c *Client) GetDefaultPatchBaseline(ctx context.Context, params *GetDefaultPatchBaselineInput, optFns ...func(*Options)) (*GetDefaultPatchBaselineOutput, error) {
 	if params == nil {
 		params = &GetDefaultPatchBaselineInput{}

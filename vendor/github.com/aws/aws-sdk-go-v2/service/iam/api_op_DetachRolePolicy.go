@@ -10,11 +10,12 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Removes the specified managed policy from the specified role. A role can also
-// have inline policies embedded with it. To delete an inline policy, use
-// DeleteRolePolicy . For information about policies, see Managed policies and
-// inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
-// in the IAM User Guide.
+// Removes the specified managed policy from the specified role.
+//
+// A role can also have inline policies embedded with it. To delete an inline
+// policy, use DeleteRolePolicy. For information about policies, see [Managed policies and inline policies] in the IAM User Guide.
+//
+// [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) DetachRolePolicy(ctx context.Context, params *DetachRolePolicyInput, optFns ...func(*Options)) (*DetachRolePolicyOutput, error) {
 	if params == nil {
 		params = &DetachRolePolicyInput{}
@@ -32,18 +33,23 @@ func (c *Client) DetachRolePolicy(ctx context.Context, params *DetachRolePolicyI
 
 type DetachRolePolicyInput struct {
 
-	// The Amazon Resource Name (ARN) of the IAM policy you want to detach. For more
-	// information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// The Amazon Resource Name (ARN) of the IAM policy you want to detach.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicyArn *string
 
 	// The name (friendly name, not ARN) of the IAM role to detach the policy from.
-	// This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	RoleName *string

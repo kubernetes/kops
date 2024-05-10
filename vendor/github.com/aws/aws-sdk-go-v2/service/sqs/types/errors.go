@@ -320,7 +320,9 @@ func (e *KmsDisabled) ErrorCode() string {
 func (e *KmsDisabled) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The request was rejected for one of the following reasons:
+//
 //   - The KeyUsage value of the KMS key is incompatible with the API operation.
+//
 //   - The encryption algorithm or signing algorithm specified for the operation
 //     is incompatible with the type of key material in the KMS key (KeySpec).
 type KmsInvalidKeyUsage struct {
@@ -646,10 +648,13 @@ func (e *ReceiptHandleIsInvalid) ErrorCode() string {
 func (e *ReceiptHandleIsInvalid) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The request was denied due to request throttling.
+//
 //   - The rate of requests per second exceeds the Amazon Web Services KMS request
 //     quota for an account and Region.
+//
 //   - A burst or sustained high rate of requests to change the state of the same
 //     KMS key. This condition is often known as a "hot key."
+//
 //   - Requests for operations on KMS keys in a Amazon Web Services CloudHSM key
 //     store might be throttled at a lower-than-expected rate when the Amazon Web
 //     Services CloudHSM cluster associated with the Amazon Web Services CloudHSM key

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.1](https://github.com/googleapis/google-cloud-go/compare/auth/v0.4.0...auth/v0.4.1) (2024-05-09)
+
+
+### Bug Fixes
+
+* **auth:** Don't try to detect default creds it opt configured ([#10143](https://github.com/googleapis/google-cloud-go/issues/10143)) ([804632e](https://github.com/googleapis/google-cloud-go/commit/804632e7c5b0b85ff522f7951114485e256eb5bc))
+
+## [0.4.0](https://github.com/googleapis/google-cloud-go/compare/auth/v0.3.0...auth/v0.4.0) (2024-05-07)
+
+
+### Features
+
+* **auth:** Enable client certificates by default ([#10102](https://github.com/googleapis/google-cloud-go/issues/10102)) ([9013e52](https://github.com/googleapis/google-cloud-go/commit/9013e5200a6ec0f178ed91acb255481ffb073a2c))
+
+
+### Bug Fixes
+
+* **auth:** Get s2a logic up to date ([#10093](https://github.com/googleapis/google-cloud-go/issues/10093)) ([4fe9ae4](https://github.com/googleapis/google-cloud-go/commit/4fe9ae4b7101af2a5221d6d6b2e77b479305bb06))
+
 ## [0.3.0](https://github.com/googleapis/google-cloud-go/compare/auth/v0.2.2...auth/v0.3.0) (2024-04-23)
 
 

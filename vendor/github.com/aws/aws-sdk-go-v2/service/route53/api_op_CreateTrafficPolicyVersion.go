@@ -40,8 +40,9 @@ type CreateTrafficPolicyVersionInput struct {
 
 	// The definition of this version of the traffic policy, in JSON format. You
 	// specified the JSON in the CreateTrafficPolicyVersion request. For more
-	// information about the JSON format, see CreateTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html)
-	// .
+	// information about the JSON format, see [CreateTrafficPolicy].
+	//
+	// [CreateTrafficPolicy]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html
 	//
 	// This member is required.
 	Document *string

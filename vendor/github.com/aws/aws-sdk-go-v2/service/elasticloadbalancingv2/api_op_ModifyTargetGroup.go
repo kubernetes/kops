@@ -43,9 +43,12 @@ type ModifyTargetGroupInput struct {
 	HealthCheckIntervalSeconds *int32
 
 	// [HTTP/HTTPS health checks] The destination for health checks on the targets.
-	// [HTTP1 or HTTP2 protocol version] The ping path. The default is /. [GRPC
-	// protocol version] The path of a custom health check method with the format
-	// /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
+	//
+	// [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
+	//
+	// [GRPC protocol version] The path of a custom health check method with the
+	// format /package.service/method. The default is /Amazon Web
+	// Services.ALB/healthcheck.
 	HealthCheckPath *string
 
 	// The port the load balancer uses when performing health checks on targets.

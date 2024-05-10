@@ -53,8 +53,9 @@ type ListCidrBlocksOutput struct {
 	CidrBlocks []types.CidrBlockSummary
 
 	// An opaque pagination token to indicate where the service is to begin
-	// enumerating results. If no value is provided, the listing of results starts from
-	// the beginning.
+	// enumerating results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
 	NextToken *string
 
 	// Metadata pertaining to the operation's result.

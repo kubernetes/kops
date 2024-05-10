@@ -10,12 +10,16 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes a SAML provider resource in IAM. Deleting the provider resource from
-// IAM does not update any roles that reference the SAML provider resource's ARN as
-// a principal in their trust policies. Any attempt to assume a role that
-// references a non-existent provider resource ARN fails. This operation requires
-// Signature Version 4 (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
-// .
+// Deletes a SAML provider resource in IAM.
+//
+// Deleting the provider resource from IAM does not update any roles that
+// reference the SAML provider resource's ARN as a principal in their trust
+// policies. Any attempt to assume a role that references a non-existent provider
+// resource ARN fails.
+//
+// This operation requires [Signature Version 4].
+//
+// [Signature Version 4]: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
 func (c *Client) DeleteSAMLProvider(ctx context.Context, params *DeleteSAMLProviderInput, optFns ...func(*Options)) (*DeleteSAMLProviderOutput, error) {
 	if params == nil {
 		params = &DeleteSAMLProviderInput{}

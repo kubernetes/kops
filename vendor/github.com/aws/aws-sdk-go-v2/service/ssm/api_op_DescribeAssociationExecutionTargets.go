@@ -41,7 +41,12 @@ type DescribeAssociationExecutionTargetsInput struct {
 	ExecutionId *string
 
 	// Filters for the request. You can specify the following filters and values.
-	// Status (EQUAL) ResourceId (EQUAL) ResourceType (EQUAL)
+	//
+	// Status (EQUAL)
+	//
+	// ResourceId (EQUAL)
+	//
+	// ResourceType (EQUAL)
 	Filters []types.AssociationExecutionTargetsFilter
 
 	// The maximum number of items to return for this call. The call also returns a

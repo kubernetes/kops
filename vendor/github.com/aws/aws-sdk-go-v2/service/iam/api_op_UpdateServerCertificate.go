@@ -11,20 +11,26 @@ import (
 )
 
 // Updates the name and/or the path of the specified server certificate stored in
-// IAM. For more information about working with server certificates, see Working
-// with server certificates (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html)
-// in the IAM User Guide. This topic also includes a list of Amazon Web Services
-// services that can use the server certificates that you manage with IAM. You
-// should understand the implications of changing a server certificate's path or
-// name. For more information, see Renaming a server certificate (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs_manage.html#RenamingServerCerts)
-// in the IAM User Guide. The person making the request (the principal), must have
-// permission to change the server certificate with the old name and the new name.
-// For example, to change the certificate named ProductionCert to ProdCert , the
-// principal must have a policy that allows them to update both certificates. If
-// the principal has permission to update the ProductionCert group, but not the
-// ProdCert certificate, then the update fails. For more information about
-// permissions, see Access management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+// IAM.
+//
+// For more information about working with server certificates, see [Working with server certificates] in the IAM
+// User Guide. This topic also includes a list of Amazon Web Services services that
+// can use the server certificates that you manage with IAM.
+//
+// You should understand the implications of changing a server certificate's path
+// or name. For more information, see [Renaming a server certificate]in the IAM User Guide.
+//
+// The person making the request (the principal), must have permission to change
+// the server certificate with the old name and the new name. For example, to
+// change the certificate named ProductionCert to ProdCert , the principal must
+// have a policy that allows them to update both certificates. If the principal has
+// permission to update the ProductionCert group, but not the ProdCert
+// certificate, then the update fails. For more information about permissions, see [Access management]
 // in the IAM User Guide.
+//
+// [Renaming a server certificate]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs_manage.html#RenamingServerCerts
+// [Access management]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html
+// [Working with server certificates]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html
 func (c *Client) UpdateServerCertificate(ctx context.Context, params *UpdateServerCertificateInput, optFns ...func(*Options)) (*UpdateServerCertificateOutput, error) {
 	if params == nil {
 		params = &UpdateServerCertificateInput{}
@@ -42,28 +48,38 @@ func (c *Client) UpdateServerCertificate(ctx context.Context, params *UpdateServ
 
 type UpdateServerCertificateInput struct {
 
-	// The name of the server certificate that you want to update. This parameter
-	// allows (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string
-	// of characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the server certificate that you want to update.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	ServerCertificateName *string
 
 	// The new path for the server certificate. Include this only if you are updating
-	// the server certificate's path. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of either a forward slash (/) by itself or a
-	// string that must begin and end with forward slashes. In addition, it can contain
-	// any ASCII character from the ! ( \u0021 ) through the DEL character ( \u007F ),
-	// including most punctuation characters, digits, and upper and lowercased letters.
+	// the server certificate's path.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of
+	// either a forward slash (/) by itself or a string that must begin and end with
+	// forward slashes. In addition, it can contain any ASCII character from the ! (
+	// \u0021 ) through the DEL character ( \u007F ), including most punctuation
+	// characters, digits, and upper and lowercased letters.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	NewPath *string
 
 	// The new name for the server certificate. Include this only if you are updating
 	// the server certificate's name. The name of the certificate cannot contain any
-	// spaces. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	// spaces.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	NewServerCertificateName *string
 
 	noSmithyDocumentSerde

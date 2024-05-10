@@ -17,9 +17,11 @@ import (
 
 // Returns the current status of a change batch request. The status is one of the
 // following values:
+//
 //   - PENDING indicates that the changes in this request have not propagated to
 //     all Amazon Route 53 DNS servers managing the hosted zone. This is the initial
 //     status of all change batch requests.
+//
 //   - INSYNC indicates that the changes have propagated to all Route 53 DNS
 //     servers managing the hosted zone.
 func (c *Client) GetChange(ctx context.Context, params *GetChangeInput, optFns ...func(*Options)) (*GetChangeOutput, error) {
@@ -187,12 +189,13 @@ type ResourceRecordSetsChangedWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *GetChangeInput, *GetChangeOutput, error) (bool, error)
 }
 

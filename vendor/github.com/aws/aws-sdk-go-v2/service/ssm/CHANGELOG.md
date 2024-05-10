@@ -1,3 +1,7 @@
+# v1.50.1 (2024-05-08)
+
+* **Bug Fix**: GoDoc improvement
+
 # v1.50.0 (2024-04-24)
 
 * **Feature**: Add SSM DescribeInstanceProperties API to public AWS SDK.

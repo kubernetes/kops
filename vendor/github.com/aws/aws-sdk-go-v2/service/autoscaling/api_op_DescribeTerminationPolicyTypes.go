@@ -10,9 +10,11 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes the termination policies supported by Amazon EC2 Auto Scaling. For
-// more information, see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// Describes the termination policies supported by Amazon EC2 Auto Scaling.
+//
+// For more information, see [Work with Amazon EC2 Auto Scaling termination policies] in the Amazon EC2 Auto Scaling User Guide.
+//
+// [Work with Amazon EC2 Auto Scaling termination policies]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html
 func (c *Client) DescribeTerminationPolicyTypes(ctx context.Context, params *DescribeTerminationPolicyTypesInput, optFns ...func(*Options)) (*DescribeTerminationPolicyTypesOutput, error) {
 	if params == nil {
 		params = &DescribeTerminationPolicyTypesInput{}

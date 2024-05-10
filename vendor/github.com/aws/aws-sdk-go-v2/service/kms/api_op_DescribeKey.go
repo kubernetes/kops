@@ -11,51 +11,73 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Provides detailed information about a KMS key. You can run DescribeKey on a
-// customer managed key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk)
-// or an Amazon Web Services managed key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk)
-// . This detailed information includes the key ARN, creation date (and deletion
+// Provides detailed information about a KMS key. You can run DescribeKey on a [customer managed key] or
+// an [Amazon Web Services managed key].
+//
+// This detailed information includes the key ARN, creation date (and deletion
 // date, if applicable), the key state, and the origin and expiration date (if any)
 // of the key material. It includes fields, like KeySpec , that help you
 // distinguish different types of KMS keys. It also displays the key usage
 // (encryption, signing, or generating and verifying MACs) and the algorithms that
-// the KMS key supports. For multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
-// , DescribeKey displays the primary key and all related replica keys. For KMS
-// keys in CloudHSM key stores (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html)
-// , it includes information about the key store, such as the key store ID and the
-// CloudHSM cluster ID. For KMS keys in external key stores (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html)
-// , it includes the custom key store ID and the ID of the external key.
+// the KMS key supports.
+//
+// For [multi-Region keys], DescribeKey displays the primary key and all related replica keys. For
+// KMS keys in [CloudHSM key stores], it includes information about the key store, such as the key
+// store ID and the CloudHSM cluster ID. For KMS keys in [external key stores], it includes the custom
+// key store ID and the ID of the external key.
+//
 // DescribeKey does not return the following information:
-//   - Aliases associated with the KMS key. To get this information, use
-//     ListAliases .
+//
+//   - Aliases associated with the KMS key. To get this information, use ListAliases.
+//
 //   - Whether automatic key rotation is enabled on the KMS key. To get this
-//     information, use GetKeyRotationStatus . Also, some key states prevent a KMS
-//     key from being automatically rotated. For details, see How Automatic Key
-//     Rotation Works (https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotate-keys-how-it-works)
-//     in the Key Management Service Developer Guide.
-//   - Tags on the KMS key. To get this information, use ListResourceTags .
-//   - Key policies and grants on the KMS key. To get this information, use
-//     GetKeyPolicy and ListGrants .
+//     information, use GetKeyRotationStatus. Also, some key states prevent a KMS key from being
+//     automatically rotated. For details, see [How Automatic Key Rotation Works]in the Key Management Service
+//     Developer Guide.
+//
+//   - Tags on the KMS key. To get this information, use ListResourceTags.
+//
+//   - Key policies and grants on the KMS key. To get this information, use GetKeyPolicyand ListGrants.
 //
 // In general, DescribeKey is a non-mutating operation. It returns data about KMS
 // keys, but doesn't change them. However, Amazon Web Services services use
-// DescribeKey to create Amazon Web Services managed keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk)
-// from a predefined Amazon Web Services alias with no key ID. Cross-account use:
-// Yes. To perform this operation with a KMS key in a different Amazon Web Services
-// account, specify the key ARN or alias ARN in the value of the KeyId parameter.
-// Required permissions: kms:DescribeKey (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
-// (key policy) Related operations:
-//   - GetKeyPolicy
-//   - GetKeyRotationStatus
-//   - ListAliases
-//   - ListGrants
-//   - ListKeys
-//   - ListResourceTags
-//   - ListRetirableGrants
+// DescribeKey to create [Amazon Web Services managed keys] from a predefined Amazon Web Services alias with no key
+// ID.
+//
+// Cross-account use: Yes. To perform this operation with a KMS key in a different
+// Amazon Web Services account, specify the key ARN or alias ARN in the value of
+// the KeyId parameter.
+//
+// Required permissions: [kms:DescribeKey] (key policy)
+//
+// Related operations:
+//
+// # GetKeyPolicy
+//
+// # GetKeyRotationStatus
+//
+// # ListAliases
+//
+// # ListGrants
+//
+// # ListKeys
+//
+// # ListResourceTags
+//
+// # ListRetirableGrants
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
-// more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html)
-// .
+// more information, see [KMS eventual consistency].
+//
+// [CloudHSM key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html
+// [external key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
+// [customer managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
+// [kms:DescribeKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
+// [How Automatic Key Rotation Works]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotate-keys-how-it-works
+// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
+// [Amazon Web Services managed keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [Amazon Web Services managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
 func (c *Client) DescribeKey(ctx context.Context, params *DescribeKeyInput, optFns ...func(*Options)) (*DescribeKeyOutput, error) {
 	if params == nil {
 		params = &DescribeKeyInput{}
@@ -73,29 +95,43 @@ func (c *Client) DescribeKey(ctx context.Context, params *DescribeKeyInput, optF
 
 type DescribeKeyInput struct {
 
-	// Describes the specified KMS key. If you specify a predefined Amazon Web
-	// Services alias (an Amazon Web Services alias with no key ID), KMS associates the
-	// alias with an Amazon Web Services managed key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html##aws-managed-cmk)
-	// and returns its KeyId and Arn in the response. To specify a KMS key, use its
-	// key ID, key ARN, alias name, or alias ARN. When using an alias name, prefix it
-	// with "alias/" . To specify a KMS key in a different Amazon Web Services account,
-	// you must use the key ARN or alias ARN. For example:
+	// Describes the specified KMS key.
+	//
+	// If you specify a predefined Amazon Web Services alias (an Amazon Web Services
+	// alias with no key ID), KMS associates the alias with an [Amazon Web Services managed key]and returns its KeyId
+	// and Arn in the response.
+	//
+	// To specify a KMS key, use its key ID, key ARN, alias name, or alias ARN. When
+	// using an alias name, prefix it with "alias/" . To specify a KMS key in a
+	// different Amazon Web Services account, you must use the key ARN or alias ARN.
+	//
+	// For example:
+	//
 	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Key ARN:
 	//   arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//
 	//   - Alias name: alias/ExampleAlias
+	//
 	//   - Alias ARN: arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias
-	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey . To
-	// get the alias name and alias ARN, use ListAliases .
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey. To get the alias name
+	// and alias ARN, use ListAliases.
+	//
+	// [Amazon Web Services managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html##aws-managed-cmk
 	//
 	// This member is required.
 	KeyId *string
 
-	// A list of grant tokens. Use a grant token when your permission to call this
-	// operation comes from a new grant that has not yet achieved eventual consistency.
-	// For more information, see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
-	// and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
-	// in the Key Management Service Developer Guide.
+	// A list of grant tokens.
+	//
+	// Use a grant token when your permission to call this operation comes from a new
+	// grant that has not yet achieved eventual consistency. For more information, see [Grant token]
+	// and [Using a grant token]in the Key Management Service Developer Guide.
+	//
+	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
 	GrantTokens []string
 
 	noSmithyDocumentSerde

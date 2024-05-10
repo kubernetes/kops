@@ -12,10 +12,14 @@ import (
 )
 
 // Lists your Amazon EventBridge rules. You can either list all the rules or you
-// can provide a prefix to match to the rule names. The maximum number of results
-// per page for requests is 100. ListRules does not list the targets of a rule. To
-// see the targets associated with a rule, use ListTargetsByRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html)
-// .
+// can provide a prefix to match to the rule names.
+//
+// The maximum number of results per page for requests is 100.
+//
+// ListRules does not list the targets of a rule. To see the targets associated
+// with a rule, use [ListTargetsByRule].
+//
+// [ListTargetsByRule]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html
 func (c *Client) ListRules(ctx context.Context, params *ListRulesInput, optFns ...func(*Options)) (*ListRulesOutput, error) {
 	if params == nil {
 		params = &ListRulesInput{}

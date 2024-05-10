@@ -31,7 +31,9 @@ type DescribeAutoScalingInstancesInput struct {
 
 	// The IDs of the instances. If you omit this property, all Auto Scaling instances
 	// are described. If you specify an ID that does not exist, it is ignored with no
-	// error. Array Members: Maximum number of 50 items.
+	// error.
+	//
+	// Array Members: Maximum number of 50 items.
 	InstanceIds []string
 
 	// The maximum number of items to return with this call. The default value is 50

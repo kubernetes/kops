@@ -16,30 +16,40 @@ import (
 // effective permissions. The entity can be an IAM user, group, or role. If you
 // specify a user, then the simulation also includes all of the policies that are
 // attached to groups that the user belongs to. You can simulate resources that
-// don't exist in your account. You can optionally include a list of one or more
-// additional policies specified as strings to include in the simulation. If you
-// want to simulate only policies specified as strings, use SimulateCustomPolicy
-// instead. You can also optionally include one resource-based policy to be
-// evaluated with each of the resources included in the simulation for IAM users
-// only. The simulation does not perform the API operations; it only checks the
+// don't exist in your account.
+//
+// You can optionally include a list of one or more additional policies specified
+// as strings to include in the simulation. If you want to simulate only policies
+// specified as strings, use SimulateCustomPolicyinstead.
+//
+// You can also optionally include one resource-based policy to be evaluated with
+// each of the resources included in the simulation for IAM users only.
+//
+// The simulation does not perform the API operations; it only checks the
 // authorization to determine if the simulated policies allow or deny the
-// operations. Note: This operation discloses information about the permissions
-// granted to other users. If you do not want users to see other user's
-// permissions, then consider allowing them to use SimulateCustomPolicy instead.
+// operations.
+//
+// Note: This operation discloses information about the permissions granted to
+// other users. If you do not want users to see other user's permissions, then
+// consider allowing them to use SimulateCustomPolicyinstead.
+//
 // Context keys are variables maintained by Amazon Web Services and its services
 // that provide details about the context of an API query request. You can use the
 // Condition element of an IAM policy to evaluate context keys. To get the list of
-// context keys that the policies require for correct simulation, use
-// GetContextKeysForPrincipalPolicy . If the output is long, you can use the
-// MaxItems and Marker parameters to paginate the results. The IAM policy
-// simulator evaluates statements in the identity-based policy and the inputs that
-// you provide during simulation. The policy simulator results can differ from your
-// live Amazon Web Services environment. We recommend that you check your policies
-// against your live Amazon Web Services environment after testing using the policy
-// simulator to confirm that you have the desired results. For more information
-// about using the policy simulator, see Testing IAM policies with the IAM policy
-// simulator  (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html)
-// in the IAM User Guide.
+// context keys that the policies require for correct simulation, use GetContextKeysForPrincipalPolicy.
+//
+// If the output is long, you can use the MaxItems and Marker parameters to
+// paginate the results.
+//
+// The IAM policy simulator evaluates statements in the identity-based policy and
+// the inputs that you provide during simulation. The policy simulator results can
+// differ from your live Amazon Web Services environment. We recommend that you
+// check your policies against your live Amazon Web Services environment after
+// testing using the policy simulator to confirm that you have the desired results.
+// For more information about using the policy simulator, see [Testing IAM policies with the IAM policy simulator]in the IAM User
+// Guide.
+//
+// [Testing IAM policies with the IAM policy simulator]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html
 func (c *Client) SimulatePrincipalPolicy(ctx context.Context, params *SimulatePrincipalPolicyInput, optFns ...func(*Options)) (*SimulatePrincipalPolicyOutput, error) {
 	if params == nil {
 		params = &SimulatePrincipalPolicyInput{}
@@ -68,12 +78,17 @@ type SimulatePrincipalPolicyInput struct {
 	// want to include in the simulation. If you specify a user, group, or role, the
 	// simulation includes all policies that are associated with that entity. If you
 	// specify a user, the simulation also includes all policies that are attached to
-	// any groups the user belongs to. The maximum length of the policy document that
-	// you can pass in this operation, including whitespace, is listed below. To view
-	// the maximum character counts of a managed policy with no whitespaces, see IAM
-	// and STS character quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length)
-	// . For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// any groups the user belongs to.
+	//
+	// The maximum length of the policy document that you can pass in this operation,
+	// including whitespace, is listed below. To view the maximum character counts of a
+	// managed policy with no whitespaces, see [IAM and STS character quotas].
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [IAM and STS character quotas]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
 	PolicySourceArn *string
@@ -84,14 +99,19 @@ type SimulatePrincipalPolicyInput struct {
 	// include both a PolicySourceArn (for example,
 	// arn:aws:iam::123456789012:user/David ) and a CallerArn (for example,
 	// arn:aws:iam::123456789012:user/Bob ), the result is that you simulate calling
-	// the API operations as Bob, as if Bob had David's policies. You can specify only
-	// the ARN of an IAM user. You cannot specify the ARN of an assumed role, federated
-	// user, or a service principal. CallerArn is required if you include a
-	// ResourcePolicy and the PolicySourceArn is not the ARN for an IAM user. This is
-	// required so that the resource-based policy's Principal element has a value to
-	// use in evaluating the policy. For more information about ARNs, see Amazon
-	// Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// the API operations as Bob, as if Bob had David's policies.
+	//
+	// You can specify only the ARN of an IAM user. You cannot specify the ARN of an
+	// assumed role, federated user, or a service principal.
+	//
+	// CallerArn is required if you include a ResourcePolicy and the PolicySourceArn
+	// is not the ARN for an IAM user. This is required so that the resource-based
+	// policy's Principal element has a value to use in evaluating the policy.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	CallerArn *string
 
 	// A list of context keys and corresponding values for the simulation to use.
@@ -107,11 +127,13 @@ type SimulatePrincipalPolicyInput struct {
 
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	MaxItems *int32
 
 	// The IAM permissions boundary policy to simulate. The permissions boundary sets
@@ -121,32 +143,48 @@ type SimulatePrincipalPolicyInput struct {
 	// permissions boundary is attached to an entity and you pass in a different
 	// permissions boundary policy using this parameter, then the new permissions
 	// boundary policy is used for the simulation. For more information about
-	// permissions boundaries, see Permissions boundaries for IAM entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
-	// in the IAM User Guide. The policy input is specified as a string containing the
-	// complete, valid JSON text of a permissions boundary policy. The maximum length
-	// of the policy document that you can pass in this operation, including
-	// whitespace, is listed below. To view the maximum character counts of a managed
-	// policy with no whitespaces, see IAM and STS character quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length)
-	// . The regex pattern (http://wikipedia.org/wiki/regex) used to validate this
-	// parameter is a string of characters consisting of the following:
+	// permissions boundaries, see [Permissions boundaries for IAM entities]in the IAM User Guide. The policy input is
+	// specified as a string containing the complete, valid JSON text of a permissions
+	// boundary policy.
+	//
+	// The maximum length of the policy document that you can pass in this operation,
+	// including whitespace, is listed below. To view the maximum character counts of a
+	// managed policy with no whitespaces, see [IAM and STS character quotas].
+	//
+	// The [regex pattern] used to validate this parameter is a string of characters consisting of
+	// the following:
+	//
 	//   - Any printable ASCII character ranging from the space character ( \u0020 )
 	//   through the end of the ASCII character range
+	//
 	//   - The printable characters in the Basic Latin and Latin-1 Supplement
 	//   character set (through \u00FF )
+	//
 	//   - The special characters tab ( \u0009 ), line feed ( \u000A ), and carriage
 	//   return ( \u000D )
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
+	// [IAM and STS character quotas]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length
+	// [Permissions boundaries for IAM entities]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
 	PermissionsBoundaryPolicyInputList []string
 
 	// An optional list of additional policy documents to include in the simulation.
 	// Each document is specified as a string containing the complete, valid JSON text
-	// of an IAM policy. The regex pattern (http://wikipedia.org/wiki/regex) used to
-	// validate this parameter is a string of characters consisting of the following:
+	// of an IAM policy.
+	//
+	// The [regex pattern] used to validate this parameter is a string of characters consisting of
+	// the following:
+	//
 	//   - Any printable ASCII character ranging from the space character ( \u0020 )
 	//   through the end of the ASCII character range
+	//
 	//   - The printable characters in the Basic Latin and Latin-1 Supplement
 	//   character set (through \u00FF )
+	//
 	//   - The special characters tab ( \u0009 ), line feed ( \u000A ), and carriage
 	//   return ( \u000D )
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	PolicyInputList []string
 
 	// A list of ARNs of Amazon Web Services resources to include in the simulation.
@@ -154,13 +192,18 @@ type SimulatePrincipalPolicyInput struct {
 	// resources). Each API in the ActionNames parameter is evaluated for each
 	// resource in this list. The simulation determines the access result (allowed or
 	// denied) of each combination and reports it in the response. You can simulate
-	// resources that don't exist in your account. The simulation does not
-	// automatically retrieve policies for the specified resources. If you want to
-	// include a resource policy in the simulation, then you must include the policy as
-	// a string in the ResourcePolicy parameter. For more information about ARNs, see
-	// Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference. Simulation of resource-based
-	// policies isn't supported for IAM roles.
+	// resources that don't exist in your account.
+	//
+	// The simulation does not automatically retrieve policies for the specified
+	// resources. If you want to include a resource policy in the simulation, then you
+	// must include the policy as a string in the ResourcePolicy parameter.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// Simulation of resource-based policies isn't supported for IAM roles.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	ResourceArns []string
 
 	// Specifies the type of simulation to run. Different API operations that support
@@ -170,19 +213,31 @@ type SimulatePrincipalPolicyInput struct {
 	// results. If your simulation does not match one of the following scenarios, then
 	// you can omit this parameter. The following list shows each of the supported
 	// scenario values and the resources that you must define to run the simulation.
+	//
 	// Each of the Amazon EC2 scenarios requires that you specify instance, image, and
 	// security group resources. If your scenario includes an EBS volume, then you must
 	// specify that volume as a resource. If the Amazon EC2 scenario includes VPC, then
 	// you must supply the network interface resource. If it includes an IP subnet,
 	// then you must specify the subnet resource. For more information on the Amazon
-	// EC2 scenario options, see Supported platforms (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html)
-	// in the Amazon EC2 User Guide.
-	//   - EC2-VPC-InstanceStore instance, image, security group, network interface
-	//   - EC2-VPC-InstanceStore-Subnet instance, image, security group, network
-	//   interface, subnet
-	//   - EC2-VPC-EBS instance, image, security group, network interface, volume
-	//   - EC2-VPC-EBS-Subnet instance, image, security group, network interface,
-	//   subnet, volume
+	// EC2 scenario options, see [Supported platforms]in the Amazon EC2 User Guide.
+	//
+	//   - EC2-VPC-InstanceStore
+	//
+	// instance, image, security group, network interface
+	//
+	//   - EC2-VPC-InstanceStore-Subnet
+	//
+	// instance, image, security group, network interface, subnet
+	//
+	//   - EC2-VPC-EBS
+	//
+	// instance, image, security group, network interface, volume
+	//
+	//   - EC2-VPC-EBS-Subnet
+	//
+	// instance, image, security group, network interface, subnet, volume
+	//
+	// [Supported platforms]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-supported-platforms.html
 	ResourceHandlingOption *string
 
 	// An Amazon Web Services account ID that specifies the owner of any simulated
@@ -198,26 +253,34 @@ type SimulatePrincipalPolicyInput struct {
 
 	// A resource-based policy to include in the simulation provided as a string. Each
 	// resource in the simulation is treated as if it had this policy attached. You can
-	// include only one resource-based policy in a simulation. The maximum length of
-	// the policy document that you can pass in this operation, including whitespace,
-	// is listed below. To view the maximum character counts of a managed policy with
-	// no whitespaces, see IAM and STS character quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length)
-	// . The regex pattern (http://wikipedia.org/wiki/regex) used to validate this
-	// parameter is a string of characters consisting of the following:
+	// include only one resource-based policy in a simulation.
+	//
+	// The maximum length of the policy document that you can pass in this operation,
+	// including whitespace, is listed below. To view the maximum character counts of a
+	// managed policy with no whitespaces, see [IAM and STS character quotas].
+	//
+	// The [regex pattern] used to validate this parameter is a string of characters consisting of
+	// the following:
+	//
 	//   - Any printable ASCII character ranging from the space character ( \u0020 )
 	//   through the end of the ASCII character range
+	//
 	//   - The printable characters in the Basic Latin and Latin-1 Supplement
 	//   character set (through \u00FF )
+	//
 	//   - The special characters tab ( \u0009 ), line feed ( \u000A ), and carriage
 	//   return ( \u000D )
+	//
 	// Simulation of resource-based policies isn't supported for IAM roles.
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
+	// [IAM and STS character quotas]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entity-length
 	ResourcePolicy *string
 
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful SimulatePrincipalPolicy or
-// SimulateCustomPolicy request.
+// Contains the response to a successful SimulatePrincipalPolicy or SimulateCustomPolicy request.
 type SimulatePrincipalPolicyOutput struct {
 
 	// The results of the simulation.
@@ -333,11 +396,13 @@ var _ SimulatePrincipalPolicyAPIClient = (*Client)(nil)
 type SimulatePrincipalPolicyPaginatorOptions struct {
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

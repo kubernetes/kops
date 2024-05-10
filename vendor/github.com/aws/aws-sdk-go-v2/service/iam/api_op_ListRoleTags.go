@@ -12,9 +12,10 @@ import (
 )
 
 // Lists the tags that are attached to the specified role. The returned list of
-// tags is sorted by tag key. For more information about tagging, see Tagging IAM
-// resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-// IAM User Guide.
+// tags is sorted by tag key. For more information about tagging, see [Tagging IAM resources]in the IAM
+// User Guide.
+//
+// [Tagging IAM resources]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html
 func (c *Client) ListRoleTags(ctx context.Context, params *ListRoleTagsInput, optFns ...func(*Options)) (*ListRoleTagsOutput, error) {
 	if params == nil {
 		params = &ListRoleTagsInput{}
@@ -32,11 +33,13 @@ func (c *Client) ListRoleTags(ctx context.Context, params *ListRoleTagsInput, op
 
 type ListRoleTagsInput struct {
 
-	// The name of the IAM role for which you want to see the list of tags. This
-	// parameter accepts (through its regex pattern (http://wikipedia.org/wiki/regex) )
-	// a string of characters that consist of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	// The name of the IAM role for which you want to see the list of tags.
+	//
+	// This parameter accepts (through its [regex pattern]) a string of characters that consist of
+	// upper and lowercase alphanumeric characters with no spaces. You can also include
+	// any of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	RoleName *string
@@ -49,11 +52,13 @@ type ListRoleTagsInput struct {
 
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	MaxItems *int32
 
 	noSmithyDocumentSerde
@@ -176,11 +181,13 @@ var _ ListRoleTagsAPIClient = (*Client)(nil)
 type ListRoleTagsPaginatorOptions struct {
 	// Use this only when paginating results to indicate the maximum number of items
 	// you want in the response. If additional items exist beyond the maximum you
-	// specify, the IsTruncated response element is true . If you do not include this
-	// parameter, the number of items defaults to 100. Note that IAM might return fewer
-	// results, even when there are more results available. In that case, the
-	// IsTruncated response element returns true , and Marker contains a value to
-	// include in the subsequent call that tells the service where to continue from.
+	// specify, the IsTruncated response element is true .
+	//
+	// If you do not include this parameter, the number of items defaults to 100. Note
+	// that IAM might return fewer results, even when there are more results available.
+	// In that case, the IsTruncated response element returns true , and Marker
+	// contains a value to include in the subsequent call that tells the service where
+	// to continue from.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token

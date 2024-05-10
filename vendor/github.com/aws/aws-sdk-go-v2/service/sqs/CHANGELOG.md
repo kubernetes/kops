@@ -1,3 +1,8 @@
+# v1.32.0 (2024-05-08)
+
+* **Feature**: This release adds MessageSystemAttributeNames to ReceiveMessageRequest to replace AttributeNames.
+* **Bug Fix**: GoDoc improvement
+
 # v1.31.4 (2024-03-29)
 
 * **Dependency Update**: Updated to the latest SDK module versions

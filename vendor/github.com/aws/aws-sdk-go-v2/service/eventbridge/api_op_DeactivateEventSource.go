@@ -11,11 +11,14 @@ import (
 )
 
 // You can use this operation to temporarily stop receiving events from the
-// specified partner event source. The matching event bus is not deleted. When you
-// deactivate a partner event source, the source goes into PENDING state. If it
-// remains in PENDING state for more than two weeks, it is deleted. To activate a
-// deactivated partner event source, use ActivateEventSource (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ActivateEventSource.html)
-// .
+// specified partner event source. The matching event bus is not deleted.
+//
+// When you deactivate a partner event source, the source goes into PENDING state.
+// If it remains in PENDING state for more than two weeks, it is deleted.
+//
+// To activate a deactivated partner event source, use [ActivateEventSource].
+//
+// [ActivateEventSource]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ActivateEventSource.html
 func (c *Client) DeactivateEventSource(ctx context.Context, params *DeactivateEventSourceInput, optFns ...func(*Options)) (*DeactivateEventSourceOutput, error) {
 	if params == nil {
 		params = &DeactivateEventSourceInput{}

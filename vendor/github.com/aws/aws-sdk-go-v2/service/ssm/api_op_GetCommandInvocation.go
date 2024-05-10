@@ -17,10 +17,11 @@ import (
 )
 
 // Returns detailed information about command execution for an invocation or
-// plugin. GetCommandInvocation only gives the execution status of a plugin in a
-// document. To get the command execution status on a specific managed node, use
-// ListCommandInvocations . To get the command execution status across managed
-// nodes, use ListCommands .
+// plugin.
+//
+// GetCommandInvocation only gives the execution status of a plugin in a document.
+// To get the command execution status on a specific managed node, use ListCommandInvocations. To get
+// the command execution status across managed nodes, use ListCommands.
 func (c *Client) GetCommandInvocation(ctx context.Context, params *GetCommandInvocationInput, optFns ...func(*Options)) (*GetCommandInvocationOutput, error) {
 	if params == nil {
 		params = &GetCommandInvocationInput{}
@@ -55,9 +56,10 @@ type GetCommandInvocationInput struct {
 	// contains only one step, you can omit the name and details for that step. If the
 	// document contains more than one step, you must specify the name of the step for
 	// which you want to view details. Be sure to specify the name of the step, not the
-	// name of a plugin like aws:RunShellScript . To find the PluginName , check the
-	// document content and find the name of the step you want details for.
-	// Alternatively, use ListCommandInvocations with the CommandId and Details
+	// name of a plugin like aws:RunShellScript .
+	//
+	// To find the PluginName , check the document content and find the name of the
+	// step you want details for. Alternatively, use ListCommandInvocationswith the CommandId and Details
 	// parameters. The PluginName is the Name attribute of the CommandPlugin object in
 	// the CommandPlugins list.
 	PluginName *string
@@ -89,15 +91,19 @@ type GetCommandInvocationOutput struct {
 	// The date and time the plugin finished running. Date and time are written in ISO
 	// 8601 format. For example, June 7, 2017 is represented as 2017-06-7. The
 	// following sample Amazon Web Services CLI command uses the InvokedAfter filter.
-	// aws ssm list-commands --filters key=InvokedAfter,value=2017-06-07T00:00:00Z If
-	// the plugin hasn't started to run, the string is empty.
+	//
+	//     aws ssm list-commands --filters key=InvokedAfter,value=2017-06-07T00:00:00Z
+	//
+	// If the plugin hasn't started to run, the string is empty.
 	ExecutionEndDateTime *string
 
 	// The date and time the plugin started running. Date and time are written in ISO
 	// 8601 format. For example, June 7, 2017 is represented as 2017-06-7. The
 	// following sample Amazon Web Services CLI command uses the InvokedBefore filter.
-	// aws ssm list-commands --filters key=InvokedBefore,value=2017-06-07T00:00:00Z If
-	// the plugin hasn't started to run, the string is empty.
+	//
+	//     aws ssm list-commands --filters key=InvokedBefore,value=2017-06-07T00:00:00Z
+	//
+	// If the plugin hasn't started to run, the string is empty.
 	ExecutionStartDateTime *string
 
 	// The ID of the managed node targeted by the command. A managed node can be an
@@ -140,40 +146,51 @@ type GetCommandInvocationOutput struct {
 	// A detailed status of the command execution for an invocation. StatusDetails
 	// includes more information than Status because it includes states resulting from
 	// error and concurrency control parameters. StatusDetails can show different
-	// results than Status . For more information about these statuses, see
-	// Understanding command statuses (https://docs.aws.amazon.com/systems-manager/latest/userguide/monitor-commands.html)
-	// in the Amazon Web Services Systems Manager User Guide. StatusDetails can be one
-	// of the following values:
+	// results than Status . For more information about these statuses, see [Understanding command statuses] in the
+	// Amazon Web Services Systems Manager User Guide. StatusDetails can be one of the
+	// following values:
+	//
 	//   - Pending: The command hasn't been sent to the managed node.
+	//
 	//   - In Progress: The command has been sent to the managed node but hasn't
 	//   reached a terminal state.
+	//
 	//   - Delayed: The system attempted to send the command to the target, but the
 	//   target wasn't available. The managed node might not be available because of
 	//   network issues, because the node was stopped, or for similar reasons. The system
 	//   will try to send the command again.
+	//
 	//   - Success: The command or plugin ran successfully. This is a terminal state.
+	//
 	//   - Delivery Timed Out: The command wasn't delivered to the managed node before
 	//   the delivery timeout expired. Delivery timeouts don't count against the parent
 	//   command's MaxErrors limit, but they do contribute to whether the parent
 	//   command status is Success or Incomplete. This is a terminal state.
+	//
 	//   - Execution Timed Out: The command started to run on the managed node, but
 	//   the execution wasn't complete before the timeout expired. Execution timeouts
 	//   count against the MaxErrors limit of the parent command. This is a terminal
 	//   state.
+	//
 	//   - Failed: The command wasn't run successfully on the managed node. For a
 	//   plugin, this indicates that the result code wasn't zero. For a command
 	//   invocation, this indicates that the result code for one or more plugins wasn't
 	//   zero. Invocation failures count against the MaxErrors limit of the parent
 	//   command. This is a terminal state.
+	//
 	//   - Cancelled: The command was terminated before it was completed. This is a
 	//   terminal state.
+	//
 	//   - Undeliverable: The command can't be delivered to the managed node. The node
 	//   might not exist or might not be responding. Undeliverable invocations don't
 	//   count against the parent command's MaxErrors limit and don't contribute to
 	//   whether the parent command status is Success or Incomplete. This is a terminal
 	//   state.
+	//
 	//   - Terminated: The parent command exceeded its MaxErrors limit and subsequent
 	//   command invocations were canceled by the system. This is a terminal state.
+	//
+	// [Understanding command statuses]: https://docs.aws.amazon.com/systems-manager/latest/userguide/monitor-commands.html
 	StatusDetails *string
 
 	// Metadata pertaining to the operation's result.
@@ -301,12 +318,13 @@ type CommandExecutedWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *GetCommandInvocationInput, *GetCommandInvocationOutput, error) (bool, error)
 }
 

@@ -973,6 +973,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 					TLS:      service.HealthCheck.HTTP.TLS,
 				}
 				if service.HealthCheck.HTTP.StatusCodes != nil {
+					//nolint:gosec
 					schemaHealthCheckHTTP.StatusCodes = &service.HealthCheck.HTTP.StatusCodes
 				}
 				schemaHealthCheck.HTTP = schemaHealthCheckHTTP

@@ -14,8 +14,9 @@ const (
 )
 
 // Values returns all known values for AccountLimitType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (AccountLimitType) Values() []AccountLimitType {
 	return []AccountLimitType{
 		"MAX_HEALTH_CHECKS_BY_OWNER",
@@ -36,8 +37,9 @@ const (
 )
 
 // Values returns all known values for ChangeAction. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ChangeAction) Values() []ChangeAction {
 	return []ChangeAction{
 		"CREATE",
@@ -55,8 +57,9 @@ const (
 )
 
 // Values returns all known values for ChangeStatus. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ChangeStatus) Values() []ChangeStatus {
 	return []ChangeStatus{
 		"PENDING",
@@ -74,6 +77,7 @@ const (
 
 // Values returns all known values for CidrCollectionChangeAction. Note that this
 // can be expanded in the future, and so it is only as up to date as the client.
+//
 // The ordering of this slice is not guaranteed to be stable across updates.
 func (CidrCollectionChangeAction) Values() []CidrCollectionChangeAction {
 	return []CidrCollectionChangeAction{
@@ -125,8 +129,9 @@ const (
 )
 
 // Values returns all known values for CloudWatchRegion. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (CloudWatchRegion) Values() []CloudWatchRegion {
 	return []CloudWatchRegion{
 		"us-east-1",
@@ -179,8 +184,9 @@ const (
 )
 
 // Values returns all known values for ComparisonOperator. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ComparisonOperator) Values() []ComparisonOperator {
 	return []ComparisonOperator{
 		"GreaterThanOrEqualToThreshold",
@@ -205,8 +211,9 @@ const (
 )
 
 // Values returns all known values for HealthCheckRegion. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (HealthCheckRegion) Values() []HealthCheckRegion {
 	return []HealthCheckRegion{
 		"us-east-1",
@@ -235,8 +242,9 @@ const (
 )
 
 // Values returns all known values for HealthCheckType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (HealthCheckType) Values() []HealthCheckType {
 	return []HealthCheckType{
 		"HTTP",
@@ -259,8 +267,9 @@ const (
 )
 
 // Values returns all known values for HostedZoneLimitType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (HostedZoneLimitType) Values() []HostedZoneLimitType {
 	return []HostedZoneLimitType{
 		"MAX_RRSETS_BY_ZONE",
@@ -276,8 +285,9 @@ const (
 )
 
 // Values returns all known values for HostedZoneType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (HostedZoneType) Values() []HostedZoneType {
 	return []HostedZoneType{
 		"PrivateHostedZone",
@@ -295,8 +305,9 @@ const (
 
 // Values returns all known values for InsufficientDataHealthStatus. Note that
 // this can be expanded in the future, and so it is only as up to date as the
-// client. The ordering of this slice is not guaranteed to be stable across
-// updates.
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (InsufficientDataHealthStatus) Values() []InsufficientDataHealthStatus {
 	return []InsufficientDataHealthStatus{
 		"Healthy",
@@ -316,8 +327,9 @@ const (
 )
 
 // Values returns all known values for ResettableElementName. Note that this can
-// be expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ResettableElementName) Values() []ResettableElementName {
 	return []ResettableElementName{
 		"FullyQualifiedDomainName",
@@ -337,6 +349,7 @@ const (
 
 // Values returns all known values for ResourceRecordSetFailover. Note that this
 // can be expanded in the future, and so it is only as up to date as the client.
+//
 // The ordering of this slice is not guaranteed to be stable across updates.
 func (ResourceRecordSetFailover) Values() []ResourceRecordSetFailover {
 	return []ResourceRecordSetFailover{
@@ -383,8 +396,9 @@ const (
 )
 
 // Values returns all known values for ResourceRecordSetRegion. Note that this can
-// be expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ResourceRecordSetRegion) Values() []ResourceRecordSetRegion {
 	return []ResourceRecordSetRegion{
 		"us-east-1",
@@ -430,8 +444,9 @@ const (
 
 // Values returns all known values for ReusableDelegationSetLimitType. Note that
 // this can be expanded in the future, and so it is only as up to date as the
-// client. The ordering of this slice is not guaranteed to be stable across
-// updates.
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ReusableDelegationSetLimitType) Values() []ReusableDelegationSetLimitType {
 	return []ReusableDelegationSetLimitType{
 		"MAX_ZONES_BY_REUSABLE_DELEGATION_SET",
@@ -458,8 +473,9 @@ const (
 )
 
 // Values returns all known values for RRType. Note that this can be expanded in
-// the future, and so it is only as up to date as the client. The ordering of this
-// slice is not guaranteed to be stable across updates.
+// the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (RRType) Values() []RRType {
 	return []RRType{
 		"SOA",
@@ -490,8 +506,9 @@ const (
 )
 
 // Values returns all known values for Statistic. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (Statistic) Values() []Statistic {
 	return []Statistic{
 		"Average",
@@ -511,8 +528,9 @@ const (
 )
 
 // Values returns all known values for TagResourceType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (TagResourceType) Values() []TagResourceType {
 	return []TagResourceType{
 		"healthcheck",
@@ -562,8 +580,9 @@ const (
 )
 
 // Values returns all known values for VPCRegion. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (VPCRegion) Values() []VPCRegion {
 	return []VPCRegion{
 		"us-east-1",
