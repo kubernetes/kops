@@ -17,28 +17,21 @@ limitations under the License.
 package maps
 
 import (
-	"reflect"
-	"sort"
+	"cmp"
+	"slices"
+
+	"golang.org/x/exp/maps"
 )
 
 // Keys returns the keys of a map
-func Keys(m interface{}) []string {
-	var list []string
-
-	v := reflect.ValueOf(m)
-	if v.Kind() == reflect.Map {
-		for _, x := range v.MapKeys() {
-			list = append(list, x.String())
-		}
-	}
-
-	return list
+func Keys[M ~map[K]V, K comparable, V any](m M) []K {
+	return maps.Keys(m)
 }
 
 // SortedKeys returns a list of sorted keys
-func SortedKeys(m interface{}) []string {
-	list := Keys(m)
-	sort.Strings(list)
+func SortedKeys[M ~map[K]V, K cmp.Ordered, V any](m M) []K {
+	list := maps.Keys(m)
+	slices.Sort(list)
 
 	return list
 }
