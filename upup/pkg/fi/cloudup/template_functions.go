@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/util/pkg/env"
+	"k8s.io/kops/util/pkg/maps"
 	"sigs.k8s.io/yaml"
 )
 
@@ -337,19 +338,26 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["UseServiceAccountExternalPermissions"] = tf.UseServiceAccountExternalPermissions
 
 	if cluster.Spec.ClusterAutoscaler != nil {
-		dest["ClusterAutoscalerPriorities"] = func() map[string][]string {
+		dest["ClusterAutoscalerPriorities"] = func() string {
 			priorities := make(map[string][]string)
 			if cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig != nil {
 				priorities = cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig
 			} else {
 				for name, spec := range tf.GetNodeInstanceGroups() {
-
 					if spec.Autoscale != nil {
-						priorities[fmt.Sprint(spec.AutoscalePriority)] = append(priorities[fmt.Sprint(spec.AutoscalePriority)], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
+						priorities[strconv.Itoa(int(spec.AutoscalePriority))] = append(priorities[strconv.Itoa(int(spec.AutoscalePriority))], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
 					}
 				}
 			}
-			return priorities
+
+			var prioritiesStr []string
+			for _, prio := range maps.SortedKeys(priorities) {
+				prioritiesStr = append(prioritiesStr, fmt.Sprintf("%s:", prio))
+				for _, value := range priorities[prio] {
+					prioritiesStr = append(prioritiesStr, fmt.Sprintf("- %s", value))
+				}
+			}
+			return strings.Join(prioritiesStr, "\n")
 		}
 		dest["CreateClusterAutoscalerPriorityConfig"] = func() bool {
 			return fi.ValueOf(cluster.Spec.ClusterAutoscaler.CreatePriorityExpenderConfig)

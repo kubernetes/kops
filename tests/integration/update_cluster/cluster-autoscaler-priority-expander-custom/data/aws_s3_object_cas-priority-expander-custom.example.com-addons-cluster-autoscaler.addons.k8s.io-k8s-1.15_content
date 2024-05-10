@@ -282,12 +282,12 @@ spec:
 apiVersion: v1
 data:
   priorities: |-
-    "0":
+    0:
     - .*
-    "50":
-    - .*low.*
-    "100":
+    100:
     - .*high.*
+    50:
+    - .*low.*
 kind: ConfigMap
 metadata:
   creationTimestamp: null
