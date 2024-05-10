@@ -18,13 +18,15 @@ package client
 
 import (
 	"fmt"
+
+	spb "github.com/google/go-sev-guest/proto/sevsnp"
 )
 
 // WindowsDevice implements the Device interface with Linux ioctls.
 type WindowsDevice struct{}
 
 // Open is not supported on Windows.
-func (_ *WindowsDevice) Open(_ string) error {
+func (*WindowsDevice) Open(_ string) error {
 	return fmt.Errorf("Windows is unsupported")
 }
 
@@ -34,12 +36,17 @@ func OpenDevice() (*WindowsDevice, error) {
 }
 
 // Close is not supported on Windows.
-func (_ *WindowsDevice) Close() error {
+func (*WindowsDevice) Close() error {
 	return fmt.Errorf("Windows is unsupported")
 }
 
 // Ioctl is not supported on Windows.
-func (_ *WindowsDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
+func (*WindowsDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 	// The GuestAttestation library on Windows is closed source.
 	return 0, fmt.Errorf("Windows is unsupported")
+}
+
+// Product is not supported on Windows.
+func (*WindowsDevice) Product() *spb.SevProduct {
+	return &spb.SevProduct{}
 }

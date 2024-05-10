@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,17 @@
 // Package oauth2 provides access to the Google OAuth2 API.
 //
 // For product documentation, see: https://developers.google.com/identity/protocols/oauth2/
+//
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
 //
 // # Creating a client
 //
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	oauth2Service, err := oauth2.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	oauth2Service, err := oauth2.NewService(ctx, option.WithScopes(oauth2.OpenIDScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	oauth2Service, err := oauth2.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	oauth2Service, err := oauth2.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package oauth2 // import "google.golang.org/api/oauth2/v2"
 
 import (
@@ -81,14 +95,15 @@ const apiId = "oauth2:v2"
 const apiName = "oauth2"
 const apiVersion = "v2"
 const basePath = "https://www.googleapis.com/"
+const basePathTemplate = "https://www.UNIVERSE_DOMAIN/"
 
 // OAuth2 scopes used by this API.
 const (
 	// See your primary Google Account email address
 	UserinfoEmailScope = "https://www.googleapis.com/auth/userinfo.email"
 
-	// See your personal info, including any personal info you've made
-	// publicly available
+	// See your personal info, including any personal info you've made publicly
+	// available
 	UserinfoProfileScope = "https://www.googleapis.com/auth/userinfo.profile"
 
 	// Associate you with your personal info on Google
@@ -105,6 +120,8 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
+	opts = append(opts, internaloption.EnableNewAuthLibrary())
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -182,126 +199,91 @@ type UserinfoV2MeService struct {
 }
 
 type Tokeninfo struct {
-	// Audience: Who is the intended audience for this token. In general the
-	// same as issued_to.
+	// Audience: Who is the intended audience for this token. In general the same
+	// as issued_to.
 	Audience string `json:"audience,omitempty"`
-
-	// Email: The email address of the user. Present only if the email scope
-	// is present in the request.
+	// Email: The email address of the user. Present only if the email scope is
+	// present in the request.
 	Email string `json:"email,omitempty"`
-
-	// ExpiresIn: The expiry time of the token, as number of seconds left
-	// until expiry.
+	// ExpiresIn: The expiry time of the token, as number of seconds left until
+	// expiry.
 	ExpiresIn int64 `json:"expires_in,omitempty"`
-
-	// IssuedTo: To whom was the token issued to. In general the same as
-	// audience.
+	// IssuedTo: To whom was the token issued to. In general the same as audience.
 	IssuedTo string `json:"issued_to,omitempty"`
-
 	// Scope: The space separated list of scopes granted to this token.
 	Scope string `json:"scope,omitempty"`
-
 	// UserId: The obfuscated user id.
 	UserId string `json:"user_id,omitempty"`
-
-	// VerifiedEmail: Boolean flag which is true if the email address is
-	// verified. Present only if the email scope is present in the request.
+	// VerifiedEmail: Boolean flag which is true if the email address is verified.
+	// Present only if the email scope is present in the request.
 	VerifiedEmail bool `json:"verified_email,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
 	// ForceSendFields is a list of field names (e.g. "Audience") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Audience") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "Audience") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Tokeninfo) MarshalJSON() ([]byte, error) {
 	type NoMethod Tokeninfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type Userinfo struct {
 	// Email: The user's email address.
 	Email string `json:"email,omitempty"`
-
 	// FamilyName: The user's last name.
 	FamilyName string `json:"family_name,omitempty"`
-
 	// Gender: The user's gender.
 	Gender string `json:"gender,omitempty"`
-
 	// GivenName: The user's first name.
 	GivenName string `json:"given_name,omitempty"`
-
-	// Hd: The hosted domain e.g. example.com if the user is Google apps
-	// user.
+	// Hd: The hosted domain e.g. example.com if the user is Google apps user.
 	Hd string `json:"hd,omitempty"`
-
 	// Id: The obfuscated ID of the user.
 	Id string `json:"id,omitempty"`
-
 	// Link: URL of the profile page.
 	Link string `json:"link,omitempty"`
-
 	// Locale: The user's preferred locale.
 	Locale string `json:"locale,omitempty"`
-
 	// Name: The user's full name.
 	Name string `json:"name,omitempty"`
-
 	// Picture: URL of the user's picture image.
 	Picture string `json:"picture,omitempty"`
-
-	// VerifiedEmail: Boolean flag which is true if the email address is
-	// verified. Always verified because we only return the user's primary
-	// email address.
+	// VerifiedEmail: Boolean flag which is true if the email address is verified.
+	// Always verified because we only return the user's primary email address.
 	//
 	// Default: true
 	VerifiedEmail *bool `json:"verified_email,omitempty"`
 
-	// ServerResponse contains the HTTP response code and headers from the
-	// server.
+	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-
-	// ForceSendFields is a list of field names (e.g. "Email") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "Email") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-
 	// NullFields is a list of field names (e.g. "Email") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
 func (s *Userinfo) MarshalJSON() ([]byte, error) {
 	type NoMethod Userinfo
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
-
-// method id "oauth2.tokeninfo":
 
 type TokeninfoCall struct {
 	s          *Service
@@ -329,23 +311,21 @@ func (c *TokeninfoCall) IdToken(idToken string) *TokeninfoCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *TokeninfoCall) Fields(s ...googleapi.Field) *TokeninfoCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *TokeninfoCall) Context(ctx context.Context) *TokeninfoCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *TokeninfoCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -354,12 +334,7 @@ func (c *TokeninfoCall) Header() http.Header {
 }
 
 func (c *TokeninfoCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
@@ -374,12 +349,10 @@ func (c *TokeninfoCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "oauth2.tokeninfo" call.
-// Exactly one of *Tokeninfo or error will be non-nil. Any non-2xx
-// status code is an error. Response headers are in either
-// *Tokeninfo.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Tokeninfo.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *TokeninfoCall) Do(opts ...googleapi.CallOption) (*Tokeninfo, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -410,28 +383,7 @@ func (c *TokeninfoCall) Do(opts ...googleapi.CallOption) (*Tokeninfo, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "httpMethod": "POST",
-	//   "id": "oauth2.tokeninfo",
-	//   "parameters": {
-	//     "access_token": {
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "id_token": {
-	//       "location": "query",
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "oauth2/v2/tokeninfo",
-	//   "response": {
-	//     "$ref": "Tokeninfo"
-	//   }
-	// }
-
 }
-
-// method id "oauth2.userinfo.get":
 
 type UserinfoGetCall struct {
 	s            *Service
@@ -448,33 +400,29 @@ func (r *UserinfoService) Get() *UserinfoGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UserinfoGetCall) Fields(s ...googleapi.Field) *UserinfoGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UserinfoGetCall) IfNoneMatch(entityTag string) *UserinfoGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UserinfoGetCall) Context(ctx context.Context) *UserinfoGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UserinfoGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -483,12 +431,7 @@ func (c *UserinfoGetCall) Header() http.Header {
 }
 
 func (c *UserinfoGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -506,12 +449,10 @@ func (c *UserinfoGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "oauth2.userinfo.get" call.
-// Exactly one of *Userinfo or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Userinfo.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Userinfo.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UserinfoGetCall) Do(opts ...googleapi.CallOption) (*Userinfo, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -542,23 +483,7 @@ func (c *UserinfoGetCall) Do(opts ...googleapi.CallOption) (*Userinfo, error) {
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "httpMethod": "GET",
-	//   "id": "oauth2.userinfo.get",
-	//   "path": "oauth2/v2/userinfo",
-	//   "response": {
-	//     "$ref": "Userinfo"
-	//   },
-	//   "scopes": [
-	//     "openid",
-	//     "https://www.googleapis.com/auth/userinfo.email",
-	//     "https://www.googleapis.com/auth/userinfo.profile"
-	//   ]
-	// }
-
 }
-
-// method id "oauth2.userinfo.v2.me.get":
 
 type UserinfoV2MeGetCall struct {
 	s            *Service
@@ -575,33 +500,29 @@ func (r *UserinfoV2MeService) Get() *UserinfoV2MeGetCall {
 }
 
 // Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
 func (c *UserinfoV2MeGetCall) Fields(s ...googleapi.Field) *UserinfoV2MeGetCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-// IfNoneMatch sets the optional parameter which makes the operation
-// fail if the object's ETag matches the given value. This is useful for
-// getting updates only after the object has changed since the last
-// request. Use googleapi.IsNotModified to check whether the response
-// error from Do is the result of In-None-Match.
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
 func (c *UserinfoV2MeGetCall) IfNoneMatch(entityTag string) *UserinfoV2MeGetCall {
 	c.ifNoneMatch_ = entityTag
 	return c
 }
 
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
+// Context sets the context to be used in this call's Do method.
 func (c *UserinfoV2MeGetCall) Context(ctx context.Context) *UserinfoV2MeGetCall {
 	c.ctx_ = ctx
 	return c
 }
 
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
 func (c *UserinfoV2MeGetCall) Header() http.Header {
 	if c.header_ == nil {
 		c.header_ = make(http.Header)
@@ -610,12 +531,7 @@ func (c *UserinfoV2MeGetCall) Header() http.Header {
 }
 
 func (c *UserinfoV2MeGetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
@@ -633,12 +549,10 @@ func (c *UserinfoV2MeGetCall) doRequest(alt string) (*http.Response, error) {
 }
 
 // Do executes the "oauth2.userinfo.v2.me.get" call.
-// Exactly one of *Userinfo or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Userinfo.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
-// to check whether the returned error was because
-// http.StatusNotModified was returned.
+// Any non-2xx status code is an error. Response headers are in either
+// *Userinfo.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
 func (c *UserinfoV2MeGetCall) Do(opts ...googleapi.CallOption) (*Userinfo, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
@@ -669,18 +583,4 @@ func (c *UserinfoV2MeGetCall) Do(opts ...googleapi.CallOption) (*Userinfo, error
 		return nil, err
 	}
 	return ret, nil
-	// {
-	//   "httpMethod": "GET",
-	//   "id": "oauth2.userinfo.v2.me.get",
-	//   "path": "userinfo/v2/me",
-	//   "response": {
-	//     "$ref": "Userinfo"
-	//   },
-	//   "scopes": [
-	//     "openid",
-	//     "https://www.googleapis.com/auth/userinfo.email",
-	//     "https://www.googleapis.com/auth/userinfo.profile"
-	//   ]
-	// }
-
 }

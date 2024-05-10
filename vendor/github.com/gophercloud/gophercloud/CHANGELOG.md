@@ -1,3 +1,66 @@
+## v1.11.0 (2024-03-07)
+
+This version reverts the inclusion of Context in the v1 branch. This inclusion
+didn't add much value because no packages were using it; on the other hand, it
+introduced a bug when using the Context property of the Provider client.
+
+## v1.10.0 (2024-02-27) **RETRACTED**: see https://github.com/gophercloud/gophercloud/issues/2969
+
+* [GH-2893](https://github.com/gophercloud/gophercloud/pull/2893) [v1] authentication: Add WithContext functions
+* [GH-2894](https://github.com/gophercloud/gophercloud/pull/2894) [v1] pager: Add WithContext functions
+* [GH-2899](https://github.com/gophercloud/gophercloud/pull/2899) [v1] Authenticate with a clouds.yaml
+* [GH-2917](https://github.com/gophercloud/gophercloud/pull/2917) [v1] Add ParseOption type to made clouds.Parse() more usable for optional With* funcs
+* [GH-2924](https://github.com/gophercloud/gophercloud/pull/2924) [v1] build(deps): bump EmilienM/devstack-action from 0.11 to 0.14
+* [GH-2933](https://github.com/gophercloud/gophercloud/pull/2933) [v1]  Fix AllowReauth reauthentication
+* [GH-2950](https://github.com/gophercloud/gophercloud/pull/2950) [v1] compute: Use volumeID, not attachmentID for volume attachments
+
+## v1.9.0 (2024-02-02) **RETRACTED**: see https://github.com/gophercloud/gophercloud/issues/2969
+
+New features and improvements:
+
+* [GH-2884](https://github.com/gophercloud/gophercloud/pull/2884) [v1] Context-aware methods to ProviderClient and ServiceClient
+* [GH-2887](https://github.com/gophercloud/gophercloud/pull/2887) [v1] Add support of Flavors and FlavorProfiles for Octavia
+* [GH-2875](https://github.com/gophercloud/gophercloud/pull/2875) [v1] [db/v1/instance]: adding support for availability_zone for a db instance
+
+CI changes:
+
+* [GH-2856](https://github.com/gophercloud/gophercloud/pull/2856) [v1] Fix devstack install on EOL magnum branches
+* [GH-2857](https://github.com/gophercloud/gophercloud/pull/2857) [v1] Fix networking acceptance tests
+* [GH-2858](https://github.com/gophercloud/gophercloud/pull/2858) [v1] build(deps): bump actions/upload-artifact from 3 to 4
+* [GH-2859](https://github.com/gophercloud/gophercloud/pull/2859) [v1] build(deps): bump github/codeql-action from 2 to 3
+
+## v1.8.0 (2023-11-30)
+
+New features and improvements:
+
+* [GH-2800](https://github.com/gophercloud/gophercloud/pull/2800) [v1] Fix options initialization in ServiceClient.Request (fixes #2798)
+* [GH-2823](https://github.com/gophercloud/gophercloud/pull/2823) [v1] Add more godoc to GuestFormat
+* [GH-2826](https://github.com/gophercloud/gophercloud/pull/2826) Allow objects.CreateTempURL with names containing /v1/
+
+CI changes:
+
+* [GH-2802](https://github.com/gophercloud/gophercloud/pull/2802) [v1] Add job for bobcat stable/2023.2
+* [GH-2819](https://github.com/gophercloud/gophercloud/pull/2819) [v1] Test files alongside code
+* [GH-2814](https://github.com/gophercloud/gophercloud/pull/2814) Make fixtures part of tests
+* [GH-2796](https://github.com/gophercloud/gophercloud/pull/2796) [v1] ci/unit: switch to coverallsapp/github-action
+* [GH-2840](https://github.com/gophercloud/gophercloud/pull/2840) unit tests: Fix the installation of tools
+
+## v1.7.0 (2023-09-22)
+
+New features and improvements:
+
+* [GH-2782](https://github.com/gophercloud/gophercloud/pull/2782) [v1] (manual clean backport) Add tag field to compute block_device_v2
+
+CI changes:
+
+* [GH-2760](https://github.com/gophercloud/gophercloud/pull/2760) [v1 backports] semver auto labels
+* [GH-2775](https://github.com/gophercloud/gophercloud/pull/2775) [v1] Fix typos in comments
+* [GH-2783](https://github.com/gophercloud/gophercloud/pull/2783) [v1] (clean manual backport) ci/functional: fix ubuntu version & add antelope
+* [GH-2785](https://github.com/gophercloud/gophercloud/pull/2785) [v1] Acceptance: Handle numerical version names in version comparison helpers
+* [GH-2787](https://github.com/gophercloud/gophercloud/pull/2787) backport-v1: fixes to semver label
+* [GH-2788](https://github.com/gophercloud/gophercloud/pull/2788) [v1] Make acceptance tests internal
+
+
 ## v1.6.0 (2023-08-30)
 
 New features and improvements:

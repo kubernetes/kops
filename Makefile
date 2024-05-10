@@ -327,7 +327,7 @@ gomod:
 
 .PHONY: goget
 goget:
-	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all | grep -v spotinst-sdk-go)
+	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all | grep -v -e spotinst-sdk-go -e k8s.io -e cert-manager -e helm)
 
 .PHONY: depup
 depup: goget gomod gen-cli-docs

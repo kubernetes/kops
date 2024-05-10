@@ -43,6 +43,28 @@ type File struct {
 	Content io.Reader `json:"content"`
 }
 
+func (f *File) MarshalJSON() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	if f.Content != nil {
+		_, err := io.Copy(buf, f.Content)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	tmpFile := struct {
+		Name        string `json:"name"`
+		ContentType string `json:"content_type"`
+		Content     string `json:"content"`
+	}{
+		Name:        f.Name,
+		ContentType: f.ContentType,
+		Content:     buf.String(),
+	}
+
+	return json.Marshal(tmpFile)
+}
+
 func (f *File) UnmarshalJSON(b []byte) error {
 	type file File
 	var tmpFile struct {
@@ -303,6 +325,15 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+func NewDurationFromTimeDuration(t time.Duration) *Duration {
+	duration := Duration{
+		Seconds: int64(t.Seconds()),
+	}
+	duration.Nanos = int32(t.Nanoseconds() - (time.Duration(duration.Seconds) * time.Second).Nanoseconds())
+
+	return &duration
 }
 
 // splitFloatString splits a float represented in a string, and returns its units (left-coma part) and nanos (right-coma part).

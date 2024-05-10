@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	coordinationv1 "k8s.io/api/coordination/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -64,6 +66,15 @@ type Manager interface {
 	// managers, either because it won a leader election or because no leader
 	// election was configured.
 	Elected() <-chan struct{}
+
+	// AddMetricsServerExtraHandler adds an extra handler served on path to the http server that serves metrics.
+	// Might be useful to register some diagnostic endpoints e.g. pprof.
+	//
+	// Note that these endpoints are meant to be sensitive and shouldn't be exposed publicly.
+	//
+	// If the simple path -> handler mapping offered here is not enough,
+	// a new http server/listener should be added as Runnable to the manager via Add method.
+	AddMetricsServerExtraHandler(path string, handler http.Handler) error
 
 	// AddHealthzCheck allows you to add Healthz checker
 	AddHealthzCheck(name string, check healthz.Checker) error
@@ -353,7 +364,20 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		leaderRecorderProvider = recorderProvider
 	} else {
 		leaderConfig = rest.CopyConfig(options.LeaderElectionConfig)
-		leaderRecorderProvider, err = options.newRecorderProvider(leaderConfig, cluster.GetHTTPClient(), cluster.GetScheme(), options.Logger.WithName("events"), options.makeBroadcaster)
+		scheme := cluster.GetScheme()
+		err := corev1.AddToScheme(scheme)
+		if err != nil {
+			return nil, err
+		}
+		err = coordinationv1.AddToScheme(scheme)
+		if err != nil {
+			return nil, err
+		}
+		httpClient, err := rest.HTTPClientFor(options.LeaderElectionConfig)
+		if err != nil {
+			return nil, err
+		}
+		leaderRecorderProvider, err = options.newRecorderProvider(leaderConfig, httpClient, scheme, options.Logger.WithName("events"), options.makeBroadcaster)
 		if err != nil {
 			return nil, err
 		}
@@ -396,7 +420,6 @@ func New(config *rest.Config, options Options) (Manager, error) {
 
 	errChan := make(chan error)
 	runnables := newRunnables(options.BaseContext, errChan)
-
 	return &controllerManager{
 		stopProcedureEngaged:          pointer.Int64(0),
 		cluster:                       cluster,

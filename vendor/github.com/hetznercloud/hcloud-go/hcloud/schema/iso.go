@@ -10,6 +10,7 @@ type ISO struct {
 	Type         string    `json:"type"`
 	Architecture *string   `json:"architecture"`
 	Deprecated   time.Time `json:"deprecated"`
+	DeprecatableResource
 }
 
 // ISOGetResponse defines the schema of the response when retrieving a single ISO.

@@ -20,9 +20,9 @@ Example to Attach a Volume
 Example to Detach a Volume
 
 	serverID := "7ac8686c-de71-4acb-9600-ec18b1a1ed6d"
-	attachmentID := "ed081613-1c9b-4231-aa5e-ebfd4d87f983"
+	volumeID := "ed081613-1c9b-4231-aa5e-ebfd4d87f983"
 
-	err := volumeattach.Delete(computeClient, serverID, attachmentID).ExtractErr()
+	err := volumeattach.Delete(computeClient, serverID, volumeID).ExtractErr()
 	if err != nil {
 		panic(err)
 	}

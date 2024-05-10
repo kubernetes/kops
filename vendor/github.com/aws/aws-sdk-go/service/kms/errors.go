@@ -97,6 +97,13 @@ const (
 	// operation.
 	ErrCodeCloudHsmClusterNotRelatedException = "CloudHsmClusterNotRelatedException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// The request was rejected because an automatic rotation of this key is currently
+	// in progress or scheduled to begin within the next 20 minutes.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeCustomKeyStoreHasCMKsException for service response error code
 	// "CustomKeyStoreHasCMKsException".
 	//
@@ -488,6 +495,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"CloudHsmClusterNotActiveException":                       newErrorCloudHsmClusterNotActiveException,
 	"CloudHsmClusterNotFoundException":                        newErrorCloudHsmClusterNotFoundException,
 	"CloudHsmClusterNotRelatedException":                      newErrorCloudHsmClusterNotRelatedException,
+	"ConflictException":                                       newErrorConflictException,
 	"CustomKeyStoreHasCMKsException":                          newErrorCustomKeyStoreHasCMKsException,
 	"CustomKeyStoreInvalidStateException":                     newErrorCustomKeyStoreInvalidStateException,
 	"CustomKeyStoreNameInUseException":                        newErrorCustomKeyStoreNameInUseException,

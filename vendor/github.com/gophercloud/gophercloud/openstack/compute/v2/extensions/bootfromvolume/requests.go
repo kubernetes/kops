@@ -62,6 +62,9 @@ type BlockDevice struct {
 	DestinationType DestinationType `json:"destination_type,omitempty"`
 
 	// GuestFormat specifies the format of the block device.
+	// Not specifying this will cause the device to be formatted to the default in Nova
+	// which is currently vfat.
+	// https://opendev.org/openstack/nova/src/commit/d0b459423dd81644e8d9382b6c87fabaa4f03ad4/nova/privsep/fs.py#L257
 	GuestFormat string `json:"guest_format,omitempty"`
 
 	// VolumeSize is the size of the volume to create (in gigabytes). This can be
@@ -79,6 +82,12 @@ type BlockDevice struct {
 	// VolumeType is the volume type of the block device.
 	// This requires Compute API microversion 2.67 or later.
 	VolumeType string `json:"volume_type,omitempty"`
+
+	// Tag is an arbitrary string that can be applied to a block device.
+	// Information about the device tags can be obtained from the metadata API
+	// and the config drive, allowing devices to be easily identified.
+	// This requires Compute API microversion 2.42 or later.
+	Tag string `json:"tag,omitempty"`
 }
 
 // CreateOptsExt is a structure that extends the server `CreateOpts` structure
