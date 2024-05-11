@@ -36,17 +36,17 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	cniAsset, cniAssetHash, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	asset, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
-		t.Errorf("Unable to parse CNI version %s", err)
+		t.Fatalf("Unable to parse CNI version: %v", err)
 	}
 
-	if cniAsset.String() != desiredCNIVersion {
-		t.Errorf("Expected CNI version from env var %q, but got %q instead", desiredCNIVersion, cniAsset)
+	if asset.DownloadURL.String() != desiredCNIVersion {
+		t.Errorf("Expected CNI version from env var %q, but got %q instead", desiredCNIVersion, asset.DownloadURL.String())
 	}
 
-	if cniAssetHash.String() != desiredCNIVersionHash {
-		t.Errorf("Expected empty CNI version hash, but got %v instead", cniAssetHash)
+	if asset.SHAValue.String() != desiredCNIVersionHash {
+		t.Errorf("Expected empty CNI version hash, but got %v instead", asset.SHAValue.String())
 	}
 }
 
@@ -58,16 +58,16 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.22.0"
 
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	cniAsset, cniAssetHash, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	asset, err := FindCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
-		t.Errorf("Unable to parse CNI version %s", err)
+		t.Fatalf("Unable to parse CNI version: %s", err)
 	}
 
-	if cniAsset.String() != desiredCNIVersionURL {
-		t.Errorf("Expected default CNI version %q, but got %q instead", desiredCNIVersionURL, cniAsset)
+	if asset.DownloadURL.String() != desiredCNIVersionURL {
+		t.Errorf("Expected default CNI version %q, but got %q instead", desiredCNIVersionURL, asset.DownloadURL)
 	}
 
-	if cniAssetHash.String() != desiredCNIVersionHash {
-		t.Errorf("Expected default CNI version hash %q, but got %q instead", desiredCNIVersionHash, cniAssetHash)
+	if asset.SHAValue.String() != desiredCNIVersionHash {
+		t.Errorf("Expected default CNI version hash %q, but got %q instead", desiredCNIVersionHash, asset.SHAValue.String())
 	}
 }

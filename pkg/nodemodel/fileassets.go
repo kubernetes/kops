@@ -75,11 +75,11 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 			}
 			k.Path = path.Join(k.Path, an)
 
-			u, hash, err := assetBuilder.RemapFileAndSHA(k)
+			asset, err := assetBuilder.RemapFile(k, nil)
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
 		}
 
 		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
@@ -98,6 +98,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 					return err
 				}
 
+				// TODO: Move these hashes to assetdata
 				hashes := map[architectures.Architecture]string{
 					"amd64": "827d558953d861b81a35c3b599191a73f53c1f63bce42c61e7a3fee21a717a89",
 					"arm64": "f1617c0ef77f3718e12a3efc6f650375d5b5e96eebdbcbad3e465e89e781bdfa",
@@ -106,70 +107,69 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 				if err != nil {
 					return fmt.Errorf("unable to parse auth-provider-gcp binary asset hash %q: %v", hashes[arch], err)
 				}
-				u, err := assetBuilder.RemapFileAndSHAValue(k, hashes[arch])
+				asset, err := assetBuilder.RemapFile(k, hash)
 				if err != nil {
 					return err
 				}
 
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
 			case kops.CloudProviderAWS:
 				binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
 				if binaryLocation == nil {
 					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
 				}
 
-				k, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
+				u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
 				if err != nil {
 					return err
 				}
-				u, hash, err := assetBuilder.RemapFileAndSHA(k)
+				asset, err := assetBuilder.RemapFile(u, nil)
 				if err != nil {
 					return err
 				}
-
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(u, hash))
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
 			}
 		}
 
 		{
-			cniAsset, cniAssetHash, err := wellknownassets.FindCNIAssets(c.Cluster, assetBuilder, arch)
+			cniAsset, err := wellknownassets.FindCNIAssets(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(cniAsset, cniAssetHash))
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(cniAsset))
 		}
 
 		if c.Cluster.Spec.Containerd == nil || !c.Cluster.Spec.Containerd.SkipInstall {
-			containerdAssetUrl, containerdAssetHash, err := wellknownassets.FindContainerdAsset(c.Cluster, assetBuilder, arch)
+			containerdAsset, err := wellknownassets.FindContainerdAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
-			if containerdAssetUrl != nil && containerdAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(containerdAssetUrl, containerdAssetHash))
+			if containerdAsset != nil {
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(containerdAsset))
 			}
 
-			runcAssetUrl, runcAssetHash, err := wellknownassets.FindRuncAsset(c.Cluster, assetBuilder, arch)
+			runcAsset, err := wellknownassets.FindRuncAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
-			if runcAssetUrl != nil && runcAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
+			if runcAsset != nil {
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(runcAsset))
 			}
-			nerdctlAssetUrl, nerdctlAssetHash, err := wellknownassets.FindNerdctlAsset(c.Cluster, assetBuilder, arch)
+			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
-			if nerdctlAssetUrl != nil && nerdctlAssetHash != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(nerdctlAssetUrl, nerdctlAssetHash))
+			if nerdctlAsset != nil {
+				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(nerdctlAsset))
 			}
 		}
 
-		crictlAssetUrl, crictlAssetHash, err := wellknownassets.FindCrictlAsset(c.Cluster, assetBuilder, arch)
+		crictlAsset, err := wellknownassets.FindCrictlAsset(c.Cluster, assetBuilder, arch)
 		if err != nil {
 			return err
 		}
-		if crictlAssetUrl != nil && crictlAssetHash != nil {
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(crictlAssetUrl, crictlAssetHash))
+		if crictlAsset != nil {
+			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(crictlAsset))
 		}
 
 		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)

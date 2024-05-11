@@ -23,7 +23,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 )
 
 const (
@@ -31,7 +30,7 @@ const (
 	crictlAssetUrlArm64 = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz"
 )
 
-func FindCrictlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindCrictlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	var assetURL string
 	switch arch {
 	case architectures.ArchitectureAmd64:
@@ -39,18 +38,18 @@ func FindCrictlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch ar
 	case architectures.ArchitectureArm64:
 		assetURL = crictlAssetUrlArm64
 	default:
-		return nil, nil, fmt.Errorf("unknown arch for crictl binaries asset: %s", arch)
+		return nil, fmt.Errorf("unknown arch for crictl binaries asset: %s", arch)
 	}
 
 	u, err := url.Parse(assetURL)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse crictl binaries asset URL %q: %v", assetURL, err)
+		return nil, fmt.Errorf("unable to parse crictl binaries asset URL %q: %v", assetURL, err)
 	}
 
-	u, h, err := assetBuilder.RemapFileAndSHA(u)
+	asset, err := assetBuilder.RemapFile(u, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to remap crictl binaries asset: %v", err)
+		return nil, fmt.Errorf("unable to remap crictl binaries asset: %v", err)
 	}
 
-	return u, h, err
+	return asset, err
 }

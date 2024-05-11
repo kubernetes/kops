@@ -56,7 +56,7 @@ func Copy(imageAssets []*ImageAsset, fileAssets []*FileAsset, vfsContext *vfs.VF
 				Name:       fileAsset.CanonicalURL.String(),
 				TargetFile: fileAsset.DownloadURL.String(),
 				SourceFile: fileAsset.CanonicalURL.String(),
-				SHA:        fileAsset.SHAValue,
+				SHA:        fileAsset.SHAValue.Hex(),
 				VFSContext: vfsContext,
 				Cluster:    cluster,
 			}

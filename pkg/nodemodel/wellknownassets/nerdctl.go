@@ -18,12 +18,10 @@ package wellknownassets
 
 import (
 	"fmt"
-	"net/url"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 )
 
 const (
@@ -33,7 +31,7 @@ const (
 	nerdctlAssetHashArm64 = "d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d"
 )
 
-func FindNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	var assetURL, assetHash string
 	switch arch {
 	case architectures.ArchitectureAmd64:
@@ -43,8 +41,8 @@ func FindNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch a
 		assetURL = nerdctlAssetUrlArm64
 		assetHash = nerdctlAssetHashArm64
 	default:
-		return nil, nil, fmt.Errorf("unknown arch for nerdctl binaries asset: %s", arch)
+		return nil, fmt.Errorf("unknown arch for nerdctl binaries asset: %s", arch)
 	}
 
-	return findAssetsUrlHash(assetBuilder, assetURL, assetHash)
+	return buildFileAsset(assetBuilder, assetURL, assetHash)
 }

@@ -47,7 +47,7 @@ const (
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
 )
 
-func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	// Override CNI packages from env vars
 	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
 	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)
@@ -58,20 +58,20 @@ func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 
 		u, err := url.Parse(cniAssetURL)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
+			return nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 		}
 
 		h, err := hashing.FromString(cniAssetHash)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset hash %q: %v", cniAssetHash, err)
+			return nil, fmt.Errorf("unable to parse CNI plugin binaries asset hash %q: %v", cniAssetHash, err)
 		}
 
-		u, err = assetBuilder.RemapFileAndSHAValue(u, cniAssetHash)
+		asset, err := assetBuilder.RemapFile(u, h)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
+			return nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 		}
 
-		return u, h, nil
+		return asset, nil
 	}
 
 	switch arch {
@@ -90,18 +90,18 @@ func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 		}
 		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:
-		return nil, nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
+		return nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
 	}
 
 	u, err := url.Parse(cniAssetURL)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
+		return nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 	}
 
-	u, h, err := assetBuilder.RemapFileAndSHA(u)
+	asset, err := assetBuilder.RemapFile(u, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
+		return nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 	}
 
-	return u, h, nil
+	return asset, nil
 }

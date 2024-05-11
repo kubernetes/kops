@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 )
 
 const (
@@ -93,12 +92,12 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		return nodeUpAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	nodeUpAsset[arch] = assets.BuildMirroredAsset(u, hash)
-	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
+	nodeUpAsset[arch] = assets.BuildMirroredAsset(asset)
+	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, asset.DownloadURL.String())
 
 	return nodeUpAsset[arch], nil
 }
@@ -113,12 +112,12 @@ func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archi
 		return protokubeAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
+	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	protokubeAsset[arch] = assets.BuildMirroredAsset(u, hash)
-	klog.V(8).Infof("Using default protokube location for %s: %q", arch, u.String())
+	protokubeAsset[arch] = assets.BuildMirroredAsset(asset)
+	klog.V(8).Infof("Using default protokube location for %s: %q", arch, asset.DownloadURL.String())
 
 	return protokubeAsset[arch], nil
 }
@@ -133,29 +132,29 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 		return channelsAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
+	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	channelsAsset[arch] = assets.BuildMirroredAsset(u, hash)
-	klog.V(8).Infof("Using default channels location for %s: %q", arch, u.String())
+	channelsAsset[arch] = assets.BuildMirroredAsset(asset)
+	klog.V(8).Infof("Using default channels location for %s: %q", arch, asset.DownloadURL.String())
 
 	return channelsAsset[arch], nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
-func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*assets.FileAsset, error) {
 	base, err := BaseURL()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	base.Path = path.Join(base.Path, file)
 
-	fileURL, hash, err := assetBuilder.RemapFileAndSHA(base)
+	asset, err := assetBuilder.RemapFile(base, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return fileURL, hash, nil
+	return asset, nil
 }
