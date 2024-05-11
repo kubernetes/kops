@@ -3,7 +3,7 @@ Zones:
 - us-test-1a
 CloudProvider: aws
 Networking: cni
-KubernetesVersion: v1.24.0
+kubernetesVersion: v1.30.0
 Image: ami-image
 ControlPlaneImage: ami-control-plane
 NodeImage: ami-worker-image

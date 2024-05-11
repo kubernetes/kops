@@ -37,8 +37,7 @@ spec:
     clusterName: complex.example.com
     concurrentNodeSyncs: 5
     configureCloudRoutes: false
-    enableLeaderMigration: true
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.19
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.0
     leaderElection:
       leaderElect: true
   cloudLabels:
@@ -50,8 +49,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.5
-    version: 1.6.20
+      version: 1.1.12
+    version: 1.7.16
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
@@ -105,9 +104,8 @@ spec:
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.24.0
+    image: registry.k8s.io/kube-apiserver:v1.30.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -139,9 +137,8 @@ spec:
     concurrentJobSyncs: 10
     configureCloudRoutes: false
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.24.0
+    image: registry.k8s.io/kube-controller-manager:v1.30.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -163,13 +160,12 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.24.0
+    image: registry.k8s.io/kube-proxy:v1.30.0
     logLevel: 2
   kubeScheduler:
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.24.0
+    image: registry.k8s.io/kube-scheduler:v1.30.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -183,7 +179,6 @@ spec:
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
@@ -196,7 +191,7 @@ spec:
   kubernetesApiAccess:
   - 1.1.1.0/24
   - pl-44444444
-  kubernetesVersion: 1.24.0
+  kubernetesVersion: 1.30.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -207,7 +202,6 @@ spec:
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2

@@ -55,7 +55,7 @@ spec:
     concurrentJobSyncs: 10
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.24.0
+  kubernetesVersion: v1.30.0
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
   additionalNetworkCIDRs:
