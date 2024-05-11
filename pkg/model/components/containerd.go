@@ -42,9 +42,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 	// Set version based on Kubernetes version
 	if fi.ValueOf(containerd.Version) == "" {
 		switch {
-		case b.IsKubernetesLT("1.24.14"):
-			fallthrough
-		case b.IsKubernetesGTE("1.25") && b.IsKubernetesLT("1.25.10"):
+		case b.IsKubernetesLT("1.25.10"):
 			fallthrough
 		case b.IsKubernetesGTE("1.26") && b.IsKubernetesLT("1.26.5"):
 			fallthrough
