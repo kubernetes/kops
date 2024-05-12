@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240409",
+  "revision": "20240422",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3369,6 +3369,16 @@
           "$ref": "ResourceUsageExportConfig",
           "description": "Configuration for exporting resource usages. Resource usage export is disabled when this config is unspecified."
         },
+        "satisfiesPzi": {
+          "description": "Output only. Reserved for future use.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "satisfiesPzs": {
+          "description": "Output only. Reserved for future use.",
+          "readOnly": true,
+          "type": "boolean"
+        },
         "securityPostureConfig": {
           "$ref": "SecurityPostureConfig",
           "description": "Enable/Disable Security Posture API features for the cluster."
@@ -3660,6 +3670,14 @@
         "desiredNetworkPerformanceConfig": {
           "$ref": "ClusterNetworkPerformanceConfig",
           "description": "The desired network performance config."
+        },
+        "desiredNodeKubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "The desired node kubelet config for the cluster."
+        },
+        "desiredNodePoolAutoConfigKubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "The desired node kubelet config for all auto-provisioned node pools in autopilot clusters and node auto-provisioning enabled clusters."
         },
         "desiredNodePoolAutoConfigNetworkTags": {
           "$ref": "NetworkTags",
@@ -5463,6 +5481,10 @@
         "loggingConfig": {
           "$ref": "NodePoolLoggingConfig",
           "description": "Logging configuration for node pools."
+        },
+        "nodeKubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "NodeKubeletConfig controls the defaults for new node-pools. Currently only `insecure_kubelet_readonly_port_enabled` can be set here."
         }
       },
       "type": "object"
@@ -5708,6 +5730,10 @@
         "networkTags": {
           "$ref": "NetworkTags",
           "description": "The list of instance tags applied to all nodes. Tags are used to identify valid sources or targets for network firewalls and are specified by the client during cluster creation. Each tag within the list must comply with RFC1035."
+        },
+        "nodeKubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "NodeKubeletConfig controls the defaults for autoprovisioned node-pools. Currently only `insecure_kubelet_readonly_port_enabled` can be set here."
         },
         "resourceManagerTags": {
           "$ref": "ResourceManagerTags",

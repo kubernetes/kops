@@ -1272,6 +1272,10 @@ type Cluster struct {
 	// ResourceUsageExportConfig: Configuration for exporting resource usages.
 	// Resource usage export is disabled when this config is unspecified.
 	ResourceUsageExportConfig *ResourceUsageExportConfig `json:"resourceUsageExportConfig,omitempty"`
+	// SatisfiesPzi: Output only. Reserved for future use.
+	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
+	// SatisfiesPzs: Output only. Reserved for future use.
+	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
 	// SecurityPostureConfig: Enable/Disable Security Posture API features for the
 	// cluster.
 	SecurityPostureConfig *SecurityPostureConfig `json:"securityPostureConfig,omitempty"`
@@ -1544,6 +1548,12 @@ type ClusterUpdate struct {
 	DesiredMonitoringService string `json:"desiredMonitoringService,omitempty"`
 	// DesiredNetworkPerformanceConfig: The desired network performance config.
 	DesiredNetworkPerformanceConfig *ClusterNetworkPerformanceConfig `json:"desiredNetworkPerformanceConfig,omitempty"`
+	// DesiredNodeKubeletConfig: The desired node kubelet config for the cluster.
+	DesiredNodeKubeletConfig *NodeKubeletConfig `json:"desiredNodeKubeletConfig,omitempty"`
+	// DesiredNodePoolAutoConfigKubeletConfig: The desired node kubelet config for
+	// all auto-provisioned node pools in autopilot clusters and node
+	// auto-provisioning enabled clusters.
+	DesiredNodePoolAutoConfigKubeletConfig *NodeKubeletConfig `json:"desiredNodePoolAutoConfigKubeletConfig,omitempty"`
 	// DesiredNodePoolAutoConfigNetworkTags: The desired network tags that apply to
 	// all auto-provisioned node pools in autopilot clusters and node
 	// auto-provisioning enabled clusters.
@@ -3993,6 +4003,10 @@ type NodeConfigDefaults struct {
 	GcfsConfig *GcfsConfig `json:"gcfsConfig,omitempty"`
 	// LoggingConfig: Logging configuration for node pools.
 	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
+	// NodeKubeletConfig: NodeKubeletConfig controls the defaults for new
+	// node-pools. Currently only `insecure_kubelet_readonly_port_enabled` can be
+	// set here.
+	NodeKubeletConfig *NodeKubeletConfig `json:"nodeKubeletConfig,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "ContainerdConfig") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -4319,6 +4333,10 @@ type NodePoolAutoConfig struct {
 	// by the client during cluster creation. Each tag within the list must comply
 	// with RFC1035.
 	NetworkTags *NetworkTags `json:"networkTags,omitempty"`
+	// NodeKubeletConfig: NodeKubeletConfig controls the defaults for
+	// autoprovisioned node-pools. Currently only
+	// `insecure_kubelet_readonly_port_enabled` can be set here.
+	NodeKubeletConfig *NodeKubeletConfig `json:"nodeKubeletConfig,omitempty"`
 	// ResourceManagerTags: Resource manager tag keys and values to be attached to
 	// the nodes for managing Compute Engine firewalls using Network Firewall
 	// Policies.

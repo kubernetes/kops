@@ -1,3 +1,7 @@
+# v1.24.0 (2024-05-10)
+
+* **Feature**: Updated request parameters for PKCE support.
+
 # v1.23.5 (2024-05-08)
 
 * **Bug Fix**: GoDoc improvement
