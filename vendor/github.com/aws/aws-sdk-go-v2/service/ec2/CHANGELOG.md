@@ -1,3 +1,7 @@
+# v1.161.1 (2024-05-10)
+
+* **Bug Fix**: Fix serialization behavior of empty lists.
+
 # v1.161.0 (2024-05-08)
 
 * **Feature**: Adding Precision Hardware Clock (PHC) to public API DescribeInstanceTypes
