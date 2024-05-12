@@ -44,11 +44,9 @@ EOF
       --base https://dl.k8s.io/release/ \
       --prefix "v${version}/" \
       --exclude "**/arm/**" \
-      --exclude "**/s390x/**" \
       --exclude "**/ppc64le/**" \
+      --exclude "**/s390x/**" \
       --exclude "**/windows/**" \
-      --exclude "**/*-s390x.tar.gz" \
-      --exclude "**/*-ppc64le.tar.gz" \
       --exclude "**/*.tar.gz" \
       | sed "s@files:@# kubernetes ${version}@g" >> "${REPO_ROOT}/pkg/assets/assetdata/k8s-${prefix}.yaml"
   done
@@ -80,13 +78,11 @@ EOF
   done
 }
 
-generate_k8s_hashes 1.24 17
 generate_k8s_hashes 1.25 16
 generate_k8s_hashes 1.26 15
 generate_k8s_hashes 1.27 13
 generate_k8s_hashes 1.28 9
 generate_k8s_hashes 1.29 4
 generate_k8s_hashes 1.30 0
-
 
 generate_runc_hashes 1.1 12

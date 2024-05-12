@@ -372,17 +372,6 @@ func TestValidateKubeControllermanager(t *testing.T) {
 			},
 			ExpectedDetail: "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25",
 		},
-		{
-			Input: kops.KubeControllerManagerConfig{
-				ExperimentalClusterSigningDuration: &metav1.Duration{Duration: time.Hour},
-			},
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					KubernetesVersion: "1.24.0",
-				},
-			},
-			ExpectedErrors: []string{},
-		},
 	}
 	for _, g := range grid {
 		if g.Cluster == nil {

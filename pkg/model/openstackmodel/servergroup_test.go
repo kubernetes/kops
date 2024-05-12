@@ -62,7 +62,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -125,7 +125,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -215,7 +215,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -344,7 +344,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -409,7 +409,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -823,7 +823,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -952,7 +952,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1041,7 +1041,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1106,7 +1106,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1195,7 +1195,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1244,7 +1244,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1295,7 +1295,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1344,7 +1344,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1393,7 +1393,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1442,7 +1442,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{
@@ -1491,7 +1491,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					KubernetesVersion: "1.24.0",
+					KubernetesVersion: "1.30.0",
 					Networking: kops.NetworkingSpec{
 						Subnets: []kops.ClusterSubnetSpec{
 							{

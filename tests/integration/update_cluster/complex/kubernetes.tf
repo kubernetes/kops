@@ -575,7 +575,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = true
@@ -871,14 +871,6 @@ resource "aws_s3_object" "complex-example-com-addons-kubelet-api-rbac-addons-k8s
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "clusters.example.com/complex.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "complex-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
-  key                    = "clusters.example.com/complex.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
