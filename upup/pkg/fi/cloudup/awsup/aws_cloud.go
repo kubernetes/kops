@@ -262,6 +262,32 @@ func getCloudInstancesFromRegion(region string) AWSCloud {
 	return cloud
 }
 
+func loadAWSConfig(ctx context.Context, region string) (aws.Config, error) {
+	loadOptions := []func(*awsconfig.LoadOptions) error{
+		awsconfig.WithRegion(region),
+		awsconfig.WithClientLogMode(aws.LogRetries),
+		awsconfig.WithLogger(awsLogger{}),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.NewStandard()
+		}),
+	}
+
+	// assumes the role before executing commands
+	roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
+	if roleARN != "" {
+		cfg, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+		if err != nil {
+			return aws.Config{}, fmt.Errorf("failed to load default aws config: %w", err)
+		}
+		stsClient := sts.NewFromConfig(cfg)
+		assumeRoleProvider := stscredsv2.NewAssumeRoleProvider(stsClient, roleARN)
+
+		loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(assumeRoleProvider))
+	}
+
+	return awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+}
+
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	ctx := context.TODO()
 	raw := getCloudInstancesFromRegion(region)
@@ -274,29 +300,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			},
 		}
 
-		loadOptions := []func(*awsconfig.LoadOptions) error{
-			awsconfig.WithRegion(region),
-			awsconfig.WithClientLogMode(aws.LogRetries),
-			awsconfig.WithLogger(awsLogger{}),
-			awsconfig.WithRetryer(func() aws.Retryer {
-				return retry.NewStandard()
-			}),
-		}
-
-		// assumes the role before executing commands
-		roleARN := os.Getenv("KOPS_AWS_ROLE_ARN")
-		if roleARN != "" {
-			cfg, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
-			if err != nil {
-				return c, fmt.Errorf("failed to load default aws config: %w", err)
-			}
-			stsClient := sts.NewFromConfig(cfg)
-			assumeRoleProvider := stscredsv2.NewAssumeRoleProvider(stsClient, roleARN)
-
-			loadOptions = append(loadOptions, awsconfig.WithCredentialsProvider(assumeRoleProvider))
-		}
-
-		cfg, err := awsconfig.LoadDefaultConfig(ctx, loadOptions...)
+		cfg, err := loadAWSConfig(ctx, region)
 		if err != nil {
 			return c, fmt.Errorf("failed to load default aws config: %w", err)
 		}

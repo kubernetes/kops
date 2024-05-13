@@ -27,7 +27,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -57,7 +56,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
 		}
-		cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(awsRegion))
+		cfg, err := loadAWSConfig(ctx, awsRegion)
 		if err != nil {
 			return fmt.Errorf("error loading AWS config: %v", err)
 		}
