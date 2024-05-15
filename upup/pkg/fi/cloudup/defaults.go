@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -132,6 +133,19 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 		return err
 	}
 	c.Spec.Networking.EgressProxy = proxy
+
+	if c.Spec.CloudProvider.Azure != nil && c.Spec.CloudProvider.Azure.StorageAccountID == "" {
+		storageAccountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
+		if storageAccountName == "" {
+			return fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")
+		}
+		sa, err := cloud.(azure.AzureCloud).FindStorageAccountInfo(storageAccountName)
+		if err != nil {
+			return err
+		}
+		klog.Infof("Found storage account %q", *sa.ID)
+		c.Spec.CloudProvider.Azure.StorageAccountID = *sa.ID
+	}
 
 	return ensureKubernetesVersion(vfsContext, c)
 }

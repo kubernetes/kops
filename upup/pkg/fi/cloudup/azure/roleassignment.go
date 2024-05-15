@@ -27,7 +27,7 @@ import (
 // RoleAssignmentsClient is a client for managing role assignments
 type RoleAssignmentsClient interface {
 	Create(ctx context.Context, scope, roleAssignmentName string, parameters authz.RoleAssignmentCreateParameters) (*authz.RoleAssignment, error)
-	List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error)
+	List(ctx context.Context, scope string) ([]*authz.RoleAssignment, error)
 	Delete(ctx context.Context, scope, raName string) error
 }
 
@@ -47,9 +47,9 @@ func (c *roleAssignmentsClientImpl) Create(
 	return &resp.RoleAssignment, err
 }
 
-func (c *roleAssignmentsClientImpl) List(ctx context.Context, resourceGroupName string) ([]*authz.RoleAssignment, error) {
+func (c *roleAssignmentsClientImpl) List(ctx context.Context, scope string) ([]*authz.RoleAssignment, error) {
 	var l []*authz.RoleAssignment
-	pager := c.c.NewListForResourceGroupPager(resourceGroupName, nil)
+	pager := c.c.NewListForScopePager(scope, nil)
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
 		if err != nil {

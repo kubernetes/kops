@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
@@ -45,6 +46,7 @@ type AzureCloud interface {
 	fi.Cloud
 	AddClusterTags(tags map[string]*string)
 	FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error)
+	FindStorageAccountInfo(name string) (*armstorage.Account, error)
 	SubscriptionID() string
 	ResourceGroup() ResourceGroupsClient
 	VirtualNetwork() VirtualNetworksClient
@@ -81,6 +83,7 @@ type azureCloudImplementation struct {
 	loadBalancersClient             LoadBalancersClient
 	publicIPAddressesClient         PublicIPAddressesClient
 	natGatewaysClient               NatGatewaysClient
+	storageAccountsClient           StorageAccountsClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -141,6 +144,9 @@ func NewAzureCloud(subscriptionID, resourceGroupName, location string, tags map[
 	if azureCloudImpl.natGatewaysClient, err = newNatGatewaysClientImpl(subscriptionID, cred); err != nil {
 		return nil, err
 	}
+	if azureCloudImpl.storageAccountsClient, err = newStorageAccountsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
 
 	return azureCloudImpl, nil
 }
@@ -158,7 +164,7 @@ func (c *azureCloudImplementation) DNS() (dnsprovider.Interface, error) {
 }
 
 func (c *azureCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, errors.New("FindVPCInfo not implemented on azureCloud, use FindVNETInfo instead")
+	return nil, errors.New("FindVPCInfo not implemented on azureCloud, use FindVNetInfo instead")
 }
 
 func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error) {
@@ -190,6 +196,19 @@ func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.V
 			CIDR:    *vnet.Properties.AddressSpace.AddressPrefixes[0],
 			Subnets: subnets,
 		}, nil
+	}
+	return nil, nil
+}
+
+func (c *azureCloudImplementation) FindStorageAccountInfo(name string) (*armstorage.Account, error) {
+	sas, err := c.storageAccountsClient.List(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	for _, sa := range sas {
+		if *sa.Name == name {
+			return sa, nil
+		}
 	}
 	return nil, nil
 }

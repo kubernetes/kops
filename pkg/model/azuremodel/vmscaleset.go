@@ -65,16 +65,26 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if ig.IsControlPlane() || b.Cluster.UsesLegacyGossip() {
 			// Create tasks for assigning built-in roles to VM Scale Sets.
 			// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-			// for the ID definitions.
-			roleDefIDs := map[string]string{
+			resourceGroupID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s",
+				b.Cluster.Spec.CloudProvider.Azure.SubscriptionID,
+				b.Cluster.Spec.CloudProvider.Azure.ResourceGroupName,
+			)
+			c.AddTask(&azuretasks.RoleAssignment{
+				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "owner")),
+				Lifecycle:  b.Lifecycle,
+				Scope:      to.Ptr(resourceGroupID),
+				VMScaleSet: vmss,
 				// Owner
-				"owner": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+				RoleDefID: to.Ptr("8e3af657-a8ff-443c-a75c-2fe8c4bcb635"),
+			})
+			c.AddTask(&azuretasks.RoleAssignment{
+				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "blob")),
+				Lifecycle:  b.Lifecycle,
+				Scope:      to.Ptr(b.Cluster.Spec.CloudProvider.Azure.StorageAccountID),
+				VMScaleSet: vmss,
 				// Storage Blob Data Contributor
-				"blob": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
-			}
-			for k, roleDefID := range roleDefIDs {
-				c.AddTask(b.buildRoleAssignmentTask(vmss, k, roleDefID))
-			}
+				RoleDefID: to.Ptr("ba92f5b4-2d11-453d-a403-e96b0029c9fe"),
+			})
 		}
 	}
 
@@ -246,15 +256,4 @@ func parseImage(image string) (*compute.ImageReference, error) {
 		SKU:       to.Ptr(l[2]),
 		Version:   to.Ptr(l[3]),
 	}, nil
-}
-
-func (b *VMScaleSetModelBuilder) buildRoleAssignmentTask(vmss *azuretasks.VMScaleSet, roleKey, roleDefID string) *azuretasks.RoleAssignment {
-	name := fmt.Sprintf("%s-%s", *vmss.Name, roleKey)
-	return &azuretasks.RoleAssignment{
-		Name:          to.Ptr(name),
-		Lifecycle:     b.Lifecycle,
-		ResourceGroup: b.LinkToResourceGroup(),
-		VMScaleSet:    vmss,
-		RoleDefID:     to.Ptr(roleDefID),
-	}
 }

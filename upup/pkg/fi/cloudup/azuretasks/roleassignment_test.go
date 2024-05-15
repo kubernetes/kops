@@ -34,10 +34,8 @@ func TestRoleAssignmentRenderAzure(t *testing.T) {
 	apiTarget := azure.NewAzureAPITarget(cloud)
 	ra := &RoleAssignment{}
 	expected := &RoleAssignment{
-		Name: to.Ptr("ra"),
-		ResourceGroup: &ResourceGroup{
-			Name: to.Ptr("rg"),
-		},
+		Name:  to.Ptr("ra"),
+		Scope: to.Ptr("scope"),
 		VMScaleSet: &VMScaleSet{
 			Name:        to.Ptr("vmss"),
 			PrincipalID: to.Ptr("pid"),
@@ -75,16 +73,18 @@ func TestRoleAssignmentFind(t *testing.T) {
 		t.Fatalf("failed to create: %s", err)
 	}
 	vmss := &VMScaleSet{
-		Name:        to.Ptr(vmssName),
-		PrincipalID: resp.Identity.PrincipalID,
+		Name:          to.Ptr(vmssName),
+		PrincipalID:   resp.Identity.PrincipalID,
+		ResourceGroup: rg,
 	}
 
+	scope := "scope"
 	roleDefID := "rdid0"
 	ra := &RoleAssignment{
-		Name:          vmss.Name,
-		ResourceGroup: rg,
-		VMScaleSet:    vmss,
-		RoleDefID:     &roleDefID,
+		Name:       vmss.Name,
+		Scope:      &scope,
+		VMScaleSet: vmss,
+		RoleDefID:  &roleDefID,
 	}
 	// Find will return nothing if there is no Role Assignment created.
 	actual, err := ra.Find(ctx)
@@ -97,7 +97,6 @@ func TestRoleAssignmentFind(t *testing.T) {
 
 	// Create Role Assignments. One of them has irrelevant (different role definition ID).
 	roleAssignmentName := uuid.New().String()
-	scope := "s"
 	roleAssignment := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
 			RoleDefinitionID: to.Ptr(roleDefID),
@@ -163,9 +162,10 @@ func TestRoleAssignmentFind_NoPrincipalID(t *testing.T) {
 		t.Fatalf("failed to create Role Assignment: %s", err)
 	}
 
+	scope := "scope"
 	ra := &RoleAssignment{
-		Name:          to.Ptr(vmssName),
-		ResourceGroup: rg,
+		Name:  to.Ptr(vmssName),
+		Scope: to.Ptr(scope),
 		VMScaleSet: &VMScaleSet{
 			Name: to.Ptr(vmssName),
 			// Do not set principal ID.

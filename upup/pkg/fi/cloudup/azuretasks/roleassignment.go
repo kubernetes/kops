@@ -43,10 +43,10 @@ type RoleAssignment struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ResourceGroup *ResourceGroup
-	VMScaleSet    *VMScaleSet
-	ID            *string
-	RoleDefID     *string
+	Scope      *string
+	VMScaleSet *VMScaleSet
+	ID         *string
+	RoleDefID  *string
 }
 
 var (
@@ -69,7 +69,7 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 	}
 
 	cloud := c.T.Cloud.(azure.AzureCloud)
-	rs, err := cloud.RoleAssignment().List(context.TODO(), *r.ResourceGroup.Name)
+	rs, err := cloud.RoleAssignment().List(context.TODO(), *r.Scope)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 	}
 
 	// Query VM Scale Sets and find one that has matching Principal ID.
-	vs, err := cloud.VMScaleSet().List(context.TODO(), *r.ResourceGroup.Name)
+	vs, err := cloud.VMScaleSet().List(context.TODO(), *r.VMScaleSet.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -117,9 +117,7 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 	return &RoleAssignment{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
-		ResourceGroup: &ResourceGroup{
-			Name: r.ResourceGroup.Name,
-		},
+		Scope:     found.Properties.Scope,
 		VMScaleSet: &VMScaleSet{
 			Name: foundVMSS.Name,
 		},
@@ -165,9 +163,7 @@ func createNewRoleAssignment(t *azure.AzureAPITarget, e *RoleAssignment) error {
 	// We generate the name of Role Assignment here. It must be a valid GUID.
 	roleAssignmentName := uuid.New().String()
 
-	// TODO(kenji): Append additinoal scope ("providers/Microsoft.Storage/storageAccounts/<account-name>") when the role is for blob access so that
-	// the role is scoped to a specific storage account.
-	scope := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", t.Cloud.SubscriptionID(), *e.ResourceGroup.Name)
+	scope := *e.Scope
 	roleDefID := fmt.Sprintf("%s/providers/Microsoft.Authorization/roleDefinitions/%s", scope, *e.RoleDefID)
 	roleAssignment := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
