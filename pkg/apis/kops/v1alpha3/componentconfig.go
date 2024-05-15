@@ -954,6 +954,10 @@ type SnapshotControllerConfig struct {
 
 // NodeTerminationHandlerSpec determines the node termination handler configuration.
 type NodeTerminationHandlerSpec struct {
+	// DeleteSQSMsgIfNodeNotFound makes node termination handler delete the SQS Message from the SQS Queue if the targeted node is not found.
+	// Only used in Queue Processor mode.
+	// Default: false
+	DeleteSQSMsgIfNodeNotFound *bool `json:"deleteSQSMsgIfNodeNotFound,omitempty"`
 	// Enabled enables the node termination handler.
 	// Default: true
 	Enabled *bool `json:"enabled,omitempty"`
@@ -990,6 +994,18 @@ type NodeTerminationHandlerSpec struct {
 	// Default: true
 	ExcludeFromLoadBalancers *bool `json:"excludeFromLoadBalancers,omitempty"`
 
+	// PodTerminationGracePeriod is the time in seconds given to each pod to terminate gracefully.
+	// If negative, the default value specified in the pod will be used, which defaults to 30 seconds if not specified for the pod.
+	// Default: -1
+	PodTerminationGracePeriod *int32 `json:"podTerminationGracePeriod,omitempty"`
+
+	// TaintNode makes node termination handler taint nodes when an interruption event occurs.
+	// Default: false
+	TaintNode *bool `json:"taintNode,omitempty"`
+
+	// MemoryLimit of NodeTerminationHandler container.
+	// Default: none
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// MemoryRequest of NodeTerminationHandler container.
 	// Default: 64Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
@@ -999,6 +1015,8 @@ type NodeTerminationHandlerSpec struct {
 	// Version is the container image tag used.
 	Version *string `json:"version,omitempty"`
 
+	// Replaces the default webhook message template.
+	WebhookTemplate *string `json:"webhookTemplate,omitempty"`
 	// If specified, posts event data to URL upon instance interruption action.
 	WebhookURL *string `json:"webhookURL,omitempty"`
 }
