@@ -6523,6 +6523,7 @@ func Convert_kops_NodeProblemDetectorConfig_To_v1alpha2_NodeProblemDetectorConfi
 }
 
 func autoConvert_v1alpha2_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(in *NodeTerminationHandlerSpec, out *kops.NodeTerminationHandlerSpec, s conversion.Scope) error {
+	out.DeleteSQSMsgIfNodeNotFound = in.DeleteSQSMsgIfNodeNotFound
 	out.Enabled = in.Enabled
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
@@ -6532,9 +6533,13 @@ func autoConvert_v1alpha2_NodeTerminationHandlerSpec_To_kops_NodeTerminationHand
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
 	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
+	out.PodTerminationGracePeriod = in.PodTerminationGracePeriod
+	out.TaintNode = in.TaintNode
+	out.MemoryLimit = in.MemoryLimit
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.Version = in.Version
+	out.WebhookTemplate = in.WebhookTemplate
 	out.WebhookURL = in.WebhookURL
 	return nil
 }
@@ -6545,6 +6550,7 @@ func Convert_v1alpha2_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerS
 }
 
 func autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHandlerSpec(in *kops.NodeTerminationHandlerSpec, out *NodeTerminationHandlerSpec, s conversion.Scope) error {
+	out.DeleteSQSMsgIfNodeNotFound = in.DeleteSQSMsgIfNodeNotFound
 	out.Enabled = in.Enabled
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
@@ -6554,9 +6560,13 @@ func autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHand
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
 	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
+	out.PodTerminationGracePeriod = in.PodTerminationGracePeriod
+	out.TaintNode = in.TaintNode
+	out.MemoryLimit = in.MemoryLimit
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.Version = in.Version
+	out.WebhookTemplate = in.WebhookTemplate
 	out.WebhookURL = in.WebhookURL
 	return nil
 }
