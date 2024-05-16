@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 1e66f34d3315646be987b84940bf5d42dc394d01a08e6aef618613307d18efe3
+    manifestHash: b19b7584337c7aaf2543011135671d520e6b765218db5c16de488831514a994d
     name: node-termination-handler.aws
     prune:
       kinds:

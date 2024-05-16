@@ -190,6 +190,7 @@ spec:
     cni: {}
   nodeTerminationHandler:
     cpuRequest: 50m
+    deleteSQSMsgIfNodeNotFound: false
     enableRebalanceDraining: false
     enableRebalanceMonitoring: false
     enableScheduledEventDraining: true
@@ -198,8 +199,10 @@ spec:
     excludeFromLoadBalancers: true
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
+    podTerminationGracePeriod: -1
     prometheusEnable: false
-    version: v1.18.3
+    taintNode: false
+    version: v1.22.0
   nonMasqueradeCIDR: 100.64.0.0/10
   podCIDR: 100.96.0.0/11
   secretStore: memfs://clusters.example.com/compress.example.com/secrets

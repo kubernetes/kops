@@ -216,6 +216,7 @@ spec:
     amazonvpc: {}
   nodeTerminationHandler:
     cpuRequest: 50m
+    deleteSQSMsgIfNodeNotFound: false
     enableRebalanceDraining: false
     enableRebalanceMonitoring: false
     enableScheduledEventDraining: true
@@ -224,8 +225,10 @@ spec:
     excludeFromLoadBalancers: true
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
+    podTerminationGracePeriod: -1
     prometheusEnable: false
-    version: v1.18.3
+    taintNode: false
+    version: v1.22.0
   nonMasqueradeCIDR: 172.20.0.0/16
   podCIDR: 172.20.128.0/17
   secretStore: memfs://tests/many-addons.example.com/secrets
