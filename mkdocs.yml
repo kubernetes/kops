@@ -86,6 +86,7 @@ nav:
     - GPU setup: "gpu.md"
     - Label management: "labels.md"
     - Rotate Secrets: "operations/rotate-secrets.md"
+    - Service Account Issuer Migration: "operations/service_account_issuer_migration.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Running kOps in a CI environment: "continuous_integration.md"
