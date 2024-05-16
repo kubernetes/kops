@@ -1,6 +1,6 @@
 {{ with .CloudProvider.AWS.NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.3/all-resources.yaml
-# and https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.3/all-resources-queue-processor.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.22.0/all-resources.yaml
+# and https://github.com/aws/aws-node-termination-handler/releases/download/v1.22.0/all-resources-queue-processor.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -191,7 +191,7 @@ spec:
             - name: CORDON_ONLY
               value: "false"
             - name: TAINT_NODE
-              value: "false"
+              value: "{{ WithDefaultBool .TaintNode false }}"
             - name: EXCLUDE_FROM_LOAD_BALANCERS
               value: "{{ .ExcludeFromLoadBalancers }}"
             - name: DELETE_LOCAL_DATA
@@ -199,7 +199,7 @@ spec:
             - name: IGNORE_DAEMON_SETS
               value: "true"
             - name: POD_TERMINATION_GRACE_PERIOD
-              value: "-1"
+              value: "{{ .PodTerminationGracePeriod }}"
             - name: NODE_TERMINATION_GRACE_PERIOD
               value: "120"
             - name: EMIT_KUBERNETES_EVENTS
@@ -210,8 +210,14 @@ spec:
               value: "true"
             - name: QUEUE_URL
               value: "{{ DefaultQueueName }}"
+            - name: DELETE_SQS_MSG_IF_NODE_NOT_FOUND
+              value: "{{ WithDefaultBool .DeleteSQSMsgIfNodeNotFound false }}"
             - name: WORKERS
               value: "10"
+            {{ if .WebhookTemplate }}
+            - name: WEBHOOK_TEMPLATE
+              value: '{{ .WebhookTemplate }}'
+            {{ end }}
             {{ if .WebhookURL }}
             - name: WEBHOOK_URL
               value: {{ .WebhookURL }}
@@ -230,6 +236,10 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
+            {{ if .MemoryLimit }}
+            limits:
+              memory: {{ .MemoryLimit }}
+            {{ end }}
             requests:
               cpu: {{ .CPURequest }}
               memory: {{ .MemoryRequest }}
@@ -356,7 +366,7 @@ spec:
             - name: CORDON_ONLY
               value: "false"
             - name: TAINT_NODE
-              value: "false"
+              value: "{{ WithDefaultBool .TaintNode false }}"
             - name: EXCLUDE_FROM_LOAD_BALANCERS
               value: "{{ WithDefaultBool .ExcludeFromLoadBalancers true }}"
             - name: DELETE_LOCAL_DATA
@@ -364,7 +374,7 @@ spec:
             - name: IGNORE_DAEMON_SETS
               value: "true"
             - name: POD_TERMINATION_GRACE_PERIOD
-              value: "-1"
+              value: "{{ .PodTerminationGracePeriod }}"
             - name: NODE_TERMINATION_GRACE_PERIOD
               value: "120"
             - name: EMIT_KUBERNETES_EVENTS
@@ -381,7 +391,19 @@ spec:
               value: "false"
             - name: UPTIME_FROM_FILE
               value: "/proc/uptime"
+            {{ if .WebhookTemplate }}
+            - name: WEBHOOK_TEMPLATE
+              value: '{{ .WebhookTemplate }}'
+            {{ end }}
+            {{ if .WebhookURL }}
+            - name: WEBHOOK_URL
+              value: {{ .WebhookURL }}
+            {{ end }}
           resources:
+            {{ if .MemoryLimit }}
+            limits:
+              memory: {{ .MemoryLimit }}
+            {{ end }}
             requests:
               cpu: {{ .CPURequest }}
               memory: {{ .MemoryRequest }}
