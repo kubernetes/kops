@@ -1478,6 +1478,8 @@ spec:
 
 **Warning**: Enabling the following configuration on an existing cluster can be disruptive due to the control plane provisioning tokens with different issuers. The symptom is that Pods are unable to authenticate to the Kubernetes API. To resolve this, delete Service Account token secrets that exists in the cluster and kill all pods unable to authenticate.
 
+**Note**: You can follow a variation of the procedure documented [here](/operations/service_account_issuer_migration/) to enable IRSA on an existing cluster without disruption.
+
 kOps can publish the Kubernetes service account token issuer and configure AWS to trust it
 to authenticate Kubernetes service accounts:
 

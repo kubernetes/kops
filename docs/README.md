@@ -64,6 +64,7 @@ For a better viewing experience please check out our live documentation site at 
 * [`kops` updating](operations/updates_and_upgrades.md#updating-kops)
 * [Label management](labels.md)
     * for cluster nodes
+* [Service Account Issuer (SAI) migration](operations/service_account_issuer_migration.md)
 * [Service Account Token Volume Projection](operations/service_account_token_volumes.md)
 * [Moving from a Single Master to Multiple HA Masters](single-to-multi-master.md)
 * [Upgrading Kubernetes](tutorial/upgrading-kubernetes.md)
