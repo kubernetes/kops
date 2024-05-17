@@ -906,7 +906,7 @@ func (s *ExtensionChainMatchCondition) MarshalJSON() ([]byte, error) {
 // balancer. It captures the ip:port over which the services are exposed by the
 // proxy, along with any policy configurations. Routes have reference to to
 // Gateways to dictate how requests should be routed by this Gateway. Next id:
-// 32
+// 33
 type Gateway struct {
 	// Addresses: Optional. Zero or one IPv4 or IPv6 address on which the Gateway
 	// will receive the traffic. When no address is provided, an IP from the

@@ -3380,37 +3380,6 @@ func (s *AuditLogConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// AuthorizationLoggingOptions: This is deprecated and has no effect. Do not
-// use.
-type AuthorizationLoggingOptions struct {
-	// PermissionType: This is deprecated and has no effect. Do not use.
-	//
-	// Possible values:
-	//   "ADMIN_READ" - This is deprecated and has no effect. Do not use.
-	//   "ADMIN_WRITE" - This is deprecated and has no effect. Do not use.
-	//   "DATA_READ" - This is deprecated and has no effect. Do not use.
-	//   "DATA_WRITE" - This is deprecated and has no effect. Do not use.
-	//   "PERMISSION_TYPE_UNSPECIFIED" - This is deprecated and has no effect. Do
-	// not use.
-	PermissionType string `json:"permissionType,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "PermissionType") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "PermissionType") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s *AuthorizationLoggingOptions) MarshalJSON() ([]byte, error) {
-	type NoMethod AuthorizationLoggingOptions
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
-}
-
 // Autoscaler: Represents an Autoscaler resource. Google Compute Engine has two
 // Autoscaler resources: * Zonal
 // (/compute/docs/reference/rest/beta/autoscalers) * Regional
@@ -25368,9 +25337,6 @@ func (s *LogConfig) MarshalJSON() ([]byte, error) {
 // LogConfigCloudAuditOptions: This is deprecated and has no effect. Do not
 // use.
 type LogConfigCloudAuditOptions struct {
-	// AuthorizationLoggingOptions: This is deprecated and has no effect. Do not
-	// use.
-	AuthorizationLoggingOptions *AuthorizationLoggingOptions `json:"authorizationLoggingOptions,omitempty"`
 	// LogName: This is deprecated and has no effect. Do not use.
 	//
 	// Possible values:
@@ -25378,15 +25344,15 @@ type LogConfigCloudAuditOptions struct {
 	//   "DATA_ACCESS" - This is deprecated and has no effect. Do not use.
 	//   "UNSPECIFIED_LOG_NAME" - This is deprecated and has no effect. Do not use.
 	LogName string `json:"logName,omitempty"`
-	// ForceSendFields is a list of field names (e.g.
-	// "AuthorizationLoggingOptions") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. See https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields
-	// for more details.
+	// ForceSendFields is a list of field names (e.g. "LogName") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "AuthorizationLoggingOptions") to
-	// include in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "LogName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }

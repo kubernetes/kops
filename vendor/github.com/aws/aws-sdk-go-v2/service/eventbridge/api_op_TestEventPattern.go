@@ -56,7 +56,7 @@ type TestEventPatternInput struct {
 	Event *string
 
 	// The event pattern. For more information, see [Events and Event Patterns] in the Amazon EventBridge User
-	// Guide.
+	// Guide .
 	//
 	// [Events and Event Patterns]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html
 	//

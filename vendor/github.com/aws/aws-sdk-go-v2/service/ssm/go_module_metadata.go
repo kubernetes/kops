@@ -3,4 +3,4 @@
 package ssm
 
 // goModuleVersion is the tagged release for this module
-const goModuleVersion = "1.50.1"
+const goModuleVersion = "1.50.3"

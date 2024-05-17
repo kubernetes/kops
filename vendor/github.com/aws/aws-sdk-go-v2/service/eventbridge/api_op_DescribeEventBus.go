@@ -6,8 +6,10 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
+	"time"
 )
 
 // Displays details about an event bus in your account. This can include the
@@ -51,6 +53,29 @@ type DescribeEventBusOutput struct {
 	// The Amazon Resource Name (ARN) of the account permitted to write events to the
 	// current account.
 	Arn *string
+
+	// The time the event bus was created.
+	CreationTime *time.Time
+
+	// Configuration details of the Amazon SQS queue for EventBridge to use as a
+	// dead-letter queue (DLQ).
+	//
+	// For more information, see Event retry policy and using dead-letter queues in the EventBridge User Guide.
+	DeadLetterConfig *types.DeadLetterConfig
+
+	// The event bus description.
+	Description *string
+
+	// The identifier of the KMS customer managed key for EventBridge to use to
+	// encrypt events on this event bus, if one has been specified.
+	//
+	// For more information, see [Data encryption in EventBridge] in the Amazon EventBridge User Guide.
+	//
+	// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
+	KmsKeyIdentifier *string
+
+	// The time the event bus was last modified.
+	LastModifiedTime *time.Time
 
 	// The name of the event bus. Currently, this is always default .
 	Name *string
