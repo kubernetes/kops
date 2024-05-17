@@ -33,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	smithyendpoints "github.com/aws/smithy-go/endpoints"
 	"k8s.io/klog/v2"
 )
 
@@ -74,6 +75,15 @@ func NewS3Context() *S3Context {
 	}
 }
 
+type ResolverV2 struct{}
+
+func (*ResolverV2) ResolveEndpoint(ctx context.Context, params s3.EndpointParameters) (
+	smithyendpoints.Endpoint, error,
+) {
+	params.UseDualStack = aws.Bool(true)
+	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
+}
+
 func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -87,7 +97,7 @@ func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, e
 		var err error
 		endpoint := os.Getenv("S3_ENDPOINT")
 		if endpoint == "" {
-			config, err = awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region), awsconfig.WithUseDualStackEndpoint(aws.DualStackEndpointStateEnabled))
+			config, err = awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
 			if err != nil {
 				return nil, fmt.Errorf("error loading AWS config: %v", err)
 			}
@@ -104,6 +114,8 @@ func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, e
 			if endpoint != "" {
 				o.BaseEndpoint = aws.String(endpoint)
 				o.UsePathStyle = true
+			} else {
+				o.EndpointResolverV2 = &ResolverV2{}
 			}
 		})
 		s.clients[region] = s3Client
