@@ -65,6 +65,7 @@
         "api_op_UpdateArchive.go",
         "api_op_UpdateConnection.go",
         "api_op_UpdateEndpoint.go",
+        "api_op_UpdateEventBus.go",
         "auth.go",
         "deserializers.go",
         "doc.go",

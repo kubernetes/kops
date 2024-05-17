@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.116.0] - 2024-05-16
+
+- #693 - @guptado - Introduce VPC peering methods
+
 ## [v1.115.0] - 2024-05-08
 
 - #688 - @asaha2 - load balancers: support glb active-passive fail-over settings, currently in closed beta

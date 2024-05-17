@@ -44,9 +44,49 @@ type CreateEventBusInput struct {
 	// This member is required.
 	Name *string
 
+	// Configuration details of the Amazon SQS queue for EventBridge to use as a
+	// dead-letter queue (DLQ).
+	//
+	// For more information, see Event retry policy and using dead-letter queues in the EventBridge User Guide.
+	DeadLetterConfig *types.DeadLetterConfig
+
+	// The event bus description.
+	Description *string
+
 	// If you are creating a partner event bus, this specifies the partner event
 	// source that the new event bus will be matched with.
 	EventSourceName *string
+
+	// The identifier of the KMS customer managed key for EventBridge to use, if you
+	// choose to use a customer managed key to encrypt events on this event bus. The
+	// identifier can be the key Amazon Resource Name (ARN), KeyId, key alias, or key
+	// alias ARN.
+	//
+	// If you do not specify a customer managed key identifier, EventBridge uses an
+	// Amazon Web Services owned key to encrypt events on the event bus.
+	//
+	// For more information, see [Managing keys] in the Key Management Service Developer Guide.
+	//
+	// Archives and schema discovery are not supported for event buses encrypted using
+	// a customer managed key. EventBridge returns an error if:
+	//
+	//   - You call [CreateArchive]on an event bus set to use a customer managed key for encryption.
+	//
+	//   - You call [CreateDiscoverer]on an event bus set to use a customer managed key for encryption.
+	//
+	//   - You call [UpdatedEventBus]to set a customer managed key on an event bus with an archives or
+	//   schema discovery enabled.
+	//
+	// To enable archives or schema discovery on an event bus, choose to use an Amazon
+	// Web Services owned key. For more information, see [Data encryption in EventBridge]in the Amazon EventBridge
+	// User Guide.
+	//
+	// [UpdatedEventBus]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_UpdatedEventBus.html
+	// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
+	// [Managing keys]: https://docs.aws.amazon.com/kms/latest/developerguide/getting-started.html
+	// [CreateArchive]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateArchive.html
+	// [CreateDiscoverer]: https://docs.aws.amazon.com/eventbridge/latest/schema-reference/v1-discoverers.html#CreateDiscoverer
+	KmsKeyIdentifier *string
 
 	// Tags to associate with the event bus.
 	Tags []types.Tag
@@ -56,8 +96,25 @@ type CreateEventBusInput struct {
 
 type CreateEventBusOutput struct {
 
+	// Configuration details of the Amazon SQS queue for EventBridge to use as a
+	// dead-letter queue (DLQ).
+	//
+	// For more information, see Event retry policy and using dead-letter queues in the EventBridge User Guide.
+	DeadLetterConfig *types.DeadLetterConfig
+
+	// The event bus description.
+	Description *string
+
 	// The ARN of the new event bus.
 	EventBusArn *string
+
+	// The identifier of the KMS customer managed key for EventBridge to use to
+	// encrypt events on this event bus, if one has been specified.
+	//
+	// For more information, see [Data encryption in EventBridge] in the Amazon EventBridge User Guide.
+	//
+	// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
+	KmsKeyIdentifier *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata

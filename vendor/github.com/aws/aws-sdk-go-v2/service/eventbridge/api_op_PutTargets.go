@@ -21,7 +21,7 @@ import (
 // Each rule can have up to five (5) targets associated with it at one time.
 //
 // For a list of services you can configure as targets for events, see [EventBridge targets] in the
-// Amazon EventBridge User Guide.
+// Amazon EventBridge User Guide .
 //
 // Creating rules with built-in targets is supported only in the Amazon Web
 // Services Management Console. The built-in targets are:
@@ -50,7 +50,7 @@ import (
 //     API Gateway APIs, EventBridge relies on IAM roles that you specify in the
 //     RoleARN argument in PutTargets .
 //
-// For more information, see [Authentication and Access Control] in the Amazon EventBridge User Guide.
+// For more information, see [Authentication and Access Control] in the Amazon EventBridge User Guide .
 //
 // If another Amazon Web Services account is in the same region and has granted
 // you permission (using PutPermission ), you can send events to that account. Set

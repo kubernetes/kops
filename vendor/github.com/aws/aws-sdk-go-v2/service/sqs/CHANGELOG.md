@@ -1,3 +1,11 @@
+# v1.32.2 (2024-05-16)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.32.1 (2024-05-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.32.0 (2024-05-08)
 
 * **Feature**: This release adds MessageSystemAttributeNames to ReceiveMessageRequest to replace AttributeNames.

@@ -3570,37 +3570,6 @@ func (s *AuthorizationConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// AuthorizationLoggingOptions: This is deprecated and has no effect. Do not
-// use.
-type AuthorizationLoggingOptions struct {
-	// PermissionType: This is deprecated and has no effect. Do not use.
-	//
-	// Possible values:
-	//   "ADMIN_READ" - This is deprecated and has no effect. Do not use.
-	//   "ADMIN_WRITE" - This is deprecated and has no effect. Do not use.
-	//   "DATA_READ" - This is deprecated and has no effect. Do not use.
-	//   "DATA_WRITE" - This is deprecated and has no effect. Do not use.
-	//   "PERMISSION_TYPE_UNSPECIFIED" - This is deprecated and has no effect. Do
-	// not use.
-	PermissionType string `json:"permissionType,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "PermissionType") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "PermissionType") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s *AuthorizationLoggingOptions) MarshalJSON() ([]byte, error) {
-	type NoMethod AuthorizationLoggingOptions
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
-}
-
 // Autoscaler: Represents an Autoscaler resource. Google Compute Engine has two
 // Autoscaler resources: * Zonal
 // (/compute/docs/reference/rest/alpha/autoscalers) * Regional
@@ -5590,8 +5559,15 @@ type BackendService struct {
 	//   "HTTP_COOKIE" - The hash is based on a user provided cookie.
 	//   "NONE" - No session affinity. Connections from the same client IP may go
 	// to any instance in the pool.
-	SessionAffinity string      `json:"sessionAffinity,omitempty"`
-	Subsetting      *Subsetting `json:"subsetting,omitempty"`
+	//   "STRONG_COOKIE_AFFINITY" - Strong cookie-based affinity. Connections
+	// bearing the same cookie will be served by the same backend VM while that VM
+	// remains healthy, as long as the cookie has not expired.
+	SessionAffinity string `json:"sessionAffinity,omitempty"`
+	// StrongSessionAffinityCookie: Describes the HTTP cookie used for stateful
+	// session affinity. This field is applicable and required if the
+	// sessionAffinity is set to STRONG_COOKIE_AFFINITY.
+	StrongSessionAffinityCookie *BackendServiceHttpCookie `json:"strongSessionAffinityCookie,omitempty"`
+	Subsetting                  *Subsetting               `json:"subsetting,omitempty"`
 	// TimeoutSec: The backend service timeout has a different meaning depending on
 	// the type of load balancer. For more information see, Backend service
 	// settings. The default is 30 seconds. The full range of timeout values
@@ -6236,6 +6212,33 @@ type BackendServiceHAPolicyLeaderNetworkEndpoint struct {
 
 func (s *BackendServiceHAPolicyLeaderNetworkEndpoint) MarshalJSON() ([]byte, error) {
 	type NoMethod BackendServiceHAPolicyLeaderNetworkEndpoint
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// BackendServiceHttpCookie: The HTTP cookie used for stateful session
+// affinity.
+type BackendServiceHttpCookie struct {
+	// Name: Name of the cookie.
+	Name string `json:"name,omitempty"`
+	// Path: Path to set for the cookie.
+	Path string `json:"path,omitempty"`
+	// Ttl: Lifetime of the cookie.
+	Ttl *Duration `json:"ttl,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *BackendServiceHttpCookie) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendServiceHttpCookie
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
@@ -27480,9 +27483,6 @@ func (s *LogConfig) MarshalJSON() ([]byte, error) {
 // LogConfigCloudAuditOptions: This is deprecated and has no effect. Do not
 // use.
 type LogConfigCloudAuditOptions struct {
-	// AuthorizationLoggingOptions: This is deprecated and has no effect. Do not
-	// use.
-	AuthorizationLoggingOptions *AuthorizationLoggingOptions `json:"authorizationLoggingOptions,omitempty"`
 	// LogName: This is deprecated and has no effect. Do not use.
 	//
 	// Possible values:
@@ -27490,15 +27490,15 @@ type LogConfigCloudAuditOptions struct {
 	//   "DATA_ACCESS" - This is deprecated and has no effect. Do not use.
 	//   "UNSPECIFIED_LOG_NAME" - This is deprecated and has no effect. Do not use.
 	LogName string `json:"logName,omitempty"`
-	// ForceSendFields is a list of field names (e.g.
-	// "AuthorizationLoggingOptions") to unconditionally include in API requests.
-	// By default, fields with empty or default values are omitted from API
-	// requests. See https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields
-	// for more details.
+	// ForceSendFields is a list of field names (e.g. "LogName") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "AuthorizationLoggingOptions") to
-	// include in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "LogName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -38713,19 +38713,10 @@ func (s *QueuedResourceListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueuedResourceStatus: [Output only] Result of queuing and provisioning based
-// on deferred capacity.
 type QueuedResourceStatus struct {
-	// FailedData: Additional status detail for the FAILED state.
-	FailedData *QueuedResourceStatusFailedData `json:"failedData,omitempty"`
-	// ProvisioningOperations: [Output only] Fully qualified URL of the
-	// provisioning GCE operation to track the provisioning along with provisioning
-	// errors. The referenced operation may not exist after having been deleted or
-	// expired.
-	ProvisioningOperations []string `json:"provisioningOperations,omitempty"`
-	// QueuingPolicy: Constraints for the time when the resource(s) start
-	// provisioning. Always exposed as absolute times.
-	QueuingPolicy *QueuingPolicy `json:"queuingPolicy,omitempty"`
+	FailedData             *QueuedResourceStatusFailedData `json:"failedData,omitempty"`
+	ProvisioningOperations []string                        `json:"provisioningOperations,omitempty"`
+	QueuingPolicy          *QueuingPolicy                  `json:"queuingPolicy,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "FailedData") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -38744,11 +38735,7 @@ func (s *QueuedResourceStatus) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueuedResourceStatusFailedData: Additional status detail for the FAILED
-// state.
 type QueuedResourceStatusFailedData struct {
-	// Error: The error(s) that caused the QueuedResource to enter the FAILED
-	// state.
 	Error *QueuedResourceStatusFailedDataError `json:"error,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Error") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -38768,8 +38755,6 @@ func (s *QueuedResourceStatusFailedData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// QueuedResourceStatusFailedDataError: The error(s) that caused the
-// QueuedResource to enter the FAILED state.
 type QueuedResourceStatusFailedDataError struct {
 	// Errors: [Output Only] The array of errors encountered while processing this
 	// operation.
@@ -43548,7 +43533,8 @@ type ResourceStatusShutdownDetails struct {
 	// StopState: Current stopping state of the instance.
 	//
 	// Possible values:
-	//   "SHUTTING_DOWN" - The instance is gracefully shutting down.
+	//   "SHUTTING_DOWN" - Deprecating, please use PENDING_STOP. The instance is
+	// gracefully shutting down.
 	//   "STOPPING" - The instance is stopping.
 	StopState string `json:"stopState,omitempty"`
 	// TargetState: Target instance state.
@@ -56950,6 +56936,9 @@ type TargetPool struct {
 	//   "HTTP_COOKIE" - The hash is based on a user provided cookie.
 	//   "NONE" - No session affinity. Connections from the same client IP may go
 	// to any instance in the pool.
+	//   "STRONG_COOKIE_AFFINITY" - Strong cookie-based affinity. Connections
+	// bearing the same cookie will be served by the same backend VM while that VM
+	// remains healthy, as long as the cookie has not expired.
 	SessionAffinity string `json:"sessionAffinity,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.

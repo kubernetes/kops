@@ -13,7 +13,7 @@ import (
 )
 
 // Get the information about an existing global endpoint. For more information
-// about global endpoints, see [Making applications Regional-fault tolerant with global endpoints and event replication]in the Amazon EventBridge User Guide.
+// about global endpoints, see [Making applications Regional-fault tolerant with global endpoints and event replication]in the Amazon EventBridge User Guide .
 //
 // [Making applications Regional-fault tolerant with global endpoints and event replication]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html
 func (c *Client) DescribeEndpoint(ctx context.Context, params *DescribeEndpointInput, optFns ...func(*Options)) (*DescribeEndpointOutput, error) {

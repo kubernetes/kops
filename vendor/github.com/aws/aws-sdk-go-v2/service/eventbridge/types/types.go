@@ -488,8 +488,10 @@ type CreateConnectionOAuthRequestParameters struct {
 	noSmithyDocumentSerde
 }
 
-// A DeadLetterConfig object that contains information about a dead-letter queue
-// configuration.
+// Configuration details of the Amazon SQS queue for EventBridge to use as a
+// dead-letter queue (DLQ).
+//
+// For more information, see Event retry policy and using dead-letter queues in the EventBridge User Guide.
 type DeadLetterConfig struct {
 
 	// The ARN of the SQS queue specified as the target for the dead-letter queue.
@@ -589,7 +591,7 @@ type EcsParameters struct {
 
 // A global endpoint used to improve your application's availability by making it
 // regional-fault tolerant. For more information about global endpoints, see [Making applications Regional-fault tolerant with global endpoints and event replication]in
-// the Amazon EventBridge User Guide.
+// the Amazon EventBridge User Guide .
 //
 // [Making applications Regional-fault tolerant with global endpoints and event replication]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html
 type Endpoint struct {
@@ -663,6 +665,15 @@ type EventBus struct {
 
 	// The ARN of the event bus.
 	Arn *string
+
+	// The time the event bus was created.
+	CreationTime *time.Time
+
+	// The event bus description.
+	Description *string
+
+	// The time the event bus was last modified.
+	LastModifiedTime *time.Time
 
 	// The name of the event bus.
 	Name *string
@@ -1308,7 +1319,7 @@ type Rule struct {
 	EventBusName *string
 
 	// The event pattern of the rule. For more information, see [Events and Event Patterns] in the Amazon
-	// EventBridge User Guide.
+	// EventBridge User Guide .
 	//
 	// [Events and Event Patterns]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html
 	EventPattern *string
@@ -1336,6 +1347,31 @@ type Rule struct {
 	ScheduleExpression *string
 
 	// The state of the rule.
+	//
+	// Valid values include:
+	//
+	//   - DISABLED : The rule is disabled. EventBridge does not match any events
+	//   against the rule.
+	//
+	//   - ENABLED : The rule is enabled. EventBridge matches events against the rule,
+	//   except for Amazon Web Services management events delivered through CloudTrail.
+	//
+	//   - ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS : The rule is enabled for all
+	//   events, including Amazon Web Services management events delivered through
+	//   CloudTrail.
+	//
+	// Management events provide visibility into management operations that are
+	//   performed on resources in your Amazon Web Services account. These are also known
+	//   as control plane operations. For more information, see [Logging management events]in the CloudTrail User
+	//   Guide, and [Filtering management events from Amazon Web Services services]in the Amazon EventBridge User Guide .
+	//
+	// This value is only valid for rules on the [default]event bus or [custom event buses]. It does not apply to [partner event buses].
+	//
+	// [Filtering management events from Amazon Web Services services]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event.html#eb-service-event-cloudtrail
+	// [custom event buses]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-event-bus.html
+	// [Logging management events]: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html#logging-management-events
+	// [default]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is-how-it-works-concepts.html#eb-bus-concepts-buses
+	// [partner event buses]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-saas.html
 	State RuleState
 
 	noSmithyDocumentSerde

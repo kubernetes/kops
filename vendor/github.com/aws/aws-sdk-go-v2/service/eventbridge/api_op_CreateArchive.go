@@ -17,6 +17,25 @@ import (
 // Allow a short period of time for changes to take effect. If you do not specify a
 // pattern to filter events sent to the archive, all events are sent to the archive
 // except replayed events. Replayed events are not sent to an archive.
+//
+// Archives and schema discovery are not supported for event buses encrypted using
+// a customer managed key. EventBridge returns an error if:
+//
+//   - You call [CreateArchive]on an event bus set to use a customer managed key for encryption.
+//
+//   - You call [CreateDiscoverer]on an event bus set to use a customer managed key for encryption.
+//
+//   - You call [UpdatedEventBus]to set a customer managed key on an event bus with an archives or
+//     schema discovery enabled.
+//
+// To enable archives or schema discovery on an event bus, choose to use an Amazon
+// Web Services owned key. For more information, see [Data encryption in EventBridge]in the Amazon EventBridge
+// User Guide.
+//
+// [UpdatedEventBus]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_UpdatedEventBus.html
+// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
+// [CreateArchive]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateArchive.html
+// [CreateDiscoverer]: https://docs.aws.amazon.com/eventbridge/latest/schema-reference/v1-discoverers.html#CreateDiscoverer
 func (c *Client) CreateArchive(ctx context.Context, params *CreateArchiveInput, optFns ...func(*Options)) (*CreateArchiveOutput, error) {
 	if params == nil {
 		params = &CreateArchiveInput{}
