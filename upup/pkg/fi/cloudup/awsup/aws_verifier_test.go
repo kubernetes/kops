@@ -74,7 +74,7 @@ func TestGetSTSRequestInfo(t *testing.T) {
 		if err != nil {
 			t.Fatalf("parsing url %q: %v", g.URL, err)
 		}
-		got := stsRequestInfo.IsValid(u)
+		got := stsRequestInfo.isValidV2(u)
 		if got != g.IsValid {
 			t.Errorf("unexpected result for IsValid(%v); got %v, want %v", g.URL, got, g.IsValid)
 		}
