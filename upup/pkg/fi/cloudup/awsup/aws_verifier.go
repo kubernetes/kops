@@ -129,16 +129,16 @@ type ResponseMetadata struct {
 
 func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if strings.HasPrefix(token, AWSAuthenticationTokenPrefixV1) {
-		return a.verifyTokenV1(ctx, rawRequest, token, body)
+		return a.verifyTokenV1(ctx, token, body, a.verifyCallerIdentity)
 	}
 	if strings.HasPrefix(token, AWSAuthenticationTokenPrefixV2) {
-		return a.verifyTokenV2(ctx, rawRequest, token, body)
+		return a.verifyTokenV2(ctx, token, body, a.verifyCallerIdentity)
 	}
 
 	return nil, bootstrap.ErrNotThisVerifier
 }
 
-func (a awsVerifier) verifyTokenV1(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
+func (a awsVerifier) verifyTokenV1(ctx context.Context, token string, body []byte, verifyCallerIdentity verifyCallerIdentityFunc) (*bootstrap.VerifyResult, error) {
 	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefixV1)
 
 	tokenBytes, err := base64.StdEncoding.DecodeString(token)
@@ -199,10 +199,10 @@ func (a awsVerifier) verifyTokenV1(ctx context.Context, rawRequest *http.Request
 		return nil, err
 	}
 
-	return a.verifyCallerIdentity(ctx, callerIdentity)
+	return verifyCallerIdentity(ctx, callerIdentity)
 }
 
-func (a awsVerifier) verifyTokenV2(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
+func (a awsVerifier) verifyTokenV2(ctx context.Context, token string, body []byte, verifyCallerIdentity verifyCallerIdentityFunc) (*bootstrap.VerifyResult, error) {
 	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefixV2)
 
 	tokenBytes, err := base64.StdEncoding.DecodeString(token)
@@ -238,8 +238,10 @@ func (a awsVerifier) verifyTokenV2(ctx context.Context, rawRequest *http.Request
 		return nil, err
 	}
 
-	return a.verifyCallerIdentity(ctx, callerIdentity)
+	return verifyCallerIdentity(ctx, callerIdentity)
 }
+
+type verifyCallerIdentityFunc func(ctx context.Context, callerIdentity *GetCallerIdentityResponse) (*bootstrap.VerifyResult, error)
 
 func (a awsVerifier) verifyCallerIdentity(ctx context.Context, callerIdentity *GetCallerIdentityResponse) (*bootstrap.VerifyResult, error) {
 	if callerIdentity.GetCallerIdentityResult[0].Account != a.accountId {
