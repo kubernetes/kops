@@ -268,7 +268,7 @@ func loadAWSConfig(ctx context.Context, region string) (aws.Config, error) {
 		awsconfig.WithClientLogMode(aws.LogRetries),
 		awsconfig.WithLogger(awsLogger{}),
 		awsconfig.WithRetryer(func() aws.Retryer {
-			return retry.NewStandard()
+			return retry.NewAdaptiveMode()
 		}),
 	}
 
