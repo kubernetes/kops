@@ -44,6 +44,28 @@ type WarmPool struct {
 	AutoscalingGroup *AutoscalingGroup
 }
 
+var _ fi.CloudupHasDependencies = &WarmPool{}
+
+// Warmpool depends on any Lifecycle hooks being in place first.
+func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+
+	// Depend on the ASG.
+	if e.AutoscalingGroup != nil {
+		deps = append(deps, e.AutoscalingGroup)
+	}
+
+	// Depend on any Lifecycle hooks assigned to the ASG.
+	for _, task := range tasks {
+		if l, ok := task.(*AutoscalingLifecycleHook); ok {
+			if l.AutoscalingGroup == e.AutoscalingGroup {
+				deps = append(deps, task)
+			}
+		}
+	}
+	return deps
+}
+
 // Find is used to discover the ASG in the cloud provider.
 func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	ctx := c.Context()
