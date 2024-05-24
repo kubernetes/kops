@@ -1,3 +1,7 @@
+# v1.54.3 (2024-05-23)
+
+* **Bug Fix**: Prevent parsing failures for nonstandard `Expires` values in responses. If the SDK cannot parse the value set in the response header for this field it will now be returned as `nil`. A new field, `ExpiresString`, has been added that will retain the unparsed value from the response (regardless of whether it came back in a format recognized by the SDK).
+
 # v1.54.2 (2024-05-16)
 
 * **Dependency Update**: Updated to the latest SDK module versions

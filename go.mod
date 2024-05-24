@@ -17,28 +17,28 @@ require (
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.2-0.20231216170552-14d4dfcbaadf
 	github.com/aws/aws-sdk-go-v2 v1.27.0
-	github.com/aws/aws-sdk-go-v2/config v1.27.15
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.15
+	github.com/aws/aws-sdk-go-v2/config v1.27.16
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.16
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.3
-	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.40.8
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.161.3
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.24.7
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.30.8
-	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.31.2
-	github.com/aws/aws-sdk-go-v2/service/iam v1.32.3
-	github.com/aws/aws-sdk-go-v2/service/kms v1.31.3
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.7
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.2
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.32.2
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.50.3
-	github.com/aws/aws-sdk-go-v2/service/sts v1.28.9
+	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.40.9
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.161.4
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.24.8
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.31.1
+	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.31.3
+	github.com/aws/aws-sdk-go-v2/service/iam v1.32.4
+	github.com/aws/aws-sdk-go-v2/service/kms v1.32.1
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.8
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.3
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.32.3
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.50.4
+	github.com/aws/aws-sdk-go-v2/service/sts v1.28.10
 	github.com/aws/smithy-go v1.20.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.14.5
 	github.com/digitalocean/godo v1.116.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-jose/go-jose/v4 v4.0.2
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.6.0
@@ -60,11 +60,11 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.171.0
 	github.com/stretchr/testify v1.9.0
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0
-	go.opentelemetry.io/otel v1.26.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.26.0
-	go.opentelemetry.io/otel/sdk v1.26.0
-	go.opentelemetry.io/otel/trace v1.26.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.52.0
+	go.opentelemetry.io/otel v1.27.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.27.0
+	go.opentelemetry.io/otel/sdk v1.27.0
+	go.opentelemetry.io/otel/trace v1.27.0
 	go.opentelemetry.io/proto/otlp v1.2.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/crypto v0.23.0
@@ -78,7 +78,7 @@ require (
 	google.golang.org/protobuf v1.34.1
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
-	helm.sh/helm/v3 v3.15.0
+	helm.sh/helm/v3 v3.15.1
 	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1
 	k8s.io/cli-runtime v0.30.1
@@ -122,8 +122,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.9 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/pricing v1.21.6 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.20.8 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.20.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.3 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -250,7 +250,7 @@ require (
 	github.com/vbatts/tar-split v0.11.3 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel/metric v1.26.0 // indirect
+	go.opentelemetry.io/otel/metric v1.27.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/term v0.20.0 // indirect
