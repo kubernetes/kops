@@ -475,9 +475,16 @@ type LoadBalancer struct {
 	// a Network Load Balancer through Amazon Web Services PrivateLink.
 	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string
 
-	// The type of IP addresses used by the subnets for your load balancer. The
-	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and IPv6
-	// addresses).
+	// [Application Load Balancers] The type of IP addresses used for public or
+	// private connections by the subnets attached to your load balancer. The possible
+	// values are ipv4 (for only IPv4 addresses), dualstack (for IPv4 and IPv6
+	// addresses), and dualstack-without-public-ipv4 (for IPv6 only public addresses,
+	// with private IPv4 and IPv6 addresses).
+	//
+	// [Network Load Balancers and Gateway Load Balancers] The type of IP addresses
+	// used for public or private connections by the subnets attached to your load
+	// balancer. The possible values are ipv4 (for only IPv4 addresses) and dualstack
+	// (for IPv4 and IPv6 addresses).
 	IpAddressType IpAddressType
 
 	// The Amazon Resource Name (ARN) of the load balancer.

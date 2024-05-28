@@ -30,9 +30,19 @@ func (c *Client) SetIpAddressType(ctx context.Context, params *SetIpAddressTypeI
 
 type SetIpAddressTypeInput struct {
 
-	// The IP address type. The possible values are ipv4 (for IPv4 addresses) and
-	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for a load
-	// balancer with a UDP or TCP_UDP listener.
+	// Note: Internal load balancers must use the ipv4 IP address type.
+	//
+	// [Application Load Balancers] The IP address type. The possible values are ipv4
+	// (for only IPv4 addresses), dualstack (for IPv4 and IPv6 addresses), and
+	// dualstack-without-public-ipv4 (for IPv6 only public addresses, with private IPv4
+	// and IPv6 addresses).
+	//
+	// [Network Load Balancers] The IP address type. The possible values are ipv4 (for
+	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You can’t
+	// specify dualstack for a load balancer with a UDP or TCP_UDP listener.
+	//
+	// [Gateway Load Balancers] The IP address type. The possible values are ipv4 (for
+	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses).
 	//
 	// This member is required.
 	IpAddressType types.IpAddressType
