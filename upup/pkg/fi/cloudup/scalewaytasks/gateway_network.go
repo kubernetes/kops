@@ -139,6 +139,7 @@ func (_ *GatewayNetwork) RenderScw(t *scaleway.ScwAPITarget, actual, expected, c
 		IpamConfig: &vpcgw.CreateGatewayNetworkRequestIpamConfig{
 			PushDefaultRoute: false,
 		},
+		EnableMasquerade: true,
 	})
 	if err != nil {
 		return fmt.Errorf("creating gateway network: %w", err)
