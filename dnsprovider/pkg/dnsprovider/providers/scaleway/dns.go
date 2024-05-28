@@ -113,6 +113,9 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 
 	zonesList := []dnsprovider.Zone(nil)
 	for _, dnsZone := range dnsZones.DNSZones {
+		if dnsZone.Domain == "privatedns" {
+			continue
+		}
 		newZone := &zone{
 			name:      dnsZone.Domain,
 			domainAPI: z.domainAPI,

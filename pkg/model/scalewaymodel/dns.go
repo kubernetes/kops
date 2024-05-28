@@ -25,7 +25,6 @@ import (
 )
 
 const (
-	placeholderIP                      = "203.0.113.123"
 	kopsControllerInternalRecordPrefix = "kops-controller.internal."
 	defaultTTL                         = uint32(60)
 )
@@ -45,12 +44,14 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !b.UseLoadBalancerForAPI() {
 		recordShortName := strings.TrimSuffix(b.Cluster.Spec.API.PublicName, "."+b.Cluster.Spec.DNSZone)
 		dnsAPIExternal := &scalewaytasks.DNSRecord{
-			Name:      fi.PtrTo(recordShortName),
-			Data:      fi.PtrTo(placeholderIP),
-			DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-			Type:      fi.PtrTo(domain.RecordTypeA.String()),
-			TTL:       fi.PtrTo(defaultTTL),
-			Lifecycle: b.Lifecycle,
+			Name:        fi.PtrTo(recordShortName),
+			Data:        fi.PtrTo(scalewaytasks.PlaceholderIP),
+			DNSZone:     fi.PtrTo(b.Cluster.Spec.DNSZone),
+			Type:        fi.PtrTo(domain.RecordTypeA.String()),
+			TTL:         fi.PtrTo(defaultTTL),
+			Lifecycle:   b.Lifecycle,
+			IsInternal:  fi.PtrTo(false),
+			ClusterName: fi.PtrTo(b.Cluster.Name),
 		}
 		c.AddTask(dnsAPIExternal)
 	}
@@ -58,12 +59,14 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !b.UseLoadBalancerForInternalAPI() {
 		recordShortName := strings.TrimSuffix(b.Cluster.APIInternalName(), "."+b.Cluster.Spec.DNSZone)
 		dnsAPIInternal := &scalewaytasks.DNSRecord{
-			Name:      fi.PtrTo(recordShortName),
-			Data:      fi.PtrTo(placeholderIP),
-			DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-			Type:      fi.PtrTo(domain.RecordTypeA.String()),
-			TTL:       fi.PtrTo(defaultTTL),
-			Lifecycle: b.Lifecycle,
+			Name:        fi.PtrTo(recordShortName),
+			Data:        fi.PtrTo(scalewaytasks.PlaceholderIP),
+			DNSZone:     fi.PtrTo(b.Cluster.Spec.DNSZone),
+			Type:        fi.PtrTo(domain.RecordTypeA.String()),
+			TTL:         fi.PtrTo(defaultTTL),
+			IsInternal:  fi.PtrTo(true),
+			ClusterName: fi.PtrTo(b.Cluster.Name),
+			Lifecycle:   b.Lifecycle,
 		}
 		c.AddTask(dnsAPIInternal)
 	}
@@ -71,12 +74,14 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	recordSuffix := strings.TrimSuffix(b.Cluster.ObjectMeta.Name, "."+b.Cluster.Spec.DNSZone)
 	recordShortName := kopsControllerInternalRecordPrefix + recordSuffix
 	kopsControllerInternal := &scalewaytasks.DNSRecord{
-		Name:      fi.PtrTo(recordShortName),
-		Data:      fi.PtrTo(placeholderIP),
-		DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-		Type:      fi.PtrTo(domain.RecordTypeA.String()),
-		TTL:       fi.PtrTo(defaultTTL),
-		Lifecycle: b.Lifecycle,
+		Name:        fi.PtrTo(recordShortName),
+		Data:        fi.PtrTo(scalewaytasks.PlaceholderIP),
+		DNSZone:     fi.PtrTo(b.Cluster.Spec.DNSZone),
+		Type:        fi.PtrTo(domain.RecordTypeA.String()),
+		TTL:         fi.PtrTo(defaultTTL),
+		IsInternal:  fi.PtrTo(true),
+		ClusterName: fi.PtrTo(b.Cluster.Name),
+		Lifecycle:   b.Lifecycle,
 	}
 	c.AddTask(kopsControllerInternal)
 

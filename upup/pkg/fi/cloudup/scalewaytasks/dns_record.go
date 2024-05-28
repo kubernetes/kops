@@ -27,15 +27,19 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
+const PlaceholderIP = "203.0.113.123"
+
 // +kops:fitask
 type DNSRecord struct {
-	ID        *string
-	Name      *string
-	Data      *string
-	DNSZone   *string
-	Type      *string
-	TTL       *uint32
-	Lifecycle fi.Lifecycle
+	ID          *string
+	Name        *string
+	Data        *string
+	DNSZone     *string
+	Type        *string
+	TTL         *uint32
+	IsInternal  *bool
+	ClusterName *string
+	Lifecycle   fi.Lifecycle
 }
 
 var _ fi.CloudupTask = &DNSRecord{}
@@ -43,6 +47,21 @@ var _ fi.CompareWithID = &DNSRecord{}
 
 func (d *DNSRecord) CompareWithID() *string {
 	return d.ID
+}
+
+var _ fi.CloudupHasDependencies = &Instance{}
+
+func (d *DNSRecord) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+	for _, task := range tasks {
+		if _, ok := task.(*Instance); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*PrivateNetwork); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
 }
 
 func (d *DNSRecord) Find(context *fi.CloudupContext) (*DNSRecord, error) {
@@ -66,13 +85,15 @@ func (d *DNSRecord) Find(context *fi.CloudupContext) (*DNSRecord, error) {
 	recordFound := records.Records[0]
 
 	return &DNSRecord{
-		ID:        fi.PtrTo(recordFound.ID),
-		Name:      fi.PtrTo(recordFound.Name),
-		Data:      fi.PtrTo(recordFound.Data),
-		TTL:       fi.PtrTo(recordFound.TTL),
-		DNSZone:   d.DNSZone,
-		Type:      fi.PtrTo(recordFound.Type.String()),
-		Lifecycle: d.Lifecycle,
+		ID:          fi.PtrTo(recordFound.ID),
+		Name:        fi.PtrTo(recordFound.Name),
+		Data:        fi.PtrTo(recordFound.Data),
+		TTL:         fi.PtrTo(recordFound.TTL),
+		DNSZone:     d.DNSZone,
+		Type:        fi.PtrTo(recordFound.Type.String()),
+		IsInternal:  d.IsInternal,
+		ClusterName: d.ClusterName,
+		Lifecycle:   d.Lifecycle,
 	}, nil
 }
 
@@ -113,6 +134,14 @@ func (_ *DNSRecord) CheckChanges(actual, expected, changes *DNSRecord) error {
 
 func (d *DNSRecord) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *DNSRecord) error {
 	cloud := t.Cloud.(scaleway.ScwCloud)
+
+	if *expected.Data == PlaceholderIP {
+		controlPlanesIPs, err := scaleway.GetControlPlanesIPs(cloud, *expected.ClusterName, *expected.IsInternal)
+		if err != nil || len(controlPlanesIPs) == 0 {
+			return fmt.Errorf("error getting control plane IPs: %v", err)
+		}
+		expected.Data = &controlPlanesIPs[0]
+	}
 
 	if actual != nil {
 		recordUpdated, err := cloud.DomainService().UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
