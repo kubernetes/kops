@@ -284,3 +284,33 @@ func GetPrivateIP(scwClient *scw.Client, serverID string, zone scw.Zone) (string
 	}
 	return privateIPs[0], nil
 }
+
+func GetControlPlanesIPs(scwCloud ScwCloud, clusterName string, getInternalIPs bool) ([]string, error) {
+	var controlPlanePrivateIPs []string
+
+	servers, err := scwCloud.GetClusterServers(clusterName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("getting cluster servers for load-balancer's back-end: %w", err)
+	}
+
+	for _, server := range servers {
+		if role := InstanceRoleFromTags(server.Tags); role == TagRoleWorker {
+			continue
+		}
+		if getInternalIPs {
+			ip, err := scwCloud.GetServerPrivateIP(server.ID, server.Zone)
+			if err != nil {
+				return nil, fmt.Errorf("getting IP of server %s for load-balancer's back-end: %w", server.Name, err)
+			}
+			controlPlanePrivateIPs = append(controlPlanePrivateIPs, ip)
+		} else {
+			ip, err := scwCloud.GetServerPublicIP(server.ID, server.Zone)
+			if err != nil {
+				return nil, fmt.Errorf("getting IP of server %s for load-balancer's back-end: %w", server.Name, err)
+			}
+			controlPlanePrivateIPs = append(controlPlanePrivateIPs, ip)
+		}
+	}
+
+	return controlPlanePrivateIPs, nil
+}
