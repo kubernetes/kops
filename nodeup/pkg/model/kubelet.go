@@ -482,9 +482,9 @@ providers:
     apiVersion: credentialprovider.kubelet.k8s.io/v1
     args:
       - get-credentials
-	env:
-	  - name: AWS_REGION
-	    value: ` + b.Cloud.Region() + `
+    env:
+      - name: AWS_REGION
+        value: ` + b.Cloud.Region() + `
 `
 
 		t := &nodetasks.File{
