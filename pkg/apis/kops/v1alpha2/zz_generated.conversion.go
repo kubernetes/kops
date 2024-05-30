@@ -3212,6 +3212,7 @@ func autoConvert_v1alpha2_ContainerdConfig_To_kops_ContainerdConfig(in *Containe
 	} else {
 		out.NRI = nil
 	}
+	out.UseECRCredentialsForMirrors = in.UseECRCredentialsForMirrors
 	return nil
 }
 
@@ -3267,6 +3268,7 @@ func autoConvert_kops_ContainerdConfig_To_v1alpha2_ContainerdConfig(in *kops.Con
 	} else {
 		out.NRI = nil
 	}
+	out.UseECRCredentialsForMirrors = in.UseECRCredentialsForMirrors
 	return nil
 }
 
