@@ -5812,10 +5812,10 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   deleteSQSMsgIfNodeNotFound:
-                    description: |-
-                      DeleteSQSMsgIfNodeNotFound makes node termination handler delete the SQS Message from the SQS Queue if the targeted node is not found.
-                      Only used in Queue Processor mode.
-                      Default: false
+                    description: 'DeleteSQSMsgIfNodeNotFound makes node termination
+                      handler delete the SQS Message from the SQS Queue if the targeted
+                      node is not found. Only used in Queue Processor mode. Default:
+                      false'
                     type: boolean
                   enableRebalanceDraining:
                     description: 'EnableRebalanceDraining makes node termination handler
@@ -5865,9 +5865,8 @@ spec:
                     anyOf:
                     - type: integer
                     - type: string
-                    description: |-
-                      MemoryLimit of NodeTerminationHandler container.
-                      Default: none
+                    description: 'MemoryLimit of NodeTerminationHandler container.
+                      Default: none'
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   memoryRequest:
@@ -5879,10 +5878,10 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   podTerminationGracePeriod:
-                    description: |-
-                      PodTerminationGracePeriod is the time in seconds given to each pod to terminate gracefully.
-                      If negative, the default value specified in the pod will be used, which defaults to 30 seconds if not specified for the pod.
-                      Default: -1
+                    description: 'PodTerminationGracePeriod is the time in seconds
+                      given to each pod to terminate gracefully. If negative, the
+                      default value specified in the pod will be used, which defaults
+                      to 30 seconds if not specified for the pod. Default: -1'
                     format: int32
                     type: integer
                   prometheusEnable:
@@ -5890,9 +5889,8 @@ spec:
                       Default: false'
                     type: boolean
                   taintNode:
-                    description: |-
-                      TaintNode makes node termination handler taint nodes when an interruption event occurs.
-                      Default: false
+                    description: 'TaintNode makes node termination handler taint nodes
+                      when an interruption event occurs. Default: false'
                     type: boolean
                   version:
                     description: Version is the container image tag used.
