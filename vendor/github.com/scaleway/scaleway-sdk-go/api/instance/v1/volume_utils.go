@@ -80,7 +80,7 @@ func (s *API) getUnknownVolume(req *getUnknownVolumeRequest, opts ...scw.Request
 		getVolumeResponse, err := s.GetVolume(&GetVolumeRequest{
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
-		})
+		}, opts...)
 		notFoundErr := &scw.ResourceNotFoundError{}
 		if err != nil && !goerrors.As(err, &notFoundErr) {
 			return nil, err
@@ -93,11 +93,12 @@ func (s *API) getUnknownVolume(req *getUnknownVolumeRequest, opts ...scw.Request
 			volume.Type = getVolumeResponse.Volume.VolumeType
 		}
 	}
+
 	if volume.Type == "" && (req.IsBlockVolume == nil || *req.IsBlockVolume == true) {
 		getVolumeResponse, err := block.NewAPI(s.client).GetVolume(&block.GetVolumeRequest{
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
-		})
+		}, opts...)
 		if err != nil {
 			return nil, err
 		}

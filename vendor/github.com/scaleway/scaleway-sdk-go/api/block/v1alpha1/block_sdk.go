@@ -289,6 +289,8 @@ const (
 	// The volume is undergoing snapshotting operation (transient).
 	VolumeStatusSnapshotting = VolumeStatus("snapshotting")
 	VolumeStatusLocked       = VolumeStatus("locked")
+	// The volume is being updated (transient).
+	VolumeStatusUpdating = VolumeStatus("updating")
 )
 
 func (enum VolumeStatus) String() string {
@@ -332,7 +334,7 @@ type Reference struct {
 	// Default value: unknown_type
 	Type ReferenceType `json:"type"`
 
-	// Status: status of reference (attaching, attached, detaching).
+	// Status: status of the reference. Statuses include `attaching`, `attached`, and `detaching`.
 	// Default value: unknown_status
 	Status ReferenceStatus `json:"status"`
 }
@@ -562,6 +564,30 @@ type GetVolumeRequest struct {
 	VolumeID string `json:"-"`
 }
 
+// ImportSnapshotFromS3Request: import snapshot from s3 request.
+type ImportSnapshotFromS3Request struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+
+	// Bucket: scaleway Object Storage bucket where the object is stored.
+	Bucket string `json:"bucket"`
+
+	// Key: the object key inside the given bucket.
+	Key string `json:"key"`
+
+	// Name: name of the snapshot.
+	Name string `json:"name"`
+
+	// ProjectID: UUID of the Project to which the volume and the snapshot belong.
+	ProjectID string `json:"project_id"`
+
+	// Tags: list of tags assigned to the snapshot.
+	Tags []string `json:"tags"`
+
+	// Size: size of the snapshot.
+	Size *scw.Size `json:"size,omitempty"`
+}
+
 // ListSnapshotsRequest: list snapshots request.
 type ListSnapshotsRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
@@ -751,7 +777,7 @@ type UpdateVolumeRequest struct {
 	PerfIops *uint32 `json:"perf_iops,omitempty"`
 }
 
-// This API allows you to use and manage your Block Storage volumes.
+// This API allows you to manage your Block Storage volumes.
 type API struct {
 	client *scw.Client
 }
@@ -1075,6 +1101,44 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	scwReq := &scw.ScalewayRequest{
 		Method: "POST",
 		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Snapshot
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ImportSnapshotFromS3: The bucket must contain a QCOW2 image.
+// The bucket can be imported into any Availability Zone as long as it is in the same region as the bucket.
+func (s *API) ImportSnapshotFromS3(req *ImportSnapshotFromS3Request, opts ...scw.RequestOption) (*Snapshot, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if req.ProjectID == "" {
+		defaultProjectID, _ := s.client.GetDefaultProjectID()
+		req.ProjectID = defaultProjectID
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots/import-from-s3",
 	}
 
 	err = scwReq.SetBody(req)

@@ -437,6 +437,7 @@ func (r *ListVersionsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	return uint32(len(results.Versions)), nil
 }
 
+// This API allows you to find available images for use when launching a Scaleway Instance.
 type API struct {
 	client *scw.Client
 }

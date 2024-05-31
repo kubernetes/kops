@@ -3140,9 +3140,10 @@ type AttachedDisk struct {
 	// when you create a snapshot or an image from the disk or when you attach the
 	// disk to a virtual machine instance. If you do not provide an encryption key,
 	// then the disk will be encrypted using an automatically generated key and you
-	// do not need to provide a key to use the disk later. Instance templates do
-	// not store customer-supplied encryption keys, so you cannot use your own keys
-	// to encrypt disks in a managed instance group.
+	// do not need to provide a key to use the disk later. Note: Instance templates
+	// do not store customer-supplied encryption keys, so you cannot use your own
+	// keys to encrypt disks in a managed instance group. You cannot create VMs
+	// that have disks with customer-supplied keys using the bulk insert method.
 	DiskEncryptionKey *CustomerEncryptionKey `json:"diskEncryptionKey,omitempty"`
 	// DiskSizeGb: The size of the disk in GB.
 	DiskSizeGb int64 `json:"diskSizeGb,omitempty,string"`
@@ -22067,7 +22068,10 @@ type InstanceProperties struct {
 	// Labels: Labels to apply to instances that are created from these properties.
 	Labels map[string]string `json:"labels,omitempty"`
 	// MachineType: The machine type to use for instances that are created from
-	// these properties.
+	// these properties. This field only accept machine types name. e.g.
+	// n2-standard-4 and does not accept machine type full or partial url. e.g.
+	// projects/my-l7ilb-project/zones/us-central1-a/machineTypes/n2-standard-4
+	// will throw INTERNAL_ERROR.
 	MachineType string `json:"machineType,omitempty"`
 	// Metadata: The metadata key/value pairs to assign to instances that are
 	// created from these properties. These pairs can consist of custom metadata or
@@ -43533,6 +43537,7 @@ type ResourceStatusShutdownDetails struct {
 	// StopState: Current stopping state of the instance.
 	//
 	// Possible values:
+	//   "PENDING_STOP" - The instance is gracefully shutting down.
 	//   "SHUTTING_DOWN" - Deprecating, please use PENDING_STOP. The instance is
 	// gracefully shutting down.
 	//   "STOPPING" - The instance is stopping.

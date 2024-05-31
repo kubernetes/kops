@@ -2990,9 +2990,10 @@ type AttachedDisk struct {
 	// when you create a snapshot or an image from the disk or when you attach the
 	// disk to a virtual machine instance. If you do not provide an encryption key,
 	// then the disk will be encrypted using an automatically generated key and you
-	// do not need to provide a key to use the disk later. Instance templates do
-	// not store customer-supplied encryption keys, so you cannot use your own keys
-	// to encrypt disks in a managed instance group.
+	// do not need to provide a key to use the disk later. Note: Instance templates
+	// do not store customer-supplied encryption keys, so you cannot use your own
+	// keys to encrypt disks in a managed instance group. You cannot create VMs
+	// that have disks with customer-supplied keys using the bulk insert method.
 	DiskEncryptionKey *CustomerEncryptionKey `json:"diskEncryptionKey,omitempty"`
 	// DiskSizeGb: The size of the disk in GB.
 	DiskSizeGb int64 `json:"diskSizeGb,omitempty,string"`
@@ -7939,6 +7940,21 @@ func (s *DeprecationStatus) MarshalJSON() ([]byte, error) {
 // regionDisks resource represents a regional persistent disk. For more
 // information, read Regional resources.
 type Disk struct {
+	// AccessMode: The access mode of the disk. - READ_WRITE_SINGLE: The default
+	// AccessMode, means the disk can be attached to single instance in RW mode. -
+	// READ_WRITE_MANY: The AccessMode means the disk can be attached to multiple
+	// instances in RW mode. - READ_ONLY_MANY: The AccessMode means the disk can be
+	// attached to multiple instances in RO mode. The AccessMode is only valid for
+	// Hyperdisk disk types.
+	//
+	// Possible values:
+	//   "READ_ONLY_MANY" - The AccessMode means the disk can be attached to
+	// multiple instances in RO mode.
+	//   "READ_WRITE_MANY" - The AccessMode means the disk can be attached to
+	// multiple instances in RW mode.
+	//   "READ_WRITE_SINGLE" - The default AccessMode, means the disk can be
+	// attached to single instance in RW mode.
+	AccessMode string `json:"accessMode,omitempty"`
 	// Architecture: The architecture of the disk. Valid values are ARM64 or
 	// X86_64.
 	//
@@ -8190,13 +8206,13 @@ type Disk struct {
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Architecture") to
+	// ForceSendFields is a list of field names (e.g. "AccessMode") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Architecture") to include in API
+	// NullFields is a list of field names (e.g. "AccessMode") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -18814,7 +18830,10 @@ type InstanceProperties struct {
 	// Labels: Labels to apply to instances that are created from these properties.
 	Labels map[string]string `json:"labels,omitempty"`
 	// MachineType: The machine type to use for instances that are created from
-	// these properties.
+	// these properties. This field only accept machine types name. e.g.
+	// n2-standard-4 and does not accept machine type full or partial url. e.g.
+	// projects/my-l7ilb-project/zones/us-central1-a/machineTypes/n2-standard-4
+	// will throw INTERNAL_ERROR.
 	MachineType string `json:"machineType,omitempty"`
 	// Metadata: The metadata key/value pairs to assign to instances that are
 	// created from these properties. These pairs can consist of custom metadata or
@@ -27132,6 +27151,7 @@ type NetworkInterface struct {
 	//
 	// Possible values:
 	//   "GVNIC" - GVNIC
+	//   "IDPF" - IDPF
 	//   "UNSPECIFIED_NIC_TYPE" - No type specified.
 	//   "VIRTIO_NET" - VIRTIO
 	NicType string `json:"nicType,omitempty"`
@@ -51603,6 +51623,7 @@ type VpnGateway struct {
 	// Possible values:
 	//   "IPV4_IPV6" - Enable VPN gateway with both IPv4 and IPv6 protocols.
 	//   "IPV4_ONLY" - Enable VPN gateway with only IPv4 protocol.
+	//   "IPV6_ONLY" - Enable VPN gateway with only IPv6 protocol.
 	StackType string `json:"stackType,omitempty"`
 	// VpnInterfaces: The list of VPN interfaces associated with this VPN gateway.
 	VpnInterfaces []*VpnGatewayVpnGatewayInterface `json:"vpnInterfaces,omitempty"`
