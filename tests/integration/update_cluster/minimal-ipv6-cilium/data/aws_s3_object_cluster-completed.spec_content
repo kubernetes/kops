@@ -229,6 +229,7 @@ spec:
       version: v1.15.4
   nodeTerminationHandler:
     cpuRequest: 50m
+    deleteSQSMsgIfNodeNotFound: false
     enableRebalanceDraining: false
     enableRebalanceMonitoring: false
     enableScheduledEventDraining: true
@@ -237,8 +238,10 @@ spec:
     excludeFromLoadBalancers: true
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
+    podTerminationGracePeriod: -1
     prometheusEnable: false
-    version: v1.18.3
+    taintNode: false
+    version: v1.22.0
   nonMasqueradeCIDR: ::/0
   secretStore: memfs://clusters.example.com/minimal-ipv6.example.com/secrets
   serviceClusterIPRange: fd00:5e4f:ce::/108
