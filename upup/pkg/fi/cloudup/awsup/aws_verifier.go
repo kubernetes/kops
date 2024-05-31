@@ -128,10 +128,82 @@ type ResponseMetadata struct {
 }
 
 func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, AWSAuthenticationTokenPrefix) {
-		return nil, bootstrap.ErrNotThisVerifier
+	if strings.HasPrefix(token, AWSAuthenticationTokenPrefixV1) {
+		return a.verifyTokenV1(ctx, rawRequest, token, body)
 	}
-	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefix)
+	if strings.HasPrefix(token, AWSAuthenticationTokenPrefixV2) {
+		return a.verifyTokenV2(ctx, rawRequest, token, body)
+	}
+
+	return nil, bootstrap.ErrNotThisVerifier
+}
+
+func (a awsVerifier) verifyTokenV1(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
+	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefixV1)
+
+	tokenBytes, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return nil, fmt.Errorf("decoding authorization token: %w", err)
+	}
+	var decoded awsV1Token
+	if err := json.Unmarshal(tokenBytes, &decoded); err != nil {
+		return nil, fmt.Errorf("unmarshalling authorization token: %w", err)
+	}
+
+	// Verify the token has signed the body content.
+	sha := sha256.Sum256(body)
+	decodedHeaders := http.Header(decoded)
+
+	if decodedHeaders.Get("X-Kops-Request-SHA") != base64.RawStdEncoding.EncodeToString(sha[:]) {
+		return nil, fmt.Errorf("incorrect SHA")
+	}
+
+	authorization := decodedHeaders.Get("Authorization")
+	if !strings.HasPrefix(authorization, "AWS4-HMAC-SHA256 ") {
+		return nil, fmt.Errorf("incorrect authorization algorithm")
+	}
+
+	amzSignature := ""
+	amzCredential := ""
+	amzSignedHeaders := ""
+
+	for _, token := range strings.Split(strings.TrimPrefix(authorization, "AWS4-HMAC-SHA256 "), ", ") {
+		kv := strings.SplitN(token, "=", 2)
+		if len(kv) == 1 {
+			return nil, fmt.Errorf("incorrect authorization format")
+		}
+		got := kv[1]
+		switch kv[0] {
+		case "Signature":
+			amzSignature = got
+		case "Credential":
+			amzCredential = got
+		case "SignedHeaders":
+			amzSignedHeaders = got
+		}
+	}
+	signedHeaders := sets.New(strings.Split(amzSignedHeaders, ";")...)
+	if !signedHeaders.Has("x-kops-request-sha") {
+		return nil, fmt.Errorf("unexpected signed headers value")
+	}
+
+	if amzSignature == "" {
+		return nil, fmt.Errorf("unexpected signature value")
+	}
+	if amzCredential == "" {
+		return nil, fmt.Errorf("unexpected credential value")
+	}
+
+	callerIdentity, err := a.stsRequestValidator.getCallerIdentityV1(ctx, &a.client, decoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return a.verifyCallerIdentity(ctx, callerIdentity)
+}
+
+func (a awsVerifier) verifyTokenV2(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
+	token = strings.TrimPrefix(token, AWSAuthenticationTokenPrefixV2)
 
 	tokenBytes, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
@@ -157,14 +229,19 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 		return nil, fmt.Errorf("unexpected signed headers value")
 	}
 
-	if !a.stsRequestValidator.IsValid(reqURL) {
+	if !a.stsRequestValidator.isValidV2(reqURL) {
 		return nil, fmt.Errorf("invalid STS url: host=%q, path=%q", reqURL.Host, reqURL.Path)
 	}
 
-	callerIdentity, err := a.stsRequestValidator.GetCallerIdentity(ctx, &a.client, &decoded)
+	callerIdentity, err := a.stsRequestValidator.getCallerIdentityV2(ctx, &a.client, &decoded)
 	if err != nil {
 		return nil, err
 	}
+
+	return a.verifyCallerIdentity(ctx, callerIdentity)
+}
+
+func (a awsVerifier) verifyCallerIdentity(ctx context.Context, callerIdentity *GetCallerIdentityResponse) (*bootstrap.VerifyResult, error) {
 	if callerIdentity.GetCallerIdentityResult[0].Account != a.accountId {
 		return nil, fmt.Errorf("incorrect account %s", callerIdentity.GetCallerIdentityResult[0].Account)
 	}
@@ -269,7 +346,7 @@ type stsRequestValidator struct {
 }
 
 // IsValid performs some basic pre-validation of the request URL.
-func (s *stsRequestValidator) IsValid(u *url.URL) bool {
+func (s *stsRequestValidator) isValidV2(u *url.URL) bool {
 	if u.Host != s.Host {
 		return false
 	}
@@ -286,14 +363,14 @@ func (s *stsRequestValidator) IsValid(u *url.URL) bool {
 	return true
 }
 
-// GetCallerIdentity will request the presigned token URL, and decode the returned identity.
-func (s *stsRequestValidator) GetCallerIdentity(ctx context.Context, httpClient *http.Client, decoded *awsV2Token) (*GetCallerIdentityResponse, error) {
+// getCallerIdentityV2 will request the presigned token URL, and decode the returned identity.
+func (s *stsRequestValidator) getCallerIdentityV2(ctx context.Context, httpClient *http.Client, decoded *awsV2Token) (*GetCallerIdentityResponse, error) {
 	reqURL, err := url.Parse(decoded.URL)
 	if err != nil {
 		return nil, fmt.Errorf("parsing STS request URL: %w", err)
 	}
 
-	if !s.IsValid(reqURL) {
+	if !s.isValidV2(reqURL) {
 		return nil, fmt.Errorf("url not valid for STS request")
 	}
 
@@ -302,6 +379,46 @@ func (s *stsRequestValidator) GetCallerIdentity(ctx context.Context, httpClient 
 		Method: decoded.Method,
 		Header: decoded.SignedHeader,
 	}
+	response, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("sending STS request: %v", err)
+	}
+	if response != nil {
+		defer response.Body.Close()
+	}
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading STS response: %v", err)
+	}
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("received status code %d from STS: %s", response.StatusCode, string(responseBody))
+	}
+
+	callerIdentity := &GetCallerIdentityResponse{}
+	err = xml.NewDecoder(bytes.NewReader(responseBody)).Decode(callerIdentity)
+	if err != nil {
+		return nil, fmt.Errorf("decoding STS response: %v", err)
+	}
+
+	return callerIdentity, nil
+}
+
+// GetCallerIdentityV1 will request the presigned token URL, and decode the returned identity.
+func (s *stsRequestValidator) getCallerIdentityV1(ctx context.Context, httpClient *http.Client, decoded awsV1Token) (*GetCallerIdentityResponse, error) {
+	// Well-known V1 request body
+	body := []byte("Action=GetCallerIdentity&Version=2011-06-15")
+
+	// The host is not passed in V1 (a shortcoming of V1)
+	host := s.Host
+	stsURL := "https://" + host + "/"
+
+	req, err := http.NewRequest("POST", stsURL, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("build STS request: %w", err)
+	}
+	req.Header = http.Header(decoded)
+
 	response, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("sending STS request: %v", err)
