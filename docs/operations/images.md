@@ -144,7 +144,15 @@ az vm image list --all --output table \
 
 Debian 12 is based on Kernel version **6.1** which has no known major Kernel bugs and fully supports all Cilium features.
 
-At the moment there is no official image published.
+Available images can be listed using:
+
+```bash
+# Amazon Web Services (AWS)
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 136693071363 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-12-*-*"
+```
 
 ### Flatcar
 
