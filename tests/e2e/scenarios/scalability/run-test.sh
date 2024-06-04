@@ -158,9 +158,6 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
-  # we are not testing statefulsets at this point
-  SMALL_STATEFUL_SETS_PER_NAMESPACE: 0
-  MEDIUM_STATEFUL_SETS_PER_NAMESPACE: 0
   # we are not testing PVS at this point
   CL2_ENABLE_PVS: false
   ENABLE_RESTART_COUNT_CHECK: false
