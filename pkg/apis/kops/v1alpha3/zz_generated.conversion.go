@@ -5549,6 +5549,10 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5625,6 +5629,10 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5785,6 +5793,10 @@ func autoConvert_v1alpha3_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5821,6 +5833,10 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha3_KubeSchedulerConfig(in *ko
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 

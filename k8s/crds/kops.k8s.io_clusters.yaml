@@ -2210,6 +2210,22 @@ spec:
                     items:
                       type: string
                     type: array
+                  cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: CPULimit, cpu limit compute resource for kube-controler-manager
+                      e.g. "500m"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: CPURequest, cpu request compute resource for kube-controler-manager.
+                      Defaults to "100m"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   disableAttachDetachReconcileSync:
                     description: DisableAttachDetachReconcileSync disables the reconcile
                       sync loop in the attach-detach controller. This can cause volumes
@@ -2378,6 +2394,22 @@ spec:
                   master:
                     description: Master is the url for the kube api master
                     type: string
+                  memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: MemoryLimit, memory limit compute resource for kube-controler-manager
+                      e.g. "30Mi"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: MemoryRequest, memory request compute resource for
+                      kube-controler-manager e.g. "30Mi"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   minResyncPeriod:
                     description: MinResyncPeriod indicates the resync period in reflectors.
                       The resync period will be random between MinResyncPeriod and
@@ -3773,6 +3805,22 @@ spec:
                       the burst quota is exhausted
                     format: int32
                     type: integer
+                  cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: CPULimit, cpu limit compute resource for scheduler
+                      e.g. "500m"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: CPURequest, cpu request compute resource for scheduler.
+                      Defaults to "100m"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   enableContentionProfiling:
                     description: EnableContentionProfiling enables block profiling,
                       if profiling is enabled
@@ -3866,6 +3914,22 @@ spec:
                       on the version and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
                     format: int32
                     type: integer
+                  memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: MemoryLimit, memory limit compute resource for scheduler
+                      e.g. "30Mi"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: MemoryRequest, memory request compute resource for
+                      scheduler e.g. "30Mi"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   qps:
                     anyOf:
                     - type: integer

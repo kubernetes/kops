@@ -139,7 +139,7 @@ ClusterName: complex.example.com
 ConfigBase: memfs://clusters.example.com/complex.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: TagVYsukF7ql0g7GpSE6Z1E3sQXC5hWT1Vf/OCgBHJU=
+NodeupConfigHash: MRD4Bp4bTN6/GAnqOQNJbR4iS2YzIgDqLGQfTdMolIw=
 
 __EOF_KUBE_ENV
 
