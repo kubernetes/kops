@@ -5390,6 +5390,10 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5461,6 +5465,10 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableLeaderMigration = in.EnableLeaderMigration
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5618,6 +5626,10 @@ func autoConvert_v1alpha3_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.EnableProfiling = in.EnableProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -5651,6 +5663,10 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha3_KubeSchedulerConfig(in *ko
 	out.EnableProfiling = in.EnableProfiling
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 

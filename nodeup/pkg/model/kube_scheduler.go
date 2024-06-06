@@ -217,6 +217,27 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		},
 	}
 
+	resourceRequests := v1.ResourceList{}
+	resourceLimits := v1.ResourceList{}
+
+	cpuRequest := resource.MustParse("100m")
+	if kubeScheduler.CPURequest != nil {
+		cpuRequest = *kubeScheduler.CPURequest
+	}
+	resourceRequests["cpu"] = cpuRequest
+
+	if kubeScheduler.CPULimit != nil {
+		resourceLimits["cpu"] = *kubeScheduler.CPULimit
+	}
+
+	if kubeScheduler.MemoryRequest != nil {
+		resourceRequests["memory"] = *kubeScheduler.MemoryRequest
+	}
+
+	if kubeScheduler.MemoryLimit != nil {
+		resourceLimits["memory"] = *kubeScheduler.MemoryLimit
+	}
+
 	image := b.RemapImage(kubeScheduler.Image)
 
 	healthAction := &v1.HTTPGetAction{
@@ -239,9 +260,8 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 			TimeoutSeconds:      15,
 		},
 		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("100m"),
-			},
+			Requests: resourceRequests,
+			Limits:   resourceLimits,
 		},
 	}
 	kubemanifest.AddHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")

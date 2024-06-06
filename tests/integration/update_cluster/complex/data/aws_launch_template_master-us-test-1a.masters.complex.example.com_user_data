@@ -202,6 +202,8 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: complex.example.com
   configureCloudRoutes: false
+  cpuLimit: 500m
+  cpuRequest: 200m
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
@@ -209,8 +211,12 @@ kubeControllerManager:
   leaderElection:
     leaderElect: true
   logLevel: 2
+  memoryLimit: 1000Mi
+  memoryRequest: 800Mi
   useServiceAccountCredentials: true
 kubeScheduler:
+  cpuLimit: 500m
+  cpuRequest: 200m
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
@@ -218,6 +224,8 @@ kubeScheduler:
   leaderElection:
     leaderElect: true
   logLevel: 2
+  memoryLimit: 1000Mi
+  memoryRequest: 800Mi
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd

@@ -666,6 +666,15 @@ type KubeControllerManagerConfig struct {
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 	// EnableLeaderMigration enables controller leader migration.
 	EnableLeaderMigration *bool `json:"enableLeaderMigration,omitempty" flag:"enable-leader-migration"`
+
+	// CPURequest, cpu request compute resource for kube-controler-manager. Defaults to "100m"
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for kube-controler-manager e.g. "500m"
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for kube-controler-manager e.g. "30Mi"
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for kube-controler-manager e.g. "30Mi"
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -746,6 +755,15 @@ type KubeSchedulerConfig struct {
 	TLSCertFile *string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TLSPrivateKeyFile is the file containing the private key for the TLS server certificate.
 	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+
+	// CPURequest, cpu request compute resource for scheduler. Defaults to "100m"
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for scheduler e.g. "500m"
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for scheduler e.g. "30Mi"
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for scheduler e.g. "30Mi"
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
