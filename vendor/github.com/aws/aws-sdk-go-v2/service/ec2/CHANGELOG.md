@@ -1,3 +1,19 @@
+# v1.163.0 (2024-06-04)
+
+* **Feature**: U7i instances with up to 32 TiB of DDR5 memory and 896 vCPUs are now available. C7i-flex instances are launched and are lower-priced variants of the Amazon EC2 C7i instances that offer a baseline level of CPU performance with the ability to scale up to the full compute performance 95% of the time.
+
+# v1.162.1 (2024-06-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.162.0 (2024-05-28)
+
+* **Feature**: Providing support to accept BgpAsnExtended attribute
+
+# v1.161.4 (2024-05-23)
+
+* No change notes available for this release.
+
 # v1.161.3 (2024-05-16)
 
 * **Dependency Update**: Updated to the latest SDK module versions

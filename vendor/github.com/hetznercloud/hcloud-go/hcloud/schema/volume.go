@@ -10,6 +10,7 @@ type Volume struct {
 	Status      string            `json:"status"`
 	Location    Location          `json:"location"`
 	Size        int               `json:"size"`
+	Format      *string           `json:"format"`
 	Protection  VolumeProtection  `json:"protection"`
 	Labels      map[string]string `json:"labels"`
 	LinuxDevice string            `json:"linux_device"`

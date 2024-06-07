@@ -134,8 +134,9 @@ type IpAddressType string
 
 // Enum values for IpAddressType
 const (
-	IpAddressTypeIpv4      IpAddressType = "ipv4"
-	IpAddressTypeDualstack IpAddressType = "dualstack"
+	IpAddressTypeIpv4                       IpAddressType = "ipv4"
+	IpAddressTypeDualstack                  IpAddressType = "dualstack"
+	IpAddressTypeDualstackWithoutPublicIpv4 IpAddressType = "dualstack-without-public-ipv4"
 )
 
 // Values returns all known values for IpAddressType. Note that this can be
@@ -146,6 +147,7 @@ func (IpAddressType) Values() []IpAddressType {
 	return []IpAddressType{
 		"ipv4",
 		"dualstack",
+		"dualstack-without-public-ipv4",
 	}
 }
 

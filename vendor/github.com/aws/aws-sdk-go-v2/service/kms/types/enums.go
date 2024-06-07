@@ -11,6 +11,7 @@ const (
 	AlgorithmSpecRsaesOaepSha256     AlgorithmSpec = "RSAES_OAEP_SHA_256"
 	AlgorithmSpecRsaAesKeyWrapSha1   AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_1"
 	AlgorithmSpecRsaAesKeyWrapSha256 AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_256"
+	AlgorithmSpecSm2pke              AlgorithmSpec = "SM2PKE"
 )
 
 // Values returns all known values for AlgorithmSpec. Note that this can be
@@ -24,6 +25,7 @@ func (AlgorithmSpec) Values() []AlgorithmSpec {
 		"RSAES_OAEP_SHA_256",
 		"RSA_AES_KEY_WRAP_SHA_1",
 		"RSA_AES_KEY_WRAP_SHA_256",
+		"SM2PKE",
 	}
 }
 
@@ -576,6 +578,7 @@ const (
 	WrappingKeySpecRsa2048 WrappingKeySpec = "RSA_2048"
 	WrappingKeySpecRsa3072 WrappingKeySpec = "RSA_3072"
 	WrappingKeySpecRsa4096 WrappingKeySpec = "RSA_4096"
+	WrappingKeySpecSm2     WrappingKeySpec = "SM2"
 )
 
 // Values returns all known values for WrappingKeySpec. Note that this can be
@@ -587,6 +590,7 @@ func (WrappingKeySpec) Values() []WrappingKeySpec {
 		"RSA_2048",
 		"RSA_3072",
 		"RSA_4096",
+		"SM2",
 	}
 }
 

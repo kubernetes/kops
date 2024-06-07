@@ -249,7 +249,7 @@ func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint64, error) {
 	return uint64(len(results.IPs)), nil
 }
 
-// IPAM API.
+// This API allows you to manage your Scaleway IP addresses with our IP Address Management tool.
 type API struct {
 	client *scw.Client
 }

@@ -48,8 +48,9 @@ type ACMEIssuer struct {
 	// endpoint.
 	// For example, for Let's Encrypt's DST crosssign you would use:
 	// "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA.
-	// This value picks the first certificate bundle in the ACME alternative
-	// chains that has a certificate with this value as its issuer's CN
+	// This value picks the first certificate bundle in the combined set of
+	// ACME default and alternative chains that has a root-most certificate with
+	// this value as its issuer's commonname.
 	// +optional
 	// +kubebuilder:validation:MaxLength=64
 	PreferredChain string `json:"preferredChain,omitempty"`
@@ -109,7 +110,7 @@ type ACMEIssuer struct {
 	// Enables requesting a Not After date on certificates that matches the
 	// duration of the certificate. This is not supported by all ACME servers
 	// like Let's Encrypt. If set to true when the ACME server does not support
-	// it it will create an error on the Order.
+	// it, it will create an error on the Order.
 	// Defaults to false.
 	// +optional
 	EnableDurationFeature bool `json:"enableDurationFeature,omitempty"`
@@ -337,7 +338,7 @@ type ACMEChallengeSolverHTTP01IngressPodSpec struct {
 
 	// If specified, the pod's imagePullSecrets
 	// +optional
-	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchMergeKey:"name" patchStrategy:"merge"`
 }
 
 type ACMEChallengeSolverHTTP01IngressTemplate struct {
@@ -478,6 +479,10 @@ type ACMEIssuerDNS01ProviderDigitalOcean struct {
 // ACMEIssuerDNS01ProviderRoute53 is a structure containing the Route 53
 // configuration for AWS
 type ACMEIssuerDNS01ProviderRoute53 struct {
+	// Auth configures how cert-manager authenticates.
+	// +optional
+	Auth *Route53Auth `json:"auth,omitempty"`
+
 	// The AccessKeyID is used for authentication.
 	// Cannot be set when SecretAccessKeyID is set.
 	// If neither the Access Key nor Key ID are set, we fall-back to using env
@@ -513,6 +518,36 @@ type ACMEIssuerDNS01ProviderRoute53 struct {
 
 	// Always set the region when using AccessKeyID and SecretAccessKey
 	Region string `json:"region"`
+}
+
+// Route53Auth is configuration used to authenticate with a Route53.
+type Route53Auth struct {
+	// Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+	// by passing a bound ServiceAccount token.
+	Kubernetes *Route53KubernetesAuth `json:"kubernetes"`
+}
+
+// Route53KubernetesAuth is a configuration to authenticate against Route53
+// using a bound Kubernetes ServiceAccount token.
+type Route53KubernetesAuth struct {
+	// A reference to a service account that will be used to request a bound
+	// token (also known as "projected token"). To use this field, you must
+	// configure an RBAC rule to let cert-manager request a token.
+	ServiceAccountRef *ServiceAccountRef `json:"serviceAccountRef"`
+}
+
+// ServiceAccountRef is a service account used by cert-manager to request a
+// token. The expiration of the token is also set by cert-manager to 10 minutes.
+type ServiceAccountRef struct {
+	// Name of the ServiceAccount used to request a token.
+	Name string `json:"name"`
+
+	// TokenAudiences is an optional list of audiences to include in the
+	// token passed to AWS. The default token consisting of the issuer's namespace
+	// and name is always included.
+	// If unset the audience defaults to `sts.amazonaws.com`.
+	// +optional
+	TokenAudiences []string `json:"audiences,omitempty"`
 }
 
 // ACMEIssuerDNS01ProviderAzureDNS is a structure containing the

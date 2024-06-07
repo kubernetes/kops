@@ -14,12 +14,14 @@ import (
 // Delivers a message to the specified queue.
 //
 // A message can include only XML, JSON, and unformatted text. The following
-// Unicode characters are allowed:
+// Unicode characters are allowed. For more information, see the [W3C specification for characters].
 //
 // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
 //
-// Any characters not included in this list will be rejected. For more
-// information, see the [W3C specification for characters].
+// Amazon SQS does not throw an exception or completely reject the message if it
+// contains invalid characters. Instead, it replaces those invalid characters with
+// U+FFFD before storing the message in the queue, as long as the message body
+// contains at least one valid character.
 //
 // [W3C specification for characters]: http://www.w3.org/TR/REC-xml/#charsets
 func (c *Client) SendMessage(ctx context.Context, params *SendMessageInput, optFns ...func(*Options)) (*SendMessageOutput, error) {
@@ -43,12 +45,14 @@ type SendMessageInput struct {
 	// KiB.
 	//
 	// A message can include only XML, JSON, and unformatted text. The following
-	// Unicode characters are allowed:
+	// Unicode characters are allowed. For more information, see the [W3C specification for characters].
 	//
 	// #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
 	//
-	// Any characters not included in this list will be rejected. For more
-	// information, see the [W3C specification for characters].
+	// Amazon SQS does not throw an exception or completely reject the message if it
+	// contains invalid characters. Instead, it replaces those invalid characters with
+	// U+FFFD before storing the message in the queue, as long as the message body
+	// contains at least one valid character.
 	//
 	// [W3C specification for characters]: http://www.w3.org/TR/REC-xml/#charsets
 	//

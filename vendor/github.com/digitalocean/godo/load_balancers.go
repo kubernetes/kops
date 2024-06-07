@@ -13,11 +13,15 @@ const (
 	loadBalancersBasePath = "/v2/load_balancers"
 )
 
-// Load Balancer types.
 const (
+	// Load Balancer types
 	LoadBalancerTypeGlobal          = "GLOBAL"
 	LoadBalancerTypeRegional        = "REGIONAL"
 	LoadBalancerTypeRegionalNetwork = "REGIONAL_NETWORK"
+
+	// Load Balancer network types
+	LoadBalancerNetworkTypeExternal = "EXTERNAL"
+	LoadBalancerNetworkTypeInternal = "INTERNAL"
 )
 
 // LoadBalancersService is an interface for managing load balancers with the DigitalOcean API.
@@ -68,6 +72,7 @@ type LoadBalancer struct {
 	Domains                      []*LBDomain      `json:"domains,omitempty"`
 	GLBSettings                  *GLBSettings     `json:"glb_settings,omitempty"`
 	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
+	Network                      string           `json:"network,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancer.
@@ -101,6 +106,7 @@ func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
 		ProjectID:                    l.ProjectID,
 		HTTPIdleTimeoutSeconds:       l.HTTPIdleTimeoutSeconds,
 		TargetLoadBalancerIDs:        append([]string(nil), l.TargetLoadBalancerIDs...),
+		Network:                      l.Network,
 	}
 
 	if l.DisableLetsEncryptDNSRecords != nil {
@@ -238,6 +244,7 @@ type LoadBalancerRequest struct {
 	Domains                      []*LBDomain      `json:"domains,omitempty"`
 	GLBSettings                  *GLBSettings     `json:"glb_settings,omitempty"`
 	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
+	Network                      string           `json:"network,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancerRequest.

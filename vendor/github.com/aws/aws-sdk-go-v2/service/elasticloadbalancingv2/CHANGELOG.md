@@ -1,3 +1,15 @@
+# v1.31.2 (2024-06-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.31.1 (2024-05-23)
+
+* No change notes available for this release.
+
+# v1.31.0 (2024-05-17)
+
+* **Feature**: This release adds dualstack-without-public-ipv4 IP address type for ALB.
+
 # v1.30.8 (2024-05-16)
 
 * **Dependency Update**: Updated to the latest SDK module versions
