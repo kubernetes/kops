@@ -380,6 +380,7 @@ func VolumeFromSchema(s schema.Volume) *Volume {
 		Name:        s.Name,
 		Location:    LocationFromSchema(s.Location),
 		Size:        s.Size,
+		Format:      s.Format,
 		Status:      VolumeStatus(s.Status),
 		LinuxDevice: s.LinuxDevice,
 		Protection: VolumeProtection{

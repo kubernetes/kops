@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.117.0] - 2024-06-04
+
+- #696 - @llDrLove - Support specifying control plane firewall rules when creating or updating DOKS clusters
+- #697 - @asaha2 - Add support for lb internal network type
+- #695 - @ElanHasson - APPS-8732 - Update documentation on App Platform OpenSearch endpoint structure.
+- #692 - @ElanHasson - APPS-8732 - Add OpenSearch as a Log Destination for App Platform.
+
 ## [v1.116.0] - 2024-05-16
 
 - #693 - @guptado - Introduce VPC peering methods

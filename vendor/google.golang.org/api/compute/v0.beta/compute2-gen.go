@@ -52511,7 +52511,7 @@ type NetworksPatchCall struct {
 }
 
 // Patch: Patches the specified network with the data included in the request.
-// Only the following fields can be modified: routingConfig.routingMode.
+// Only routingConfig can be modified.
 //
 // - network: Name of the network to update.
 // - project: Project ID for this request.

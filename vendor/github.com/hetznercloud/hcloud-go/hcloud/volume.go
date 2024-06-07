@@ -21,11 +21,17 @@ type Volume struct {
 	Server      *Server
 	Location    *Location
 	Size        int
+	Format      *string
 	Protection  VolumeProtection
 	Labels      map[string]string
 	LinuxDevice string
 	Created     time.Time
 }
+
+const (
+	VolumeFormatExt4 = "ext4"
+	VolumeFormatXFS  = "xfs"
+)
 
 // VolumeProtection represents the protection level of a volume.
 type VolumeProtection struct {

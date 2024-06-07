@@ -77,6 +77,45 @@ func NewFakeAWSServices(clusterID string) *FakeAWSServices {
 	s.selfInstance = selfInstance
 	s.instances = []*ec2.Instance{selfInstance}
 
+	selfInstance.NetworkInterfaces = []*ec2.InstanceNetworkInterface{
+		{
+			Attachment: &ec2.InstanceNetworkInterfaceAttachment{
+				DeviceIndex: aws.Int64(1),
+			},
+			PrivateIpAddresses: []*ec2.InstancePrivateIpAddress{
+				{
+					Primary:          aws.Bool(true),
+					PrivateDnsName:   aws.String("ip-172-20-1-100.ec2.internal"),
+					PrivateIpAddress: aws.String("172.20.1.1"),
+				},
+				{
+					Primary:          aws.Bool(false),
+					PrivateDnsName:   aws.String("ip-172-20-1-101.ec2.internal"),
+					PrivateIpAddress: aws.String("172.20.1.2"),
+				},
+			},
+			Status: aws.String(ec2.NetworkInterfaceStatusInUse),
+		},
+		{
+			Attachment: &ec2.InstanceNetworkInterfaceAttachment{
+				DeviceIndex: aws.Int64(0),
+			},
+			PrivateIpAddresses: []*ec2.InstancePrivateIpAddress{
+				{
+					Primary:          aws.Bool(true),
+					PrivateDnsName:   aws.String("ip-172-20-0-100.ec2.internal"),
+					PrivateIpAddress: aws.String("172.20.0.100"),
+				},
+				{
+					Primary:          aws.Bool(false),
+					PrivateDnsName:   aws.String("ip-172-20-0-101.ec2.internal"),
+					PrivateIpAddress: aws.String("172.20.0.101"),
+				},
+			},
+			Status: aws.String(ec2.NetworkInterfaceStatusInUse),
+		},
+	}
+
 	var tag ec2.Tag
 	tag.Key = aws.String(TagNameKubernetesClusterLegacy)
 	tag.Value = aws.String(clusterID)

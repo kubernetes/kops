@@ -1,3 +1,15 @@
+# v1.32.5 (2024-06-06)
+
+* **Documentation**: Doc only updates for SQS. These updates include customer-reported issues and TCX3 modifications.
+
+# v1.32.4 (2024-06-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.32.3 (2024-05-23)
+
+* No change notes available for this release.
+
 # v1.32.2 (2024-05-16)
 
 * **Dependency Update**: Updated to the latest SDK module versions

@@ -1,3 +1,6 @@
+> [!WARNING]
+> As of v2 of this library, change log can be found in GitHub releases.
+
 ## 1.5.1
 
 * Wrap errors so they're compatible with `errors.Is` and `errors.As` [GH-282]

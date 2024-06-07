@@ -1986,7 +1986,7 @@ type UpdateUserRequest struct {
 	Tags *[]string `json:"tags,omitempty"`
 }
 
-// IAM API.
+// This API allows you to manage Identity and Access Management (IAM) across your Scaleway Organizations, Projects and resources.
 type API struct {
 	client *scw.Client
 }
