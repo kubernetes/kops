@@ -1,3 +1,15 @@
+# v1.32.2 (2024-06-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.32.1 (2024-05-23)
+
+* No change notes available for this release.
+
+# v1.32.0 (2024-05-22)
+
+* **Feature**: This release includes feature to import customer's asymmetric (RSA, ECC and SM2) and HMAC keys into KMS in China.
+
 # v1.31.3 (2024-05-16)
 
 * **Dependency Update**: Updated to the latest SDK module versions

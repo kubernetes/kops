@@ -1341,8 +1341,8 @@ type Server struct {
 	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode.
 	RoutedIPEnabled bool `json:"routed_ip_enabled"`
 
-	// EnableIPv6: true if IPv6 is enabled.
-	EnableIPv6 bool `json:"enable_ipv6"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6"`
 
 	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
@@ -1353,10 +1353,10 @@ type Server struct {
 	// Protected: defines whether the Instance protection option is activated.
 	Protected bool `json:"protected"`
 
-	// PrivateIP: private IP address of the Instance.
+	// PrivateIP: private IP address of the Instance (deprecated and always `null` when `routed_ip_enabled` is `True`).
 	PrivateIP *string `json:"private_ip"`
 
-	// PublicIP: information about the public IP.
+	// Deprecated: PublicIP: information about the public IP (deprecated in favor of `public_ips`).
 	PublicIP *ServerIP `json:"public_ip"`
 
 	// PublicIPs: information about all the public IPs attached to the server.
@@ -1375,7 +1375,7 @@ type Server struct {
 	// Location: instance location.
 	Location *ServerLocation `json:"location"`
 
-	// IPv6: instance IPv6 address.
+	// Deprecated: IPv6: instance IPv6 address (deprecated when `routed_ip_enabled` is `True`).
 	IPv6 *ServerIPv6 `json:"ipv6"`
 
 	// Deprecated: Bootscript: instance bootscript.
@@ -1822,15 +1822,15 @@ type ApplyBlockMigrationRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
 	Zone scw.Zone `json:"-"`
 
-	// VolumeID: the volume to migrate, along with potentially other resources, according to the migration plan generated with a call to PlanBlockMigration.
+	// VolumeID: the volume to migrate, along with potentially other resources, according to the migration plan generated with a call to the "Plan a migration" endpoint.
 	// Precisely one of VolumeID, SnapshotID must be set.
 	VolumeID *string `json:"volume_id,omitempty"`
 
-	// SnapshotID: the snapshot to migrate, along with potentially other resources, according to the migration plan generated with a call to PlanBlockMigration.
+	// SnapshotID: the snapshot to migrate, along with potentially other resources, according to the migration plan generated with a call to the "Plan a migration" endpoint.
 	// Precisely one of VolumeID, SnapshotID must be set.
 	SnapshotID *string `json:"snapshot_id,omitempty"`
 
-	// ValidationKey: a value to be retrieved from a call to PlanBlockMigration, to confirm that the volume and/or snapshots specified in said plan should be migrated.
+	// ValidationKey: a value to be retrieved from a call to the "Plan a migration" endpoint, to confirm that the volume and/or snapshots specified in said plan should be migrated.
 	ValidationKey string `json:"validation_key,omitempty"`
 }
 
@@ -2090,10 +2090,10 @@ type CreateServerRequest struct {
 	// Volumes: volumes attached to the server.
 	Volumes map[string]*VolumeServerTemplate `json:"volumes,omitempty"`
 
-	// EnableIPv6: true if IPv6 is enabled on the server.
-	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled on the server (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
-	// PublicIP: ID of the reserved IP to attach to the Instance.
+	// Deprecated: PublicIP: ID of the reserved IP to attach to the Instance.
 	PublicIP *string `json:"public_ip,omitempty"`
 
 	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
@@ -2122,6 +2122,9 @@ type CreateServerRequest struct {
 
 	// PlacementGroup: placement group ID if Instance must be part of a placement group.
 	PlacementGroup *string `json:"placement_group,omitempty"`
+
+	// AdminPasswordEncryptionSSHKeyID: UUID of the SSH RSA key that will be used to encrypt the initial admin password for OS requiring it. Mandatory for Windows OS.
+	AdminPasswordEncryptionSSHKeyID *string `json:"admin_password_encryption_ssh_key_id,omitempty"`
 }
 
 // CreateServerResponse: create server response.
@@ -2208,6 +2211,15 @@ type CreateVolumeRequest struct {
 // CreateVolumeResponse: create volume response.
 type CreateVolumeResponse struct {
 	Volume *Volume `json:"volume"`
+}
+
+// DeleteEncryptedRdpPasswordRequest: delete encrypted rdp password request.
+type DeleteEncryptedRdpPasswordRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+
+	// ServerID: UUID of the Instance.
+	ServerID string `json:"-"`
 }
 
 // DeleteIPRequest: delete ip request.
@@ -2367,6 +2379,27 @@ type GetDashboardRequest struct {
 // GetDashboardResponse: get dashboard response.
 type GetDashboardResponse struct {
 	Dashboard *Dashboard `json:"dashboard"`
+}
+
+// GetEncryptedRdpPasswordRequest: get encrypted rdp password request.
+type GetEncryptedRdpPasswordRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+
+	// ServerID: UUID of the Instance.
+	ServerID string `json:"-"`
+}
+
+// GetEncryptedRdpPasswordResponse: get encrypted rdp password response.
+type GetEncryptedRdpPasswordResponse struct {
+	// Value: the encrypted RDP password.
+	Value *string `json:"value"`
+
+	// AdminPasswordEncryptionSSHKeyDescription: the description of the SSH key used for ciphering.
+	AdminPasswordEncryptionSSHKeyDescription *string `json:"admin_password_encryption_ssh_key_description"`
+
+	// AdminPasswordEncryptionSSHKeyID: the UUID of the SSH key used for ciphering.
+	AdminPasswordEncryptionSSHKeyID *string `json:"admin_password_encryption_ssh_key_id"`
 }
 
 // GetIPRequest: get ip request.
@@ -2956,11 +2989,14 @@ type ListServersRequest struct {
 	// Name: filter Instances by name (eg. "server1" will return "server100" and "server1" but not "foo").
 	Name *string `json:"-"`
 
-	// PrivateIP: list Instances by private_ip.
+	// Deprecated: PrivateIP: list Instances by private_ip.
 	PrivateIP *net.IP `json:"-"`
 
 	// WithoutIP: list Instances that are not attached to a public IP.
 	WithoutIP *bool `json:"-"`
+
+	// WithIP: list Instances by IP (both private_ip and public_ip are supported).
+	WithIP *net.IP `json:"-"`
 
 	// CommercialType: list Instances of this commercial type.
 	CommercialType *string `json:"-"`
@@ -3222,7 +3258,7 @@ type MigrationPlan struct {
 	// Snapshots: a list of snapshots which will be migrated to SBS together and with the volume, if present.
 	Snapshots []*Snapshot `json:"snapshots"`
 
-	// ValidationKey: a value to be passed to ApplyBlockMigrationRequest, to confirm that the execution of the plan is being requested.
+	// ValidationKey: a value to be passed to the call to the "Apply a migration plan" endpoint, to confirm that the execution of the plan is being requested.
 	ValidationKey string `json:"validation_key"`
 }
 
@@ -3596,6 +3632,7 @@ type UpdateServerRequest struct {
 	// PublicIPs: a list of reserved IP IDs to attach to the Instance.
 	PublicIPs *[]string `json:"public_ips,omitempty"`
 
+	// Deprecated
 	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
 	Protected *bool `json:"protected,omitempty"`
@@ -3797,8 +3834,8 @@ type setServerRequest struct {
 	// RoutedIPEnabled: true to configure the instance so it uses the new routed IP mode (once this is set to True you cannot set it back to False).
 	RoutedIPEnabled *bool `json:"routed_ip_enabled,omitempty"`
 
-	// EnableIPv6: true if IPv6 is enabled.
-	EnableIPv6 bool `json:"enable_ipv6"`
+	// Deprecated: EnableIPv6: true if IPv6 is enabled (deprecated and always `False` when `routed_ip_enabled` is `True`).
+	EnableIPv6 *bool `json:"enable_ipv6,omitempty"`
 
 	// Hostname: instance host name.
 	Hostname string `json:"hostname"`
@@ -3809,10 +3846,10 @@ type setServerRequest struct {
 	// Protected: instance protection option is activated.
 	Protected bool `json:"protected"`
 
-	// PrivateIP: instance private IP address.
+	// Deprecated: PrivateIP: instance private IP address (deprecated and always `null` when `routed_ip_enabled` is `True`).
 	PrivateIP *string `json:"private_ip,omitempty"`
 
-	// PublicIP: information about the public IP.
+	// Deprecated: PublicIP: information about the public IP (deprecated in favor of `public_ips`).
 	PublicIP *ServerIP `json:"public_ip,omitempty"`
 
 	// PublicIPs: information about all the public IPs attached to the server.
@@ -3828,7 +3865,7 @@ type setServerRequest struct {
 	// Location: instance location.
 	Location *ServerLocation `json:"location,omitempty"`
 
-	// IPv6: instance IPv6 address.
+	// Deprecated: IPv6: instance IPv6 address (deprecated when `routed_ip_enabled` is `True`).
 	IPv6 *ServerIPv6 `json:"ipv6,omitempty"`
 
 	// Deprecated: Bootscript: instance bootscript.
@@ -3903,7 +3940,7 @@ type setSnapshotResponse struct {
 	Snapshot *Snapshot `json:"snapshot"`
 }
 
-// Instance API.
+// This API allows you to manage your Instances.
 type API struct {
 	client *scw.Client
 }
@@ -4031,6 +4068,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "private_ip", req.PrivateIP)
 	parameter.AddToQuery(query, "without_ip", req.WithoutIP)
+	parameter.AddToQuery(query, "with_ip", req.WithIP)
 	parameter.AddToQuery(query, "commercial_type", req.CommercialType)
 	parameter.AddToQuery(query, "state", req.State)
 	if len(req.Tags) != 0 {
@@ -6435,7 +6473,7 @@ func (s *API) GetDashboard(req *GetDashboardRequest, opts ...scw.RequestOption) 
 	return &resp, nil
 }
 
-// PlanBlockMigration: Given a volume or snapshot, returns the migration plan for a call to the RPC ApplyBlockMigration. This plan will include zero or one volume, and zero or more snapshots, which will need to be migrated together. This RPC does not perform the actual migration itself, ApplyBlockMigration must be used. The validation_key value returned by this call must be provided to the ApplyBlockMigration call to confirm that all resources listed in the plan should be migrated.
+// PlanBlockMigration: Given a volume or snapshot, returns the migration plan for a call to the "Apply a migration plan" endpoint. This plan will include zero or one volume, and zero or more snapshots, which will need to be migrated together. This endpoint does not perform the actual migration itself, the "Apply a migration plan" endpoint must be used. The validation_key value returned by this endpoint must be provided to the call to the "Apply a migration plan" endpoint to confirm that all resources listed in the plan should be migrated.
 func (s *API) PlanBlockMigration(req *PlanBlockMigrationRequest, opts ...scw.RequestOption) (*MigrationPlan, error) {
 	var err error
 
@@ -6467,7 +6505,7 @@ func (s *API) PlanBlockMigration(req *PlanBlockMigrationRequest, opts ...scw.Req
 	return &resp, nil
 }
 
-// ApplyBlockMigration: To be used, this RPC must be preceded by a call to PlanBlockMigration. To migrate all resources mentioned in the MigrationPlan, the validation_key returned in the MigrationPlan must be provided.
+// ApplyBlockMigration: To be used, the call to this endpoint must be preceded by a call to the "Plan a migration" endpoint. To migrate all resources mentioned in the migration plan, the validation_key returned in the plan must be provided.
 func (s *API) ApplyBlockMigration(req *ApplyBlockMigrationRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -6488,6 +6526,66 @@ func (s *API) ApplyBlockMigration(req *ApplyBlockMigrationRequest, opts ...scw.R
 	err = scwReq.SetBody(req)
 	if err != nil {
 		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetEncryptedRdpPassword: Get the initial administrator password for Windows RDP. This password is encrypted using the SSH RSA key specified at the time of Instance creation.
+func (s *API) GetEncryptedRdpPassword(req *GetEncryptedRdpPasswordRequest, opts ...scw.RequestOption) (*GetEncryptedRdpPasswordResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ServerID) == "" {
+		return nil, errors.New("field ServerID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/encrypted_rdp_password",
+	}
+
+	var resp GetEncryptedRdpPasswordResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteEncryptedRdpPassword: Delete the initial administrator password for Windows RDP.
+func (s *API) DeleteEncryptedRdpPassword(req *DeleteEncryptedRdpPasswordRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ServerID) == "" {
+		return errors.New("field ServerID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "DELETE",
+		Path:   "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/encrypted_rdp_password",
 	}
 
 	err = s.client.Do(scwReq, nil, opts...)

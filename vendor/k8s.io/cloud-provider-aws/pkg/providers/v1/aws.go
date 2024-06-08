@@ -1543,6 +1543,19 @@ func extractIPv4NodeAddresses(instance *ec2.Instance) ([]v1.NodeAddress, error) 
 
 	addresses := []v1.NodeAddress{}
 
+	// sort by device index so that the first address added to the addresses list is from the first (primary) device
+	sort.Slice(instance.NetworkInterfaces, func(i, j int) bool {
+		// These nil checks should cause interfaces with non-nil attachments to sort before those with nil attachments
+		if instance.NetworkInterfaces[i].Attachment == nil {
+			return false
+		}
+		if instance.NetworkInterfaces[j].Attachment == nil {
+			return true
+		}
+
+		return aws.Int64Value(instance.NetworkInterfaces[i].Attachment.DeviceIndex) < aws.Int64Value(instance.NetworkInterfaces[j].Attachment.DeviceIndex)
+	})
+
 	// handle internal network interfaces
 	for _, networkInterface := range instance.NetworkInterfaces {
 		// skip network interfaces that are not currently in use

@@ -221,6 +221,7 @@ const (
 	AppDatabaseSpecEngine_PG      AppDatabaseSpecEngine = "PG"
 	AppDatabaseSpecEngine_Redis   AppDatabaseSpecEngine = "REDIS"
 	AppDatabaseSpecEngine_MongoDB AppDatabaseSpecEngine = "MONGODB"
+	AppDatabaseSpecEngine_Kafka   AppDatabaseSpecEngine = "KAFKA"
 )
 
 // AppDedicatedIp Represents a dedicated egress ip.
@@ -415,6 +416,7 @@ type AppLogDestinationSpec struct {
 	Papertrail  *AppLogDestinationSpecPapertrail `json:"papertrail,omitempty"`
 	Datadog     *AppLogDestinationSpecDataDog    `json:"datadog,omitempty"`
 	Logtail     *AppLogDestinationSpecLogtail    `json:"logtail,omitempty"`
+	OpenSearch  *AppLogDestinationSpecOpenSearch `json:"open_search,omitempty"`
 	Endpoint    string                           `json:"endpoint,omitempty"`
 	TLSInsecure bool                             `json:"tls_insecure,omitempty"`
 	Headers     []*AppLogDestinationSpecHeader   `json:"headers,omitempty"`
@@ -440,6 +442,15 @@ type AppLogDestinationSpecHeader struct {
 type AppLogDestinationSpecLogtail struct {
 	// Logtail token.
 	Token string `json:"token"`
+}
+
+// AppLogDestinationSpecOpenSearch OpenSearch configuration.
+type AppLogDestinationSpecOpenSearch struct {
+	// OpenSearch API Endpoint. Only HTTPS is supported. Format: https://<host>:<port>.
+	Endpoint  string               `json:"endpoint"`
+	BasicAuth *OpenSearchBasicAuth `json:"basic_auth,omitempty"`
+	// The index name to use for the logs. If not set, the default index name is \"logs\".
+	IndexName string `json:"index_name,omitempty"`
 }
 
 // AppLogDestinationSpecPapertrail Papertrail configuration.
@@ -1169,6 +1180,14 @@ const (
 type ListBuildpacksResponse struct {
 	// List of the available buildpacks on App Platform.
 	Buildpacks []*Buildpack `json:"buildpacks,omitempty"`
+}
+
+// OpenSearchBasicAuth Configure Username and/or Password for Basic authentication.
+type OpenSearchBasicAuth struct {
+	// Username to authenticate with.
+	User string `json:"user"`
+	// Password for user defined in User.
+	Password string `json:"password"`
 }
 
 // AppProposeRequest struct for AppProposeRequest

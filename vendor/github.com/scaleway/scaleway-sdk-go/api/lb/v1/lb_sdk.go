@@ -957,6 +957,9 @@ type IP struct {
 	// Reverse: reverse DNS (domain name) of the IP address.
 	Reverse string `json:"reverse"`
 
+	// Tags: IP tags.
+	Tags []string `json:"tags"`
+
 	// Deprecated: Region: the region the IP address is in.
 	Region *scw.Region `json:"region,omitempty"`
 
@@ -1877,6 +1880,9 @@ type CreateIPRequest struct {
 
 	// IsIPv6: if true, creates a Flexible IP with an ipv6 address.
 	IsIPv6 bool `json:"is_ipv6"`
+
+	// Tags: list of tags for the IP.
+	Tags []string `json:"tags"`
 }
 
 // CreateLBRequest: create lb request.
@@ -2398,6 +2404,9 @@ type ListIPsRequest struct {
 	// IPType: IP type to filter for.
 	// Default value: all
 	IPType ListIPsRequestIPType `json:"-"`
+
+	// Tags: tag to filter for, only IPs with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ListIPsResponse: list i ps response.
@@ -3066,6 +3075,9 @@ type UpdateIPRequest struct {
 
 	// LBID: ID of the server on which to attach the flexible IP.
 	LBID *string `json:"lb_id,omitempty"`
+
+	// Tags: list of tags for the IP.
+	Tags *[]string `json:"tags,omitempty"`
 }
 
 // UpdateLBRequest: update lb request.
@@ -3394,6 +3406,9 @@ type ZonedAPICreateIPRequest struct {
 
 	// IsIPv6: if true, creates a Flexible IP with an ipv6 address.
 	IsIPv6 bool `json:"is_ipv6"`
+
+	// Tags: list of tags for the IP.
+	Tags []string `json:"tags"`
 }
 
 // ZonedAPICreateLBRequest: zoned api create lb request.
@@ -3769,6 +3784,9 @@ type ZonedAPIListIPsRequest struct {
 	// IPType: IP type to filter for.
 	// Default value: all
 	IPType ListIPsRequestIPType `json:"-"`
+
+	// Tags: tag to filter for, only IPs with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ZonedAPIListLBPrivateNetworksRequest: zoned api list lb private networks request.
@@ -4253,6 +4271,9 @@ type ZonedAPIUpdateIPRequest struct {
 
 	// LBID: ID of the server on which to attach the flexible IP.
 	LBID *string `json:"lb_id,omitempty"`
+
+	// Tags: list of tags for the IP.
+	Tags *[]string `json:"tags,omitempty"`
 }
 
 // ZonedAPIUpdateLBRequest: zoned api update lb request.
@@ -4572,6 +4593,7 @@ func (s *ZonedAPI) ListIPs(req *ZonedAPIListIPsRequest, opts ...scw.RequestOptio
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "ip_type", req.IPType)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -6273,7 +6295,7 @@ func (s *ZonedAPI) DetachPrivateNetwork(req *ZonedAPIDetachPrivateNetworkRequest
 	return nil
 }
 
-// This API allows you to manage your load balancer service.
+// This API allows you to manage your Load Balancers.
 type API struct {
 	client *scw.Client
 }
@@ -6533,6 +6555,7 @@ func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsR
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "ip_type", req.IPType)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")

@@ -2922,7 +2922,7 @@ type UpdateDNSZoneRequest struct {
 	ProjectID string `json:"project_id"`
 }
 
-// Manage your domains, DNS zones and records with the Domains and DNS API.
+// This API allows you to manage your domains, DNS zones and records.
 type API struct {
 	client *scw.Client
 }

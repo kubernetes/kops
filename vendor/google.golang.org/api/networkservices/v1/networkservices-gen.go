@@ -836,7 +836,7 @@ type ExtensionChainExtension struct {
 	Service string `json:"service,omitempty"`
 	// SupportedEvents: Optional. A set of events during request or response
 	// processing for which this extension is called. This field is required for
-	// the `LbTrafficExtension` resource. It's not relevant for the
+	// the `LbTrafficExtension` resource. It must not be set for the
 	// `LbRouteExtension` resource.
 	//
 	// Possible values:
@@ -2234,6 +2234,14 @@ type LbRouteExtension struct {
 	//   "EXTERNAL_MANAGED" - Signifies that this is used for External Managed
 	// HTTP(S) Load Balancing.
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
+	// Metadata: Optional. The metadata provided here will be included as part of
+	// the `metadata_context` (of type `google.protobuf.Struct`) in the
+	// `ProcessingRequest` message sent to the extension server. The metadata will
+	// be available under the namespace `com.google.lb_route_extension.`. The
+	// following variables are supported in the metadata Struct:
+	// `{forwarding_rule_id}` - substituted with the forwarding rule's fully
+	// qualified resource name.
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 	// Name: Required. Identifier. Name of the `LbRouteExtension` resource in the
 	// following format:
 	// `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route_extensio
@@ -2301,6 +2309,12 @@ type LbTrafficExtension struct {
 	//   "EXTERNAL_MANAGED" - Signifies that this is used for External Managed
 	// HTTP(S) Load Balancing.
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
+	// Metadata: Optional. The metadata provided here will be included in the
+	// `ProcessingRequest.metadata_context.filter_metadata` map field. The metadata
+	// will be available under the key `com.google.lb_traffic_extension.`. The
+	// following variables are supported in the metadata: `{forwarding_rule_id}` -
+	// substituted with the forwarding rule's fully qualified resource name.
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 	// Name: Required. Identifier. Name of the `LbTrafficExtension` resource in the
 	// following format:
 	// `projects/{project}/locations/{location}/lbTrafficExtensions/{lb_traffic_exte

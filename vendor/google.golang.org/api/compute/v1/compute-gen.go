@@ -2990,9 +2990,10 @@ type AttachedDisk struct {
 	// when you create a snapshot or an image from the disk or when you attach the
 	// disk to a virtual machine instance. If you do not provide an encryption key,
 	// then the disk will be encrypted using an automatically generated key and you
-	// do not need to provide a key to use the disk later. Instance templates do
-	// not store customer-supplied encryption keys, so you cannot use your own keys
-	// to encrypt disks in a managed instance group.
+	// do not need to provide a key to use the disk later. Note: Instance templates
+	// do not store customer-supplied encryption keys, so you cannot use your own
+	// keys to encrypt disks in a managed instance group. You cannot create VMs
+	// that have disks with customer-supplied keys using the bulk insert method.
 	DiskEncryptionKey *CustomerEncryptionKey `json:"diskEncryptionKey,omitempty"`
 	// DiskSizeGb: The size of the disk in GB.
 	DiskSizeGb int64 `json:"diskSizeGb,omitempty,string"`
@@ -3052,12 +3053,12 @@ type AttachedDisk struct {
 	// on disk
 	ShieldedInstanceInitialState *InitialStateConfig `json:"shieldedInstanceInitialState,omitempty"`
 	// Source: Specifies a valid partial or full URL to an existing Persistent Disk
-	// resource. When creating a new instance, one of initializeParams.sourceImage
-	// or initializeParams.sourceSnapshot or disks.source is required except for
-	// local SSD. If desired, you can also attach existing non-root persistent
-	// disks using this property. This field is only applicable for persistent
-	// disks. Note that for InstanceTemplate, specify the disk name for zonal disk,
-	// and the URL for regional disk.
+	// resource. When creating a new instance boot disk, one of
+	// initializeParams.sourceImage or initializeParams.sourceSnapshot or
+	// disks.source is required. If desired, you can also attach existing non-root
+	// persistent disks using this property. This field is only applicable for
+	// persistent disks. Note that for InstanceTemplate, specify the disk name for
+	// zonal disk, and the URL for regional disk.
 	Source string `json:"source,omitempty"`
 	// Type: Specifies the type of the disk, either SCRATCH or PERSISTENT. If not
 	// specified, the default is PERSISTENT.
@@ -3167,13 +3168,12 @@ type AttachedDiskInitializeParams struct {
 	// template, specify only the resource policy name.
 	ResourcePolicies []string `json:"resourcePolicies,omitempty"`
 	// SourceImage: The source image to create this disk. When creating a new
-	// instance, one of initializeParams.sourceImage or
-	// initializeParams.sourceSnapshot or disks.source is required except for local
-	// SSD. To create a disk with one of the public operating system images,
-	// specify the image by its family name. For example, specify family/debian-9
-	// to use the latest Debian 9 image:
-	// projects/debian-cloud/global/images/family/debian-9 Alternatively, use a
-	// specific version of a public operating system image:
+	// instance boot disk, one of initializeParams.sourceImage or
+	// initializeParams.sourceSnapshot or disks.source is required. To create a
+	// disk with one of the public operating system images, specify the image by
+	// its family name. For example, specify family/debian-9 to use the latest
+	// Debian 9 image: projects/debian-cloud/global/images/family/debian-9
+	// Alternatively, use a specific version of a public operating system image:
 	// projects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD To create a
 	// disk with a custom image that you created, specify the image name in the
 	// following format: global/images/my-custom-image You can also specify a
@@ -3190,11 +3190,11 @@ type AttachedDiskInitializeParams struct {
 	// keys.
 	SourceImageEncryptionKey *CustomerEncryptionKey `json:"sourceImageEncryptionKey,omitempty"`
 	// SourceSnapshot: The source snapshot to create this disk. When creating a new
-	// instance, one of initializeParams.sourceSnapshot or
-	// initializeParams.sourceImage or disks.source is required except for local
-	// SSD. To create a disk with a snapshot that you created, specify the snapshot
-	// name in the following format: global/snapshots/my-backup If the source
-	// snapshot is deleted later, this field will not be set.
+	// instance boot disk, one of initializeParams.sourceSnapshot or
+	// initializeParams.sourceImage or disks.source is required. To create a disk
+	// with a snapshot that you created, specify the snapshot name in the following
+	// format: global/snapshots/my-backup If the source snapshot is deleted later,
+	// this field will not be set.
 	SourceSnapshot string `json:"sourceSnapshot,omitempty"`
 	// SourceSnapshotEncryptionKey: The customer-supplied encryption key of the
 	// source snapshot.
@@ -7939,6 +7939,21 @@ func (s *DeprecationStatus) MarshalJSON() ([]byte, error) {
 // regionDisks resource represents a regional persistent disk. For more
 // information, read Regional resources.
 type Disk struct {
+	// AccessMode: The access mode of the disk. - READ_WRITE_SINGLE: The default
+	// AccessMode, means the disk can be attached to single instance in RW mode. -
+	// READ_WRITE_MANY: The AccessMode means the disk can be attached to multiple
+	// instances in RW mode. - READ_ONLY_MANY: The AccessMode means the disk can be
+	// attached to multiple instances in RO mode. The AccessMode is only valid for
+	// Hyperdisk disk types.
+	//
+	// Possible values:
+	//   "READ_ONLY_MANY" - The AccessMode means the disk can be attached to
+	// multiple instances in RO mode.
+	//   "READ_WRITE_MANY" - The AccessMode means the disk can be attached to
+	// multiple instances in RW mode.
+	//   "READ_WRITE_SINGLE" - The default AccessMode, means the disk can be
+	// attached to single instance in RW mode.
+	AccessMode string `json:"accessMode,omitempty"`
 	// Architecture: The architecture of the disk. Valid values are ARM64 or
 	// X86_64.
 	//
@@ -8190,13 +8205,13 @@ type Disk struct {
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Architecture") to
+	// ForceSendFields is a list of field names (e.g. "AccessMode") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Architecture") to include in API
+	// NullFields is a list of field names (e.g. "AccessMode") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -16016,6 +16031,10 @@ type InstanceGroupManager struct {
 	// Region: [Output Only] The URL of the region where the managed instance group
 	// resides (for regional resources).
 	Region string `json:"region,omitempty"`
+	// SatisfiesPzi: [Output Only] Reserved for future use.
+	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
+	// SatisfiesPzs: [Output Only] Reserved for future use.
+	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
 	// SelfLink: [Output Only] The URL for this managed instance group. The server
 	// defines this URL.
 	SelfLink string `json:"selfLink,omitempty"`
@@ -18814,7 +18833,10 @@ type InstanceProperties struct {
 	// Labels: Labels to apply to instances that are created from these properties.
 	Labels map[string]string `json:"labels,omitempty"`
 	// MachineType: The machine type to use for instances that are created from
-	// these properties.
+	// these properties. This field only accept machine types name. e.g.
+	// n2-standard-4 and does not accept machine type full or partial url. e.g.
+	// projects/my-l7ilb-project/zones/us-central1-a/machineTypes/n2-standard-4
+	// will throw INTERNAL_ERROR.
 	MachineType string `json:"machineType,omitempty"`
 	// Metadata: The metadata key/value pairs to assign to instances that are
 	// created from these properties. These pairs can consist of custom metadata or
@@ -27132,6 +27154,7 @@ type NetworkInterface struct {
 	//
 	// Possible values:
 	//   "GVNIC" - GVNIC
+	//   "IDPF" - IDPF
 	//   "UNSPECIFIED_NIC_TYPE" - No type specified.
 	//   "VIRTIO_NET" - VIRTIO
 	NicType string `json:"nicType,omitempty"`
@@ -47014,6 +47037,36 @@ type TargetHttpsProxy struct {
 	// TargetHttpsProxy resource. If not set, the TargetHttpsProxy resource has no
 	// SSL policy configured.
 	SslPolicy string `json:"sslPolicy,omitempty"`
+	// TlsEarlyData:  Specifies whether TLS 1.3 0-RTT Data ("Early Data") should be
+	// accepted for this service. Early Data allows a TLS resumption handshake to
+	// include the initial application payload (a HTTP request) alongside the
+	// handshake, reducing the effective round trips to "zero". This applies to TLS
+	// 1.3 connections over TCP (HTTP/2) as well as over UDP (QUIC/h3). This can
+	// improve application performance, especially on networks where interruptions
+	// may be common, such as on mobile. Requests with Early Data will have the
+	// "Early-Data" HTTP header set on the request, with a value of "1", to allow
+	// the backend to determine whether Early Data was included. Note: TLS Early
+	// Data may allow requests to be replayed, as the data is sent to the backend
+	// before the handshake has fully completed. Applications that allow idempotent
+	// HTTP methods to make non-idempotent changes, such as a GET request updating
+	// a database, should not accept Early Data on those requests, and reject
+	// requests with the "Early-Data: 1" HTTP header by returning a HTTP 425 (Too
+	// Early) status code, in order to remain RFC compliant. The default value is
+	// DISABLED.
+	//
+	// Possible values:
+	//   "DISABLED" - TLS 1.3 Early Data is not advertised, and any (invalid)
+	// attempts to send Early Data will be rejected by closing the connection.
+	//   "PERMISSIVE" - This enables TLS 1.3 0-RTT, and only allows Early Data to
+	// be included on requests with safe HTTP methods (GET, HEAD, OPTIONS, TRACE).
+	// This mode does not enforce any other limitations for requests with Early
+	// Data. The application owner should validate that Early Data is acceptable
+	// for a given request path.
+	//   "STRICT" - This enables TLS 1.3 0-RTT, and only allows Early Data to be
+	// included on requests with safe HTTP methods (GET, HEAD, OPTIONS, TRACE)
+	// without query parameters. Requests that send Early Data with non-idempotent
+	// HTTP methods or with query parameters will be rejected with a HTTP 425.
+	TlsEarlyData string `json:"tlsEarlyData,omitempty"`
 	// UrlMap: A fully-qualified or valid partial URL to the UrlMap resource that
 	// defines the mapping from URL to the BackendService. For example, the
 	// following are all valid URLs for specifying a URL map: -
@@ -51603,6 +51656,7 @@ type VpnGateway struct {
 	// Possible values:
 	//   "IPV4_IPV6" - Enable VPN gateway with both IPv4 and IPv6 protocols.
 	//   "IPV4_ONLY" - Enable VPN gateway with only IPv4 protocol.
+	//   "IPV6_ONLY" - Enable VPN gateway with only IPv6 protocol.
 	StackType string `json:"stackType,omitempty"`
 	// VpnInterfaces: The list of VPN interfaces associated with this VPN gateway.
 	VpnInterfaces []*VpnGatewayVpnGatewayInterface `json:"vpnInterfaces,omitempty"`
@@ -53157,7 +53211,7 @@ func (s *XpnResourceId) MarshalJSON() ([]byte, error) {
 }
 
 // Zone: Represents a Zone resource. A zone is a deployment area. These
-// deployment areas are subsets of a region. For example the zone us-east1-a is
+// deployment areas are subsets of a region. For example the zone us-east1-b is
 // located in the us-east1 region. For more information, read Regions and
 // Zones.
 type Zone struct {

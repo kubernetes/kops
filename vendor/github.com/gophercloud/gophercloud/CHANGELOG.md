@@ -1,3 +1,13 @@
+## v1.12.0 (2024-05-27)
+
+* [GH-2979](https://github.com/gophercloud/gophercloud/pull/2979) [v1] CI backports
+* [GH-2985](https://github.com/gophercloud/gophercloud/pull/2985) [v1] baremetal: fix handling of the "fields" query argument
+* [GH-2989](https://github.com/gophercloud/gophercloud/pull/2989) [v1] [CI] Fix portbiding tests
+* [GH-2992](https://github.com/gophercloud/gophercloud/pull/2992) [v1] [CI] Fix portbiding tests
+* [GH-2993](https://github.com/gophercloud/gophercloud/pull/2993) [v1] build(deps): bump EmilienM/devstack-action from 0.14 to 0.15
+* [GH-2998](https://github.com/gophercloud/gophercloud/pull/2998) [v1] testhelper: mark all helpers with t.Helper
+* [GH-3043](https://github.com/gophercloud/gophercloud/pull/3043) [v1] CI: remove Zed from testing coverage
+
 ## v1.11.0 (2024-03-07)
 
 This version reverts the inclusion of Context in the v1 branch. This inclusion
