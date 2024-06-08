@@ -53,6 +53,15 @@ spec:
   kubeControllerManager:
     concurrentHorizontalPodAustoscalerSyncs: 10
     concurrentJobSyncs: 10
+    cpuRequest: 200m
+    cpuLimit: 500m
+    memoryRequest: 800Mi
+    memoryLimit: 1000Mi
+  kubeScheduler:
+    cpuRequest: 200m
+    cpuLimit: 500m
+    memoryRequest: 800Mi
+    memoryLimit: 1000Mi
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.30.0
