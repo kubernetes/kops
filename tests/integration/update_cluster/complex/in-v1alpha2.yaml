@@ -30,6 +30,10 @@ spec:
   kubeControllerManager:
     concurrentHorizontalPodAustoscalerSyncs: 10
     concurrentJobSyncs: 10
+    cpuRequest: 200m
+    cpuLimit: 500m
+    memoryRequest: 800Mi
+    memoryLimit: 1000Mi
   cloudProvider: aws
   cloudLabels:
     Owner: John Doe
@@ -49,6 +53,11 @@ spec:
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
+    cpuRequest: 200m
+    cpuLimit: 500m
+    memoryRequest: 800Mi
+    memoryLimit: 1000Mi
+  kubeScheduler:
     cpuRequest: 200m
     cpuLimit: 500m
     memoryRequest: 800Mi
