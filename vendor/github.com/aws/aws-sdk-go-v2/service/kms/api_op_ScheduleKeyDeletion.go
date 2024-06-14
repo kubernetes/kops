@@ -214,6 +214,9 @@ func (c *Client) addOperationScheduleKeyDeletionMiddlewares(stack *middleware.St
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpScheduleKeyDeletionValidationMiddleware(stack); err != nil {
 		return err
 	}

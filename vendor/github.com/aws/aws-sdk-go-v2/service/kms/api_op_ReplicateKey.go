@@ -344,6 +344,9 @@ func (c *Client) addOperationReplicateKeyMiddlewares(stack *middleware.Stack, op
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpReplicateKeyValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -1276,7 +1276,6 @@ func NVDefineSpace(rw io.ReadWriter, owner, handle tpmutil.Handle, ownerAuth, au
 		Auth:       []byte(ownerAuth),
 	}
 	return NVDefineSpaceEx(rw, owner, authString, nvPub, authArea)
-
 }
 
 // NVDefineSpaceEx accepts NVPublic structure and AuthCommand, allowing more flexibility.
@@ -2121,12 +2120,12 @@ func RSAEncrypt(rw io.ReadWriter, key tpmutil.Handle, message []byte, scheme *As
 	return decodeRSAEncrypt(resp)
 }
 
-func encodeRSADecrypt(key tpmutil.Handle, password string, message tpmutil.U16Bytes, scheme *AsymScheme, label string) ([]byte, error) {
+func encodeRSADecrypt(sessionHandle, key tpmutil.Handle, password string, message tpmutil.U16Bytes, scheme *AsymScheme, label string) ([]byte, error) {
 	ha, err := tpmutil.Pack(key)
 	if err != nil {
 		return nil, err
 	}
-	auth, err := encodeAuthArea(AuthCommand{Session: HandlePasswordSession, Attributes: AttrContinueSession, Auth: []byte(password)})
+	auth, err := encodeAuthArea(AuthCommand{Session: sessionHandle, Attributes: AttrContinueSession, Auth: []byte(password)})
 	if err != nil {
 		return nil, err
 	}
@@ -2160,7 +2159,15 @@ func decodeRSADecrypt(resp []byte) ([]byte, error) {
 // label, a null byte is appended to the label and the null byte is included in the
 // padding scheme.
 func RSADecrypt(rw io.ReadWriter, key tpmutil.Handle, password string, message []byte, scheme *AsymScheme, label string) ([]byte, error) {
-	Cmd, err := encodeRSADecrypt(key, password, message, scheme, label)
+	return RSADecryptWithSession(rw, HandlePasswordSession, key, password, message, scheme, label)
+}
+
+// RSADecryptWithSession performs RSA decryption in the TPM according to RFC 3447. The key must be
+// a private RSA key in the TPM with FlagDecrypt set. Note that when using OAEP with a
+// label, a null byte is appended to the label and the null byte is included in the
+// padding scheme.
+func RSADecryptWithSession(rw io.ReadWriter, sessionHandle, key tpmutil.Handle, password string, message []byte, scheme *AsymScheme, label string) ([]byte, error) {
+	Cmd, err := encodeRSADecrypt(sessionHandle, key, password, message, scheme, label)
 	if err != nil {
 		return nil, err
 	}

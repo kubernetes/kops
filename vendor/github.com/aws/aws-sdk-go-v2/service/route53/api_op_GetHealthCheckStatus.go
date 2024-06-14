@@ -118,6 +118,9 @@ func (c *Client) addOperationGetHealthCheckStatusMiddlewares(stack *middleware.S
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetHealthCheckStatusValidationMiddleware(stack); err != nil {
 		return err
 	}

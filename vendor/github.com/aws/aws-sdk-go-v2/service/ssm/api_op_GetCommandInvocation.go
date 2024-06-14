@@ -254,6 +254,9 @@ func (c *Client) addOperationGetCommandInvocationMiddlewares(stack *middleware.S
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetCommandInvocationValidationMiddleware(stack); err != nil {
 		return err
 	}

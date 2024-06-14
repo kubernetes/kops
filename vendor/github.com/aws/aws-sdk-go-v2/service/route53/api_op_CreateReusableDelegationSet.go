@@ -164,6 +164,9 @@ func (c *Client) addOperationCreateReusableDelegationSetMiddlewares(stack *middl
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpCreateReusableDelegationSetValidationMiddleware(stack); err != nil {
 		return err
 	}

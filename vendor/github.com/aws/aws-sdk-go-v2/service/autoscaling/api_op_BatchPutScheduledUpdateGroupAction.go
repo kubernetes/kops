@@ -110,6 +110,9 @@ func (c *Client) addOperationBatchPutScheduledUpdateGroupActionMiddlewares(stack
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpBatchPutScheduledUpdateGroupActionValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -113,6 +113,9 @@ func (c *Client) addOperationUntagInstanceProfileMiddlewares(stack *middleware.S
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpUntagInstanceProfileValidationMiddleware(stack); err != nil {
 		return err
 	}

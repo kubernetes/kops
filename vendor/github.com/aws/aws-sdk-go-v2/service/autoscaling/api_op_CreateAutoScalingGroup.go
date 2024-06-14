@@ -370,6 +370,9 @@ func (c *Client) addOperationCreateAutoScalingGroupMiddlewares(stack *middleware
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpCreateAutoScalingGroupValidationMiddleware(stack); err != nil {
 		return err
 	}

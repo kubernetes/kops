@@ -137,6 +137,9 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpCreateServiceSpecificCredentialValidationMiddleware(stack); err != nil {
 		return err
 	}

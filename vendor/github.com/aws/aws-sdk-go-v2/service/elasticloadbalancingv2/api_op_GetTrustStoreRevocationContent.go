@@ -109,6 +109,9 @@ func (c *Client) addOperationGetTrustStoreRevocationContentMiddlewares(stack *mi
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetTrustStoreRevocationContentValidationMiddleware(stack); err != nil {
 		return err
 	}

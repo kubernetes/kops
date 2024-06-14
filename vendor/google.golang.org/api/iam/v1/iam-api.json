@@ -3216,7 +3216,7 @@
       }
     }
   },
-  "revision": "20240521",
+  "revision": "20240530",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -4053,7 +4053,7 @@
       "type": "object"
     },
     "OauthClient": {
-      "description": "Represents an OauthClient. Used to access Google Cloud resources on behave of a user by using OAuth 2.0 Protocol to obtain an access token from Google Cloud Platform.",
+      "description": "Represents an OauthClient. Used to access Google Cloud resources on behalf of a Workforce Identity Federation user by using OAuth 2.0 Protocol to obtain an access token from Google Cloud.",
       "id": "OauthClient",
       "properties": {
         "allowedGrantTypes": {
@@ -4081,7 +4081,7 @@
           "type": "array"
         },
         "allowedScopes": {
-          "description": "Required. The list of scopes that the OauthClient is allowed to request during OAuth flows. The following scopes are supported: * `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account. * `openid`: Associate you with your personal info on Google Cloud. * `email`: See your Google Cloud Account email address.",
+          "description": "Required. The list of scopes that the OauthClient is allowed to request during OAuth flows. The following scopes are supported: * `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account.",
           "items": {
             "type": "string"
           },

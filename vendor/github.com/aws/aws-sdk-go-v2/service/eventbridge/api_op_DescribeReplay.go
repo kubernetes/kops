@@ -145,6 +145,9 @@ func (c *Client) addOperationDescribeReplayMiddlewares(stack *middleware.Stack, 
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpDescribeReplayValidationMiddleware(stack); err != nil {
 		return err
 	}

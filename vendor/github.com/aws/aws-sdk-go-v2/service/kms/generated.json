@@ -18,6 +18,7 @@
         "api_op_DeleteAlias.go",
         "api_op_DeleteCustomKeyStore.go",
         "api_op_DeleteImportedKeyMaterial.go",
+        "api_op_DeriveSharedSecret.go",
         "api_op_DescribeCustomKeyStores.go",
         "api_op_DescribeKey.go",
         "api_op_DisableKey.go",

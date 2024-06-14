@@ -138,6 +138,9 @@ func (c *Client) addOperationResetServiceSettingMiddlewares(stack *middleware.St
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpResetServiceSettingValidationMiddleware(stack); err != nil {
 		return err
 	}

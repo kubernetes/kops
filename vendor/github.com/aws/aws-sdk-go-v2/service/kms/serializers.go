@@ -566,6 +566,61 @@ func (m *awsAwsjson11_serializeOpDeleteImportedKeyMaterial) HandleSerialize(ctx 
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsjson11_serializeOpDeriveSharedSecret struct {
+}
+
+func (*awsAwsjson11_serializeOpDeriveSharedSecret) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpDeriveSharedSecret) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*DeriveSharedSecretInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("TrentService.DeriveSharedSecret")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentDeriveSharedSecretInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsjson11_serializeOpDescribeCustomKeyStores struct {
 }
 
@@ -3300,6 +3355,47 @@ func awsAwsjson11_serializeOpDocumentDeleteImportedKeyMaterialInput(v *DeleteImp
 	if v.KeyId != nil {
 		ok := object.Key("KeyId")
 		ok.String(*v.KeyId)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentDeriveSharedSecretInput(v *DeriveSharedSecretInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.DryRun != nil {
+		ok := object.Key("DryRun")
+		ok.Boolean(*v.DryRun)
+	}
+
+	if v.GrantTokens != nil {
+		ok := object.Key("GrantTokens")
+		if err := awsAwsjson11_serializeDocumentGrantTokenList(v.GrantTokens, ok); err != nil {
+			return err
+		}
+	}
+
+	if len(v.KeyAgreementAlgorithm) > 0 {
+		ok := object.Key("KeyAgreementAlgorithm")
+		ok.String(string(v.KeyAgreementAlgorithm))
+	}
+
+	if v.KeyId != nil {
+		ok := object.Key("KeyId")
+		ok.String(*v.KeyId)
+	}
+
+	if v.PublicKey != nil {
+		ok := object.Key("PublicKey")
+		ok.Base64EncodeBytes(v.PublicKey)
+	}
+
+	if v.Recipient != nil {
+		ok := object.Key("Recipient")
+		if err := awsAwsjson11_serializeDocumentRecipientInfo(v.Recipient, ok); err != nil {
+			return err
+		}
 	}
 
 	return nil

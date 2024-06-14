@@ -225,6 +225,9 @@ func (c *Client) addOperationGenerateOrganizationsAccessReportMiddlewares(stack 
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGenerateOrganizationsAccessReportValidationMiddleware(stack); err != nil {
 		return err
 	}

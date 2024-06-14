@@ -162,6 +162,9 @@ func (c *Client) addOperationModifyListenerMiddlewares(stack *middleware.Stack, 
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpModifyListenerValidationMiddleware(stack); err != nil {
 		return err
 	}

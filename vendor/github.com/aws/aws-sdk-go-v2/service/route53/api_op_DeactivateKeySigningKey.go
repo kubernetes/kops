@@ -112,6 +112,9 @@ func (c *Client) addOperationDeactivateKeySigningKeyMiddlewares(stack *middlewar
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpDeactivateKeySigningKeyValidationMiddleware(stack); err != nil {
 		return err
 	}

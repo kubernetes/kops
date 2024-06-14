@@ -110,6 +110,9 @@ func (c *Client) addOperationPutInventoryMiddlewares(stack *middleware.Stack, op
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpPutInventoryValidationMiddleware(stack); err != nil {
 		return err
 	}

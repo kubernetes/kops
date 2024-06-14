@@ -55,11 +55,15 @@ import (
 // Asymmetric KMS keys contain an RSA key pair, Elliptic Curve (ECC) key pair, or
 // an SM2 key pair (China Regions only). The private key in an asymmetric KMS key
 // never leaves KMS unencrypted. However, you can use the GetPublicKeyoperation to download
-// the public key so it can be used outside of KMS. KMS keys with RSA or SM2 key
-// pairs can be used to encrypt or decrypt data or sign and verify messages (but
-// not both). KMS keys with ECC key pairs can be used only to sign and verify
-// messages. For information about asymmetric KMS keys, see [Asymmetric KMS keys]in the Key Management
-// Service Developer Guide.
+// the public key so it can be used outside of KMS. Each KMS key can have only one
+// key usage. KMS keys with RSA key pairs can be used to encrypt and decrypt data
+// or sign and verify messages (but not both). KMS keys with NIST-recommended ECC
+// key pairs can be used to sign and verify messages or derive shared secrets (but
+// not both). KMS keys with ECC_SECG_P256K1 can be used only to sign and verify
+// messages. KMS keys with SM2 key pairs (China Regions only) can be used to either
+// encrypt and decrypt data, sign and verify messages, or derive shared secrets
+// (you must choose one key usage type). For information about asymmetric KMS keys,
+// see [Asymmetric KMS keys]in the Key Management Service Developer Guide.
 //
 // HMAC KMS key To create an HMAC KMS key, set the KeySpec parameter to a key spec
 // value for HMAC KMS keys. Then set the KeyUsage parameter to GENERATE_VERIFY_MAC
@@ -278,7 +282,8 @@ type CreateKeyInput struct {
 	//
 	//   - HMAC_512
 	//
-	//   - Asymmetric RSA key pairs
+	//   - Asymmetric RSA key pairs (encryption and decryption -or- signing and
+	//   verification)
 	//
 	//   - RSA_2048
 	//
@@ -286,7 +291,8 @@ type CreateKeyInput struct {
 	//
 	//   - RSA_4096
 	//
-	//   - Asymmetric NIST-recommended elliptic curve key pairs
+	//   - Asymmetric NIST-recommended elliptic curve key pairs (signing and
+	//   verification -or- deriving shared secrets)
 	//
 	//   - ECC_NIST_P256 (secp256r1)
 	//
@@ -294,13 +300,14 @@ type CreateKeyInput struct {
 	//
 	//   - ECC_NIST_P521 (secp521r1)
 	//
-	//   - Other asymmetric elliptic curve key pairs
+	//   - Other asymmetric elliptic curve key pairs (signing and verification)
 	//
 	//   - ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
-	//   - SM2 key pairs (China Regions only)
+	//   - SM2 key pairs (encryption and decryption -or- signing and verification -or-
+	//   deriving shared secrets)
 	//
-	//   - SM2
+	//   - SM2 (China Regions only)
 	//
 	// [kms:EncryptionAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-algorithm
 	// [kms:Signing Algorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-signing-algorithm
@@ -321,13 +328,16 @@ type CreateKeyInput struct {
 	//
 	//   - For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC .
 	//
-	//   - For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT or
+	//   - For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT or
 	//   SIGN_VERIFY .
 	//
-	//   - For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY .
+	//   - For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
+	//   specify SIGN_VERIFY or KEY_AGREEMENT .
 	//
-	//   - For asymmetric KMS keys with SM2 key material (China Regions only), specify
-	//   ENCRYPT_DECRYPT or SIGN_VERIFY .
+	//   - For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY .
+	//
+	//   - For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+	//   ENCRYPT_DECRYPT , SIGN_VERIFY , or KEY_AGREEMENT .
 	//
 	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
 	KeyUsage types.KeyUsageType
@@ -533,6 +543,9 @@ func (c *Client) addOperationCreateKeyMiddlewares(stack *middleware.Stack, optio
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
 	if err = addOpCreateKeyValidationMiddleware(stack); err != nil {

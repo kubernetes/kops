@@ -147,6 +147,9 @@ func (c *Client) addOperationGetParametersByPathMiddlewares(stack *middleware.St
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetParametersByPathValidationMiddleware(stack); err != nil {
 		return err
 	}

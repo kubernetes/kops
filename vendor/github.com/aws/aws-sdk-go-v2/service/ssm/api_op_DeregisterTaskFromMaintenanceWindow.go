@@ -110,6 +110,9 @@ func (c *Client) addOperationDeregisterTaskFromMaintenanceWindowMiddlewares(stac
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpDeregisterTaskFromMaintenanceWindowValidationMiddleware(stack); err != nil {
 		return err
 	}
