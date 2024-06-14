@@ -105,6 +105,9 @@ func (c *Client) addOperationGetAutomationExecutionMiddlewares(stack *middleware
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetAutomationExecutionValidationMiddleware(stack); err != nil {
 		return err
 	}

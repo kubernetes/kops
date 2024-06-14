@@ -160,6 +160,9 @@ func (c *Client) addOperationGetAccountAuthorizationDetailsMiddlewares(stack *mi
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetAccountAuthorizationDetails(options.Region), middleware.Before); err != nil {
 		return err
 	}

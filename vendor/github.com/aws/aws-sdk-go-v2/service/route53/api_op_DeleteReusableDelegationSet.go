@@ -109,6 +109,9 @@ func (c *Client) addOperationDeleteReusableDelegationSetMiddlewares(stack *middl
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpDeleteReusableDelegationSetValidationMiddleware(stack); err != nil {
 		return err
 	}

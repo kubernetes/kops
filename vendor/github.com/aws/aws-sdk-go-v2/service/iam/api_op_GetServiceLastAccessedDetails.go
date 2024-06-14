@@ -215,6 +215,9 @@ func (c *Client) addOperationGetServiceLastAccessedDetailsMiddlewares(stack *mid
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetServiceLastAccessedDetailsValidationMiddleware(stack); err != nil {
 		return err
 	}

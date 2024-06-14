@@ -196,8 +196,10 @@ type GenerateDataKeyPairInput struct {
 	// algorithm is RSAES_OAEP_SHA_256 .
 	//
 	// This parameter only supports attestation documents for Amazon Web Services
-	// Nitro Enclaves. To include this parameter, use the [Amazon Web Services Nitro Enclaves SDK]or any Amazon Web Services
-	// SDK.
+	// Nitro Enclaves. To call DeriveSharedSecret for an Amazon Web Services Nitro
+	// Enclaves, use the [Amazon Web Services Nitro Enclaves SDK]to generate the attestation document and then use the
+	// Recipient parameter from any Amazon Web Services SDK to provide the attestation
+	// document for the enclave.
 	//
 	// When you use this parameter, instead of returning a plaintext copy of the
 	// private data key, KMS encrypts the plaintext private data key under the public
@@ -317,6 +319,9 @@ func (c *Client) addOperationGenerateDataKeyPairMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
 	if err = addOpGenerateDataKeyPairValidationMiddleware(stack); err != nil {

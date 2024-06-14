@@ -1,3 +1,12 @@
+# v1.164.0 (2024-06-12)
+
+* **Feature**: Tagging support for Traffic Mirroring FilterRule resource
+
+# v1.163.1 (2024-06-07)
+
+* **Bug Fix**: Add clock skew correction on all service clients
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.163.0 (2024-06-04)
 
 * **Feature**: U7i instances with up to 32 TiB of DDR5 memory and 896 vCPUs are now available. C7i-flex instances are launched and are lower-priced variants of the Amazon EC2 C7i instances that offer a baseline level of CPU performance with the ability to scale up to the full compute performance 95% of the time.

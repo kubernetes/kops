@@ -132,6 +132,9 @@ func (c *Client) addOperationRegisterInstancesWithLoadBalancerMiddlewares(stack 
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpRegisterInstancesWithLoadBalancerValidationMiddleware(stack); err != nil {
 		return err
 	}

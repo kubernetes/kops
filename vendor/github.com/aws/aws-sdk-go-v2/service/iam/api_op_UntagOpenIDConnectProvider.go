@@ -115,6 +115,9 @@ func (c *Client) addOperationUntagOpenIDConnectProviderMiddlewares(stack *middle
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpUntagOpenIDConnectProviderValidationMiddleware(stack); err != nil {
 		return err
 	}

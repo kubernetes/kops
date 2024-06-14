@@ -119,6 +119,9 @@ func (c *Client) addOperationDetachGroupPolicyMiddlewares(stack *middleware.Stac
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpDetachGroupPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}

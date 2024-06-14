@@ -129,6 +129,9 @@ func (c *Client) addOperationCreateLBCookieStickinessPolicyMiddlewares(stack *mi
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpCreateLBCookieStickinessPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}

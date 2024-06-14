@@ -121,6 +121,9 @@ func (c *Client) addOperationUpdateSAMLProviderMiddlewares(stack *middleware.Sta
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpUpdateSAMLProviderValidationMiddleware(stack); err != nil {
 		return err
 	}

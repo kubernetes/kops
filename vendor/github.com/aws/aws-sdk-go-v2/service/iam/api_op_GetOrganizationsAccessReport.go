@@ -192,6 +192,9 @@ func (c *Client) addOperationGetOrganizationsAccessReportMiddlewares(stack *midd
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpGetOrganizationsAccessReportValidationMiddleware(stack); err != nil {
 		return err
 	}

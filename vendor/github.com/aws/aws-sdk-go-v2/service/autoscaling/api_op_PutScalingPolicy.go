@@ -262,6 +262,9 @@ func (c *Client) addOperationPutScalingPolicyMiddlewares(stack *middleware.Stack
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
 	if err = addOpPutScalingPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}

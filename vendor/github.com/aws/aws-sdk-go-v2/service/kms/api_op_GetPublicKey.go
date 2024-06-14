@@ -33,7 +33,8 @@ import (
 //     ECC_NIST_P521 .
 //
 // [KeyUsage]
-//   - : Whether the key is used for encryption or signing.
+//   - : Whether the key is used for encryption, signing, or deriving a shared
+//     secret.
 //
 // [EncryptionAlgorithms]
 //   - or [SigningAlgorithms]: A list of the encryption algorithms or the signing algorithms for the
@@ -146,6 +147,10 @@ type GetPublicKeyOutput struct {
 	// ENCRYPT_DECRYPT .
 	EncryptionAlgorithms []types.EncryptionAlgorithmSpec
 
+	// The key agreement algorithm used to derive a shared secret. This field is
+	// present only when the KMS key has a KeyUsage value of KEY_AGREEMENT .
+	KeyAgreementAlgorithms []types.KeyAgreementAlgorithmSpec
+
 	// The Amazon Resource Name ([key ARN] ) of the asymmetric KMS key from which the public key
 	// was downloaded.
 	//
@@ -155,11 +160,11 @@ type GetPublicKeyOutput struct {
 	// The type of the of the public key that was downloaded.
 	KeySpec types.KeySpec
 
-	// The permitted use of the public key. Valid values are ENCRYPT_DECRYPT or
-	// SIGN_VERIFY .
+	// The permitted use of the public key. Valid values for asymmetric key pairs are
+	// ENCRYPT_DECRYPT , SIGN_VERIFY , and KEY_AGREEMENT .
 	//
-	// This information is critical. If a public key with SIGN_VERIFY key usage
-	// encrypts data outside of KMS, the ciphertext cannot be decrypted.
+	// This information is critical. For example, if a public key with SIGN_VERIFY key
+	// usage encrypts data outside of KMS, the ciphertext cannot be decrypted.
 	KeyUsage types.KeyUsageType
 
 	// The exported public key.
@@ -236,6 +241,9 @@ func (c *Client) addOperationGetPublicKeyMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
 	if err = addOpGetPublicKeyValidationMiddleware(stack); err != nil {
