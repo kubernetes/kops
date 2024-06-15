@@ -49,6 +49,7 @@ The following table provides the support status for various distros with regards
 | [RHEL 8](#rhel-8)                       |         1.15 |   1.18 |          - |       - |
 | [RHEL 9](#rhel-9)                       |         1.27 |      - |          - |       - |
 | [Rocky 8](#rocky-8)                     |       1.23.2 |   1.24 |          - |       - |
+| [Rocky 9](#rocky-9)                     |         1.30 |      - |          - |       - |
 | Ubuntu 16.04                            |          1.5 |   1.10 |       1.17 |    1.20 |
 | Ubuntu 18.04                            |         1.10 |   1.16 |       1.26 |    1.28 |
 | [Ubuntu 20.04](#ubuntu-2004-focal)      |       1.16.2 |   1.18 |          - |       - |
@@ -208,6 +209,20 @@ aws ec2 describe-images --region us-east-1 --output table \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=Rocky-8-ec2-8.*.*"
 ```
+
+### Rocky 9
+
+Rocky Linux 9 is based on Kernel version **5.14**.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 792107900819 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=Rocky-9-EC2-Base-9.*.*"
+```
+
 
 ### Ubuntu 20.04 (Focal)
 
