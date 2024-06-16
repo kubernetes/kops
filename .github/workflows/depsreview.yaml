@@ -14,6 +14,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: 'Review Dependencies'
         uses: actions/dependency-review-action@72eb03d02c7872a771aacd928f3123ac62ad6d3a
