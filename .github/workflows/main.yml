@@ -16,7 +16,7 @@ jobs:
   build-linux-amd64:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -33,7 +33,7 @@ jobs:
   build-macos-amd64:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -50,7 +50,7 @@ jobs:
   build-windows-amd64:
     runs-on: windows-2019
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -67,7 +67,7 @@ jobs:
   verify:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
