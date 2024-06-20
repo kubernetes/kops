@@ -220,6 +220,13 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.KubernetesVersion = opt.KubernetesVersion
 	}
 
+	// Verify the kubernetes version early (while we can still handle the version nicely)
+	if cluster.Spec.KubernetesVersion != "" {
+		if _, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion); err != nil {
+			return nil, fmt.Errorf("cannot parse KubernetesVersion %q: %w", cluster.Spec.KubernetesVersion, err)
+		}
+	}
+
 	cluster.Spec.ConfigStore = api.ConfigStoreSpec{
 		Base: opt.ConfigBase,
 	}
