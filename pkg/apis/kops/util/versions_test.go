@@ -80,6 +80,14 @@ func Test_ParseKubernetesVersion(t *testing.T) {
 			},
 		},
 		{
+			version: "https://dl.k8s.io/release/v1.30.2",
+			expected: &semver.Version{
+				Major: 1,
+				Minor: 30,
+				Patch: 0,
+			},
+		},
+		{
 			version:       "",
 			expectedError: fmt.Errorf("unable to parse kubernetes version \"\""),
 		},
