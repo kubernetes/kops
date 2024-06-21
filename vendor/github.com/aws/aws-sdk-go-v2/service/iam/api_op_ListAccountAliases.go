@@ -137,6 +137,9 @@ func (c *Client) addOperationListAccountAliasesMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListAccountAliases(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -157,14 +160,6 @@ func (c *Client) addOperationListAccountAliasesMiddlewares(stack *middleware.Sta
 	}
 	return nil
 }
-
-// ListAccountAliasesAPIClient is a client that implements the ListAccountAliases
-// operation.
-type ListAccountAliasesAPIClient interface {
-	ListAccountAliases(context.Context, *ListAccountAliasesInput, ...func(*Options)) (*ListAccountAliasesOutput, error)
-}
-
-var _ ListAccountAliasesAPIClient = (*Client)(nil)
 
 // ListAccountAliasesPaginatorOptions is the paginator options for
 // ListAccountAliases
@@ -238,6 +233,9 @@ func (p *ListAccountAliasesPaginator) NextPage(ctx context.Context, optFns ...fu
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListAccountAliases(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -256,6 +254,14 @@ func (p *ListAccountAliasesPaginator) NextPage(ctx context.Context, optFns ...fu
 
 	return result, nil
 }
+
+// ListAccountAliasesAPIClient is a client that implements the ListAccountAliases
+// operation.
+type ListAccountAliasesAPIClient interface {
+	ListAccountAliases(context.Context, *ListAccountAliasesInput, ...func(*Options)) (*ListAccountAliasesOutput, error)
+}
+
+var _ ListAccountAliasesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListAccountAliases(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

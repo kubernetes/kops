@@ -106,6 +106,9 @@ func (c *Client) addOperationGetHostedZoneCountMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetHostedZoneCount(options.Region), middleware.Before); err != nil {
 		return err
 	}

@@ -125,6 +125,9 @@ func (c *Client) addOperationDescribeLoadBalancersMiddlewares(stack *middleware.
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeLoadBalancers(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -144,85 +147,6 @@ func (c *Client) addOperationDescribeLoadBalancersMiddlewares(stack *middleware.
 		return err
 	}
 	return nil
-}
-
-// DescribeLoadBalancersAPIClient is a client that implements the
-// DescribeLoadBalancers operation.
-type DescribeLoadBalancersAPIClient interface {
-	DescribeLoadBalancers(context.Context, *DescribeLoadBalancersInput, ...func(*Options)) (*DescribeLoadBalancersOutput, error)
-}
-
-var _ DescribeLoadBalancersAPIClient = (*Client)(nil)
-
-// DescribeLoadBalancersPaginatorOptions is the paginator options for
-// DescribeLoadBalancers
-type DescribeLoadBalancersPaginatorOptions struct {
-	// Set to true if pagination should stop if the service returns a pagination token
-	// that matches the most recent token provided to the service.
-	StopOnDuplicateToken bool
-}
-
-// DescribeLoadBalancersPaginator is a paginator for DescribeLoadBalancers
-type DescribeLoadBalancersPaginator struct {
-	options   DescribeLoadBalancersPaginatorOptions
-	client    DescribeLoadBalancersAPIClient
-	params    *DescribeLoadBalancersInput
-	nextToken *string
-	firstPage bool
-}
-
-// NewDescribeLoadBalancersPaginator returns a new DescribeLoadBalancersPaginator
-func NewDescribeLoadBalancersPaginator(client DescribeLoadBalancersAPIClient, params *DescribeLoadBalancersInput, optFns ...func(*DescribeLoadBalancersPaginatorOptions)) *DescribeLoadBalancersPaginator {
-	if params == nil {
-		params = &DescribeLoadBalancersInput{}
-	}
-
-	options := DescribeLoadBalancersPaginatorOptions{}
-
-	for _, fn := range optFns {
-		fn(&options)
-	}
-
-	return &DescribeLoadBalancersPaginator{
-		options:   options,
-		client:    client,
-		params:    params,
-		firstPage: true,
-		nextToken: params.Marker,
-	}
-}
-
-// HasMorePages returns a boolean indicating whether more pages are available
-func (p *DescribeLoadBalancersPaginator) HasMorePages() bool {
-	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
-}
-
-// NextPage retrieves the next DescribeLoadBalancers page.
-func (p *DescribeLoadBalancersPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*DescribeLoadBalancersOutput, error) {
-	if !p.HasMorePages() {
-		return nil, fmt.Errorf("no more pages available")
-	}
-
-	params := *p.params
-	params.Marker = p.nextToken
-
-	result, err := p.client.DescribeLoadBalancers(ctx, &params, optFns...)
-	if err != nil {
-		return nil, err
-	}
-	p.firstPage = false
-
-	prevToken := p.nextToken
-	p.nextToken = result.NextMarker
-
-	if p.options.StopOnDuplicateToken &&
-		prevToken != nil &&
-		p.nextToken != nil &&
-		*prevToken == *p.nextToken {
-		p.nextToken = nil
-	}
-
-	return result, nil
 }
 
 // LoadBalancerAvailableWaiterOptions are waiter options for
@@ -342,7 +266,13 @@ func (w *LoadBalancerAvailableWaiter) WaitForOutput(ctx context.Context, params 
 		}
 
 		out, err := w.client.DescribeLoadBalancers(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -566,7 +496,13 @@ func (w *LoadBalancerExistsWaiter) WaitForOutput(ctx context.Context, params *De
 		}
 
 		out, err := w.client.DescribeLoadBalancers(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -740,7 +676,13 @@ func (w *LoadBalancersDeletedWaiter) WaitForOutput(ctx context.Context, params *
 		}
 
 		out, err := w.client.DescribeLoadBalancers(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -824,6 +766,88 @@ func loadBalancersDeletedStateRetryable(ctx context.Context, input *DescribeLoad
 
 	return true, nil
 }
+
+// DescribeLoadBalancersPaginatorOptions is the paginator options for
+// DescribeLoadBalancers
+type DescribeLoadBalancersPaginatorOptions struct {
+	// Set to true if pagination should stop if the service returns a pagination token
+	// that matches the most recent token provided to the service.
+	StopOnDuplicateToken bool
+}
+
+// DescribeLoadBalancersPaginator is a paginator for DescribeLoadBalancers
+type DescribeLoadBalancersPaginator struct {
+	options   DescribeLoadBalancersPaginatorOptions
+	client    DescribeLoadBalancersAPIClient
+	params    *DescribeLoadBalancersInput
+	nextToken *string
+	firstPage bool
+}
+
+// NewDescribeLoadBalancersPaginator returns a new DescribeLoadBalancersPaginator
+func NewDescribeLoadBalancersPaginator(client DescribeLoadBalancersAPIClient, params *DescribeLoadBalancersInput, optFns ...func(*DescribeLoadBalancersPaginatorOptions)) *DescribeLoadBalancersPaginator {
+	if params == nil {
+		params = &DescribeLoadBalancersInput{}
+	}
+
+	options := DescribeLoadBalancersPaginatorOptions{}
+
+	for _, fn := range optFns {
+		fn(&options)
+	}
+
+	return &DescribeLoadBalancersPaginator{
+		options:   options,
+		client:    client,
+		params:    params,
+		firstPage: true,
+		nextToken: params.Marker,
+	}
+}
+
+// HasMorePages returns a boolean indicating whether more pages are available
+func (p *DescribeLoadBalancersPaginator) HasMorePages() bool {
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
+}
+
+// NextPage retrieves the next DescribeLoadBalancers page.
+func (p *DescribeLoadBalancersPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*DescribeLoadBalancersOutput, error) {
+	if !p.HasMorePages() {
+		return nil, fmt.Errorf("no more pages available")
+	}
+
+	params := *p.params
+	params.Marker = p.nextToken
+
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
+	result, err := p.client.DescribeLoadBalancers(ctx, &params, optFns...)
+	if err != nil {
+		return nil, err
+	}
+	p.firstPage = false
+
+	prevToken := p.nextToken
+	p.nextToken = result.NextMarker
+
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
+		p.nextToken = nil
+	}
+
+	return result, nil
+}
+
+// DescribeLoadBalancersAPIClient is a client that implements the
+// DescribeLoadBalancers operation.
+type DescribeLoadBalancersAPIClient interface {
+	DescribeLoadBalancers(context.Context, *DescribeLoadBalancersInput, ...func(*Options)) (*DescribeLoadBalancersOutput, error)
+}
+
+var _ DescribeLoadBalancersAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeLoadBalancers(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

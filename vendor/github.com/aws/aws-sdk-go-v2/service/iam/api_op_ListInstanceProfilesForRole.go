@@ -150,6 +150,9 @@ func (c *Client) addOperationListInstanceProfilesForRoleMiddlewares(stack *middl
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListInstanceProfilesForRoleValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -173,14 +176,6 @@ func (c *Client) addOperationListInstanceProfilesForRoleMiddlewares(stack *middl
 	}
 	return nil
 }
-
-// ListInstanceProfilesForRoleAPIClient is a client that implements the
-// ListInstanceProfilesForRole operation.
-type ListInstanceProfilesForRoleAPIClient interface {
-	ListInstanceProfilesForRole(context.Context, *ListInstanceProfilesForRoleInput, ...func(*Options)) (*ListInstanceProfilesForRoleOutput, error)
-}
-
-var _ ListInstanceProfilesForRoleAPIClient = (*Client)(nil)
 
 // ListInstanceProfilesForRolePaginatorOptions is the paginator options for
 // ListInstanceProfilesForRole
@@ -256,6 +251,9 @@ func (p *ListInstanceProfilesForRolePaginator) NextPage(ctx context.Context, opt
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListInstanceProfilesForRole(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -274,6 +272,14 @@ func (p *ListInstanceProfilesForRolePaginator) NextPage(ctx context.Context, opt
 
 	return result, nil
 }
+
+// ListInstanceProfilesForRoleAPIClient is a client that implements the
+// ListInstanceProfilesForRole operation.
+type ListInstanceProfilesForRoleAPIClient interface {
+	ListInstanceProfilesForRole(context.Context, *ListInstanceProfilesForRoleInput, ...func(*Options)) (*ListInstanceProfilesForRoleOutput, error)
+}
+
+var _ ListInstanceProfilesForRoleAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListInstanceProfilesForRole(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

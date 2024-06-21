@@ -164,6 +164,9 @@ func (c *Client) addOperationListHostedZonesMiddlewares(stack *middleware.Stack,
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListHostedZones(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -187,14 +190,6 @@ func (c *Client) addOperationListHostedZonesMiddlewares(stack *middleware.Stack,
 	}
 	return nil
 }
-
-// ListHostedZonesAPIClient is a client that implements the ListHostedZones
-// operation.
-type ListHostedZonesAPIClient interface {
-	ListHostedZones(context.Context, *ListHostedZonesInput, ...func(*Options)) (*ListHostedZonesOutput, error)
-}
-
-var _ ListHostedZonesAPIClient = (*Client)(nil)
 
 // ListHostedZonesPaginatorOptions is the paginator options for ListHostedZones
 type ListHostedZonesPaginatorOptions struct {
@@ -262,6 +257,9 @@ func (p *ListHostedZonesPaginator) NextPage(ctx context.Context, optFns ...func(
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListHostedZones(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -280,6 +278,14 @@ func (p *ListHostedZonesPaginator) NextPage(ctx context.Context, optFns ...func(
 
 	return result, nil
 }
+
+// ListHostedZonesAPIClient is a client that implements the ListHostedZones
+// operation.
+type ListHostedZonesAPIClient interface {
+	ListHostedZones(context.Context, *ListHostedZonesInput, ...func(*Options)) (*ListHostedZonesOutput, error)
+}
+
+var _ ListHostedZonesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListHostedZones(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

@@ -140,6 +140,9 @@ func (c *Client) addOperationDescribeInstanceInformationMiddlewares(stack *middl
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeInstanceInformationValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -163,14 +166,6 @@ func (c *Client) addOperationDescribeInstanceInformationMiddlewares(stack *middl
 	}
 	return nil
 }
-
-// DescribeInstanceInformationAPIClient is a client that implements the
-// DescribeInstanceInformation operation.
-type DescribeInstanceInformationAPIClient interface {
-	DescribeInstanceInformation(context.Context, *DescribeInstanceInformationInput, ...func(*Options)) (*DescribeInstanceInformationOutput, error)
-}
-
-var _ DescribeInstanceInformationAPIClient = (*Client)(nil)
 
 // DescribeInstanceInformationPaginatorOptions is the paginator options for
 // DescribeInstanceInformation
@@ -240,6 +235,9 @@ func (p *DescribeInstanceInformationPaginator) NextPage(ctx context.Context, opt
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeInstanceInformation(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -258,6 +256,14 @@ func (p *DescribeInstanceInformationPaginator) NextPage(ctx context.Context, opt
 
 	return result, nil
 }
+
+// DescribeInstanceInformationAPIClient is a client that implements the
+// DescribeInstanceInformation operation.
+type DescribeInstanceInformationAPIClient interface {
+	DescribeInstanceInformation(context.Context, *DescribeInstanceInformationInput, ...func(*Options)) (*DescribeInstanceInformationOutput, error)
+}
+
+var _ DescribeInstanceInformationAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeInstanceInformation(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

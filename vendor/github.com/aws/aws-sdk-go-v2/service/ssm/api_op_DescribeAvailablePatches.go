@@ -205,6 +205,9 @@ func (c *Client) addOperationDescribeAvailablePatchesMiddlewares(stack *middlewa
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeAvailablePatches(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -225,14 +228,6 @@ func (c *Client) addOperationDescribeAvailablePatchesMiddlewares(stack *middlewa
 	}
 	return nil
 }
-
-// DescribeAvailablePatchesAPIClient is a client that implements the
-// DescribeAvailablePatches operation.
-type DescribeAvailablePatchesAPIClient interface {
-	DescribeAvailablePatches(context.Context, *DescribeAvailablePatchesInput, ...func(*Options)) (*DescribeAvailablePatchesOutput, error)
-}
-
-var _ DescribeAvailablePatchesAPIClient = (*Client)(nil)
 
 // DescribeAvailablePatchesPaginatorOptions is the paginator options for
 // DescribeAvailablePatches
@@ -299,6 +294,9 @@ func (p *DescribeAvailablePatchesPaginator) NextPage(ctx context.Context, optFns
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeAvailablePatches(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -317,6 +315,14 @@ func (p *DescribeAvailablePatchesPaginator) NextPage(ctx context.Context, optFns
 
 	return result, nil
 }
+
+// DescribeAvailablePatchesAPIClient is a client that implements the
+// DescribeAvailablePatches operation.
+type DescribeAvailablePatchesAPIClient interface {
+	DescribeAvailablePatches(context.Context, *DescribeAvailablePatchesInput, ...func(*Options)) (*DescribeAvailablePatchesOutput, error)
+}
+
+var _ DescribeAvailablePatchesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeAvailablePatches(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

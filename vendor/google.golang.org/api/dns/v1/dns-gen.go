@@ -277,13 +277,13 @@ type ResponsePolicyRulesService struct {
 	s *Service
 }
 
-// Change: A Change represents a set of ResourceRecordSet additions and
+// Change: A Change represents a set of `ResourceRecordSet` additions and
 // deletions applied atomically to a ManagedZone. ResourceRecordSets within a
 // ManagedZone are modified by creating a new Change element in the Changes
 // collection. In turn the Changes collection also records the past
-// modifications to the ResourceRecordSets in a ManagedZone. The current state
-// of the ManagedZone is the sum effect of applying all Change elements in the
-// Changes collection in sequence.
+// modifications to the `ResourceRecordSets` in a `ManagedZone`. The current
+// state of the `ManagedZone` is the sum effect of applying all `Change`
+// elements in the `Changes` collection in sequence.
 type Change struct {
 	// Additions: Which ResourceRecordSets to add?
 	Additions []*ResourceRecordSet `json:"additions,omitempty"`
@@ -331,18 +331,17 @@ func (s *Change) MarshalJSON() ([]byte, error) {
 // ResourceRecordSets collection.
 type ChangesListResponse struct {
 	// Changes: The requested changes.
-	Changes []*Change       `json:"changes,omitempty"`
-	Header  *ResponseHeader `json:"header,omitempty"`
+	Changes []*Change `json:"changes,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your pagination token.
-	// This lets you retrieve the complete contents of even very large collections
-	// one page at a time. However, if the contents of the collection change
-	// between the first and last paginated list request, the set of all elements
-	// returned are an inconsistent view of the collection. You cannot retrieve a
-	// "snapshot" of collections larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -514,19 +513,17 @@ func (s *DnsKeySpec) MarshalJSON() ([]byte, error) {
 // ManagedZone.
 type DnsKeysListResponse struct {
 	// DnsKeys: The requested resources.
-	DnsKeys []*DnsKey       `json:"dnsKeys,omitempty"`
-	Header  *ResponseHeader `json:"header,omitempty"`
+	DnsKeys []*DnsKey `json:"dnsKeys,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your pagination token.
-	// In this way you can retrieve the complete contents of even very large
-	// collections one page at a time. However, if the contents of the collection
-	// change between the first and last paginated list request, the set of all
-	// elements returned are an inconsistent view of the collection. There is no
-	// way to retrieve a "snapshot" of collections larger than the maximum page
-	// size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -1058,8 +1055,10 @@ type ManagedZone struct {
 	// while private zones are visible only to Virtual Private Cloud resources.
 	//
 	// Possible values:
-	//   "public"
-	//   "private"
+	//   "public" - Indicates that records in this zone can be queried from the
+	// public internet.
+	//   "private" - Indicates that records in this zone cannot be queried from the
+	// public internet. Access to private zones depends on the zone configuration.
 	Visibility string `json:"visibility,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -1116,8 +1115,12 @@ type ManagedZoneDnsSecConfig struct {
 	// responses. Can only be changed while the state is OFF.
 	//
 	// Possible values:
-	//   "nsec"
-	//   "nsec3"
+	//   "nsec" - Indicates that Cloud DNS will sign records in the managed zone
+	// according to RFC 4034 and respond with NSEC records for names that do not
+	// exist.
+	//   "nsec3" - Indicates that Cloud DNS will sign records in the managed zone
+	// according to RFC 5155 and respond with NSEC3 records for names that do not
+	// exist.
 	NonExistence string `json:"nonExistence,omitempty"`
 	// State: Specifies whether DNSSEC is enabled, and what mode it is in.
 	//
@@ -1205,32 +1208,31 @@ func (s *ManagedZoneForwardingConfigNameServerTarget) MarshalJSON() ([]byte, err
 }
 
 type ManagedZoneOperationsListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your page token. This
-	// lets you retrieve the complete contents of even very large collections one
-	// page at a time. However, if the contents of the collection change between
-	// the first and last paginated list request, the set of all elements returned
-	// are an inconsistent view of the collection. You cannot retrieve a consistent
-	// snapshot of a collection larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// Operations: The operation resources.
 	Operations []*Operation `json:"operations,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -1272,7 +1274,8 @@ type ManagedZonePeeringConfigTargetNetwork struct {
 	Kind           string `json:"kind,omitempty"`
 	// NetworkUrl: The fully qualified URL of the VPC network to forward queries
 	// to. This should be formatted like
-	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{ne
+	// twork}`
 	NetworkUrl string `json:"networkUrl,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "DeactivateTime") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -1347,7 +1350,8 @@ type ManagedZonePrivateVisibilityConfigNetwork struct {
 	Kind string `json:"kind,omitempty"`
 	// NetworkUrl: The fully qualified URL of the VPC network to bind to. Format
 	// this URL like
-	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{ne
+	// twork}`
 	NetworkUrl string `json:"networkUrl,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -1420,7 +1424,8 @@ type ManagedZoneServiceDirectoryConfigNamespace struct {
 	Kind         string `json:"kind,omitempty"`
 	// NamespaceUrl: The fully qualified URL of the namespace associated with the
 	// zone. Format must be
-	// https://servicedirectory.googleapis.com/v1/projects/{project}/locations/{location}/namespaces/{namespace}
+	// `https://servicedirectory.googleapis.com/v1/projects/{project}/locations/{loc
+	// ation}/namespaces/{namespace}`
 	NamespaceUrl string `json:"namespaceUrl,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "DeletionTime") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -1441,32 +1446,31 @@ func (s *ManagedZoneServiceDirectoryConfigNamespace) MarshalJSON() ([]byte, erro
 }
 
 type ManagedZonesListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
 	// ManagedZones: The managed zone resources.
 	ManagedZones []*ManagedZone `json:"managedZones,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your page token. This
-	// lets you the complete contents of even very large collections one page at a
-	// time. However, if the contents of the collection change between the first
-	// and last paginated list request, the set of all elements returned are an
-	// inconsistent view of the collection. You cannot retrieve a consistent
-	// snapshot of a collection larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -1581,32 +1585,31 @@ func (s *OperationManagedZoneContext) MarshalJSON() ([]byte, error) {
 }
 
 type PoliciesListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your page token. This
-	// lets you the complete contents of even very large collections one page at a
-	// time. However, if the contents of the collection change between the first
-	// and last paginated list request, the set of all elements returned are an
-	// inconsistent view of the collection. You cannot retrieve a consistent
-	// snapshot of a collection larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// Policies: The policy resources.
 	Policies []*Policy `json:"policies,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -1617,18 +1620,17 @@ func (s *PoliciesListResponse) MarshalJSON() ([]byte, error) {
 }
 
 type PoliciesPatchResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
-	Policy *Policy         `json:"policy,omitempty"`
+	Policy *Policy `json:"policy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Policy") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
+	// NullFields is a list of field names (e.g. "Policy") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -1641,18 +1643,17 @@ func (s *PoliciesPatchResponse) MarshalJSON() ([]byte, error) {
 }
 
 type PoliciesUpdateResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
-	Policy *Policy         `json:"policy,omitempty"`
+	Policy *Policy `json:"policy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Policy") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
+	// NullFields is a list of field names (e.g. "Policy") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -1801,7 +1802,7 @@ func (s *PolicyNetwork) MarshalJSON() ([]byte, error) {
 
 // Project: A project resource. The project is a top level container for
 // resources including Cloud DNS ManagedZones. Projects can be created only in
-// the APIs console. Next tag: 7.
+// the APIs console.
 type Project struct {
 	// Id: User assigned unique identifier for the resource (output only).
 	Id   string `json:"id,omitempty"`
@@ -1944,7 +1945,7 @@ func (s *RRSetRoutingPolicy) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// RRSetRoutingPolicyGeoPolicy: Configures a RRSetRoutingPolicy that routes
+// RRSetRoutingPolicyGeoPolicy: Configures a `RRSetRoutingPolicy` that routes
 // based on the geo location of the querying user.
 type RRSetRoutingPolicyGeoPolicy struct {
 	// EnableFencing: Without fencing, if health check fails for all configured
@@ -1982,7 +1983,7 @@ func (s *RRSetRoutingPolicyGeoPolicy) MarshalJSON() ([]byte, error) {
 type RRSetRoutingPolicyGeoPolicyGeoPolicyItem struct {
 	// HealthCheckedTargets: For A and AAAA types only. Endpoints to return in the
 	// query result only if they are healthy. These can be specified along with
-	// rrdata within this item.
+	// `rrdata` within this item.
 	HealthCheckedTargets *RRSetRoutingPolicyHealthCheckTargets `json:"healthCheckedTargets,omitempty"`
 	Kind                 string                                `json:"kind,omitempty"`
 	// Location: The geo-location granularity is a GCP region. This location string
@@ -1990,8 +1991,8 @@ type RRSetRoutingPolicyGeoPolicyGeoPolicyItem struct {
 	// "asia-east1", etc.
 	Location string   `json:"location,omitempty"`
 	Rrdatas  []string `json:"rrdatas,omitempty"`
-	// SignatureRrdatas: DNSSEC generated signatures for all the rrdata within this
-	// item. If health checked targets are provided for DNSSEC enabled zones,
+	// SignatureRrdatas: DNSSEC generated signatures for all the `rrdata` within
+	// this item. If health checked targets are provided for DNSSEC enabled zones,
 	// there's a restriction of 1 IP address per item.
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "HealthCheckedTargets") to
@@ -2014,8 +2015,7 @@ func (s *RRSetRoutingPolicyGeoPolicyGeoPolicyItem) MarshalJSON() ([]byte, error)
 
 // RRSetRoutingPolicyHealthCheckTargets: HealthCheckTargets describes endpoints
 // to health-check when responding to Routing Policy queries. Only the healthy
-// endpoints will be included in the response. Only one of
-// internal_load_balancer and external_endpoints should be set.
+// endpoints will be included in the response.
 type RRSetRoutingPolicyHealthCheckTargets struct {
 	// InternalLoadBalancers: Configuration for internal load balancers to be
 	// health checked.
@@ -2047,8 +2047,8 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 	//
 	// Possible values:
 	//   "undefined"
-	//   "tcp"
-	//   "udp"
+	//   "tcp" - Indicates the load balancer is accessible via TCP.
+	//   "udp" - Indicates the load balancer is accessible via UDP.
 	IpProtocol string `json:"ipProtocol,omitempty"`
 	Kind       string `json:"kind,omitempty"`
 	// LoadBalancerType: The type of load balancer specified by this target. This
@@ -2060,14 +2060,17 @@ type RRSetRoutingPolicyLoadBalancerTarget struct {
 	//
 	// Possible values:
 	//   "none"
-	//   "globalL7ilb"
-	//   "regionalL4ilb"
-	//   "regionalL7ilb"
+	//   "globalL7ilb" - Indicates the load balancer is a Cross-Region Application
+	// Load Balancer.
+	//   "regionalL4ilb" - Indicates the load balancer is a Regional Network
+	// Passthrough Load Balancer.
+	//   "regionalL7ilb" - Indicates the load balancer is a Regional Application
+	// Load Balancer.
 	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 	// NetworkUrl: The fully qualified URL of the network that the load balancer is
 	// attached to. This should be formatted like
-	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
-	// .
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{ne
+	// twork}`.
 	NetworkUrl string `json:"networkUrl,omitempty"`
 	// Port: The configured port of the load balancer.
 	Port string `json:"port,omitempty"`
@@ -2099,15 +2102,15 @@ func (s *RRSetRoutingPolicyLoadBalancerTarget) MarshalJSON() ([]byte, error) {
 // policy.
 type RRSetRoutingPolicyPrimaryBackupPolicy struct {
 	// BackupGeoTargets: Backup targets provide a regional failover policy for the
-	// otherwise global primary targets. If serving state is set to BACKUP, this
+	// otherwise global primary targets. If serving state is set to `BACKUP`, this
 	// policy essentially becomes a geo routing policy.
 	BackupGeoTargets *RRSetRoutingPolicyGeoPolicy `json:"backupGeoTargets,omitempty"`
 	Kind             string                       `json:"kind,omitempty"`
 	// PrimaryTargets: Endpoints that are health checked before making the routing
 	// decision. Unhealthy endpoints are omitted from the results. If all endpoints
-	// are unhealthy, we serve a response based on the backup_geo_targets.
+	// are unhealthy, we serve a response based on the `backup_geo_targets`.
 	PrimaryTargets *RRSetRoutingPolicyHealthCheckTargets `json:"primaryTargets,omitempty"`
-	// TrickleTraffic: When serving state is PRIMARY, this field provides the
+	// TrickleTraffic: When serving state is `PRIMARY`, this field provides the
 	// option of sending a small percentage of the traffic to the backup targets.
 	TrickleTraffic float64 `json:"trickleTraffic,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "BackupGeoTargets") to
@@ -2172,18 +2175,19 @@ type RRSetRoutingPolicyWrrPolicyWrrPolicyItem struct {
 	// routing decision. The unhealthy endpoints are omitted from the result. If
 	// all endpoints within a bucket are unhealthy, we choose a different bucket
 	// (sampled with respect to its weight) for responding. If DNSSEC is enabled
-	// for this zone, only one of rrdata or health_checked_targets can be set.
+	// for this zone, only one of `rrdata` or `health_checked_targets` can be set.
 	HealthCheckedTargets *RRSetRoutingPolicyHealthCheckTargets `json:"healthCheckedTargets,omitempty"`
 	Kind                 string                                `json:"kind,omitempty"`
 	Rrdatas              []string                              `json:"rrdatas,omitempty"`
-	// SignatureRrdatas: DNSSEC generated signatures for all the rrdata within this
-	// item. Note that if health checked targets are provided for DNSSEC enabled
-	// zones, there's a restriction of 1 IP address per item.
+	// SignatureRrdatas: DNSSEC generated signatures for all the `rrdata` within
+	// this item. Note that if health checked targets are provided for DNSSEC
+	// enabled zones, there's a restriction of 1 IP address per item.
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
-	// Weight: The weight corresponding to this WrrPolicyItem object. When multiple
-	// WrrPolicyItem objects are configured, the probability of returning an
-	// WrrPolicyItem object's data is proportional to its weight relative to the
-	// sum of weights configured for all items. This weight must be non-negative.
+	// Weight: The weight corresponding to this `WrrPolicyItem` object. When
+	// multiple `WrrPolicyItem` objects are configured, the probability of
+	// returning an `WrrPolicyItem` object's data is proportional to its weight
+	// relative to the sum of weights configured for all items. This weight must be
+	// non-negative.
 	Weight float64 `json:"weight,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "HealthCheckedTargets") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -2224,15 +2228,15 @@ type ResourceRecordSet struct {
 	Name string `json:"name,omitempty"`
 	// RoutingPolicy: Configures dynamic query responses based on either the geo
 	// location of the querying user or a weighted round robin based routing
-	// policy. A valid ResourceRecordSet contains only rrdata (for static
-	// resolution) or a routing_policy (for dynamic resolution).
+	// policy. A valid `ResourceRecordSet` contains only `rrdata` (for static
+	// resolution) or a `routing_policy` (for dynamic resolution).
 	RoutingPolicy *RRSetRoutingPolicy `json:"routingPolicy,omitempty"`
 	// Rrdatas: As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1) --
 	// see examples.
 	Rrdatas []string `json:"rrdatas,omitempty"`
 	// SignatureRrdatas: As defined in RFC 4034 (section 3.2).
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
-	// Ttl: Number of seconds that this ResourceRecordSet can be cached by
+	// Ttl: Number of seconds that this `ResourceRecordSet` can be cached by
 	// resolvers.
 	Ttl int64 `json:"ttl,omitempty"`
 	// Type: The identifier of a supported record type. See the list of Supported
@@ -2265,16 +2269,15 @@ type ResourceRecordSetsDeleteResponse struct {
 }
 
 type ResourceRecordSetsListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
 	// Kind: Type of resource.
 	Kind string `json:"kind,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your pagination token.
-	// This lets you retrieve the complete contents of even larger collections, one
-	// page at a time. However, if the collection changes between paginated list
-	// requests, the set of elements returned is an inconsistent view of the
-	// collection. You cannot retrieve a consistent snapshot of a collection larger
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
 	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// Rrsets: The resource record set resources.
@@ -2282,15 +2285,15 @@ type ResourceRecordSetsListResponse struct {
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
+	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "Kind") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2300,53 +2303,28 @@ func (s *ResourceRecordSetsListResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
-// ResponseHeader: Elements common to every response.
-type ResponseHeader struct {
-	// OperationId: For mutating operation requests that completed successfully.
-	// This is the client_operation_id if the client specified it, otherwise it is
-	// generated by the server (output only).
-	OperationId string `json:"operationId,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "OperationId") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "OperationId") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s *ResponseHeader) MarshalJSON() ([]byte, error) {
-	type NoMethod ResponseHeader
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
-}
-
 type ResponsePoliciesListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
-	// NextPageToken: The presence of this field indicates that more results exist
-	// following your last page of results in pagination order. To fetch them, make
-	// another list request by using this value as your page token. This lets you
-	// view the complete contents of even very large collections one page at a
-	// time. However, if the contents of the collection change between the first
-	// and last paginated list request, the set of all elements returned are an
-	// inconsistent view of the collection. You cannot retrieve a consistent
-	// snapshot of a collection larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// ResponsePolicies: The Response Policy resources.
 	ResponsePolicies []*ResponsePolicy `json:"responsePolicies,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -2359,20 +2337,19 @@ func (s *ResponsePoliciesListResponse) MarshalJSON() ([]byte, error) {
 }
 
 type ResponsePoliciesPatchResponse struct {
-	Header         *ResponseHeader `json:"header,omitempty"`
 	ResponsePolicy *ResponsePolicy `json:"responsePolicy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "ResponsePolicy") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ResponsePolicy") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2383,20 +2360,19 @@ func (s *ResponsePoliciesPatchResponse) MarshalJSON() ([]byte, error) {
 }
 
 type ResponsePoliciesUpdateResponse struct {
-	Header         *ResponseHeader `json:"header,omitempty"`
 	ResponsePolicy *ResponsePolicy `json:"responsePolicy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "ResponsePolicy") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ResponsePolicy") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2475,7 +2451,8 @@ type ResponsePolicyNetwork struct {
 	Kind string `json:"kind,omitempty"`
 	// NetworkUrl: The fully qualified URL of the VPC network to bind to. This
 	// should be formatted like
-	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{ne
+	// twork}`
 	NetworkUrl string `json:"networkUrl,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Kind") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -2505,18 +2482,19 @@ type ResponsePolicyRule struct {
 	//
 	// Possible values:
 	//   "behaviorUnspecified"
-	//   "bypassResponsePolicy" - Skip a less-specific ResponsePolicyRule and
-	// continue normal query logic. This can be used with a less-specific wildcard
-	// selector to exempt a subset of the wildcard ResponsePolicyRule from the
-	// ResponsePolicy behavior and query the public Internet instead. For instance,
-	// if these rules exist: *.example.com -> LocalData 1.2.3.4 foo.example.com ->
-	// Behavior 'bypassResponsePolicy' Then a query for 'foo.example.com' skips the
-	// wildcard. This additionally functions to facilitate the allowlist feature.
-	// RPZs can be applied to multiple levels in the (eventually org, folder,
-	// project, network) hierarchy. If a rule is applied at a higher level of the
-	// hierarchy, adding a passthru rule at a lower level will supersede that, and
-	// a query from an affected vm to that domain will be exempt from the RPZ and
-	// proceed to normal resolution behavior.
+	//   "bypassResponsePolicy" - Skip a less-specific Response Policy Rule and let
+	// the query logic continue. This mechanism, when used with wildcard selectors,
+	// lets you exempt specific subdomains from a broader Response Policy Rule and
+	// direct the queries to the public internet instead. For example, if the
+	// following rules exist: ``` *.example.com -> LocalData 1.2.3.4
+	// foo.example.com -> Behavior 'passthrough' ``` A query for foo.example.com
+	// skips the wildcard rule. This functionality also facilitates allowlisting.
+	// Response Policy Zones (RPZs) can be applied at multiple levels within the
+	// hierarchy: for example, an organization, a folder, a project, or a VPC
+	// network. If an RPZ rule is applied at a higher level, adding a `passthrough`
+	// rule at a lower level will override it. Queries from affected virtual
+	// machines (VMs) to that domain bypass the RPZ and proceed with normal
+	// resolution.
 	Behavior string `json:"behavior,omitempty"`
 	// DnsName: The DNS name (wildcard or exact) to apply this rule to. Must be
 	// unique within the Response Policy Rule.
@@ -2574,28 +2552,27 @@ func (s *ResponsePolicyRuleLocalData) MarshalJSON() ([]byte, error) {
 }
 
 type ResponsePolicyRulesListResponse struct {
-	Header *ResponseHeader `json:"header,omitempty"`
-	// NextPageToken: The presence of this field indicates that there exist more
-	// results following your last page of results in pagination order. To fetch
-	// them, make another list request using this value as your page token. This
-	// lets you the complete contents of even very large collections one page at a
-	// time. However, if the contents of the collection change between the first
-	// and last paginated list request, the set of all elements returned are an
-	// inconsistent view of the collection. You cannot retrieve a consistent
-	// snapshot of a collection larger than the maximum page size.
+	// NextPageToken: This field indicates that more results are available beyond
+	// the last page displayed. To fetch the results, make another list request and
+	// use this value as your page token. This lets you retrieve the complete
+	// contents of a very large collection one page at a time. However, if the
+	// contents of the collection change between the first and last paginated list
+	// request, the set of all elements returned are an inconsistent view of the
+	// collection. You can't retrieve a consistent snapshot of a collection larger
+	// than the maximum page size.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// ResponsePolicyRules: The Response Policy Rule resources.
 	ResponsePolicyRules []*ResponsePolicyRule `json:"responsePolicyRules,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -2608,20 +2585,19 @@ func (s *ResponsePolicyRulesListResponse) MarshalJSON() ([]byte, error) {
 }
 
 type ResponsePolicyRulesPatchResponse struct {
-	Header             *ResponseHeader     `json:"header,omitempty"`
 	ResponsePolicyRule *ResponsePolicyRule `json:"responsePolicyRule,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "ResponsePolicyRule") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ResponsePolicyRule") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2632,20 +2608,19 @@ func (s *ResponsePolicyRulesPatchResponse) MarshalJSON() ([]byte, error) {
 }
 
 type ResponsePolicyRulesUpdateResponse struct {
-	Header             *ResponseHeader     `json:"header,omitempty"`
 	ResponsePolicyRule *ResponsePolicyRule `json:"responsePolicyRule,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Header") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "ResponsePolicyRule") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Header") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ResponsePolicyRule") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }

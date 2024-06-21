@@ -101,6 +101,9 @@ func (c *Client) addOperationDeleteTrustStoreMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteTrustStoreValidationMiddleware(stack); err != nil {
 		return err
 	}

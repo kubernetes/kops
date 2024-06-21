@@ -118,6 +118,9 @@ func (c *Client) addOperationDescribeTargetHealthMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeTargetHealthValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -141,14 +144,6 @@ func (c *Client) addOperationDescribeTargetHealthMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// DescribeTargetHealthAPIClient is a client that implements the
-// DescribeTargetHealth operation.
-type DescribeTargetHealthAPIClient interface {
-	DescribeTargetHealth(context.Context, *DescribeTargetHealthInput, ...func(*Options)) (*DescribeTargetHealthOutput, error)
-}
-
-var _ DescribeTargetHealthAPIClient = (*Client)(nil)
 
 // TargetDeregisteredWaiterOptions are waiter options for TargetDeregisteredWaiter
 type TargetDeregisteredWaiterOptions struct {
@@ -265,7 +260,13 @@ func (w *TargetDeregisteredWaiter) WaitForOutput(ctx context.Context, params *De
 		}
 
 		out, err := w.client.DescribeTargetHealth(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -465,7 +466,13 @@ func (w *TargetInServiceWaiter) WaitForOutput(ctx context.Context, params *Descr
 		}
 
 		out, err := w.client.DescribeTargetHealth(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -549,6 +556,14 @@ func targetInServiceStateRetryable(ctx context.Context, input *DescribeTargetHea
 
 	return true, nil
 }
+
+// DescribeTargetHealthAPIClient is a client that implements the
+// DescribeTargetHealth operation.
+type DescribeTargetHealthAPIClient interface {
+	DescribeTargetHealth(context.Context, *DescribeTargetHealthInput, ...func(*Options)) (*DescribeTargetHealthOutput, error)
+}
+
+var _ DescribeTargetHealthAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeTargetHealth(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

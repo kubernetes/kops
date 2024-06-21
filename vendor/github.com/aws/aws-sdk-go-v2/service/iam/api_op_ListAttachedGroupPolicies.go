@@ -166,6 +166,9 @@ func (c *Client) addOperationListAttachedGroupPoliciesMiddlewares(stack *middlew
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListAttachedGroupPoliciesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -189,14 +192,6 @@ func (c *Client) addOperationListAttachedGroupPoliciesMiddlewares(stack *middlew
 	}
 	return nil
 }
-
-// ListAttachedGroupPoliciesAPIClient is a client that implements the
-// ListAttachedGroupPolicies operation.
-type ListAttachedGroupPoliciesAPIClient interface {
-	ListAttachedGroupPolicies(context.Context, *ListAttachedGroupPoliciesInput, ...func(*Options)) (*ListAttachedGroupPoliciesOutput, error)
-}
-
-var _ ListAttachedGroupPoliciesAPIClient = (*Client)(nil)
 
 // ListAttachedGroupPoliciesPaginatorOptions is the paginator options for
 // ListAttachedGroupPolicies
@@ -271,6 +266,9 @@ func (p *ListAttachedGroupPoliciesPaginator) NextPage(ctx context.Context, optFn
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListAttachedGroupPolicies(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -289,6 +287,14 @@ func (p *ListAttachedGroupPoliciesPaginator) NextPage(ctx context.Context, optFn
 
 	return result, nil
 }
+
+// ListAttachedGroupPoliciesAPIClient is a client that implements the
+// ListAttachedGroupPolicies operation.
+type ListAttachedGroupPoliciesAPIClient interface {
+	ListAttachedGroupPolicies(context.Context, *ListAttachedGroupPoliciesInput, ...func(*Options)) (*ListAttachedGroupPoliciesOutput, error)
+}
+
+var _ ListAttachedGroupPoliciesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListAttachedGroupPolicies(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

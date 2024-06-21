@@ -150,6 +150,9 @@ func (c *Client) addOperationCreatePartnerEventSourceMiddlewares(stack *middlewa
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreatePartnerEventSourceValidationMiddleware(stack); err != nil {
 		return err
 	}

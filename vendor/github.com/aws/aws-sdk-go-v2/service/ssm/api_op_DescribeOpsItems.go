@@ -189,6 +189,9 @@ func (c *Client) addOperationDescribeOpsItemsMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeOpsItemsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -212,14 +215,6 @@ func (c *Client) addOperationDescribeOpsItemsMiddlewares(stack *middleware.Stack
 	}
 	return nil
 }
-
-// DescribeOpsItemsAPIClient is a client that implements the DescribeOpsItems
-// operation.
-type DescribeOpsItemsAPIClient interface {
-	DescribeOpsItems(context.Context, *DescribeOpsItemsInput, ...func(*Options)) (*DescribeOpsItemsOutput, error)
-}
-
-var _ DescribeOpsItemsAPIClient = (*Client)(nil)
 
 // DescribeOpsItemsPaginatorOptions is the paginator options for DescribeOpsItems
 type DescribeOpsItemsPaginatorOptions struct {
@@ -285,6 +280,9 @@ func (p *DescribeOpsItemsPaginator) NextPage(ctx context.Context, optFns ...func
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeOpsItems(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -303,6 +301,14 @@ func (p *DescribeOpsItemsPaginator) NextPage(ctx context.Context, optFns ...func
 
 	return result, nil
 }
+
+// DescribeOpsItemsAPIClient is a client that implements the DescribeOpsItems
+// operation.
+type DescribeOpsItemsAPIClient interface {
+	DescribeOpsItems(context.Context, *DescribeOpsItemsInput, ...func(*Options)) (*DescribeOpsItemsOutput, error)
+}
+
+var _ DescribeOpsItemsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeOpsItems(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

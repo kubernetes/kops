@@ -119,6 +119,9 @@ func (c *Client) addOperationDescribeLoadBalancersMiddlewares(stack *middleware.
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeLoadBalancers(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -139,14 +142,6 @@ func (c *Client) addOperationDescribeLoadBalancersMiddlewares(stack *middleware.
 	}
 	return nil
 }
-
-// DescribeLoadBalancersAPIClient is a client that implements the
-// DescribeLoadBalancers operation.
-type DescribeLoadBalancersAPIClient interface {
-	DescribeLoadBalancers(context.Context, *DescribeLoadBalancersInput, ...func(*Options)) (*DescribeLoadBalancersOutput, error)
-}
-
-var _ DescribeLoadBalancersAPIClient = (*Client)(nil)
 
 // DescribeLoadBalancersPaginatorOptions is the paginator options for
 // DescribeLoadBalancers
@@ -200,6 +195,9 @@ func (p *DescribeLoadBalancersPaginator) NextPage(ctx context.Context, optFns ..
 	params := *p.params
 	params.Marker = p.nextToken
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeLoadBalancers(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -218,6 +216,14 @@ func (p *DescribeLoadBalancersPaginator) NextPage(ctx context.Context, optFns ..
 
 	return result, nil
 }
+
+// DescribeLoadBalancersAPIClient is a client that implements the
+// DescribeLoadBalancers operation.
+type DescribeLoadBalancersAPIClient interface {
+	DescribeLoadBalancers(context.Context, *DescribeLoadBalancersInput, ...func(*Options)) (*DescribeLoadBalancersOutput, error)
+}
+
+var _ DescribeLoadBalancersAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeLoadBalancers(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

@@ -60,6 +60,15 @@ func (enum ListSnapshotsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListSnapshotsRequestOrderBy) Values() []ListSnapshotsRequestOrderBy {
+	return []ListSnapshotsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListSnapshotsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -94,6 +103,15 @@ func (enum ListVolumesRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListVolumesRequestOrderBy) Values() []ListVolumesRequestOrderBy {
+	return []ListVolumesRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListVolumesRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -138,6 +156,18 @@ func (enum ReferenceStatus) String() string {
 	return string(enum)
 }
 
+func (enum ReferenceStatus) Values() []ReferenceStatus {
+	return []ReferenceStatus{
+		"unknown_status",
+		"attaching",
+		"attached",
+		"detaching",
+		"detached",
+		"creating",
+		"error",
+	}
+}
+
 func (enum ReferenceStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -174,6 +204,15 @@ func (enum ReferenceType) String() string {
 	return string(enum)
 }
 
+func (enum ReferenceType) Values() []ReferenceType {
+	return []ReferenceType{
+		"unknown_type",
+		"link",
+		"exclusive",
+		"read_only",
+	}
+}
+
 func (enum ReferenceType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -205,8 +244,9 @@ const (
 	// Snapshot was deleted.
 	SnapshotStatusDeleted = SnapshotStatus("deleted")
 	// Snapshot attached to one or more references.
-	SnapshotStatusInUse  = SnapshotStatus("in_use")
-	SnapshotStatusLocked = SnapshotStatus("locked")
+	SnapshotStatusInUse     = SnapshotStatus("in_use")
+	SnapshotStatusLocked    = SnapshotStatus("locked")
+	SnapshotStatusExporting = SnapshotStatus("exporting")
 )
 
 func (enum SnapshotStatus) String() string {
@@ -215,6 +255,20 @@ func (enum SnapshotStatus) String() string {
 		return "unknown_status"
 	}
 	return string(enum)
+}
+
+func (enum SnapshotStatus) Values() []SnapshotStatus {
+	return []SnapshotStatus{
+		"unknown_status",
+		"creating",
+		"available",
+		"error",
+		"deleting",
+		"deleted",
+		"in_use",
+		"locked",
+		"exporting",
+	}
 }
 
 func (enum SnapshotStatus) MarshalJSON() ([]byte, error) {
@@ -251,6 +305,15 @@ func (enum StorageClass) String() string {
 		return "unknown_storage_class"
 	}
 	return string(enum)
+}
+
+func (enum StorageClass) Values() []StorageClass {
+	return []StorageClass{
+		"unknown_storage_class",
+		"unspecified",
+		"bssd",
+		"sbs",
+	}
 }
 
 func (enum StorageClass) MarshalJSON() ([]byte, error) {
@@ -299,6 +362,22 @@ func (enum VolumeStatus) String() string {
 		return "unknown_status"
 	}
 	return string(enum)
+}
+
+func (enum VolumeStatus) Values() []VolumeStatus {
+	return []VolumeStatus{
+		"unknown_status",
+		"creating",
+		"available",
+		"in_use",
+		"deleting",
+		"deleted",
+		"resizing",
+		"error",
+		"snapshotting",
+		"locked",
+		"updating",
+	}
 }
 
 func (enum VolumeStatus) MarshalJSON() ([]byte, error) {
@@ -546,6 +625,21 @@ type DeleteVolumeRequest struct {
 	VolumeID string `json:"-"`
 }
 
+// ExportSnapshotToObjectStorageRequest: export snapshot to object storage request.
+type ExportSnapshotToObjectStorageRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+
+	// SnapshotID: UUID of the snapshot.
+	SnapshotID string `json:"-"`
+
+	// Bucket: scaleway Object Storage bucket where the object is stored.
+	Bucket string `json:"bucket"`
+
+	// Key: the object key inside the given bucket.
+	Key string `json:"key"`
+}
+
 // GetSnapshotRequest: get snapshot request.
 type GetSnapshotRequest struct {
 	// Zone: zone to target. If none is passed will use default zone from the config.
@@ -562,6 +656,30 @@ type GetVolumeRequest struct {
 
 	// VolumeID: UUID of the volume.
 	VolumeID string `json:"-"`
+}
+
+// ImportSnapshotFromObjectStorageRequest: import snapshot from object storage request.
+type ImportSnapshotFromObjectStorageRequest struct {
+	// Zone: zone to target. If none is passed will use default zone from the config.
+	Zone scw.Zone `json:"-"`
+
+	// Bucket: scaleway Object Storage bucket where the object is stored.
+	Bucket string `json:"bucket"`
+
+	// Key: the object key inside the given bucket.
+	Key string `json:"key"`
+
+	// Name: name of the snapshot.
+	Name string `json:"name"`
+
+	// ProjectID: UUID of the Project to which the volume and the snapshot belong.
+	ProjectID string `json:"project_id"`
+
+	// Tags: list of tags assigned to the snapshot.
+	Tags []string `json:"tags"`
+
+	// Size: size of the snapshot.
+	Size *scw.Size `json:"size,omitempty"`
 }
 
 // ImportSnapshotFromS3Request: import snapshot from s3 request.
@@ -1117,7 +1235,7 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	return &resp, nil
 }
 
-// ImportSnapshotFromS3: The bucket must contain a QCOW2 image.
+// Deprecated: ImportSnapshotFromS3: The bucket must contain a QCOW2 image.
 // The bucket can be imported into any Availability Zone as long as it is in the same region as the bucket.
 func (s *API) ImportSnapshotFromS3(req *ImportSnapshotFromS3Request, opts ...scw.RequestOption) (*Snapshot, error) {
 	var err error
@@ -1139,6 +1257,81 @@ func (s *API) ImportSnapshotFromS3(req *ImportSnapshotFromS3Request, opts ...scw
 	scwReq := &scw.ScalewayRequest{
 		Method: "POST",
 		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots/import-from-s3",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Snapshot
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ImportSnapshotFromObjectStorage: The bucket must contain a QCOW2 image.
+// The bucket can be imported into any Availability Zone as long as it is in the same region as the bucket.
+func (s *API) ImportSnapshotFromObjectStorage(req *ImportSnapshotFromObjectStorageRequest, opts ...scw.RequestOption) (*Snapshot, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if req.ProjectID == "" {
+		defaultProjectID, _ := s.client.GetDefaultProjectID()
+		req.ProjectID = defaultProjectID
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots/import-from-object-storage",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Snapshot
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ExportSnapshotToObjectStorage: The snapshot is exported in QCOW2 format.
+// The snapshot must not be in transient state.
+func (s *API) ExportSnapshotToObjectStorage(req *ExportSnapshotToObjectStorageRequest, opts ...scw.RequestOption) (*Snapshot, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SnapshotID) == "" {
+		return nil, errors.New("field SnapshotID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/block/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/snapshots/" + fmt.Sprint(req.SnapshotID) + "/export-to-object-storage",
 	}
 
 	err = scwReq.SetBody(req)

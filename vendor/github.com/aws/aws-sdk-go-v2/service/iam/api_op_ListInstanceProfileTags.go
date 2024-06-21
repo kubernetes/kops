@@ -149,6 +149,9 @@ func (c *Client) addOperationListInstanceProfileTagsMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListInstanceProfileTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -172,14 +175,6 @@ func (c *Client) addOperationListInstanceProfileTagsMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// ListInstanceProfileTagsAPIClient is a client that implements the
-// ListInstanceProfileTags operation.
-type ListInstanceProfileTagsAPIClient interface {
-	ListInstanceProfileTags(context.Context, *ListInstanceProfileTagsInput, ...func(*Options)) (*ListInstanceProfileTagsOutput, error)
-}
-
-var _ ListInstanceProfileTagsAPIClient = (*Client)(nil)
 
 // ListInstanceProfileTagsPaginatorOptions is the paginator options for
 // ListInstanceProfileTags
@@ -254,6 +249,9 @@ func (p *ListInstanceProfileTagsPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListInstanceProfileTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -272,6 +270,14 @@ func (p *ListInstanceProfileTagsPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// ListInstanceProfileTagsAPIClient is a client that implements the
+// ListInstanceProfileTags operation.
+type ListInstanceProfileTagsAPIClient interface {
+	ListInstanceProfileTags(context.Context, *ListInstanceProfileTagsInput, ...func(*Options)) (*ListInstanceProfileTagsOutput, error)
+}
+
+var _ ListInstanceProfileTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListInstanceProfileTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

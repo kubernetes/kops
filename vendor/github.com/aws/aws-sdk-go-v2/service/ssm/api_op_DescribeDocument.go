@@ -116,6 +116,9 @@ func (c *Client) addOperationDescribeDocumentMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeDocumentValidationMiddleware(stack); err != nil {
 		return err
 	}

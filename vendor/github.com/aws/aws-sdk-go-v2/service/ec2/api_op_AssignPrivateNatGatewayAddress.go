@@ -11,8 +11,8 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Assigns one or more private IPv4 addresses to a private NAT gateway. For more
-// information, see [Work with NAT gateways]in the Amazon VPC User Guide.
+// Assigns private IPv4 addresses to a private NAT gateway. For more information,
+// see [Work with NAT gateways]in the Amazon VPC User Guide.
 //
 // [Work with NAT gateways]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-working-with
 func (c *Client) AssignPrivateNatGatewayAddress(ctx context.Context, params *AssignPrivateNatGatewayAddressInput, optFns ...func(*Options)) (*AssignPrivateNatGatewayAddressOutput, error) {
@@ -123,6 +123,9 @@ func (c *Client) addOperationAssignPrivateNatGatewayAddressMiddlewares(stack *mi
 		return err
 	}
 	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
 	if err = addOpAssignPrivateNatGatewayAddressValidationMiddleware(stack); err != nil {

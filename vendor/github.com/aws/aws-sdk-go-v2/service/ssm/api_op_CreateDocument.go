@@ -204,6 +204,9 @@ func (c *Client) addOperationCreateDocumentMiddlewares(stack *middleware.Stack, 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreateDocumentValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -149,6 +149,9 @@ func (c *Client) addOperationListPolicyTagsMiddlewares(stack *middleware.Stack, 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListPolicyTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -172,14 +175,6 @@ func (c *Client) addOperationListPolicyTagsMiddlewares(stack *middleware.Stack, 
 	}
 	return nil
 }
-
-// ListPolicyTagsAPIClient is a client that implements the ListPolicyTags
-// operation.
-type ListPolicyTagsAPIClient interface {
-	ListPolicyTags(context.Context, *ListPolicyTagsInput, ...func(*Options)) (*ListPolicyTagsOutput, error)
-}
-
-var _ ListPolicyTagsAPIClient = (*Client)(nil)
 
 // ListPolicyTagsPaginatorOptions is the paginator options for ListPolicyTags
 type ListPolicyTagsPaginatorOptions struct {
@@ -252,6 +247,9 @@ func (p *ListPolicyTagsPaginator) NextPage(ctx context.Context, optFns ...func(*
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListPolicyTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -270,6 +268,14 @@ func (p *ListPolicyTagsPaginator) NextPage(ctx context.Context, optFns ...func(*
 
 	return result, nil
 }
+
+// ListPolicyTagsAPIClient is a client that implements the ListPolicyTags
+// operation.
+type ListPolicyTagsAPIClient interface {
+	ListPolicyTags(context.Context, *ListPolicyTagsInput, ...func(*Options)) (*ListPolicyTagsOutput, error)
+}
+
+var _ ListPolicyTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListPolicyTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

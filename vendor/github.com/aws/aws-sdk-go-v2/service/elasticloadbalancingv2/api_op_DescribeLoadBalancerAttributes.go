@@ -120,6 +120,9 @@ func (c *Client) addOperationDescribeLoadBalancerAttributesMiddlewares(stack *mi
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeLoadBalancerAttributesValidationMiddleware(stack); err != nil {
 		return err
 	}

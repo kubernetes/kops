@@ -149,6 +149,9 @@ func (c *Client) addOperationDescribeParametersMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeParametersValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -172,14 +175,6 @@ func (c *Client) addOperationDescribeParametersMiddlewares(stack *middleware.Sta
 	}
 	return nil
 }
-
-// DescribeParametersAPIClient is a client that implements the DescribeParameters
-// operation.
-type DescribeParametersAPIClient interface {
-	DescribeParameters(context.Context, *DescribeParametersInput, ...func(*Options)) (*DescribeParametersOutput, error)
-}
-
-var _ DescribeParametersAPIClient = (*Client)(nil)
 
 // DescribeParametersPaginatorOptions is the paginator options for
 // DescribeParameters
@@ -246,6 +241,9 @@ func (p *DescribeParametersPaginator) NextPage(ctx context.Context, optFns ...fu
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeParameters(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -264,6 +262,14 @@ func (p *DescribeParametersPaginator) NextPage(ctx context.Context, optFns ...fu
 
 	return result, nil
 }
+
+// DescribeParametersAPIClient is a client that implements the DescribeParameters
+// operation.
+type DescribeParametersAPIClient interface {
+	DescribeParameters(context.Context, *DescribeParametersInput, ...func(*Options)) (*DescribeParametersOutput, error)
+}
+
+var _ DescribeParametersAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeParameters(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

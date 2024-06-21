@@ -145,6 +145,9 @@ func (c *Client) addOperationGetPolicyVersionMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetPolicyVersionValidationMiddleware(stack); err != nil {
 		return err
 	}

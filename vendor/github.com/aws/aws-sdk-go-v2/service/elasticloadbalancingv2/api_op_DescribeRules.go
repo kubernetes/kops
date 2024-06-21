@@ -119,6 +119,9 @@ func (c *Client) addOperationDescribeRulesMiddlewares(stack *middleware.Stack, o
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeRules(options.Region), middleware.Before); err != nil {
 		return err
 	}

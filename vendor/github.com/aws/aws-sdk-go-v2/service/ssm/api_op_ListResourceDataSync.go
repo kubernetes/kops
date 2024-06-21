@@ -127,6 +127,9 @@ func (c *Client) addOperationListResourceDataSyncMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListResourceDataSync(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -147,14 +150,6 @@ func (c *Client) addOperationListResourceDataSyncMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// ListResourceDataSyncAPIClient is a client that implements the
-// ListResourceDataSync operation.
-type ListResourceDataSyncAPIClient interface {
-	ListResourceDataSync(context.Context, *ListResourceDataSyncInput, ...func(*Options)) (*ListResourceDataSyncOutput, error)
-}
-
-var _ ListResourceDataSyncAPIClient = (*Client)(nil)
 
 // ListResourceDataSyncPaginatorOptions is the paginator options for
 // ListResourceDataSync
@@ -221,6 +216,9 @@ func (p *ListResourceDataSyncPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListResourceDataSync(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -239,6 +237,14 @@ func (p *ListResourceDataSyncPaginator) NextPage(ctx context.Context, optFns ...
 
 	return result, nil
 }
+
+// ListResourceDataSyncAPIClient is a client that implements the
+// ListResourceDataSync operation.
+type ListResourceDataSyncAPIClient interface {
+	ListResourceDataSync(context.Context, *ListResourceDataSyncInput, ...func(*Options)) (*ListResourceDataSyncOutput, error)
+}
+
+var _ ListResourceDataSyncAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListResourceDataSync(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

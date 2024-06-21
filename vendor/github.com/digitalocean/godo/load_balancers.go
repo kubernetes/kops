@@ -170,6 +170,7 @@ type HealthCheck struct {
 	ResponseTimeoutSeconds int    `json:"response_timeout_seconds,omitempty"`
 	HealthyThreshold       int    `json:"healthy_threshold,omitempty"`
 	UnhealthyThreshold     int    `json:"unhealthy_threshold,omitempty"`
+	ProxyProtocol          *bool  `json:"proxy_protocol,omitempty"`
 }
 
 // String creates a human-readable description of a HealthCheck.

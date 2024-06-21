@@ -153,6 +153,9 @@ func (c *Client) addOperationListSSHPublicKeysMiddlewares(stack *middleware.Stac
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListSSHPublicKeys(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -173,14 +176,6 @@ func (c *Client) addOperationListSSHPublicKeysMiddlewares(stack *middleware.Stac
 	}
 	return nil
 }
-
-// ListSSHPublicKeysAPIClient is a client that implements the ListSSHPublicKeys
-// operation.
-type ListSSHPublicKeysAPIClient interface {
-	ListSSHPublicKeys(context.Context, *ListSSHPublicKeysInput, ...func(*Options)) (*ListSSHPublicKeysOutput, error)
-}
-
-var _ ListSSHPublicKeysAPIClient = (*Client)(nil)
 
 // ListSSHPublicKeysPaginatorOptions is the paginator options for ListSSHPublicKeys
 type ListSSHPublicKeysPaginatorOptions struct {
@@ -253,6 +248,9 @@ func (p *ListSSHPublicKeysPaginator) NextPage(ctx context.Context, optFns ...fun
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListSSHPublicKeys(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -271,6 +269,14 @@ func (p *ListSSHPublicKeysPaginator) NextPage(ctx context.Context, optFns ...fun
 
 	return result, nil
 }
+
+// ListSSHPublicKeysAPIClient is a client that implements the ListSSHPublicKeys
+// operation.
+type ListSSHPublicKeysAPIClient interface {
+	ListSSHPublicKeys(context.Context, *ListSSHPublicKeysInput, ...func(*Options)) (*ListSSHPublicKeysOutput, error)
+}
+
+var _ ListSSHPublicKeysAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListSSHPublicKeys(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

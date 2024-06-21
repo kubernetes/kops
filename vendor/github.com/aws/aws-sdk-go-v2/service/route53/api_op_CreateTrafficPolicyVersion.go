@@ -137,6 +137,9 @@ func (c *Client) addOperationCreateTrafficPolicyVersionMiddlewares(stack *middle
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreateTrafficPolicyVersionValidationMiddleware(stack); err != nil {
 		return err
 	}

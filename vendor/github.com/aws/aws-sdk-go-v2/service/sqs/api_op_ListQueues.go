@@ -135,6 +135,9 @@ func (c *Client) addOperationListQueuesMiddlewares(stack *middleware.Stack, opti
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListQueues(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -155,13 +158,6 @@ func (c *Client) addOperationListQueuesMiddlewares(stack *middleware.Stack, opti
 	}
 	return nil
 }
-
-// ListQueuesAPIClient is a client that implements the ListQueues operation.
-type ListQueuesAPIClient interface {
-	ListQueues(context.Context, *ListQueuesInput, ...func(*Options)) (*ListQueuesOutput, error)
-}
-
-var _ ListQueuesAPIClient = (*Client)(nil)
 
 // ListQueuesPaginatorOptions is the paginator options for ListQueues
 type ListQueuesPaginatorOptions struct {
@@ -227,6 +223,9 @@ func (p *ListQueuesPaginator) NextPage(ctx context.Context, optFns ...func(*Opti
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListQueues(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -245,6 +244,13 @@ func (p *ListQueuesPaginator) NextPage(ctx context.Context, optFns ...func(*Opti
 
 	return result, nil
 }
+
+// ListQueuesAPIClient is a client that implements the ListQueues operation.
+type ListQueuesAPIClient interface {
+	ListQueues(context.Context, *ListQueuesInput, ...func(*Options)) (*ListQueuesOutput, error)
+}
+
+var _ ListQueuesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListQueues(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

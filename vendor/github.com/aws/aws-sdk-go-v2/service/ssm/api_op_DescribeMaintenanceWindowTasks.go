@@ -127,6 +127,9 @@ func (c *Client) addOperationDescribeMaintenanceWindowTasksMiddlewares(stack *mi
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeMaintenanceWindowTasksValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -150,14 +153,6 @@ func (c *Client) addOperationDescribeMaintenanceWindowTasksMiddlewares(stack *mi
 	}
 	return nil
 }
-
-// DescribeMaintenanceWindowTasksAPIClient is a client that implements the
-// DescribeMaintenanceWindowTasks operation.
-type DescribeMaintenanceWindowTasksAPIClient interface {
-	DescribeMaintenanceWindowTasks(context.Context, *DescribeMaintenanceWindowTasksInput, ...func(*Options)) (*DescribeMaintenanceWindowTasksOutput, error)
-}
-
-var _ DescribeMaintenanceWindowTasksAPIClient = (*Client)(nil)
 
 // DescribeMaintenanceWindowTasksPaginatorOptions is the paginator options for
 // DescribeMaintenanceWindowTasks
@@ -226,6 +221,9 @@ func (p *DescribeMaintenanceWindowTasksPaginator) NextPage(ctx context.Context, 
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeMaintenanceWindowTasks(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -244,6 +242,14 @@ func (p *DescribeMaintenanceWindowTasksPaginator) NextPage(ctx context.Context, 
 
 	return result, nil
 }
+
+// DescribeMaintenanceWindowTasksAPIClient is a client that implements the
+// DescribeMaintenanceWindowTasks operation.
+type DescribeMaintenanceWindowTasksAPIClient interface {
+	DescribeMaintenanceWindowTasks(context.Context, *DescribeMaintenanceWindowTasksInput, ...func(*Options)) (*DescribeMaintenanceWindowTasksOutput, error)
+}
+
+var _ DescribeMaintenanceWindowTasksAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeMaintenanceWindowTasks(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

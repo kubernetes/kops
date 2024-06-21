@@ -58,6 +58,14 @@ func (enum BearerType) String() string {
 	return string(enum)
 }
 
+func (enum BearerType) Values() []BearerType {
+	return []BearerType{
+		"unknown_bearer_type",
+		"user",
+		"application",
+	}
+}
+
 func (enum BearerType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -102,6 +110,19 @@ func (enum ListAPIKeysRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListAPIKeysRequestOrderBy) Values() []ListAPIKeysRequestOrderBy {
+	return []ListAPIKeysRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+		"expires_at_asc",
+		"expires_at_desc",
+		"access_key_asc",
+		"access_key_desc",
+	}
+}
+
 func (enum ListAPIKeysRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -140,6 +161,17 @@ func (enum ListApplicationsRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListApplicationsRequestOrderBy) Values() []ListApplicationsRequestOrderBy {
+	return []ListApplicationsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListApplicationsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -182,6 +214,17 @@ func (enum ListGroupsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListGroupsRequestOrderBy) Values() []ListGroupsRequestOrderBy {
+	return []ListGroupsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListGroupsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -218,6 +261,15 @@ func (enum ListJWTsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListJWTsRequestOrderBy) Values() []ListJWTsRequestOrderBy {
+	return []ListJWTsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+	}
+}
+
 func (enum ListJWTsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -248,6 +300,13 @@ func (enum ListLogsRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListLogsRequestOrderBy) Values() []ListLogsRequestOrderBy {
+	return []ListLogsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
 }
 
 func (enum ListLogsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -286,6 +345,15 @@ func (enum ListPermissionSetsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListPermissionSetsRequestOrderBy) Values() []ListPermissionSetsRequestOrderBy {
+	return []ListPermissionSetsRequestOrderBy{
+		"name_asc",
+		"name_desc",
+		"created_at_asc",
+		"created_at_desc",
+	}
+}
+
 func (enum ListPermissionSetsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -322,6 +390,15 @@ func (enum ListPoliciesRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListPoliciesRequestOrderBy) Values() []ListPoliciesRequestOrderBy {
+	return []ListPoliciesRequestOrderBy{
+		"policy_name_asc",
+		"policy_name_desc",
+		"created_at_asc",
+		"created_at_desc",
+	}
+}
+
 func (enum ListPoliciesRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -352,6 +429,13 @@ func (enum ListQuotaRequestOrderBy) String() string {
 		return "name_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListQuotaRequestOrderBy) Values() []ListQuotaRequestOrderBy {
+	return []ListQuotaRequestOrderBy{
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListQuotaRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -392,6 +476,17 @@ func (enum ListSSHKeysRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListSSHKeysRequestOrderBy) Values() []ListSSHKeysRequestOrderBy {
+	return []ListSSHKeysRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListSSHKeysRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -438,6 +533,19 @@ func (enum ListUsersRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListUsersRequestOrderBy) Values() []ListUsersRequestOrderBy {
+	return []ListUsersRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+		"email_asc",
+		"email_desc",
+		"last_login_asc",
+		"last_login_desc",
+	}
+}
+
 func (enum ListUsersRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -472,6 +580,15 @@ func (enum LogAction) String() string {
 		return "unknown_action"
 	}
 	return string(enum)
+}
+
+func (enum LogAction) Values() []LogAction {
+	return []LogAction{
+		"unknown_action",
+		"created",
+		"updated",
+		"deleted",
+	}
 }
 
 func (enum LogAction) MarshalJSON() ([]byte, error) {
@@ -514,6 +631,17 @@ func (enum LogResourceType) String() string {
 	return string(enum)
 }
 
+func (enum LogResourceType) Values() []LogResourceType {
+	return []LogResourceType{
+		"unknown_resource_type",
+		"api_key",
+		"user",
+		"application",
+		"group",
+		"policy",
+	}
+}
+
 func (enum LogResourceType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -550,6 +678,15 @@ func (enum PermissionSetScopeType) String() string {
 	return string(enum)
 }
 
+func (enum PermissionSetScopeType) Values() []PermissionSetScopeType {
+	return []PermissionSetScopeType{
+		"unknown_scope_type",
+		"projects",
+		"organization",
+		"account_root_user",
+	}
+}
+
 func (enum PermissionSetScopeType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -584,6 +721,14 @@ func (enum UserStatus) String() string {
 	return string(enum)
 }
 
+func (enum UserStatus) Values() []UserStatus {
+	return []UserStatus{
+		"unknown_status",
+		"invitation_pending",
+		"activated",
+	}
+}
+
 func (enum UserStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -616,6 +761,14 @@ func (enum UserType) String() string {
 		return "unknown_type"
 	}
 	return string(enum)
+}
+
+func (enum UserType) Values() []UserType {
+	return []UserType{
+		"unknown_type",
+		"guest",
+		"owner",
+	}
 }
 
 func (enum UserType) MarshalJSON() ([]byte, error) {

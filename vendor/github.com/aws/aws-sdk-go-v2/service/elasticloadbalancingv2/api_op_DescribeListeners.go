@@ -120,6 +120,9 @@ func (c *Client) addOperationDescribeListenersMiddlewares(stack *middleware.Stac
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeListeners(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -140,14 +143,6 @@ func (c *Client) addOperationDescribeListenersMiddlewares(stack *middleware.Stac
 	}
 	return nil
 }
-
-// DescribeListenersAPIClient is a client that implements the DescribeListeners
-// operation.
-type DescribeListenersAPIClient interface {
-	DescribeListeners(context.Context, *DescribeListenersInput, ...func(*Options)) (*DescribeListenersOutput, error)
-}
-
-var _ DescribeListenersAPIClient = (*Client)(nil)
 
 // DescribeListenersPaginatorOptions is the paginator options for DescribeListeners
 type DescribeListenersPaginatorOptions struct {
@@ -200,6 +195,9 @@ func (p *DescribeListenersPaginator) NextPage(ctx context.Context, optFns ...fun
 	params := *p.params
 	params.Marker = p.nextToken
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeListeners(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -218,6 +216,14 @@ func (p *DescribeListenersPaginator) NextPage(ctx context.Context, optFns ...fun
 
 	return result, nil
 }
+
+// DescribeListenersAPIClient is a client that implements the DescribeListeners
+// operation.
+type DescribeListenersAPIClient interface {
+	DescribeListeners(context.Context, *DescribeListenersInput, ...func(*Options)) (*DescribeListenersOutput, error)
+}
+
+var _ DescribeListenersAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeListeners(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

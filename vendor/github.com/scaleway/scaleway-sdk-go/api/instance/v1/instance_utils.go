@@ -384,3 +384,48 @@ func (s *API) WaitForMACAddress(req *WaitForMACAddressRequest, opts ...scw.Reque
 func (r *GetServerTypesAvailabilityResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
+
+// WaitForServerRDPPasswordRequest is used by WaitForServerRDPPassword method.
+type WaitForServerRDPPasswordRequest struct {
+	ServerID      string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+// WaitForServerRDPPassword wait for an RDP password to be generated for an instance before returning.
+// This function can be used to wait for a windows instance to boot up.
+func (s *API) WaitForServerRDPPassword(req *WaitForServerRDPPasswordRequest, opts ...scw.RequestOption) (*Server, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
+	server, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (interface{}, bool, error) {
+			res, err := s.GetServer(&GetServerRequest{
+				ServerID: req.ServerID,
+				Zone:     req.Zone,
+			}, opts...)
+			if err != nil {
+				return nil, false, err
+			}
+
+			if res.Server.AdminPasswordEncryptedValue != nil && *res.Server.AdminPasswordEncryptedValue != "" {
+				return res.Server, true, err
+			}
+
+			return res.Server, false, err
+		},
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "waiting for server failed")
+	}
+	return server.(*Server), nil
+}

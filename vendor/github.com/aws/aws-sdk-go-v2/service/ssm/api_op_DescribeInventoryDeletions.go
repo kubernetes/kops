@@ -116,6 +116,9 @@ func (c *Client) addOperationDescribeInventoryDeletionsMiddlewares(stack *middle
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeInventoryDeletions(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -136,14 +139,6 @@ func (c *Client) addOperationDescribeInventoryDeletionsMiddlewares(stack *middle
 	}
 	return nil
 }
-
-// DescribeInventoryDeletionsAPIClient is a client that implements the
-// DescribeInventoryDeletions operation.
-type DescribeInventoryDeletionsAPIClient interface {
-	DescribeInventoryDeletions(context.Context, *DescribeInventoryDeletionsInput, ...func(*Options)) (*DescribeInventoryDeletionsOutput, error)
-}
-
-var _ DescribeInventoryDeletionsAPIClient = (*Client)(nil)
 
 // DescribeInventoryDeletionsPaginatorOptions is the paginator options for
 // DescribeInventoryDeletions
@@ -212,6 +207,9 @@ func (p *DescribeInventoryDeletionsPaginator) NextPage(ctx context.Context, optF
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeInventoryDeletions(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -230,6 +228,14 @@ func (p *DescribeInventoryDeletionsPaginator) NextPage(ctx context.Context, optF
 
 	return result, nil
 }
+
+// DescribeInventoryDeletionsAPIClient is a client that implements the
+// DescribeInventoryDeletions operation.
+type DescribeInventoryDeletionsAPIClient interface {
+	DescribeInventoryDeletions(context.Context, *DescribeInventoryDeletionsInput, ...func(*Options)) (*DescribeInventoryDeletionsOutput, error)
+}
+
+var _ DescribeInventoryDeletionsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeInventoryDeletions(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

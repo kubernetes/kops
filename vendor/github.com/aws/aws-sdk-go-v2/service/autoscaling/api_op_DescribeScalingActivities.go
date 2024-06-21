@@ -145,6 +145,9 @@ func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middlew
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeScalingActivities(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -165,14 +168,6 @@ func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middlew
 	}
 	return nil
 }
-
-// DescribeScalingActivitiesAPIClient is a client that implements the
-// DescribeScalingActivities operation.
-type DescribeScalingActivitiesAPIClient interface {
-	DescribeScalingActivities(context.Context, *DescribeScalingActivitiesInput, ...func(*Options)) (*DescribeScalingActivitiesOutput, error)
-}
-
-var _ DescribeScalingActivitiesAPIClient = (*Client)(nil)
 
 // DescribeScalingActivitiesPaginatorOptions is the paginator options for
 // DescribeScalingActivities
@@ -240,6 +235,9 @@ func (p *DescribeScalingActivitiesPaginator) NextPage(ctx context.Context, optFn
 	}
 	params.MaxRecords = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeScalingActivities(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -258,6 +256,14 @@ func (p *DescribeScalingActivitiesPaginator) NextPage(ctx context.Context, optFn
 
 	return result, nil
 }
+
+// DescribeScalingActivitiesAPIClient is a client that implements the
+// DescribeScalingActivities operation.
+type DescribeScalingActivitiesAPIClient interface {
+	DescribeScalingActivities(context.Context, *DescribeScalingActivitiesInput, ...func(*Options)) (*DescribeScalingActivitiesOutput, error)
+}
+
+var _ DescribeScalingActivitiesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeScalingActivities(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

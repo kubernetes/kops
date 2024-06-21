@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.118.0] - 2024-06-04
+
+**Note**: This release contains features in closed beta (#700).
+
+- #701 - @llDrLove - Rename control plane permission to control plane firewall
+- #700 - @bbassingthwaite - Add ProxyProtocol to LoadBalancer HealthCheck
+
 ## [v1.117.0] - 2024-06-04
 
 - #696 - @llDrLove - Support specifying control plane firewall rules when creating or updating DOKS clusters

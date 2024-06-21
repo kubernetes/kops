@@ -204,6 +204,9 @@ func (c *Client) addOperationChangeResourceRecordSetsMiddlewares(stack *middlewa
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpChangeResourceRecordSetsValidationMiddleware(stack); err != nil {
 		return err
 	}

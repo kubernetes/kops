@@ -58,6 +58,17 @@ func (enum ListImagesRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListImagesRequestOrderBy) Values() []ListImagesRequestOrderBy {
+	return []ListImagesRequestOrderBy{
+		"name_asc",
+		"name_desc",
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+	}
+}
+
 func (enum ListImagesRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -88,6 +99,13 @@ func (enum ListLocalImagesRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListLocalImagesRequestOrderBy) Values() []ListLocalImagesRequestOrderBy {
+	return []ListLocalImagesRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
+}
+
 func (enum ListLocalImagesRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -116,6 +134,13 @@ func (enum ListVersionsRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListVersionsRequestOrderBy) Values() []ListVersionsRequestOrderBy {
+	return []ListVersionsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
 }
 
 func (enum ListVersionsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -150,6 +175,14 @@ func (enum LocalImageType) String() string {
 		return "unknown_type"
 	}
 	return string(enum)
+}
+
+func (enum LocalImageType) Values() []LocalImageType {
+	return []LocalImageType{
+		"unknown_type",
+		"instance_local",
+		"instance_sbs",
+	}
 }
 
 func (enum LocalImageType) MarshalJSON() ([]byte, error) {

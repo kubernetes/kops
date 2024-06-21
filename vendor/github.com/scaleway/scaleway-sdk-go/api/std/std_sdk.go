@@ -55,6 +55,15 @@ func (enum LanguageCode) String() string {
 	return string(enum)
 }
 
+func (enum LanguageCode) Values() []LanguageCode {
+	return []LanguageCode{
+		"unknown_language_code",
+		"en_US",
+		"fr_FR",
+		"de_DE",
+	}
+}
+
 func (enum LanguageCode) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }

@@ -129,6 +129,9 @@ func (c *Client) addOperationGetOpsSummaryMiddlewares(stack *middleware.Stack, o
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetOpsSummaryValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -152,13 +155,6 @@ func (c *Client) addOperationGetOpsSummaryMiddlewares(stack *middleware.Stack, o
 	}
 	return nil
 }
-
-// GetOpsSummaryAPIClient is a client that implements the GetOpsSummary operation.
-type GetOpsSummaryAPIClient interface {
-	GetOpsSummary(context.Context, *GetOpsSummaryInput, ...func(*Options)) (*GetOpsSummaryOutput, error)
-}
-
-var _ GetOpsSummaryAPIClient = (*Client)(nil)
 
 // GetOpsSummaryPaginatorOptions is the paginator options for GetOpsSummary
 type GetOpsSummaryPaginatorOptions struct {
@@ -224,6 +220,9 @@ func (p *GetOpsSummaryPaginator) NextPage(ctx context.Context, optFns ...func(*O
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetOpsSummary(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -242,6 +241,13 @@ func (p *GetOpsSummaryPaginator) NextPage(ctx context.Context, optFns ...func(*O
 
 	return result, nil
 }
+
+// GetOpsSummaryAPIClient is a client that implements the GetOpsSummary operation.
+type GetOpsSummaryAPIClient interface {
+	GetOpsSummary(context.Context, *GetOpsSummaryInput, ...func(*Options)) (*GetOpsSummaryOutput, error)
+}
+
+var _ GetOpsSummaryAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetOpsSummary(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

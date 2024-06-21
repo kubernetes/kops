@@ -130,6 +130,9 @@ func (c *Client) addOperationRollbackInstanceRefreshMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpRollbackInstanceRefreshValidationMiddleware(stack); err != nil {
 		return err
 	}

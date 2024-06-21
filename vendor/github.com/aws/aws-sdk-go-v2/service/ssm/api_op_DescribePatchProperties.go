@@ -155,6 +155,9 @@ func (c *Client) addOperationDescribePatchPropertiesMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribePatchPropertiesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -178,14 +181,6 @@ func (c *Client) addOperationDescribePatchPropertiesMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// DescribePatchPropertiesAPIClient is a client that implements the
-// DescribePatchProperties operation.
-type DescribePatchPropertiesAPIClient interface {
-	DescribePatchProperties(context.Context, *DescribePatchPropertiesInput, ...func(*Options)) (*DescribePatchPropertiesOutput, error)
-}
-
-var _ DescribePatchPropertiesAPIClient = (*Client)(nil)
 
 // DescribePatchPropertiesPaginatorOptions is the paginator options for
 // DescribePatchProperties
@@ -253,6 +248,9 @@ func (p *DescribePatchPropertiesPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribePatchProperties(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -271,6 +269,14 @@ func (p *DescribePatchPropertiesPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// DescribePatchPropertiesAPIClient is a client that implements the
+// DescribePatchProperties operation.
+type DescribePatchPropertiesAPIClient interface {
+	DescribePatchProperties(context.Context, *DescribePatchPropertiesInput, ...func(*Options)) (*DescribePatchPropertiesOutput, error)
+}
+
+var _ DescribePatchPropertiesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribePatchProperties(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

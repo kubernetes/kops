@@ -101,6 +101,9 @@ func (c *Client) addOperationDeleteApiDestinationMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteApiDestinationValidationMiddleware(stack); err != nil {
 		return err
 	}

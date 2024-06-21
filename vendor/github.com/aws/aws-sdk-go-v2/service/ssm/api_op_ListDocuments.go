@@ -130,6 +130,9 @@ func (c *Client) addOperationListDocumentsMiddlewares(stack *middleware.Stack, o
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListDocumentsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -153,13 +156,6 @@ func (c *Client) addOperationListDocumentsMiddlewares(stack *middleware.Stack, o
 	}
 	return nil
 }
-
-// ListDocumentsAPIClient is a client that implements the ListDocuments operation.
-type ListDocumentsAPIClient interface {
-	ListDocuments(context.Context, *ListDocumentsInput, ...func(*Options)) (*ListDocumentsOutput, error)
-}
-
-var _ ListDocumentsAPIClient = (*Client)(nil)
 
 // ListDocumentsPaginatorOptions is the paginator options for ListDocuments
 type ListDocumentsPaginatorOptions struct {
@@ -225,6 +221,9 @@ func (p *ListDocumentsPaginator) NextPage(ctx context.Context, optFns ...func(*O
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListDocuments(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -243,6 +242,13 @@ func (p *ListDocumentsPaginator) NextPage(ctx context.Context, optFns ...func(*O
 
 	return result, nil
 }
+
+// ListDocumentsAPIClient is a client that implements the ListDocuments operation.
+type ListDocumentsAPIClient interface {
+	ListDocuments(context.Context, *ListDocumentsInput, ...func(*Options)) (*ListDocumentsOutput, error)
+}
+
+var _ ListDocumentsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListDocuments(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

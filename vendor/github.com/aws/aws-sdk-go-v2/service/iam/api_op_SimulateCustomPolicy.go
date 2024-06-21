@@ -337,6 +337,9 @@ func (c *Client) addOperationSimulateCustomPolicyMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpSimulateCustomPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -360,14 +363,6 @@ func (c *Client) addOperationSimulateCustomPolicyMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// SimulateCustomPolicyAPIClient is a client that implements the
-// SimulateCustomPolicy operation.
-type SimulateCustomPolicyAPIClient interface {
-	SimulateCustomPolicy(context.Context, *SimulateCustomPolicyInput, ...func(*Options)) (*SimulateCustomPolicyOutput, error)
-}
-
-var _ SimulateCustomPolicyAPIClient = (*Client)(nil)
 
 // SimulateCustomPolicyPaginatorOptions is the paginator options for
 // SimulateCustomPolicy
@@ -441,6 +436,9 @@ func (p *SimulateCustomPolicyPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.SimulateCustomPolicy(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -459,6 +457,14 @@ func (p *SimulateCustomPolicyPaginator) NextPage(ctx context.Context, optFns ...
 
 	return result, nil
 }
+
+// SimulateCustomPolicyAPIClient is a client that implements the
+// SimulateCustomPolicy operation.
+type SimulateCustomPolicyAPIClient interface {
+	SimulateCustomPolicy(context.Context, *SimulateCustomPolicyInput, ...func(*Options)) (*SimulateCustomPolicyOutput, error)
+}
+
+var _ SimulateCustomPolicyAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opSimulateCustomPolicy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

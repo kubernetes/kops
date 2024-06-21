@@ -166,6 +166,9 @@ func (c *Client) addOperationListAttachedRolePoliciesMiddlewares(stack *middlewa
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListAttachedRolePoliciesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -189,14 +192,6 @@ func (c *Client) addOperationListAttachedRolePoliciesMiddlewares(stack *middlewa
 	}
 	return nil
 }
-
-// ListAttachedRolePoliciesAPIClient is a client that implements the
-// ListAttachedRolePolicies operation.
-type ListAttachedRolePoliciesAPIClient interface {
-	ListAttachedRolePolicies(context.Context, *ListAttachedRolePoliciesInput, ...func(*Options)) (*ListAttachedRolePoliciesOutput, error)
-}
-
-var _ ListAttachedRolePoliciesAPIClient = (*Client)(nil)
 
 // ListAttachedRolePoliciesPaginatorOptions is the paginator options for
 // ListAttachedRolePolicies
@@ -271,6 +266,9 @@ func (p *ListAttachedRolePoliciesPaginator) NextPage(ctx context.Context, optFns
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListAttachedRolePolicies(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -289,6 +287,14 @@ func (p *ListAttachedRolePoliciesPaginator) NextPage(ctx context.Context, optFns
 
 	return result, nil
 }
+
+// ListAttachedRolePoliciesAPIClient is a client that implements the
+// ListAttachedRolePolicies operation.
+type ListAttachedRolePoliciesAPIClient interface {
+	ListAttachedRolePolicies(context.Context, *ListAttachedRolePoliciesInput, ...func(*Options)) (*ListAttachedRolePoliciesOutput, error)
+}
+
+var _ ListAttachedRolePoliciesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListAttachedRolePolicies(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

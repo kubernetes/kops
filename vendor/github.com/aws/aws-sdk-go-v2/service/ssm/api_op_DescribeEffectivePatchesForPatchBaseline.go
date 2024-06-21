@@ -118,6 +118,9 @@ func (c *Client) addOperationDescribeEffectivePatchesForPatchBaselineMiddlewares
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeEffectivePatchesForPatchBaselineValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -141,14 +144,6 @@ func (c *Client) addOperationDescribeEffectivePatchesForPatchBaselineMiddlewares
 	}
 	return nil
 }
-
-// DescribeEffectivePatchesForPatchBaselineAPIClient is a client that implements
-// the DescribeEffectivePatchesForPatchBaseline operation.
-type DescribeEffectivePatchesForPatchBaselineAPIClient interface {
-	DescribeEffectivePatchesForPatchBaseline(context.Context, *DescribeEffectivePatchesForPatchBaselineInput, ...func(*Options)) (*DescribeEffectivePatchesForPatchBaselineOutput, error)
-}
-
-var _ DescribeEffectivePatchesForPatchBaselineAPIClient = (*Client)(nil)
 
 // DescribeEffectivePatchesForPatchBaselinePaginatorOptions is the paginator
 // options for DescribeEffectivePatchesForPatchBaseline
@@ -216,6 +211,9 @@ func (p *DescribeEffectivePatchesForPatchBaselinePaginator) NextPage(ctx context
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeEffectivePatchesForPatchBaseline(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -234,6 +232,14 @@ func (p *DescribeEffectivePatchesForPatchBaselinePaginator) NextPage(ctx context
 
 	return result, nil
 }
+
+// DescribeEffectivePatchesForPatchBaselineAPIClient is a client that implements
+// the DescribeEffectivePatchesForPatchBaseline operation.
+type DescribeEffectivePatchesForPatchBaselineAPIClient interface {
+	DescribeEffectivePatchesForPatchBaseline(context.Context, *DescribeEffectivePatchesForPatchBaselineInput, ...func(*Options)) (*DescribeEffectivePatchesForPatchBaselineOutput, error)
+}
+
+var _ DescribeEffectivePatchesForPatchBaselineAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeEffectivePatchesForPatchBaseline(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

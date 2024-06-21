@@ -158,6 +158,9 @@ func (c *Client) addOperationDescribeInstancePatchesMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeInstancePatchesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -181,14 +184,6 @@ func (c *Client) addOperationDescribeInstancePatchesMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// DescribeInstancePatchesAPIClient is a client that implements the
-// DescribeInstancePatches operation.
-type DescribeInstancePatchesAPIClient interface {
-	DescribeInstancePatches(context.Context, *DescribeInstancePatchesInput, ...func(*Options)) (*DescribeInstancePatchesOutput, error)
-}
-
-var _ DescribeInstancePatchesAPIClient = (*Client)(nil)
 
 // DescribeInstancePatchesPaginatorOptions is the paginator options for
 // DescribeInstancePatches
@@ -255,6 +250,9 @@ func (p *DescribeInstancePatchesPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeInstancePatches(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -273,6 +271,14 @@ func (p *DescribeInstancePatchesPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// DescribeInstancePatchesAPIClient is a client that implements the
+// DescribeInstancePatches operation.
+type DescribeInstancePatchesAPIClient interface {
+	DescribeInstancePatches(context.Context, *DescribeInstancePatchesInput, ...func(*Options)) (*DescribeInstancePatchesOutput, error)
+}
+
+var _ DescribeInstancePatchesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeInstancePatches(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

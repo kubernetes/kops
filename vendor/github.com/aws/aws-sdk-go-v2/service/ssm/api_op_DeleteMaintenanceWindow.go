@@ -105,6 +105,9 @@ func (c *Client) addOperationDeleteMaintenanceWindowMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteMaintenanceWindowValidationMiddleware(stack); err != nil {
 		return err
 	}

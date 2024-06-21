@@ -1,3 +1,17 @@
+# v1.34.1 (2024-06-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.34.0 (2024-06-18)
+
+* **Feature**: Track usage of various AWS SDK features in user-agent string.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.33.1 (2024-06-17)
+
+* **Documentation**: Updating SDK example for KMS DeriveSharedSecret API.
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.33.0 (2024-06-13)
 
 * **Feature**: This feature allows customers to use their keys stored in KMS to derive a shared secret which can then be used to establish a secured channel for communication, provide proof of possession, or establish trust with other parties.

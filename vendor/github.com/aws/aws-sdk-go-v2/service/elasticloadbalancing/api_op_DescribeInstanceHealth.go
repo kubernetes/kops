@@ -121,6 +121,9 @@ func (c *Client) addOperationDescribeInstanceHealthMiddlewares(stack *middleware
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeInstanceHealthValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -144,14 +147,6 @@ func (c *Client) addOperationDescribeInstanceHealthMiddlewares(stack *middleware
 	}
 	return nil
 }
-
-// DescribeInstanceHealthAPIClient is a client that implements the
-// DescribeInstanceHealth operation.
-type DescribeInstanceHealthAPIClient interface {
-	DescribeInstanceHealth(context.Context, *DescribeInstanceHealthInput, ...func(*Options)) (*DescribeInstanceHealthOutput, error)
-}
-
-var _ DescribeInstanceHealthAPIClient = (*Client)(nil)
 
 // AnyInstanceInServiceWaiterOptions are waiter options for
 // AnyInstanceInServiceWaiter
@@ -270,7 +265,13 @@ func (w *AnyInstanceInServiceWaiter) WaitForOutput(ctx context.Context, params *
 		}
 
 		out, err := w.client.DescribeInstanceHealth(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -452,7 +453,13 @@ func (w *InstanceDeregisteredWaiter) WaitForOutput(ctx context.Context, params *
 		}
 
 		out, err := w.client.DescribeInstanceHealth(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -652,7 +659,13 @@ func (w *InstanceInServiceWaiter) WaitForOutput(ctx context.Context, params *Des
 		}
 
 		out, err := w.client.DescribeInstanceHealth(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -736,6 +749,14 @@ func instanceInServiceStateRetryable(ctx context.Context, input *DescribeInstanc
 
 	return true, nil
 }
+
+// DescribeInstanceHealthAPIClient is a client that implements the
+// DescribeInstanceHealth operation.
+type DescribeInstanceHealthAPIClient interface {
+	DescribeInstanceHealth(context.Context, *DescribeInstanceHealthInput, ...func(*Options)) (*DescribeInstanceHealthOutput, error)
+}
+
+var _ DescribeInstanceHealthAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeInstanceHealth(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

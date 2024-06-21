@@ -193,6 +193,9 @@ func (c *Client) addOperationDescribeCustomKeyStoresMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeCustomKeyStores(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -213,14 +216,6 @@ func (c *Client) addOperationDescribeCustomKeyStoresMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// DescribeCustomKeyStoresAPIClient is a client that implements the
-// DescribeCustomKeyStores operation.
-type DescribeCustomKeyStoresAPIClient interface {
-	DescribeCustomKeyStores(context.Context, *DescribeCustomKeyStoresInput, ...func(*Options)) (*DescribeCustomKeyStoresOutput, error)
-}
-
-var _ DescribeCustomKeyStoresAPIClient = (*Client)(nil)
 
 // DescribeCustomKeyStoresPaginatorOptions is the paginator options for
 // DescribeCustomKeyStores
@@ -289,6 +284,9 @@ func (p *DescribeCustomKeyStoresPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.Limit = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeCustomKeyStores(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -307,6 +305,14 @@ func (p *DescribeCustomKeyStoresPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// DescribeCustomKeyStoresAPIClient is a client that implements the
+// DescribeCustomKeyStores operation.
+type DescribeCustomKeyStoresAPIClient interface {
+	DescribeCustomKeyStores(context.Context, *DescribeCustomKeyStoresInput, ...func(*Options)) (*DescribeCustomKeyStoresOutput, error)
+}
+
+var _ DescribeCustomKeyStoresAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeCustomKeyStores(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

@@ -129,6 +129,9 @@ func (c *Client) addOperationDescribeMaintenanceWindowScheduleMiddlewares(stack 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeMaintenanceWindowSchedule(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -149,14 +152,6 @@ func (c *Client) addOperationDescribeMaintenanceWindowScheduleMiddlewares(stack 
 	}
 	return nil
 }
-
-// DescribeMaintenanceWindowScheduleAPIClient is a client that implements the
-// DescribeMaintenanceWindowSchedule operation.
-type DescribeMaintenanceWindowScheduleAPIClient interface {
-	DescribeMaintenanceWindowSchedule(context.Context, *DescribeMaintenanceWindowScheduleInput, ...func(*Options)) (*DescribeMaintenanceWindowScheduleOutput, error)
-}
-
-var _ DescribeMaintenanceWindowScheduleAPIClient = (*Client)(nil)
 
 // DescribeMaintenanceWindowSchedulePaginatorOptions is the paginator options for
 // DescribeMaintenanceWindowSchedule
@@ -225,6 +220,9 @@ func (p *DescribeMaintenanceWindowSchedulePaginator) NextPage(ctx context.Contex
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeMaintenanceWindowSchedule(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -243,6 +241,14 @@ func (p *DescribeMaintenanceWindowSchedulePaginator) NextPage(ctx context.Contex
 
 	return result, nil
 }
+
+// DescribeMaintenanceWindowScheduleAPIClient is a client that implements the
+// DescribeMaintenanceWindowSchedule operation.
+type DescribeMaintenanceWindowScheduleAPIClient interface {
+	DescribeMaintenanceWindowSchedule(context.Context, *DescribeMaintenanceWindowScheduleInput, ...func(*Options)) (*DescribeMaintenanceWindowScheduleOutput, error)
+}
+
+var _ DescribeMaintenanceWindowScheduleAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeMaintenanceWindowSchedule(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

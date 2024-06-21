@@ -117,6 +117,9 @@ func (c *Client) addOperationListCidrCollectionsMiddlewares(stack *middleware.St
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListCidrCollections(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -137,14 +140,6 @@ func (c *Client) addOperationListCidrCollectionsMiddlewares(stack *middleware.St
 	}
 	return nil
 }
-
-// ListCidrCollectionsAPIClient is a client that implements the
-// ListCidrCollections operation.
-type ListCidrCollectionsAPIClient interface {
-	ListCidrCollections(context.Context, *ListCidrCollectionsInput, ...func(*Options)) (*ListCidrCollectionsOutput, error)
-}
-
-var _ ListCidrCollectionsAPIClient = (*Client)(nil)
 
 // ListCidrCollectionsPaginatorOptions is the paginator options for
 // ListCidrCollections
@@ -210,6 +205,9 @@ func (p *ListCidrCollectionsPaginator) NextPage(ctx context.Context, optFns ...f
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListCidrCollections(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -228,6 +226,14 @@ func (p *ListCidrCollectionsPaginator) NextPage(ctx context.Context, optFns ...f
 
 	return result, nil
 }
+
+// ListCidrCollectionsAPIClient is a client that implements the
+// ListCidrCollections operation.
+type ListCidrCollectionsAPIClient interface {
+	ListCidrCollections(context.Context, *ListCidrCollectionsInput, ...func(*Options)) (*ListCidrCollectionsOutput, error)
+}
+
+var _ ListCidrCollectionsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListCidrCollections(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

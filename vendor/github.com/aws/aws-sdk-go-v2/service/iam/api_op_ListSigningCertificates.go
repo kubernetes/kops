@@ -153,6 +153,9 @@ func (c *Client) addOperationListSigningCertificatesMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListSigningCertificates(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -173,14 +176,6 @@ func (c *Client) addOperationListSigningCertificatesMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// ListSigningCertificatesAPIClient is a client that implements the
-// ListSigningCertificates operation.
-type ListSigningCertificatesAPIClient interface {
-	ListSigningCertificates(context.Context, *ListSigningCertificatesInput, ...func(*Options)) (*ListSigningCertificatesOutput, error)
-}
-
-var _ ListSigningCertificatesAPIClient = (*Client)(nil)
 
 // ListSigningCertificatesPaginatorOptions is the paginator options for
 // ListSigningCertificates
@@ -255,6 +250,9 @@ func (p *ListSigningCertificatesPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListSigningCertificates(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -273,6 +271,14 @@ func (p *ListSigningCertificatesPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// ListSigningCertificatesAPIClient is a client that implements the
+// ListSigningCertificates operation.
+type ListSigningCertificatesAPIClient interface {
+	ListSigningCertificates(context.Context, *ListSigningCertificatesInput, ...func(*Options)) (*ListSigningCertificatesOutput, error)
+}
+
+var _ ListSigningCertificatesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListSigningCertificates(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

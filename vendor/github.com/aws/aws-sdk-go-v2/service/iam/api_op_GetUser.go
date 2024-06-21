@@ -143,6 +143,9 @@ func (c *Client) addOperationGetUserMiddlewares(stack *middleware.Stack, options
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetUser(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -163,13 +166,6 @@ func (c *Client) addOperationGetUserMiddlewares(stack *middleware.Stack, options
 	}
 	return nil
 }
-
-// GetUserAPIClient is a client that implements the GetUser operation.
-type GetUserAPIClient interface {
-	GetUser(context.Context, *GetUserInput, ...func(*Options)) (*GetUserOutput, error)
-}
-
-var _ GetUserAPIClient = (*Client)(nil)
 
 // UserExistsWaiterOptions are waiter options for UserExistsWaiter
 type UserExistsWaiterOptions struct {
@@ -285,7 +281,13 @@ func (w *UserExistsWaiter) WaitForOutput(ctx context.Context, params *GetUserInp
 		}
 
 		out, err := w.client.GetUser(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -341,6 +343,13 @@ func userExistsStateRetryable(ctx context.Context, input *GetUserInput, output *
 
 	return true, nil
 }
+
+// GetUserAPIClient is a client that implements the GetUser operation.
+type GetUserAPIClient interface {
+	GetUser(context.Context, *GetUserInput, ...func(*Options)) (*GetUserOutput, error)
+}
+
+var _ GetUserAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetUser(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

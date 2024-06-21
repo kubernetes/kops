@@ -129,6 +129,9 @@ func (c *Client) addOperationDescribePoliciesMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribePolicies(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -149,14 +152,6 @@ func (c *Client) addOperationDescribePoliciesMiddlewares(stack *middleware.Stack
 	}
 	return nil
 }
-
-// DescribePoliciesAPIClient is a client that implements the DescribePolicies
-// operation.
-type DescribePoliciesAPIClient interface {
-	DescribePolicies(context.Context, *DescribePoliciesInput, ...func(*Options)) (*DescribePoliciesOutput, error)
-}
-
-var _ DescribePoliciesAPIClient = (*Client)(nil)
 
 // DescribePoliciesPaginatorOptions is the paginator options for DescribePolicies
 type DescribePoliciesPaginatorOptions struct {
@@ -222,6 +217,9 @@ func (p *DescribePoliciesPaginator) NextPage(ctx context.Context, optFns ...func
 	}
 	params.MaxRecords = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribePolicies(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -240,6 +238,14 @@ func (p *DescribePoliciesPaginator) NextPage(ctx context.Context, optFns ...func
 
 	return result, nil
 }
+
+// DescribePoliciesAPIClient is a client that implements the DescribePolicies
+// operation.
+type DescribePoliciesAPIClient interface {
+	DescribePolicies(context.Context, *DescribePoliciesInput, ...func(*Options)) (*DescribePoliciesOutput, error)
+}
+
+var _ DescribePoliciesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribePolicies(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
